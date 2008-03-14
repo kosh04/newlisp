@@ -1,0 +1,23 @@
+# makefile for newLISP v. 9.x.x on Mac OSX as a newlisp.dylib
+#
+# all versions MacOS X
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o unix-lib.o
+
+
+CFLAGS = -Wall -O2 -c -DMAC_OSX -DLIBRARY 
+
+CC = cc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -g -lm -bundle -o newlisp.dylib
+#	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_darwin_lib
+
+

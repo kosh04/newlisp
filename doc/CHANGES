@@ -1,0 +1,4180 @@
+6.0.25
+'find', 'replace' and 'search' now have an option for case insensitive
+search, updated source and manual
+
+6.0.26 - 6.0.27 - 11:34 AM 4/4/99
+'trace' got stuck in executeCommandline() in traceExit() because an empty
+ fgets() in LINUX still has a '\n'
+
+6.0.27 - 6.0.28 - 6:30 PM 4/6/99
+'import' now returns primitve address
+'define' now also works like (define x y) ; as in SCHEME
+'char' now defaults to 0 on offset and returns unsigned int
+new 'mod' floating point modular function
+new 'abs' floating point absolute value function
+new 'trim' trims spaces or characters both sides
+
+6.0.28 - 6.0.29
+'filter' new primitive
+
+6.0.29 - 6.0.30
+'dump' now displays address of cell
+'make-dir' mode parameter now optional defaults to 493 = drwxr-xr-x
+
+6.0.30 - 6.0.31
+fixed trim, which had all kinds of problems
+new 'difference' returns set difference of two lists
+new 'intersect' resturns set intersection of two lists
+new 'unique' returns unique set from list (duplicates removed)
+when comparing lambda expressions, now state lists also get compared
+
+6.0.31 - 6.0.33
+'match' now also works on list expressions, wildcard symbols 
+can occur on different nesting levels. 
+ 
+6.0.33 - 6.0.34 Released on www.newlisp.org
+in 'substring' the length parameter is now optional 
+math exception showed wrong error message 
+tty setup now only when tty detected else supress buffering 
+for usage with 'socker'
+
+6.0.33 - 6.0.35 4/20/2000
+inlined cleanupResults() in evaluateExpression() ca. 4% speedup !
+took out all #pragma statements
+took out termio stuff, works better without
+new functions read-file, write-file
+new functions read-process, write-process
+new function error-text
+
+6.035 - 6.0.36 4/21/2000
+'char' now also can take a number as an argument converting it to a 
+string of one character: 
+(char 65) => "A"
+(char "A") => 65
+'integer' and 'float' now return 'nil' if the string passed does
+not start with a number digit or +/-
+strings can now encode characters in the form \nnn where nnn
+is a 3 digit decimal (leading 0' if less 100) e.g.:
+"\065\066\067" => "ABC"
+
+6.036 - 6.039 4/28/2000
+added 'chop', 'explode', 'get-float', 'starts-with', 'ends-with'
+added 'random' 'normal'
+renamed 'get-number' to 'get-integer'
+added script for httpd webserver demon
+
+6.039 - 6.043
+'symbol' now takes optional context argument
+'symbols' now gives error message if symbol args is not context
+eliminated 'sourcePtr' which wasn't used anyway, introduced
+'sourceLine' for keeping track of line-numbers in error messages
+added 'encrypt' for one-time-pad encryption/decryption
+
+6.043 - 6.044
+speedup in deleteList() and copyList()
+
+6.044 - 6.045
+took out 'sourceLine', too much confusing situtations which are
+unresolvable. 'eval-string' now does multiple expressions
+
+6.045 - 6.048
+put back pushResultFlag, 'eval' needed it. 
+fixed bug in 'substring' for trailing 0's, changed tokeString to 
+resemble split() and taking separators > 1 char.
+This also changes pack/unpack in parsePackFormat() to take care of
+more than one space between formats. 
+After reset and execution of 'error-event' errorReg now set to 0.
+
+6.048 - 6.049
+took out executeSymbolParams modifying executeParams for optional arg
+'reset' now throws 'user reset - no error' - error, so it can be handled as
+a non-error in user defined error handlers, also takes now optional
+symbol for 'resetEvent to be exuted after errorEvent.
+
+6.049 - 6.051
+'reset' now takes optional third parameter for stacksize. So the
+syntax for reset is nor (reset [resetEventSymbol] [stacksize])
+
+6.051 - 6.052
+no length limitiation anymore for printing strings to the console
+'replace-nth' new primitive
+
+6.052 - 6.054 5/19/2000
+'let' new primitive like in other Lisp but dynamically scoped
+'seed' new primitive seeds random generator for rand, random, normal
+now feature complete for 6.1 release
+
+6.054 - 6.055 5/20/2000
+fixed memory leek in varPrintf()
+'integer' and 'float' now take optional thirsd parameter for default
+return value if string cannot be parsed.
+
+6.055 - 6.056
+fixed bug in 'symbol' which would not overwrite symbols in MAIN for
+symbols in other contexts so (symbol "set" 'MyContext) now works
+creating a symbol 'set in MyContext.
+
+6.056 - 6.059 5/29/2000
+improved pretty printing for 'let', which takes now the same flag
+as 'cond'. Improved httpd script, now sends http header for each
+file.
+
+6.059 - 6.060 5/29/2000
+httpd did fail on POST on some browsers now 'upper-case' when matching
+'content-length'. Alos fixed in manuual
+
+6.060 - 6.0.61
+changed 'parse' so it parses a max token length of 2048 (256 previous)
+this was already changed erarlier on the Win32 versions.
+The read-line limit of 16384 should be changed at some point to infinite
+similar to the print buffer. At the moment cgi vi std/IO is limited by
+read-line to forms no bigger than 16384.
+
+6.0.61 - 6.0.62
+varPrintf was still limited. MAX_PRINT_LEN changed to size.
+
+6.0.62 - 6.0.63
+'integer' now parses also hex strings eg: (integer "0xFF") => 255
+'write-line' now retuenw nil on file errors
+
+6.0.63 - 6.0.64
+5% speedup introducing cell type masks
+
+6.0.64 - 6.0.65
+1% speedup taking out symbol in evaluateExpression
+
+6.0.65 - 6.0.67
+new 'count' counts elements of one list in another list
+
+6.0.67 - 6.0.68
+fixed error in 'reverse'
+
+6.0.68 - 6.0.69
+'parse' now without size limitations in tokens when using breakstr argument.
+
+6.0.69 - 6.0.70
+'string' now without size limitations of printing in string
+
+6.0.69 - 6.0/71
+'read-line' now without size limitations
+
+6.0.71 - 6.0.72
+'for' fixed bug when from and to where equal would run forever
+
+6.0.72 - 6.0.73
+'putenv' didn't work, fixed
+
+6.0.73 - 6.0.75
+problem with ebaluateLambda when passing (set 'p ...) to (foo p) as an argument 
+for parameter p.
+
+6.0.75 - 6.0.76
+additional functions: prob-z prob-chi2 and crit-chi2. (for ...) no works with
+floating point numbers. Additional module xml.lsp
+
+6.0.76 - 6.0.77
+additional function: join. Additional module mail.lsp
+additional function: sequence
+
+6.0.77 - 6.0.79
+additional functions: xml-parse, xml-error
+fixed buffer overflow bug in varPrintf to string device (function 'string)
+
+6.0.79 -> 6.1.0
+new function println
+6.1.14 documentation
+
+6.1.0 -> 6.1.1
+new function fft and ifft
+6.1.15 documentation
+
+6.1.1 -> 6.1.2
+the length parameter in 'sublist' is now optional (assumes all)
+
+6.1.2 -> 6.1.3
+fixed default for 'true' in 'case'
+
+6.1.3 -> 6.1.4
+new function 'swap' for swapping elements in a list
+
+6.1.4 -> 6.1.5
+new function 'read-url' for reading pages/files via http
+revision of httpd script more RFC compliant
+
+6.1.5 -> 6.1.6
+'read-url' nl-web.c now handles proxy's if HTTP_PROXY is set to proxy URL
+new functions 'collect'and 'select' for selecting multiple elements from a
+list
+
+6.1.6 -> 6.1.7 Release
+'rand' now takes an optional second parameter to return a list of random
+numbers (similar to 'random' and 'normal')
+many formatting changes in manual.
+
+================================================================================
+6.1.7exp -> experimental '-p port' mode
+
+6.1.7 -> 6.1.8
+fixed bug in error event handling when error==0
+
+6.1.8 -> 6.1.9
+trace now is a source level debugger, similar in funcitonality to the Win32
+version, but for a character console.
+linking now encrypted, new functions 'betai' and 'gammaln'
+
+6.1.9 -> 6.1.10 
+fixed bug which could affect parsing \xxx in getToken() where isdigit(x)
+'prob-chi2' now more precise using gammap(),
+new functions 'crit-z', 'beta' and 'gammai'
+
+6.1.10 -> 6.1.11
+new 'debug-highlight' for setting pre and post string in debugger
+highlighting. Eliminated example httpget because 'read-url' does
+the same. 
+
+6.1.12 -> 6.1.12
+'swap' now treats negative values as the last element, consistent
+with other functions, 'read-url' fix in error message text
+init.lsp, mysql.lsp etc have moved to /usr/local/newlisp
+
+6.1.12 -> 6.1.15
+'read-url' now handles also redirects
+
+6.1.15 -> 6.1.16
+fixed bug in trace mode, trace stopped at all args evals in function
+calls. Still stops and shows result for each 'map', which is ok, but
+must be documented. Improved subroutines for handling POP3 and SMTP mail.
+
+6.1.16 -> 6.1.17
+new matrix functions 'invert', 'multiply', 'transpose'
+
+6.1.17 -> 6.1.18
+fixed dimension problem in transpose
+
+6.1.18 - > 6.1.19
+fixed missing error text for 'singular matrix' in invert
+
+6.1.19 -> 6.1.20
+ifft didn't normalize right when N not a power of 2
+evaluateLambda() rewritten to store statics in a way that
+anonymous lambda expressions with static data can be stored
+this also gave a general speed up of about 5%.
+
+6.1.20p2
+(nth -1 lst) now returns the last element instead of nil. This
+is consisten with other functions
+
+6.1.20p4
+eliminated optional parameters in reset, because never worked right.
+instead the error-event can be used for code after reset and the stack
+size can now be specified on the command line.
+
+6.1.20p5
+eliminated get-state and set-state as primitves, they are now written
+in newLISP and part of the initialization file /usr/local/newlisp/init.lsp
+
+6.1.20p6
+new function 'regex for POSIX 1003.2 regular expressions (GNU library)
+ifdef'ed readline, only works in CYGWIN, cannot figure unresolved 'tputs()' etc in
+libreadline.so in LINUX, seems not to see libcurses?
+
+6.1.20p7
+cleanup makefile for different features NANOSLEEP, READLINE, REGEX
+cleanup fft
+took out replace-match, new function index
+
+6.1.20p8
+cleanup regex, additions changes in manual
+
+6.1.20 -> 6.3.pre1
+READLINE finally working on Mandrake missing link to 'libtermcap.so'
+lots of manual changes
+ 
+6.3.pre2
+preparing to replace simple binary tree for symbols woth RB balanced tree
+
+6.3.pre4
+running RB balanced tree code
+
+6.3.pre5
+fixed bug in 'symbols for context and 'delete for context
+
+6.3.pre6
+changed httpd CHANGES
+===============================================================================
+6.3 Release
+time-of-day new function
+
+6.3.01
+a fix for 'regex' in the CYGWIN version sent in by Steve Adams
+
+6.3.02
+additional optional parameter in 'eval-string'
+streamlining code in nl-web.c, reformatting manual so it is easier converted
+to PDF
+
+6.3.04
+new -p commandline parameter for TCP/IP port mode of newLISP.
+Fixed format for default data type (will treat as string),
+also format will permit now unlimeted size of the formatted 
+output (was 2047 bytes).
+
+6.3.05
+cleanup -p with trace for rt/lf translation
+
+===============================================================================
+6.3.06 Release  July 8th, 2001
+optional parameter 'nil in 'eval for silent evaluation evaulates without return
+value and prompt on the console, needed for Tcl/Tk integration
+
+6.3.07 Release
+a new function 'debug (shortcut fr using trace) and various bugfixes in the
+trace/debug functions. '{' and '}' characters are allowed as string delimiters
+but only on the outer level, they get replaced by the parser. This allows
+writing 'nicer' source for HTML and TK stuff.
+
+6.3.08
+regex now also returns sub expressions. further changes in debugger to accomodate
+remote TclTk controlled debugging: (q)uit now quits execution, (c)ontinue stops
+debugging but continues execution.
+
+===============================================================================
+6.3.09 Release July 16th, 2001
+string now can take more than one parameters, like concat but works on different
+data types
+
+6.3.10
+added symbol count to 'sys-info'
+added ERR: string in error message when in trace for TclTk frontend
+
+6.3.11
+new function 'dotree' to iterate thrugh symbol trees, usefull for simulating
+arrays and hashes
+
+===============================================================================
+6.3.12 Release July 30th, 2001
+new function 'catch' for catching errors when evaluating expressions
+fixed bug in net-connect when trying to connect to dead port
+
+===============================================================================
+6.3.14 Release August 2nd, 2001
+changes in newlisp_manual.html and newlisp-tk.html
+cleanup and improvment of qa file
+fixed crash-bug in markReferences and saveSymbol when copying contexts
+function 'args' now works also for lambda, no symbol param necessary anymore
+===============================================================================
+6.3.15 Release September 3rd, 2001
+xml-parse now accepts empty atribute value strings e.g.: <ATAG ATT=""></ATAG>
+net-lookup now works in both directions: ip->name and name->ip
+===============================================================================
+6.3.16 Release September 6th, 2001
+float division by 0.0 now yields 'Inf', as specified by IEE 754. Before 6.3.16
+it would couse a Math exception. Now all compare operations with NaN return 'nil'.
+new functions 'floor' and 'ceil' and 'NaN?'.
+ 
+Ctrl-D will now longer crash but exit newLISP
+
+More LSB compliance in install directories used: now /usr/share/newlisp
+instead of old /usr/local/newlisp
+
+===============================================================================
+6.3.17 Release September 9th, 2001
+fixed a memory leak in 'regex'. The leak could not be fixed in the CYGWIN
+version which uses regexp !
+
+
+6.3.18
+fixed rounding problem in 'sequence', Ctrl-D will not exit but only do newline
+if at beginning of line, else it will behave as expected under readline, to exit
+newLISP with one keystoke use Ctrl-C instead.
+output cleanup in error-text and error-event
+better standard behaviour of 'cond' when action clause is missing
+new function 'series' for generating geometric sequences.
+new function 'rotate' for rotating lists
+
+6.3.20 Release October 22nd, 2001
+bug fix in xml-parse when parsing closing tags without opening tags
+bug fix memory leak in catch and eval-string uder error conditions
+about 30% speedup removing copyCell/pushResult in: inc set define
+manual changes and additions.
+tookout net-cleanup in  network examples
+
+6.3.21p1
+bug fix in 'char' when using with floats
+'integer' now also takes floats converting them into integer
+also now translates "055" to 45 taking it as an octal number,
+which is consistend now with the parser.
+'float' now also takes integeres converting into floats
+
+6.3.21p2
+eliminated symbol->type in SYMBOL typdef, which reduces symbol memory by from 36 to 32 byte
+fixed a bug where sometimes newlisp wouldn't exit after tk-frontend exited
+
+===============================================================================
+6.3.21 Release November 13th, 2001
+MAX_ERROR_NUMBER was to high, parenthesis count wasn't reset when evalCatchFlag
+
+6.3.22
+fixed potential bug in join with memory intialization
+fixed problem parsing URL when redirection in 'read-url'
+'get-url/read-url' now also handles 205 and 307 return codes
+'get-url/read-url' now always only returns header portion if "header" option is specified
+new -d demon mode, like -p but newLISP stays in memory to accept a new connection
+new function 'put-url' for HTTP PUT method
+new function 'post-url' for HTTP POST method
+
+===============================================================================
+6.3.23 Release January 6th, 2002
+new function 'binomial'
+
+6.3.24
+'exit' now closes net work connection when running in '-d' demon mode.
+new function 'now' returns detailed date/time info: (y m d h m s us dy dw)
+new function 'date-value' converts date/time into seconds since 1970-1-1
+new financial functions 'pmt', 'nper', 'pv', 'fv', 'npv'
+bug fix in 'map' which would crash when last arg was not a list (as it should be)
+replaced 'MySQL:close' with 'MySQL:close-db' to avoid overwriting of close in MAIN in mysql.lsp
+
+===============================================================================
+6.4.00 Release March 20th, 2002
+inclusion of BWidget set in the Win32 tk v 0.80 distibution, many manual changes
+
+6.4.1
+main-args now returns path of program as first list member
+get-url "debug" option now can be specified together with "header" option
+post-url content-type now is optional and defaults to "application/x-www-form-urlencoded"
+added closing channel in get-url
+fixed bug in 'join', which could crash on an empty list
+httpd, finger and gettime changes for new 'main-args'
+balloon help in newlisp-tk v. 081
+new '(tk-args)' when running Tcl/Tk frontend returns newlisp-tk commandline args
+several changes in stat.lsp/plot directing temporal files to /tmp
+fixed potential crash bug in 'dotree'
+Win32 installer now puts desktop icon
+
+===============================================================================
+6.4.2 Release April 22nd, 2002
+'format' now for multiple args
+
+6.4.3 development release
+'parse' now correctly does handles trailing separator by returning an empty token ""
+
+6.4.4
+buffer limit in vsnprintf() was not handled correctly, putting a space limitation
+on 'string' (16k), 'format' (2k) and 'C' functions depending on varPrintf(),
+fixed potential buffer overflow in writeStreamStr().
+'tranpose' did not check for matrix type.
+experimental function 'throw'
+
+6.4.5 Development release
+starts-with, ends-with 
+now are working type polymorph on strings and lists
+rotate now takes negative numbers for left rotation
+rearranged lambda evaluation (eval args before saving environment),
+which causes 6% speed improvements
+'args' only available in define-macro (again as before 6.3.14)
+changed 'if', 'unless', 'while', 'until' for less CPU stack requirements
+
+6.4.6
+'nth', 'first', 'last', 'rest'
+now are working type polymorph on strings and lists
+'cons' works now correctly on 1 arg  (who cares? -> consistency proof)
+potenial cell-memory leak on error in 'apply'
+
+6.4.7 Development release
+improved syntax for statics environment list as assoc list:
+(define  (foo a b c ((x 1) (y 2) (z 3))) ....)
+to retrieve statics environment just do:
+(last (first foo) => ((x 1) (y 2) (z 3))
+also improves speed of ststic processing by about 10%
+
+===============================================================================
+6.4.8 Release May 16, 2002
+empty? now works on strings
+fix for 'cons' when lambda expr is second argument
+fix for (rest "") which now returns ""
+fix for (first "") now returns nil
+purelisp.lsp for prooving consistency
+fix for link.lsp on CYGWIN
+
+6.4.9 Development release May 21st, 2002
+'nil' as a symbol was not always treated as nil value constant
+(push exp lst) now works even if lst does not contain a list
+in that case old contents of lst gets deleted and initialized
+with () before pushing exp, this makes initialization of lists
+to '() before pushing on it unnecessary.
+'time' now works as a timer returning mseconds needed to evaluate
+this is also mor compatible how other Lisp's define 'time'
+an expression, for old funcitonality of 'time' use (apply date-value (now))
+'sort' now takes an optional parameter '< or '> for ascending/descending
+also about 30% speedup, like in: (sort myList '>)
+
+6.4.10 Development release May 21st, 2002
+correct treatment of symbol 'nil in 'and' and 'or'
+eliminated orSymbol reference in soirce code
+speedup parsing source
+dump with parameter now returns list (cellAdress, cellType, cellNext, cellAux, cellContents)
+stepsize in 'for' 'sequence' always forced to positive
+
+6.4.11
+'push' in its new form did not respect 'nil and 'true
+new error message when trying to set/define/push on 'nil, 'true or context
+speedup in multiple compares in nl-math.c 
+speedup in upper-case, lower-case
+speedup in get-char, get-string, get-integer and get-float
+
+
+6.4.12
+boolean types and symbols are equal
+another speed improvement in lambad and expression evaluation
+over all speed improvement over 6.4.8 now about 5-10% depending
+on expression mix.
+local iterator symbols are now handled on environment stack for
+better error recovery.
+new chapter "Data structure objects in lists" in docs and
+many little doc changes.
+
+===============================================================================
+6.5.0 Release May 28th, 2002
+no changes related to newlisp itself except for versioning
+changes in httpd (see httpd file)
+changes in newlisp-IDE for changes in httpd and changes for date display
+
+6.5.1
+compiles with -Wall -pedantic -Wno-uninitialized -O2 
+-Wall -pedantic for better portability
+-Wno-uninitialized to suppress 'fork' 'longjmp' warning in -O2
+-O2 does ~25% speed and size improvement!
+'let' did not handle empty parameter lists and now double fast
+
+6.5.2 development release June 3rd
+'concat' is deprecated 'append' doubles functionality of 'concat'
+new individual makefiles for making newLISP on different platforms without
+the need to tweak makefiles.
+
+6.5.4
+'find', 'replace' and file 'search' now can do Regular Expressions.
+Regular Expressions are not dependend any more on the C-library
+on the OS platform used, instead PCRE (Perl Compatible Regular Expressions)
+is used on all platforms and the source is contained in the distribution.
+Additions to INSTALL file about PCRE and localization of newLISP.
+
+6.5.5
+fix for 'replace' in regex mode
+
+6.5.5 -> 6.5.7
+changes in win32.lsp and makefile_win32
+eliminated file: nl-importDM.c was already merged
+new chapter 'Lambda expressions in newLISP' in newlisp_manual.html
+
+===============================================================================
+6.5.8 Released version (functionally equal to 6.5.7) June 13th 2002
+#ifdef NOIMPORT instead of MAC_OSC in evaluateExpression()
+spelling stuff in newlisp_manual.html
+
+6.5.10
+- incorporated nl-web.c into native win32 version to make work get-url, post-url
+and put-url. Server modes -p and -d now are working too in native win32 version.
+
+- newlisp-tk.tcl changed to work with win32 because read-line/write-line don't 
+work on sockets in win32. 
+
+- writeStramChar() now works also on binary streams
+
+- newlisp-tk.tcl changed to work on remote connection over the internet.
+Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
+
+- 'reload last' button in newlisp-tk GUI
+
+- dependency fix in makefile_win32
+
+
+6.5.11
+- moved to Borlanc C++ v5.5 compiler, gives faster and smaller executable than 
+ Digital Mars compiler previously used. Now all functions of the Linux version
+ also work in the Win32 version.
+
+6.5.12
+- changes in newlisp-tk.tcl for faster performance on remote and working
+  reliable with win32 version. Old newlisp-tk.conf should be deleted.
+  Win-tk version can now be distributed without CYGWIN DLLs using the
+  Borland 'C' Win32 compile.
+
+6.5.13
+- fixed problem in 'net-receive', which was introduced in 6.5.10
+  httpd now works fine with win32 compile (with change in line 147 of httpd)
+
+- send() in net-send and win32_fprintf() now performs check and resend
+
+6.5.14
+- reintroduced writeStreamChar in 'net-receive', writeStreamChar did not zero buffer
+- debug was broken with TK because of missing redefine of fgets() in nl-debug.c
+
+6.5.15
+- net-close wasn't working in win32 version, which gave problems in cgi in httpd
+- new newlisp-IDE-1.3.tgz with fixes for LF -> RET/LF translation which was happening
+  in win32 pipes
+
+6.5.16
+- doc changes
+- took out again size-check and resend in netSend() and win32_fprintf() as it is
+  not relevant in blocking sockets
+- mail.lsp was broken because of change how optional parameter in 'find' works
+- 'read-process' and 'write-process' collapsed to 'exec'
+- match for lists now behaves like match for string returning a list of matches
+  ie. (match '(I * you) '(I love you)) => (I (love) you)
+  this allows easier substituting of star/* patterns in pattern matches in chat
+  robots
+
+6.5.17
+- new option# parameter in 'xml-parse' 
+    (a) option# 1 to surpress white-space TEXT fields (for data XMLs)
+    (b) option# 2 to surpress empty attribute tags (for tags which never have attributes)
+    (c) option# 4 to surpress comments
+    (d) option# 8 to tanslate tag names into symbols
+
+- new 'xml-type-tags' for definig alternative tags for "ELEMENT", "CDATA", "COMMENT"
+  and "ELEMENT". Instead symbol can be defined or nil can be specified to surpress
+  the type tag completely.
+
+- the newlisp-tk_win32 version now comes with the win32 native compile
+
+- fixed bug in 'string', which was not reentrant
+
+===============================================================================
+6.5.18 Release August 3, 2002
+- fixed stream problem in 'eval-string' in Win32
+- fixed openStrStream, didn't initialize stream->handle to 0
+
+6.5.19
+- doc changes, renamed mail.lsp to pop3.lsp, sendmail.lsp to smtp.lsp
+- memory initialization in p_format()
+
+6.5.20
+- fixed p_format again, vsnprintf() doesn't include null-char in return count
+  as advertised in GNU docs
+- doc changes
+
+6.5.21
+- 'explode' now also works on binary contents
+- 'file-info' modification and creation time where added
+- can now specify \000 in string constants
+- in imported function now up to 10 parameters (previous 8)
+- odbc.lsp module for ODBC communications
+
+6.5.22
+- comparing symbols now includes the context name in their comparison
+- 'name' new function to extract the name of a symbol as astring without the context
+- milli second resolution in 'time-of-day', 'now' and 'time' in Win32
+- newlisp_manual.book for conversion html->pdf with HTMLDOC http://www.easysw.com
+  this makes a printable manual. Print double sided then cut 8.0 x 9 inch, which is
+  2 from the bottom and 0.5 from the right side when printed on 8.5 x 11 inch paper;
+  then spiral bind (thin round spirals, not the flat once).
+- post-url was never working on win32 becuase of missing win32_fwrite
+
+
+===============================================================================
+6.5.23 ----------- released September 17, 2002
+- httpd fix for empty query string 
+- newlisp-IDE-1.6.tgz now saves files up to 10k, changed POST encoding to multi part
+
+6.5.24
+- quote wil not evaluate it's argument anymore, but work like Scheme or Common Lisp
+- in newlisp-tk the lisp file estension can now be configured in newlisp-tk.config
+- in Win32 now line termination gets written as RT-LF, 
+  change also in newlisp-tk.tcl when filling editbox
+- net-read-line now protected from deletion in newlisp-tk browser
+- prettyPrint will never put newline after quote
+- fixed prettyPrint bug when printing empty prettyPrint constructs (while, dotimes etc)
+
+6.5.25
+- quote fixed again (quoted twice)
+
+6.5.26
+- doc fixes
+- date crashed on values resulting in dates before 1970-Jan-1 00:00:00
+  in the Win32 version. In Win32 now minimum value for date is 86400,
+  which is safely on or after 1970-Jan-1 00:00:00 for all time zones
+- NaN can now be put into a variable for comparison
+- division by zero now causes a math exception also in floats (previously
+  inf was returned in cygwin/Unix version and Win32 crashed)
+- in mixed arithmetik using integer operators NaN is taken as 0
+
+6.5.27
+- new function 'constant' to protect symbol contents from changing
+- fixed bug in newlisp-tk.tcl which was introduced after 6.5.23
+  which caused problems in Mouse.lsp (_result -> result in 'tk')
+- 'div' with NaN value raised exception/crashed in Win32, now
+   returns NaN
+- DOMAIN error messages in the Win32 versions are now silenced
+
+6.5.28
+- doc changes
+- new function 'setq', both 'set' and 'setq' and now can take multiple args
+  note that old init.lsp should be updated because of macro for 'setq'
+- new option number 16 in xml-parse for generating SXML output
+
+- 7.0.0 pre release
+- bug fix for 'string', suppresses all pretty-print formatting
+- better error reporting on pop3.lsp and smtp.lsp with debug-flag true
+===============================================================================
+- 7.0.1 release October 24, 2002
+  merged caveGuy's pop3.lsp mail-id improvements
+
+- 7.0.2
+- readLineStream was not initizlized during program startup and caused
+  'current-line' to crash if not used after a 'read-line'
+- direct execution mode with new command line option -e
+- in SXML parsing attribute tags where left strings instead of symbols
+- 'find' now also does regex when looking up a string in list of strings
+
+- 7.0.3
+- example in newLISP for put.cgi in newlisp_manual.html
+- include cgi.lsp in distribution
+- the header in the SMTP interface smtp.lsp was not finished with empty line
+- 'save now can save multiple contexts and/or symbols at once
+- 'open now has a "append" or "a" option
+
+===============================================================================
+- 7.0.4 release February 2, 2003
+  replace now gives error instead of returning 'nil when second arg not
+  list or string
+  new primitive 'lookup' works like assoc with extracting parameter
+  fixed bug in pop3.lsp
+  moved to version 5.4 of Freewrap for making the newlisp-tk.exe, which
+  is now doubled in size because 5.4 doesn't compress anymore (see Freewrap
+  docs).
+
+- 7.0.5
+  Manual improvements in for correct conversion with HTML2DOC
+  additional hour offset parameter in 'now' and 'date'
+  fixed bug in dotree which caused crashes on Windows
+  'context', 'dotree' and 'symbols' now accept unquoted
+  symbol if the symbols is a context.
+  contexts can be deleted again when empty
+  The newlisp-tk Windows version is now wrapped with freewrap v.5.5
+  and based on Tcl/Tk version 8.4.1 and BWidget v.1.6
+  newlisp-tk.tcl has been changed for better usage of 'context'
+
+- 7.1.0-rc1
+  PCRE Perl Compatible Regular Expression support updated to version 4.3
+  in 'replace' now replacement pattern with back references and as 
+  lisp expression. Sub expressions are stored in variable $1, $2 ... etc.
+  $0 contains the whole pattern found. These variables are also filled
+  in 'regex' 'find' (all functions doing regular expressions).
+  The new implementation of 'replace' is also faster (about 15%).
+  example: 
+  (replace "%([0-9A-F][0-9A-F])" str (char (integer(append "0x" $1))) 1)
+  This will do URL translation i.e.: "xxx%41xxx%42" -> "xxxAxxxB".
+
+- 7.1.0-rc2
+  'parse' can take regular expressions in sepearator when additional
+  options parameter is defined (as in find, replace)  
+
+===============================================================================
+- 7.1.0 Release August 28, 2003
+  'search' like 'find' and 'replace' also accepts regular expression
+  when extra options parameter is given.
+  [text] and [/text] can be used as string limiters for large text regions
+  i.e. for HTML in cgi pages written with newLISP. Text limited this way
+  stays completely unprocessed and contain any characters.
+  The function 'symbol' accepts unquoted symbol for context parameter
+  (like 'dotree', 'context', 'symbols')
+  PCRE Perl Compatible Regular Expression support updated to version 4.4
+  extensive manual changes formatting and PDF release  
+
+- 7.1.1
+  surpression of some compiler warnings in Mac OSX compile
+  makefile for linux has strip turned on and readline support
+  was not the default
+
+- 7.1.2
+  third parameter in 'symbol' for supression of symbol creation, if
+  not found; return 'nil instead.
+  HTML manual had formatting error, which caused all after 'regex'
+  to be in curier.
+
+===============================================================================
+- 7.1.3 release September 3, 2003
+  [text]...[/text] caused problems in TCP/IP communications
+ 
+===============================================================================
+- 7.1.4 release September 6, 2003
+  uninitialized memory in writeStreamStr() caused problems when
+  running newlisp-tk and transferring bigger string buffers.
+  win32_fprintf() did not work right for buffers > 2048, which
+  caused problems in browsing bigger buffers in newLISP-tk.
+
+- 7.1.6
+  new function 'process' for launching independent child processes
+  (will not block), new function 'pipe' for use with child processes.
+
+  'if' now accepts multiple condition-exp pairs and then works like a
+  cond without parenthesis around condition-value. 'if' with
+  condition-exp-exp or condition-exp still works like before.
+
+  new 'net-send-udp' and 'net-receive-udp' for UDP communications
+  without need of net-listen,net-accept and net-connect. 
+
+  On Mac OSX 'import' is now enabled using to addtional files
+  osx-dlfcn.n/h for compiling. This import is for '.dylib'
+  libaries.
+  'append' now also can append binary strings (i.e. containing 0's)
+  'joint' now also can joint binary strings (including the joint string)
+
+  if the length of a sublist in slice is 0 then sice returns the empty
+  list '(), previously returned nil. This is more consistent with the
+  behavior of slice on strings and at the end of lists.
+
+  'write-buffer' now acepts both: a symbol or a string
+
+  'send' now accepts both: a symbol or a string
+  
+  'symbol' pretended to create a symbol although context would not exist
+
+  error messages now include the offending expression/parameter which
+  caused the error.
+
+
+- 7.1.7
+  speedup in UDP communications (no session registration)
+  memory leak fixed in 'net-receive-udp'
+
+  'first' of an empty string now returns an empty string, previously nil
+
+  improved cgi.lsp
+
+  'reverse' now works on strings
+
+- 7.1.8
+  'throw' now is documented (actually happened in 7.1.7)
+
+  'collect' and 'select' now also work on strings
+  i.e: (collect "2001-09-20" 5 6 8 9 0 1 2 3) => "09202001"
+
+  'slice' couldn't slice lambda's
+
+  memory leak in searchBufferRegex() affecting 'find' and 'replace' was fixed
+
+- 7.1.9  
+  'set' with multiple args had a cell memory leak
+
+  'transpose' had a memory leak
+
+- 7.1.10
+  logfile support for remote mode -p and -d with '-l logfilename'
+
+  fixed bug in pretty print on command line
+
+  fixed bug in 'save', which went into a loop when saving symbols containing
+  contexts
+
+- 7.1.12 
+  logfile with string -L options also logs remote command line input
+ 
+  'fft' and 'ifft' now can take plain numbers instead of complex numbers
+  or a mixture of both
+
+  regular expression speedup 5 to 50% by chaching the search pattern
+  and avoiding recompile, speedup greatly depends on complexity of
+  pattern relatively to the length of the search string
+
+  rearranged functions in source files to make newlisp.c more manageable
+
+  eliminated various unecessary typedefs
+
+  Sun SOLARIS is now supported (not much tested though)
+
+  operating system number in last position of 'sys-info'
+  linux 1, bsd 2, osx 3, solaris 4, cygwin 5, win32 6
+
+  strings containig zeros are now displayed correctly i.e. 
+  (pack "c c c" 0 1 2 3) => "\000\001\002\003"
+
+- 7.1.14
+  redundancy in printString() eliminated
+
+  memory leak in 'parse' with regex fixed
+
+  the userdefined function for an error is now reported
+
+  overall speedup since 7104 of about 5%
+
+  commented out undocumented function 'symbol-dump'
+
+===============================================================================
+- 7.2.0 is 7.1.14 released October 2nd, 2003
+
+
+- 7.2.1
+  moved check for symbol type of lambdaFunc to errorProc for efficiency
+
+  cleanup of unecessary defines in newlisp.h
+
+  defined 'vasprintf()' to take advantage of vasprintf() where available
+
+  'format' now checks for correct number of arguments and well formed
+  format string, it should not crash anymore on mismatch of number
+  and type of parameters
+
+  newLISP-tk is now version 1.0 with changes for multiline 'tk' statements
+  (stements containing line-breaks), this allows sending bigger Tcl/Tk
+  code portions in one 'tk' statement
+
+- 7.2.2
+  force creation of $0, $1 ... in MAIN even when used in different context
+  for the first time
+
+  supress $0, $1 ... in newlisp-tk frontend in variable listbox
+  (the $ would confuse tk)
+
+- 7.2.3
+  replace-assoc now also uses the system variable $0 for the old
+  list, which can be reused in the replacement expression, i.e:
+
+  (set 'lst '((a 1)(b 2)(c 3))) 
+  (replace-assoc 'b lst (list 'b (+ 1 (last $0))))
+  lst => ((a 1)(b 3)(c 3))
+
+  replace-nth now also uses the system variable $0 for the old element, i.e:
+
+  (set 'lst '(1 2 3 4))
+  (replace-nth 1 lst (+ $0 1))
+  lst => '(1 3 3 4)
+
+  added new module 'ftp.lsp' for get/put ftp transfers
+
+  updated module smtp.lsp and program spam-filter
+
+  symbols set with 'constant' now also gets saved with 'constant'
+
+  introduced getContext() for code savings
+
+  added error message in 'import' for win32
+  
+  eliminated win32.cmd
+
+  many documentation changes/fixes, rewritten introduction
+  added chapter about deprecated functions
+
+  changes in set/define functions for better protection and
+  error messages of protected symbols
+
+  full stack trace on error messages
+
+- 7.2.4
+  replace-assoc now returns the changed list instead of the old
+  association found (which is now in $0)
+  
+  replace-nth now return the changed list instead of the old
+  expression found (which is now in $0)
+  now checks also for missing last argument
+
+  replace now returns changed list or string
+  for changed list count of replacements in $0
+  count for string replacements is not available any more
+  (could be handled in replacement expression)
+  now checks also for missing last argument
+
+  remove now returns the changed list
+  and the number of removed elements in $0
+
+- 7.2.5
+  chop now also works on lists
+
+  coding improvements in slice/sublist() and substring()
+
+  newlisp-tk 1.02 now on Linux tmp directory is in the home
+  directory of the user running newlisp-tk
+
+  replace with expression in replacement would overflow CPU stack
+  after 2048 replacements, now no limit
+
+  cgi.lsp v.1.2 now lives in a context CGI for better isolation
+
+  httpd v.3.0 with bugfixes for big POST buffers
+
+  new module infix.lsp for parsing infix expressions
+
+  in newlisp-tk changed /tmp to tmp for Linux/UNIX
+
+- 7.2.6
+  (new CTX 'CTX2) copies context CTX to CTX2, helps using
+  contexts a objects, which can be instantiated from a template
+  context
+
+  'define' 'constant' used in contexts will always force creation
+  of the symbol in that context, never overwrite definitions in
+  MAIN. This is changed behaviour also be reflected in the documentation.
+  The old way was leading to unexpected definitions in MAIN of symbols
+  although loaded from a context. 'set' still will first look for a
+  global in MAIN.
+
+  fixed false error messaging on certain parenthesis errors
+
+  fixed wrong error message when trying to define protected
+  symbol
+
+  error message 'parameter out of range when calling 'gammai',
+ 'beta' or 'gammaln' with first parameter 0.
+
+- 7.2.7
+  contexts now can be assigned to variables and referenced
+  during runtime, i.e. 'contextVar:varName' with late binding
+  of contextVar.  New possibilities of OO programming and lexically
+  scoped programming, see new chapter in the users manual
+  about 'Programming with context objects'.
+
+  stronger separation of contexts from context MAIN, only
+  primitive symbols, context symbols, true and nil are
+  inherited
+
+  'new' now returns the new context, formerly 'true'
+
+  'set', 'setq', 'set!', 'constant' now return the value of
+  the symbol set when the rvalue is missing i.e:
+  (constant 'foo) will make foo a constant and return it's
+  curent value
+
+  protected all symbols in MAIN in newlisp-tk.tcl v 1.03
+  against accidental overwrite
+
+  cleaned up toal mess of tem pdir detection in unix mode
+
+  cleaned up init.lsp
+
+  'nth' now can take multiple indices, i.e.:
+  (nth 1 2 0 '(1 (a b (c d)))) => c
+  good for working with matrices or sparse matrices
+  out of bounds indices return the last in dimension
+
+  'set-nth' like former 'replace-nth' but multidimensional
+  like 'nth'
+  (set-nth 1 2 0 '(1 (a b (c d))) 'x) =>  (1 (a b (x d)))
+
+- 7.2.8
+  eliminated statics in lambda expression, not necessary
+  anymore as we have dynamic contexts, which also
+  create a lexically closure around vars
+
+  fix in dolist, how cleanup is done
+
+===============================================================================
+- 7.3.0 Released version 2003/11/03
+  (cpymen fromAddress toAdress nBytes), address may be integer
+  or string, only for internal use, not documented. Could be
+  used with 'dump' to hack lisp-cells and symbols-cells.
+  i.e. to unprotect a symbol :
+  (cpymem (pack "c c" 0 32) (last (dump 'sym)) 2)
+
+  fixed error message reporting in 'set-nth'
+
+- 7.3.1
+  'import' was broken in Win32 native version when working
+  inside contexts (odbc.lsp and mysql.lsp)
+
+  (pretty-print line-length indent-string)
+  experimental not documented yet, to change pretty printing
+  behaviour, without args returns current status => (64 " ")
+  64 length 1 space for indenting
+
+- 7.3.2
+  'char', 'collect', 'lookup', 'nth', 'pop', 'push', 'select', 'set-nth'
+  and 'slice' now all accept negative offset which will count from the 
+  end of a list i.e. (slice "newLISP" -4 2) => "LI"
+
+  'push' and 'pop' now can take multidimensional offsets like
+  'nth' and 'set-nth'
+
+  'collect'/'select' now return the last element for offsets to big
+  (formerly nil)
+
+  'pretty-print' now tested and documented
+
+  1.e-1 or 123. , a decimal point without following digits is
+  no an accepted number format
+
+  in newlisp-tk the windows position gets now saved when saving
+  Options/Settings
+
+  fixed bug in 'let' when returning a local var
+
+- 7.3.3
+  new 'push' changed 'nilCell'
+
+- 7.3.4
+  newlisp_manual.html with Kazemori edits
+  
+  'list' now accepts unlimited number of arguments
+
+- 7.3.5
+  'push' could not append to an empty list
+
+  handling big buffers in newlisp-tk in evaluation
+
+  common floating point exception handling on all
+  platforms (BorlandC and GCC)
+
+  block mode for remote connection starting with [cmd]
+  on a line by itself and finishing with [/cmd] on
+  a line by itself
+ 
+  sets locale environment on non-US versions of an OS
+  platform, this enables automatically correct character
+  handling (i.e. upper-case) on non-engish character sets
+ 
+- 7.3.7
+  newlisp-tk.tcl now takes advantage of new block mode (multiple
+  lines in interactive mode). This ways one of the ports in
+  communication with newlisp could be eliminated and browser-editor
+  buffers of unlimited length can be evaluated, preferrably in
+  evaluation without printing (left of the two buttons)
+
+  doc changes for 'silent'
+
+- 7.3.8
+  'let' now accepts also alternative syntax without the parenthesis
+  around var - exp pairs: (let (var1 exp1 var2 exp2 ...) body )
+
+  doc changes for 'let' and chapter 'Lambda expression'
+  doc change new function 'set-locale'
+  doc change new sub chapter 'Switching the locale' in chapter
+  'Localization and customization'
+  doc change new file LOCALIZATION
+
+  'fn' may be used instaed of 'lambda' (save typing)
+ 
+  'set-locale' changes usage: (set-locale) => return current
+  setting, (set-locale "") => switches to local locale with
+  all option turned on. (set-locale str int) switches to locale
+  in str with category option int as speicied in "locale.h" of
+  platform/OS, look for defs of LC_ALL, LC_NUNMERIC etc..
+  on  startup newLISP tries to swithc to ISO "C" locale.
+
+- 7.3.9
+  'push' and 'pop' now can take the int-offsets in a list to
+   work together with new 'ref' which reports the position of an
+   expression in a nested list
+
+   doc changes (sometimes only small changes)
+        'push', 'pop', 'symbol?' new function 'ref'
+	'save', 'set', 'Arrays and Hash Tables ...', 'close',
+	'cons', 'context', 'delete', 'explode', 'fft', 'find',
+	'format', 'intersect', 'lambda?', 'length', 'let'
+	'make-dir', 'match', 'net-receive', 'net-select',
+	'net-send', 'new'
+
+   changed options flag will trigger recompile when caching regular
+   expression patterns
+
+   'select' evaluated args in offset list
+
+   'join' evaluated args in string list
+
+   'append'' evaluated the first string arg double
+
+   all type predicates now given an error message if the
+   argument is missing, previously 'nil' ('true' on atom?)
+
+   getting an int from a 'inf' floating point crashed on  Borland Win32
+   now returns 0 like on other platforms
+
+- 7.3.10
+  'remove' didn't check for list type in second arg and bombed
+
+- 7.3.11
+  new compile for Win32 DLL with makefile_win32dll
+  see file win32dll.readme for unsolved issues
+
+- 7.3.12
+  (replace expr aList) now works like 'remove', but for removing
+  strings the empty string "" must still be specified:
+  (replace str aString "")
+  'remove' is deprecated and will not be available anymore in 8.0
+
+  new 'flat' to flatten lists complements multidimensional set
+  of list functions, example:
+  (set 'lst '(a (b (c d))))
+  (map (fn (x) (ref x lst)) (flat lst)) => ((0) (1 0) (1 1 0) (1 1 1))
+
+  newlisp.dll now runs qa suite
+
+- 7.3.14
+  DLL now suppresses pop up on FP domain error (thanks Steve)
+  DLL now also can use print statment, output will be in return
+  value.
+
+  'replace' did not work correctly when removing multiple expressions
+  at the beginning of a list
+
+  doc changes 'replace', 'flat', chapter 'Deprecated functions'
+               chapter 'DLL module ...'
+
+  error message for "string too long" now reports shorter string
+
+- 7.3.15
+  better error reporting on some string getting functions when arg
+  is missing
+
+  doc changes license change for documentation, misc. links
+
+  replace could not handle empty search string
+
+  Win32 DLL no contained in Win32 distribution
+
+  fixed error in httpd
+
+- 7.3.16
+  error messages in newlisp.dll where broken becuase of wrong makefile_win32dll
+
+  newlisp-tk.html now reformatted to manual HTML for better maintenance/conversion
+
+  slight optimixation in 'nth' and 'set-nth'
+
+  fix for 'nth' on empty string
+
+  better error messages on missing args in various functions
+
+  link.lsp now also works on win32 DLLs but is not supported anymore
+  for CYGWIN, use a win32 compiled newlisp.exe and newlisp.dll instead,
+  both work fine under CYGWIN
+
+  doc change for chapter 'Win32 DLL  ...'
+ 
+  fixed 'silent' mode for DLL
+
+  'float' conversion noe accepts leading . without zero like the
+  internal parser
+
+- 7.3.17
+  doc changes as of Sam Cox's and Nigel's postings on 
+  http://www.alh.net/newlisp/phpbb/ on 2003-12-07
+
+  new functions 'atan2' and 'irr' and documentation
+
+  eliminated compiler warnings for Linux GCC 3.3.1
+
+- 7.4.0rc1
+  'irr' now strips of digits less than precision 1e-5
+
+  'set-nth' alsow works on strings (singular index)
+
+  'swap' now works on strings, also return value changed
+  from swapped pair to changes list/string
+
+  'pretty-print' had a cell leak
+
+  in the installation for LINUX/BSD etc. the doc directory has been
+  moved from /usr/doc/newlisp to /usr/share/doc/newlisp
+  newlisp-tk.tcl 1.07 changed accordingly
+
+  upgrade to PCRE 4.5 files
+
+  'integer' didn't truncate to -MAX_LONG
+
+  'integer' did not truncate to MAX_LONG when feeding big
+  floating point numbers, but crashed on Win32
+
+  on Win32 float functions on NaN crashed
+
+  doc changes: integer, NaN?, error-event, error-text, atan2
+
+- 7.4.0rc2
+  enabled error events in Win32 DLL module
+
+  update finger example file and example in doc
+  doc change 'net-connect'
+
+- 7.4.0rc3
+  floats now work in imported fuctions (tested on x86 platforms)
+  and up to 14 parameters (previously 10) are accepted, floats
+  count as two
+
+  nth-set like set-nth but different return value, was in rc2
+  but now documented
+
+  doc changes: chapter 'Functions in groups', 'import', 'inc', 'dec'
+              arithmetik operators +,-,*,/, 'set-nth', 'nth-set'
+              'sort', '%', 'mod', '<,>,=,<=,>='
+
+  doc new file: hacking_newlisp.html with describes previously
+  undocumented features
+
+  'for', 'dotimes', 'seqence', 'series' now return a 'invalid parameter: NAN'
+  error when NaN parameters are passed
+
+===============================================================================
+- 7.4.0 release 2003/12/20
+- 7.4.1
+  commandline switch '-m N' where N is the max number of megabyte newLISP
+  is allowed to allocate for LISP cells
+
+  setq,set!, define (as set) did not work right with dynamic context vars
+
+- 7.4.2
+  %s format now recognizes precision i.e: (format "%5.2" "hello") => "   he"
+
+  various doc changes
+
+  pop3.lsp now handles pop3 servers w/o LAST command, but only on the
+  functions: get-all-mail and delete-all-mail
+
+  char did not convert the  0 correctly, now: (char 0) => "\000"
+
+- 7.4.3
+  fixed printing context name when in a context other than MAIN
+  this affected the newlisp-tk frontend since v. 7.2.7
+
+  many doc corrections, now rev 5
+
+- 7.4.4
+  (now ... ) returns an additional number 'minutes west of GMT' 
+  for the timezone offset 
+
+  the optional time ofset parameter in 'date' and 'now' must now
+  be given in minutes west of GMT, was previously in hours, 
+  standard when using time zone offsets
+
+  max cell count as specified in command line swith -m now second
+  number in 'sys-info' if not specified defaults to 0x10000000
+
+  doc addition of -m commandline switch and change in 'sys-info'
+
+- 7.4.5
+  format now can take unlimited number of parameters, before 2048
+
+  changes in stat.lsp, smtp.lsp and httpd for new 'sys-info'
+
+- 7.4.6
+  fixed problem in float -> integer conversion of big numbers
+
+  attempt to fix for last parameter of 'now' for solaris (not tested)
+
+- 7.4.7
+  updated to BWidget-1.7 in newlisp-tk (since 7.4.6)
+
+  timezone offset in return value for 'now' set to 0 on SOLARIS
+
+  plotting with stat.lsp and gnuplot was messed up on Win32, now
+  can also do multiple plot one after another using 'process' instead
+  of exec
+
+  eliminated 'gettime' example, as that service doesn't run on most
+  computers these days
+
+  'import' on Win32 now can use cdecl calling conventions with
+  additional parameter string "cdecl" when importing functions. 
+  This allows calling many third party DLLs without special wrapper DLLs
+  On LINUX etc. the extra parameter is ignored.
+  
+  mysql.lsp version 2.0, several functions changed and offsets defined
+  for MySQL v.4.0, previous versions will not work
+
+- 7.4.8
+  improved error message for missing par
+
+  sqlite.lsp - module for SQLite datavase from http://www.sqlite.org
+  
+  mysql.lsp small fixes and revised test routine, tested on MySQL v. 4.0
+
+  'transpose' now transposes any kind of matrix (previously only matrices
+  containing numbers; it also rectangualarizes matrices; speed improved
+  3 fold.
+ 
+  in 'if' and 'cond': if the last condition given is the empty listy ()
+  which evaluates to nil in a boolean context, and if no then/else actions
+  or now cond action is given, then the empty list () is returned (previusly nil) .
+
+  fix for 'date' which crashed at values overflowing int32 (2038 1 19 3:14:07)
+
+  logging has been changed to a fixed filename 'newlisp-log.txt
+
+  new command line switch -h
+
+  better pretty printing of symbols which are constant and global
+
+===============================================================================
+- 7.5.0 RELEASE 2004-01-21
+  cgi.lsp, form.html, form.cgi where missing from FILES inventory
+
+  new 'sqlite.cgi' web script for administering SQLite database in newLISP
+
+  eliminated various unused vars with -w8004
+
+  fixded bug in 'global' printing
+ 
+  changed directory structure, new dirs: doc, examples, modules 
+ 
+- 7.5.1
+  (rotate '()) crashed because of list length zero
+
+  fixed nested catch/throw
+
+  fixed lambda stack oberflow after 3000 catch
+ 
+  eliminated array.lsp instead shorter hash.lsp for hash functions
+
+  changed sqlite.lsp to version 1.6, name change for future 
+  reserved word 'array' 
+
+  dynamic context var refs now work inside contexts, this makes
+  it possible to call constructors from inside the class context
+
+  improvement of floating point speed 60% in simple arithmetik
+  and 25% in most floating point functions
+
+  (format "%d" 1.23) => "1" before this was not permitted
+  (format "%5.2f" 10) => "10.00" also allowed now
+
+- 7.5.2
+  (array i j k aList), returns a 1 to 8 dimensional array and
+  initializes optionally from flat list in aList 
+
+  (array-list myArray) returns a list conversion of myArray
+
+  (aray? expr) tests if expression is a list
+
+  all array acces modification via nth, set-nth and nth-set
+
+  also released benchmarks  comparing with Perl, Python and Guile,
+  see at: http://newlisp.org/benchmarks
+
+
+- 7.5.3
+  (seek 0) now returns numbers of characters printed to stdout,
+  works on BSD but on LINUX and Win32 will always return -1
+
+  'integer' now takes additional base parameter after the
+  default parameter, i.e:  (integer "1111" 0 2) => 15
+  note, that hex numbers still need to be prefixed with 0x
+  even when specifying base 16
+
+  added txt2pdf.lsp as a new module in the module directory
+
+  comprehensive manual edit by Brian Clausing (thanks!)
+
+  new chapter about linking LISP source and executable
+
+  all deprecated functions thrown out:
+  concat, remove, replace-nth, sublist, substring, read-process
+  read-url, write-process. All have replacements, see manual.
+
+  changed cgi.lsp, stat.lsp, spam-filter for deprecated functions
+
+  1% overall speed improvement 0.5% size reduction
+
+  nth didn't work on lambda in 7502
+
+  'format' increasing of ars beyond 2048 has been rolled back
+  because of problems when evaluation of args is deeply nested
+
+- 7.5.3a
+  changes in newlisp-tk.tcl for deprecated 'remove'
+  changes in qa for deprecated functions
+
+ 
+- 7.5.4
+  15% speedup in 'format'
+
+  writeStreamStr() and readStreamText() did not handle zeros
+
+  'source' like save on strings eliminates tmp directory in
+  new newlisp-tk v.1.09
+
+  1000+ times speedup in XML parsing of bigger files 
+  changing a strncpy() to a memcpy()
+
+- 7.5.6
+  newlisp-tk 1.10 now shows message box when trying to open
+  debugger with browsers at the same time
+
+  updated FILES inventory
+
+  logging did not work as described (was always on with -p -d)
+
+  net-listen and net-receive-udp take as an additional optional
+  parameter the address the listening socket should bind for
+  computers with multiple network adapters
+
+  optional last parameter in net-send-udp for specifying 
+  broadcast mode with 'true' (or anything not evaluating to nil), 
+  not necessary on wome Win OS where '255' on last address byte 
+  is enough to turn on broadcast mode
+
+  Ctrl-C handler simple on Win32 and with continue, exit, reset
+  menu on LINUX/BSD (somewhat unreliable?)
+
+  Broken Pipe on net-send now handled correctly on Linux/BSD
+  is handled by socket stack on Win32
+
+  (slice str 1 -1) does not crash anymore (length arg should
+  never be negative)
+
+- 7.5.7
+  signal handlers now initialized before loading commandline
+  scripts
+
+- 7.5.8
+  shorter code for swap
+  
+  defunct zombie child processes now cleaned up by 'process'
+  on UNIXs
+
+  fixed potential bug in regex replace when replacement expression
+  evaluates to no-string
+
+- 7.5.9
+  all functions changing the contents of a symbol (destructive
+  functions) will now cause an error when used on symbols protected
+  with 'constant', previously it worked only with set, set!, setq
+  and define, define-macro; loop variables in dotimes, for, dolist
+  and dotree are protected against change by user with an error 
+  message during looping and may not be constant before the looping
+  starts using them
+  
+  new manual chapter about 'Variable names and numbers syntax"
+  
+  bug fixes/additions in httpd, now version 3.3
+  
+  fixed potential memory overwrites in nl-web.c
+
+  error message length limited to 1024 characters
+
+- 7.5.10
+  rolled back symbol protection for dotree and dolist, which
+  is not necessary
+
+- 7.5.11
+  new mode for 'open' "pipe' or "p" opens a named pipe non-blocking
+  for reading
+
+- 7.5.12
+  rolled back protection for dotimes, for loop variable solving
+  crash problem in different way
+
+- 7.5.14
+  documentation fixes and compiler warnings fixes
+
+  two additional file for viewing manual in frames with index
+
+  the Win32 installer puts entries in startmenu including an uninstall
+
+  The WIn32 installer puts a newLISP icon in desktop and startmenu links
+
+  protect built-in functions from overwriting with import but the 
+  function can still be imported in a context different from MAIN
+
+  eliminated "pipe" or "p" mode in 'open' instead "non-block" or "n"
+  as additional option after "read" or "write" option
+
+  net-lookup, net-select, net-send-udp, net-peek did not clear net-error
+
+  net-select now can accept a list of sockets instead of one socket
+  net-select now has a third mode "exception" or "e" to test error
+  conditions on socket
+
+  apply works reducing a list when additional reduce count is given
+
+  load takes multiple filenames
+
+- 7.5.15
+  integer and float now return nil or the default value when type
+  other than string or number is specified, previously this
+  caused an error message
+
+  expanded chapter on Tcl/Tk Variables in:
+  "Writing applications with newLISP and Tcl/Tk"
+
+- 8.0.0rc1  
+  added more examples to newlisp-tk.html
+
+  allow [cmd] tag in -d mode
+
+  reopen mode in [cmd] section for potential memory leak after
+  error conditions or on reconnect
+
+  allow contexts to be overcopied (broke benchmarks)
+ 
+- 8.0.0rc3
+  re-fixes the memory leak for [cmd] tags
+
+- 8.0.0rc4
+  doc changes manpage
+
+  take abs() value in -m commandline option 
+
+  reorder help menu for logical sequence of options
+
+  newlisp-tk 1.12 now tolerant for not finding "Fixedsys",
+  "Lucida Console" or "fixed" fnt. Will take first font found
+  
+  newlisp-tk 1.12 now save newlisp-tk.con correctly in home directory
+  of UNIX (startup dir in Win32)
+  
+  man page for LINUX et al, thankyou Nigel Brown 
+
+- 8.0 released April 7 2004 ============================================
+  version nunbers changed from 8.0.0 to 8.0 to distinguish
+  rc versions from final version
+
+  sys-info now returns 7 as OS number of win32dll
+
+  corrections in MemoryManagement.html and newlisp_manual.html
+
+- 8.0.1
+  changed package version number to dotted form for compatibility with
+  RPM packaging
+
+  changed Makefile install option for RPM compatibility and added
+  'make rpm' for makeing rpm package
+
+  man page for newlisp-tk 
+
+  array was not serialized correctly in 'source' and 'save'
+
+  negative indices in arrays, which are too big now give out-of-bounds 
+  error (previously took first element as for lists)
+
+  now up to 16 indices can be specified, previously 8
+
+  changes in docs for array chapter and functions
+
+  in newLISP-tk under Linux/Unix file open dialog now starts
+  with /usr/share/newlisp/newlisp-tk
+
+
+- 8.0.2 Released 2004-05-02 ============================================
+
+  httpd version 3.5
+  
+  doc changes
+
+- 8.0.3
+  constant did not allow multiple args
+
+  parse now recognizes zero length token and stops parsing
+  instaed of going into a loop
+
+  fix for contextvars in tcl/tlk IDE v1.15 and p_context()
+
+  bug fixes in cgi.lsp now v.1.5
+
+  documentation corrections
+
+  a bug fix in the reset routine
+
+- 8.0.4
+  fixed the fix in reset
+ 
+  cell leaks in error messages in catch/throw situations are now avoided
+
+- 8.0.5
+  filter now filters nil symbols like nil values (like if, while, not etc)
+  this effects the function index in the same way
+
+  access system variables $0, $1 ... etc. with an index ($ 0), ($ 1) .. ($ i)
+  where i is an integer
+
+  bug fix for catch when result variable has same contents as return from
+  catch statement
+
+- 8.0.6 Released 2004-06-06 ============================================
+  new env replaces deprecated environ, getenv, putenv (still available but
+  to be eliminated in 8.1)
+
+  additional paragraph about ovewriting global symbols in the chapter
+  'Contexts' 
+
+- 8.0.7
+  net-receive-udp can take an additional timeout parameter 
+
+  doc changes for net-receive-udp
+
+  new example whitelist-filter for email filtering
+
+- 8.0.8
+  trim now can take optional second trim-character parameter:
+  (trim "---HELLO===" "-" "=") => "HELLO"
+  (trim "0001234" "0" "") => "1234"
+  allows trimming of only one side (empty string) or different
+  trimming left and right
+
+  new functions 'utf8' and 'unicode' to convert between utf8
+  and UCS-4 encoded Unicode
+
+  UTF-8 versions of: char, upper-case, lower-case, first, rest,
+                    chop, explode, last, trim, collect select,
+		    nth, set-nth, nth-set
+
+  any positions/indices in the UTF-8 versions  of char, nth
+  set-nth and nth-set refer to (multibyte)character positions
+  rather than byte positions
+
+  find and regex return byte positions, slice takes byte positions
+  reverse always works on byte level, to reverse utf8 strings use:
+  (join (reverse (explode str)))
+
+  changed parsing of octal numbers 090 now "0" "90"
+
+- 8.0.9
+  'source' now also working on context symbols
+  fix for 'trim' in utf8 version
+  fix for 'set-nth' and 'nth-set' in utf8 version
+  version 3.7 httpd fixing problems with post on IE
+
+- 8.0.10
+  'net-sessions' now registers connecting peer in -p -d modes
+  makefiles for MinGW compiler for newlisp.exe and newlisp.dll
+  MinGW will eventually replace Borland BCC 5.5 as the default
+  compiler for the Win32 binary distribution
+ 
+- 8.0.11
+  a fix for server crash in -d mode when reconnecting on Linux
+
+- 8.0.12
+  now will reset when client exits in -d demon mode (still does
+  not maintain demon mode on slackware 2.4 but Debian 2.6
+  Linux Mandrakae 9.2/2.4.22 and FreeBSD  4.7 are OK)
+
+  new function (dup expr n) repeats expression n times in
+  list or string
+  function 'pipe' works on MinGW compiled version
+
+- 8.0.13-14
+  fix of 'test-pipe' in fle qa
+  new option in Makefile: make uninstall
+  /usr/share/newlisp/init.lsp now tries to load $HOME/.init.lsp
+  as a user specific .init.lsp after the system wide init.lsp
+  $HOME gets defined as (env "HOME") or (env "USERPROFILE") 
+  or (env "DOCUMENT_ROOT")  
+  whatever is available in that sequence
+  fixes restart problem in demon mode
+
+- 8.0.15
+  makefiles for newlisp as a shared library on Linux and BSD:
+  newlisp.so, the function to import is: newlispEvalStr
+
+  'print' and 'println' in newlisp.dll now  are always
+   returned correctly in the return value of 'dllEvaStr'
+   was not working correctly before in many cirumstances
+
+  'newlispEvalStr' will replace 'dllEvalStr' in future
+   version in newlisp.dll, at the moment both work
+   this change was made for consistency over platforms
+
+   new chapter "Shared library newlisp.so on Linux/BSD" in users manual
+
+- 8.0.16
+   doc changes for 'net-receive-udp'
+   'net-receive-udp' can now receive on a specific IP address, this
+   was documented already but not working
+
+   'net-connect' and 'net-listen' ca use a "udp" option to do
+   nonblocking UDP data exchange with net-send and net-receive and
+   without immediate closing of socket as happening using
+   net-receive-udp and net-send-udp. See documenataion for
+   net-listen and net-connect in the manual
+
+   improved error message for missing parenthesis 
+
+   newlisp.vim VIM syntax file now included in source distribution
+   thanks to David from http://www.geocities.com/excaliborus/ for
+   this contribution
+  
+   updated the CREDITS file
+
+   all predicates, which ended in p when using HTML (i.e. listp for list?)
+   have been renamed to using the '?' instead of 'p' in HTML to make
+   utilities, which position in the newlisp_manual.html work
+
+- 8.1.0rc1
+   fixed memory leak in 'irr'
+  
+   new 'net-receive-from' and 'net-send-to' for non-blocking UDP
+   communications over open connections
+
+- 8.1.0rc2 
+   an almost double speed and smaller parser for pack/unpack format strings,
+   which does not need spaces in between the format specifiers
+
+   a fix in net-send-udp not closing the socket after the new changes in rc1
+
+   doc changes
+
+- 8.1.0 Released version on 2004-08-10 ========================================
+  two new example programs: udp-server.lsp and udp-client.lsp to demo
+  non-blockig UDP communications
+
+  merged bugfixes from dlcompat as of cvs 2004-07-12  Peter O'Gorman
+  this affects only Mac OSX
+
+  added -c option for suppressing the prompt
+
+  added node.lsp in modules directory for building newLISP clusters.
+
+  new versions of several modules and example files to account for
+  new version numbering
+
+- 8.1.1
+  sleep now rounds to the nearest full second on systems where nanosleep()
+  is not available.
+
+  timeout option in net-receive-udp works again
+
+- 8.1.2
+  'make install_home' and 'make uninstall_home' of installations on Linux/UNIX
+  in the home directory of the user in $HOME/bin and $HOME/share/
+
+  'search' crashed on invalid filehandles
+
+  new 'expand' for expanding variable bindings in lists
+
+- 8.1.3
+  a fix for 'get-url' on some Solaris installations
+
+- 8.1.4 released August 21st, 2004 ==========================================
+  doc changes ansd new option 'make version' for changing version numbers
+  in all affected files
+
+- 8.1.5
+  nl-sock.c missed a change for Win CE, PocketPC
+
+  qa - testfile now complete with all functions, use: ./newlisp qa to test
+  without process and test functions using process, or use: ./newlisp qa ext
+  to test for all function (only Win32 and Linux)
+
+  a fix for timeout values > 1000000 usec on BSD and Solaris in net-select
+  and net-receive-udp
+
+  in net-listen and net-connect specify "multi" or "m" instead of "udp"
+  for UDP Multicast mode
+
+- 8.1.6
+  'collect' and 'select' are collapsed into 'select' which is now also
+  type polymorph on the second parameter.
+
+  new makefile_solaris_utf8
+
+  new 'fork' function for lauching a newLISP child process thread
+  on Linux/UNIX only and CYGWIN on Win32.
+
+- 8.1.7
+  fixed rounding error in 'sleep' when compiled with NANOSLEEP
+
+  improved qa routines using 'fork' on Linux/UNIX for some tests
+
+- 8.1.8
+  new 'wait-pid'for watching the status of child threads created with 'fork'
+  and proccesses created with 'process'
+
+  upgraded to PCRE v. 5.0
+
+  more tweaks in qa file
+
+  fixed potential memory leak in 'new'
+
+- 8.2.0 Release September 21st, 2004 ======================================
+
+- 8.2.1
+  write-buffer can now take string instead of file handle to write
+  to a string in a string growing (concatenating) fashion, this is
+  much faster then doing (set 'str (append str content)) now:
+  (write-buffer str content)
+
+  'symbol' now can overwrite global symbols from MAIN (i.e. built-ins)
+  i.e. (symbol "print" 'MyContext)
+
+  'process' now ca take to addtioal pipe handle parameters, which
+  get mapped to stdin and stdout for the new process:
+  (map '(myin bcout) (pipe))
+  (map '(bcin myout) (pipe))
+  (process "bc" bcin bcout)
+  (write-buffer myout "3 + 4\n")
+  (read-line myin) => "7"
+
+  'semaphore' lets you create wait and signal semaphores
+  (set 'sid (semaphore)) ; aquire
+  (semaphore sid -1)     ; wait
+  (semaphore sid 1)      ; signal
+  (semaphore sid) => 1   ; status
+  (semaphore sid 0)      ; release/delete
+
+  'share' to create shared memrory regions
+  (share) => address off mmap share
+  (share addr exp) => sets addr to exp for integers, floats and strings
+  (share addr) => returns integer, float or string exp
+
+  added newLISP-Excel-Import.xls example to examples/ directory
+  added prodcons.lsp - demo for fork, wait-pid, semaphore and share
+
+- 8.2.2
+  'write-line' with string device like 'write-buffer', in both
+  symbol is now protected if protected with constant
+
+  share was broken for strings
+
+- 8.2.3
+
+  pipe is now also available on CGWIN and Borland compiled versions
+  on all Win32 versions pipe can now remap std I/O like on Linux/UNIX:
+
+  (map '(myin bcout) (pipe))
+  (map '(bcin myout) (pipe))
+  (process "bc" bcin bcout)
+  (write-buffer myout "3 + 4\n")
+  (read-line myin) => "7"
+
+  process on Win32 can hide or minimize window:
+  (process application 0 0 0) => hide app
+  (process application 0 0 1) => show app
+  (process application 0 0 2) => minimize app
+
+  'share' and 'semaphore' are now also available on Win32
+
+  improvements in qa file, now tests all functions by default w/o ext option
+  better syncronization on some tests with semaphores
+
+  'match' in list mode now only returns matched expressions
+
+  (map set '(x y) (match '(a (? c) d *) '(a (b c) d e f)))
+  x => b
+  y => (e f)
+
+  when using match with an optional third parameter 'true', it works
+  in the old fashion:  (map pattern aList true) => works like before
+
+  The context default function is a userdefined function with the same name
+  as the context it resides in, i.e: (define (ctx:ctx a b) (+ a b)) and can
+  be called just with the context name (ctx 3 4) => 7. 
+  Default functions should only be called rom MAIN, or have already been 
+  loaded or their context created before referred to in another context or
+  default function.  Not yet 'official' see doc/default_functions.html
+
+  fixed cell leak in 'match' on backtracking
+
+  bug fix in let which did not honor protected symbols
+
+- 8.2.4
+  deprecated collect, getenv, putenv and environ completely eliminated from
+  newlisp and examples, modules: httpd, cgi.lsp, sqlite.lsp
+
+  '+' new wildcard operator 'match': take one or more
+
+  net-error now returns error number and text separate in a list
+
+  net-connect failure did not set net-error
+
+  'now' has now the daylight-savings-flag 0 or 1 as last parameter
+
+  new 'sys-error' for reporting C-library errno values
+
+  'newlisp -e' without a command string crashed
+
+  'push' now optimized when pushing as last element with -1
+
+  (new ...) now will not overwrite existing symbols, to allow true
+  mixins of other contexts. To overwrite symbols as before version
+  8.2.4 use the true as a third parameter i.e. (new A 'B true).
+
+- 8.2.5
+  'symbol?' can now be used on dymamic context vars, i.e
+  (set 'ctx MyCTX) ; MyCTX is existing context
+  (symbol? 'ctx:x) ; true if MyCTX:x exists, nil if not  
+  This checks the xistence without inadvertantly creating it.
+  previously (symbol "x" ctx nil) had to be used.
+
+  'replace' can now take an additional option bit 0x8000 for replacing
+   only once in a string: (replace "a" "aaa" "A" 0x8000) => "Aaa"
+
+
+  'define-new' copies individual funtions from
+  other contexts with or without renaming them to a new function:.
+  (define-new 'foo:func 'bar:func) copy to different context
+  (define-new 'foo:func 'foofa) copy to current and rename
+
+  forward referece to a symbol in symbol did not work in mixin mode
+  of 'new'
+
+  the space between optioncharacter (-s,-m,-p,-d,-e) and optionvalue
+  can now be omitted, i.e. -s 10000 and -s10000, both work.
+
+  'date' without an argument returns the character string for the current
+  local time, this avoids the construct (date (apply date-value (now)))
+
+  'date-value' without and argument returns the time of seconds
+  since 1970-1-1 0:00 equivalent to (apply date-value (now))
+
+8.2.6
+  'delete' now can delete an entire context without removing conatined 
+   symbols first
+
+  serialization of contexts to a file using 'save' now is done correctly 
+  when the context context contains overwrites of global symbols.
+
+  a more flexible and faster 'symbol' function, which can take any character
+  sequence and numbers, and can be used this way for hash-like associative 
+  memory access. New module hash.lsp to show usage.
+
+  'define-new' renamed to 'def-new', for shorter typing and for not 
+   associating it to 'define' but rather to 'new' (was introduced in 8.2.5)
+
+  'letn' works similar to 'let' but incrementally uses the local variable 
+   bindings like multiple nested let when evaluating the initializer expressionsi
+   for locals.
+
+8.2.7
+  'address' (previously only documented  in 'hacking_newlisp.html') now also 
+  returns addresses to integer and double float data type, useful when passing
+  int * or double * to imported functions, now documented in main manual
+
+  'sym' is an abbreviated form of 'symbol', since 'symbol' starting in 8.2.6
+  can take any sequence of characters, including strings which are illegal
+  symbols in newLISP syntax, and is used for hash/dictionat like lookups, it
+  is used more often, therefore this shorter form 'sym' is introduced
+
+  added configuration variable in newlisp-tk.config to specify a newLISP
+  application. See newlisp-tk.html "Delievering Applications" for details
+
+  'apply' and 'map' now can be used on macros
+
+  'pack' and 'unpack' have new format specifier 'b' for unsigned 8bit numbers
+
+  'encrypt' crashed on empty strins in key
+
+8.2.8
+  'encrypt' crashed on empty key-string, now gives error message
+
+  'int' as shorter writing of 'integer'
+
+  'pack' now converts all types as needed, i.e. (unpack "b" (pack "b" -1.0)) => 255
+  from-to integer-floats, did it before only for "f" and "lf"
+
+  'flt' converts a number to a 32bit float repesented by an integer for usage
+  in calling imported library routines, which take floats.
+
+  'array' skipped wrong index types instead of giving error message
+
+8.3.0 Released Nov 21st, 2004
+
+8.3.1 Released Nov 23rd, 2004 ============================================
+  'nth-set' gave error on protected symbol in index
+
+  'apply' 'map' on macro was returned to 8.2.0 behaviour
+
+8.3.2
+   more cleanup in qa file
+
+   cleaned up makefiles -D definitions eliminating redundant -DOPSYS
+
+   eliminated 'break', which did not do anything after introduction
+   of 'debug' in version 6.3.07
+
+   overall speedup of about 5% by predefining system symbols
+   $0 -> $15, speedup of 80% to 100% in functions using system
+   symbols like set-nth, nth-set, find, parse, regex, replace
+
+   new 'do-while' and 'do-until' check condition _after_ evaluating
+   the body expressions
+
+   new 'read-key' reads nonblocking keyboard character code
+   not working on Mac OSX but all other flavors
+
+   superflous args in user defined function call caused cell leak
+   never happened, i.e.: (define (foo x) ..) and (foo a b c)
+
+   'get-url' now handles "Transfer-Encoding: chunked" correctly
+
+   'amb' picks an argument at random and evaluates it
+
+   -x command line switch for server mode with handler function 
+   'x-event' i.e: newlisp my-httpd -x 8080 
+   my-httpd is a lisp file containing the user defined handler 
+   function i.e: (define (x-event request) .....)
+   this way servers for different protocols / requests can be simply
+   programmed using 'print','read-line', etc., for IO to the specified
+   port, the connection stays up until closed by the client.
+   See chapter 'Command line options ...' in the manual
+
+   fixed a bug in 'new' and 'def-new' when the source was MAIN 
+   this fix was necessary to write a function (def-static ....)
+   for writing statically scoped functions (see int the manual
+   chapter 'Lexical, static scoping in newLISP', subchapter
+   of 'Programming with context objects'.
+
+8.3.3
+   'debug' did not handle default functions written without colon
+
+   'save' 'source' did not space symbols under sum circumstances
+
+   'dolist' now double as fast and safe to break out with 'throw'
+
+   'catch' now has an additional syntax with just one argument to write
+   easier returns from functions, loops or blocks, ie:
+   (catch (dotimes (x 1000) (if (x 500) (throw "fin"))) => "fin"
+   returns the result  or throw argument
+
+8.3.4
+  'save' 'source' spacing-fix was incomplete
+
+8.3.5
+  If the a '!' is entered as the first character on the command line immediately 
+  followed y a shell command, that command will be executed, i.e. !lsi in Unix 
+  or !dir in Win32 would show a directory listing. There should be no space 
+  between '!' and the shell command.
+
+  URL length in get-url and post-url is now unlimited
+
+8.3.6
+  manual corrections, additions and new sub-chapter about XML-RPC
+
+  BASE64 encoding and decoding with 'base64-enc' and 'base64-dec'.
+
+  new sign-on message, and different for remote modes
+
+  added 'xmlrpc-server' to examples directory
+  added 'xmlrpc-client.lsp' to modules directory
+
+  fix for 'Transfer-encoding: chunked' if 'Content-length:'
+  is given too (which should not happen but is found occasionally)
+
+8.4.0 Released 2005-01-18 ============================================
+  added xmlrpc.cgi for handling XML-RPC requests as CGI
+
+  fixed a file descriptor leak in -d -x modes
+
+  after the 'debug' fix in 8.3.3 debug did not recurse into funcs
+
+  'args' can take an index argment i.e. (args 0) (args 1) etc.
+
+8.4.1
+  fixed signon message missing 'n'ewLISP
+
+  added UTF-8 to signon message
+
+  added f-prob to stat.lsp (probability of F ratio for df1/def2)
+
+  (throw-error expr) throws an error with message printed in expr
+  error thrown this way can be handled like any other newLISP error
+  using (catch foo 'result) or with (error-event ...)
+
+  changed/added docs for catch, throw, throw-error and chapter:
+  Integer abnd Floating point ...
+
+  newlisp-tk.exe now wrapped with freewrap v.6.0 and Tcl/Tk 8.4.8
+  suppresses occasional display of tcwish console
+
+  added updated newlisp.jsf syntax file for JOE editor to distribution
+
+8.4.2
+  [cmd] tags did not work when compiled with READLINE option
+
+  (args) which previously worked only in macros now too works in
+  functions. The behaviour of (args) has changed: only unbound arguments
+  for which there is now local variable in the macro (or function) are 
+  returned in the list. This makes changes in existing macros necessary, 
+  which specify both, local variables and they use args. Most changes
+  lead to simpler macros or function, because (args) already contains
+  only the unassigned args.
+
+  changed macro definition of 'tk' in newlisp-tk.tcl to function
+
+  changed plot 'macro' in stat.lsp and 'defun' in init.lsp
+
+8.4.3 Release 2005-02-12  =================================================
+  cleanup from (args) changes, protect $args from deletion
+
+8.4.4
+  misplaced paren in conditional def of defun in init.lsp
+
+  OS number in sys-info was incrementing on every call when DLL or UTF-8
+
+  decimal point setting from locale is now used correctly when parsing source
+  i.e. after performing (set-locale "German_Germany.1252") in Germany
+  1,23 will be recognized corectly as a decimal number with comma as the 
+  decimal separator.
+
+  qa_comma QA test file for German or other locales using ',' comma as
+  decimal separator, qa renamed to qa_dot for decimal-dot locales.
+  In comma locales both, qa_dot and qa_comma should work, in decimal
+  dot countries onlz qa_dot will work.
+
+  daylights savings field in 'now' function now shows a flag 1/0 if time
+  zone may have DST at certain time of the year on Linux/UNIX. On Win32
+  it shows a 'daylight minutes bias' for timezones which may have DST.
+  Note that flag/bias is set through all the year even if DST is not
+  in effect at a given moment. May not work on all platforms.
+  
+  additional format parameter in (date num offset fmt), see GNU gcc
+  strftime() function for details
+
+  Win32 installation now to $PROGRAMFILES/newlisp, which is 
+  c:\Program Files\newlisp on English Windows. This defines a
+  fixed location for $PROGRAMFILES/newlisp/newlisp.dll for applications
+  loading newlisp.dll. 'PROGRAMFILES' is an environment variable available
+  on all MS Windows installations.
+
+  newLISP is now correctly registered in the
+  'control panel/add or remove programs' applet
+
+8.4.5
+  newlisp.exe compiled on MinGW or Borland now will look for init.lsp
+  in the same directory where newlisp.exe resides
+
+  installer now sets path on Win32, this allows to import the DLL without 
+  specifying the full path and allows to start newlisp or newlisp-tk from
+  anywhere on Win32
+
+  installer now allows installing without newlisp-tk
+
+  'nth' upgraded to 16 indices (like set-nth and nth-set)
+
+  'sort' now allows any binary operator user defined function as
+  compare funtion in third parameter
+
+  'implicit indexing' on lists, arrays and strings i.e.:
+  (lst 1 3) equivalent to (nth 1 3 lst)
+  (ary 0 -1) equivalent to (nth 0 -1 ary)
+  ("newLISP" 3) equivalent to (nth 3 "newLISP")
+  unlimited number of indices and faster than explicit form
+
+  'pack' and 'unpack' now allow switching between little and big endian
+  byte order using new format characters '<' and '>'
+
+
+8.4.6
+  'new' and 'def-new' did not replicate arrays, could cause crash
+
+8.4.7
+  added 'upload.htm', 'uplload.cgi' to examples directory
+  minor fix in xmlrpc.cgi xmlrpc-server
+
+  better handling of bad server responses in get/post/put-url avoiding
+  an ifinite loop on some types of bad server responses
+
+  fix for endian switch in 'unpack' which changed the original buffer
+
+  re-arranged arrays, hashes and indexing chapters in the manual and
+  enhanced hashing chapter, added Win32 trailing slash warning to
+  manual entries of 'directory' and 'directory?'
+
+  experimental implicit indexing with nrest: 
+  (1 '(a b c)) => (b c)
+  (1 "abc") => "bc"
+
+8.4.8
+  implicit indexing with slice:
+  (3 2 '(a b c d e f g)) => (d e)
+  (-4 2 "abcdefg") => "de"
+
+  updated infix.lsp to version 1.4/5 was broken after newLISP 8.2.0
+  because of change in 'symbol' functioanality
+
+  possibility to check legality of a string as a newLISP source symbol
+  with (symbol? string), i.e: (symbol? "a b") => nil
+
+  illegal symbols are now serialized correctly in 'save' using a
+  set expression with (sym str context)
+
+  the Win32 installer now will correctly change settings in
+  newlisp-tk.config when chaning the install path during installation
+  will only work Windows 2000 and later
+
+8.4.9
+  did not evaluate length in implicit slice-length
+
+8.4.10
+  separated legal symbol? functionality into 'legal?' function. 'symbol?'
+  back to pre 8.4.8 functionality
+
+8.5.0 Released April 8, 2005
+  '=' fixed problem when comparing strings and binary buffers
+
+  'args' with negative index did hang
+
+  'main-args' nor can be indexed like args, both accept negative indices
+
+8.5.1
+  newlisp-tk tripped over file spec "", changed to "." in lastLoadedFile
+  on MacOSX. Changed Demo.lsp to work with TLCKAqua on MacOSX.
+
+  new function 'factor' for factoring numbers up to 15 digits 
+  (must give floats for numbers bigger max int)
+
+  in newlisp.so and newlisp.dll main-args was initilized to nil instead of
+  the empty list ()
+
+  list in 'dolist' now safe to modify (back to 8.3.2 behaviour), but can
+  leave with 'throw' without leaking cells
+
+  signalling SIGUSR1 will perform a 'reset' but not kill newLISP
+
+  'timer' start a one shot timer event and registers a user defined
+  event handler, i.e: (define (ticker) (println (date)) (timer 'ticker 1))
+  defines a self starting and retriggering ticker.
+
+8.5.2
+  added debug option to SIGINT handler, eliminated SIGUSR1 handler, because
+  is redundant
+
+8.5.3
+  added 'signal' for userdefined signal handlers: (signal sig-no symbol)
+
+  args was not reset to '() when left unused in recursion levels
+ 
+8.5.4
+  signal handler can pass the signal number as an argument (see manual)
+
+  new makefiles for OSX/Darwin UTF-8: make 'osx_utf8' and make 'darwin_osx_utf8'
+  (Darwin means: OSX + readline support)
+
+  when compiled with readline support newLISP will now exit pressing Ctrl-D
+  (Linux/UNIX)
+
+  'net-select' crashed on an empty list
+
+8.5.5
+  fixed UTF-8 problems in file names in newlisp-tk.tcl (thanks Norman)
+
+  UTF-8 symbols where not treated as legal symbols in 'save' , 'legal?'
+  This prevented UTF-8 symbols to show up in the editor/browser listbox.
+  This is now fine on all UTF-8 and non-UTF-8 version.
+
+  UTF-8 now handled correctly in hostnames in net-xxx routines
+
+  UTF-8 now handled correctly in 'float' and 'integer', took some
+  UTF-8 characters for numbers.
+
+  'net-connect' and 'net-select' did not accept/convert floats for 
+  portnumbers/sockets
+
+  sqlite3.lsp v.1.3 now handles FLOAT and BLOB datatypes and finds the correct
+  library/location depending on the OS platform
+
+  newlisp-tk did not save pathnames correctly in newlisp-tk.conf. New
+
+  version newLISP-tk 1.26 now works correctly when installing on MacOSX
+  use 'sudo make install' after build with 'make darwin' or 'make osx'
+  needs TclTk Aqua installed with darwin port tools
+
+8.5.6
+  fixed potential problem in 'net-connect' with multicast option on
+  big-endian CPUs (MacOSX)
+
+  added broadcast option to 'net-connect' as udp mode plus broadcast specified
+  with "b" or "broadcast" instead od "udp". Broadcast mode was already possible
+  in 'net-send-udp'. Now broadcast can be set up in non-blocking mode on the 
+  receiver side.
+
+
+8.5.7
+  big speedup of 'replace' with strings on a file of 100k about 30x on
+  500k about 500x times speedup.
+
+  added example/tcltk.lsp for showing how to make GUIs without newlisp-tk
+  controlled from a newlisp script
+
+
+8.5.8 
+  added true/nil as allowed data in memory shares
+
+  added new make flavor osx_lib for shared library newlisp.so
+
+  MacOSX binary are smaller now because since 10.3 osx-dlfcn.o
+  is not required anymore, but extra makefile_osx_10.2 for older
+  Mac's
+
+  flushing stdio after output if not in terminal mode lets newLISP
+  now serve as a UNIX inetd handler 
+
+8.5.9
+  'timer' now can take fractions of a second, i.e. (timer 'alarm 0.1)
+  for 100 millisec
+
+  'read-buffer' now can take an optional wait string as 4th parameter
+  similar to 'net-receive' with wait string
+
+  added Mac OSX package preperation to Makefile
+
+  dropped cygwin support. MinGW and Borland remain as Win32 options
+  #ifdef's for cygwin are still there but have not been tested for
+  several versions
+
+8.5.10
+  fixed a crash when hitting cursor-up inbetween [cmd]...[/cmd] tags
+
+  'timer' now avalailable on Win32
+
+  fixed a regex error, when expression found is of length 0
+  only one replacement was made
+
+  implicit indexing did not accept indices after a var-index, if
+  var-index was the first.
+
+8.6.0
+ a bug fix for unpack when passing a number as an address on
+ OpenBSD where virtual memory pointers may be > 0x7fffffff
+
+ new function crc32, version: http://www.w3.org
+
+ share on Win32 leaked memory
+
+8.6.1
+ 'sql3:open' now returns nil and sets error the message when trying
+ to sql3:open twice.
+
+ 'timer' now returns the elapsed time when calling just with the
+  event symbol, useful for checking timer progress or programming
+  timelines/schedules.
+
+  'source' now works like 'save' and can take multiple symbols;
+  context symbols are serialized including all of the contained
+  symbols.
+
+  Files are now created without execution permission with rw-rw-rw
+  which results in rw-r--r-- on UNIX systems assuming a user mask
+  of 0022.
+
+  'peek' similar to 'net-peek' but for any file descriptor, returns
+  number of bytes ready to read works also on std I/O 0/1. Only UNIX.
+
+  Added gmp.lsp for GNU Multi Precision library, contains
+  integer functions for arithmetik, see header of file gmp.lsp
+  for details.
+
+  optional parameter 'true' in 'difference' and 'intersect' puts
+  these functions in list-mode (versus normally set-mode).
+
+  new function 'title-case' upper-cases first character and
+  optionally lowercases the rest characters
+
+8.6.2
+  changed  makefile_darwin_utf8 to work on standard 10.4 installation
+
+  a parameter in utf8 version of upper/lower was evaluated twice 
+  caused by new title-case code in 8.6.1
+
+  fixed append mode in file 'open' which created file with ------ 
+  permissions when file did not exists
+ 
+  optional 'true' flag in net-lookup to force hostbyname() lookup
+  for strings like "216.16.84.66.sbl-xbl.spamhaus.org"
+
+  huge speedup for 'difference' and 'intersect'. On a 10000 elment
+  list about 100 times speedup, both functions now scale linearly
+  with n+m instead of n*m, when n an m are the lenghts of the two
+  lists
+
+  speedup of 'count' for big item lists now scales m+n instead m*n
+  when m is the list of items to count in list with length n
+
+8.6.3
+  'difference' did sometimes not unique, 'nil' treated incorrectly
+
+8.6.4
+  fixed problems in  'count' and 'sort' caused by changes in 'sort'
+  necessary in new version of 'count', 'difference', 'intersect' and
+  'unique'
+
+8.6.5
+  'catch' did not respect protection of symbols in the catch symbol
+   
+   make version with sed finally working on UNIX previously only
+   cygwin
+ 
+   new function 'randomize' shuffles the elements of a list
+
+   new function 'net-eval' evaluates a batch of functions remotely
+   on newlisp servers, manages Tcp/Ip communications and data collection
+   with multiple servers started with: newlisp -c -d <portno>
+   timeout and optional callback/idle function
+
+   'array' with 0 length dimension crashed, now ignores 0-length
+
+   -d mode would exit when loss of communication in multiline [cmd] mode
+   now just cycles to restart
+
+   'error-event' only worked in programs loaded interactively, now works
+    also defined in scripts started on the command line
+
+   -l and -L now usable for logging in normal console mode, -l logs only
+   user input -L logs both user input and newLISP output (without prompt)
+   new chapter for logging in users manual
+
+   when evaluating multiple expressions on the command line or a batch
+   of expressions enclosed in [cmd],[/cmd] tags multiple results are now 
+   separated by one space.
+
+8.6.5-7
+   'ramdomize' looped on listlen 1
+
+   'load' now throws an eror when the file cannot be found or returns
+   the value of the last expression in the file evaluated. Before 'load'
+   returned 'nil' when file was not found and else 'true'. Note that this
+   required a change in init.lsp to catch error when trying to load
+   $HOME/.init.lsp
+
+   eliminated all sprintf() to avoid security warnings on openBSD compiles
+
+   'erf' and 'sgn' new functions
+
+   took out txt2pdf which is broken, will come back when fixed
+
+   fixed leak in evluateStream introduced with 'net-eval'
+
+8.7.0-rc1 released October 10th 2005
+   'get-url' now acccepts https:// pages in main url or moved location
+
+   'sgn' extended with optional triconditional functionality
+
+   fixed result stack leak in 'net-eval'
+
+   'get-url', 'post-url' and 'put-url' now can take a timeout parameter
+
+   'read-buffer' with wait string now will put bytes read in buffer
+    including when the wait string was not found. When no bytes are
+    read buffer is nil.
+
+   'date-value' returned negative numbers on dates earlier 1970, now returns
+    0 on dates previous to 1970
+ 
+    'net-eval' would loop on connection errors, more detailed error messages
+
+8.7.0 released October 15th
+    'append-file' like 'write-file' but appends
+
+    'select' on lists with an empty selection list now returns the empty list
+    previously nil.
+
+8.7.1 RELEASE Nov 7th, 2005
+    fixed bug for push -1 optimization and various doc corrections
+
+    replaced 'integer' with 'int', 'get-integer' with 'get-int' and 'symbol'
+    with 'sym' in several examples/ and modules/ files
+
+    (nth <list> <list>) now throws error (list index only allowed in
+    push/pop and implicit indexing)
+
+8.7.2 development Release November 20th
+    new (net-ping host wait-time) returns ip-no or multiple ip-no for multiple
+    addresses in batch-mode or broadcast. Must have root privileges to use, or 
+    set the newlisp executable set-user-ID with: chmod u+s /usr/bin/newlisp or: 
+    chmod 4755 /usr/bin/newlisp; only on UNIX
+
+    'time' now safe for midnight wrap
+
+    'dup' with optional 'true' flag now can force list return  when a string argument
+    is given; by default 'dup' concatenates the string
+
+    sys-error now reset after readline(), which caused it set to 22
+
+    'transpose' on empty lists segfaulted when on zero length dimension in the
+    first row, now an error message will be issued if the first row is empty
+
+    imnplicit rest failed strings when n was >= length of string
+
+    'count', 'difference' and 'intersect' crashed when handling  identical lists
+
+8.7.3 development release November 27th
+   added "list" flag to 'get-url', which permits capturing header and page in a list.
+
+   added custom header option to get-url, post-url and put-url
+
+   string display translation for char > 126 to \nnn format
+
+8.7.4 development release December 5th, 2005
+   expanded functionality for 'context': (context 'CTX "symstr" value)
+   adds symbol to context CTX, (context 'CTX "symstr") returns value
+   this is a short form for: (set (sym "symstr" 'CTX) 123)
+
+   expanded form of 'context?' for checking existence of a symbol
+
+   'time' takes an additional parameter for the number of times the
+   expression should be evaluated for timing
+
+   cleanup format, file and directory routines (less code)
+
+   the terminating character from an expression returned in the console has been
+   changed from a space to a line feed
+
+8.7.5 Development release December 23rd
+   added util/newlisp.plist syntax file for OSX BBEdit or TextWrangler editors
+
+   raw mode in 'net-eval' now documented
+
+   recognize simple path-href in 'location:' header spec in get/post/put -url
+
+   in 'process' on UNIX an optional pipe handle for standard error can be specified
+   if not present standard error gets redirected to stdout
+
+   allow default functions to be defined as primitives
+
+   shortened symbol param loop in evaluateLambda and evlaluateMacro
+
+   getContext() now safe for debug mode
+
+   'replace-assoc' gets additional (long overdue) syntax to remove associations 
+
+   help-option in context console menu on newlisp-tk (not working on OS X)
+
+8.7.6 
+   Help buttons now work on MacOS X in newlisp-tk
+
+   fixed and issue with 'case' when a 'true' clause was assembled from an
+   evaluated 'true
+
+   handle some cases of self reference in set-nth/nth-set, i.e: the replacement sub
+   expression itlself changes the place its supposed to be assigned:
+   (set-nth i L (set-nth i L 99)) ) 
+ 
+   : (colon) now will be returned as token even if attached to other following chars
+
+   'parse' without regex parameter couild overrun string when it ended in \
+
+8.7.7
+   regular expression support in 'directory'
+
+   new 'number?' works like (or (float? x) (integer? x))
+
+   in newlisp-tk help on hightlighted reserved word now works on MacOS X bringing
+   up browser with manual on right spot.   (Ctrl-Left-Button for context menu)
+
+   new (bayes-train list-A list-B [list-C ...] context-symbol) lists contain
+   string tokens; and  (bayes-query list-query context), not documented yet, 
+   still testing and modifying
+
+   memory error fix in 'get-url' for chunked pages
+
+8.7.8 development release January 16th 2006
+   'apply' now works on lists with unlimited length, no stack limit
+
+    both Bayesan modes: Chain Bayesian and R.A. Fisher CHi2, are now supported with 
+    new 'bayes-train' and 'bayes-query', working and tested, see manual for
+    details
+
+    moved 'prob-chi2' and 'pob-z' in manual to "Simulation and modelling" group
+    together with 'bayes-train' and 'bayes-query'
+
+    ATTENTION:
+
+    calling into a context now changes the current run-time context:
+
+    (context 'FOO)
+    (define (foo) (context))
+    (context MAIN)
+
+    (FOO:foo) => MAIN ; old behaviour
+
+    (FOO:foo) => FOO  ; new behaviour
+
+    The new behaviour is more intuitive and is what most programmers would expect.
+    Only applications using 'eval-string' or 'sym' (w/o specifying a context) are 
+    effected. From all apps published by newlisp.org (blog, wiki, ide) only the file
+    cgi.lsp packaged with these applications is affected and should be changed to
+    the new cgi.lsp v.1.9 packaged with 8.7.8.
+
+    Users should check all applications using 'eval-string' and 'sym' (or the
+    deprecated 'symbol'). Pre 8.7.8 'eval-string' and 'sym' work with the runtime-
+    context beeing MAIN, the context where the program was started. Now both functions
+    work with the context they are part of:
+    
+    (context 'FOO)
+    (set 'x 999)
+    (define (foo s) (eval-string s))
+    (define (bar s) (eval (sym s)))
+    (context MAIN)
+    (set 'x 123)
+
+    (FOO:foo "x") => 123    ; old behaviour
+    (FOO:bar "x") => 123    ; old behaviour
+
+    (FOO:foo "x") => 999    ; new behaviour
+    (FOO:bar "x") => 999    ; new behaviour 
+
+    Changes to old code:
+
+    (1) Replace all cgi.lsp in newlisp-ide, newlisp-blog and newlisp-wiki apps.
+    the replacement will also work with newLISP versions previous to 8.7.8.
+
+    (2) Change old apps by preceding the 'eval-string' statement with (context MAIN)
+    or other required context change. Most of the time it's MAIN, the context where
+    th whole program was started.
+
+    (3) Change old apps adding explicitly the desired context in 'sym' as a
+    second parameter, i.e. (sym s 'MAIN) or (sym s ctx) where 'ctx' is a context
+    variable.
+
+    The new behaviour is more intuitive and will make OO based programming based
+    on contexts easier, it also increases isoloation of contexts because the current
+    run-time context is not dependend from where the program was started originally,
+    but only on the situation internal to that context.
+    
+8.7.9
+    added a configure script for compatibility with the popular autoconf/configure
+    system. An installation of autoconf is not required but the same sequence
+    of commands as on autoconf systems will work to make newLISP. newLISP's old
+    ways of making newLISP will also still work:
+
+    ./configure will just try to discover the platform and give a message
+    make will try to discover the platform and make it
+
+    if make cannot discover the platform it will give a message
+
+    the module/context is now reported in error messages
+
+    'load' will never cause the runtime context changed, but the same run-time
+     context that was valid before the call to 'load' will be valid when 'load'
+     returns
+
+    'eval-string' now can specify the context under which it's string argument
+    should be parsed and evaluated.
+
+    'log' can be specify an additional parameter for a different base than the
+    default natural log
+
+    fixed a problem with reading very long UTF-8 source string constants
+
+    big speedup of parse with regular expression, now scaling linear
+    this enables tokenizing big documents in one piece
+
+    args in functions should be evaluated in callers context
+    (for: sym, context, eval-string)
+
+8.7.10
+    raw string ouput (upper ascii in \nnn codes) in the newLISP commandline shell
+    return value only when locale is the default "C" locale.
+
+    'trim' was changing the original string in UTF-8 mode
+
+    'find', 'replace' and 'search' now do binary in both regex and non-regex modes
+     searched buffer, key/patterns string and replacement string can all contain 
+     binary 0s
+
+8.7.11
+    'string' now optimized double fast on string arguments
+
+    getCreateContext() checking symbol protection
+
+     'load' switches to context MAIN when loading file except if different
+     context is specified in file, on return 'load' switches back to callers
+     context (8.7.9)
+
+     'reset' adds an additional parameter for restarting newLISP with same
+     command line parameters with fresh memory in a new process space.
+
+     many security improvements for OpenBSD compiles
+
+     'reset' with optional 'true' (or non 'nil') parameter will restart
+     newLISP with the same commandline parameters, reloading files etc.
+     Not available on Win32 (execv() leave the system unstable when compiling
+     with MinGW.
+
+8.8.0-p1 pre-release 1
+     'reset' was always exiting on UNIX after the change in 8.7.11
+
+     text buffers returned in 'net-eval' > 2048 characters and containing zero
+     characters where throwing  a 'string too long error' 
+
+8.8.0-p2 pre-rlease 2
+     Many doc corrections
+
+	 system symbols in set-nth was broken in 8.7.6
+
+     self refs in set-nth now safe
+
+     added  and changed some cases to qa_dot and qa_comma, now safe again
+	 for memory leak tests.
+
+8.8.0 released February 20th, 2006
+     large file system support for files > 2 GB can now be turned on in newlisp.h 
+     specifying #define LFS. File positions > 2^31 must then be specified as
+     floats up to 999999999999999.0 for 999 terabyte (TB). 'seek' will always 
+     return a float, file positions should be handled as floats using
+     add, sub, mul, div instead +,-,*,/
+
+	 Documentation corrections (thanks Ryon, Nigel et al.)
+
+     moved sql.c and types.c into the util directory
+
+     updated newlisp.vim (v1.27) and newlisp.jsf (v.1.9)
+
+     bug fix in cgi.lsp for '=' in key value strings
+
+8.8.1
+     realloc compiler warning fix in nl-filesys.c/readBuffer()
+
+     error-event, net-eval (edited 4/13/20060), signal and timer can now take 
+     a function or lambda expression, previously only  a symbol holding a lambda: 
+     (signal 2 exit) 
+     (timer (fn () (println "hello")) 5)
+	 The old syntax still works too.
+
+     Could not compile to a library (also fixed in re-release of 8.8.0)
+
+     code cleanup for allocMemory() + memset() => callocMemory()
+
+	 now memory cleanup after exception in functor passed by:
+     'filter', 'index', 'net-eval' and 'replace'. 
+
+     implicit n-rest and slice on default lists and strings:
+     (set 'foo:foo '(a s d f g h j))
+     (2 foo) => (d f g h j)
+     (-3 2 foo) => (g h)
+
+     'save' and 'source' will always serialize from context MAIN perspective 
+     (like 'load') (source reverted back in 8.8.2)
+
+	 fixed odd/even problem for 'rand' on FreeBSD, NetBSD, OpenBSD
+
+8.8.2
+     'source' reverted back to 8.8.0 behaviour: serialize to current context
+
+8.8.3
+     'signal' fixed format of internal symbol when passing functions
+
+     suppress saving/sourcing system symbols starting with '$' unless specified
+     specifically
+
+     new built-in function 'real-path' translates a relative path into an
+     absolute path. (read-path) same as (real-path ".") returns the current
+     working directory
+
+8.8.4
+    'real-path' now also in Win32
+
+    handle self reference of result of while expression in condition
+
+    allow (sys-info 3) or (sys-info -1) as with 'args' and 'main-args'
+
+    'dup' will assume 0 for negative values
+
+    when entering multiline expressions/definitions bracketed by [cmd] ... [/cmd]
+    tags (each on a separate line] and hitting <enter><up-arrow> after the closing 
+    [/cmd], newLISP compiled with lib readline support segfaulted, this long standing
+    bug as finallly been fixed
+
+    in 'xml-parse' when a closing CDATA tag was preceded by a forward slash, then
+    an extra text element containing part of the closing tag was emmitted, 
+    this is fixed
+
+    support for MySQL v. 5.0 was added with mysql5.lsp
+
+8.8.5
+    'read-key' now also works on MacOS X
+
+    a bug in the second syntax of 'context' has been fixed now can do:
+    (push i (context 'CTX "foo")) which now works if CTX:foo is a list
+
+    'load' now can take http:// (and file://) URL prefixes in filnames to retrieve/load 
+    files via HTTP from remote servers
+
+    'xml-parse' now can take a context to place symbols/tags from SXML conversion
+
+    zlib.lsp: new module for in memory and .gz compatible file compression 
+
+    'net-eval' idle loop did not pass parameter (broken in 8.8.1)
+
+    fixed a cell leak caused by 'while' self ref handling in 8.8.4
+
+8.8.6
+ 
+    fix for error reporting of strings, which are too long
+
+    an optional break condition in all looping constructs allows early return:
+        (for (i from to step condition) ...)
+        (dotimes (i N condition) ...)
+        (dolist (i lst conditon) ...)
+    When condition returns non-nil the loop returns with the value of the condition.
+    When loop comes to end end the result of the last body expression gets returned.
+
+    describing the effects of non-rectangular matrices in the "Data types" chapter
+    and for the functions 'multiply', 'invert' and 'transpose'.
+
+    sqlite.lsp vor SQLite v.2.x has been discontinued, use sqlite3.lsp and SQLite3
+
+    error message was printed for each catch level where error was not caught,
+    should only be printed on top level if uncatched
+
+    new 'letex': let expression with expansion of let vars into body expressions
+    before evaluation
+
+    file open for append now atomic
+
+8.8.7
+    new 'clean':
+    (clean predicate? aList) works like:
+    (filter (fn (x) (not (predicate? x))) aList)
+
+    "Transfer-Encoding: chunked" did not trigger chunked decoding
+    when more than one space after the ':' before 'chunked'
+
+    $0 counter did not count first element when in remove mode of 
+    'replace'
+
+    'unify' does Prolog like unification with occur-check
+    (unify '(f (g A) A) '(f B xyz)) => ((B (g xyz)) (A xyz))
+
+    'unify' can take additional assoc params list:
+	(unify '(A (B) X) '(A (A) Z) '((A 1) (Z 4)))
+    => ((A 1) (Z 4) (B 1) (X 4))
+	this is useful when chanining/nesting 'unify' to pass on
+    a newly bound environment
+
+    new mode in 'expand' with parameter assoc list:
+    (expand '(a (B (c) (d a B))) '((a 1) (B 2) (c 3) (d 4))) =>
+	(1 (2 (3) (4 1 2))) 
+    
+    new mode in 'expand' without symbol or assoc list:
+	(set 'X 2)
+	(expand '(a ((X)) b)) => (a ((2)) b))
+	expands only uppercase variables for use with the new Prolog like
+    'unify' function
+
+    added file syntax.cgi for syntax highlighting in HTML of newLISP source
+    to examples directory
+
+8.8.8
+	eliminates several cell leaks in unify
+
+	'pop' can be used on strings (pop str [pos] [len]) pos can be negative
+    'push' can be used on strings (push str [pos]) pos can be negative
+    'push' now will only do list mode when lst is list  or nil:
+    (push new lst) lst has to be list  or nil, previous to string mode of push
+    any existing datatype non-list was initializeed to () now only nil is allowed
+
+    system var $idx contains the offset in dolist:
+		 (dolist (e '(a b c d e)) (println $idx "->" e))
+	0->a
+	1->b etc.
+
+    indexing mode of 'args' now works with multiple indices, i.e (args 3 -1)
+    and is much faster
+
+	implicit indexing syntax now allowed in 'nth-set' and 'set-nth':
+	(set 'd '(a b c d e f g))
+    (nth-set (d 3) 99) => d
+    d => (a b c 99 e f g)
+    or with default functor:
+    (set 'db:db '(a b c d e f g))
+    (nth-set (db -1) 99) => g
+    db:db => (a b c d e f 99)
+    This also works for strings and arrays
+    
+    many fixes/changes/additions in the manual and reference
+
+8.8.9
+    'net-ping' didn't work on localhost
+
+    'nth-set/nth-set' bugfix for new feature breaking old
+
+     complete manual pass of the first 3 chapters by Michael - thanks
+
+8.8.10
+    rotate works also on strings
+
+    (cons item lst -1) for consing at the end of the list (undocumented)
+
+    allow 0 length in chunked pages happening on put-url
+
+    give error message for unterminated [text] in interactive console
+
+8.9.0 Release June 25th
+    complete pass through Users Manual by Michael Michaels
+
+    example programs in Appendix are now syntax highlighted
+
+    dolist $idx safe for nested loops
+
+    member works for strings
+
+    (starts-with s k true) should behave like the default (starts-with s k)
+    same with ends-with. This bug never surfaced because nobody specified
+    anything for the default of case sensitivity
+
+8.9.1
+    (rand x n) returned n+1 after fix in 8.9.0, also looped on n=-1
+
+    new 'zero?' was broken for floats with fractional parts
+
+    newlisp -c -d <portno> and newlisp -c controlled by inetd now understand 
+    simple HTTP GET requests. This feature is mainly intended for use with
+    (get-url "http://...) and (load "http://...) for retrieving or loading
+    files from remote newlisp/inetd worker nodes in a distributed computing
+    environment. 
+
+    manual reviewed/edited up to and including the letter C
+
+8.9.2
+
+    new (find-all pattern string [func [options]]) finds all regex-patterns in a 
+    string and returns a list of matching strings:
+    (find-all {\d+} "asdf2kjh44hgfhgf890") 
+    => ("2" "44" "890")
+    (find-all {(new)(lisp)} "newLISPisNEWLISP" (append $2 $1) 1) 
+    => ("LISPnew" "LISPNEW")
+
+    the parameters in 'format' after the format string can now also be
+    given in a list: (format "%d %s" '(123 "hello"))
+
+    'read-key' did not work on SUSE Linux
+
+8.9.3
+     default values in function and macro parameters: (define (foo (a 1) (b 2)) (list a b))
+    (foo) => (1 2)
+    (foo 3) => (3 2)
+    (foo 3 4) => (3 4)
+    no performance loss for normal syntax without defaults
+
+    format partly rewritten for better portability, 
+    no tru64.c or ffi required after removing TRU64 for p_format in nl-string.c
+
+8.9.4
+    removed tru64.c and changed makefile_true64
+
+    starts-with and ends-with can do reguluar expressions and take a regex option number, 
+    the old nil-option for case insensitivity still works and is translated to regex 
+    option = 1, but is deprecated and will be eliminated in the future
+
+    member for strings can take regular expressions, the old case insensitivity option
+    will not work (member for strings was introduced only recently
+
+    'symbol' the old writing for 'sym' has been eliminated
+
+    fixed create context bug in newlisp-tk.tcl
+
+    (<< num) works like (<< num 1), (>> num) like (>> num 1), (div num) like (div 1.0 num)
+
+    function 'uuid' for creating Universal Unique IDs type 1 and 4 (RFC 4122)
+
+    -C command option for Emacs forces prompt even if in pipe mode
+
+    manual edits up to letter J, thanks Michael
+
+8.9.5
+    type 4 UUID now closer to RFC 4122 specification
+
+    trying to use set-nth or nth-set on an empty list corrupted the list
+
+8.9.6
+    UUID type 1 got timestamp wrong, UUID 4 always started the same sequence
+
+
+-------------------------- 64 Bit Integers  ------------------------------------
+
+
+8.9.7
+    all integer arithmetik 64 bit
+
+    'factor' now takes integers with  max 64 bits and is 4x faster than previously
+
+    'import', 'pack', still take ints as 32bit, taking the least significant 32 bits
+	to pack 64bits do: (pack "ldld" int64 (>> int64 32)) for little endian
+	for big endian do: (pack "ldls" (>> int64 32) int64)
+    
+    'format' has new 64 bit formats "%lld", "%llu" "%llx" for 64bit decimals and
+    hex numbers on UNIX on Win32 use "%I64d", "%I64u", "%I64x"
+
+    'format' now also recognises 'e' and 'E' scientific folating point formatting
+
+    32 bit format strings "%d" "%u" "%x" will truncate on int64 numbers
+
+    in float->int conversions floats out of range are converted to min/max 64 bit int
+    -9223372036854775808, 9223372036854775807 and 18446744073709551615 for unsigned
+
+	if an int32/uint32 is required by a function int64 values overflow to 
+    min/max 32 bit int -2147483648/2147483647 and 4294967295 for unsignde int
+
+    LFS (large file support) in file operations for files opened with 'open'
+    now full 64 Bits (before 40 Bits)
+
+    (for (i from to step)...) has float in i, only when optional step value is specified 
+    (sequence from to step) produces float only when optional step value is specified 
+    (dotimes (i N)...) always has integer in i
+    this is consistend with 'inc' and 'dec'
+
+    net-select now can go to 68 :) years waiting time specifying 64bit  higher timeout
+    values and a timeout of -1 waits forever
+
+	'net-close' with optional parameter: (net-close sock true) will suppress shutdown()
+    before closing the socket. In this case net-close will wait for undergoing traffic
+    to finish
+
+    new function (gcd x y ...) for greatest common deviser of n arguments
+
+    (pow x) defaults to (pow x 2)
+
+    wrong format could segfault (this bug was introduced in 8.9.3)
+
+    when replacing the first element in an association list with 'replace-assoc' and 
+    an error occured when evaluating the replacement expression a segfault occured
+    (thanks to Ingo for catching this)
+
+    Note that bits shifts <<,>> now work on 64-bit integers too (added 2006-09-12)
+
+8.9.8
+    'net-eval' now evaluates node parameters, before constants where required
+    (set 'host "localhost" 'port 4711 'cmd "(+ 3 4)")
+    (net-eval '((host port cmd)) 1000) = (7)
+
+    'net-eval' if no timeout specified waits forever
+
+    'net-eval' short form for one node: (net-eval host port cmd [timeout idle-loop])
+    timeout an idle loop are optional: (net-eval host port cmd)
+
+    Similar as for (load "http:// ...) and (get-url "http//..) in 8.9.1;
+    server mode: newlisp -c with -p or -d, now understands HTTP PUT requests
+    for saving/writing text files to a newLISP server node on UNIX using:
+    (save "http://..." ...) and (put-url "http://...") ...)
+    The server mode together with the beefed up 'net-eval', 'load', 'save'
+    'get-url' and 'put-url' assemble a nice toolset for distributed applications
+    with newLISP. The server node can also be started by inetd or xinetd. 
+    (See manual). Must give full path-file-name in URLs i.e:
+    (put-url "http://localhost:50001//Myfiles/afile.txt" (read-file "somefile"))
+
+    newLISP server mode with HTTP capabilities in not yet available on Win32.
+
+    target context MAIN is now disabled in 'def-new' and 'new' because it would
+    cause ambigous situations when copying context vars after fixing a related
+    bug: def-new and new on context-vars
+
+    on UNIX a shared memory address obtained with 'share' can be unmapped using
+    (share nil <address>)
+
+	'put-url' with "Pragma: append\r\n" in header option appends when talking
+    to newLISP server
+
+    'read-file', 'write-file' and 'append-file' accept "http:// ..." and
+    for HTTP mode and "file://..." for normal file mode.
+    in HTTP mode they work exactly like 'get-url', 'put-url' and 'put-url'
+    with "Pragma: append" in the header option.
+ 
+    new QA file qa-net for testing newLISP server modes with:
+    net-eval, load, save, read-file, write-file, append-file
+
+    new QA file qa-utf8 to display UTF8 characters, this is not a test for 
+    newLISP but rather the UTF8 display capabilities of the platform running on 
+
+8.9.9
+    matrix operations now can be performed on arrays (previously only lists)
+    matrix operations will return the type (list or arrray) which was given
+    as input. In case of mixed input (i.e. in multiply), array type is
+    returned.
+
+    new function 'det' returns the determinant of a square matrix expressed
+    as a list or array.
+
+    fixed cell leak in define-macro when exercising default values
+
+    64-bit integers where not displayed correctly in Win32 MinGW
+
+8.9.10
+    'append', 'first', 'last', 'rest', 'slice' (and implicit slicing) now also
+     available for arrays 
+
+    (timer 'event 0) did not stop on Win32
+
+    a fix in Curl_base64_decode() for bad base64 strings
+
+    20% speed up for append on strings and join
+
+8.9.11
+    'append' did not append correctly to lambda lists, which lost lambda attribute
+
+    'qa-net' fixed (this file only tests on UNIX)
+
+8.9.12
+    'int' did a signed instead of unsigned conversion
+
+     'save' did not save global protected symbols in a way they
+     could be reloaded
+
+8.9.13
+     'local' like 'let' but no initialization of locals (all nil): 
+     (local (x b x) body)
+
+     'swap' has a third syntax pattern to swap the contents of symbols: (swap x y)
+
+8.9.14
+     speedup and memory savings on 'apply'
+
+     fixed INT64->string conversion in sym for True64/WINCC
+ 
+     error checking on all reallocs()
+
+     changed to realloc() in writeStream() routines
+
+8.9.15
+	(join '(1 2 3)) was hanging, instead of wrong datatype error message
+	
+	support "\x41\x42\xff" in string hex format equivalent to "\065\066\255"
+
+	new 'ref-all' returns a list of index vectors for all ref's of an expression
+	(ref-all 'a '(a b c (d a f (a h a)) (k a (m n a) (x))))
+	=> ((0) (3 1) (3 3 0) (3 3 2) (4 1) (4 2 2))
+
+9.0.0 Release October 15th, 2006
+
+9.0.1
+    'read-file' did not read extended http:// mode parameters correctly
+
+    new 'doargs' works like 'dolist' iterates through (args)
+	(define (foo) (doargs (i) (println i)))
+    (foo 1 2 3) => prints 1 2 3
+    implemented on top of 'dolist' also does $idx and break-expressions	
+
+    'explode' takes extra parameter for # of characters (works on UTF-8 too):
+    (explode "newlisp" 2) => ("ne" "wl" "is" "p")
+
+    new 'utf8len' length of a string in UTF-8 characters
+
+    new scalar matrix operations (matrix is a 2 dimensional list or array): 
+    (set 'A '((1 2 3) (4 5 6))
+    (set 'B A)
+    (mat + A B) => ((2 4 6) (8 10 12))
+    (mat - A B) => ((0 0 0) (0 0 0))
+    (mat * A B) => ((1 4 9) (16 25 36))
+    (mat / A B) => ((1 1 1) (1 1 1))
+    Note that all matrix operations are in floating point
+
+9.0.2
+    explode works on lists: 
+    (explode '(a b c d e)) => '((a) (b) (c) (d) (e))
+    (explode '(a b c d e) 2) => '((a b) (c d) (e))
+    many structural transformations can be done combining 'explode' and 'transpose'
+
+    fixed cell-leak in 'ref-all'
+
+    in (mat <op> A B) B can be a single number: 
+    (mat + '((1 2 3) (4 5 6)) 2) => ((3 4 5) (6 7 8))
+
+    some fixes for HTTP mode on UNIX
+
+    HTTP mode now working on Win32 but with some timing issues,
+    see header of file qa-net for details
+
+9.0.3
+    $idx was broken after 9.0 starting with 1 instead of 0
+
+9.0.4
+    fixed midnight rollover in 'timer' on Win32
+
+    new (round <number> <precision>) rounds a number to precision digits
+    left (positive) or rigt (negative) of the decimal point
+
+    new hyperbolic functions sinh cosh tanh
+
+    fixed push -1 optimization when popping only remaining element in list
+
+    new 'ostype' symbol holds os type string
+
+    new 'delete-url', needs to be enabled on target www server (most aren't)
+    else => "ERR: server code 405: HTTP/1.1 405 Method Not Allowed\r\n"
+    and must have file permissions set accordingly on target file;
+    additional parameters like timeout and custom headers are available
+    exactly as in 'get-url', the feature is also available in:
+    (delete-file "http://......"), similar to HTTP mode in 'read-file', 
+    'write-file' and 'append-file' and is also implemented in newlisp
+    server mode (not working on Win32 newlisp server mode)
+
+    GET queries are now supported in newlisp server mode (not yet Win32)
+
+9.0.5
+    'and' and 'or' now () when failing and last evaluation was ()
+
+     GET and POST cgi now working on UNIX and Win32 (9.0.6)
+
+     new -w <working-directory> commandline switch 
+     useful for changing working directory after newlisp startup:
+         newlisp -c -d 8080 -w /Users/lutz/ide
+     this is the same as going into the directory and starting newlisp
+         newlisp -c -d 8080
+
+     newlisp can now run as a webserver doing newlisp based CGI. It runs both
+     newlisp-ide-x.x.tgz and newlisp-wiki-x.x.tgz, to run the ide on the local
+     machine:
+         newlisp -c -d 8080 -w /usr/home/www/ide
+     then in a webbrowser enter the URL http://localhost:8080/
+     index.cgi and index.html are looked for by default if no filename is
+     specified in URL
+
+     httpd example programm has been eliminated, because httpd mode now built-in
+     into newLISP
+
+     'file-info' now correctly reports filesizes > 2G (2147483647) bytes
+     now also can index: (file-info <path-name> 0) => filesize
+
+     the -x commandlne switch has been disabled, use newlisp server modes instead
+
+     fixed problems with break-condition in dolist/doargs introduced in 9.0.1
+     fixed problem when break-condition is the loop symbol itself 
+
+9.0.6
+     'nth' now with similar syntax options as 'net-set/set-nth'
+     new in 'nth':
+        (nth (L <idx1> <idx2> ...))
+        (nth (L <aref>)) ; where <aref> is a list of indices
+     new in 'set=nth', 'nth-set'
+        (set-nth (L <aref>) <newval>)
+        (nth-set (L <aref>) <newval>)
+
+     'file-info' now distinguishes in the mode field (12th bit) between links 
+     and normal files: 
+        (define (link? fname) (= 0x2000 (& (file-info fname 1) 0x2000)))
+     not on Win32, who knows the correct Win32 function for lstat() on MinGW gcc?A
+
+9.0.7
+     HTTP server mode looks for procedure httpd-conf for processing/transforming
+     the path-file-name of the request. This way security checks, remappings etc
+     can be performed. In this case a file httpd.conf containing the definition
+     of httpd-conf can be loaded when starting the server:
+        newlisp httpd.conf -c -d 8080 -w www/httpddocs
+     if the file httpd.conf contains:
+        (define (httpd-conf request) 
+            (if (ends-with request ".exe") "errorpage.html" request))
+     now any request for a file which finishes in .exe will be transformed into a
+     request for errorpage.html containing an error message for the client.
+
+     fixed HTTP server mode crash on LINUX
+
+     fixed 'nth' which failed on old mode when indices where expressions
+
+9.0.8
+    new syntax of 'nth' should work on protected symbols
+
+    new syntax of 'set-nth/nth-set' did not check for index maximum of 16
+
+    make httpd-conf safe for non-string returns
+
+    server mode now correctly remaps directory paths when performing CGI
+    in directories not web root, i.e. http://ahost.com:/ide/ will work with CGI,
+    note that directories need to end with "/" to make the resolve to index.html
+    or iondex.cgi work correctly
+    
+    new -http flag like -c (suppressing prompts) but only allow HTTP commands
+    no newLISP statements (-c allows both), this is a 'safe' HTTP mode not
+    allowing 'net-eva' or other commandline protocols.
+    The following configurations can be used:
+	
+    (1) serve HTTP requests only
+        newlisp -http -d <portno> -w <www-root>
+        newlisp -http -w <www-root> # started vi INIX inetd or xinetd
+
+    (2) serve 'net-eval', HTTP and command line without prompt
+        newlisp -c -d <portno> -w <www-root>
+        newlisp -c -w <www-root> # started via UNIX inetd or xinetd
+    this mode is useful when running newLISP server in a controlled environment
+    behind a secured firewall in a distributed computing environment where 
+    newLISP server must answer to both: net-eval and HTTP requests.
+
+    Note that on Win32 a \tmp directory must be created on the same drive
+    which is current for CGI processes for newLISP HTTP mode to work correctly
+    for CGI processing. On UNIX /tmp is standard.
+
+    fixed 'invert' crash (since v.9.0.2) on not-invertible matrices
+
+    upgraded to better random number generation in 'rand' and 'random'
+	(not available on Win32)
+
+    fixed (rotate '(1) -1)
+
+9.0.9
+    another fix for 'nth' and protected symbols
+	
+    if 'httpd-conf' returns 'nil' nothing will be processed, this can be
+    used to completely hand off CGI request processing to httpd-conf
+
+9.0.10
+    moved env variable creation of DOCOUMENT_ROOT earlier, so it is available
+    in httpd-conf.lsp
+
+    added httpd-conf.lspi to the examples directory in the source distribution,
+    now filters csertain file extensions and does not allow access to files 
+    outside the web directory tree specified with the -w option:
+        newlisp httpd-conf.lsp -http -d 8080 -w /wwwdocs
+    or outside the startup directory if no -w is given, also takes care
+    of request for directories when no trailing '/' is present
+
+    cleaned up nthArray  and implicitIndexList/array code
+
+    trying to 'set-nth' and empty list should return the empty list not nil
+
+    more tests in qa-dot and qa-comma for symbol protection and 'nth'
+
+9.0.11
+    rework of whole indexing area, now correctly honors symbol protection in
+    all modes if symbol is nested inside an expression. The old flat mode: 
+      (nth i j alist)
+    is much slower, instead use one of the following modes:
+      (nth (alist i j)) or (alist i j) or (nth (alist aref)) or (alist aref)
+	ehere aref is a list of nymbers, i.e.: (1 2), same modes in set-nth,nth-set
+
+    reworked nil and empty list detection throughout all files. 'nil' and the
+    empty list '() are logic false, things work like this:
+        (map true? '(nil () 0 "")) => (nil nil true true)
+        (map nil? '(nil () 0 "")) => (true nil nil nil)
+        (map not '(nil () 0 "")) => (true true nil nil)
+        (map null? '(nil () 0 "")) => (true true true true)
+    in v9.0.0:
+        (true? '()) => true, which was wrong because also 
+        (true? (not '()) => true, which is correct
+    this affects filter and index usage with true? as predicate, but does not
+    affect: if, unless, while, until, do-while, do-until, which always worked
+    correctly assuming '() as logical false
+
+    'name' also can take contexts i.e.: 
+        (set 'L:L '(a b cd)) (set 'x L) (name x) => "L"
+
+    now when evaluating a context by itself it returns the default symbol
+    if the default symbol does not exists it gets created:
+          (set 'foo:foo '(a b c d e f g))
+          (foo) => foo:foo
+          (eval (foo)) => '(a b c d e f g)
+    this can be used for reference passing:
+          (define (mysort ctx func) 
+              (sort (eval (ctx)) func))
+          (mysort foo >) => (g f e d c b a)
+          foo:foo => (g f e d c b a)
+    previously a passed context could only be used for functions using
+    index lists and implicit indexing as in (nth-set (ctx idx) value) etc.
+    now functions working on the entire list can be used with reference passed
+    data. THIS FUNCTIONALITY HAS BEEN DISABLED IN 9.0.14, as a workaround
+    use (sym (name ctx) ctx) to retrieve the functor
+
+9.0.12
+    the newLISP-tk installer now contains a file md5-checksums.txt with
+    checksums for newlisp-tk.exe, newlisp.exe and newlisp.dll
+    
+    bit not ~ was still on 32 bits now 64 like all integer arithmetik since 9.0
+    
+    all buffer variables moved to size_t and ssize_t type in preparation for
+    64-bit model LP64 compile for 64-bit memory addressing.
+    
+    get-char, get-int, get-float and get-string failed when using on 64-bit
+    addresses, which where not truncated correctly on little-endian CPUs.
+    This affected the mysql.lsp and mysql5.lsp modules when using with newLISP
+    versions 8.9.7 and later and on Intel CPUs. On Mac PPC and other big-endian
+    architectures this problem did not occur. All other modules where not affected
+    on any architecture.
+    
+    <,>,<=,>=,= when given only one argument compare agains 0, "" or (),
+    all other data types return true as before
+       (< 1) =>nil, (= 0) =>true, (> "abc") => true, (= "") =>true etc.
+
+    64-bit file poisitioning fixed under Win32 (now runs qa-lfs)
+
+9.0.13
+    fixed problems in the new <,>,<=,>=,= single argument feature
+ 
+9.0.14
+    further fix in 64-bit ~ function
+
+    a context feature intoduced in 9.0.11 to extract the default functor from an 
+    unknown context has been disabled, instead use the workaround:
+        (set 'foo:foo '(a b c d e f g))
+        (set 'ctx foo)
+        (sym (name ctx) ctx) => foo:foo
+        (sort (eval (sym (name ctx) ctx)) >) => (g f e d c b a)
+        foo:foo => (g f e d c b a)
+    a more elegant way will be supplied in the future
+
+    both string and list versions of 'explode' now return an empty list if optional
+    length <= 0
+
+    'nt-set/set-nth' did not honor constant protection of default functors
+
+	now compiles for LP64 64-bit memory model on 64-bit LINUX using the makefile:
+       make -f makefile_linux64LP64
+    or simply:
+       make linux64LP64
+
+    the old makefile for making a ILP32 32-bit newlisp on 64-bit LINUX has been
+    renamed:
+       make -f makefile_linux64ILP32
+    or simply:
+       make linux64ILP32
+
+    tested on a AMD64 CPU with LINUX 2.6 64-bit Fedora 3
+
+    enjoy up to 17,179,869,184 gigabytes or 16 exabytes of RAM, on AMD64
+    the LP64 compiled version is 12 to 25% faster than the ILP32 version
+
+    avoid sign extension when unpacking signed 32bit into unsigned 32bit displayed
+    in 64-bit: (unpack "lu" (pack "ld" -1)) => (4294967295) ; not (-1)
+
+    added 'get-long' and "Ld", "Lu" 64-bit packing formats 
+
+    new 'parse-date' for parsing date strings (not yet working for Win32)
+
+9.0.15
+    more manual additions and changes, moved all predicates into own group
+
+    fixed dynamic symbols compare
+
+    fixed warnings fo missing -Wno-strict-alasing GCC message on older Solaris
+    and BSD GCC versions
+
+    fixed parsing of [text] tag on 64-bit compiles
+
+    fixed 'flt' for TRU64 compile
+
+    tried Linux debian package, Ok on Ubuntu, will be included from now on
+    in newlisp.org releases, but appreciate help in getting it into Ubunto
+    and Debian for inclusion into their lists
+
+    The Tru64UNIX compile using makefile_tru64 is now a large pointer model LP64
+    compile, thanks to Peter for porting and testing on an Alpha CPU
+
+    added makefile_darwin_LP64 for 64-bit compile/link, but cannot test it
+    on my  PPC-G4 (I believe I need a G5 for this)
+
+    fixed 'char' on UTF-8, bug due to 64-bit changes
+
+    LP64 mode for Solaris workng, use makefile_solarisLP64
+
+    new 'make test' to run qa-dot, qa-net, qa-xml
+
+9.0.16
+    OS/2 compile flavor now part of distribution
+
+    fix for Solaris in some networking routines broken in 9.0.2 !
+
+    fixed: (dup x -1), which was broken since 9.0.14
+
+    'make test' now does qa-dot, qa-xml, qa-setsig, qa-net all one after
+     another. The qa-setsig script will drop out on Win32 with a message.
+
+     A small change in the 'test-process' routine in the qa-dot script will 
+     cause less failure message for 'process' on slow computers.
+
+     qa-dot now will set to locale "en_US' when testing an UTF-8 version,
+     this has been done to suppress failure messages for UTF-8 'upper-case'
+     and 'lower-case' which do not work in the default 'C' locale in
+     UTF-8 mode on some platforms.
+     qa-comma always sets to "de_DE"
+
+     'asinh', 'acosh', 'atanh' complete the triginometric functions
+
+     up to 8 'callback' routines cain be defined to be called by an imported
+     library, example for Glut lib:
+        (glutDisplayFunc (callback 0 'draw))
+        (glutKeyboardFunc (callback 1 'keyboard))
+        (glutMouseFunc (callback 2 'mouse))
+     up to four parameters (32-bit ints) are received by the user-defined
+     callback handlers. See the file newlisp-9.0.16/examples/opengl-demo.lsp
+     for details. Note that OpenGL passes floating point data, which are only
+     handled correctly on x86 based platforms. On the Mac PPC this file will
+     not work (although the callback interface itself does work, but no
+     drawing will be visible).
+
+9.0.17
+     fixed 'non-blocking' bug for write on Linux, thanks Peter!
+
+     number of maximum cells was not reported correctly in 64-bit newLISP
+
+     'ref' and 'ref-all' now can take a comparison functor (like 'sort') for
+     comparison: (ref-all key List func), if no func is specified
+     assumes = (equal), ref-all now much faster on big lists with  many finds.
+
+     'find' and 'replace' (both in their list forms) can take a comparison
+     functor like 'sort', 'ref', 'ref-all'.
+     'replace' for lists now also processes $0 (old entry) in replacement 
+     expression. 
+
+     using replace for lists with 'match' or 'unify' as comparison functor 
+     makes 'replace' as powerful as 'replace for strings with regular expressions.
+     This is an important new feature with many applications.  It also gives
+     the much overlooked 'match' and 'unify' the more frequent usage they deserve.
+
+     new logic functions 'exists' and 'for-all' apply a condition to each
+     element in a list and return the result.
+
+     match now will accept atoms in the entry expressions to make it usable 
+     for 'ref' and 'ref-all'
+
+9.0.18
+     fixed a bug in (pop <string> <idx>)
+
+9.0.19
+     (find <str> <str> [<option>]) will do both: regex if option is a number
+     (as before) and function comparison if option is a funtor or user-defined
+     function.
+
+     fixed 'pop' on an empty string
+
+     fixed newlisp -h where new options didm't show
+
+     'file-info' was hanging on name pipes now shows 0 for file size
+
+     trying to start server mode with no or zero port will fail
+
+     'array' will give error message on negative parameters, before
+     they where simply skippped
+
+     Ctrl-C signal handler crashed on Linux when in -d mode
+
+     'explode' will take optionl 'true' to omit chunksize too short when
+      chunk size is given (strings and lists)
+      (explode "newlisp" 3) => ("new" "lis" "p")
+      (explode "newlisp" 3 true) => ("new" "lis")
+
+9.0.20
+     -l and -L mode now always must specify a path-name for the
+     log file (either attached or detached):
+         newlisp -l /usr/home/www/logfile.txt
+     logging is allowed in all modes. -l will only log network connections
+     or commandline or net-eval requests input. -L will log also HTTP requests 
+     and newLISP output from commandline and net-eval
+
+     doc installation directory changes from /usr/share/newlisp/doc to
+     /usr/share/doc/newlisp
+
+     CodePatterns.html ammended with chapter for HTTP only server mode
+     MemoryManagement.html ammended with implementation chapter
+
+     newLISPdoc.html and inewLISP-X.x-Release.html added to install 
+     in /usr/share/doc/newlisp, this file will only change on mayor
+     releases
+
+    
+9.0.21
+     a crash bug in 'match' introduced in 9.0.17 was fixed
+
+     new 'curry' (curry f x) => (lambda (y) (f x y)), makes a unary opearator
+     out of a binary operator, useful when using 'match' 'unify' and other 
+     binary ops in: 'filter', 'clean', 'index' etc., i.e:
+     (filter (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
+     => ((a 10) (a 3) (a 9))
+
+9.0.22
+     integrated syntax highlighting into newlispdoc, which now is part of
+     installation in /usr/bin/ and with man page in /usr/share/man/man1 
+
+     added media types for .pdf .mov. .mpg  and .mp3 in HTTP request handling
+     additionally to .jpg .png .gif
+
+     protect stack from overflow when loading huge contexts in sysEvalString()
+
+
+9.1.0 Release February 15th
+
+9.1.1 Release March 15t
+     safer memory allocation for net-ping when using wildcard *
+
+     new module crypto.lsp with md5 and sha1 hash functions
+
+     fixed bug in Win32 version when stdout of more than 2048 chars
+     in shell window
+
+9.1.2
+    net-peer, net-local and net-receive-from where dropping the third digit of the
+    least siginificant IP group in the IP-string return value on 12 digit IP numbers
+
+9.1.3
+    makefile_osxLP64 produces a 64-Bit version on intel core 2 duo which passes
+    'make test'. Use: make osxLP64 or: make -f makefile_osxLP64
+
+    some cleanup in nl-sock.c
+
+    newlisp-tk.tcl now detects default browser in Debian LINUX
+
+9.1.4
+    passed all rand() to newer, better random() in nl-math.c
+
+    local domain UNIX sockets using: (NOTE THAT SYNTAX CHANGES IN 9.1.5)
+		 (net-listen <str-path> "local") and (net-connect <str-path> "local")
+    then use 'net-accept', 'net-select, 'net-send' and 'net-receive' as usual
+    see also file qa-local-domain
+
+    fixed many problems with 'net-ping' which did not work correctly on
+    machines rejecting out of sequence errors in ICMP packets. Now will handle
+    EHOSTDOWN and EHOSTUNREACH errors correctly
+
+    'net-ping' now also can accept ranges, e.g: (net-ping 192.168.1.120-150) 
+    additionally to the '*' star, i.e: (net-ping 102.168.1.*)
+    superuser permission are required for net-ping
+
+    added MySQL:escape to mysql.lsp (v.4) and mysql5.lsp, thanks to Jeff
+    for submitting this addition
+
+    added HTTP_COOKIE to environemnt variables set by newLISP HTTP server
+    mode
+
+    leading and trailing white space now gets removed from environment variables
+    set by newLISP server mode, specifically in HTTP_HOST, HTTP_USER_AGENT and 
+    HTTP_COOKIE
+
+9.1.5
+	changed the way of specifying local-domain UNIX sockets in net-connect and net-listen:
+    (net-connect <local-socket-path>) ; don't specify a port
+    (net-listen <local-socket-path>) ; specify socket-name instead of port)
+
+	local domain UNIX socket support in newlisp -d server mode and net-eval:
+    server mode: newlisp -d /tmp/mysocket
+	client: (net-eval "/tmp/mysocket"  0 "(+ 3 4)") => 7
+
+    speedup utf8_wlen()
+
+    load and save do not use lisp source anymore but call getPutPostDeleteUrl() directly
+    this increases speed and leaves get-url/put-url to be renamed if required
+
+    guard against partial send()'s in net-eval and HTTP mode on Win32
+
+    'net-eval', 'net-ping', 'net-receive-from' and 'net-receive-udp' now set
+    timeout error for retrieval with 'net-error'
+
+    'net-ping' will stop waiting for response when the number of responses
+    reaches the number of pings even if no max count was not specified.
+
+    a fix for local-domain UNIX sockets on OS/2
+
+    reorderd "3. Functions in groups" subchapters adding group "Pattern recognition"
+
+    now any keystroke/mouse-button will close the about windows in newLISP-tk.
+    Before only <esc> worked
+
+9.1.6
+    newlisp-x.x.x/util/nclocal.c utility program similar to nc/netcat but for
+    local domain UNIX sockets. 
+
+    When deleting contexts the context symbol now will stay and not be deleted 
+    but demoted to a normal unprotected symbol.
+
+    It is now possible to create contexts on local variables in 'define', 
+    'lambda' or 'local' expressions without error messages on usage of these 
+    symbols/variables subsequently. After leaving the 'define', 'lambda' or 
+    'local' the variable symbols will be returned to their previous status in 
+    the upper scope. Before this version they staid protected. 
+    Note: For efficiency reasons this coding practice is not recommended but 
+    will not cause an error anymore.
+
+	use strncmp() instead of strcmp() in netReieive() to avoid buffer overflows
+
+    read empty [text][/text] tagged text correctly
+
+    newlisp doc v.1.1 fixes formatting of the syntax line when parenthesized 
+    expressions are part of the syntax line.
+
+9.1.7
+    a fix for ends-with when using with regular expression option (did not anchor
+    correctly to the end)
+
+    net-listen didn't evaluate the port parameter since 9.1.4 when local domain 
+    sockets where introduced
+
+9.1.8
+    fixed a crash bug on Win32 when using a permission mask in make-dir
+
+	'%%' as a last spec in format was not translated correctly
+
+9.1.9
+    when a system wide error handler defined with error-event contained 'nil
+    newLISP would go into a loop caused by an error invoked by the error handler
+    now an error-event defined with a symbol containing nil will simply to
+    nothing.
+
+    xml-parse now can take an optional callback functor (see manual for detail)
+
+    on the Win32 UTF-8 versions UTF-16 file-path names now are processed
+    correctly, thanks to Michael Sabin for contributing the file win32-path.c
+
+    this is the first release containing the source of Java based GUI-server 
+	in the guiserver subdirectory of the distribution. guiserver.jar is
+    already prebuilt contained in the source distributin and installed
+    drng the normal newlisp install. It also can be installed individually
+    descending into newlisp-x.x.x/guiserver (read README.txt found there)
+
+    new global? property function checks if a symbol is global
+    new protected? property function checks if a symbol s protected
+
+    a bug in push on strings when the index was > the length of the string
+    and a fix for utf8
+
+9.1.10
+    this development release was made for additions in newLISP-GS
+
+9.1.11
+    fixed a bug in explode when specifying N > length of string
+
+    negative second length in slicing now interpreted as offset
+    from the right: (2 3 "abcdefg") => "cde", (2 -3 "abcdefg") => "cd"
+    before negative length would be interpreted as going to the end
+
+    implicit n-resting on strings was UTF-8 sensitive which it should
+    not be, all implicit indexing and slice on strings is on byte borders,
+    only first,last,rest are UTF-8 sensitive.
+
+    fixed crash when net-select was interrrupted by timer, traceExit()
+    was not protected from entry when signal handlers where defined
+
+9.1.12
+    newlisp invoked on the command line can take URLs for filespecs to execute
+    remote programs: newlisp http://newlisp.org/example.lsp
+
+    join now can take an extra flag to force a joint string after the last element:
+    (join '("A" "B" "C") "-" true) => "A-B-C-"
+
+9.2.0 Release August 15th, 2007
+
+9.2.1
+    rewritten 'count is about 3-4 times faster than before when counting 100 
+    in 1,000,000 elements. Only on Mac OS X and other UNIX. On the older
+    MinGW GCC C library the required functions tsearch() and tfind() are not
+    available.
+    
+    fix for special characters in cookies cookies in cgi.lsp
+
+    'pack' now can take lists for data:
+    (set 'lst '("A" "B" "C"))
+    (set 'adr (pack "lululu" lst))
+    (map get-string (unpack "lululu" adr)) => ("A" "B" "C")
+    This was imnplemented in response to a request for a (address <list-of-strings>).
+    Note that the lst should not be changed and be referenced directly in 'pack'
+    so the pointers passed by 'adr' are valid. 'adr' would be a 'char * adr[]' in the 
+    C-programming language
+
+    fixed cell leak in indexed sys-info and indexed file-info
+
+    new 'dostring' iterates over a string with character values in loop variable. 
+    On UTF-8 compiled newLISP UTF8 character values are returned by the loop variable
+
+    documented 'bind' : 
+    (bind '((a 1) (b 2) (c 3))) same as  (map set '(a b c) '(1 2 3))
+    This function was already in earlier versions, but not documented.
+
+    on startup NEWLISPDIR will be registered as either: /usr/share/newlisp
+    on Mac OS X / UNIX as: PROGRAMFILES/newlisp on Win32, where ROGRAMFILES
+    is an exisiting Windows environmnt variable. (env "NEWLISPDIR") =>
+
+    additions in guisserver.lsp and newlisp-edit.lsp, see guiserver/CHANGES
+
+9.2.2
+    iterators segfaulted when evaluating the iterator variable was the last
+    statement in the iterator body: dostring, dolist, dotree. 
+    Added test-cases for this situation.
+
+    (main-args) could be pop'ed which was due to an implementaion error, main-args
+    cannot be popped any more, if necessary, assign to another variable first:
+    (set 'margs (main-args)), (pop margs) etc.
+
+    additions in guisserver.lsp and newlisp-edit.lsp, see guiserver/CHANGES
+
+9.2.3
+    addtions, changes in guiserver.lsp and newlisp-edit.lsp, see guiserver/CHANGES
+    for details
+
+    misc. code cleanups in core
+
+9.2.4
+    in 'set-nth/nth-set' when no replacement arg is given, the old value should
+    be returned only as in 'set'. Was replacing with nil.
+
+    fixed a cell-leak in 'set' when using mutliple arg pairs.
+
+    allow symbols for the name in (context <ctx> <name> [<value>]), previously
+    only strings where allowed.
+
+    speedup in symbol deletion
+
+    in (signal <sig-no> <handler | flag> the nil flag now specifies SIG_IGN
+    and the true flag SIG_DFL. Before 9.2.4 nil would specifiy an empty newLISP
+    handler and the true flag was not available.
+ 
+    reworked 'process' now creates the new process without the previous
+    time and memory overhaead (on UNIX) of an extra newlisp fork which stayed
+    in memory until the newly created process had finished.
+    In most cases the full path must be given for the command in 'process'.
+
+    new 'destroy' to destroy  processes created with 'process' or 'fork'	
+    see reworked docmentation for 'fork' and 'process'
+
+    fixed a bug when sorting (ordered compare) mixed  boolean values/symbols
+
+9.2.5
+    'dup' without the repetition number parameter will assume 2, i.e:
+     (dup 'x) == (dup 'x 2) => (x x) ;  Thanks to Lance Bradley for this idea.
+
+    'find-all' will return an empty list '() when nothing is found, previously
+    nil was returned.
+    
+	':' now also works like a function and can be attached to symbol following
+    it. The colon operator forms a context symbol from the symbol following it
+    and the context symbol found as the first element of the list contained
+    in the next argument.
+
+    (define (rectangle:area p)
+	    (mul (p 3) (p 4)))
+
+    (define (circle:area c)
+	    (mul (pow (c 3) 2) (acos 0) 2))
+
+    (set 'myrect '(rectangle 5 5 10 20)) ; x y width height
+    (set 'mycircle '(circle 1 2 10)) ; x y radius
+
+    (:area myrect) => 200 ; same as (rectangle:area myrect)
+    (:area mycircle) => 314.1592654 ; same as (circle:area mycircle)
+
+    This can be used for simple OO programming where objects are represented 
+    as lists and methods are packaged contexts / namespaces serving as object
+    classes. The colon ':' operator implements polymorphism by looking up
+    the class / context of the object as the first symbol in the object list.
+
+    'integer' the long writing of 'int' will be eliminated in the next
+     development version!!!
+     new versions newlisp-ide-4.1.tgz and newisp-wiki-4.2.tgz have changed
+    'integer' to 'int'
+
+    better platform independent library detection routines in modules:
+    crypto.lsp, gmp.lsp, sqlite3.lsp and zlib.lsp
+
+    crypto.lsp has new 'crypto:hmac' as of RFC 2104 used for Amazon REST API
+
+    new util/newlisp.vim, for matching .vimrc see http://newlisp.org/code/vimrc.txt
+
+9.2.6
+    Moved to MinGW 5.1.3 with gcc v.3.4.5 and eliminated declarations for
+    struct timezone and gettimeofday(). Changed sleep() to Sleep().
+    -> grep 3\.4\.5 *.c <- shows all changes 
+
+    Improved random number generation with 'rand' now gives better integer quality
+    random numbers on Win32, which only does 16 bits in 'C' random(), even for
+    ranges close to or > 16bit.
+
+    newLISP GS 1.07 now automatically restarts monitor shell, if required by run-command.
+
+    newLISP GS 1.07 now loads, saves and displays UTF-8 correctly in editor and 
+    interactive monitor area
+
+    new manual chapter: "Object Oriented Programming in newLISP" explaining
+    newLISP object format and how to use the new : (colon) operator.
+
+9.2.7
+    changes in newLISP-GS to automatically detect and switch to UTF-8 mode, depending
+    on the newLISP executable. Edited chapter "17. Object-Oriented Programming in newLISP"
+    (thanks Michael Michaels)
+
+	In Guiserver 1.08:
+    new gs:window-moved and gs:window-resized. See new demo file move-resize-demo.lsp
+
+9.2.8
+	get-url, post-url, put-url and delete-url have been extended and reworked:
+
+    - now return extended error information if supplied by the server, before only 
+    the error cocd was reported.
+
+    - now can take a trailing "debug" in the option string, i.e."list debug" or 
+    "header debug" or simply "debug" when neither "list" or "header" applies. The 
+    debug option will print all outgoing info onto the console screen.
+
+    in some situations an empty document returned was reported as "ERR: empty document"
+    when ist was not an error but intended by the server.
+
+    in some situations customheaders were only taken when the option string was
+    present too. The manual showed the option-string optional, which it is.
+
+    the server response code 204 is now handled correctly
+   
+    when using a custom header "Content-type:" must be defined for put-url, before
+    "Content-type: text/html\r\n" was assumed. 
+
+9.2.9
+    last element speed optimization for 'last', 'nth', 'nth-set', 'set-nth' and
+    implicit indexing with index -1. 
+
+    'sort' can now be used on arrays too
+
+    changes in newLISP-GS for editor keyboard short cuts and list-boxes, see
+    guiserver/CHANGES file
+
+    the newlispdoc utility has improved pager headers and a feature to point to
+    other module collections from the index page.
+
+9.2.10
+    new functions to modify nested lists by reference via a key:
+
+    (set-ref (L key) value)
+    (ref-set (L key) value)
+    (set-ref-all (L key) value)
+
+    basically 'set-ref' and 'ref-aset' are shortcuts for doing a ref and
+    using set-nth/nth-set on the result:
+
+    (set-ref (L key) value)) equivalent to (set-nth (L (ref key L)) value)
+    (ref-set (L key) value)) equivalent to (nth-set (L (ref key L)) value)
+
+    all ref functions support either:
+           (<func> (L key) [...]) or (<func> key L [...]) 
+    syntax similar to nth functions working with indices instead of keys
+
+	like with 'set-nth' and 'nth-set' L can be the context of the default
+    functor L:L containing the list for passing lists by reference
+
+    all 8 'nth' and 'ref' functions together now constitute a complete set of
+    functions for indexing, referencing, accessing, modifying and search and
+    replace on nested lists. All 8 functions are also capable of receiving
+    lists passed by reference via context default functors, passed only by
+    their context name. All functions now offer the same two syntax patterns
+    with either one index and the key followed by the list:
+        (<function> <idx>|<key> <list> ...)
+    or the parethesized formi, which also can take contexts as default functors:
+        (<function> (<list> <idx>|<key>) ...)
+
+    on Win32 function 'directory?' now will accept training slahes '\' or '/'
+    before it would always fails on trailing slashes
+
+9.2.11
+   'ends-with' with regex options failed when alternative pattersn where used
+    and the succeeding pattern was last
+
+    fixed directory? for drives on Win32
+
+    define MY_RAND_MAX as 0x7FFFFFFF for TRU64 flavor
+
+    added mysql51.lsp module for MySQL v.5.1
+
+9.2.12
+    indices overshooting the list at the end (too big positive index) and
+    indices overshooting the list at the beginning (too big negative index)
+    now cause a "list index out of bounds" error. Before the last or
+    first element of a list was returned instead.
+
+    This affects the functions: nth, set-nth, nth-set, push and pop
+
+    If more indices are present than nesting levels, these are discarded as before.
+    Popping an empty list will return nil.
+
+    Fixed a stack overflow in the new 'set-ref-all'
+
+    Changes in the newlisp-edit.lsp GS editor, see guiserver/CHANGES
+
+    The environment variable NEWLISPDIR will only be created and set if it does
+    not exist. An exisiting definition of NEWLISPDIR will not be overwritten.
+
+9.2.13
+    a bug fix in set-nth, nth-set, ser-ref, ref-set (in getList() ) when first 
+    element in an implicit index parameter list evaluates to a context
+
+9.2.15
+    assoc, set-assoc (old replace-assoc) and new assoc-set all take mutiple keys
+    for multilevel association lists
+
+    fixed stack overflow in ref, set-ref, ref-set
+
+9.2.16
+    set-assoc and assoc-set redone, fixes for set-ref, ref-set, set-ref-all
+	newlisop_manual.html updates
+
+9.2.17
+    Fixes for 'set-assoc' and 'set-ref' when using the wrong syntax
+
+    new 'pop-assoc' for removing associations
+
+    'find' and 'ref' put their last found expression into $0 when used with a
+    cpmparison functor as parameter 
+
+    'find-all' has two additional syntax patterns
+
+    'process' now parses commands and args delimited by single or double quotes.
+    This is necessary when using file name or argumemnts containing spaces.
+    On Win32 do: (process {newlisp '"test prog.lsp"'}) 
+    On Unix do: (process {newlisp 'test prog.lsp'}) ; single or double quotes work
+
+    The octal format spcecifier (format "%o" 8) => "10" will work on many
+    platforms compilers. This is now documented and useful when inspecting
+    the mode number from the 'file-info' function.
+
+9.3.0 prerelease January 28th, 2008
+    fix in 'sys-info' for some 64-bit compilations, and other int -> size_t
+
+    reset -w base directory after http requests, this is important in -c mode
+    when both, http and net-eval requests may come in, so that http requests
+    cannot change the current directory of the server for net-eval requests
+
+9.3.0 final release February 1st, 2008
+    a fix for newlisp server mode when using IE explorer on Win32
+
+    documentation changes
+
+9.3.1
+    doc changes
+
+    fixes for guiserver v.115 (see guiserver/CHANGES)
+
+    fixed error message for unclosed curl brace
+
+	'pop-assoc' should not set $0 as do 'set-assoc', 'assoc-set' 
+
+	: colon operator should not evaluate args after the object
+
+    the description - read - has been deleted, the function originally introduced
+    here in 9.3.1 has been taken out in 9.3.3
+
+9.3.2
+    new compile flavor for IPv6 with the following makefiles:
+      makefile_darwin_utf8_IPv6
+      makefile_linux_IPv6
+      makefile_bsd_IPv6
+
+    elimnate quirky symbol syntax in 'net-send'
+
+    functions called by dynamic symbols now switch to the dynamic
+    context:
+        (define (foo:foo) (context))
+        (set 'ctx foo)
+        (ctx) => foo
+        (ctx:foo) => foo ; previously MAIN
+
+    changed report format in 'net-ping' now includes roundtrip time in 
+    micro-seconds
+
+9.3.3
+    fixed display of signon banner, which made newlisp-tk.tcl not work. Also, in order
+    to make newlisp-tk.tcl work on 9.3.0 and after, the line in newlisp-tk.tcl:
+		(net-send SYS:tk-sock 'result)
+	should be changed
+		(net-send SYS:tk-sock result)	
+
+    in the runtk.lsp utility (see http://www.newlisp.org/index.cgi?page=Tk_and_newLISP)
+    the line: 
+		(process "wish" tcin tcout)
+	changed to:
+		(process "/usr/bin/wish" tcin tcout)
+	to make it work on v9.3.0 and after
+
+    'search' has a new flag parameter to put the filepointer after the seach to either
+     the beginnin (nil) or the end (true) of the searched string.
+
+    added <hr> as a legal tag in v.1.5 newlispdoc formatted documentation 
+
+    'xml-parse' crashed when not passing a valid symbol or context
+
+    extra boolean flag in 'bind' forces evaluation of bound parameters:
+
+    (bind assocList true) same as: (apply set (flat assocList))
+    this enables an efficient way to define functions with names parameters:
+
+        (define-macro (foo)
+	      (local (len width height)
+		  (bind (args) true)
+		  (println "len: " len " width:" width " height:" height)
+	    ))
+
+        (foo (width 20) (height (+ 5 25)) (len 10))
+
+      outputs -> len: 10 width:20 height:30
+
+    a fix for 'expand' when expanding upper-case characters, now limited to 65->90
+    to prevent expansion of symbils starting with special characters
+
+    took out the 'read' from 9.3.1. Just couldn't see the benefit of it. Everything
+    which can be done eoth it can be done by redefining 'define', or create other
+    special def- functions which transform toplevel expressions.
+
+    'env' now removes an enviroment variable when setting it to an empty string
+	except when on Solaris, where it stays as an empty string.
+    (env "VAR" "value") (env "VAR") => "value" (env "VAR" "") (env "VAR") => nil
+    On Solaris (env "VAR") = ""
+
+    fixed a memory leak on Won32 and Solaris when repeatedly setting the same 
+    environment variable
+
+    9.3.2 did not compile on Solaris, 9.3.3 now compiles on Solaris
+

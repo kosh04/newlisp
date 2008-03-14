@@ -1,0 +1,41 @@
+#!/usr/bin/newlisp
+
+; test local domain UNIX sockets
+
+(define (listener path)
+	(set 'lsock (net-listen path))
+	(set 'csock (net-accept lsock))
+	(net-receive csock 'buff 1024)
+	(net-send csock (upper-case buff))
+	(net-close csock)
+	(exit)
+)
+
+(set 'pid (fork (listener "/tmp/mysock")))
+(println "pid:" pid)
+
+(while (not (set 'conn (net-connect "/tmp/mysock")))
+	(sleep 100))
+
+(if (not conn)
+	(begin
+		(println "Could not connect")
+		(exit)))
+(println "net-peer: " (net-peer conn))
+(println "net-local: " (net-local conn))
+(net-send conn "hello world")
+
+(while (not (net-select conn "read" 1000))
+	(println "waiting with net-select ..."))
+
+(println "net-peek: " (net-peek conn))
+
+(net-receive conn 'buff 1024)
+(if (= "HELLO WORLD" buff)
+	(println buff ": Ok")
+	(prrintn buff ": Error"))
+
+(wait-pid pid)
+
+(exit)
+

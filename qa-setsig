@@ -1,0 +1,72 @@
+#!/usr/bin/newlisp
+#
+# check out customized signal handlers
+#
+# USAGE: qa-setsig <low-bound> <high-bound>
+#
+# example: qa-setsig 1 8
+#
+# checks all signals between 1 and 8
+#
+# run without arguments for testing 1-8, 10-16
+#
+# USAGE: qa-setsig
+#
+
+(set 'opsys (& 0xF ((sys-info) -1)))
+
+(set 'library (if
+  (= opsys 1) "libc.so.6" ;; Linux
+  (= opsys 2) "libc.so"        ;; FreeBSD
+  (= opsys 3) "libc.dylib"     ;; Mac OSX
+  (= opsys 4) "libc.so"))      ;; Solaris
+
+(if (not library)
+	(begin
+		(println "Cannot run qa-signal on this platform")
+		(exit)))
+
+(import library "getpid")
+(import library "kill")
+
+(set 'low (int (main-args 2)))
+(set 'high (int (main-args 3)))
+(set 'pid (getpid))
+
+(if low
+	(println "low=" low " hight=" high " pid=" pid))
+
+(define (alarm sig)
+	(if (= sig high) (set 'done true)) 
+	(print "sig-" sig " ")
+	(push sig result-list -1)
+)
+
+(if (and low high) 
+	(set 'sig-list (sequence low high))
+	(set 'sig-list (append (sequence 1 8) (sequence 10 16))))
+
+(set 'high (last sig-list))
+
+(dolist (s sig-list) (signal s 'alarm))
+
+
+(fork (begin
+		(dolist (s sig-list)
+			(sleep 200)
+			(kill pid (int s)))
+		(sleep 200)
+;		(kill pid 9)
+))
+
+(println)
+(while (not done)  (print ".") (sleep 100))
+(println)
+(println "sent: " sig-list)
+(println "received: " result-list)
+(if (= result-list sig-list)
+	(println "signal testing OK")
+	(println "ERROR: problem in signal testing"))
+
+(println)
+(exit)

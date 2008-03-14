@@ -1,0 +1,35 @@
+#!/usr/bin/newlisp
+#
+# v 1.1 changes for changed 'main-args'
+# v 1.2 eliminated 'net-cleanup'
+# v 1.3 replaced concat with append
+# v 1.4 direct string form of net-send, eplace name with user
+#
+
+(define (finger nameSite , socket buffer user site)
+	  (map set '(user site) (parse nameSite "@"))
+	  (set 'socket (net-connect site 79))
+	  (if (not socket)
+	  	(begin
+			(print "Could not connect\n")
+			(exit)))
+	  (if (not (net-send socket (append user "\r\n")))
+	  	(print "no connection\n")
+		(net-finger-receive socket)))
+		
+(define (net-finger-receive socket , str)
+	(if (not (net-receive socket 'str 512)) 
+		(print "Receive failed\n")
+	(print "\n" str "\n"))
+	(if socket (net-close socket)))
+
+(set 'params (main-args))
+(if (< (length params) 3) 
+  (begin 
+    (print "USAGE: finger name@host\n")
+    (exit)))
+(finger (nth 2 params))
+(exit)
+
+;eof;
+

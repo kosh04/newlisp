@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<style type="text/css" media="screen">
+<!--
+body, h1, h2, h3, h4, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 120%;
+ 	}
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+-->
+</style>
+</head>
+
+<body text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
+
+<br>
+<blockquote>
+<center><h2>Automatic Memory Management in newLISP</h2></center>
+<center><font size="-1">Lutz Mueller, 2004-2007. Last edit 2007-8-28 rev 19<br>
+</font></center>
+
+<center><blockquote><blockquote><i>
+ORO (One Reference Only) automatic memory management developed for newLISP is a fast and resources saving alternative to classic garbage collection algorithms in dynamic, interactive programming languages. This article explains how ORO memory management works</i>
+</blockquote></blockquote></center>
+
+<p>newLISP and any other interactive language system will constantly generate new memory objects during expression evaluation. The new memory objects are intermediate evaluation results, reassigned memory objects, or memory objects whose content was changed. If newLISP did not delete these objects, it would eventually run out of available memory.</p>
+
+<p>In order to understand newLISP's automatic memory management, it is necessary to first review the traditional methods employed by other languages.</p>
+
+<h3>Traditional automatic memory management (Garbage Collection)</h3>
+
+<p>In most programming languages, a process registers allocated memory, and another process finds and recycles the unused parts of the allocated memory pool. The recycling process can be triggered by some memory allocation limit or can be scheduled to happen between evaluation steps. This form of automatic memory management is called <i>Garbage Collection</i>.</p>
+
+<p>Traditional garbage collection schemes developed for LISP employed one of two algorithms&sup1;:</p>
+
+<p>(1) The <i>mark-and-sweep</i> algorithm registers each allocated memory object. A mark phase periodically flags each object in the allocated memory pool. A named object (a variable) directly or indirectly references each memory object in the system. The sweep phase frees the memory of the marked objects when they are no longer in use.</p>
+
+<p>(2) A <i>reference-counting</i> scheme registers each allocated memory object together with a count of references to the object. This reference count gets incremented or decremented during expression evaluation. Whenever an object's reference count reaches zero, the object's allocated memory is freed.</p>
+
+<p>Over time, many elaborate garbage collection schemes have been attempted using these algorithms. The first garbage collection algorithms appeared in LISP. The inventors of the Smalltalk language used more elaborate garbage collection schemes. The history of Smalltalk-80 is an exciting account of the challenges of implementing memory management in an interactive programming language; see [Glenn Krasner, 1983: <i>Smalltalk-80, Bits of History, Words of Advice</i>]. A more recent overview of garbage collection methods can be found in [Richard Jones, Rafael Lins, 1996: <i>Garbage Collection, Algorithms for Automatic Dynamic Memory Management</i>].</p>
+
+
+<h3>One reference only, (ORO) memory management</h3>
+
+<p>Memory management in newLISP does not rely on a garbage collection algorithm. Memory is not marked or reference-counted. Instead, a decision whether to delete a newly created memory object is made right after the memory object is created.</p>
+
+<p>Empirical studies of LISP have shown that most LISP cells are not shared and so can be reclaimed during the evaluation process. Aside from some optimizations for primitives like <tt>set</tt>, <tt>define</tt>, and <tt>eval</tt>, newLISP deletes memory objects containing intermediate evaluation results once it reaches a higher evaluation level. newLISP does this by pushing a reference to each created memory object onto a result stack. When newLISP reaches a higher evaluation level, it removes the last evaluation result's reference from the result stack and deletes the evaluation result's memory object. This should not be confused with one-bit reference counting. ORO memory management does not set bits to mark objects as <i>sticky</i>.</p>
+
+<p>newLISP follows a one reference only (ORO) rule. Every memory object not referenced by a symbol or context reference is obsolete once newLISP reaches a higher evaluation level during expression evaluation. Objects in newLISP (excluding symbols and contexts) are passed by value to other functions. As a result, each newLISP object only requires one reference.</p>
+
+<p>newLISP's ORO rule has advantages. It simplifies not only memory management but also other aspects of the newLISP language. For example, while users of traditional LISP have to distinguish between equality of copied memory objects and equality of references to memory objects, newLISP users do not.</p>
+
+<p>newLISP's ORO rule forces newLISP to constantly allocate and then free LISP cells. newLISP optimizes this process by allocating large chunks of cell memory from the host operating system. newLISP will request LISP cells from a free cell list and then recycle those cells back into that list. As a result, only a few CPU instructions (pointer assignments) are needed to unlink a free cell or to re-insert a deleted cell.</p>
+
+<p>The overall effect of ORO memory management is a faster evaluation time and a smaller memory and disk footprint than traditional interpreted LISP's can offer. The lack of garbage collection in newLISP more than compensates for its high frequency of cell creation/deletion. Note that under error conditions, newLISP will employ a mark and sweep algorithm to free un-referenced cells.</p>
+
+<h3>Performance considerations with value-passing</h3>
+
+<p>Passing parameters by value (memory copying) instead of by reference poses a potential disadvantage when dealing with large lists. For practical purposes, however, the overhead needed to copy a large list is negligible compared to the processing done on the list. Nevertheless, to achieve maximum performance, newLISP offers a group of destructive functions that can efficiently create and modify large lists. While <trt>cons</tt> and <tt>set-nth</tt> return a new memory object of the changed list, <tt>push</tt>, <tt>pop</tt> and <tt>nth-set</tt> change the existing list and only return a copy of the list elements that they added or removed. In order for any user defined function to operate destructively on a large list, the large list must be passed by reference. If a list is packaged in a context (a namespace) in newLISP, then newLISP can pass the list by reference.  newLISP contexts are the best choice when passing big lists or string buffers by reference. </p>
+
+<p>In most cases where lists are less than a few hundred elements long, the speed of ORO memory management more than compensates for the overhead required to pass parameters by value.</p>
+
+<h3>Memory and datatypes in newLISP</h3>
+
+<p>The memory objects of newLISP strings are allocated from and freed to the host's OS whenever newLISP recycles the cells from its allocated chunks of cell memory. This means that newLISP handles cell memory more efficiently than string memory. As a result, it is often better to use symbols than strings for efficient text processing. For example, when handling natural language it is more efficient to handle natural language words as individual symbols in a separated name-space, rather than as a single string. 
+The <tt>bayes-train</tt> function in newLISP uses this method. newLISP can handle millions of symbols without degrading performance.</p>
+
+<p>Programmers coming from other programming languages frequently overlook that symbols in LISP can act as more than just variables or object references. The symbol is a useful data type in itself, which in many cases can replace the string data type.</p>
+
+<p>Integer numbers and double floating-point numbers are stored directly in newLISP's LISP cells and do not need a separate memory allocation cycle.</p>
+
+<p>For efficiency during matrix operations like matrix multiplication or inversion, newLISP allocates non-cell memory objects for matrices, converts the results to LISP cells, and then frees the matrix memory objects.</p>
+
+<p>newLISP allocates an array as a group of LISP cells. The LISP cells are allocated linearly. As a result, array indices have faster random access to the LISP cells. Only a subset of newLISP list functions can be used on arrays. Automatic memory management in newLISP handles arrays in a manner similar to how it handles lists.</p>
+
+<h3>Implementing ORO memory management <font size="-1">&sup2;</font></h3>
+
+<p>The following pseudo code illustrates the algorithm implemented in newLISP in the context of LISP expression evaluation. Only two functions and one data structure are necessary to implement ORO memory management:</p>
+
+<blockquote><pre>
+function pushResultStack(evalationResult)
+
+function popResultStack() ; implies deleting
+
+array resultStack[] ; preallocated stack area
+</pre></blockquote>
+
+<p>The first two functions <tt>pushResultStack</tt> and <tt>popResultStack</tt> push or pop a LISP object handle on or off a stack. <tt>pushResultStack</tt> increases the value <tt>resultStackIndex</tt> while <tt>popResultStack</tt> decreases it. In newLISP every object is contained in a LISP cell structure. The object handle of that structure is simply the memory pointer to the cell structure. The cell itself may contain pointer addresses to other memory objects like string buffers or other LISP cells linked to the original object. Small objects like numbers are stored directly. In this paper function <tt>popResultStack()</tt> also implies that the popped object gets deleted.</p> 
+
+<p>The two <tt>resultStack</tt> management functions described are called by newLISP's <tt>evaluateExpression</tt> function:</p>
+
+<blockquote><pre>
+function evaluateExpression(expr)
+    {
+    resultStackIndexSave = resultStackIndex
+
+    if typeOf(expr) is BOOLEAN or NUMBER or STRING
+		return(expr)
+
+    if typeOf(expr) is SYMBOL
+        return(symbolContents(expr))
+
+    if typeOf(expr) is QUOTE
+        return(quoteContents(expr))
+
+    if typeOf(expr) is LIST
+        {    
+        func = evaluateExpression(firstOf(expr))
+        args = rest(expr)
+        if typeOf(func) is BUILTIN_FUNCTION
+                result = evaluateFunc(func, args)
+        else if typeOf(func) = LAMBDA_FUNCTION
+                result = evaluateLambda(func, args)
+        }
+    }
+
+    while (resultStackIndex > resultStackIndexSave)
+        deleteList(popResultStack())
+
+    pushResultStack(result)
+
+    return(result)
+    }
+</pre></blockquote>
+
+<p>The function <tt>evaluateExpression</tt> introduces the two variables <tt>resultStackIndexSave</tt> and <tt>resultStackIndex</tt> and a few other functions:</p>
+
+<ul>
+<li>
+<tt>resultStackIndex</tt> is an index pointing to the top element in the <tt>resultStack</tt>. The deeper the level of evaluation the higher the value of <tt>resultStackIndex</tt>.
+</li>
+<br />
+<li>
+<tt>resultStackIndexSave</tt> serves as a temporary storage for the value of <tt>resultStackIndex</tt> upon entry of the <tt>evaluateExpression(func, args)</tt> function. Before exit the <tt>resultStack</tt> is popped to the saved level of <tt>resultStackIndex</tt>. Popping the <tt>resultStack</tt> implies deleting the memory objects pointed to by entries in the <tt>resultStack</tt>.
+</li>
+<br />
+<li>
+<tt>resultStack[]</tt> is a preallocated stack area for saving pointers to LISP cells and indexed by <tt>resultStackIndex</tt>.
+</li>
+<br />
+<li>
+<tt>symbolContents(expr)</tt> and <tt>quoteContents(expr)</tt> extract contents from symbols or quote-envelope cells.
+</li>
+<br />
+<li>
+<tt>typeOf(expr)</tt> extracts the type of an expression, which is either a <tt>BOOLEAN</tt> constant like <tt>nil</tt> or <tt>true</tt> or a <tt>NUMBER</tt> or <tt>STRING</tt>, or is a variable <tt>SYMBOL</tt> holding some contents, or a <tt>QUOTE</tt> serving as an envelope to some other <tt>LIST</tt> expression <tt>expr</tt>.
+</li>
+<br />
+<li>
+<tt>evaluateFunc(func, args)</tt> is the application of a built-in function to its arguments. The built-in  function is the evaluated first member of a list in <tt>expr</tt> and the arguments are the <tt>rest</tt> of the list in <tt>expr</tt>. The function <tt>func</tt> is extracted calling <tt>evaluateExpression(first(expr))</tt> recursively. For example if the expression (<tt>expr</tt> is <tt>(foo x y)</tt> than <tt>foo</tt> is a built-in function and <tt>x</tt> and <tt>y</tt> are the function arguments or parameters.</li>
+<br />
+<li>
+<tt>evaluateLambda(func, args)</tt> works simlar to <tt>evaluateFunc(func, args)</tt>, applying a user-defined function <tt>first(expr)</tt> to its arguments in <tt>rest(expr)</tt>. In case of a user-defined function we have two types of arguments in <tt>rest(expr)</tt>, a list of local parameters followed by one or more body expressions evaluated in sequence.
+</li>
+</ul>
+
+<p>Both, <tt>evaluateFunc(func, args)</tt> and <tt>evaluateLambda(func, args)</tt> will return a newly created LISP cell object, which may be any type of the above mentioned expressions. The <tt>result</tt> values from these functions will always be newly created LISP cell objects destined to be destroyed on the next higher evaluation level, after the current <tt>evaluateExpression(expr)</tt> function excution returned.</p>
+
+<p>Both functions will recursively call <tt>evaluateExpression(expr)</tt> to evaluate their arguments. As recursion deepens it increases the recursion level of the function.</p>
+
+<p>Before <tt>evaluateExpression(func, args)</tt> returns it will pop the <tt>resultStack</tt> deleting the <tt>result</tt> values from deeper level of evaluation and returned by one of the two functions, either <tt>evaluateFunc</tt> or <tt>evaluateLambda</tt>.</p>
+
+<p>Any <tt>result</tt> expression is destined to be destroyed later but its deletion is delayed at a lower level of evaluation. This permits results to be used or copied by calling functions.</tt>
+
+<p>The following example shows the evaluation of a small user-defined LISP function <tt>sum-of-squares</tt> and the creation and deletion of associated memory objects:</p>
+
+<blockquote><pre>
+(define (sum-of-squares x y)
+	(+ (* x x) (* y y)))
+
+(sum-of-squares 3 4) =&gt; 25
+</pre></blockquote>
+
+<p><tt>sum-of-squares</tt> is a user-define <em>lambda-function</em> calling to <em>built-in</em> functions <tt>+</tt> and <tt>*</tt>.</p>
+
+<p>The following trace shows the relevant steps when defining the <tt>sum-of-squares</tt> function and when executing it with the arguments <tt>3</tt> and <tt>4</tt>.</p>
+
+<blockquote><pre>
+> (define (sum-of-squares x y) (+ (* x x) (* y y)))
+
+level 0: evaluateExpression( (define (sum-of-squares x y) 
+ (+ (* x x) (* y y))) )
+level 1: evaluateFunc( define <6598> )
+level 1: return( (lambda (x y) (+ (* x x) (* y y))) )
+
+<b>&rarr; (lambda (x y) (+ (* x x) (* y y)))</b>
+
+> (sum-of-squares 3 4)
+level 0: evaluateExpression( (sum-of-squares 3 4) )
+level 1:   evaluateLambda( (lambda (x y) (+ (* x x) (* y y))), (3 4) )
+level 1:   evaluateExpression( (+ (* x x) (* y y)) )
+level 2:     evaluateFunc( +, ((* x x) (* y y)) )
+level 2:     evaluateExpression( (* x x) )
+level 3:       evaluateFunc( *, (x x) )
+level 3:       pushResultStack( 9 )
+level 3:       return( 9 )
+level 2:     evaluateExpression( (* y y) )
+level 3:       evaluateFunc( *, (y y) )
+level 3:       pushResultStack( 16 )
+level 3:       return( 16 )
+level 2:     popResultStack() ->16
+level 2:     popResultStack() ->9
+level 2:     pushResultStack( 25 )
+level 2:     return( 25 )
+level 1:   return( 25 )
+
+<b>&rarr; 25</b> 
+</pre></blockquote>
+
+<p>The actual C-language implementation is optimized in some places to avoid pushing the <tt>resultStack</tt> and avoid calling <tt>evaluateExpression(expr)</tt>. Only the most relevant steps are shown. The function <tt>evaluateLambda(func, args)</tt> does not need to evaluate its arguments <tt>3</tt> and <tt>4</tt> becuase they are constants, but <tt>evaluateLambda(func, args)</tt> will call <tt>evaluateExpression(expr)</tt> twice to evaluate the two body expressions <tt>(+ (* x x)</tt> and <tt>(+ (* x x)</tt>. Lines preceded by the prompt <tt>&gt;</tt> show the command-line entry.</p>
+
+<p><tt>evaluateLambda(func, args)</tt> also saves the environment for the variable symbols <tt>x</tt> and <tt>y</tt>, copies parameters into local variables and restores the old environment upon exit. These actions too involve creation and deletion of memory objects. Details are omitted, becuase they are similar to to methods in other dynamic languages.</p>
+<br />
+
+<h3>References</h3>
+&ndash; Glenn Krasner, 1983: <i>Smalltalk-80, Bits of History, Words of
+Advice</i><br>
+Addison Wesley Publishing Company<br>
+  <br>
+&ndash; Richard Jones, Rafael Lins, 1996: <i>Garbage Collection, Algorithms
+for Automatic Dynamic Memory Management</i><br>
+John Wiley &amp; Sons <br>
+<br>
+&sup1; <font size="-1">Reference counting and mark-and-sweep algorithms where specifically developed for LISP. Other schemes like copying or generational algorithms where developed for other languages like Smalltalk and later also used in LISP.</font>
+<br /><br />
+&sup2; <font size="-1">This chapter was added in January 2007.</font>
+<br><br>
+<center><font size="-1">Copyright &copy; 2004-2007, Lutz Mueller 
+<a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>
+</blockquote>
+</font>
+</body>
+</html>

@@ -1,0 +1,4 @@
+TextPaneWidget.java: 		      if (e instanceof HTMLFrameHyperlinkEvent) {
+gsObject.java:	boolean isBorderLayout = (container.getLayout() instanceof LayoutBorder);
+guiserver.java:		if(gsobject != null && (gsobject instanceof WindowFrame))
+guiserver.java:		if(gsobject != null && (gsobject instanceof WindowFrame))

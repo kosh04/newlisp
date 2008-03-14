@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="NeoOffice 2.2  (Unix)">
+	<META NAME="CREATED" CONTENT="20070718;17381700">
+	<META NAME="CHANGED" CONTENT="20080130;10321700">
+	<STYLE TYPE="text/css">
+	<!--
+		H1 { font-family: "Georgia", "Times New Roman", "Times", serif; line-height: 120% }
+		P { font-family: "Georgia", "Times New Roman", "Times", serif; line-height: 120% }
+		H3 { font-family: "Georgia", "Times New Roman", "Times", serif; line-height: 120% }
+		BLOCKQUOTE { font-family: "Georgia", "Times New Roman", "Times", serif; line-height: 120% }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 STYLE="margin-left: 0.2in; margin-top: 0in">newLISP<FONT SIZE=2>tm</FONT>
+v.9.3 Release Notes <FONT SIZE=2>February 1st, 2008, rev 4</FONT></H1>
+<H3 STYLE="margin-left: 0.2in; margin-top: 0in">Improved newLISP-GS
+Graphics Server module and editor</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">This is the
+second release with the new Java based graphical user interface (GUI)
+server for newLISP. Since newLISP-GS appeared for the first time in
+release 9.2 new functions have been added, many bugs where fixed, and
+the newLISP-GS based multi tab editor has much improved behavior when
+launching applications. The monitor area at the bottom of the editor
+now works as an interactive newLISP shell. 
+</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">The new way
+of doing Graphics and GUIs in newLISP using the Java based newLISP-GS
+module has been well received by the community. newLISP can also
+still be used with <A HREF="http://www.gtk-server.org/">GTK-Server</A>
+or Tcl/Tk.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in; text-decoration: none">
+As in previous releases, most new functionality and changes where
+asked for or contributed by the community of newLISP users.</BLOCKQUOTE>
+<H3 STYLE="margin-left: 0.2in">Full support for nested association
+lists</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in; text-decoration: none">
+This version has a new set of functions for managing nested
+association lists. Nested association lists are frequently the result
+from converting XML into Lisp s-expressions. XML has established
+itself as a format for data interchange on the internet. The new
+functions permit access, modification and deletion of associations in
+nested association lists. These functions also work together with
+FOOP, which represents objects as associations.</BLOCKQUOTE>
+<H3 STYLE="margin-left: 0.2in; margin-top: 0in">FOOP – Functional
+Object Oriented Programming</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">Using the <FONT FACE="Lucida Sans Regular, sans-serif">:
+</FONT>colon operator to implement <SPAN STYLE="font-style: normal">polymorphism</SPAN>
+in method application and using context namespaces to encapsulate all
+methods of an object class, an object oriented programming system for
+newLISP has been designed. Thanks to <I>Michael Michaels</I> from
+<A HREF="http://www.neglook.com/">neglOOk</A> for designing most of
+this new way of object oriented programming in newLISP and for
+creating the training video series: “Towards FOOP”. FOOP melts
+contexts, the new colon operator <FONT FACE="Lucida Sans Regular, sans-serif">:
+</FONT>and functional programming into a simple and efficient way of
+<SPAN STYLE="font-style: normal">object oriented programming</SPAN>
+in newLISP. The system features polymorphism and inheritance and can
+have anonymous objects, which are memory managed automatically by
+newLISP.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">A very
+short description of FOOP can be found in the Users Manual. For a
+more in depth treatment of this topic see <I>Michael Michaels</I>'s
+video series accessible from the <A HREF="http://newlisp.org/index.cgi?Documentation">newLISP
+documentation </A>page and the <A HREF="http://www.neglook.com/">neglOOk</A>
+website.</BLOCKQUOTE>
+<H3 STYLE="margin-left: 0.2in; margin-top: 0in">New functions</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">assoc-set,
+set-assoc, pop-assoc</FONT> – change or delete an association,
+handle nested associations.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">bind</FONT>
+– the function binds expressions to symbols from an association
+list and is normally used in logic programming together with <FONT FACE="Lucida Sans Regular, sans-serif">unify</FONT>.
+This function was already persent in earlier versions, but was not
+documented.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">destroy</FONT>
+– destroys a process addressed by the process id returned by yhr
+newLISP functions <FONT FACE="Lucida Sans Regular, sans-serif">process</FONT>
+or <FONT FACE="Lucida Sans Regular, sans-serif">fork</FONT>.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">dostring</FONT>
+– iterates over a string with the character value in the loop
+variable. On UTF-8 compiled newLISP UTF8 character values are
+returned by the loop variable.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">NEWLISPDIR</FONT>
+- this environment variable will be registered on startup as
+<FONT FACE="Lucida Sans Regular, sans-serif">/usr/share/newlisp</FONT>
+on Unix and Unix like OSs and as <FONT FACE="Lucida Sans Regular, sans-serif">%PROGRAMFILES%/newlisp</FONT>
+on Win32. This allows writing platform independent code for loading
+modules. An already existing definition of <FONT FACE="Lucida Sans Regular, sans-serif">NEWLISPDIR</FONT>
+will not be overwritten during startup.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">ref-set,
+set-ref, ref-set-all</FONT> – these functions modify one or all
+elements in a list searched by a key. The key can be any type of
+expression and <FONT FACE="Lucida Sans Regular, sans-serif">unify</FONT>,
+<FONT FACE="Lucida Sans Regular, sans-serif">match</FONT> or a
+user-defined function can be specified as comparison function. Like
+the <FONT FACE="Lucida Sans Regular, sans-serif">nth</FONT>, <FONT FACE="Lucida Sans Regular, sans-serif">set-nth</FONT>
+and <FONT FACE="Lucida Sans Regular, sans-serif">nth-set</FONT>
+family of functions these new list search-and-replace functions can
+pass lists by reference using a context name which is interpreted as
+a <I>default functor</I>.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">when</FONT>
+– works like <FONT FACE="Lucida Sans Regular, sans-serif">if
+</FONT>without the <I>else </I>clause evaluating a block
+conditionally and without the necessity of <FONT FACE="Lucida Sans Regular, sans-serif">begin</FONT>.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">The <FONT FACE="Lucida Sans Regular, sans-serif">:
+</FONT>(colon) now also works as a function and can be attached to a
+symbol following it. The operator forms a context symbol from the
+symbol following it and the context symbol found as the first element
+of the list contained in the next argument. The colon operator is
+used to implement polymorphism in FOOP.</BLOCKQUOTE>
+<H3 STYLE="margin-left: 0.2in; margin-top: 0in">Enhancements and
+changes to existing functionality</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">assoc</FONT>
+– now handles nested multilevel associations.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">count</FONT>
+– has been rewritten to be many times faster on Unix and Unix like
+OSs.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">dup</FONT>
+- without the repetition parameter will assume 2.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">find</FONT>
+– when used with a comparison functor puts the last found
+expression into <FONT FACE="Lucida Sans Regular, sans-serif">$0.</FONT></BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">find-all</FONT>
+– can now be used on lists too.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">get-url,
+post-url, put-url, delete-url</FONT> - have been extended and
+reworked to return more error information as supplied by the server
+and have improved debugging support.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">last,
+nth, nth-set, set-nth</FONT> – now have last element speed
+optimization as previously only present in <FONT FACE="Lucida Sans Regular, sans-serif">push</FONT>
+and <FONT FACE="Lucida Sans Regular, sans-serif">pop</FONT>.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">nth,
+set-nth, nth-set, push, pop</FONT> – when used on lists, indices
+overshooting the beginning or the end of the list now will cause an
+error to be thrown. Before, out of range indices would pick the first
+or last element in a list. The new behavior is consistent with the
+behavior of indexing arrays.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">pack</FONT>
+– now can take lists for data.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">process</FONT>
+– this reworked function now creates the new process without the
+previous time and memory overhead on Unix. No extra newLISP fork will
+be created to launch the new process. In most cases the full path
+must now be given for the command in <FONT FACE="Lucida Sans Regular, sans-serif">process</FONT>.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">rand</FONT>
+– integer random number generation with better statistical quality
+on Win32.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">ref</FONT>
+– when used with a comparison function puts the last found
+expression into <FONT FACE="Lucida Sans Regular, sans-serif">$0.</FONT></BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">set-assoc</FONT>
+– renamed <FONT FACE="Lucida Sans Regular, sans-serif">replace-assoc</FONT>
+changes an association, handles nested associations.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">set-nth,
+nth-set </FONT>– now return the old list or value when the second
+argument is not present. They behave now like <FONT FACE="Lucida Sans Regular, sans-serif">set</FONT>
+without the value argument. Before both, <FONT FACE="Lucida Sans Regular, sans-serif">set-nth</FONT>
+and <FONT FACE="Lucida Sans Regular, sans-serif">nth-set </FONT>returned
+<FONT FACE="Lucida Sans Regular, sans-serif">nil</FONT> when the
+value argument was missing.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in"><FONT FACE="Lucida Sans Regular, sans-serif">signal</FONT>
+– the <FONT FACE="Lucida Sans Regular, sans-serif">nil</FONT> flag
+now specifies <FONT FACE="Lucida Sans Regular, sans-serif">SIG_IGN
+</FONT>and the <FONT FACE="Lucida Sans Regular, sans-serif">true</FONT>
+flag <FONT FACE="Lucida Sans Regular, sans-serif">SIG_DFL</FONT>.
+Before 9.3 <FONT FACE="Lucida Sans Regular, sans-serif">nil</FONT>
+would specify an empty newLISP handler and the <FONT FACE="Lucida Sans Regular, sans-serif">true</FONT>
+flag was not available. This allows to reset the signal handler for a
+specific signal to its OS default.</BLOCKQUOTE>
+<H3 STYLE="margin-left: 0.2in">Other additions and changes</H3>
+<P STYLE="margin-left: 0.2in"><FONT FACE="Lucida Sans Regular, sans-serif">newlisp.vim</FONT>
+– the syntax highlighting and editing control file for the <A HREF="http://www.vim.org/">VIM</A>
+text editor has been much improved by <A HREF="http://wagner.pp.ru/~slobin/"><I>Cyril
+Slobin</I></A>.</P>
+<P STYLE="margin-left: 0.2in"><FONT FACE="Lucida Sans Regular, sans-serif">crypto.lsp</FONT>
+– this module has been expanded to offer <FONT FACE="Lucida Sans Regular, sans-serif">hmac</FONT>
+encryption using MD5 or SHA-1 hashing.</P>
+<P STYLE="margin-left: 0.2in"><FONT FACE="Lucida Sans Regular, sans-serif">amazon.lsp</FONT>
+– this new module interfaces to the Amazon Web Services, S3 storage
+API.</P>
+<P STYLE="margin-left: 0.2in"><FONT FACE="Lucida Sans Regular, sans-serif">newlispdoc</FONT>
+– this utility has been improved to handle indices and links to
+external <A HREF="http://newlisp.org/modules">module collections</A>.</P>
+<P STYLE="margin-left: 0.2in"><FONT FACE="Lucida Sans Regular, sans-serif">wordnet.lsp</FONT>
+- this new module interfaces to the WordNet 3.o datebase</P>
+<P STYLE="margin-left: 0.2in">The amazon.lsp and wordet.lsp modules
+are not part of the distribution, but can be accessed in the new
+<A HREF="http://newlisp.org/modules">http://newlisp.org/modules</A>
+section.</P>
+<H3 STYLE="margin-left: 0.2in; margin-top: 0in">Bug fixes and
+documentation corrections</H3>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in">Many bugs
+have been fixed in this release stabilizing some of the new features
+in the previous 9.2 release and fixing older previously undetected
+bugs. For more detail on bug fixes and changes see the CHANGES file
+in the source distribution of newLISP v.9.3.0 in
+newlisp-9.3.0/doc/CHANGES. This file details fixes changes for the
+development versions between 9.2.0 and to 9.3.0.</BLOCKQUOTE>
+<BLOCKQUOTE STYLE="margin-left: 0.2in; margin-right: 0in; text-align: center">
+&sect;</BLOCKQUOTE>
+</BODY>
+</HTML>

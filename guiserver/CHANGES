@@ -1,0 +1,802 @@
+0.2
+    documentation corrections regarding default layout of frame and dialog
+
+    switchable look-and-feel with (gs:set-look-and-feel <str-spec>)
+    now on Windows the Windows look and feel is chosen correctly by default
+
+    speedup of interpreter 
+
+0.3
+  suppressed nullpointer error when using gs:set-look-and-feel
+
+	supppress Java error messages on Windows when shuttng down program
+
+  gs:label now can take optional width height has last parameters
+  before ann extra gs:set-size statement was necessary
+
+  width and height specified in gs:button did not work, does now
+	(note that for all other buttons/check-box an extra gs:set-size
+  must still be used to change the size, it will not be added as
+  optional parameters, as it is almost never used)
+
+	now image-button can take pressed icon path after the normal path
+	(gs:image-button 'TheButton "/local/run32.png" "/local/run32p.png")
+
+  now gs:set-color working on frames and dialogs too
+
+  font-demo.lsp showing the fonts built-in on all platforms
+
+  new gs:text-pane for HTML and RTF (future version) formatted text
+  see html-demo.lsp for a demo.
+
+0.4 
+  allow multiple re-starts from same newlisp process, this works together
+  with (gs:listen true)
+
+  parenthesis matching in text-pane and tab-size working on text-pane,
+	will only work on "text/plain" flavore of text-pane
+
+  console.lsp now remembers last directory in file dialogs save/load
+
+	console.lsp now has list boxes for browsing contexts and variables
+
+  changed split-pane syntax adding divider size, leaving out width/height
+  which can be set with extra set-size if required
+
+  combo-box and list-box life update now works and updates the screen 
+  correctly 
+
+  new gs:clear-list empties out a combo-box or list-box
+	eliminated redundant 'action' parameter on message-dialog
+
+  new confirm-dialog similar to message-dialog but 'yes', 'no' and optional 
+  'cancel' button and fires an event.
+
+0.5
+    gs:set-size now works on frames
+
+    new gs:remove-from removes one or more components from a container
+
+    new gs:select-text, gs:cut-text, gs:copy-text  and gs:paste-text
+    with suport for system clipboard, new gs:insert-text
+   
+    gs:set-background/set-color now can take a list for the r g b
+    color components
+
+    list-box now also fires event on key-entering a selection, previously only
+    on mouse-double-click
+
+    avoid Java "index out of bound messages" in parenthesis matching
+
+    restructured text-area and text-pane event:
+    (define (action-handler id code dot mark) ...)
+
+        id = name of text widget
+        code = code of character
+        dot = caret position
+        mark = selection position
+ 
+    if there is no selection then dot and mark are equal
+    if only the caret was moved then code is 65535 (16bit -1)
+
+    working logic for highlighting of cut/copy save/saveAs buttons and
+    related menu items in console.lsp
+
+    working logic of maintaining directories and filenames in commonly
+    established fashion between file operations
+
+    NOTE, console.lsp has been little tested, do not use in production,
+    no confirmation dialogs yet for overwiting files, save before new, etc.
+
+		NOTE that console.lsp is broken on Windwos because iof filepath issues
+    and CR-LF issues in parenhesis matching
+
+    many documentain fixes
+
+0.6
+    gs:set-font working on combo-box and list-box
+
+    parenthesis matching in text-pane working now on Windows too
+
+    file operations working in console.lsp on Windows
+
+    confirm dialog for new button in console when edit buffer is touched
+
+    eliminated crashes with bigger results in output area of console
+
+    context stays selected in console
+
+    console new button action will not reset current directory for file operations
+
+    request-focus now works on text-area and text-pane
+
+    eliminate Java error messages on listboxes
+
+    new gs:select-list-item selects a list box or combo box item
+
+    documentation changes for border-layout and others
+    fixed many documantatin formatting problems
+ 
+0.7
+    because of a change in gs:listen in v. 0.6 all error messages from
+    guiserver where suppresses, which made debugging difficult. Some applications
+    running in guiserver v.0.6 may fail now because error messages are enabled
+    again. E.g. misspelled or missing action handlers would cause no harm
+    in v.0.6, but will let exit an application with an error message in v.0.7.
+
+    gs:window creates a wimndow without any border and system bar. On MacOX X
+    when setting the background in such a window to 
+        (gs:set-background 'thewindow 0 0 0 0)
+    totally transparent, the window will be invisible and widgets ppaced on it
+    seem to float on the desktop (e.g. text from labels)
+
+    the second to- parameter in gs:select-text is now optional and the function
+    will select all text from the from- position to the end of the text.
+
+0.8
+	text-panes and text-areas did not scroll after ading to tab, fixed
+	added action event to gs:tabbed-pane
+    (gs:tabbed-pane <sym-id> <sym-action> <str-orientation> 
+		[<sym-widget> <sym-tab-title> ...])
+	the event reports: tabbed-pane-id tab-id tab-title.
+
+	console.lsp project renamed to  newlisp-console.lsp instead, which is a
+	multi tab lisp editor with run button and console window
+
+	in scrollable text-pane and text-area after gs:set-text will scroll
+	to the beginning, after gs:append-text will scroll to end
+
+	can use gs:set-text in the tabs of a gs:tabbed-pane	
+
+	can use gs:set-icon in the tabs of a gs:tabbed-pane
+
+	more demos: frameless-demo.lsp and clipboard-demo.lsp
+
+0.9
+    Several functions to retrieve system properties:
+    gs:get-version - gets the GUI server version number
+    gs:get-screen - gets width, height and resolution of the screen
+    gs:get-fonts - gets all fonts on the current system
+
+    The following system variables can be used after a property function has
+    been call once:
+    gs:version - the version number
+    gs:screen - list of screen parameters
+    gs:fonts - list of all fonts
+    Once a function has been callled onlyt the variables should be used
+    for efficiency
+
+    two new demos: properties-demo.lsp, allfonts-demo.lsp
+
+    increased possible text size for events from 100K to 1000M 
+    (mainly for editor)
+
+    for do-nothing buttons or or other widgets specify 'gs:no-action as 
+    action-handler
+
+0.93 First 2D canvas and mouse stuff
+   gs:set-select now working for toggle-button, radio-butoon, check-box
+
+   gs:mouse-clicked, gs:mouse-dragged, gs:mouse-moved, gs:mouse-pressed
+   and gs:mouse-released
+
+   new demos mouse-demo.lsp shapes-demo.lsp animation-demo.lsp
+
+   gs:draw-line, gs:draw-rect, gs:draw-circle
+   gs:fill-rect, gs:fill-circle (raound-rect and ellipse in next version)
+
+   gs:paint (gs:stroke for line width in next version)
+
+   gs:delete-tag to delete a tagged group of shapes
+   gs:moce-tag to move  a tagged group of shapes
+
+0.94
+   fixed message box in newlisp-edit.lsp when no c:\temp on Windows
+
+   gs:paint renamed to gs:set-paint
+
+   last gs:set-paint now gets correctly taken when now color is specified in
+   shapes or text
+ 
+   now different fonts on same canvas don't overwrite previous
+
+   documentation for draw-text had syntax in reverse
+   all graphics functions now sorted into all other Functions
+   spellchecked documentation 
+
+   lines are now movable too  
+
+   gs:set-canvas - onlye used for switching between muliple canvases
+   gs:set-translation - move coordinate origin
+   gs:set-scale - scales up or down
+   gs:set-stroke - sets drawing line width and optional cap, join and miter limit
+   gs:draw-arc - draw an arc outline
+   gs:fill-arc - paints a filled arc
+
+   new stroke-demo.lsp - shows lines and outlimes with different strokes and round
+   line ends
+
+   GUI-server signon message now contains version number. Note that in the future
+   newLISP binary installers for Mac OS X and Win32 icons will be placed in the
+   Mac OX X application folder and Win32 desktop for the newlisp-edit.lsp application.
+   Then the signon and connection messages will be unvisible. They are more thought
+   as a debugging aid duwing development.
+
+   On Mac OS X and UNIX applications can be started this way to close the terminal/shell
+   window:
+        newlisp newlisp-edit.lsp & exit
+   this places the GUI-server process into the background and closes the termonal/shell
+
+0.95
+   fixed newlisp-edit.lsp temporal directory detection (again, thanks Sleeper)
+
+   gs:move-tag did not distinguish between tags, fixed
+
+   gs:set-select can take multiple id, flag pairs, fixed
+
+   gs:split-pane divider width in split-pane did not work, fixed
+
+   new gs:draw-ellipse - draws an elllipse outline
+   new gs:fill-ellipse - fills an elllipse
+
+   new gs:set-translation of the canvas origin coordinates
+   new gs:set-rotation set the rotation of the canvas
+
+   all tag transforms below add to the affine transform matrix
+   already in the canvas 
+
+   new gs:hide-tag - hides objects of a tag group
+   new gs:scale-tag - scales an object up or down
+   new gs:translate-tag - translates the coordinate origin of a tag group
+   new gs:show-tag - shows objects of a tag group
+   new gs:rotate-tag - function for rotating objects
+   new gs:shear-tag - function for shearing objects
+
+   like gs:move-tag all other functions work on any shape, text
+   or image. 
+
+   shaped-demo.lsp modified to show funtioning of gs:hide-tag and gs:show-tag
+   via selecting or de-selecting shapes with check boxes
+
+   gs:mouse-wheel - register mouse wheel events
+
+   mouse-demo.lsp - modified to show mouse wheel events
+  
+   animaton-demo.lsp - modified to show the mouse wheel move text up/down
+
+   new rotation-demo.lsp to show rotating objects 
+   new image-demo - shows image zzomin, turning and squashing
+   new textrot-demo - shows text rotation
+
+   gs:draw-text has optional angle parameter (but can also be titled
+   using gs:rotate-tag, see sample program text-rotation.lsp)
+
+   all tag operations have optional flag to turn of screen update
+   this is recommended when using several tag commands in a batch
+   to do only one screen update at the end using gs:update
+   the default for this flag is 'true' for doing the update.
+
+   On all other systems except Mac OS X, double buffering is tried for
+   flicker free performance when animating graphics on systems other than
+   the Mac. The performance of this depends on the graphics cards used.
+   Performance was execellent on 2 Windows system I tried, one of them
+   4 years old.
+
+0.96
+   gs:scale-tag, gs:translate-tag and gs:rotate-tag add to the affine transform matrix
+   already in the canvas (it was wrongly stated before that gs:translate-tag
+   if not accumulative, but it is like all others)
+
+   Corrections in the doc about the behaviour of gs:set-translation, gs:set-scale
+   and gs:set-rotation. Again: they are all absolute, while tag operations are
+   accumulative.
+
+   rotation-demo.lsp and image-demo.lsp have been changed using gs:translate-tag
+   instead the global canvas gs:set-translation. This makes it possible to
+   rotate or scale several tags at the same time, using gs:translate-tag
+   to supply each tag group its own center (set to 0,0). This leads also
+   to better readable code. All object cooridnates to rotate or zoom are
+   best defined in reference to a 0,0 center point and then moved to their
+   pace with gs:translate-tag. See also description of gs:scale-tag in documentation.
+
+   net gs:get-font-metrics - returns width and height of a string to display
+   new gs:draw-round-rect - draw a rectangle with round corners
+   new gs:full-round-rect - fill a rectangle with round corners
+   new gs:draw-polygon - draws a polygon with 3 to N points
+   new gs:fill-polygon - fill a polygon with 3 to N points
+   new gs:set-cursor - set one of 14 cursor shapes
+
+   new cursor-demo.lsp tot show different cursor shapes
+
+0.97
+   gs:mouse-dragged fired invalid events when not defined but gs:mouse-clicked
+   was defined.
+
+   gs:mouse-pressed, gs:mouse-released and gs:mouse-clicked now take an optional
+   'true' parameter. This makes events carry a list of tags, which have been
+   affected by one of the above mouse actions. This can be used to implement
+   object dragging (see the new drag-demo.lsp) it also opens the possibility
+   of creating self-drawn custom controls on a canvas because clicks can be
+   detected on tags. The code mouse-demo.lsp has been simplified to detect
+   tags to delete by using the tag list in the mouse-clicked event.
+
+   events generated by gs:mouse-pressed, gs:mouse-released, gs:mouse-clicked
+   and gs:mouse-dragged besides the new tags spec also carry a number for
+   modifier keys, e.g. pressing ctrl or shift while clicking the mouse.
+   See the modified moused-demo.lsp.
+
+   gs:text-pane and gs:text-area now can register gs:mous-clicked events
+   in the newlisp-edit.lsp app a popup  has been implemented as a right click
+   (or ctrl-click for one-button mouse) to popup an edit menu.
+
+   new drag-demo.lsp
+
+   Point detection is implemented for closed shapes, images and text. Precise
+   deletection is done for images, text, polygons and rectangles, but for
+   circles and ellipses the whole rectangle enclosing the shape is used
+   for calculations. A precise point detection limited only to the inside
+   of the circle or ellipse will be implemented at a later time.
+
+   Images must carry width and height parameters in the gs:draw-image statement.
+   Drawn text is detected by calculating the enclosing rectangle.
+
+   new gs:draw-path - similar to polygon but the path may stay unclosed.
+   new gs:export - exports to an image file in png in RGB + alpha channel
+   format.
+
+   Note that detection will fail if scaling or translation has been used to
+   for the canvas or drawn objects involved, because mouse coordinates do
+   not sync to object coordinates in a scaled or translated coordinate
+   system.
+
+   new gs:menu-pop and gs:show-popup implements popup menus for gs:text-area,
+   gs:text-pane and gs:canvas. For a demo see newlisp-edit.lsp and
+   drag-demo.lsp
+
+   bug fixes in newlisp-edit.lsp when closing other but the last tab.
+
+0.98
+   popup menus on canvas now also working on Win32
+
+   gs:open-file had problems with file masks (changed parameter format)
+
+   new gs:frame-closed - registers an event for a closing frame or dialog
+
+   new gs:find-text - finds and selects text in a text rea or text panel widget
+
+   new gs:mouse-event - registers a general mouse-event for any component
+   see allfonts-demo.lsp, button-demo.lsp  and the Fontbook button in 
+   newlisp-edit.lsp for demo
+
+   changed some shortcut keys in newlisp-edit.lsp to be more standard conform
+
+   newlisp-edit.lsp has now text search and replace implemented
+
+   newlisp-edit.lsp now has fontselection implemented
+
+   splash screen working, see doc for new gs:dispose-splash
+
+0.99
+   gs:find-text selection now positions and highlights correctly on Win32
+
+   now showing directories on Win32 even when file view is constrained to text files:
+   .lsp .c .h .txt .java .htm .html .css .php .pl .py .rb .lisp .el .cl .cpp
+   what are other essential text formats on Win32?
+
+   graceful error recovery on most errors in GUI-server: after the error
+   message box is closed, the app will try continue and not exit as before.
+
+   better parenthesis matching performance on larger files
+   (but minor flicker on Win32)
+
+   gs:get-font-metrics got stuck on last queried value
+
+   gs:set-tab-size when used on gs:text-pane, sets the tabsize in points
+   
+   added ctrl-M to clear monitor area in newlisp-edit.lsp
+
+   find previous, undo and redo in newlisp-edit.lsp
+
+   new gs:undo-text and gs:redo-text, if no menus or code is used
+   ctrl-z and ctrl-shift-z and meta-z meta-shift-z (MacOS X) are
+   still hardwired into gs:text-pane
+
+   text widgets now also respond to the general gs:mouse-event
+
+0.991
+   Text selection was still broken on Win32 when starting out with a file containing
+   carriage returns or when entering new text. It only worked on files loded without
+   CRs even when etering new text. Now it seems to work in all situations, setting
+   a Java system property to LF only and converting text when it goes in/out.
+
+   Changed run button to auxiliary stateful newLISP process as used
+   previously in console.lsp. Now evaluation via the newLISP run button
+   is stateful unless the restart button is hit to restart the 
+   other newLISP process. If  the process exits, e.g. when closing a GUI-server
+   applications the small LED turns red. When hitting the run-newLISP button
+   and the newLISP process is down, it will get restarted automatically.
+
+   Only one GUI applocation should be started at the time from newlisp-edit.lsp
+   starting more than one is unreliable and blocked on MacOX X.
+
+   There are som unreliabilities running GUI-Server apps from newlisp-edit.lsp
+   on Win32, which have not been worked out. Text in the edit area should be saved
+   before running a GUI-server app, to be safe.
+
+ 
+0.992
+  File dialog file mask selection was broken again
+
+0.993
+
+  Eliminated flicker when matching parenthesis in bigger files.
+
+  A canvas now can be treated like any other container adding other
+  widgets to it (see demo textrot-demo.lsp).
+
+  Custom control for font coolors and size in newlisp-edit.lsp
+
+  Now newlisp-editor.lsp stays functional while a lengthy evaluation
+  process is running and outputing to the monitor area. In another tab
+  files can be edite/saved etc.
+
+  Auxiary newLISP process in newlisp-edit.lsp now starts with home directory as
+  current directory
+
+  Trying to start  a second evaluation or trying to restart the newLISP process 
+  will make the led blink in yellow for a second and output "busy" in the monitor 
+  area. 
+ 
+  Trying to quit newlisp-edit.lsp while an evaluating process is running will 
+  leave the newlisp-edit.lsp application unfunctional on the screen until the 
+  evaluating process finishes. On MacOS X the Quit option of the top screen menu
+  can be used to exit newlisp-edit.lsp in this case but on Win32 the task manager 
+  must be used to shut down newlisp-edit.lsp or the other evaluating process.
+
+0.994
+  Many fixes for running programs from the editor. There should be no possibility
+  now to hang the editor, even if a pending newLISP evaluation cannot be finished,
+  the editor should be still functional to edit and save files.
+
+  The yellow led will now stay on when a newLISP evaluation is pending to exit and
+  an attempt has been make to start a second process. When the process has finished
+  the led goes red. Attempting to start another app will do a restart automatically.
+
+  Running GUI-Server apps from newlisp-edit.lsp seems to be reliable now on MacOX X
+  and Windows XP.
+
+  new menu 'File/Save Settings' saves all font, color and current directory when
+  loading file. The settimgs file contains many more settings, which can be changed
+  to give the editor a complete diferent appearance: 
+
+  - The toolbar can be hidden completely or made floatable.
+  - The tabs can be relocated to the bottom, left or right side of the editor.
+  - The window size can be set to a desired X,Y width and height.
+
+  When newlisp-edit.lsp starts the first time and does not encounter a config file
+  it gets created in the current home directory.
+
+  File and settings saving is announced in the monitor area.
+
+  Note, the directory remembered when open the file dialog is the directory of
+  the currently open tab.
+
+  An optional icon can be added to gs:message-dialog when defining the type as "plain".
+  In this case a user supplied icon will be shown.
+
+0.995
+  newlisp-edit.lsp:
+
+  - Font size did not get saved by 'File/Save Settings'.
+
+  - settings file ion Win32 gets now written to APPDATA/newLISP/newlisp-edit.conf
+  where APPDATA is the Win32 environment variable for the applications data
+  directory. If APPDATA is not defined USERPOFILE or DOCUMENT_ROOT is assumed
+  On all other OS .newlisp-edit.conf is written to the users home directory
+  in UNIX like fashion. This may change in the future for the Mac OX X to:
+  ~/Libarary/Application Support/newLISP/newlisp-edit.conf
+
+  - The toolbar can now be detached/reattached from the View menu
+
+  - The Tool menu as a 'Save Settings' option.
+
+  - The Help menu has options to access newLISP and GUI-Server docs.
+
+  - When editing the settings file and leaving an error, the next startup
+  of newlisp-edit will give an error message box with the error.
+
+  - Ctrl-F (Win32) or meta-F (OS X) reenter the find dialog if not already
+  open (this was already in 0.994, but not mentioned).
+
+  - Pressing ESC while in find dialog text field will close the find dialog
+  this is consisten with behaviour of other Java-Swing built-in dialogs.
+  When in the edit area ctrl-D / meta-D, will still work to dispose of the 
+  find-dialog
+
+  - on Mac OS X ctrl-up will select the tab, then keys left or right will
+  let select other tabs. This is Java-Swing built-in behaviour and assumed
+  to work like this on all platforms.
+
+  New gs:menu-item-check for checked menu items (behaves like a check box)
+  
+  A new chapter about writing and debugging event handlers was added in  the 
+  guiserver.lsp.html documentation.
+
+ 0.996
+  newlisp-edit.lsp:
+
+  - settings will now remember loaction and size of newlisp-edit.lsp on the screen 
+
+  - Edit/Find marked edit buffer as dirty, which was not correct (icon and red dot)
+
+  - new menu option Edit/Goto Line
+
+  - mew menu option Files/Recent Files remembers a list of recently saved files
+  the list is automatically updated each time a file is saved and maintained in
+  the file $APPDATA/newlisp-edit-recent on Win32 or in $HOME/.newlisp-edit-recent
+  on Mac OS X and Unix
+
+  popup menus now displayed in correct position on scrollable content
+
+  gs:get-bounds was broken, now displayes on-scrren coordinates for top level windows
+
+  new gs:goto-text - positions cursor in text at row columns position
+
+  new gs:load-text, gs:save-text to directlty load/save docs in to/from gs:text-pane
+  these should not be used from Win32 because they don't work correctly with
+  CR/LF line terminated files when using Edit/Find
+
+  documentation links in the Help menu have been taken out, because browser
+  blocks guiserver.jar from exiting on Win32
+
+ 0.997
+  When using gs:load-text it now correctly filters carriage returns when
+  loading files on Win32 or any other platforms. gs:save-text will always
+  write LF line terminations. If this is not desirable, gs:get-text should
+  be used instead.
+
+  ESC in find dialog also works when cursor in replace text field. ESC will close
+  the dialog without initiaiting search action, as it did wrongly before.
+
+  demo directory accessible from the Help menu
+ 
+  Many additions and corrections to the documentaion. 
+
+0.998
+  new gs:set-syntax-selected for enabling newLISP syntax highlighting in gs:text-pane
+
+  new gs:set-caret-color for setting a caret color in in all text widgets
+
+  new gs:set-selection-color for setting a text selection color
+
+  new gs:set-syntax-colors for setting syntax colors for keywords, comments etc.
+
+  new gs:key-event to register key events for any component (except text widgets,
+  which already register keyevents by default)
+
+  syntax highlighting in newlisp-edit.lsp:
+  - 3 preconfigured themes to choose from for medium, low and high contrast
+  - alt-Y (Win32) or meta-Y (Mac OS X) toggle syntax highlighting on/off
+  - by default all files ending in .lsp are highlighted
+
+0.999
+  newlisp-edit.lsp:
+
+  - any number of syntax profiles can now be configured in the settings file and
+  loaded automatically into the View menu on startup.
+
+  - for the Tool menu scripts can be registered using the settings file. The
+  scripts are run over the content of the current edit tab. The contents of the
+  current edit tab is saved to a tmporary file, and the name of this file is passed
+  as an argument to the script. The output of the script is shown in the monitor
+  area.
+
+  - added tabulator size (in points) to settings file
+
+  - syntax on/off is remembered when switching tabs
+
+  - Edit/Get Position tells line and column positin of text cursor
+
+  - undo/redo was broken when in syntax highlighting mode. Undo/redo is now reset
+  whenever switching syntax highligthing on/off. Loading a file is not part of an
+  undoable operation anymore.
+
+  - eliminated foreground/background color options which are set as part of
+  the color theme. When syntax highlighting is tirned off, foreground and background
+  are still defined by the colors of the current theme.
+
+  - non-existing files in the recent files list are eliminated automatically
+
+  - now remembers correctly screen positions in settings file on all platforms
+
+  - eliminated black flash before splash screen display
+
+  - startup on Win32 w/o run.exe now shows hour glass cursor
+
+  - Clear Monitor disable/enable was faulty
+
+  - now highlights search text when returning to find/replace dialog
+
+  - message box when saving failed, e.g. becuase of wromg permissions
+
+  gs:set-cursor now works correctly in text widgets.
+ 
+  gs:get-bonds now works correctly for on-screen widgets
+
+1.0 feature complete for release August 15th
+
+  fixed unreliable gs:layout
+  
+  fixed occasional text blur in monitor area of newlisp-edit.lsp
+
+  new gs:get-selected-text, works like gs:get-text but retrieves selected text only
+
+  added C, C++, Java and PHP syntax highlighting, automatically selected for .c, .cpp, .h,
+  .java and .php files. When a file does not have a known extension when loading, then no 
+  syntax highlighing is selected. But when switching highlighting on via View/Syntax 
+  or meta-Y (OS X) or alt-Y (Win32), a menu pops up for selecting a highlighting mode.
+
+  some small fixes for newLISP syntax highlighting
+
+  now 2 types of scripts in Tool menu and registered in currentScripts in settings file:
+
+  - Type "content" takes the contens of the edutor and passes it as a file to the script.
+    Anything printed in the script goes to the monitor area in the editor. See the
+    program word-count.lsp for an example
+
+  - Type "selection" takes the selection of the editor and passes it as a file to the
+    script. Anyting printed from thr script replaces the selectin. If nothing
+    was selected the output og the script gets inserted at the text caret.
+
+  The selection replace/insert type of script operation can be undone using Edit/Undo.
+  In the settings file: the menu string, the script path name, the type and an
+  optional shortcut key are specified. See the settings file for an example.
+
+  The settings file gets automatically created when not present on startup
+  and registers the two scripts word-count.lsp and uppercase.lsp. The settings file
+  can be edited using the option in the Tools menu. 
+
+  before installing this version remove old settingfile on Win32:
+  $HOME/Application Data/newLISP/newlisp-edit.conf or on Mac OS X and Unix: 
+  ~/.newlisp-edit.conf
+
+1.01 August 15th release
+ 
+  In newlis-edit.lsp: changed key assignments for fonts smaller/bigger:
+	meta-minus and shift-meta-equals on Mac OS X and ctrl-minus ctrl-equals on Win32.
+  For Mac OS X this is standard, for Win32 it mimics FireFox behaviour.
+
+  The items in gs:list-box and gs:combo-box can be either given individually
+  or in a list: (gs:list-box 'TheListBox 'list-action '("a" "b" "c))
+
+  New gs:play-sound plays/streams .wav and .aif sound files.
+
+
+1.03
+  The monitor area now works also as a newLISP shell, where expressions can
+  be typed in directly and evaluated. The red/green led is not necessary
+  anymore. The shell can be restarted at any time, even if a process is running.
+  The run button will only work if the shell is present. If the shell is exited
+  by a program, hit the restart button to restart. When restarting the shell
+  while a program in it is running, the program will quit and the shell restart.
+
+  When the monitor/shell area has focus:
+    Ctrl-l clears monitor and gives shell prompt (like Meta-m/Alt-m)
+    Ctrl-p copies previous command
+  Other common readline/editing commands usual in UNIX shells may be implemented
+  in the future.
+
+  On Win32 Ctrl-l used to be "goto line" now: Alt-l
+  On Win32 Ctrl-Shift-l used to "show current line/column" now: shift-Alt-l
+
+  newLISP-edit can be exited at any time, if a process is still running in the
+  shell window it keeps on running after newLISP-edit closed.
+
+  New gs:run-shell installs a shell process in the monitor area
+  New gs:eval-shell send a string for evaluation in the shell
+  New gs:destroy-shell destroys the shell
+
+  Note that newlis-edit.lsp uses newISP as a shell process, but other shells
+  can be started using gs:run-shell.
+
+  New gs:reorder-tags reorders the stacking order of tagged images.
+  See the file drag-demo.lsp for usage (comment in gs:reorder-tags statement
+  in line 47)
+
+1.04
+  Monitor background and foreground colors are now configuable in settings file
+  do a File/Save Settings first to have the new config variables registered, then
+  Tools/Edit Settings for editing: currentMonitorBackground and currentMonitorForeground.
+
+  Fix when evaluating in shell area after Ctrl-L, Meta-M (Alt-M).
+
+  Eliminated some quirks when copying/pasting between editor and monitor/shell area, and
+  when hitting enter in the middle of an edited command.
+
+  Now full commandline history in shell-commandline when using arrow-up/down.
+
+  meta-1, meta-2 (alt-1, alt-2 on Win32) for switching between editor and shell/monitor.
+
+  More bash-shell like key bindings on UNIX: Ctrl-A beginnining of line after the
+  shell prompt , Ctrl-E end of line (in gs:text-area with shell attached).
+
+  new gs:color-tag colors all shapes with the same tag
+
+1.05
+  gs:get-text now can be called without an action handler to return the text
+  immedeately. This new synchronous mnode of gs:get-text is not recommended when
+  receiving larger text areas, as the call is blocking until all text is returned,
+  but makes coding simple data forms a lot shorter.
+
+  gs:mouse-move now can take an additional boolean parameter to indicate that
+  a list of tags are to be returned in the mouse-move event handler. The flag
+  should not be used when large amount of tags are present as it can slow down
+  performance significantly calculating and transmitting tag lists on every
+  mouse movement.
+
+  gs:key-event now also can be registered as a second key listener on text widgets.
+  This is espacially interesting on gs:text-field, where individual key action
+  could not be captured before, as the normal handler registered with gs:text-area
+  only handles the ENTER and ESC key.
+
+  fix in gs:run-shell for shells without prompts
+
+  now uses patform independent: 
+    (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+  in all demo files to load guiserver.lsp
+
+1.06
+  edit buffer did not get marked as dirty when cutting/pasting into clean buffer
+
+  when file-recent-loading->saving->file-recent-reloading the same file editor crashed
+
+  make sure shell proccesses in monitor window are destroyed when closing newlisp-edit
+
+  because of new 'process' in newlisp core full java path is needed in process statement
+  in gs:init function. Assumes /usr/bin/java
+
+1.07
+  Tcp/Ip connection between Guiserver and newLISP now goes via 127.0.0.1, not localhost
+  to avoid loss of connection when computer sleeps, while an GS application was
+  running.
+
+  when runniung editor contents and shell is dow, the shell will be restarted 
+  automatically
+
+  the editor now  loads, saves and displays UTF-8 correctly
+
+1.08
+  Guiserver now adjusts automatically to set UTF-8 on/off depending on newLISP version
+
+  The Win32 is again shipped as not UTF-8 by default.
+
+  new gs:window-moved and gs:window-resized. See new demo file move-resize-demo.lsp
+
+1.09
+  reverse "meta N" and "shift meta N" on OS X to be standard with "meta N" new window/tab
+  on OS X
+
+  gs:mouse-event now can also be used on list boxes made with gs:list-box, this makes
+  it possible to process single clicks.
+
+1.10
+  the gs:list-box event now responds on any click-count, previously only on 2 for
+  double click. Addtionally the click-count is transmitted in the event as the last
+  parameter
+
+1.11
+  replace all can now be redone, double undo not required any more for replace
+
+  new gs:undo-enable undo is currently disabled in newlisp-edit for find/replace 
+  because of instabilities
+
+1.12
+  newlisp-edit "Undo Previous" button in find dialog, this is used to undo replacements.
+  Replacements cannot be undone with normal undo when the find dialog is closed again,
+  but can only be undone from inside the find dialog
+
+1.12-13-14
+  in guiserver.lsp now checking JAVA_HOME when not Win32 or OS X
+
+1.15
+  fixed highlighing for 'pop-assoc'

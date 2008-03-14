@@ -1,0 +1,3208 @@
+#!/usr/bin/newlisp
+(set 'start-of-qa (time-of-day))
+;;
+;; General test suite testing functioning of all built in primitives.
+;;
+;; use from inside the newlisp-x.x.x/ directory
+;;
+;;   ./newlisp qa-dot
+;;
+;;   or for countries and configurations with decimal 
+;;
+;;   ./newlisp qa-comma (for countries and configurations with decimal , )
+;;
+
+(set (sym "test-:" 'QA) (lambda () true))
+(context 'Lex)  ; predeclare/create context for bayes-train
+(context MAIN)
+(define (utf8qa)
+(set-locale "en_US")
+
+(set 'unicodelist '(913 914 915 916 937 945 946 947 948 969 32 
+                 1040 1041 1042 1043 1044 1072 1073 1074 1075 1076 13 10))
+
+(set 'utf8str (join (map char unicodelist)))
+
+
+(if (not (= (length (char 937)) 2)) (QA:failed "UTF-8 char: failed"))
+
+(if (not (and
+    (= (map char (explode (chop utf8str))) (chop unicodelist)) 
+    (= (map char (explode (chop utf8str 3))) (chop unicodelist 3))
+    (= (map char (explode (chop utf8str 5))) (chop unicodelist 5)))) (QA:failed "UTF-8 chop: failed"))
+
+(if (not (= (map char (explode utf8str)) unicodelist)) (QA:failed "UTF-8 explode: failed"))
+
+(if (not (= (map char (explode (upper-case utf8str))) 
+    '(913 914 915 916 937 913 914 915 916 937 32 1040 1041 1042 1043 1044 1040 1041 1042 1043 1044 13 10)))
+    (QA:failed "UTF-8 upper-case: failed"))
+
+(if (not (= (map char (explode (lower-case utf8str))) 
+    '(945 946 947 948 969 945 946 947 948 969 32 1072 1073 1074 1075 1076 1072 1073 1074 1075 1076 13 10)))
+    (QA:failed "UTF-8 lower-case: failed"))
+
+(if (not (= (map char (explode (first utf8str))) '(913))) (QA:failed "UTF-8 first: failed"))
+
+(if (not (= (map char (explode (last utf8str))) '(10))) (QA:failed "UTF-8 last: failed"))
+
+(if (not (= (map char (explode (rest utf8str))) 
+    '(914 915 916 937 945 946 947 948 969 32 1040 1041 1042 1043 1044 1072 1073 1074 1075 1076 13 10)))
+    (QA:failed "UTF-8 rest: failed"))
+
+(if (not (= (map char (explode (first (rest utf8str)))) '(914))) (QA:failed "UTF-8 first, rest: failed"))
+
+(if (not 
+  (and (= (map char (explode (select utf8str 1 2 3))) '(914 915 916))
+       (= (map char (explode (select utf8str -1 -2 -3))) '(10 13 1076))
+       (= (map char (explode (select utf8str 2 4 6))) '(915 937 946))))
+  (QA:failed "UTF-8 select: failed"))
+
+
+(if (not (= (map char (explode (select utf8str '(1 2 3)))) '(914 915 916))) (QA:failed "UTF-8 select: failed"))
+
+(if (not (and
+    (= (map char (explode (nth 1 utf8str))) '(914))
+    (= (map char (explode (nth -5 utf8str))) '(1074))))
+ (QA:failed "UTF-8 nth: failed"))
+
+(if (not (= (map char (explode (nth-set 2 utf8str (char 937)))) '(915))) (QA:failed "UTF-8 nth-set: failed"))
+
+(if (not (= (map char (explode (set-nth 2 utf8str (char 937)))) 
+    '(913 914 937 916 937 945 946 947 948 969 32 1040 1041 1042 1043 1044 1072 1073 1074 1075 1076 13 10)))
+    (QA:failed "UTF-8 set-nth: failed"))
+
+true
+)
+
+(global 'global-myvar)
+(set 'global-myvar 123)
+
+; testing the default functor
+		
+(define (double:double x) (+ x x))
+
+(define (test-default-functor)
+	(and
+		(= (map double '(1 2 3 4 5)) '(2 4 6 8 10))
+		(= (map 'double '(1 2 3 4 5)) '(2 4 6 8 10))
+		(set 'dflt:dflt '(a b c d e f g))
+		(= (map dflt '(1 2 6)) '(b c g))
+		(set 'i 0 'j -1 'k 6)
+		(= (dflt i) 'a)
+		(= (dflt k) 'g)
+		(= (dflt j) 'g)
+		(set 'ctx dflt)
+		(= (default ctx) 'dflt:dflt)
+		(= (default dflt) 'dflt:dflt)
+		(sort (eval (default ctx)) >)
+		(= dflt:dflt '(g f e d c b a))
+))
+		 
+
+(context 'QA)
+
+;; get operating system
+(set 'opsys (& (last (sys-info)) 0xf))
+
+(define (cleanup)
+  (delete-file "junk")
+  (delete-file "junk2"))
+
+(set 'failed-messages '())
+
+(define (check-case x)
+  (case x 
+   (1 "one") 
+   (2 "two") 
+   (3 "three")))
+
+(define (check-cond x)
+  (cond 
+   ((= x 1) 1) 
+   ((= x 2) 2) 
+   ((= x 3) 3)))
+
+(define (checkqa )
+  (dolist (p (symbols 'MAIN)) 
+   (if (primitive? (eval p)) 
+    (begin 
+     (set 'sm (sym (append "test-" (string p)))) 
+     (if (not (lambda? (eval sm))) 
+      (print sm "\n"))))))
+
+(define-macro (do-args p)
+  (= (args) '(2 "3 4" 5 (x y)))
+  (= (args 3 -1) 'y))	
+
+(define (failed msg)
+;  (println msg)
+  (push msg failed-messages))
+
+(define (file-copy from-file to-file)
+  (set 'in-file (open from-file "read"))
+  (set 'out-file (open to-file "write"))
+  (while (set 'chr (read-char in-file)) 
+   (if (not (= chr 95)) 
+    (write-char out-file chr)))
+  (close in-file)
+  (close out-file))
+
+(define (line-count file)
+  (device (open file "read"))
+  (set 'cnt 0)
+  (while (read-line) 
+   (inc 'cnt))
+  (close (device))cnt)
+
+(define (myappend x y)
+  (cond 
+   ((= '() x) y) 
+   (true (cons (first x) (myappend (rest x) y)))))
+
+(define (qa )
+  (dolist (sm (symbols 'MAIN)) 
+   (if (not 
+     (if (and (primitive? (eval sm)) (< sm 'zzzz)) 
+       (begin 
+          (print (name sm) " ")
+          (set 'func (eval (sym (append "test-" (string sm)))) )
+          (and (catch (apply func) 'result)  result))
+       true)) 
+     (failed (string ">>>> " sm " failed " result) )))
+  (println))
+
+(define (test-$) (find "a|b" "xtzabc" 0) (= ($ 0) $0))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; test-functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (test-!)
+  (integer? (! "")))
+
+(define (test-!= )
+  (and (not (!= -9223372036854775808 (& -9223372036854775808 -1))) (!= "abc" "ABC") 
+   (!= "a" "ä") 
+   (!= 1.000000001 1) 
+   (!= "á" "a")))
+
+(define (test-$)
+	(set '$0 123)
+	(= ($ 0) 123))
+
+(define (test-% )
+  (and
+    (= (% 10 3) 1)
+    (not (catch (%) 'result))))
+
+(define (test-& )
+  (= -9223372036854775808 (& -9223372036854775808 -1)))
+
+(define (test-* )
+  (= (* (* 123456789 123456789)) 15241578750190521))
+
+(define (test-+ )
+  (= (+ 999999999999999999 1) 1000000000000000000)
+  (= (+ 9223372036854775807 -9223372036854775808) -1)
+  (= (+ -9223372036854775808 -1) 9223372036854775807)) ; wraps around
+
+(define (test-- )
+  (= (- 100000000 1) 99999999))
+
+(define (test-/ )
+  (= (/ 15241578750190521 123456789) 123456789)
+  (= (/ -10 5) -2))
+
+(define (test-< )
+  (and 
+   (< -9223372036854775808 9223372036854775807)
+   (< "abcdefg" "abcdefgh")
+   (< 1 1.000000001) 
+   (< 1 "a") 
+   (< "a" 'a)
+   (< '(a b) '(b c) '(c d))
+   (not (< '(a b) '(b d) '(b c)))
+   (< '(((a b))) '(((b c))))
+   (< '(a (b c)) '(a (b d)) '(a (b (d))))
+   (< -1)
+   (< -1.23)
+   (not (< "1"))
+   (not (< '()))
+))
+
+(define (test-<< )
+  (= (<< 1 63) -9223372036854775808))
+
+(define (test-<= )
+  (and (<= -9223372036854775808 -9223372036854775808) (<= 1 1.00000001)))
+
+(define (test-= )
+  (and 
+    (= 1.23456789 1.23456789) 
+    (= 123456789 123456789) 
+    (= '(1 2 3 (4 5) (a b ("CDEFG" "HIJK") 'u 'v 'w)) 
+    '(1 2 3 (4 5) (a b ("CDEFG" "HIJK") 'u 'v 'w))) 
+    (= "éâäáíóúñÑöò" "éâäáíóúñÑöò")
+    (= '())
+    (= 0)
+    (= "")
+    (not (= 1))
+    (not (= "abc"))
+    (not (= '(1 2 3)))
+))
+
+(define (test-> )
+  (and (> 9223372036854775807 -9223372036854775808) (> "abcdefgh" "abcdefg") (> 1.000000001 
+    1) 
+   (> "a" 1) 
+   (> "z" "aaaaa")
+   (> "aaa" "a")
+   (> 'a "a") 
+   (> '(a) 'a)
+   (> 1)
+   (> 1.23)
+   (> "abc")
+   (> '(1 2 3))
+   (not (> ""))
+   (not (> '()))   
+))
+
+(define (test->= )
+  (and (>= 1 0) (>= 1.00000001 1)))
+
+(define (test->> )
+  (= (>> 1073741824 30) 1))
+
+(define (test-NaN? )
+  (and (NaN? (sqrt -1))
+       (set 'NaN (sqrt -1)) 
+       (= 1 (+ 1 NaN)) 
+       (= 0 (* 2 NaN)) 
+       (NaN? (add 1 (sqrt -1))) 
+       (NaN? (abs (sqrt -1)))))
+
+(define (test-^ )
+  (= (^ 1431655765 -1431655766) -1))
+
+(define (test-abs )
+  (and (= (abs -1) 1) (= (abs -9.9) 9.9)))
+
+(define (test-acos )
+  (= 0 (acos (cos (acos (cos 0))))))
+
+(define (test-acosh)
+	(= (cosh (acosh 1)) 1))
+
+(define (test-add , l)
+  (dotimes (x 100) 
+   (push x l))
+  (= 4950 (apply add l)))
+
+(define (test-address, s)
+	(set 's "foo")
+	(= (address s) (last (dump s))))
+
+(define (test-amb)
+	(set 'x (amb 1 2))
+	(or (= x 1) (= x 2)))
+
+(define (test-and )
+  (and (and true true true) (not (and true true nil))))
+
+(define (test-append )
+  (and
+    (= '(1 2 3 4) (append '(1 2) '(3 4)))
+    (= '(1 2 3 4 5) (append '(1 2) '(3) '(4 5)))
+    (= '(1 2 3 4) (append '(1 2) '(3 4) '()))
+    (= '(1 2 3 4 5) (append '(1 2) '(3 4) '() '(5)))
+    (= '(1 2 3 4 5) (append '() '(1 2) '(3 4) '() '(5)))
+    (= '() (append '()) (append '() '()) (append))
+    (= "abcdefg" (append "" "a" "bcd" "" "ef" "g" ""))
+    (= "" (append ""))
+    (set 'A (array 3 2 (sequence 1 6)))
+    (set 'B (array 2 2 (sequence 7 10)))
+    (= (array 5 2 (sequence 1 10)) (append A B))
+    (lambda? (append '(lambda)))
+))
+
+(define (test-append-file)
+  (append-file "junk" "ABC")
+  (append-file "junk" "DEF")
+  (= (read-file "junk") "ABCDEF")
+)
+
+(define (test-apply )
+  (and (= (apply + '(1 2)) 3) 
+       (= (apply append '("a" "b" "c")) "abc")
+       (= (apply (fn (x y) (+ x y)) '(3 4)) 7)
+))
+
+(define (test-args )
+  (do-args 1 2 "3 4" 5 (x y)))
+
+(define (test-array) 
+  (and
+    (= (array-list (array 3 2 (sequence 1 6))) '((1 2) (3 4) (5 6)))
+    (set 'A (array 3 2 (sequence 1 6)))
+    (= (array-list (nth 0 A)) '(1 2))
+    (= (nth 0 0 A) 1)
+    (= (nth 2 1 A) 6)
+    (= (nth -1 -1 A) 6)
+    (not (catch (nth 10 10 A)  'result))
+    (not (catch (nth -10 -10 A) 'result))
+    (= (nth 0 A) (array 2 '(1 2)))
+    (= (array-list (nth 0 A)) '(1 2))
+    (< (nth 0 A) (nth 1 A))
+    (> (nth 2 A) (nth 1 A))
+    (set-nth 1 0 A 1)
+    (= (nth 1 0 A) 1)
+    (= (nth-set 1 1 A 1) 4)
+    (< (nth 1 A) (nth 0 A))
+))
+
+(define (test-array-list)
+	(set 'a (array 3 4 (sequence 1 12)))
+	(and (array? a) (list? (array-list a))))
+
+(define (test-array?) (test-array-list))
+
+(define (test-asin )
+  (= (round (asin (sin (asin (sin 1)))) -9) 1))
+
+(define (test-asinh)
+  (= (sinh (asinh 1)) 1))
+
+(define (test-assoc )
+  (= (assoc 'b '((a 1) (b 2))) '(b 2)))
+
+(define (test-assoc-set)
+	(and
+		(set 'A '((a 1) (b 2) (c 3)))
+  		(= (assoc-set (A 'b) '(b 3)) '(b 2))
+		(= A '((a 1) (b 3) (c 3)))
+))
+
+
+(define (test-atan )
+	(< (sub 1 (atan (tan (atan (tan 1))))) 1e-15))
+
+; old test broke after Mac OS X update to 10.5.2
+;  (= 1 (atan (tan (atan (tan 1)))))
+
+(define (test-atanh)
+	(< (sub (tanh (atanh 0.5)) 0.5) 0.0000000001))
+
+(define (test-atan2 )
+  (= (div (acos 0) (atan 1 1)) 2))
+
+(define (test-atom? )
+  (and (atom? 1) (atom? 1.23) (atom? "hello") (atom? 'x) (atom? nil) (atom? true)))
+
+(define (test-base64-enc)
+  (and
+    (= "" (base64-dec (base64-enc "")))
+    (= "1" (base64-dec (base64-enc "1")))
+    (= "12" (base64-dec (base64-enc "12")))
+    (= "123" (base64-dec (base64-enc "123")))
+    (= "1234" (base64-dec (base64-enc "1234")))
+))
+
+(define (test-base64-dec)
+  (test-base64-enc))
+
+;; context Lex was previously created
+
+(define (test-bayes-train)
+  (and
+    (= (bayes-train '(F F F B B) '(F B B B B) 'Lex) '(5 5))
+    (> 0.001 (apply add (map sub (bayes-query '(F) Lex) '(0.75 0.25))))
+    (> 0.001 (apply add (map sub (bayes-query '(F) Lex true) '(0.75 0.25))))
+    (> 0.001 (apply add (map sub (bayes-query '(F F) Lex) '(0.8251777681 0.1748222319))))
+    (> 0.001 (apply add (map sub (bayes-query '(F F) Lex true) '(0.9 0.1))))
+  )
+)
+
+(define (test-bayes-query) 
+	(set 'Lex:F '(0 0))
+	(set 'Lex:B '(0 0))
+	(set 'Lex:total '(0 0))
+	true)
+
+(define (test-begin )
+  (begin 
+   (set 'x 0) 
+   (inc 'x) 
+   (inc 'x) 
+   (= x 2)))
+
+(define (test-beta )
+  (< (abs (sub (beta 1 2) 0.5)) 1e-05))
+
+(define (test-betai )
+  (< (abs (sub (betai 0.5 5 10) 0.910217)) 1e-05))
+
+(define (test-bind)
+	(bind '((a 1) (b "hello") (c (3 4))))
+	(and
+		(= a 1)
+		(= b "hello")
+		(= c '(3 4)))
+)
+
+(define (test-binomial )
+  (< (sub (binomial 2 1 0.5) 0.5) 1e-09))
+
+(define (test-break )
+  (break true)
+  (= true (break))
+  (not (break nil)))
+
+(define (test-case )
+  (and (= (check-case 1) "one") (= (check-case 2) "two") (= (check-case 
+     9) nil)))
+
+(define (test-callback) true)
+
+(define (test-catch )
+  (and 
+	(catch (+ 3 4) 'result) 
+        (= result 7)
+	(= (catch (+ 3 4)) 7)
+        (= (catch (dotimes (x 100) (if (= x 7) (throw x)))) 7)
+))
+
+(define (test-ceil )
+  (= 2 (ceil 1.5)))
+
+(define (test-change-dir )
+  (make-dir "adir")
+  (change-dir "adir")
+  (change-dir "..")
+  (remove-dir "adir"))
+
+(define (test-char )
+  (and 
+    (= (format "%c" (char "a" 0)) "a") 
+    (= (char "A") 65) (= (char 65) "A")
+    (= (map char (sequence 65 67)) '("A" "B" "C"))
+    (= (char 0) "\000")))
+
+(define (test-chop )
+  (and 
+    (= (chop "newlisp") "newlis") 
+    (= (chop "newlisp" 4) "new"))
+	(= (chop "abc" 5) "")
+	(= (chop "abc" -5) "")
+    (= (chop '(a b (c d) e)) '(a b (c d)))
+    (= (chop '(a b (c d) e) 2) '(a b)))
+
+(define (test-clean ) 
+  (and
+    (= (clean integer? '(1 1.1 2 2.2 3 3.3)) '(1.1 2.2 3.3))
+    (= (clean true? '(a nil b nil c nil)) '(nil nil nil))))
+
+(define (test-close , fno)
+  (and 
+    (set 'fno (open "qa-dot" "read")) 
+    (close fno)))
+
+(define (test-crc32)
+    (= (crc32 "abcdefghijklmnopqrstuvwxyz") 1277644989))
+
+(define (test-select-collect )
+  (and
+    (set 'l '(0 1 2 3 4 5 6 7 8 9))
+    (= (select l '()) '())
+    (= (select l 0 9 9 0 1 8 8 1) '(0 9 9 0 1 8 8 1)) 
+    (= (select "2001-09-20" 5 6 8 9 0 1 2 3) "09202001") 
+    (set 'a 0 'b 1 'c 2)
+    (= (select '(w x y z) a b c) '(w x y))
+    (= (select '(w x y z) (inc 'a) (inc 'b) (inc 'c)) '(x y z))
+))
+
+(define (test-command-line )
+  (and (not (command-line nil)) (command-line true)))
+
+(define (test-cond )
+  (and 
+      (= (check-cond 1) 1)
+      (= (check-cond 2) 2)
+      (not (check-cond 99)) 
+      (= (cond ((+ 3 4))) 7)
+      (= (cond (nil 1) ('())) '())
+      (= (cond (nil 1) (nil)) nil)
+      (= (cond (nil 1) (true nil)) nil)
+      (= (cond ('())) '())
+      (= (cond (nil 1) ('() 2)) '())
+))
+
+(define (test-cons )
+  (= (myappend '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
+  (= (cons 'c '(a b) -1) '(a b c))
+)
+
+(define (test-constant )
+  (constant 'cs 123)
+  (= cs 123)
+  (define (trick z) (constant 'z 999))
+  (= (trick) 999)
+  (= (set 'z 123) 123)
+  (= (trick) 999)
+  (= z 123))
+
+
+(define (test-context )
+  (and (context 'TEST) (context 'QA)))
+
+(define (test-context? )
+  (and (context? MAIN) (context? QA)))
+
+(define (test-copy-file ) 
+  (and (copy-file "qa-dot" "junk") (delete-file "junk")))
+
+(define (test-cos )
+  (= 1 (cos (acos (cos (acos 1))))))
+
+(define (test-cosh)
+	(= (cosh 1) (div (add (exp 1) (exp -1)) 2)))
+
+(define (test-count )
+  (and (= (count '(1 2) '(2 1 2 1)) '(2 2)) 
+       (= (count '(a b) '(a a b c a b b)) '(3 3))
+       (= (count '(a b c) '()) '(0 0 0))
+       (set 'L '(a b c d e f))
+       (= (count L L) '(1 1 1 1 1 1))
+  )
+)
+
+(define (test-cpymem)  
+  (set 'from "12345")
+  (set 'to "     ")
+  (cpymem (address from) (address to) 5)
+  (= from to))
+
+(define (test-crit-chi2 )
+  (< (abs (sub (crit-chi2 0.559506 10) 9.999991)) 1e-05))
+
+(define (test-crit-z )
+  (< (abs (sub (crit-z 0.999) 3.090232)) 1e-05))
+
+(define (test-current-line , handle)
+  (and
+    (set 'handle (open "qa-dot" "r"))
+    (= (read-line handle) "#!/usr/bin/newlisp") 
+    (= (current-line) "#!/usr/bin/newlisp") 
+    (close handle)))
+
+(define (test-curry)
+  (and
+    (= (set 'f (curry + 10)) (lambda (_x) (+ 10 _x)))
+    (= (filter (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
+       '((a 10) (a 3) (a 9)))
+    (= (clean (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
+       '((b 5) (c 8)))
+    (= (map (curry list 'x) (sequence 1 5))
+       '((x 1) (x 2) (x 3) (x 4) (x 5)))
+))
+
+(define (test-date )
+  (= (date) (date (date-value)) (date (apply date-value (now)))))
+
+(define (test-date-value )
+  (= 0 (date-value 1970 1 1 0 0 0)))
+
+(define (test-debug )
+  (= (debug (+ 3 4)) 7))
+
+(define (test-dec , x)
+  (set 'x 20)
+  (and (= 19 (dec 'x)) (= 17 (dec 'x 2)) (= 16.5 (dec 'x 0.5))))
+
+(define (test-define , foo)
+  (and 
+	(lambda? (define (foo (x 1) (y 2)) (list x y)))
+    (= (foo) '(1 2))
+	(= (foo 3) '(3 2))
+	(= (foo 3 4) '(3 4))
+	(define (foo (x 10) (y (div x 2))) (list x y))
+	(= (foo) '(10 5))
+	(= (foo 20) '(20 10))
+	(= (foo 3 4) '(3 4))
+))
+
+(define (test-def-new)
+  (and
+    (set 'fooctx:x 123)
+    (new fooctx)
+    (= fooctx:x 123)
+    (set 'barctx:bar 999)
+    (def-new 'barctx:bar)
+    (= bar 999)
+    (def-new 'barctx:bar 'foobar)
+    (= foobar 999)
+    (def-new 'barctx:bar 'foofoo:foo)
+    (= foofoo:foo 999)
+))
+
+
+(define (test-define-macro , foo)
+  (and 
+	(macro? (define-macro (foo (x 1) (y 2)) (list x y)))
+    (= (foo) '(1 2))
+	(= (foo 3) '(3 2))
+	(= (foo 3 4) '(3 4))
+	(define-macro (foo (x 10) (y (div x 2))) (list x y))
+	(= (foo) '(10 5))
+	(= (foo 20) '(20 10))
+	(= (foo 3 4) '(3 4))
+))
+
+(define (test-default)
+	(MAIN:test-default-functor))
+
+(define (test-delete )
+  (delete 'xxx))
+
+(define (test-delete-file ) 
+  (and (copy-file "qa-dot" "junk") (delete-file "junk")))
+
+(define (test-delete-url )
+  (= "ERR: bad formed URL" (delete-url "")))
+
+(define (test-destroy)
+ 	(if (or (< opsys 5)(= opsys 9))
+		(set 'pid (fork (dotimes (t 100) (sleep 100))))
+		(set 'pid (process "newlisp"))	)
+	(destroy pid))
+
+(define (test-det) 
+  (set 'A '((-1 1 1) (1 4 -5) (1 -2 0)))
+  (<  (sub (det A) -1) 2e-10))
+
+(define (test-device , fno)
+  (set 'fno (open "junk" "write"))
+  (device fno)
+  (if (= (device) fno) 
+   (close (device))))
+
+(define (test-difference )
+  (and
+    (= (difference '(2 5 6 0 3 0 2 5) '(1 2 3 3 2 1)) '(5 6 0))
+    (= (difference '(1 5 2 3 2 2 4 5 3 4 5 1) '(3 4) true) '(1 5 2 2 2 5 5 1))
+    (= (difference '(nil nil nil) '()) '(nil))
+    (= (difference '(nil nil nil) '() true) '(nil nil nil))
+    (set 'L '(a b c d e f))
+    (= (difference L L) '())
+  )
+)
+
+(define (test-directory )
+  (or (find "qa-dot" (directory)) (find "QA" (directory))))
+
+(define (test-directory? )
+  (directory? "."))
+
+(define (test-div )
+  (and (= 0.1 (div 100000000 1000000000)) 
+       (= (div 1 3) 0.3333333333333333)
+       (= (div 3) 0.3333333333333333)
+))
+
+(define (testdoargs)
+	(local (lst)
+		(doargs (i) (push i lst))
+		lst))
+
+(define (test-doargs)
+	(= (testdoargs 3 2 1) '(1 2 3)))
+
+(define (test-dolist , rList)
+  (and 
+   (dolist (x '(1 2 3 4 5 6 7 8 9)) 
+    (push x rList)) 
+   (= rList '(9 8 7 6 5 4 3 2 1)) 
+   (dolist (x rList) 
+    (pop rList))
+    (dolist (x '(1 2 3 4 5 6 7 8 9) (> x 5))
+	  (push x rList))
+   (= rList '(5 4 3 2 1))
+   (= (local (l) (dolist (e '(1 2 3)) (push $idx l)) l) '(2 1 0))
+   (= (dolist (x '(a b c d e f g)) x) 'g)
+))
+
+(define (test-dostring)
+	(local (r) 
+		(dostring (i "newlisp" (= i 108)) (push  i r)) 
+		(= r '(119 101 110))
+		(= (dostring (c "newlisp") c) 112)
+ 	)
+)
+
+(define (test-dotimes , aList)
+  (dotimes (x 2) 
+   (dotimes (y 2) 
+    (dotimes (z 2) 
+     (push z aList))))
+  (and
+     (= '(1 0 1 0 1 0 1 0) aList)
+     (not (dotimes (x 0) x))
+     (= (dotimes (x 1) x) 0)
+
+     ; dotimes returns nil when ever executed since 8.9.7
+     (not (= (dotimes (x -1) x) 0))
+     (not (= (dotimes (x -1.8) x) 0))
+
+     (= (dotimes (x 1.8) x) 0)
+	 (set 'cnt 0)
+	 (dotimes (x 10 (> x 5)) (inc 'cnt))
+	 (= cnt 6)
+
+))
+     
+(define (test-dotree )
+  (set 'aList '())
+  (and
+    (= (last (symbols MAIN)) (dotree (p MAIN) p))
+  	(dotree (x 'MAIN) 
+   		(push x aList))
+  	(= (length (symbols 'MAIN)) (length aList))
+))
+
+(define (test-dump )
+  ( = "hello" (get-string (last (dump "hello")))))
+
+(define (test-dump-symbol )
+  (= (length (dump nil) 4)))
+
+(define (test-dup)
+  (and
+    (= (dup "" 0) "")
+    (= (dup "" 10) "")
+    (= (dup "A" 10) "AAAAAAAAAA")
+    (= (dup "AB" 5) "ABABABABAB")
+    (= (dup 'x 5) '(x x x x x))
+	(= (dup "l" -1) "")
+	(= (dup '(1) -1) '())
+    (= (dup 1 0) '())
+    (= (dup 1 5) '(1 1 1 1 1))))
+
+(define (test-empty? , aList)
+  (set 'aList '(1 2 3 4 5 6 7 8 9 0))
+  (while aList 
+   (pop aList))
+  (and (empty? aList) (empty? "")))
+
+(define (test-encrypt )
+  (= (encrypt (encrypt "newlisp" "123") "123") "newlisp"))
+
+(define (test-ends-with )
+  (and 
+	(ends-with "newlisp" "lisp") 
+	(ends-with "newlisp" "LISP" nil) 
+	(ends-with "abc.def.ghi" "def|ghi" 1)
+	(ends-with "12345" "4|5" 1)
+    (ends-with (explode "newlisp") "p")))
+
+(define (test-env)
+  (and 
+    (list? (env))
+    (env "key" "value") 
+    (= (env "key") "value")
+	(env "key" "") ; remove key
+	(if (= ostype "Solaris")
+		(= (env "key" ""))
+		(not (env "key")))
+))
+
+(define (test-erf)
+   (<  (abs (sub 0.5204998778 (erf 0.5))) 0.000001))
+
+(define (alarm) (println "ring..."))
+
+(define (test-timer)
+        (timer 'alarm 4))
+
+(define (test-title-case)
+	(= (title-case "heLLo") "HeLLo")
+	(= (title-case "heLLo" true) "Hello"))
+
+(define (test-throw-error)
+    (and
+        (not (catch (throw-error "message text") 'result))
+        (starts-with result "user error :")) )
+
+
+(define (test-error-event )
+  (= 'nil (error-event)))
+
+(define (test-error-number )
+  (integer? (error-number)))
+
+(define (test-error-text )
+  (= (error-text 24) "invalid function"))
+
+(define (test-eval , x y)
+  (set 'x 123)
+  (set 'y 'x)
+  (set 'z 'y)
+  (and (= 123 (eval y)) (= 123 (eval 'x)) (= 123 (eval (eval z)))))
+
+(define (test-eval-string )
+  (eval-string "(set 'x 123)")
+  (eval-string "(set 'y x)")
+  (and (= 123 (eval-string "y")))
+  (= 123 (eval-string "(blah-blah)" 123))
+  (set 'Foo:xyz 99999)
+  (= 99999 (eval-string "xyz" nil 'Foo))
+)
+
+(define (test-exec )
+  (and (sub-read-exec) (sub-write-exec)))
+
+(define (sub-read-exec ) 
+   (write-file "exectest" {(println "hello") (exit)})
+   (and
+     (set 'result  (if (and (> opsys 5) (< opsys 9))
+     (exec "newlisp exectest") (exec "./newlisp exectest")))
+     (or (= '("hello") result) (= '("" "hello") result)) 
+     (delete-file "exectest")))
+
+(define (sub-write-exec )
+  (and 
+    (write-file "testexec" {(write-file "exectest" (read-line))})
+    (if (and (> opsys 5) (< opsys 9))
+	 (exec "newlisp testexec" "HELLO") (exec "./newlisp testexec" "HELLO"))
+    (= "HELLO" (read-file "exectest"))
+    (delete-file "testexec")
+    (delete-file "exectest")))
+
+
+(define (test-exit )
+  (or (primitive? exit) (lambda? exit)))
+
+(define (test-exists)
+  (and
+    (= (exists string? '(2 3 4 6 "hello" 7)) "hello")
+    (not (exists string? '(3 4 2 -7 3 0)) )
+    (= (exists zero? '(3 4 2 -7 3 0)) 0)
+    (= (exists < '(3 4 2 -7 3 0)) -7)
+    (= (exists (fn (x) (> x 3)) '(3 4 2 -7 3 0)) 4)
+    (not (exists (fn (x) (= x 10)) '(3 4 2 -7 3 0)))
+))
+
+(define (test-exp )
+  (= 1 (exp (log (exp (log (exp (log 1))))))))
+
+(define (test-expand) 
+  (and
+    (set 'x 2)
+    (= (expand '(a x b) 'x) '(a 2 b))
+    (= (expand '(x b) 'x) '(2 b))
+    (= (expand '(a x) 'x) '(a 2))
+    (= (expand '(a (x) b) 'x) '(a (2) b))
+    (= (expand '(a ((x)) b) 'x) '(a ((2)) b))
+    (set 'a 1 'b 2 'c 3)
+    (= (expand '(a b c) 'b 'a 'c ) '(1 2 3))
+	;; prolog mode with uppercase vars
+	(set 'X 2)
+	(= (expand '(a ((X)) b)) '(a ((2)) b))
+	;; env list as parameter
+	(set 'a "a" 'B "B" 'c "c" 'd "d")
+	(= (expand '(a (B (c) (d a B))) '((a 1) (B 2) (c 3) (d 4)))
+	   '(1 (2 (3) (4 1 2))))
+	(= a "a") (= B "B") (= c "c") (= d "d")
+))
+
+(define (test-explode )
+	(and	
+		(= (explode "kakak" -1) '())
+		(= (explode "ABC" 4) '("ABC"))
+		(= (explode '(a b c d e f) -1) '())
+		(= (explode "new") '("n" "e" "w"))
+		(= (explode "newlisp" 3) '("new" "lis" "p"))
+		(= (explode "newlisp" 3 true) '("new" "lis"))
+		(= (explode "newlisp" 7 true) '("newlisp"))
+		(= (explode "newlisp" 8 true) '())
+		(= (explode '(a b c d e)) '((a) (b) (c) (d) (e)))
+		(= (explode '(a b c d e) 2) '((a b) (c d) (e)))
+		(= (explode '(n e w l i s p)) '((n) (e) (w) (l) (i) (s) (p)))
+		(= (explode '(n e w l i s p) 3) '((n e w) (l i s) (p)))
+		(= (explode '(n e w l i s p) 7 true) '((n e w l i s p)))
+        (= (explode '(n e w l i s p) 8 true) '())
+))
+
+(define (test-factor)
+	(= (apply * (factor 0x7FFFFFFFFFFFFFFF)) 0x7FFFFFFFFFFFFFFF))
+
+(define (test-fft )
+  (= '((1 2) (3 4)) (ifft (fft '((1 2) (3 4))))))
+
+(define (test-file-info )
+  (list? (file-info "qa-dot")))
+
+(define (test-file? )
+  (file? "qa-dot"))
+
+(define (test-filter )
+  (and
+    (= (filter integer? '(1 1.1 2 2.2 3 3.3)) '(1 2 3))
+    (= (filter true? '(a nil b nil c nil)) '(a b c))))
+
+(define (test-find )
+  (and 
+    (= 3 (find '(3 4) '(0 1 2 (3 4) 5 6 7 8)))
+    (= nil (find 9 '(1 2 3))) 
+    (= 2 (find "W" "newlisp" 1))
+    (= $0 "w")
+    (= (find "newlisp" '("Perl" "Python" "newLISP") 1) 2)
+    ; use a comparison functor
+    (= (find '(1 2) '((1 4) 5 6 (1 2) (8 9))) 3)
+    (= (find 3 '(8 4 3  7 2 6) >)  4)
+    (= (find 5 '((l 3) (k 5) (a 10) (z 22)) (fn (x y) (= x (last y)))) 1)
+    (= (find '(a ?) '((l 3) (k 5) (a 10) (z 22)) match) 2)
+    (= (find '(X X) '((a b) (c d) (e e) (f g)) unify) 2)
+    (define (has-it-as-last x y) (= x (last y)))
+    (= (find 22 '((l 3) (k 5) (a 10) (z 22)) has-it-as-last) 3)
+    (= (find "newlisp" '("Perl" "Python" "newLISP") (fn (x y) (regex x y 1))) 2)
+))
+
+(define (test-find-all)
+  (and
+	(= (find-all {\d+} "asdf2kjh44hgfhgf890") '("2" "44" "890"))
+	(= (find-all {(new)(lisp)} "newLISPisNEWLISP" (append $2 $1) 1) '("LISPnew" "LISPNEW"))
+))
+
+(define (test-first )
+  (= 1 (first '(1 2 3 4)))
+  (= "n" (first "ewLISP"))
+  (= (array 2 '(1 2)) (first (array 3 2 (sequence 1 6))))
+)
+
+(define (test-flat )
+  (set 'lst '(a (b (c d))))
+  (= (map (fn (x) (ref x lst)) (flat lst)) '((0) (1 0) (1 1 0) (1 1 1))))
+
+(define (test-float )
+  (float? (float "1.234")))
+
+(define (test-flt)
+	(= (flt 1.23) 1067282596))
+
+(define (test-float? )
+  (float? 1.234))
+
+(define (test-floor )
+  (= 1 (floor 1.5)))
+
+(define (test-for , x lst1 lst2)
+  (set 'lst1 '())
+  (set 'lst2 '())
+  (for (x 10 0 3) 
+   (push x lst1))
+  (for (x 10 0 3 (< x 7))
+   (push x lst2))
+  (and
+   (= lst1 '(1 4 7 10))
+   (= lst2 '(7 10)) )
+)
+
+(define (test-for-all)
+  (and
+    (for-all number? '(2 3 4 6 7)) 
+    (not (for-all number? '(2 3 4 6 "hello" 7)) )
+    (for-all (fn (x) (= x 10)) '(10 10 10 10 10))
+))
+
+
+(define (test-fork) (integer? (fork (exit))))
+
+(define (test-format )
+  (and
+   (= (format "%d" 1.23) "1") 
+   (= (format "%5.2f" 10) "10.00") 
+   (= (format "%c %s %d %g" 65 "hello" 123 1.23) "A hello 123 1.23")
+   (= (format "%5.2s" "hello") "   he")
+   ; args passed in a list
+   (= (format "%d" '(1.23)) "1")  
+   (= (format "%5.2f" '(10)) "10.00")  
+   (= (format "%c %s %d %g" '(65 "hello" 123 1.23)) "A hello 123 1.23")
+   (= (format "%5.2s" '("hello")) "   he")
+   (set 'data '((1 "a001" "g") (2 "a101" "c") (3 "c220" "g")))
+   (set 'result (map (fn (x) (format "%3.2f %5s %2s" (nth 0 x) (nth 1 x) (nth 2 x))) data))
+   (set 'result (map (fn (x) (format "%3.2f %5s %2s" (x 0) (x 1) (x 2))) data))
+   (= result '("1.00  a001  g" "2.00  a101  c" "3.00  c220  g"))
+   (not (catch (format "%%" 1) 'result))
+   (not (catch (format "%10.2lf" 123) 'result))
+   (if (and (> opsys 5) (< opsys 9) (!= opsys 7)) ;; Win32 
+      (begin
+        (and
+         (= (format "%I64d" 0x7fffffffffffffff) "9223372036854775807")
+         (= (format "%I64x" 0x7fffffffffffffff) "7fffffffffffffff")
+         (= (format "%I64u" 0x7fffffffffffffff) "9223372036854775807")
+         (= (format "%I64d" 0x8000000000000000) "-9223372036854775808")
+         (= (format "%I64x" 0x8000000000000000) "8000000000000000")
+         (= (format "%I64u" 0x8000000000000000) "9223372036854775808")
+         (= (format "%I64d" 0xFFFFFFFFFFFFFFFF) "-1")
+         (= (format "%I64x" 0xFFFFFFFFFFFFFFFF) "ffffffffffffffff")
+         (= (format "%I64u" 0xFFFFFFFFFFFFFFFF) "18446744073709551615"))
+      )
+      (begin ;; UNIX like OS 
+        (if (= opsys 9) ;TRU64
+          (begin
+            (and
+              (= (format "%d" 0x7fffffff) "2147483647")
+              (= (format "%d" 0xffffffff) "-1")
+              (= (format "%u" 0xffffffff) "4294967295")
+              (= (format "%i" 0x7fffffff) "2147483647")
+
+              ; truncate
+              (= (format "%d" 0x7fffffffffffffff) "-1")
+              (= (format "%u" 0x7fffffffffffffff) "4294967295")
+              (= (format "%x" 0x7fffffffffffffff) "ffffffff") 
+              (= (format "%X" 0x7fffffffffffffff) "FFFFFFFF") 
+
+              (= (format "%ld" 0x7fffffffffffffff) "9223372036854775807")
+              (= (format "%lu" 0xffffffffffffffff) "18446744073709551615")
+              (= (format "%li" 0x7fffffffffffffff) "9223372036854775807")
+              (= (format "%lx" 0x7fffffffffffffff) "7fffffffffffffff")
+              (= (format "%ld" 0x8000000000000000) "-9223372036854775808")
+              (= (format "%lx" 0x8000000000000000) "8000000000000000")
+              (= (format "%lu" 0x8000000000000000) "9223372036854775808")
+              (= (format "%ld" 0xFFFFFFFFFFFFFFFF) "-1")
+              (= (format "%lx" 0xFFFFFFFFFFFFFFFF) "ffffffffffffffff")
+              (= (format "%lu" 0xFFFFFFFFFFFFFFFF) "18446744073709551615"))
+          )
+          (begin
+            (and
+              (= (format "%d" 0x7fffffff) "2147483647")
+              (= (format "%d" 0xffffffff) "-1")
+              (= (format "%u" 0xffffffff) "4294967295")
+
+              ; truncate
+              (= (format "%d" 0x7fffffffffffffff) "-1")
+              (= (format "%u" 0x7fffffffffffffff) "4294967295")
+              (= (format "%x" 0x7fffffffffffffff) "ffffffff") 
+              (= (format "%X" 0x7fffffffffffffff) "FFFFFFFF") 
+
+              (= (format "%lld" 0x7fffffffffffffff) "9223372036854775807")
+              (= (format "%llx" 0x7fffffffffffffff) "7fffffffffffffff")
+              (= (format "%llu" 0x7fffffffffffffff) "9223372036854775807")
+              (= (format "%lld" 0x8000000000000000) "-9223372036854775808")
+              (= (format "%llx" 0x8000000000000000) "8000000000000000")
+              (= (format "%llu" 0x8000000000000000) "9223372036854775808")
+              (= (format "%lld" 0xFFFFFFFFFFFFFFFF) "-1")
+              (= (format "%llx" 0xFFFFFFFFFFFFFFFF) "ffffffffffffffff")
+              (= (format "%llu" 0xFFFFFFFFFFFFFFFF) "18446744073709551615"))
+          )
+      )
+))))
+
+(define (test-fv )
+  (< (sub (fv 0.1 10 1000 0 0) -15937.4246) 1e-05))
+
+(define (test-gammai )
+  (< (abs (sub (gammai 4 5) 0.734974)) 1e-05))
+
+(define (test-gammaln )
+  (< (abs (sub 120 (exp (gammaln 6)))) 1e-05))
+
+(define (test-gcd)
+ (and
+  (= (gcd 0) 0)
+  (= (gcd 1) 1)
+  (= (gcd 12 36) 12)
+  (= (gcd 12 36 6) 6)
+  (= (gcd 12 36 6 3) 3)
+))
+
+(define (test-get-char )
+  (= 65 (get-char (address "A"))))
+
+(define (test-get-float )
+  (= 1.234 (get-float (pack "lf" 1.234))))
+
+(define (test-get-int )
+  (and
+    (= 123456789 (get-int (pack "ld" 123456789)))
+    (set 'adr (pack "ldld" 0xaabbccdd 0xccddeeff))
+    (= (format "%x" (get-int adr)) "aabbccdd")
+    (= (format "%x" (get-int (address adr))) "aabbccdd")
+    (= (format "%x" (get-int (+ (address adr) 0))) "aabbccdd")
+    (= (format "%x" (get-int (+ (address adr) 4))) "ccddeeff")
+    (set 'adr (pack "> ldld" 0xaabbccdd 0xccddeeff))
+    (= adr "\170\187\204\221\204\221\238\255")
+    (set 'adr (pack "< ldld" 0xaabbccdd 0xccddeeff))
+    (= adr "\221\204\187\170\255\238\221\204")
+    (set 'buff (pack "lulululululululu" 1 2 3 4))
+    (apply and (map (fn (i) (= (+ i 1) (get-int (+ (* i 4) (address buff))))) '(0 1 2 3))) 
+))
+
+(define (test-get-long)
+	(set 'adr (pack "Ld" -1))
+	(= -1 (get-long adr)))
+
+(define (test-get-string )
+  (= "hello" (get-string (address "hello"))))
+
+(define (test-get-url )
+  (= "ERR: bad formed URL" (get-url "")))
+
+
+(define (test-global)
+	(= global-myvar 123))
+
+(define (test-global?)
+	(and
+		(global? 'global-myvar)
+		(global? 'println)
+))
+
+(define (test-if )
+  (and 
+   (if true true) 
+   (if nil nil true) 
+   (if 'nil nil true) 
+   (if '() nil true)
+   (= (if '()) '())
+   (= (if nil 1 '() 2) '())
+   (= (if nil '() '()) '())
+   (= (if true '() '()) '())
+   (= (if nil 1 nil 2 nil 3 true 4 3) 4)
+   (= (if nil 1 nil 2 nil 3 nil 4 3) 3)
+   ))
+
+(define (test-ifft )
+  (= '((1 2) (3 4)) (ifft (fft '((1 2) (3 4))))))
+
+(define (test-import )
+  (primitive? import))
+
+(define (test-inc , x)
+  (set 'x 1)
+  (and (= 2 (inc 'x)) (= 2.1 (inc 'x 0.1))))
+
+(define (test-index )
+  (= '(1 3) (index (lambda (x) (> x 3)) '(1 5 2 6 2 0))))
+
+(define (test-integer )
+  (and 
+    (integer? (int "12345"))
+    (= (int " 12345") 12345)
+    (= (int "9223372036854775807")  9223372036854775807)
+    (= (int "-9223372036854775808") -9223372036854775808)
+    (= (int 0.0) 0)
+    (= (int 1e30)  9223372036854775807)
+    (= (int -1e30) -9223372036854775808)
+    (= (int 0x8000000000000000) (int "0x8000000000000000"))
+))
+
+(define (test-int) (test-integer))
+
+(define (test-integer? )
+  (and
+    (integer? 12345)
+    (integer? 9223372036854775807)
+    (integer? -9223372036854775808)
+    (integer? 0x7FFFFFFFFFFFFFFF)
+    (integer? 0xFFFFFFFFFFFFFFFF)
+))
+
+(define (test-intersect )
+  (and
+    (= (intersect '(3 0 2 4 1) '(1 4 2 5)) '(2 4 1))
+    (set 'L '(a b c d e f))
+    (= (intersect L L) L)
+  )
+)
+
+(define (test-invert )
+  (set 'A '((-1 1 1) (1 4 -5) (1 -2 0)))
+  (set 'I (multiply A (invert A)))
+  (set 'J (multiply (array 3 3 (flat A)) (invert (array 3 3 (flat A)))))
+  (and (< (sub 1 (nth 0 (nth 0 I))) 1e-06)
+       (< (sub 1 (nth 1 (nth 1 I))) 1e-06) 
+       (< (sub 1 (nth 2 (nth 2 I))) 1e-06)
+       (= I (array-list J)) 
+       (not (invert '((0 1 0) (1 0 1) (0 0 0))) )
+))
+
+(define (test-irr )
+  (< (abs (sub (irr '(-1000 500 400 300 200 100)) 0.20272)) 0.0001))
+
+(define (test-join )
+  (and 
+    (= "this is a sentence" (join '("this" "is" "a" "sentence") " ")) 
+    (= "this_is_a_sentence" (join '("this_" "is_" "a_" "sentence")))
+    (= "" (join '()))
+	(= (join '("A" "B" "C") "-") "A-B-C")
+	(= (join '("A" "B" "C") "-" true) "A-B-C-")
+))
+
+(define (test-lambda? )
+  (lambda? qa))
+
+(define (test-last )
+  (= 'f (last '(a b c d e f)))
+  (= "p" (last "newlisp"))
+  (= (array 2 '(5 6)) (last (array 3 2 (sequence 1 6))))
+)
+
+(define (test-legal?)
+  (and
+    (legal? "abc")
+    (not (legal? "a b c"))
+    (set 'greek (pack "cccccccccccccccccc" 206 160 206 181 206 187 206 181 206 185 206
+				172 206 180 206 181 207 137))
+    (legal? greek)
+))
+
+
+(define (test-length )
+  (> (length (symbols)) 100)
+  (- 7 (length "newlisp")))
+
+(define (test-let )
+  (set 'a 123)
+  (set 'b 456)
+  (set 'p 111)
+  (set 'q 222)
+  (and
+     (let ((a 1) (b 2)) 
+       (= (+ a b) 3))
+     (= a 123) 
+     (= b 456)
+     (let (p 3 q 4)
+       (= (+ q p) 7))
+     (= p 111)
+     (= q 222)
+))
+
+(define (test-letex)
+  (and
+	(= (letex (x '* y 3 z 4) (x y z)) 12)
+	(= (letex (x 1 y 2 z 3) (quote (x y z))) '(1 2 3))
+	(= (letex (x 1 y 2 z 3) '(x y z)) '(1 2 3))
+	(= (letex (x 1 y 2 z 3) '('x (quote y) z)) '('1 (quote 2) 3))
+	(= (letex (x 1) 'x) 1)
+	))
+
+(define (test-letn)
+  (set 'x 0 'y 0 'z 0)
+  (and
+      (= (letn ((x 1) (y (+ x 1)) (z (+ y 1))) (list x y z)) '(1 2 3))
+      (= 0 x y z))
+)
+
+(define (test-list )
+  (and (list? (list 1 2 3 4 5)) (= '(1) (list 1)) (= '(1 nil) (list 
+     1 'nil))))
+
+(define (test-list? )
+  (and (list? '(1 2 3 4 5)) (list? '())))
+
+(define (test-load )
+  (write-file "junk" "(+ 3 4)")
+  (load "junk"))
+
+(define (test-local)
+	(set 'a 10 'b 20)
+	(and 
+		(= (local (a b) (set 'a 1 'b 2) (+ a b)) 3)
+		(= a 10)
+		(= b 20)))
+
+(define (test-set-locale) 
+  (string? (set-locale)))
+
+(define (test-log )
+  (and
+  	(= 1 (log (exp 1)))
+	(= 1 (log (exp 1) (exp 1)))
+  )
+)
+
+(define (test-lookup )
+  (and (= 3 (lookup 1 '((2 3 4) (1 2 3)))) (= 2 (lookup 1 '((2 3 
+       4) 
+      (1 2 3)) 1))))
+
+(define (test-lower-case )
+  (if (> opsys 4) 
+   (= "abcdefgq" (lower-case "ABCDEFGQ")) 
+   (= "abcdefgh" (lower-case "ABCDEFGH"))))
+
+(define (test-macro? )
+  (macro? 
+   (define-macro (foo-macro))))
+
+(define (test-main-args )
+  (and 
+     (list? (main-args))
+     (list? $main-args)
+     (= $main-args (main-args))
+     (= ($main-args 0) ((main-args) 0) (main-args 0))
+     (= ($main-args -1) ((main-args) -1))
+     (= ($main-args -1) (main-args -1))
+))
+
+(define (test-make-dir )
+  (and (make-dir "foodir") (remove-dir "foodir")))
+
+(define (test-map )
+  (and (= '(11 22 33) (map + '(10 20 30) '(1 2 3))) 
+       (= '(2 4 6) (map (lambda (x) (+ x x)) '(1 2 3)))
+))
+
+(define (test-mat)
+	(set 'A '((1 2 3) (4 5 6))) 
+	(set 'B A)
+	(and
+		(= (mat + A B) '((2 4 6) (8 10 12)))
+		(= (mat - A B) '((0 0 0) (0 0 0)))
+		(= (mat * A B) '((1 4 9) (16 25 36)))
+		(= (mat / A B) '((1 1 1) (1 1 1)))
+		(= (mat + A 2) '((3 4 5) (6 7 8)))
+		(= (mat - A 2) '((-1 0 1) (2 3 4)))
+		(= (mat * A 2) '((2 4 6) (8 10 12)))
+		(= (mat / A 2) '((0.5 1 1.5) (2 2.5 3)))
+
+		(= (mat + A 5) '((6 7 8) (9 10 11)))
+		(= (mat - A 2) '((-1 0 1) (2 3 4)))
+		(= (mat * A 3) '((3 6 9) (12 15 18)))
+		(= (mat / A 10) '((.1 .2 .3) (.4 .5 .6)))
+
+        (set 'op +)
+		(= (mat op A B) '((2 4 6) (8 10 12)))
+        (set 'op '+)
+		(= (mat op A B) '((2 4 6) (8 10 12)))
+	))
+
+(define (test-match)
+  (and 
+    (= (match '(a (b ?) d e *) '(a (b c) d e f g) true)   '(a (b c) d e (f g)) )
+    (= (match '(a (b ?) d e *) '(a (b c) d e f g) )  '(c (f g)) )
+
+    (= (match '(a * b x) '(a b c d b x e f b x) true) '(a (b c d b x e f) b x) )
+    (= (match '(a * b x) '(a b c d b x e f b x) ) '((b c d b x e f)) )
+
+
+    (= (match '(? (?) x * ? (? e)) '(a (b) x y c (d e)) true) '(a (b) x (y) c (d e)) )
+    (= (match '(? (?) x * ? (? e)) '(a (b) x y c (d e))) '(a b (y) c d) )
+
+    (= (match '(a * b) '(a x b) true) '(a (x) b) )
+    (= (match '(a * b) '(a x b)) '((x)) )
+
+
+    (= (match '(a * b) '(a b) true) '(a () b) )
+    (= (match '(a * b) '(a b)) '(()) )
+
+    (= (match '( (? ?) * ) '( (x y) ) true) '((x y) ()) )
+    (= (match '( (? ?) * ) '( (x y) )) '(x y ()) )
+    (match '(+) '(a))
+    (match '(+) '(a b))
+    (not (match '(+) '()))
+  ))
+
+
+(define (test-max )
+  (and (= 10 (max 3 6 10 8)) (= 1.2 (max 0.7 0.6 1.2))))
+
+(define (test-member )
+  (= '(3 4) (member 3 '(1 2 3 4)))
+  (= (member "LISP" "newLISP") "LISP")
+  (= (member "LI" "newLISP") "LISP")
+  (= (member "" "newLISP") "newLISP")
+  (not (member "xyz" "newLISP"))
+  (not (member "new" "this is NEWLISP" 0))
+  (= (member "new" "this is NEWLISP" 1) "NEWLISP")
+)
+
+(define (test-min )
+  (and (= 3 (min 3 6 10 8)) (= 0.6 (min 0.7 0.6 1.2))))
+
+(define (test-mod )
+  (and (< (sub (mod 10.5 3.3) 0.6) 0.0001) (< (sub (mod 10 3) 1) 0.0001)))
+
+(define (test-mul )
+  (= 1e-09 (mul 0.0001 1e-05)))
+
+(define (test-multiply )
+  (let ((A '((1 2 3) (4 5 6))) (B '((1 2) (1 2) (1 2)))) 
+    (and 
+       (= '((6 12) (15 30)) (multiply A B))
+       (= (array 2 2 (flat '((6 12) (15 30))))
+          (multiply (array 2 3 (flat A)) (array 3 2 (flat  B))))
+    )
+))
+
+(define (test-name )
+  (= "name" (name 'name)))
+
+(define (test-net-accept )
+  (and
+	(set 'net-listen-test (set 'listen (net-listen 12345)))
+	(set 'net-connect-test (set 'connect (net-connect "localhost" 12345)))
+	(set 'server (net-accept listen))
+	(set 'net-send-test (= (net-send server "hello") 5))
+	(set 'net-select-test (net-select connect "r" 100000))
+	(set 'net-peek-test (= (net-peek connect) 5))
+	(set 'net-receive-test (net-receive connect 'buff 20))
+	(= buff "hello")
+	(set 'net-sessions-test (and  
+	  (find listen (net-sessions))
+	  (find connect (net-sessions))
+	  (find server (net-sessions))))
+	(set 'net-local-test (= (net-local server) (net-peer connect)))
+	(set 'net-peer-test (= (net-local connect) (net-peer server)))
+	(set 'net-close-test (net-close connect))
+	(set 'net-close-test (net-close server))
+	(set 'net-close-test (net-close listen))
+	(not (net-error))
+))
+
+(define (test-net-close ) net-close-test)
+
+(define (test-net-connect )  net-connect-test)
+
+(define (test-net-error ) 
+	(and
+		(not (net-close 12345))
+		(list? (net-error))))
+
+(define (test-net-eval) true) ;; see special test prog
+
+(define (test-net-listen ) net-listen-test)
+
+(define (test-net-local ) net-local-test)
+
+(define (test-net-lookup )
+	(and
+		(or (= "127.0.0.1" (net-lookup "localhost")) (= "::1" (net-lookup "localhost")))
+		(or (= "localhost" (net-lookup "127.0.0.1")) (= "localhost" (net-lookup "::1")))
+	)
+)
+
+(define (test-net-peek ) net-peek-test)
+
+(define (test-net-peer ) net-peer-test)
+
+(define (test-net-ping) true) ; test manualyy as superuser
+
+(define (test-net-receive ) net-receive-test)
+
+(define (test-net-receive-from)
+  (and
+    (set 'sock (net-listen 1234 "localhost" "udp"))
+    (set 'net-send-to-test (net-send-to "localhost" 1234 "hello" sock))
+    (set 'net-select-test (net-select sock "r" 1000000) )
+    (= "hello" (first (net-receive-from sock 10)))
+    (net-close sock)))
+
+
+(define (test-net-receive-udp)
+    (write-file "udptest.lsp"
+[text]
+(map set '(in out sid) (map int (slice (main-args) 2)))
+(semaphore sid 1) ; signal parent to start
+(set 'msg (net-receive-udp in 20 2000000))
+(sleep 100)
+(if (not msg) (exit))
+(net-send-udp "localhost" out (upper-case (first msg)))
+(exit)
+[/text]
+    )
+  (and
+    (set 'sid (semaphore))
+    (if (and (> opsys 5)(< opsys 9))
+      (process (string "newlisp udptest.lsp " 10001 " " 10002 " " sid))
+      (process (string "./newlisp udptest.lsp " 10001 " " 10002 " " sid)))
+    (println "---------- testing UDP Win32 and OS/2 -------------")
+    (println "waiting ...");
+    (semaphore sid -1) ; wait for child process
+    (sleep 100)
+    (println "sending ...")
+    (net-send-udp "localhost" 10001 "hello") 
+    (println "receiving ...")
+    (set 'msg (net-receive-udp 10002 20 3000000))
+    (println "msg:" msg)
+    (or (delete-file "udptest.lsp") true)
+    (println "deleting semaphore:" (semaphore sid 0)) ; delete semaphore
+    (println "------------------------------------------")
+    (if msg (set 'net-send-udp-test (= "HELLO" (first msg)) ) )))
+
+
+(if (or (< opsys 6)(= opsys 9))
+  (define (test-net-receive-udp)
+    (fork (begin (sleep 500) (net-send-udp "localhost" 10001 "hello")))
+    (set 'net-send-udp-test (= "hello" (first (net-receive-udp 10001 10)))))
+)
+
+
+(define (test-net-select )  net-select-test)
+
+(define (test-net-send ) net-send-test)
+
+(define (test-net-send-to ) net-send-to-test)
+
+(define (test-net-send-udp ) net-send-udp-test)
+
+(define (test-net-service ) (= 21 (net-service "ftp" "tcp")))
+
+(define (test-net-sessions ) net-sessions-test)
+
+(define (test-new) 
+  (new QA 'MAIN:QA2))
+
+(define (test-nil?) 
+  (and
+    ;test symbol-nil = logic-nil in order compare of count
+	(= (count '(nil true) (map (curry < 3) '(1 2 4 5))) '(2 2))
+    (= nil (not (nil? nil)))
+    (= '(nil true) (map nil? '(a nil)))))
+
+(define (test-null?)
+	(= (map null? '(1 0 2 0.0 "hello" "" (a b c) () nil true (lambda) (fn) (lambda ())))
+	'(nil true nil true nil true nil true true nil true true nil)))
+
+(define (test-normal )
+  (and (float? (normal)) (float? (normal 10 3)) (list? (normal 10 
+     3 100))))
+
+(define (test-not )
+  (and (not (not (not '()))) (not (not (not (not (not nil))))) (not 
+    (not (not (not true)))) 
+   (= '(true true true) (map not '(nil nil nil))) 
+   (= '(nil nil nil) (map not '(true true true)))))
+
+(define (test-now )
+  (= (length (now)) 11))
+
+(define (test-nper )
+  (< (sub (nper 0.1 1000 100000 0 0) -25.15885793) 1e-08))
+
+(define (test-npv )
+  (< (sub (npv 0.1 '(-10000 3000 4200 6800)) 1188.443412) 1e-06))
+
+(define (test-nth , l) ;; see set-nth for more comprehensive testing
+	(set 'l '(0 1 2))
+	(and (= 0 (nth 0 l))
+		(= 1 (nth 1 l))
+		(= 2 (nth 2 l))
+		(= 2 (nth -1 l))
+		(= (nth 0 "lisp") "l")
+		(= (nth 1 "lisp") "i")
+		(= (nth 3 "lisp") "p")
+		(= (nth -4 "lisp") "l")
+		(= (nth 0 "") "")
+		(= (nth 1 "") "")
+		(= (nth -1 "") "")
+
+		(set 'l '(a b (c d) (e f)))
+		(= 'a (l 0))
+		(= '(c d) (l 2))
+		(= 'c (l 2 0))
+		(= 'f (l -1 -1))
+		(= 'c (l '(2 0)))
+		(= 'f (l '(-1 -1)))
+
+		(set 'myarray (array 3 2 (sequence 1 6)))
+		(= (array 2 '(3 4)) (myarray 1))
+		(= 6 (myarray -1 -1))
+
+		(= (array 2 '(3 4)) (myarray '(1)))
+		(= 6 (myarray '(-1 -1)))
+
+		(= "L" ("newLISP" 3))
+
+		(constant 'constL '((1 2 3) (a b c)))
+		(set 'aref '(1 2))
+		(= (constL 1 2) 'c)
+		(= (nth 1 2 constL) 'c)
+		(= (nth (constL 1 2)) 'c)
+		(= (nth (constL (- 2 1) (+ 1 1))) 'c)
+		(= (nth (constL '(1 2))) 'c)
+		(= (nth (constL aref)) 'c)
+		(= (nth 0 (+ 1 1) constL) 3)
+
+  ))
+
+(define (test-number?)
+    (and
+        (number? 1)
+        (number? 1.23)
+        (not (number? 'x))
+        (not (number? "abc"))
+        (not (number? '(a b c)))
+    )
+)
+
+(define (test-open )
+  (and 
+    (set 'fle (open "qa-dot" "read"))
+    (close fle)))
+
+(define (test-or )
+  (and (or (or (= 1 2) nil nil) (or nil nil nil true)) (not (or nil 
+     (= "a" "b") nil))))
+
+(define (test-pack )
+ (and
+  (= (pack "c c c" 65 66 67) "ABC")
+  (= (unpack "c c c" "ABC") '(65 66 67))
+  (set 's (pack "c d u" 10 12345 56789))
+  (= (unpack "c d u" s) '(10 12345 56789))
+  (set 's (pack "s10 f" "result" 1.23))
+  (= (first (unpack "s10 f" s)) "result\000\000\000\000")
+  (< (- (last (unpack "s10 f" s)) 1.23) 0.00001)
+  (set 's (pack "s3 lf" "result" 1.23))
+  (= (first (unpack "s3 f" s)) "res")
+
+  (= (pack "ccc" 65 66 67) "ABC")
+  (= (unpack "ccc" "ABC") '(65 66 67))
+  (set 's (pack "cdu" 10 12345 56789))
+  (= (unpack "cdu" s) '(10 12345 56789))
+  (set 's (pack "s10f" "result" 1.23))
+  (= (first (unpack "s10f" s)) "result\000\000\000\000")
+  (< (- (last (unpack "s10f" s)) 1.23) 0.00001)
+  (set 's (pack "s3lf" "result" 1.23))
+  (= (first (unpack "s3f" s)) "res")
+
+  (= "\001\000" (pack "<d" 1))
+  (= "\000\001" (pack ">d" 1))
+  (= "\001\000\000\000" (pack "<ld" 1))
+  (= "\000\000\000\001" (pack ">ld" 1))
+  (= '(12345678) (unpack "ld" (pack "ld" 12345678)))
+  (= '(12345678) (unpack "<ld" (pack "<ld" 12345678)))
+  (= '(12345678) (unpack ">ld" (pack ">ld" 12345678)))
+  (= (unpack "bbbbbbbb" (pack "<lf" 1.234)) '(88 57 180 200 118 190 243 63))
+  (= (unpack "bbbbbbbb" (pack ">lf" 1.234)) '(63 243 190 118 200 180 57 88))
+  (= (format "%20.2f" (first (unpack "lf" (pack "lf" 1234567890123456)))) " 1234567890123456.00")
+))
+
+(define (test-parse )
+  (and 
+    (= 3 (length (parse "hello hi there"))) 
+    (= (parse "abcbdbe" "b") '("a" "c" "d" "e")) 
+    (= (parse "," ",") '("" ""))  
+    (= (parse "hello regular   expression 1, 2, 3" {,\s*|\s+} 0)
+       '("hello" "regular" "expression" "1" "2" "3"))))
+
+
+(define (test-parse-date)
+	(and
+		(= (parse-date "2007.1.3" "%Y.%m.%d") 1167782400)
+		(= (parse-date "January 10, 07" "%B %d, %y") 1168387200)
+))
+
+
+(define (test-peek)
+	(set 'fle (open "qa-dot" "r"))
+	(= (peek fle) (first (file-info "qa-dot")))
+	(close fle))
+
+(define (test-pipe)
+	(write-file "pipe-child.lsp" 
+[text]
+(set 'msg (read-line (int (nth 2 (main-args)))))
+(write-line (upper-case msg) (int (nth 3 (main-args))))
+(exit)
+[/text]
+	)
+	(set 'channel (pipe))
+	(set 'in (first channel))
+	(set 'out (last channel))
+	(if (and (> opsys 5) (< opsys 9))
+		(process (string "newlisp pipe-child.lsp " in " " out))
+		(process (string "./newlisp pipe-child.lsp " in " " out)))
+	(sleep 500)
+	(write-line "hello there" out)
+	(sleep 500)
+	(= (read-line in) "HELLO THERE")
+	(delete-file "pipe-child.lsp"))
+
+(if (< opsys 6)
+  (define (test-pipe)
+	(set 'channel (pipe))
+	(set 'in (first channel))
+	(set 'out (last channel))
+	(fork (write-line (upper-case (read-line in)) out))
+	(write-line "hello there" out)
+	(sleep 1000)
+	(= (read-line in) "HELLO THERE")
+	)
+)
+
+
+(define (test-pmt ) 
+  (< (sub (pmt 0.1 10 100000 0 0) -16274.53949) 1e-05))
+
+(define (test-pop , r l)
+  (set 'r '())
+  (set 'l '(1 2 3 4 5 6 7 8 9 0))
+  (dotimes (x 10) 
+   (push (pop l) r))
+  (and (= r '(0 9 8 7 6 5 4 3 2 1))
+       (set 'l '(a b (c d (x) e)))
+       (= 'x (pop l '(2 2 0)))
+       (set 'lst '(1 2 3 (4 5)()))
+       (push 'x lst -1 -1)
+       (= lst '(1 2 3 (4 5) (x)))
+       (push 'y lst -1 0)
+       (= lst '(1 2 3 (4 5) (y x)))
+       (push 'z lst -1 1)
+       (= lst '(1 2 3 (4 5) (y z x)))
+       (push 'p lst 4)
+       (= lst '(1 2 3 (4 5) p (y z x)))
+       (push 'q lst -2)
+       (= lst '(1 2 3 (4 5) p q (y z x)))
+       (push 'a lst 3 -3)
+       (= lst '(1 2 3 (a 4 5) p q (y z x)))
+       (= (pop lst 3 -3) 'a)
+       (= (pop lst -2) 'q)
+       (= (pop lst 4) 'p)
+       (= (pop lst -1 1) 'z)
+       (= (pop lst -1 0) 'y)
+       (= (pop lst -1 -1) 'x)
+       (= lst '(1 2 3 (4 5)()))
+       ; test pop string
+       (set 's "newLISP")
+       (= (pop s) "n")
+       (= s "ewLISP")
+       (= (pop s 2) "L")
+       (= s "ewISP")
+       (= (pop s -1) "P")
+       (= s "ewIS")
+       (= (pop s -2 2) "IS")
+       (= s "ew")
+       (= (pop s -2 10) "ew")
+       (= s "")
+       (set 's "123456789")
+       (= (pop s 5) "6")
+       (= (pop s 5 -1) "")
+       (= s "12345789")
+       (set 's "123456789")
+       (= (pop s 5 5) "6789")
+       (set 's "x")
+       (= (pop s) "x")
+       (= s "")
+       (= (pop s) "")
+       (= (pop s) "")	
+       (= s "")
+))
+
+(define (test-pop-assoc)
+	(and
+		(set 'L '((a (b 1) (c (d 2)))))
+		(= (pop-assoc (L 'a)) '(a (b 1) (c (d 2))))
+		(= L '())
+		(set 'L '((a (b 1) (c (d 2)))))
+		( = (pop-assoc (L 'a 'b)) '(b 1))
+		(= L '((a (c (d 2)))))
+		(set 'L '((a (b 1) (c (d 2)))))
+		(= (pop-assoc (L 'a 'c)) '(c (d 2)))
+		(= L '((a (b 1))))
+		(set 'L '((a (b 1) (c (d 2)))))
+		(= (pop-assoc (L 'a 'c 'd)) '(d 2))
+		(= L '((a (b 1) (c))))
+		(= (pop-assoc (L 'a 'c)) '(c))
+		(= L '((a (b 1))))
+		(= (pop-assoc (L 'a 'b)) '(b 1))
+		(= L '((a)))
+		(= (pop-assoc (L 'a)) '(a))
+		(= L '())
+	)
+)
+
+(define (test-post-url )
+  (= "ERR: bad formed URL" (post-url "" "abc" "def")))
+
+(define (test-pow )
+  (and
+    (= 1024 (pow 2 10))
+    (= 100 (pow 10))
+))
+
+(define (test-pretty-print)
+  (= (pretty-print) '(80 " ")))
+
+(define (test-primitive? )
+  (primitive? primitive?))
+
+(define (test-print ) 
+  (device (open "testprint" "w"))
+  (print "hello")
+  (close (device))
+  (and (= "hello" (read-file "testprint"))
+     (delete-file "testprint")))
+
+(define (test-println ) 
+  (device (open "testprintln" "w"))
+  (print "hello")
+  (close (device))
+  (and 
+     (= "hello" (slice (read-file "testprintln") 0 5))
+     (delete-file "testprintln")))
+
+(define (test-prob-chi2 )
+  (< (abs (sub (prob-chi2 10 10) 0.440493)) 1e-05))
+
+(define (test-prob-z )
+  (< (abs (sub (prob-z 0) 0.5)) 1e-05))
+
+(define (test-process ) 
+   (write-file "process test" {(write-file "test process" "hello") (exit)})
+   (if (and (> opsys 5) (< opsys 9))
+	(process {newlisp '"process test"'}) ; Win32
+    (process "./newlisp 'process test'")) ; Unix
+   (until (file? "test process") (sleep 500))
+   (sleep 200)
+   (and
+     (= "hello" (read-file "test process"))
+     (delete-file "process test")
+     (delete-file "test process")))
+
+(define (test-protected?)
+	(and
+		(protected? 'println)
+		(constant 'cval 123)
+		(protected? 'cval)
+		(protected? 'QA))
+)
+
+(define (test-push , l)
+  (dotimes (x 10) 
+   (push x l x))
+  (and 
+       (= l '(0 1 2 3 4 5 6 7 8 9))
+       (set 'l '(a b (c d () e)))
+       (push 'x l '(2 2 0))
+       (= (ref 'x l) '(2 2 0))
+       (set 'lst '(1 2 3 (4 5)()))
+       (push 'x lst -1 -1)
+       (= lst '(1 2 3 (4 5) (x)))
+       (push 'y lst -1 0)
+       (= lst '(1 2 3 (4 5) (y x)))
+       (push 'z lst -1 1)
+       (= lst '(1 2 3 (4 5) (y z x)))
+       (push 'p lst 4)
+       (= lst '(1 2 3 (4 5) p (y z x)))
+       (push 'q lst -2)
+       (= lst '(1 2 3 (4 5) p q (y z x)))
+       (push 'a lst 3 -3)
+       (= lst '(1 2 3 (a 4 5) p q (y z x)))
+       (= (pop lst 3 -3) 'a)
+       (= (pop lst -2) 'q)
+       (= (pop lst 4) 'p)
+       (= (pop lst -1 1) 'z)
+       (= (pop lst -1 0) 'y)
+       (= (pop lst -1 -1) 'x)
+       (= lst '(1 2 3 (4 5)()))
+       (test-push-pop)
+       (test-push-optimization-bug)
+       ; test string push
+       (set 's "newLISP")
+       (= (push "#" s) "#")
+       (= s "#newLISP")
+       (= (push "#" s 1) "#")
+       (= s "##newLISP")
+       (= (push "#" s 3) "#")
+       (= s "##n#ewLISP")
+       (= (push "#" s -1) "#")
+       (= s "##n#ewLISP#")
+       (= (push "#" s -3) "#")
+       (= s "##n#ewLIS#P#")
+       (= (push "xy" s) "xy")
+       (= s "xy##n#ewLIS#P#")
+       (= (push "xy" s -1) "xy")
+       (= s "xy##n#ewLIS#P#xy")
+       (set 's "")
+       (= (push "" s) "")
+       (= s "")
+       (set 's "newLISP")
+       (= (push "" s -1) "")
+       (= (push "" s) "")
+       (= s "newLISP")
+       (push "-" s 7)
+	   (= s "newLISP-")
+	   (push "-" s -9)
+	   (= s "-newLISP-")
+       (set 's "newLISP")
+       (push "-" s 8)
+	   (= s "newLISP-")
+	   (push "-" s -10)
+	   (= s "-newLISP-")
+))
+
+(define (test-push-pop)
+	(set 'lst (sequence 1 1000))
+	(dotimes (x 1000) (push (pop lst) lst -1))
+	(= lst (sequence 1 1000)))
+
+(define (test-push-optimization-bug) ; fixed in 8.7.1
+    (set 'l nil)
+    (and (push 'x l -1)
+         (set 'lst l)
+         (push 'y lst -1)
+         (= lst '(x y))))
+
+(define (test-put-url ) 
+  (= "ERR: bad formed URL" (put-url "" "abc")))
+
+(define (test-pv )
+  (< (sub (pv 0.1 10 1000 100000 0 0) -44696.89605) 1e-05))
+
+(define (test-quote )
+  (= (quote x) 'x))
+
+(define (test-quote? )
+  (quote? ''quote?))
+
+(define (test-rand , sum)
+  (set 'sum 0)
+  (dotimes (x 1000) 
+   (inc 'sum (rand 2)))
+  (and (< sum 600) (> sum 400) (list? (rand 10 100))))
+
+(define (test-random )
+  (and (float? (random)) (= (length (random 0 1 10)) 10)))
+
+(define (test-randomize)
+  (and
+    (!= '(a b c d e f g) (randomize '(a b c d e f g)))
+    (= (difference '(a b c d e f g) (randomize '(a b c d e f g))) '())
+  )
+)
+
+(define (test-read-expr)
+    (set 'code "; a statement\n(+ 3 4)\n(define (double x) (+ x x))")
+    (read-expr code (fn (x) (push x clist)) (context))
+    (= clist '((define (double x) (+ x x)) (+ 3 4)))
+)
+
+(define (test-read-buffer )
+  (and
+    (set 'file (open "qa-dot" "read"))
+    (read-buffer file 'buff (nth 0 (file-info "qa-dot")))
+    (close file)
+    (set 'file (open "junk" "write"))
+    (write-buffer file 'buff (nth 0 (file-info "qa-dot")))
+    (close file)))
+
+(define (test-read-char )
+  (and 
+    (file-copy "qa-dot" "junk")
+    (delete-file "junk")))
+
+(define (test-read-file )
+  (read-file "qa-dot"))
+
+(define (test-read-key) true)
+
+(define (test-read-line )
+  (line-count "qa-dot"))
+
+
+(define (test-real-path) 
+  (and
+	(string? (real-path))
+    (string? (real-path "."))
+ ))
+
+(define (test-ref)
+  (and 
+    (set 'pList '(a b (c d () e)))
+    (push 'x pList 2 2 0)
+    (= (ref 'x pList) '(2 2 0))
+    (= (ref '(x) pList) '(2 2))
+    (set 'v (ref '(x) pList))
+    (= (pList v) '(x))
+    (= (ref 'foo pList) '())
+    ; comparison functor
+    (= (ref 'e '(a b (c d (e) f)) =) '(2 2 0))
+    (= (ref 'e '(a b (c d (e) f)) >) '(0))
+    (= (ref 'e '(a b (c d (e) f)) <) '(2))
+    (= (ref 'e '(a b (c d (e) f)) (fn (x y) (or (= x y) (= y 'd)))) '(2 1))
+    (define (is-it-or-d x y) (or (= x y) (= y 'd)))
+    (= (ref 'e '(a b (c d (e) f)) is-it-or-d) '(2 1))
+    ; comparison with match and unify
+    (= (ref '(a ?) '((l 3) (a 12) (k 5) (a 10) (z 22)) match) '(1))
+    (= (ref '(X X) '( ((a b) (c d)) ((e e) (f g)) ) unify) '(1 0))
+    (= (ref '(X g) '( ((a b) (c d)) ((e e) (f g)) ) unify) '(1 1))
+))
+
+(define (test-ref-all) 
+  (and
+    (set 'L '(a b c (d a f (a h a)) (k a (m n a) (x))))
+    (= (ref-all 'a L) '((0) (3 1) (3 3 0) (3 3 2) (4 1) (4 2 2)))
+    (= (L '(3 1)) 'a)
+    (= (map 'L (ref-all 'a L)) '(a a a a a a))
+    ; with comparison functor
+    (= (ref-all 'a '(1 2 3 4 5 6)) '())
+    (set 'L '(a b c (d f (h l a)) (k a (m n) (x))))
+    (= (ref-all 'c L =) '((2)))
+    (= (ref-all 'c L >) '((0) (1) (3 2 2) (4 1)))
+    (= (ref-all 'a L (fn (x y) (or (= x y) (= y 'k)))) ' ((0) (3 2 2) (4 0) (4 1)))
+    (define (is-long? x y) (> (length y) 2))
+    (= (ref-all nil L is-long?) '((3) (3 2) (4)))
+    (define (is-it-or-d x y) (or (= x y) (= y 'd)))
+    (= (ref-all 'e '(a b (c d (e) f)) is-it-or-d) '((2 1) (2 2 0)))
+    (= (ref-all 'b '(a b (c d (e) f)) is-it-or-d) '((1) (2 1)))
+    (= (ref-all nil '(((()))) (fn (x y) (> (length y) 0))) '((0) (0 0)))
+    ; test comparison with match and unify
+    (= (ref-all '(a ?) '((l 3) (a 12) (k 5) (a 10) (z 22)) match) '((1) (3)))
+    (= (ref-all '(X X) '( ((a b) (c d)) ((e e) (f g)) ((z) (z))) unify) '((1 0) (2)))
+    (= (ref-all '(X g) '( ((x y z) g) ((a b) (c d)) ((e e) (f g))) unify) '((0) (2 1)))
+))
+
+
+(define (test-regex )
+  (and
+   (= (regex "http://(.*):(.*)" "http://nuevatec.com:80")
+      '("http://nuevatec.com:80" 0 22 "nuevatec.com" 7 12 "80" 20 2))
+   (= $0 "http://nuevatec.com:80")
+   (= $1 "nuevatec.com")
+   (= $2 "80")
+   (= (regex "b+" "AAAABBBAAAA" 1) '("BBB" 4 3))))
+ 
+(define (test-remove-dir )
+  (and (make-dir "junk") (remove-dir "junk")))
+
+(define (test-rename-file )
+  (copy-file "qa-dot" "junk")
+  (rename-file "junk" "junk2"))
+
+;; this can run only once than must be reloaded
+;; because some replace's are in place with a constant
+(define (test-replace ) 
+ (and
+  (not (catch (replace "a" "akakak") 'result))
+  (not (catch (replace "a") 'result))
+  (not (catch (replace) 'result))
+  (catch (replace "a" '("x" "a" "y")) 'result)
+  (= (replace "a" "ababab" "b") "bbbbbb")
+  (= $0 3) 
+  (= (replace 'a '(a a b a b a a a b a) 'b) '(b b b b b b b b b b))
+  (= (replace 'a '(a a b a b a a a b a)) '(b b b))
+  (= (replace 'a '(a)) '())
+;; with regular expressions option
+  (= (replace "" "abc" "x" 0) "xaxbxcx")
+  (= (replace "$" "abc" "x" 0) "abcx")
+  (= (replace "^" "abc" "x" 0) "xabc")
+  (= (replace "\\b" "abc" "x" 0) "xabcx")
+  (= (replace "(?<=[0-9])(?=(?:[0-9]{3})+(?![0-9]))" "1234567" "," 0) "1,234,567")
+  (= (replace "a" "ababab" (upper-case $0) 0) "AbAbAb")
+  (= $0 3) 
+  (set 'str2 "abaBab")
+  (= (replace "b|B" str2 "z" 0) "azazaz")
+  (= $0 3)
+  (replace-once "aaa")
+  (= (replace "%([0-9A-F][0-9A-F])" "%41123%42456%43" (char (int (append "0x" $1))) 1) "A123B456C")
+  ; replace with comparison functor
+  (set 'L '(1 4 22 5 6 89 2 3 24))
+  (= (replace 10 L 10 <) '(1 4 10 5 6 10 2 3 10)) 
+  (set 'L '(1 4 22 5 6 89 2 3 24))
+  (= (replace 10 L 10 (fn (x y) (< x y))) '(1 4 10 5 6 10 2 3 10))
+  ;
+  (set 'AL '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
+  (= (replace '(mary *)  AL (list 'mary (apply + (rest $0))) match)
+    '((john 5 6 4) (mary 14) (bob 4 2 7 9) (jane 3)))
+  (set 'AL '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
+  (= (replace '(*) AL (list ($0 0) (apply + (rest $0))) match)
+    '((john 15) (mary 14) (bob 22) (jane 3)))
+  (set 'AL '((john 5 6 4) ("mary" 3 4 7) (bob 4 2 7 9) ("jane" 3)))
+  (= (replace nil AL (cons (sym ($0 0)) (rest $0)) (fn (x y) (string? (y 0))))
+    '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
+))
+ 
+(define (replace-once str)
+  (= (replace "a" str (upper-case $0) 0x8000) "Aaa") ;; custom option replace once
+)
+
+(define (test-replace-assoc )
+  (set 'aList '((a 1 2 3) (b 4 5 6) (c 7 8 9)))
+  (set 'bList '((a 1) (b 2) (c 3)))
+  (replace-assoc 'b aList '(b 4 5 99))
+  (replace-assoc 'c aList '(x "this works too"))
+  (and
+    (= aList '((a 1 2 3) (b 4 5 99) (x "this works too")))
+    (set 'lst '((a 1)(b 2)(c 3)))
+    (= (replace-assoc 'b lst (list 'b (+ 1 (last $0))))
+       '((a 1)(b 3)(c 3)))
+    (= (replace-assoc 'b bList) '((a 1) (c 3)))
+    (= (replace-assoc 'a bList) '((c 3)))
+    (= (replace-assoc 'c bList) '())
+  )
+)
+
+(define (test-reset )
+  true)
+
+(define (test-rest , l)
+  (set 'l '(a b c d e f g))
+  (and  (= (cons (first l) (rest l)) l)
+    (= (rest "newlisp") "ewlisp")
+;; implicit nrest
+        (= (1 l) '(b c d e f g))
+    (= (10 l) '())
+    (= (0 l) l)
+    (= (-3 '(a b c d e f g)) '(e f g))
+        (= (-3 "abcdefg") "efg")
+    (= (1 '(A)) '())
+    (= (1 "A") "")
+    (= (array 2 2 (sequence 3 6)) (rest (array 3 2 (sequence 1 6))))
+))
+
+(define (test-reverse )
+  (and
+    (= (reverse '(1 2 3)) '(3 2 1))
+    (= (reverse "newLISP") "PSILwen")))
+
+(define (test-rotate )
+  (and
+    (= '(8 9 0 1 2 3 4 5 6 7) (rotate '(0 1 2 3 4 5 6 7 8 9) 2))
+    (= '() (rotate '()))
+	(= (rotate '(1) -1) '(1))
+	(= (rotate "") "")
+	(= (rotate "x" -1) "x")
+	(set 'str "abcdefg")
+	(= (rotate str) "gabcdef")
+	(= (rotate str 3) "defgabc")
+	(= (rotate str -4) "abcdefg")
+))
+
+(define (test-round)
+	(and
+		(= (round 1.25)  (round 1.25 0) 1)
+		(= (round 3.89) (round 3.89 0) 4)
+		(= (round 123.49 2) 100)
+		(= (round 123.49 1) 120)
+		(= (round 123.49 0) 123)
+		(= (round 123.49 -1) 123.5)
+		(= (round 123.49 -2) 123.49)
+		(= (round 123.49 -3) 123.49)
+		(!= (round 123.49 -2) 123.49000000000001)
+		(= (round 123.49 3)  0)))
+
+(define (test-save )
+  (and (save "all") (save "save.lsp" 'test-save) (delete-file "all") 
+   (delete-file "save.lsp")))
+
+(define (test-search , file)
+  (and
+    (set 'file (open "qa-dot" "read"))
+    (search file "define")
+    (close file)))
+
+(define (test-seed )
+  (seed 123)
+  (set 'a (rand 10))
+  (seed 123)
+  (set 'b (rand 10))
+  (= a b))
+
+(define (test-seek , file chr)
+  (set 'file (open "junk" "write"))
+  (dotimes (x 100) 
+   (write-char file x))
+  (close file)
+  (set 'file (open "junk" "read"))
+  (seek file 65)
+  (set 'chr (read-char file))
+  (close file)
+  (delete-file "junk")
+  (= chr 65))
+
+(define (test-select )
+  (set 'l '(0 1 2 3 4 5 6 7 8 9))
+  (and
+    (test-select-collect)
+    (= (select l '(0 9 9 0 1 8 8 1)) '(0 9 9 0 1 8 8 1))
+    (= (select "2001-09-20" '(5 6 8 9 0 1 2 3)) "09202001")))
+
+;; for testing semaphores accross processes/threads see test-share
+(define (test-semaphore)
+  (and
+    (set 'sid (semaphore))
+    (if (or (< opsys 5)(= opsys 9)) (= (semaphore sid) 0) true) ;; no semaphore status on Win32
+    (semaphore sid 1)
+    (if (or (< opsys 5)(= opsys 9)) (= (semaphore sid) 1) true) ;; no semaphore status on Win32
+    (semaphore sid 0)))
+
+(define (test-sequence )
+  (= (sequence 1 10 3) '(1 4 7 10)))
+
+(define (test-series )
+  (and
+    (= (series 2 2 5) '(2 4 8 16 32))
+    (= (series 2 2 0) '())
+    (= (series 1 2 -10) '())
+    (= (series 1 1 5) '(1 1 1 1 1))
+))
+
+(define (test-set , x y z)
+  (set 'x (set 'y (set 'z 123)))
+  (= x 123))
+
+(define (test-setq , x y z)
+  (setq x 1 y 2 z 3)
+  (and (= x 1) (= y 2) (= z 3)))
+
+(define (test-set-assoc)
+ (and
+	(set 'L '((a 1) (b (c (d 2) (e 3) (e 4))) ("a" 5) ((a) 6)))	
+	(= (assoc 'a L) '(a 1))	
+	(= (assoc 'b L) '(b (c (d 2) (e 3) (e 4))))
+	(= (assoc "a" L) '("a" 5))
+	(= (assoc '(a) L) '((a) 6))
+
+	(= (assoc (L 'a)) '(a 1))
+	(= (assoc (L 'b)) '(b (c (d 2) (e 3) (e 4))))
+	(= (assoc (L "a")) '("a" 5))
+	(= (assoc (L '(a))) '((a) 6))
+
+	(= (assoc (L 'b 'c)) '(c (d 2) (e 3) (e 4)))
+	(= (assoc (L 'b 'c 'd)) '(d 2))
+	(= (assoc (L 'b 'c 'e)) '(e 3))
+
+	(= (set-assoc (L 'a) '(a 11)) 
+	'((a 11) (b (c (d 2) (e 3) (e 4))) ("a" 5) ((a) 6)))
+
+	(= (set-assoc (L 'b) '(B (C (d 2) (e 3) (e 4))))
+ 		'((a 11) (B (C (d 2) (e 3) (e 4))) ("a" 5) ((a) 6)))
+
+	(= (set-assoc (L "a") '("A" 5))
+		'((a 11) (B (C (d 2) (e 3) (e 4))) ("A" 5) ((a) 6)))
+
+	(= (set-assoc (L '(a)) '((A) 6))
+		'((a 11) (B (C (d 2) (e 3) (e 4))) ("A" 5) ((A) 6)))
+
+	(= (set-assoc (L 'B 'C) '(c (d 2) (e 3) (e 4)))
+		'((a 11) (B (c (d 2) (e 3) (e 4))) ("A" 5) ((A) 6)))
+
+	(= (set-assoc (L 'B 'c 'd) '(d 22))
+		'((a 11) (B (c (d 22) (e 3) (e 4))) ("A" 5) ((A) 6)))
+
+	(= (set-assoc (L 'B 'c 'e) '(e 33))
+		'((a 11) (B (c (d 22) (e 33) (e 4))) ("A" 5) ((A) 6)))
+
+	(= (length (set 'L (dup '(a 1) 1000))) 1000)
+	(= (push '(x 9) L -1) '(x 9))
+	(= (ref '(x *) L match) '(1000))
+	(= (assoc 'x L) '(x 9))
+	(= (assoc-set (L 'x) $0) '(x 9))
+))
+
+(define (test-set-nth-implicit) 
+  (and
+    (= (set-nth ("abcd" 0) "z") "zbcd")
+    (= (set-nth ("abcd" -1) "z") "abcz")
+    (= (set-nth ("abcd" 3) "z") "abcz")
+    (= (set-nth ("abcd" -4) "z") "zbcd")
+    (= (set-nth ("abcd" 0) "xyz") "xyzbcd")
+    (= (set-nth ("abcd" -1) "xyz") "abcxyz")
+    (= (set-nth ("abcd" 3) "xyz") "abcxyz")
+    (= (set-nth ("abcd" -4) "xyz") "xyzbcd")
+    (= (set-nth ("abcd" 1) (append $0 $0)) "abbcd")
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 0) 'new) '(new (2 3) 4))
+    (= (nth 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 1) 'new) '(1 new 4))
+    (= (nth 1 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 2) 'new) '(1 (2 3) new))
+    (= (nth 2 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 0 0) 'new) '(new (2 3) 4))
+    (= (nth 0 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 1 0) 'new) '(1 (new 3) 4))
+    (= (nth 1 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth (l 1 1) 'new) '(1 (2 new) 4))
+    (= (nth 1 1 l) 'new)
+    (set 'l '((2 3) 4))
+    (= (set-nth (l 0 0) 'new) '((new 3) 4))
+    (= (nth 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth (l 0 0 0) 'new) '((new (3 4)) (5 6)))
+    (= (nth 0 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth (l 0 0 1) 'new) '((new (3 4)) (5 6)))
+    (= (nth 0 0 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth (l 0 1 1) 'new) '((2 (3 new)) (5 6)))
+    (= (nth 0 1 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth (l 0 1) 'new) '((2 new) (5 6)))
+    (= (nth 0 1 l) 'new)
+	(set 'L '(1 2 3 4 5))
+	(= (set-nth (L 3) (+ $0 1)) '(1 2 3 5 5))
+	(set 'L '(a b c (d e f)))
+	(= (set-nth (L 3) (set-nth (L 3) 99)) '(a b c (a b c 99)))
+	(set 'L '(()))
+	(= (set-nth (L -1) 99) '(99))
+	(set 'L '((1 2 3) (a b c)))
+	(= (set 'aref (ref 'c L)) '(1 2))
+	(= (set-nth (L aref) 99) '((1 2 3) (a b 99)))
+	(set 'L '((1 2 3) (a b c)))
+	(= (set-nth 1 (+ 1 1) L 99) '((1 2 3) (a b 99)))
+	(= (set-nth (L 1 (+ 1 1)) 999) '((1 2 3) (a b 999)))	
+	(= (set-nth (L (sequence 1 10000)) '@) '((1 2 3) (a b @)))
+))
+
+(define (test-set-nth) 
+  (and
+    (= (set-nth 0 "abcd" "z") "zbcd")
+    (= (set-nth -1 "abcd" "z") "abcz")
+    (= (set-nth 3 "abcd" "z") "abcz")
+    (= (set-nth -4 "abcd" "z") "zbcd")
+    (= (set-nth 0 "abcd" "xyz") "xyzbcd")
+    (= (set-nth -1 "abcd" "xyz") "abcxyz")
+    (= (set-nth (+ 1 2) "abcd" "xyz") "abcxyz")
+    (= (set-nth -4 "abcd" "xyz") "xyzbcd")
+    (= (set-nth 1 "abcd" (append $0 $0)) "abbcd")
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth 0 l 'new) '(new (2 3) 4))
+    (= (nth 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth 1 l 'new) '(1 new 4))
+    (= (nth 1 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth 2 l 'new) '(1 (2 3) new))
+    (= (nth 2 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth 0 0 l 'new) '(new (2 3) 4))
+    (= (nth 0 0 l) 'new)
+    (set 'l '(1 (2 3) 4)) ;;;;
+    (= (set-nth 1 0 l 'new) '(1 (new 3) 4))
+    (= (nth 1 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (set-nth 1 1 l 'new) '(1 (2 new) 4))
+    (= (nth 1 1 l) 'new)
+    (set 'l '((2 3) 4))
+    (= (set-nth 0 0 l 'new) '((new 3) 4))
+    (= (nth 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth 0 0 0 l 'new) '((new (3 4)) (5 6)))
+    (= (nth 0 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth 0 0 1 l 'new) '((new (3 4)) (5 6)))
+    (= (nth 0 0 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth 0 1 1 l 'new) '((2 (3 new)) (5 6)))
+    (= (nth 0 1 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (set-nth 0 1 l 'new) '((2 new) (5 6)))
+    (= (nth 0 1 l) 'new)
+	(set 'L '(1 2 3 4 5))
+	(= (set-nth 3 L (+ $0 1)) '(1 2 3 5 5))
+	(set 'L '(a b c (d e f)))
+	(= (set-nth 3 L (set-nth 3 L 99)) '(a b c (a b c 99)))
+	(test-set-nth-implicit)
+))
+
+(define (test-nth-set-implicit)
+  (and
+    (= (nth-set ("abcd" 0) "z") "a")
+    (= (nth-set ("abcd" -1) "z") "d")
+    (= (nth-set ("abcd" 3) "z") "d")
+    (= (nth-set ("abcd" -4)"z") "a")
+    (= (nth-set ("abcd" 0) "xyz") "a")
+    (= (nth-set ("abcd" -1)"xyz") "d")
+    (= (nth-set ("abcd" 3) "xyz") "d")
+    (= (nth-set ("abcd" -4) "xyz") "a")
+    (= (nth-set ("abcd" 1) (append $0 $0)) "b")
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 0) 'new) 1)
+    (= (nth 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set  (l 1) 'new) '(2 3))
+    (= (nth 1 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 2) 'new) 4)
+    (= (nth 2 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 3) 'new) 4)
+    (= (nth 3 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 0 0) 'new) 1)
+    (= (nth 0 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 1 0) 'new) 2)
+    (= (nth 1 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set (l 1 1) 'new) 3)
+    (= (nth 1 1 l) 'new)
+    (set 'l '((2 3) 4))
+    (= (nth-set (l 0 0) 'new) 2)
+    (= (nth 0 0 l) 'new)
+    (set 'l '((2 3)))
+    (= (nth-set (l 1 1) 'new) 3)
+    (= (nth 1 1 l) 'new)
+    (set 'l '((2 3)))
+    (= (nth-set (l 2 3) 'new) 3)
+    (= (nth 2 3 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set (l 0 0 0) 'new) 2)
+    (= (nth 0 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set (l 0 0 1) 'new) 2)
+    (= (nth 0 0 1 l) 'new) ;;;
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set (l 0 1 1) 'new) 4)
+    (= (nth 0 1 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set (l 0 1) 'new) '(3 4))
+    (= (nth 0 1 l) 'new)
+	(set 'L '(a b c (d e f)))
+	(nth-set (L 3) (nth-set (L 3) 99))
+	(= L '(a b c (d e f)))
+	(set 'L '((1 2 3) (a b c)))
+	(= (set 'aref (ref 'c L)) '(1 2))
+	(= (nth-set (L aref) 99) 'c)
+))
+
+
+(define (test-nth-set) 
+  (and
+    (= (nth-set 0 "abcd" "z") "a")
+    (= (nth-set -1 "abcd" "z") "d")
+    (= (nth-set (+ 1 2) "abcd" "z") "d")
+    (= (nth-set -4 "abcd" "z") "a")
+    (= (nth-set 0 "abcd" "xyz") "a")
+    (= (nth-set -1 "abcd" "xyz") "d")
+    (= (nth-set 3 "abcd" "xyz") "d")
+    (= (nth-set -4 "abcd" "xyz") "a")
+    (= (nth-set 1 "abcd" (append $0 $0)) "b")
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 0 l 'new) 1)
+    (= (nth 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 1 l 'new) '(2 3))
+    (= (nth 1 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 2 l 'new) 4)
+    (= (nth 2 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 2 l 'new) 4)
+    (= (nth 2 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 0 0 l 'new) 1)
+    (= (nth 0 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 1 0 l 'new) 2)
+    (= (nth 1 0 l) 'new)
+    (set 'l '(1 (2 3) 4))
+    (= (nth-set 1 1 l 'new) 3)
+    (= (nth 1 1 l) 'new)
+    (set 'l '((2 3) 4))
+    (= (nth-set 0 0 l 'new) 2)
+    (= (nth 0 0 l) 'new)
+    (set 'l '((2 3)))
+    (= (nth-set 0 1 l 'new) 3)
+    (= (nth 0 1 l) 'new)
+    (set 'l '((2 3)))
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set 0 0 0 l 'new) 2)
+    (= (nth 0 0 0 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set 0 0 1 l 'new) 2)
+    (= (nth 0 0 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set 0 1 1 l 'new) 4)
+    (= (nth 0 1 1 l) 'new)
+    (set 'l '((2 (3 4))(5 6)))
+    (= (nth-set 0 1 l 'new) '(3 4))
+    (= (nth 0 1 l) 'new)
+	(set 'L '(a b c (d e f)))
+	(nth-set 3 L (nth-set 3 L 99))
+	(= L '(a b c (d e f)))
+))
+
+
+(define (test-set-ref)
+	(and
+		(set 'L '(z a b (z) (d (c c (c)) e f c))) 
+		(= (set-ref (L 'c) 'z) '(z a b (z) (d (z c (c)) e f c)))
+		(set 'L '((a 1) (b 2) (a 3) (b 4)))	
+		(= (set-ref (L '(a *)) '(z 99) match) '((z 99) (b 2) (a 3) (b 4)))
+		(= (set-ref (L '(a *)) '(z 99) match) '((z 99) (b 2) (z 99) (b 4)))
+		(set 'Ct:Ct '(a b c d e f g))
+		(= (set-ref  (Ct 'c) 'z) '(a b z d e f g))
+	)
+)
+
+
+(define (test-set-ref-all)
+    (and
+		(set 'L '(z a b (c) (d (c c (c)) e f c))) 
+		(= (set-ref-all (L 'c) 'z) '(z a b (z) (d (z z (z)) e f z)))
+		(set 'L '((a 1) (b 2) (a 3) (b 4)))
+		(= (set-ref-all (L '(a *)) '(z 99) match) '((z 99) (b 2) (z 99) (b 4)))
+    )
+)
+
+(define (test-ref-set)
+	(and
+		(set 'L '(a b (c) d e f g))
+		(= (ref-set (L 'c) 'z) 'c)
+		(set 'L '(a b (c) d e f g))
+		(= (ref-set (L 'c) 'z) 'c)
+	)
+)
+
+(define (test-share)
+    (and 
+      (if (or (< opsys 5)(= opsys 9))
+          (unix-test-share)
+          (win32-test-share))
+      (set 'mvar (share))
+      (share mvar 123)
+      (= (share mvar) 123)
+      (share mvar 123.456)
+      (= (share mvar) 123.456)
+      (share mvar "hello")
+      (= (share mvar) "hello")))
+
+
+(define (win32-test-share)
+    (write-file "sharetest.lsp"
+[text]
+(map set '(sid mm) (map int (slice (main-args) 2)))
+(if (= (share mm) "hello") (share mm "HELLO"))
+(semaphore sid 1) ; signale parent to read
+(exit)
+[/text]
+    )
+  (and
+    (set 'sid (semaphore))
+    (set 'mm (share))
+    (share mm "hello")
+    (if (and (> opsys 5)(< opsys 9))
+      (process (string "newlisp sharetest.lsp " sid " " mm))
+      (process (string "./newlisp sharetest.lsp " sid " " mm)))
+    (semaphore sid -1) ; wait for child process
+    (sleep 1000)
+    (semaphore sid 0) ;; delete semaphore
+    (= (share mm) "HELLO")
+    (or (delete-file "sharetest.lsp") true)))
+
+
+(define (unix-test-share)
+  (and
+    (set 'mm (share))
+    (share mm "hello")
+
+    (wait-pid (fork (begin
+            (if (= (share mm) "hello")
+                (share mm "HELLO"))
+                (exit ))))
+		
+    (= (share mm) "HELLO")
+    (share nil mm) ; unmap share
+))
+
+(define (test-sgn)
+ (and
+   (= 0 (sgn 0))
+   (= 1 (sgn 123))
+   (= -1 (sgn -3.5))))
+
+
+; test manually
+(define (test-signal) true)
+
+(define (test-silent )
+  (primitive? silent))
+
+(define (test-sin )
+  (= 1 (sin (asin (sin (asin 1))))))
+
+(define (test-sinh)
+	(< (abs (sub (tanh 1) (div (sinh 1) (cosh 1))))  0.0000000001)
+)
+
+(define (test-sleep )
+  (set 'start (time-of-day))
+  (sleep 10)
+  (set 'start (time-of-day))
+  (sleep 1000)
+  (set 'duration (- (time-of-day) start))
+  (and (> duration 500) (< duration 1500)))
+
+(define (test-slice )
+(and 
+   (set 'str "0123456789")
+   (= (slice str 0 1) "0") 
+   (= (slice str 0 3) "012") 
+   (= (slice str 8 2) "89") 
+   (= (slice str 8 10) "89") 
+   (= (slice str 20 10) "")
+   (= (slice str 2 -2) "234567")
+   (= (slice str 2 -5) "234")
+   (= (slice str 2 -7) "2")
+   (= (slice str 2 -8) "")
+   (= (slice str 2 -9) "")
+   (= (slice '(a b c d e f g) 3 1) '(d))
+   (= (slice '(a b c d e f g) 3 0) '())
+   (= (slice '(a b c d e f g) 0 0) '())
+   (= (slice '(a b c d e f g) 10 10) '())
+   (= (slice '(a b c d e f g) 3 2) '(d e))
+   (= (slice '(a b c d e f g) 5) '(f g))
+   (= (slice '(a b c d e f g) -5 2) '(c d))
+   (= (slice '(a b c d e f g) -1 -2) '())
+   (= (slice '(a b c d e f g) 1 -2) '(b c d e))
+   (= (slice '(a b c d e f g) 4 -2) '(e))
+   (= (slice '(a b c d e f g) 4 -3) '())
+   (= (slice '(a b c d e f g) 4 -4) '())
+   (= (slice '(a b c d e f g) -6 -3) '(b c d))
+;; implicit slice
+   (= (1 3 '(a b c d e f g)) '(b c d))
+   (= (-4 2 '(a b c d e f g)) '(d e))
+   (= (1 3 "abcdefg") "bcd")
+   (= (-4 2 "abcdefg") "de")
+   (= (1 -3 "abcdefg") "bcd")
+   (= (1 -5 "abcdefg") "b")
+   (=  (1 -7 "abcdefg") "")
+   (setq x 1 y 2)
+   (= (x y '(a b c d e f g)) '(b c))
+   (= (x y "abcdefg") "bc")
+   (= (1 -2 '(a b c d e f g)) '(b c d e))
+   (= (4 -2 '(a b c d e f g)) '(e))
+   (= (4 -3 '(a b c d e f g)) '())
+   (= (4 -4 '(a b c d e f g)) '())
+   (= (-6 -3 '(a b c d e f g)) '(b c d))
+))
+
+(define (test-sort )
+  (and
+    (= '(1 2 3 4 5 6 7 8 9) (sort '(9 1 8 2 7 3 6 4 5)))
+    (= '(1 2 3 4 5 6 7 8 9) (sort '(9 1 8 2 7 3 6 4 5)))
+    (= '(1 2 3 4 5 6 7 8 9) (sort '(9 1 8 2 7 3 6 4 5) <))
+    (= '(9 8 7 6 5 4 3 2 1) (sort '(9 1 8 2 7 3 6 4 5) >))
+    (= '(1 2 3 4 5 6 7 8 9) (sort '(9 1 8 2 7 3 6 4 5) (fn (x y) (< x y))))
+    (= '(9 8 7 6 5 4 3 2 1) (sort '(9 1 8 2 7 3 6 4 5) (fn (x y) (> x y))))
+    (= '() (sort '()))
+  )
+)
+
+(define (test-source) 
+  (= (replace "\r|\n" (source 'test-sin) "" 0) 
+     "(define (test-sin )  (= 1 (sin (asin (sin (asin 1))))))"))
+
+(define (test-sqrt )
+  (and (= 10 (sqrt 100)) (= 1.2 (sqrt 1.44))))
+
+(define (test-starts-with )
+  (and (starts-with "newlisp" "new") (starts-with "newlisp" "NEW" 
+    nil)))
+
+(define (test-string )
+  (and (string? (string 12345)) (= (string 12345) "12345") (string? 
+    (string 1.234)) 
+   (= (string 'test-string) "test-string") 
+   (string? (string test-string)) 
+   (= (string "a" "b" "c") (append "a" "b" "c") "abc") 
+   (= (string "a" 123 "b") "a123b")))
+
+(define (test-string? )
+  (and (string? "1234") (not (string? 1234))))
+
+(define (test-sub )
+  (= 0 (sub 0.99999999 0.99999999))
+  (= -123 (sub 123)))
+
+(define (test-swap )
+  (set 'lst '(1 2 3 4))
+  (and 
+	(= (swap 1 2 lst) '(1 3 2 4)) 
+	(= lst '(1 3 2 4))
+    (let (a 1 b 2) (and (= (swap a b) 1) (= a 2) (= b 1)))
+  )
+)
+
+(define (test-sym)
+  (and (= (sym "test-sym") 'test-sym) 
+       (= (sym "test-sym" 'QA) 'test-sym)))
+
+(define (test-symbol? )
+	(and
+  		(symbol? (sym "test-symbol"))
+		(symbol? (sym "a b"))
+))
+
+(define (test-symbols )
+  (and (list? (symbols)) (> (length (symbols)) 0)))
+
+(define (test-sys-error)
+	(integer? (sys-error 0) ))
+
+(define (test-sys-info )
+   (and (list? (sys-info)) (= (length (sys-info)) 8)))
+
+(define (test-tan )
+  (> 1 (tan (atan (tan (atan 1))))))
+
+(define (test-tanh)
+	(< (abs (sub (sinh 1) (div (sub (exp 1) (exp -1)) 2))) 0.0000000001)
+)
+
+(define (test-throw )
+  (and (catch (throw (+ 3 4)) 'msg) (= msg 7)))
+
+(define (test-time )
+  (integer? (time)))
+
+(define (test-time-of-day )
+  (integer? (time-of-day)))
+
+(define (test-trace )
+  (trace nil)
+  (= nil (trace)))
+
+(define (test-trace-highlight )
+  (trace-highlight "#" "#"))
+
+(define (test-transpose )
+ (and
+  (= '((1) (2) (3)) (transpose '((1 2 3))))
+  (= '((a b) (c d) (e f)) (transpose '((a c e) (b d f))))
+  (= '((a d f) (b e g) (c nil nil)) (transpose '((a b c) (d e) (f g))))
+  (= '((a c f) (b d g)) (transpose '((a b) (c d e) (f g))))
+;; transpose arrays
+  (set 'A (array 2 3 (sequence 1 6)))
+  (= (array-list (transpose A)) '((1 4) (2 5) (3 6))) 
+))
+
+(define (test-trim )
+  (and 
+    (= (trim "    hello    ") "hello") 
+    (= (trim "----hello----" "-") "hello")
+    (= (trim "----hello====" "-" "=") "hello")
+    (= (trim "000012345" "0" "") "12345")))
+
+(define (test-true?)
+ (= (map true? '(x nil  1 nil "hi" ())) '(true nil true nil true nil)))
+
+(define (test-unique )
+  (= (unique '(2 3 4 4 6 7 8 7)) '(2 3 4 6 7 8)))
+
+(define (test-unicode)
+  (= (utf8 (unicode "newLISP")) "newLISP"))
+
+(define (test-unify) 
+	(and
+		(= (unify 'X 123) '((X 123)))
+        (= (unify '(Int Flt Str Sym Lst) '(123 4.56 "Hello" s '(a b c)))
+                  '((Int 123) (Flt 4.56) (Str "Hello") (Sym s) (Lst '(a b c))))
+		(= (unify 'A 'A) '())
+		(= (unify '(A B "hello") '("hi" A Z)) '((A "hi") (B "hi") (Z "hello")))
+		(= (unify '(A B) '(B abc)) '((A abc) (B abc)))
+		(= (unify '(B A) '(abc B)) '((B abc) (A abc)))
+		(= (unify '(A A C D) '(B C 1 C)) '((B 1) (A 1) (C 1) (D 1)))
+		(= (unify '(D C A A) '(C 1 C B)) '((D 1) (C 1) (B 1) (A 1)))
+		(= (unify '(f A) '(f (a b c))) '((A (a b c))))
+		(= (unify '(A f) '((a b c) f)) '((A (a b c))))
+		(= (unify '(f (g A)) '(f B)) '((B (g A))))
+		(= (unify '(p X Y a) '(p Y X X)) '((Y a) (X a)))
+		(= (unify '(p X Y) '(p Y X)) '((Y X)))
+		(= (unify '(q (p X Y) (p Y X)) '(q Z Z)) '((Y X) (Z (p X X))))
+		(= (unify '(f (g A) A) '(f B xyz)) '((B (g xyz)) (A xyz)))
+		(= (unify '(A (g abc)) '(B A)) '((B (g abc)) (A (g abc))))
+		;; with additional environment list
+		(= (unify '(A (B) X) '(A (A) Z) '((A 1) (Z 4)))
+		   '((A 1) (Z 4) (B 1) (X 4)))
+))
+
+(define (test-unless )
+  (unless nil 
+   true nil))
+
+(define (test-unpack )
+  (= (pack "c c c" 65 66 67) "ABC")
+  (= (unpack "c c c" "ABC") '(65 66 67)))
+
+(define (test-until , x)
+  (set 'x 0)
+  (= 10 (until (= x 10) (inc 'x)) x))
+
+(define (test-do-until , x)
+  (set 'x 0)
+  (and 
+   (= 10 (do-until (= x 10) (inc 'x)) x)
+   (= 11 (do-until (> x 0) (inc 'x)) x)
+))
+
+(define (test-upper-case )
+  (if (> opsys 4) 
+   (= "ABCDEFGQ" (upper-case "abcdefgq")) 
+   (= "ABCDEFGH" (upper-case "abcdefgh"))))
+
+(define (test-utf8)
+  (and
+    (= (utf8 (unicode "newLISP")) "newLISP")
+    (MAIN:utf8qa)))
+
+(define (test-utf8len)
+	(= 23 (utf8len MAIN:utf8str)))
+
+(define (test-uuid)
+    (= 36 (length (uuid))))
+
+(define (test-wait-pid)
+  (set 'pid (fork (begin (sleep 200)(exit))))
+  (wait-pid pid))
+
+(define (test-when)
+	(and 
+		(= (when true (set 'x 1) (set 'y 2) (set 'z 3)) 3)
+		(= x 1) (= y 2) (= z 3)
+		(= (when 123) 123)
+		(= (when nil) nil))
+)
+
+(define (test-while , x)
+  (and
+    (set 'x 0)
+    (= 1000 (while (< x 1000) (inc 'x)) x)
+))
+
+(define (test-do-while, x)
+  (and
+    (set 'x 0)
+    (= 100 (do-while (< x 100) (inc 'x)) x)
+    (= 101 (do-while (< x 100) (inc 'x)) x)
+))
+
+(define (test-write-buffer )
+  (set 'str "")
+  (dotimes (x 5) (write-buffer str "hello"))
+  (and (= str "hellohellohellohellohello")
+       (test-read-buffer)))
+
+(define (test-write-char )
+  (file-copy "qa-dot" "junk")
+  (delete-file "junk"))
+
+(define (test-write-file )
+  (write-file "junk" "newlisp")
+  (= (read-file "junk") "newlisp"))
+
+(define (test-write-line ) 
+  (and
+    (set 'fle (open "testwrite" "w"))
+    (write-line "hello" fle)
+    (close fle)
+    (set 'fle (open "testwrite" "r"))
+    (= (read-line fle) "hello")
+    (close fle)
+    (delete-file "testwrite")  ))
+
+
+(define (test-xml-error )
+  (= (xml-error) nil))
+
+(define (test-xml-parse )
+  (= (xml-parse "<hello att='value'></hello>") '(("ELEMENT" "hello" 
+     (("att" "value")) 
+     ()))))
+
+(define (test-xml-type-tags )
+  (length (xml-type-tags) 4))
+
+(define (test-zero?)
+  (= (map zero? '(1 0 1.2 0.0)) '(nil true nil true)))
+
+(define (test-| )
+  (= (| -1431655766 1431655765) -1))
+
+(define (test-~ )
+  (and
+    (= (~ 0) -1)
+    (if 
+        (and (> opsys 5) (< opsys 9)) ;; Win32 
+        (= (format "%I64x" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
+
+        (= opsys 9)
+        (= (format "%lx" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
+
+        (= (format "%llx" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f"))
+))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MAIN ENTRY POINT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(if (or (not (or (file? "newlisp") (file? "newlisp.exe"))) (not (file? "qa-dot")))
+	(begin
+		(println "both newlisp(.exe) and qa-dot should be in the current directory.")
+		(exit)))
+
+(cleanup)
+(println)
+(println "Testing built-in functions ...")
+(println)
+(qa)
+(cleanup)
+
+(context 'MAIN)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(println)
+(println "Testing contexts as objects and scoping rules ...")
+(println)
+
+;; check creating local symbols
+;; in case they already exist in MAIN
+(set 'var 123)
+(set 'CTX:var 456)
+(if (or (!= CTX:var 456) (!= var 123))
+	(println ">>>>> problem creating local symbols"))
+
+(set 'ctx CTX)
+
+(global 'myprint)
+(set 'myprint print)
+
+;; following would fail without dynamic symbols for non-existing
+;; contexts because 'accnt' is not a context at this moment
+(define (report accnt)
+    (list accnt:name accnt:balance))
+
+;; late in ACCOUNT the definition of 'deposit' should
+;; should not fail, locals should always be created for
+;; the current context
+(constant 'amount 999)
+(constant 'stat 999)
+
+;; the symbol defined should always be forced into the current
+;; context, even if alread exists in MAIN, if not following
+;; definition of 'deposit' would fail
+(set 'deposit 999) 
+(set 'clear 999)
+(constant 'withdraw 999) 
+
+(define balance 1000.00)
+(constant 'phone "123-456-789")
+
+
+(context 'ACCOUNT)
+    (set 'ACCOUNT:name "")      ; force creation of local symbol with
+    (define balance 0.0)  	; same name as built in primitive
+    (constant 'phone "")     
+
+    (define (deposit amount)
+        (inc 'balance amount))
+
+    (define (withdraw amount)
+        (dec 'balance amount))
+    
+    ; make sure contexts are inherited
+    ; but not variables containing contexts
+    (if (not (context? CTX)) 
+	(QA:failed ">>>> problem inheriting context symbols"))
+
+    ; make sure context variables get not inherited
+    (if (= ctx CTX) (QA:failed ">>>>> should not inherit context var"))
+    
+    (set 'ctx 123)
+
+    ; make sure redefined primitives get inherited
+    (if (not (primitive? myprint)) 
+    	(QA:failed ">>>> problem inheriting redefined primitives"))
+
+(set 'myprint nil)
+   
+(context 'MAIN)
+
+;; make sure again that context defs did not overwrite MAIN symbols
+(if (or (!= deposit 999) (!= clear 999) (!= withdraw 999) (!= stat 999) (!= ctx CTX)
+        (not (primitive? name)) (!= balance 1000.0) (!= phone "123-456-789"))
+	(QA:failed ">>>> context definitions are overwriting MAIN"))
+
+(new ACCOUNT 'John true)     ; this creates a new context copy of 
+                             ; ACCOUNT called 'John' if exists overwrite symbols
+
+(set 'John:name "John Doe")
+(set 'John:phone "555-123-456")
+
+(John:deposit 100.00)
+(John:withdraw 60)
+
+(new ACCOUNT 'Anne true)
+
+(set 'Anne:name "Anne Somebody")
+(set 'Anne:phone "555-456-123")
+
+(Anne:deposit 120.00)
+(Anne:withdraw 50)
+(if (or (!= John:balance 40) (!= Anne:balance 70))
+	(QA:failed ">>>> problem with methods in contexts"))
+
+(if (or (!= (report John) (list John:name John:balance))
+        (!= (report Anne) (list Anne:name Anne:balance)))
+    (QA:failed ">>>> problem using context variables"))
+
+(if (!= (map report (map eval '(John Anne))) 
+       '(("John Doe" 40) ("Anne Somebody" 70)) )
+    (QA:failed ">>>> problem mapping functions using context vars"))
+
+
+;; dynamic context var as symbol to be defined
+;;
+(define (defit)
+	(define (ctx:foo x) (+ x x)))
+
+(set 'ctx ACCOUNT)
+(defit)
+(if (!= (ctx:foo 10) 20) 
+  (QA:failed ">>>> problem with dyna symbols in defined symbol"))
+
+
+;; check setq, define (as set) and inc, dec on dynamic context vars
+;;
+(define (foo-set ct value) (set 'ct:var value))
+(define (foo-setq ct value) (setq ct:var value))
+(define (foo-define ct value) (define ct:var value))
+(define (foo-inc ct value) (inc 'ct:var))
+(define (foo-dec ct value) (dec 'ct:var))
+
+(set 'CTX:var 0) ;; make sure var is existent
+(foo-set CTX 1)
+(if (!= 1 CTX:var) 
+  (QA:failed ">>>> problem with set on context vars"))
+
+(foo-setq CTX 3)
+(if (!= 3 CTX:var) 
+  (QA:failed ">>>> problem with setq on context vars"))
+
+(foo-define CTX 4)
+(if (!= 4 CTX:var) 
+  (QA:failed ">>>> problem with define on context vars"))
+
+(foo-inc CTX)
+(if (!= 5 CTX:var) 
+  (QA:failed ">>>> problem with inc on context vars"))
+
+(foo-dec CTX)
+(if (!= 4 CTX:var) 
+  (QA:failed ">>>> problem with dec on context vars"))
+
+;; dynamic context vars inside a context (since version 7.5.1)
+
+(context 'TST)
+
+(define (init ctx value)
+	(set 'ctx:foo value))
+
+;; since version 8.7.8 when calling a function in a context the current runtime
+;; context changes
+(define (test-context-change)
+	(= (context) TST))
+
+(context MAIN)
+
+;; foo does not exist in CTX
+
+(TST:init CTX 999)
+
+(if (!= 999 CTX:foo) 
+  (QA:failed ">>>> problem with dyna vars in contexts"))
+
+;; now foo does exist
+(TST:init CTX 222)
+
+(if (!= 222 CTX:foo)
+  (QA:failed ">>>> problem with dyna vars in contexts"))
+
+
+(define (cdf:cdf a b) (+ a b))
+
+(if (!= (cdf 3 4) 7) 
+  (QA:failed ">>>> problem with context default vars"))
+
+;; check for existence of dynamic context symbol
+
+(define (check-sym-existence ctx)
+  (if (symbol? 'ctx:foovar) ;; chack only, will not create 
+    (QA:failed ">>>> problem with symbol? for dyna vars")))
+
+(check-sym-existence CTX)
+
+;; do not overwrite existing symbols
+
+(set 'Actx:x 123)
+(set 'Actx:y 456)
+(set 'Bctx:x 999)
+
+(new Actx Bctx)
+
+(if (not (= Bctx:x 999))
+  (QA:failed ">>>>> problem with new in overwriting symbols"))
+
+
+;; delete contexts
+ (if (not (and
+        (delete ACCOUNT)
+        (delete Anne)
+        (delete John)
+;		(map delete '(Actx Bctx cdf))
+      ) )
+    (QA:failed ">>>>> problem deleting contexts"))
+
+
+;; define static default functions
+
+(define foobar:foobar)
+
+(define (def-static s contents)
+   (def-new 'contents (sym (name s) s)))
+
+(if (not 
+  (and
+    (def-static 'foobar (fn (x) (+ x x)))
+    (= foobar:foobar (lambda (foobar:x) (+ foobar:x foobar:x)))
+    (= (foobar 10) 20)))
+  (QA:failed ">>>>> problem with static default function definition"))
+
+;; calling into context changes context
+(if (not TST:test-context-change)
+  (QA:failed ">>>>> problem changing runtime context with symbol"))
+
+;; but calling with raw lambda doesn't
+(if ((eval TST:test-context-change))
+  (QA:failed ">>>>> problem maintaining runtime context with lambda"))
+
+;; apply evaluates functor
+(if (not (apply 'TST:test-context-change))
+  (QA:failed ">>>>> problem changing runtime context with apply symbol"))
+
+;; apply evaluates functor
+(if (apply TST:test-context-change)
+  (QA:failed ">>>>> problem maintaining runtime context with apply lambda"))
+
+;; map evaluates functor
+(if (!= (map 'TST:test-context-change '(a b c)) '(true true true))
+  (QA:failed ">>>>> problem changing runtime context with map symbol"))
+
+;; map evaluates functor
+(if (!= (map TST:test-context-change '(a b c)) '(nil nil nil))
+  (QA:failed ">>>>> problem maintaining runtime context with map lambda"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(println)>
+(if QA:failed-messages
+  (begin
+    (println "TESTING: " (main-args 0) " FINISHED WITH ERRORS:")
+    (println)
+    (dolist (func (reverse QA:failed-messages))
+        (println func)))
+  (println "ALL FUNCTIONS FINISHED SUCCESSFULL: " (main-args 0)))
+
+(println)
+(delete-file "sharetest.lsp")
+(delete-file "udptest.lsp")
+(println "total time: " (- (time-of-day) start-of-qa))
+(exit)
+;; eof
+
+

@@ -1,0 +1,22 @@
+# makefile for newLISP  DLL v. 9.x.x on MinGW DLL
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o nl-sock.o \
+	nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o win32-util.o win32-path.o win32dll.o
+
+CFLAGS = -Wall -pedantic -Wno-long-long -c -O1 -DWIN_32 -DLIBRARY 
+
+CC = /MinGW/bin/gcc
+STRIP = /MinGW/bin/strip
+WRAP = /MinGW/bin/dllwrap
+
+default: $(OBJS)
+	$(WRAP) *.o --enable-stdcall-fixup --def win32dll.def -o newlisp.dll -lws2_32
+	$(STRIP) newlisp.dll
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_mingwdll
+
+

@@ -1,0 +1,27 @@
+# makefile for newLISP v. 9.x.x on Mac OSX with readline support
+#
+# for OS X 10.4/Tiger, Tiger comes standard with libreadline
+#
+# needs readline library and headerfiles installed (X tools)
+# use the Mac OS X lipo utitlity to extract one or the other ppc/intel
+# example: lipo newlisp-universal -output newlisp-ppc -thin ppc7400
+# note: architecture id for ppc on Tiger: ppc on Leopard: ppc7400
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -Wall -arch i386 -arch ppc -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX
+#CFLAGS = -Wall -I/usr/include -c -g -DREADLINE -DMAC_OSX
+
+CC = cc -L/usr/lib
+
+default: $(OBJS)
+	$(CC) $(OBJS) -arch i386 -arch ppc -g -lm -lreadline -o newlisp-universal
+	strip newlisp-universal
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_universal
+
+

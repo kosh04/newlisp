@@ -1,0 +1,161 @@
+LIST OF FILES IN DISTRIBUTION in newLISP version 9.0
+----------------------------------------------------
+
+doc/             documentation directory
+
+COPYING          text of GNU GPL, also conatined in the manual
+CREDITS          people who helped developing or documenting newLISP
+INSTALL          install procedure
+LOCALIZATION     how to localize newLISP builds
+TRUE64BUILD      comments on building for the true64 CPU flavor
+newlisp.1        man page for LINUX/BSD/UNIX
+newlispdoc.1     man page for newlispdoc
+
+manual_frame.html         for viewing the manual in a frame with index
+newlisp_manual.html       newLISP for LINUX, Users manual and Reference
+newlisp-index.html        index for frame viewing of manual
+newLISPdoc.html           documentation for newlispdoc utility
+newLISP-9.2-Release.html  release notes for mayor release 
+
+CodePatterns.html      frequently used patterns in newLISP programming
+MemoryManagement.html  how newLISP manages memory
+
+
+util/          various utility files
+
+http-conf.lsp  configuration file for newLISP HTTP server mode
+link.lsp       for 'linking' a source file together with a newlisp executeable
+nclocal.c       nc/netcat like utility for loal domain sockets
+newlisp.vim	    syntax file for VIM editor syntax highlighting
+newlispdoc      utility to generate HTML docs from newLISP source
+preparepdf      preprocessese newlisp_manual.html for PDF conversion
+syntax.cgi      syntax highlighting in HTML for newLISP source
+syntax-help     function for inclusion in init.lsp for command line syntax help
+sql.c           program to disply MySQL include file offsets
+type.c          program to show type sizes for porting newLISP
+
+newlisp-x.x.x/   main distribution directory containing all source
+
+README           general info and install
+newlisp.c        newLISP VM and core primitives and auxiilary functions
+newlisp.h        main header file
+primes.h         header file containing table of all primitives 
+protos.h         header file containing function prototypes
+nl-list.c        functions working on lists
+nl-liststr.c     functions working on lists and striong alike
+nl-string.c      string handling primitives
+nl-filesys.c     I/O primitives, process control, time date
+nl-import.c      shared library interface
+nl-math.c        floating point API
+nl-matrix.c      matrix functions
+nl-sock.c        networking API
+nl-symbol.c      symbol creation manipulation Red/Black tree
+nl-xml.c         xml functions
+nl-web.c         special web functions
+nl-debug.c       debugging functions
+nl-utf8.c        UTF-8 versions of some newLISP string functions
+unix-lib.c       for compiling newlisp.so shared lib under Linux/UNIX
+osx-dlfcn.c      Mac OSX/Darwin dylib library interface
+osx-dlfcn.h      Mac OSX/Darwin dylib library interface
+win32-util.c     Win32 specific functions also used in CYGWIN, MinGW
+win32dll.c       for compiling a Win32 DLL also used in CYGWIN, MinGW
+win32dll.def     for compiling a Win32 DLL also used in CYGWIN, MinGW
+win32-path.c     routines for UTF-16 file and directory access
+init.lsp.example initialization file loaded from /usr/share/newlisp/init.lsp
+
+pcre.h            PCRE Perl Compatible Regular Expression header file
+pcre-config.h     PCRE config file
+pcre-internal.h   PCRE headerfile
+pcre.c            PCRE main source
+pcre-chartables.c PCRE standrad character table
+
+Makefile          main makefile
+build             script called discovering the OS platform and making newlisp
+configure         discovery of OS platform only without actually making newlisp
+
+makefile_*        See the file Makefile for explanation
+
+qa-dot            test suite for countries with decimal point
+qa-comma          test suite for countries with decimal comma
+qa-lfs            test suite for large file system support
+qa-local-domain   test suite for local-dmain UNIX sockets
+qa-net            test suite for distributed networking functions (UNIX only)
+qa-setsig         test suite for signals
+qa-utf16path.lsp  test suite for UTF-16 pathnames on Win32
+qa-utf8           displays a sentence in many language alphabets
+qa-xml            test suite for xml functions
+
+modules/          modules to be loaded which implement a specific interface
+
+For all modules HTML documentation can be generated using newlispoc
+inside the modules directory execute: newlisp -s *.lsp
+The module for GUI-Server guiserver.lsp can be found in the
+guiserver subdirectory newlisp-x.x.x/guiserver/
+
+cgi.lsp		    functions for CGI with Apache or compatible web servers
+crypto.lsp      OpenSSL crypto library module
+ftp.lsp		    functions for file transfer with FTP	
+gmp.lsp         functions for GNU Multiplem Precision Library support
+infix.lsp	    parses infix, postfix and reverse polish to s-expressions
+mysql.lsp	    MySQL version 4.0 database access
+mysql5.lsp	    MySQL version 5.0 database access
+mysql51.lsp	    MySQL version 5.0 database access
+odbc.lsp	    ODBC database access
+pop3.lsp	    mailbox access with POP3
+postsrcipt.lsp  functions for generating Postscript files
+smtp.lsp	    sending mail with SMTP
+sqlite3.lsp	    SQLite3 database access for SQLite 3.0 and later
+stat.lsp	    multivariate statistics and plotting (requires gnuplot)
+unix.lsp        functions for importing common libc UNIX utility functions
+xmlrpc-client.lsp   cient module for XML-RPC
+zlisp.lsp       Zlib compression/de-compression support
+
+examples/      various code examples and utilities
+
+finger         sample script for a finger client
+client         client/server networking sample
+form.html      sample html form for processing with form.cgi
+form.cgi       newLISP CGI processing sample script
+newLISP-Excel-Import.xls  example how to call newlisp.dll from VB for applications
+opengl-demo.lsp  OpenGL demo using Glut, see file header for libs required
+prodcons.lsp   demo for fork, wait-pid, semaphore and share on Linux/UNIX
+server         client/server networking sample
+sqlite.cgi     simple script to call sqlite from a websever
+sqlite3.cgi    simple script to call sqlite from a websever
+tcltk.lsp      run Tcl/Tk apps without newlisp-tk frontend
+udp-client.lsp example for UDP client
+udp-server.lsp example for UDP server
+upload.html    file upload example with multipart POST request
+upload.cgi     CGI to handle upload.html
+xmlrpc.cgi     newISP XML-RPC service as a CGI request
+
+guiserver/
+
+All of the following files are also installed when executing:
+    sudo make install
+
+guiserver.lsp       module file to talk to guiserver.jar
+guiserver.jar       compiled GUI-Server Java executable
+guiserver.lsp.html  HTML doc generated from guiserver.lsp
+index.html          index page for guiserver.lsp.html
+newlisp-edit.lsp    GUI-Server application
+
+*.lsp          various demos for GUI-Server
+
+CHANGES             changes notes for guiserver
+guisserver.lsp.html guiserver module file
+guisserver.lsp.html guiserver docs generated from guiserver.lsp
+index.html          index of guiserver functions generated from guiserver.lsp
+Makefile            used for guisever development
+Manifest            used by the Java compiler
+
+/guiserver/images
+
+*.png          various icons and images built into guiserver.jar
+
+/guiserver/java/
+
+*.java         Java source for GUI-Server
+
+                              +++
+

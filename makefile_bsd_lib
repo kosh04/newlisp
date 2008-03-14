@@ -1,0 +1,18 @@
+# makefile for newLISP v. 9.x.x on BSD as a shared library - newlisp.so -
+#
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o unix-lib.o
+
+CFLAGS = -Wall -pedantic -Wno-uninitialized -O2 -c -DLIBRARY -D_BSD
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -lm -shared -o newlisp.so
+	strip newlisp.so
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_bsd_lib
+

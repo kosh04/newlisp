@@ -1,0 +1,69 @@
+newlispdoc(1)               Commandline Parameters               newlispdoc(1)
+
+
+
+NAME
+       newlispdoc - generate documentation from newLISP source comments
+
+SYNOPSIS
+       newlispdoc [-s] lisp-file1 [lisp-file2 ...]
+
+       newlispdoc [-url] urls-file
+
+DESCRIPTION
+       newlispdoc is a commandline utility written in newLISP to generate HTML
+       documentation from comments written in newLISP  source  files.  Consult
+       /usr/share/doc/newlisp/newLISPdoc.html  for  a  detailed description on
+       how to write comments usable for  newlispdoc.  The  newlispdoc  command
+       should  be  executed from inside the directory where the newLISP source
+       files can be found. The generated documetation files  will  have  .html
+       added  to the name of the source file. An index.html page is generated,
+       which is listing for each file links to all the documented functions.
+
+OPTIONS
+       -s     this option causes newlispdoc to also generate  a  syntax  high-
+              lighted  HTML  file  of  the source. A link to this file will be
+              present in the HTML documentation of this  file.  The  generated
+              file will have the added extension .src.html.
+
+       lisp-file
+              is  a  commented  newLISP source file from which a documentation
+              file will be generated.
+
+       -url   this option is used to retrieve newLISP source files  for  docu-
+              mentation from remote locations.
+
+       urls-file
+              is  a  file containing urls of newLISP source files, one url per
+              line.
+
+EXAMPLES
+       Generate all documentation form files in the current directory.
+              newlispdoc afile.lsp bfile.lsp
+
+
+       Generate documentation and syntax highlighted HTML  versions  from  all
+       lisp files in the current directory
+              newlispdoc -s *.lsp
+
+       Retrieve source files for documentation  from  remote  locations.  Each
+       file is specified on one line in urls.txt with its http:// address.
+              newlispdoc -s -url urls.txt
+
+EXIT STATUS
+       newlispdoc returns a zero exit status for normal exit or writes a usage
+       message if not enough paramneters are supplied.
+
+AUTHOR
+       Lutz Mueller <lutz@nuevatec.com>
+
+SEE ALSO
+       newlisp(1) - newlisp man page
+
+       http://www.newlisp.org/ -  the newLISP home page
+
+
+
+
+version 1.4                      January 2008                    newlispdoc(1)
+

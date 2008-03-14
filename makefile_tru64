@@ -1,0 +1,25 @@
+# makefile for newLISP v. 8.x.x on HP Tru64Unix
+#
+# tesetd on Compaq Alpha hardware platform
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+# CFLAGS = -I/usr/local/include -ieee -pedantic -c -O3 -DREADLINE -DSOLARIS -DTRU64 -DNEWLISP64 -D_POSIX_PII_SOCKET
+CFLAGS = -ieee -pedantic -c -O3 -DSOLARIS -DTRU64 -DNEWLISP64 -D_POSIX_PII_SOCKET
+
+CC = cc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -lm -lrt -ldb -lbsd -o newlisp
+	strip newlisp
+
+readline: $(OBJS)
+	$(CC) $(OBJS) -lm -lrt -ldb -lbsd -lreadline -ltermcap -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_tru64
+

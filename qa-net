@@ -1,0 +1,131 @@
+#!/usr/bin/newlisp
+
+; qa-net - test network routines for server mode
+;
+; tests: net-eval
+; tests http mode of: load, save, read-file, write-file, delete-file
+; 
+; assumes newlisp executable in the current directory:
+;     newlisp-x.x.x/
+;
+; usage to test on local host:
+;
+;        ./newlisp qa-net  
+;
+; usage to test on a remote host
+; 
+;        ./newlisp qa-net http://mysite.com:10001//home/test
+; or 
+;        ./newlisp qa-net http://localhost:4711//Users/Lutz/newlisp-8.9.8
+;
+; running this test on Win32:
+;
+;        newlisp qa-net
+;
+; On Win32 this test may have timing issues, try running again.
+; 
+;
+
+(set 'start (time-of-day))
+
+; get operating system
+(set 'opsys (& (last (sys-info)) 0xf))
+
+(set 'targetURL (or 
+		(main-args 2)
+		(append "http://localhost:10001/" (real-path) "/qa-junk.txt")))
+
+(replace "\\" targetURL "/") ; for Win32
+
+(if (not (ends-with targetURL "/qa-junk.txt"))
+	(set 'targetURL (append targetURL "/qa-junk.txt")))
+
+(set 'host ((regex "http://(.*?):" targetURL) 3))
+(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
+(set 'path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
+
+(println)
+(println "target URL: " targetURL)
+
+(println "host: " host)
+(println "port: " port)
+(println "path: " path)
+
+; check if server is online or start it, if not
+; start one on localhost if no URL was specified
+; on the command line
+(set 'connection (net-connect host port))
+(if (not connection)
+	(begin
+		(println "Starting server on localhost")
+		(if (and (not (main-args -2)) (> opsys 5) (< opsys 9))
+			(set 'pid (process (string "newlisp -c -d " port)))
+			(set 'pid (process (string "./newlisp -c -d " port)))))
+	(begin
+		(println "Server already running ...")
+		(net-close connection)))
+	
+
+(println "waiting for server ...")
+(sleep 1000)
+
+; test short syntax normal mode
+(if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
+	(println "net-eval normal mode ->OK")
+	(println "net-eval poblem with normal mode ->ERROR"))
+
+; test raw mode only in list syntax
+(if (=  (net-eval '((host port {(+ 3 4)} true)) 1000) '("7\n")) 
+	(println "net-eval raw mode ->OK")
+	(println "net-eval problem with raw mode ->ERROR"))
+
+
+; test saving to URL
+(set 'key (uuid))
+(set 'verify key)
+(if (find "transferred" (print (save targetURL 'key)))
+	(println "save to URL ->OK")
+	(println "save to URL ->ERROR"))
+
+(if (= opsys 6) (sleep 4000)) ; for Win32
+
+; test loading from URL
+(if (and
+	(println "loading target URL: " targetURL)
+	(= (load targetURL) verify)
+	(= key verify))
+	(println "load from URL ->OK")
+	(println "load from URL ->ERROR"))
+
+; test writing file to remote
+
+; generate random binary data
+(set 'content "")
+(dotimes (i 100000)
+	(write-buffer content (pack "c" (rand 255))))
+
+; write content to remote URL
+(if	(find "transferred" (print (write-file targetURL content)) )
+	(println "write-file to remote URL ->OK")
+	(println "write-file to remote URL ->ERROR"))
+
+(if (= opsys 6) (sleep 4000)) ; for Win32
+
+; read content from remote URL
+(if (= content (read-file targetURL))
+	(println "read-file from remote URL ->OK")
+	(println "read-file from  remote URL ->ERROR"))
+
+; delete file at remote URL
+(if (!= opsys 6)
+(if (starts-with (print  (delete-file targetURL)) "File deleted:")
+	(println "delete-file from remote URL ->OK")
+	(println "delete-file from remote URL ->Error"))
+)
+
+(if pid
+	(println "destroy -> " pid " ->" (destroy pid)))
+
+(println "\nduration =>" (- (time-of-day) start) " ms\n")
+
+(exit)

@@ -1,0 +1,510 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="author" content="Lutz Mueller">
+   <meta name="keywords" content="newLISP LISP SCHEME manual reference help artificial intelligence AI NUEVATEC">
+   <meta name="description" content="newLISP Users Manual and Reference Index">
+   <title>newLISP Manual and Reference Index</title>
+
+<style type="text/css" media="screen">
+<!--
+
+body, h1, h2, h3, h4, p {
+   font-family: Georgia, Verdana, Arial, Helvetica, sanserif;
+ }
+
+pre, tt {
+   font-family: Lucida Console, Courier;
+}
+
+-->
+</style>
+
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
+<h3>Functions in alphabetical order</h3>
+
+<b>
+<a href="newlisp_manual.html#shell" target="body">!</a>&nbsp;
+<a href="newlisp_manual.html#arithmetic" target="body">+-*/%</a>&nbsp;
+<a href="newlisp_manual.html#abs" target="body">Ab</a>&nbsp;
+<a href="newlisp_manual.html#append" target="body">Ap</a>&nbsp;
+<a href="newlisp_manual.html#base64-dec" target="body">B</a>&nbsp; 
+<a href="newlisp_manual.html#case" target="body">Ca</a>&nbsp;
+<a href="newlisp_manual.html#cons" target="body">Co</a>&nbsp;
+<a href="newlisp_manual.html#date" target="body">Da</a>&nbsp;
+<a href="newlisp_manual.html#difference" target="body">Di</a>&nbsp;
+<a href="newlisp_manual.html#emptyp" target="body">Em</a>&nbsp; 
+<a href="newlisp_manual.html#eval" target="body">Ev</a>&nbsp;
+<a href="newlisp_manual.html#factor" target="body">Fa</a>&nbsp; 
+<a href="newlisp_manual.html#fn" target="body">Fn</a>&nbsp;
+<a href="newlisp_manual.html#gammai" target="body">G</a>&nbsp;
+<a href="newlisp_manual.html#if" target="body">I</a>&nbsp; 
+<a href="newlisp_manual.html#join" target="body">J</a>&nbsp; 
+<a href="newlisp_manual.html#lambda" target="body">La</a>&nbsp;
+<a href="newlisp_manual.html#list" target="body">Li</a>&nbsp;
+<a href="newlisp_manual.html#macrop" target="body">Ma</a>&nbsp; 
+<a href="newlisp_manual.html#member" target="body">Me</a>&nbsp;
+<a href="newlisp_manual.html#name" target="body">Na</a> &nbsp; 
+<a href="newlisp_manual.html#net-accept" target="body">Ne</a>&nbsp;
+<a href="newlisp_manual.html#not" target="body">No</a>&nbsp;
+<a href="newlisp_manual.html#open" target="body">O</a>&nbsp;
+<a href="newlisp_manual.html#pack" target="body">Pa</a>&nbsp; 
+<a href="newlisp_manual.html#pretty-print" target="body">Pr</a>&nbsp;
+<a href="newlisp_manual.html#quote" target="body">Q</a>&nbsp; 
+<a href="newlisp_manual.html#rand" target="body">Ra</a>&nbsp;
+<a href="newlisp_manual.html#regex" target="body">Reg</a>&nbsp;
+<a href="newlisp_manual.html#save" target="body">Sa</a>&nbsp; 
+<a href="newlisp_manual.html#share" target="body">Sh</a>&nbsp;
+<a href="newlisp_manual.html#starts-with" target="body">St</a>&nbsp;
+<a href="newlisp_manual.html#tan" target="body">T</a>&nbsp; 
+<a href="newlisp_manual.html#unicode" target="body">U</a>&nbsp;
+<a href="newlisp_manual.html#wait-pid" target="body">W</a>&nbsp;
+<a href="newlisp_manual.html#xml-error" target="body">X</a>&nbsp;
+</b>
+
+
+<h3>List processing, flow control and integer arithmetic</h3>
+
+<a href="newlisp_manual.html#arithmetic" target="body">+, -, *, /,%</a><br />
+<a href="newlisp_manual.html#logical" target="body">&lt;, >, =,</a><br />
+<a href="newlisp_manual.html#logical" target="body">&lt;=, >=, !=</a><br />
+<a href="newlisp_manual.html#colon" target="body">:</a><br />
+<a href="newlisp_manual.html#and" target="body">and</a><br />
+<a href="newlisp_manual.html#append" target="body">append</a><br />
+<a href="newlisp_manual.html#apply" target="body">apply</a><br />
+<a href="newlisp_manual.html#args" target="body">args</a><br />
+<a href="newlisp_manual.html#assoc" target="body">assoc</a><br />
+<a href="newlisp_manual.html#assoc-set" target="body">assoc-set</a><br />
+<a href="newlisp_manual.html#begin" target="body">begin</a><br />
+<a href="newlisp_manual.html#bind" target="body">bind</a><br />
+<a href="newlisp_manual.html#case" target="body">case</a><br />
+<a href="newlisp_manual.html#catch" target="body">catch</a><br />
+<a href="newlisp_manual.html#chop" target="body">chop</a><br />
+<a href="newlisp_manual.html#clean" target="body">clean</a><br />
+<a href="newlisp_manual.html#cond" target="body">cond</a><br />
+<a href="newlisp_manual.html#cons" target="body">cons</a><br />
+<a href="newlisp_manual.html#constant" target="body">constant</a><br />
+<a href="newlisp_manual.html#count" target="body">count</a><br />
+<a href="newlisp_manual.html#curry" target="body">curry</a><br />
+<a href="newlisp_manual.html#define" target="body">define</a><br />
+<a href="newlisp_manual.html#define-macro" target="body">define-macro</a><br />
+<a href="newlisp_manual.html#def-new" target="body">def-new</a><br />
+<a href="newlisp_manual.html#difference" target="body">difference</a><br />
+<a href="newlisp_manual.html#doargs" target="body">doargs</a><br />
+<a href="newlisp_manual.html#dolist" target="body">dolist</a><br />
+<a href="newlisp_manual.html#dostring" target="body">dostring</a><br />
+<a href="newlisp_manual.html#dotimes" target="body">dotimes</a><br />
+<a href="newlisp_manual.html#dotree" target="body">dotree</a><br />
+<a href="newlisp_manual.html#do-until" target="body">do-until</a><br />
+<a href="newlisp_manual.html#do-while" target="body">do-while</a><br />
+<a href="newlisp_manual.html#dup" target="body">dup</a><br />
+<a href="newlisp_manual.html#ends-with" target="body">ends-with</a><br />
+<a href="newlisp_manual.html#exists" target="body">exists</a><br />
+<a href="newlisp_manual.html#eval" target="body">eval</a><br />
+<a href="newlisp_manual.html#expand" target="body">expand</a><br />
+<a href="newlisp_manual.html#first" target="body">first</a><br />
+<a href="newlisp_manual.html#filter" target="body">filter</a><br />
+<a href="newlisp_manual.html#find" target="body">find</a><br />
+<a href="newlisp_manual.html#find-all" target="body">find-all</a><br />
+<a href="newlisp_manual.html#flat" target="body">flat</a><br />
+<a href="newlisp_manual.html#fn" target="body">fn</a><br />
+<a href="newlisp_manual.html#for" target="body">for</a><br />
+<a href="newlisp_manual.html#for-all" target="body">for-all</a><br />
+<a href="newlisp_manual.html#if" target="body">if</a><br />
+<a href="newlisp_manual.html#index" target="body">index</a><br />
+<a href="newlisp_manual.html#intersect" target="body">intersect</a><br />
+<a href="newlisp_manual.html#lambda" target="body">lambda</a><br />
+<a href="newlisp_manual.html#lambda-macro" target="body">lambda-macro</a><br />
+<a href="newlisp_manual.html#last" target="body">last</a><br />
+<a href="newlisp_manual.html#length" target="body">length</a><br />
+<a href="newlisp_manual.html#let" target="body">let</a><br />
+<a href="newlisp_manual.html#letex" target="body">letex</a><br />
+<a href="newlisp_manual.html#letn" target="body">letn</a><br />
+<a href="newlisp_manual.html#list" target="body">list</a><br />
+<a href="newlisp_manual.html#local" target="body">local</a><br />
+<a href="newlisp_manual.html#lookup" target="body">lookup</a><br />
+<a href="newlisp_manual.html#map" target="body">map</a><br />
+<a href="newlisp_manual.html#match" target="body">match</a><br />
+<a href="newlisp_manual.html#member" target="body">member</a><br />
+<a href="newlisp_manual.html#not" target="body">not</a><br />
+<a href="newlisp_manual.html#nth" target="body">nth</a><br />
+<a href="newlisp_manual.html#nth-set" target="body">nth-set</a><br />
+<a href="newlisp_manual.html#or" target="body">or</a><br />
+<a href="newlisp_manual.html#pop" target="body">pop</a><br />
+<a href="newlisp_manual.html#pop-assoc" target="body">pop-assoc</a><br />
+<a href="newlisp_manual.html#push" target="body">push</a><br />
+<a href="newlisp_manual.html#quote" target="body">quote</a><br />
+<a href="newlisp_manual.html#ref" target="body">ref</a><br />
+<a href="newlisp_manual.html#ref-all" target="body">ref-all</a><br />
+<a href="newlisp_manual.html#ref-set" target="body">ref-set</a><br />
+<a href="newlisp_manual.html#rest" target="body">rest</a><br />
+<a href="newlisp_manual.html#replace" target="body">replace</a><br />
+<a href="newlisp_manual.html#set-assoc" target="body">replace-assoc</a><br />
+<a href="newlisp_manual.html#reverse" target="body">reverse</a><br />
+<a href="newlisp_manual.html#rotate" target="body">rotate</a><br />
+<a href="newlisp_manual.html#select" target="body">select</a><br />
+<a href="newlisp_manual.html#set" target="body">set</a><br />
+<a href="newlisp_manual.html#setq" target="body">setq</a><br />
+<a href="newlisp_manual.html#set-assoc" target="body">set-assoc</a><br />
+<a href="newlisp_manual.html#set-nth" target="body">set-nth</a><br />
+<a href="newlisp_manual.html#set-ref" target="body">set-ref</a><br />
+<a href="newlisp_manual.html#set-ref-all" target="body">set-ref-all</a><br />
+<a href="newlisp_manual.html#silent" target="body">silent</a><br />
+<a href="newlisp_manual.html#slice" target="body">slice</a><br />
+<a href="newlisp_manual.html#sort" target="body">sort</a><br />
+<a href="newlisp_manual.html#starts-with" target="body">starts-with</a><br />
+<a href="newlisp_manual.html#swap" target="body">swap</a><br />
+<a href="newlisp_manual.html#unify" target="body">unify</a><br />
+<a href="newlisp_manual.html#unique" target="body">unique</a><br />
+<a href="newlisp_manual.html#unless" target="body">unless</a><br />
+<a href="newlisp_manual.html#until" target="body">until</a><br />
+<a href="newlisp_manual.html#when" target="body">when</a><br />
+<a href="newlisp_manual.html#while" target="body">while</a><br />
+
+<h3>String and conversion functions</h3>
+
+<a href="newlisp_manual.html#address" target="body">address</a><br />
+<a href="newlisp_manual.html#append" target="body">append</a><br />
+<a href="newlisp_manual.html#char" target="body">char</a><br />
+<a href="newlisp_manual.html#chop" target="body">chop</a><br />
+<a href="newlisp_manual.html#dup" target="body">dup</a><br />
+<a href="newlisp_manual.html#ends-with" target="body">ends-with</a><br />
+<a href="newlisp_manual.html#encrypt" target="body">encrypt</a><br />
+<a href="newlisp_manual.html#eval-string" target="body">eval-string</a><br />
+<a href="newlisp_manual.html#explode" target="body">explode</a><br />
+<a href="newlisp_manual.html#find" target="body">find</a><br />
+<a href="newlisp_manual.html#first" target="body">first</a><br />
+<a href="newlisp_manual.html#float" target="body">float</a><br />
+<a href="newlisp_manual.html#format" target="body">format</a><br />
+<a href="newlisp_manual.html#get-char" target="body">get-char</a><br />
+<a href="newlisp_manual.html#get-float" target="body">get-float</a><br />
+<a href="newlisp_manual.html#get-int" target="body">get-int</a><br />
+<a href="newlisp_manual.html#get-long" target="body">get-long</a><br />
+<a href="newlisp_manual.html#get-string" target="body">get-string</a><br />
+<a href="newlisp_manual.html#int" target="body">int</a><br />
+<a href="newlisp_manual.html#join" target="body">join</a><br />
+<a href="newlisp_manual.html#last" target="body">last</a><br />
+<a href="newlisp_manual.html#lower-case" target="body">lower-case</a><br />
+<a href="newlisp_manual.html#member" target="body">member</a><br />
+<a href="newlisp_manual.html#name" target="body">name</a><br />
+<a href="newlisp_manual.html#nth" target="body">nth</a><br />
+<a href="newlisp_manual.html#nth-set" target="body">nth-set</a><br/>
+<a href="newlisp_manual.html#pack" target="body">pack</a><br />
+<a href="newlisp_manual.html#parse" target="body">parse</a><br />
+<a href="newlisp_manual.html#pop" target="body">pop</a><br />
+<a href="newlisp_manual.html#push" target="body">push</a><br />
+<a href="newlisp_manual.html#regex" target="body">regex</a><br />
+<a href="newlisp_manual.html#replace" target="body">replace</a><br />
+<a href="newlisp_manual.html#rest" target="body">rest</a><br />
+<a href="newlisp_manual.html#reverse" target="body">reverse</a><br />
+<a href="newlisp_manual.html#rotate" target="body">rotate</a><br />
+<a href="newlisp_manual.html#select" target="body">select</a><br />
+<a href="newlisp_manual.html#set-nth" target="body">set-nth</a><br/>
+<a href="newlisp_manual.html#slice" target="body">slice</a><br />
+<a href="newlisp_manual.html#source" target="body">source</a><br/>
+<a href="newlisp_manual.html#starts-with" target="body">starts-with</a><br />
+<a href="newlisp_manual.html#string" target="body">string</a><br />
+<a href="newlisp_manual.html#sym" target="body">sym</a><br />
+<a href="newlisp_manual.html#title-case" target="body">title-case</a><br />
+<a href="newlisp_manual.html#trim" target="body">trim</a><br />
+<a href="newlisp_manual.html#unicode" target="body">unicode</a><br />
+<a href="newlisp_manual.html#unpack" target="body">unpack</a><br />
+<a href="newlisp_manual.html#upper-case" target="body">upper-case</a><br />
+<a href="newlisp_manual.html#utf8" target="body">utf8</a><br />
+<a href="newlisp_manual.html#utf8len" target="body">utf8len</a><br />
+
+<h3>Floating point math and special functions</h3>
+
+<a href="newlisp_manual.html#abs" target="body">abs</a><br />
+<a href="newlisp_manual.html#acos" target="body">acos</a><br />
+<a href="newlisp_manual.html#acosh" target="body">acosh</a><br />
+<a href="newlisp_manual.html#add" target="body">add</a><br />
+<a href="newlisp_manual.html#asin" target="body">asin</a><br />
+<a href="newlisp_manual.html#asinh" target="body">asinh</a><br />
+<a href="newlisp_manual.html#atan" target="body">atan</a><br />
+<a href="newlisp_manual.html#atanh" target="body">atanh</a><br />
+<a href="newlisp_manual.html#atan2" target="body">atan2</a><br />
+<a href="newlisp_manual.html#beta" target="body">beta</a><br />
+<a href="newlisp_manual.html#betai" target="body">betai</a><br />
+<a href="newlisp_manual.html#binomial" target="body">binomial</a><br />
+<a href="newlisp_manual.html#ceil" target="body">ceil</a><br />
+<a href="newlisp_manual.html#cos" target="body">cos</a><br />
+<a href="newlisp_manual.html#cosh" target="body">cosh</a><br />
+<a href="newlisp_manual.html#crc32" target="body">crc32</a><br />
+<a href="newlisp_manual.html#crit-chi2" target="body">crit-chi2</a><br />
+<a href="newlisp_manual.html#crit-z" target="body">crit-z</a><br />
+<a href="newlisp_manual.html#dec" target="body">dec</a><br />
+<a href="newlisp_manual.html#div" target="body">div</a><br />
+<a href="newlisp_manual.html#erf" target="body">erf</a><br />
+<a href="newlisp_manual.html#exp" target="body">exp</a><br />
+<a href="newlisp_manual.html#factor" target="body">factor</a><br />
+<a href="newlisp_manual.html#fft" target="body">fft</a><br />
+<a href="newlisp_manual.html#floor" target="body">floor</a><br />
+<a href="newlisp_manual.html#flt" target="body">flt</a><br />
+<a href="newlisp_manual.html#gammai" target="body">gammai</a><br />
+<a href="newlisp_manual.html#gammaln" target="body">atan</a><br />
+<a href="newlisp_manual.html#gcd" target="body">gcd</a><br />
+<a href="newlisp_manual.html#ifft" target="body">ifft</a><br />
+<a href="newlisp_manual.html#inc" target="body">inc</a><br />
+<a href="newlisp_manual.html#log" target="body">log</a><br />
+<a href="newlisp_manual.html#min" target="body">min</a><br />
+<a href="newlisp_manual.html#max" target="body">max</a><br />
+<a href="newlisp_manual.html#mod" target="body">mod</a><br />
+<a href="newlisp_manual.html#mul" target="body">mul</a><br />
+<a href="newlisp_manual.html#pow" target="body">pow</a><br />
+<a href="newlisp_manual.html#round" target="body">round</a><br />
+<a href="newlisp_manual.html#sequence" target="body">sequence</a><br />
+<a href="newlisp_manual.html#series" target="body">series</a><br />
+<a href="newlisp_manual.html#sgn" target="body">sgn</a><br />
+<a href="newlisp_manual.html#sin" target="body">sin</a><br />
+<a href="newlisp_manual.html#sinh" target="body">sinh</a><br />
+<a href="newlisp_manual.html#sqrt" target="body">sqrt</a><br />
+<a href="newlisp_manual.html#sub" target="body">sub</a><br />
+<a href="newlisp_manual.html#tan" target="body">tan</a><br />
+<a href="newlisp_manual.html#tanh" target="body">tanh</a><br />
+
+<h3>Matrix functions</h3>
+
+<a href="newlisp_manual.html#det" target="body">det</a><br />
+<a href="newlisp_manual.html#invert" target="body">invert</a><br />
+<a href="newlisp_manual.html#mat" target="body">mat</a><br />
+<a href="newlisp_manual.html#multiply" target="body">multiply</a><br />
+<a href="newlisp_manual.html#transpose" target="body">transpose</a><br />
+
+<h3>Array functions</h3>
+
+<a href="newlisp_manual.html#append" target="body">append</a><br/>
+<a href="newlisp_manual.html#array" target="body">array</a><br/>
+<a href="newlisp_manual.html#array-list" target="body">array-list</a><br/>
+<a href="newlisp_manual.html#arrayp" target="body">array?</a><br/>
+<a href="newlisp_manual.html#det" target="body">det</a><br/>
+<a href="newlisp_manual.html#first" target="body">first</a><br/>
+<a href="newlisp_manual.html#invert" target="body">invert</a><br/>
+<a href="newlisp_manual.html#last" target="body">last</a><br/>
+<a href="newlisp_manual.html#mat" target="body">mat</a><br />
+<a href="newlisp_manual.html#multiply" target="body">multiply</a><br/>
+<a href="newlisp_manual.html#nth" target="body">nth</a><br/>
+<a href="newlisp_manual.html#nth-set" target="body">nth-set</a><br/>
+<a href="newlisp_manual.html#rest" target="body">rest</a><br/>
+<a href="newlisp_manual.html#set-nth" target="body">set-nth</a><br/>
+<a href="newlisp_manual.html#transpose" target="body">transpose</a><br/>
+
+<h3>Bit operators</h3>
+
+<a href="newlisp_manual.html#bit_shift" target="body">&lt;&lt;, >></a><br />
+<a href="newlisp_manual.html#bit_and" target="body">&amp;</a><br />
+<a href="newlisp_manual.html#bit_inclusive" target="body">|</a><br />
+<a href="newlisp_manual.html#bit_exclusive" target="body">^</a><br />
+<a href="newlisp_manual.html#bit_not" target="body">~</a><br />
+
+<h3>Predicates</h3>
+<a href="newlisp_manual.html#arrayp" target="body">array?</a><br />
+<a href="newlisp_manual.html#atomp" target="body">atom?</a><br />
+<a href="newlisp_manual.html#contextp" target="body">context?</a><br />
+<a href="newlisp_manual.html#directoryp" target="body">directory?</a><br />
+<a href="newlisp_manual.html#emptyp" target="body">empty?</a><br />
+<a href="newlisp_manual.html#filep" target="body">file?</a><br />
+<a href="newlisp_manual.html#floatp" target="body">float?</a><br />
+<a href="newlisp_manual.html#globalp" target="body">global?</a><br />
+<a href="newlisp_manual.html#integerp" target="body">integer?</a><br />
+<a href="newlisp_manual.html#lambdap" target="body">lambda?</a><br />
+<a href="newlisp_manual.html#legalp" target="body">legal?</a><br />
+<a href="newlisp_manual.html#listp" target="body">list?</a><br />
+<a href="newlisp_manual.html#macrop" target="body">macro?</a><br />
+<a href="newlisp_manual.html#NaNp" target="body">NaN?</a><br />
+<a href="newlisp_manual.html#nilp" target="body">nil?</a><br />
+<a href="newlisp_manual.html#nullp" target="body">null?</a><br />
+<a href="newlisp_manual.html#numberp" target="body">number?</a><br />
+<a href="newlisp_manual.html#primitivep" target="body">primitive?</a><br />
+<a href="newlisp_manual.html#protectedp" target="body">protected?</a><br />
+<a href="newlisp_manual.html#quotep" target="body">quote?</a><br />
+<a href="newlisp_manual.html#stringp" target="body">string?</a><br />
+<a href="newlisp_manual.html#symbolp" target="body">symbol?</a><br />
+<a href="newlisp_manual.html#truep" target="body">true?</a><br />
+<a href="newlisp_manual.html#zerop" target="body">zero?</a><br />
+
+<h3>Time and date functions</h3>
+ 
+<a href="newlisp_manual.html#date" target="body">date</a><br />
+<a href="newlisp_manual.html#date-value" target="body">date-value</a><br />
+<a href="newlisp_manual.html#parse-date" target="body">parse-date</a><br />
+<a href="newlisp_manual.html#now" target="body">now</a><br />
+<a href="newlisp_manual.html#time" target="body">time</a><br />
+<a href="newlisp_manual.html#time-of-day" target="body">time-of-day</a><br />
+
+<h3>Simulation and modelling math functions</h3>
+
+<a href="newlisp_manual.html#amb" target="body">amb</a><br />
+<a href="newlisp_manual.html#bayes-query" target="body">bayes-query</a><br />
+<a href="newlisp_manual.html#bayes-train" target="body">bayes-train</a><br />
+<a href="newlisp_manual.html#normal" target="body">normal</a><br />
+<a href="newlisp_manual.html#prob-chi2" target="body">prob-chi2</a><br />
+<a href="newlisp_manual.html#prob-z" target="body">prob-z</a><br />
+<a href="newlisp_manual.html#rand" target="body">rand</a><br />
+<a href="newlisp_manual.html#random" target="body">random</a><br />
+<a href="newlisp_manual.html#randomize" target="body">randomize</a><br />
+<a href="newlisp_manual.html#seed" target="body">seed</a><br />
+
+<h3>Pattern recognition</h3>
+
+<a href="newlisp_manual.html#ends-with" target="body">ends-with</a><br />
+<a href="newlisp_manual.html#find" target="body">find</a><br />
+<a href="newlisp_manual.html#find-all" target="body">find-all</a><br />
+<a href="newlisp_manual.html#match" target="body">match</a><br />
+<a href="newlisp_manual.html#parse" target="body">parse</a><br />
+<a href="newlisp_manual.html#regex" target="body">regex</a><br />
+<a href="newlisp_manual.html#replace" target="body">replace</a><br />
+<a href="newlisp_manual.html#search" target="body">search</a><br />
+<a href="newlisp_manual.html#starts-with" target="body">starts-with</a><br />
+<a href="newlisp_manual.html#unify" target="body">unify</a><br />
+
+<h3>Financial math functions</h3>
+ 
+<a href="newlisp_manual.html#fv" target="body">fv</a><br />
+<a href="newlisp_manual.html#irr" target="body">irr</a><br />
+<a href="newlisp_manual.html#nper" target="body">nper</a><br />
+<a href="newlisp_manual.html#npv" target="body">npv</a><br />
+<a href="newlisp_manual.html#pv" target="body">pv</a><br />
+<a href="newlisp_manual.html#pmt" target="body">pmt</a><br />
+
+<h3>Input/output and file operations</h3>
+
+<a href="newlisp_manual.html#append-file" target="body">append-file</a><br />
+<a href="newlisp_manual.html#close" target="body">close</a><br />
+<a href="newlisp_manual.html#command-line" target="body">command-line</a><br />
+<a href="newlisp_manual.html#device" target="body">device</a><br />
+<a href="newlisp_manual.html#exec" target="body">exec</a><br />
+<a href="newlisp_manual.html#load" target="body">load</a><br />
+<a href="newlisp_manual.html#open" target="body">open</a><br />
+<a href="newlisp_manual.html#peek" target="body">peek</a><br />
+<a href="newlisp_manual.html#print" target="body">print</a><br />
+<a href="newlisp_manual.html#println" target="body">println</a><br />
+<a href="newlisp_manual.html#read-buffer" target="body">read-buffer</a><br />
+<a href="newlisp_manual.html#read-char" target="body">read-char</a><br />
+<a href="newlisp_manual.html#read-file" target="body">read-file</a><br />
+<a href="newlisp_manual.html#read-key" target="body">read-key</a><br />
+<a href="newlisp_manual.html#read-line" target="body">read-line</a><br />
+<a href="newlisp_manual.html#save" target="body">save</a><br />
+<a href="newlisp_manual.html#search" target="body">search</a><br />
+<a href="newlisp_manual.html#seek" target="body">seek</a><br />
+<a href="newlisp_manual.html#write-buffer" target="body">write-buffer</a><br />
+<a href="newlisp_manual.html#write-char" target="body">write-char</a><br />
+<a href="newlisp_manual.html#write-file" target="body">write-file</a><br />
+<a href="newlisp_manual.html#write-line" target="body">write-line</a><br />
+
+<h3>Processes, pipes and threads</h3>
+<a href="newlisp_manual.html#shell" target="body">!</a><br />
+<a href="newlisp_manual.html#destroy" target="body">destroy</a><br />
+<a href="newlisp_manual.html#exec" target="body">exec</a><br />
+<a href="newlisp_manual.html#fork" target="body">fork</a><br />
+<a href="newlisp_manual.html#pipe" target="body">pipe</a><br />
+<a href="newlisp_manual.html#process" target="body">process</a><br />
+<a href="newlisp_manual.html#semaphore" target="body">semaphore</a><br />
+<a href="newlisp_manual.html#share" target="body">share</a><br />
+<a href="newlisp_manual.html#wait-pid" target="body">wait-pid</a><br />
+
+<h3>File and directory management</h3>
+
+<a href="newlisp_manual.html#change-dir" target="body">change-dir</a><br />
+<a href="newlisp_manual.html#copy-file" target="body">copy-file</a><br />
+<a href="newlisp_manual.html#delete-file" target="body">delete-file</a><br />
+<a href="newlisp_manual.html#directory" target="body">directory</a><br />
+<a href="newlisp_manual.html#file-info" target="body">file-info</a><br />
+<a href="newlisp_manual.html#make-dir" target="body">make-dir</a><br />
+<a href="newlisp_manual.html#real-path" target="body">real-path</a><br />
+<a href="newlisp_manual.html#remove-dir" target="body">remove-dir</a><br />
+<a href="newlisp_manual.html#rename-file" target="body">rename-file</a><br />
+
+<h3>HTTP network API</h3>
+
+<a href="newlisp_manual.html#base64-enc" target="body">base64-enc</a><br />
+<a href="newlisp_manual.html#base64-dec" target="body">base64-dec</a><br />
+<a href="newlisp_manual.html#delete-url" target="body">delete-url</a><br />
+<a href="newlisp_manual.html#get-url" target="body">get-url</a><br />
+<a href="newlisp_manual.html#put-url" target="body">put-url</a><br />
+<a href="newlisp_manual.html#post-url" target="body">post-url</a><br />
+<a href="newlisp_manual.html#xml-error" target="body">xml-error</a><br />
+<a href="newlisp_manual.html#xml-parse" target="body">xml-parse</a><br />
+<a href="newlisp_manual.html#xml-type-tags" target="body">xml-type-tags</a><br />
+
+<h3>Socket TCP/IP network API</h3>
+
+<a href="newlisp_manual.html#net-accept" target="body">net-accept</a><br />
+<a href="newlisp_manual.html#net-close" target="body">net-close</a><br />
+<a href="newlisp_manual.html#net-connect" target="body">net-connect</a><br />
+<a href="newlisp_manual.html#net-error" target="body">net-error</a><br />
+<a href="newlisp_manual.html#net-eval" target="body">net-eval</a><br />
+<a href="newlisp_manual.html#net-listen" target="body">net-listen</a><br />
+<a href="newlisp_manual.html#net-local" target="body">net-local</a><br />
+<a href="newlisp_manual.html#net-lookup" target="body">net-lookup</a><br />
+<a href="newlisp_manual.html#net-peer" target="body">net-peer</a><br />
+<a href="newlisp_manual.html#net-peek" target="body">net-peek</a><br />
+<a href="newlisp_manual.html#net-ping" target="body">net-ping</a><br />
+<a href="newlisp_manual.html#net-receive" target="body">net-receive</a><br />
+<a href="newlisp_manual.html#net-receive-from" target="body">net-receive-from</a><br />
+<a href="newlisp_manual.html#net-receive-udp" target="body">net-receive-udp</a><br />
+<a href="newlisp_manual.html#net-select" target="body">net-select</a><br />
+<a href="newlisp_manual.html#net-send" target="body">net-send</a><br />
+<a href="newlisp_manual.html#net-send-to" target="body">net-send-to</a><br />
+<a href="newlisp_manual.html#net-send-udp" target="body">net-send-udp</a><br />
+<a href="newlisp_manual.html#net-service" target="body">net-service</a><br />
+<a href="newlisp_manual.html#net-sessions" target="body">net-sessions</a><br />
+
+<h3>System functions</h3>
+
+<a href="newlisp_manual.html#systemsymbol" target="body">$</a><br />
+<a href="newlisp_manual.html#callback" target="body">callback</a><br />
+<a href="newlisp_manual.html#catch" target="body">catch</a><br />
+<a href="newlisp_manual.html#context" target="body">context</a><br />
+<a href="newlisp_manual.html#debug" target="body">debug</a><br />
+<a href="newlisp_manual.html#default" target="body">default</a><br />
+<a href="newlisp_manual.html#delete" target="body">delete</a><br />
+<a href="newlisp_manual.html#env" target="body">env</a><br />
+<a href="newlisp_manual.html#error-event" target="body">error-event</a><br />
+<a href="newlisp_manual.html#error-number" target="body">error-number</a><br />
+<a href="newlisp_manual.html#exit" target="body">exit</a><br />
+<a href="newlisp_manual.html#global" target="body">global</a><br />
+<a href="newlisp_manual.html#import" target="body">import</a><br />
+<a href="newlisp_manual.html#main-args" target="body">main-args</a><br />
+<a href="newlisp_manual.html#new" target="body">new</a><br />
+<a href="newlisp_manual.html#ostype" target="body">ostype</a><br />
+<a href="newlisp_manual.html#pretty-print" target="body">pretty-print</a><br />
+<a href="newlisp_manual.html#reset" target="body">reset</a><br />
+<a href="newlisp_manual.html#set-locale" target="body">set-locale</a><br />
+<a href="newlisp_manual.html#signal" target="body">signal</a><br />
+<a href="newlisp_manual.html#sleep" target="body">sleep</a><br />
+<a href="newlisp_manual.html#sym" target="body">sym</a><br />
+<a href="newlisp_manual.html#symbols" target="body">symbols</a><br />
+<a href="newlisp_manual.html#sys-error" target="body">sys-error</a><br />
+<a href="newlisp_manual.html#sys-info" target="body">sys-info</a><br />
+<a href="newlisp_manual.html#timer" target="body">timer</a><br />
+<a href="newlisp_manual.html#throw" target="body">throw</a><br />
+<a href="newlisp_manual.html#throw-error" target="body">throw-error</a><br />
+<a href="newlisp_manual.html#trace" target="body">trace</a><br />
+<a href="newlisp_manual.html#trace-highlight" target="body">trace-highlight</a><br />
+
+
+<h3>Importing Libraries</h3>
+
+<a href="newlisp_manual.html#address" target="body">address</a><br />
+<a href="newlisp_manual.html#flt" target="body">flt</a><br />
+<a href="newlisp_manual.html#float" target="body">float</a><br />
+<a href="newlisp_manual.html#get-char" target="body">get-char</a><br />
+<a href="newlisp_manual.html#get-float" target="body">get-float</a><br />
+<a href="newlisp_manual.html#get-int" target="body">get-int</a><br />
+<a href="newlisp_manual.html#get-long" target="body">get-long</a><br />
+<a href="newlisp_manual.html#get-string" target="body">get-string</a><br />
+<a href="newlisp_manual.html#import" target="body">import</a><br />
+<a href="newlisp_manual.html#int" target="body">int</a><br />
+<a href="newlisp_manual.html#pack" target="body">pack</a><br />
+<a href="newlisp_manual.html#unpack" target="body">unpack</a><br />
+
+<h3>newLISP internals API</h3>
+
+<a href="newlisp_manual.html#cpymem" target="body">cpymem</a><br />
+<a href="newlisp_manual.html#dump" target="body">dump</a><br />
+
+</body>
+</html>

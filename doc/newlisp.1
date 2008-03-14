@@ -1,0 +1,102 @@
+.TH newlisp 1 "January 2008" "version 9.3" "Commandline Parameters"
+.SH NAME
+newlisp \- lisp like programming language
+.SH SYNOPSIS
+.B newlisp
+[\-h] [\-c | \-C | \-http] [\-s stacksize] [\-m max\-mem\-megabyte] [[\-l path\-file | \-L path\-file] [\-p port\-number | \-d port\-number]] [\-w diectory] [lisp\-files ...] [\-e programtext]
+.SH DESCRIPTION
+Invokes newLISP which first loads init.lsp if present. Then one or more options and one or more newLISP source files can be specified. The options and source files are executed in the sequence they appear. For some options is makes sense to have source files loaded first like for the \-p and \-d options. For other options like \-s and \-m it is logical to specify these before the source files to be loaded. If a \-e switch is used the programtext is evaluated and then newlisp exits otherwise evaluation continues interactively (unless an exit occurs during lisp\-file interpretation).
+.SH OPTIONS
+.TP
+\-h
+Display a short help text.
+.TP
+\-c
+Suppress the commandline prompt.
+.TP
+\-C
+Force prompt when running newLISP in pipe I/O mode for Emacs.
+.TP
+\-http
+only accept HTTP commands
+.TP
+\-s stacksize
+Stack size to use when starting newLISP. When no stack size is specified the stack defaults to 1024.
+.TP
+\-m max\-mem\-megabyte
+Limits memory to max\-mem\-megabyte megabytes for LISP cell memory.
+.TP
+lisp\-files
+Load and evaluate the specified lisp source files in sequence. Source files can be specified using URLs. If an (exit) is executed by one of the source files then newlisp exits and all processing ceases.
+.TP
+\-e programtext
+Programtext is an expression enclosed in quotation marks which is evaluated and the result printed to standard out device (STDOUT). In most UNIX system shells apostrophes can also be used to delimit the expression. newLISP exits after evaluation of programtext is complete.
+.TP
+\-w directory
+Directory is the start up directory for newLISP. Any file reference in a program will refer to this directory by default as the current directory. This can be used to define a web root directory when in server mode.
+.TP
+\-l \-L path\-file
+Log network connections and newLISP I/O to the file in path\-file. \-l will only log network connections or commandline input or net\-eval requests. \-L will additionally log HTTP requests and newLISP output from commandline and net\-eval input.
+.TP
+\-p port\-number
+Listen for commands on a TCP/IP socket connection. In this case standard I/O is redirected to the port specified in the \-p option. Any specified lisp\-files will be loaded the first time a connection is made, that is, before text is accepted from the port connection.
+.TP
+\-d port\-number
+Run in demon mode. As for the \-p option, but newLISP does not exit after a closed connection and stays in memory listening for a new connection.
+
+.SH EXAMPLES
+.TP
+Start interactive session
+.B newlisp
+.PP
+.TP
+Excute a program
+.B newlisp myprog.lsp
+.PP
+.TP
+Excute a remote program
+.B newlisp http://newlisp.org/example.lsp
+.PP
+.TP
+Add 3 and 4, 7 prints on standard output
+.B newlisp
+\-e "(+ 3 4)"
+.PP
+.TP
+newLISP is started as a server (the & indicates to LINUX to run the process in the background) and can be connected to with telnet by issuing telnet localhost 1234
+.B newlisp
+\-p 1234 &
+.PP
+.TP
+newLISP is started as a server for another newlisp process connecting with the net\-eval function or HTTP requests
+.B newlisp
+\-c \-d 4711 &
+.PP
+.TP
+newLISP is started as a server handling HTTP requests only. Connections are logged to the file /usr/home/www/log.txt
+.B newlisp
+\-l /usr/home/www/log.txt \-http \-d 8080 &
+.PP
+.TP
+newLISP is started as a server handling HTTP requests and defining the startup/web root directory
+.B newlisp
+\-http \-d 8080 \-w /usr/home/www/httpdocs &
+.TP
+When accepting HTTP commands a file httpd.conf can be loaded, which will preprocess the path\-name in the HTTP request
+.B newlisp
+httpd.conf \-http \-d 8080 \-w /usr/home/www/httpdocs &
+.PP
+If the file httpd.conf contains:
+
+(define (httpd\-conf path\-name)
+    (if (ends\-with path\-name ".exe") "errorpage.html" path\-name))
+
+then all files ending in .exe will translate the request in to a request for an error page, else the original request string is returned.
+.PP
+.SH EXIT STATUS
+newLISP returns a zero exit status for normal termination unless an exit command specifies a code to be returned. Non zero is returned in case of abnormal exit.
+.SH AUTHOR
+Lutz Mueller <lutz@nuevatec.com>
+
+http://newlisp.org/ \- the newLISP home page
+

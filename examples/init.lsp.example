@@ -1,0 +1,61 @@
+;; init.lsp - newLISP initialization file
+;; gets loaded automatically on newLISP startup
+;; newLISP looks for it in: /usr/share/newlisp/init.lsp
+;;
+;; defines some useful macros, none of these
+;; are required in the other sample programs
+;; but some implement forms frequently used
+;; in other LISPs
+;;
+;; v.8.7.11
+;;
+;; fixed a wrong logic in conditional making of defun macro
+;;
+;; macro for 'defun' like in other LISPs
+;; usage: (defun foo (x y z) body1 body2 ... ) 
+;;
+;;
+(constant (global 'defun) 
+	(lambda-macro (_func-name _arguments)
+      (set _func-name (append '(lambda ) (list _arguments) (args)))))
+
+
+;; edits a function
+;;
+;; usage: (edit foo)
+;;
+;; this will open and edit window for editing
+;; a functioon called "foo". After saving and 
+;; exiting the editor newLISP will reload the
+;; function, which is also available in a file 
+;; with the same name. Only for unix like OSs
+;;
+
+(if (< (& 0xF (last (sys-info))) 5)
+  (begin
+    (define-macro (edit _func)
+	(save (string "/tmp/" _func) _func)
+	(! (string "/usr/bin/vi /tmp/" _func))
+	(load (string "/tmp/" _func)))
+    (global 'edit)))
+
+
+;; this needs an installation of lynx, a character based web browser
+;; loads very fast, quickly exit with Ctrl-C
+;;
+
+(define-macro (help func)
+   (if (primitive? (eval func))
+       (let (func-name (name func))
+            (if (ends-with func-name "?") (replace "?" func-name "p")) 
+       (!  (format "lynx /usr/share/newlisp/doc/newlisp_manual.html#%s" func-name)))
+   (format "%s is not a built-in function" (name func))))
+
+(constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT")))
+(if $HOME (catch (load (append $HOME "/.init.lsp")) 'error))
+
+;;;; end of file ;;;;
+
+
+          
+          

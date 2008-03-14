@@ -1,0 +1,138 @@
+#!/usr/bin/newlisp
+
+# qa-xml - test newLISP xml-parse, xml-type-tags functions
+
+(set 'example-xml
+[text]
+
+<DATABASE name="example.xml">
+<!--This is a database of fruits-->
+    <FRUIT>
+        <NAME>apple</NAME>
+        <COLOR>red</COLOR>
+        <PRICE>0.80</PRICE>
+    </FRUIT>
+
+    <FRUIT>
+        <NAME>orange</NAME>
+        <COLOR>orange</COLOR>
+        <PRICE>1.00</PRICE>
+    </FRUIT>
+
+    <FRUIT>
+       <NAME>banana</NAME>
+       <COLOR>yellow</COLOR>
+       <PRICE>0.60</PRICE>
+    </FRUIT>
+</DATABASE>
+[/text])
+
+
+(set 'result1 '(
+  ("ELEMENT" "DATABASE" (("name" "example.xml")) (("TEXT" "\n") (
+     "COMMENT" "This is a database of fruits") 
+    ("TEXT" "\n    ") 
+    ("ELEMENT" "FRUIT" () (("TEXT" "\n        ") ("ELEMENT" "NAME" 
+       () 
+       (("TEXT" "apple"))) 
+      ("TEXT" "\n        ") 
+      ("ELEMENT" "COLOR" () (("TEXT" "red"))) 
+      ("TEXT" "\n        ") 
+      ("ELEMENT" "PRICE" () (("TEXT" "0.80"))) 
+      ("TEXT" "\n    "))) 
+    ("TEXT" "\n\n    ") 
+    ("ELEMENT" "FRUIT" () (("TEXT" "\n        ") ("ELEMENT" "NAME" 
+       () 
+       (("TEXT" "orange"))) 
+      ("TEXT" "\n        ") 
+      ("ELEMENT" "COLOR" () (("TEXT" "orange"))) 
+      ("TEXT" "\n        ") 
+      ("ELEMENT" "PRICE" () (("TEXT" "1.00"))) 
+      ("TEXT" "\n    "))) 
+    ("TEXT" "\n\n    ") 
+    ("ELEMENT" "FRUIT" () (("TEXT" "\n       ") ("ELEMENT" "NAME" 
+       () 
+       (("TEXT" "banana"))) 
+      ("TEXT" "\n       ") 
+      ("ELEMENT" "COLOR" () (("TEXT" "yellow"))) 
+      ("TEXT" "\n       ") 
+      ("ELEMENT" "PRICE" () (("TEXT" "0.60"))) 
+      ("TEXT" "\n    "))) 
+    ("TEXT" "\n")))))
+
+
+(set 'result2 '(
+  ("ELEMENT" "DATABASE" (("name" "example.xml")) (("ELEMENT" "FRUIT" 
+     (("ELEMENT" "NAME" (("TEXT" "apple"))) ("ELEMENT" "COLOR" ((
+         "TEXT" "red"))) 
+      ("ELEMENT" "PRICE" (("TEXT" "0.80"))))) 
+    ("ELEMENT" "FRUIT" (("ELEMENT" "NAME" (("TEXT" "orange"))) ("ELEMENT" 
+       "COLOR" 
+       (("TEXT" "orange"))) 
+      ("ELEMENT" "PRICE" (("TEXT" "1.00"))))) 
+    ("ELEMENT" "FRUIT" (("ELEMENT" "NAME" (("TEXT" "banana"))) ("ELEMENT" 
+       "COLOR" 
+       (("TEXT" "yellow"))) 
+      ("ELEMENT" "PRICE" (("TEXT" "0.60")))))))))
+
+
+(set 'result3 '(
+  (DATABASE ((name "example.xml")) (!-- "This is a database of fruits") 
+   (FRUIT (NAME "apple") (COLOR "red") (PRICE "0.80")) 
+   (FRUIT (NAME "orange") (COLOR "orange") (PRICE "1.00")) 
+   (FRUIT (NAME "banana") (COLOR "yellow") (PRICE "0.60")))))
+
+;(define CTX:msg)
+
+(define (test-xml-parse)
+  (begin
+	(= (xml-type-tags "TEXT" "CDATA" "COMMENT" "ELEMENT")
+		'("TEXT" "CDATA" "COMMENT" "ELEMENT"))
+	(print (= result1 (xml-parse example-xml)) " ")
+	(print (= result2 (xml-parse example-xml (+ 1 2 4))) " ")
+ 	(xml-type-tags nil 'cdata '!-- nil) 
+	(print (= result3 (xml-parse example-xml (+ 1 2 8))) " ")
+	(xml-type-tags nil nil nil nil)
+	(print (= (xml-parse "<msg>Hello World</msg>" (+ 1 2 4 8 16) 'CTX)
+    		'((CTX:msg "Hello World"))) " -> ")
+))
+
+(println)
+(if (test-xml-parse)
+	(println "xml-parse and xml-type-tags OK")
+    (println "ERROR with xml-parse or xml-type-tags"))
+(println)
+
+
+
+;; test callback feature
+(define (xml-callback s-expr start size)
+	(if (or (= (s-expr 0) 'NAME) (= (s-expr 0) 'COLOR) (= (s-expr 0) 'PRICE))
+		(begin
+			(print "parsed expresson:" s-expr)
+			(println ", source:" (start size example-xml))
+		)
+	)
+)
+
+(println "Testing xml-parse with callback feature")
+(xml-type-tags nil 'cdata '!-- nil) 
+(xml-parse example-xml (+ 1 2 8) MAIN xml-callback)
+
+; produces this output:
+[text]
+parsed expresson:(NAME "apple"), source:<NAME>apple</NAME>
+parsed expresson:(COLOR "red"), source:<COLOR>red</COLOR>
+parsed expresson:(PRICE "0.80"), source:<PRICE>0.80</PRICE>
+parsed expresson:(NAME "orange"), source:<NAME>orange</NAME>
+parsed expresson:(COLOR "orange"), source:<COLOR>orange</COLOR>
+parsed expresson:(PRICE "1.00"), source:<PRICE>1.00</PRICE>
+parsed expresson:(NAME "banana"), source:<NAME>banana</NAME>
+parsed expresson:(COLOR "yellow"), source:<COLOR>yellow</COLOR>
+parsed expresson:(PRICE "0.60"), source:<PRICE>0.60</PRICE>
+[/text]
+
+(exit)
+
+;; eof
+	

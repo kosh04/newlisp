@@ -1,0 +1,25 @@
+# makefile for newLISP v. 9.x.x on Mac OSX with readline support
+#
+# for OS X 10.4/Tiger, Tiger comes standard with libreadline
+#
+# needs readline library and headerfiles installed (X tools)
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+#CFLAGS = -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX
+CFLAGS = -Wall -I/usr/include -c -g -DREADLINE -DMAC_OSX
+
+CC = cc -L/usr/lib
+
+default: $(OBJS)
+	$(CC) $(OBJS) -g -lm -lreadline -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_darwin
+
+

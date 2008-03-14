@@ -1,0 +1,3573 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <meta name="author" content="Lutz Mueller">
+   <meta name="keywords" 
+         content="newLISP LISP SCHEME programming language manual reference Artificial Intelligence AI NUEVATEC">
+   <meta name="description" content="newLISP Code Patterns">
+   <title>newLISP Code Patterns</title>
+
+<style type="text/css" media="screen">
+
+<!--
+
+.divider {
+	margin-top: 2em; 
+	margin-bottom: 1em;
+	font-family: Times New Roman, Times, serif;
+	color: #ffAA28;
+	}
+
+.title {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size:300%;
+	font-weight: 500;
+	}
+
+.trade {
+	font-family:Optima, Georgia, Times New Roman, Times, serif;
+	font-size:100%;
+	padding-top:16px;
+	}
+
+span.arw {
+	color:#666666;
+	font-size: 100%;
+	}
+	
+body, h1, h2, h3, h4, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 120%;
+ 	}
+
+table.list {
+	border-width: 0px;
+	padding: 3px;
+	}
+	
+th.list {
+	font-family:Georgia, Times New Roman, Times, serif;
+	font-size:0.8em;
+	font-weight: 700;
+	}
+	
+td.left {
+	font-family: Andale Mono, Bitstream Vera Sans Mono, Monaco, Courier New;
+   	font-size: 100%;
+	}
+	
+td.right {
+	font-family:Georgia, Times New Roman, Times, serif;
+   	font-size: 100%;
+   	font-style: italic;
+	}
+	
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+	
+-->
+
+</style>
+</head>
+<body style="margin: 20px;" text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
+
+<br><br>
+
+<center>
+<h1 class="title">Code Patterns in newLISP<sup><font size="-2">TM</font></sup></h1>
+Version 2008 March 2nd<sup>th</sup><br>
+<a href="http://newlisp.org">newLISP</a> v.9.3 and after 
+</center>
+
+<br><br><br>
+
+<center>
+<span style="line-height:80%;">
+<font size="-2">
+Copyright &copy; 2008 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
+Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br>
+Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br>
+and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br>
+<br>
+newLISP is a trademark of Lutz Mueller.
+</font>
+</span>
+</center>
+
+<br><br>
+
+<blockquote>
+<center><h2>Contents</h2></center>
+<ol>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#scripts">newLISP script files</a></li>
+<ul>
+	<li>Specifying command line options in script files</li>
+	<li>Scripts as pipes</li>
+	<li>File filters</li>
+</ul>
+<li><a href="#modules">Writing software in modules</a></li>
+<ul>
+	<li>Sructuring an application</li>
+	<li>More than one context per file</li>
+	<li>Simple context objects and the default function</li>
+	<li>Packaging data with contexts</li>
+	<li>Passing context objects by reference</li>
+</ul> 
+<li><a href="#locals">Local variables</a></li>
+<ul>
+	<li>Locals in looping functions</li>
+	<li>Local symbols using <tt>let</tt>, <tt>letn</tt> and <tt>local</tt></li>
+	<li>Unused parameters as local symbols</li>
+	<li>Using <tt>args</tt> as local substitute</li>
+</ul>
+<li><a href="#walking">Walking through lists</a></li>
+<ul>
+	<li>Recursion or not?</li>
+	<li>Generators</li>
+	<li>Speed up with memoization</li>
+	<li>Walking a tree</li>
+	<li>Walking a directory tree</li>
+</ul>
+<li><a href="#creating">Creating, accessing, modifying and searching lists</a></li>
+<ul>
+	<li><tt>push</tt> and <tt>pop</tt></li> 
+	<li>Accessing lists</li>
+	<li>Selecting more than one element</li>
+    <li>Filtering and differencing lists</li>
+	<li>Changing list elements</li>
+	<li>The new element as a function of the replaced</li>
+	<li>Search and replace in simple lists</li>
+	<li>Search and replace in nested lists</li>
+	<li>Passing lists by reference using the default functor</li> 
+</ul>
+<li><a href="#flow">Program flow</a></li>
+<ul>
+	<li>Loops</li>
+	<li>Blocks</li>
+	<li>Branching</li>
+	<li>Fuzzy flow</li>
+	<li>Change flow with <tt>catch</tt> and <tt>throw</tt></li>
+	<li>Leave loops with a break condition</li>
+	<li>Change flow with <tt>and</tt> or <tt>or</tt></li>
+</ul>	
+<li><a href="#error">Error handling</a></li>
+<ul>
+	<li>System errors</li>
+	<li>User defined errors</li>
+	<li>Error event handlers</li>
+	<li>Catching errors</li>
+</ul>
+<li><a href="#functions">Functions as data</a></li>
+<ul>
+	<li>Manipulate functions after definition</li>
+	<li>Mapping and applying functions</li>
+	<li>Function currying: functions making functions</li>
+</ul>
+<li><a href="#text">Text processing</a></li>
+<ul>
+	<li>Regular expressions</li>
+	<li>Scanning text</li>
+	<li>Appending strings</li>
+	<li>Growing strings in place</li>
+	<li>Rearranging strings</li>
+</ul>
+<li><a href="#dicts">Dictionaries</a></li>
+<ul>
+    <li>Creating and modifying symbols</li>
+    <li>Iterating through dictionaries</li>
+	<li>Object oriented implementation of a dictionary</li>
+</ul>
+<li><a href="#tcpip">TCP/IP client server communications</a></li>
+<ul>
+	<li>Client - server TCP/IP - open connection</li>
+	<li>Client - server TCP/IP - closed connection</li>
+</ul>
+<li><a href="#udp">UDP communications</a></li>
+<ul>
+	<li>Open communications with UDP</li>
+	<li>Closed transaction oriented UDP</li>
+	<li>UDP multi-cast communications</li>
+</ul>
+<li><a href="#nonblock">Non-blocking communications</a></li>
+<ul>
+	<li>Using net-select</li>
+	<li>Using net-peek</li>
+</ul>
+<li><a href="#controlling">Controlling other apps</a></li>
+<ul>
+	<li>Communications via STD I/O</li>
+	<li>Communications via TCP/IP</li>
+	<li>Communicate via named FIFO</li>
+	<li>Communicate via UDP</li>
+</ul>
+<li><a href="#launch">Launching applications blocking</a></li>
+<ul>
+	<li>Shell execution</li> 
+	<li>Execution capturing std-out in a list</li>
+	<li>Execution feeding std-in</li>
+</ul>
+<li><a href="#threads">Threads, semaphores and shared memory</a></li>
+<li><a href="#databases">Databases, lookup tables</a></li>
+<ul>
+	<li>Association lists</li>
+	<li>Nested associations</li>
+	<li>Updating nested associations</li>
+	<li>Symbol creation and lookup</li>
+</ul>
+<li><a href="#distributed">Distributed computing</a></li>
+<ul>
+	<li>Setting up a newLISP server node</li>
+	<li>Evaluating multiple expressions remotely</li>
+	<li>Transferring files to and from remote nodes</li>
+	<li>Loading and saving code from and to remote nodes</li>
+    <li>HTTPD-only mode, newLISP as a webserver</li>
+    <li>Media types in HTTP modes</li>
+	<li>Environment variables set</li>
+	<li>Local domain UNIX sockets</li>
+</ul>
+<li><a href="#extending">Extending newLISP</a></li>
+<ul>
+	<li>Compile a shared library on Linux/UNIX/MacOSX</li>
+	<li>Compile a DLL on Win32</li>
+	<li>Using data structures in imported libraries</li>
+	<li>Unevenly aligned data structures</li>
+	<li>Passing parameters in library calls</li>
+	<li>Extracting return values from library calls</li>
+</ul>
+<li><a href="#appendix">Appendix</a></li>
+<ul>
+	<li>GNU Free Documentation License</li>
+</ul>
+</ol>
+</blockquote>
+
+<br>
+<center>&sect;</center>
+<a name="intro"></a>
+<h2>1. Introduction</h2>
+<p>When programming in newLISP certain functions and usage patterns occur repeatedly. For some problems an optimal way to solve them evolves over time. The following chapters present example code and explanations for the solution of specific problems when programming in newLISP.</p>
+
+<p>Some content is overlapping with material covered in the newLISP Users Manual and Reference or presented here with a different slant.</p>
+
+<p>Only a subset of newLISP's total function repertoire is used here. Some functions demonstrated have additional calling patterns or applications not mentioned on these pages.</p>
+
+<p>This collection of patterns and solutions is a work in progress. Over time material will be added or existing material improved.</p>
+<center>&sect;</center>
+<br>
+
+<a name="scripts"></a>
+<h2>2. newLISP script files</h2>
+
+<h3>Specifying command line options in script files</h3>
+<p>On Linux/UNIX put the following in the first line of the script/program file:</p>
+
+<pre>
+	#!/usr/bin/newlisp
+</pre>
+
+<p>specifying a bigger stack: </p>
+
+<pre>
+	#!/usr/bin/newlisp -s 100000
+</pre>
+
+<p>or</p>
+
+<pre>
+	#!/usr/bin/newlisp -s100000
+</pre>
+
+<p>Operating systems shells behave differently when parsing the first line and extract parameters. newLISP takes both, attached or detached parameters. Put the following lines in small script to test the behavior of the underlying OS and platform. The script changes the stack size allocated to 100,000 and limits LISP cell memory to about 10 M bytes.</p>
+
+<pre>
+	#!/usr/bin/newlisp -s 100000 -m 10
+
+	(println (main-args))
+	(println (sys-info))
+</pre>
+
+<p>A typical output executing the script from the system shell would be:</p>
+
+<pre>
+	./arg-test
+	
+	("/usr/bin/newlisp" "-s" "100000" "-m" "10" "./arg-test")	
+	(308 655360 299 2 0 100000 8410 2)
+</pre>
+
+<p>Note that few programs in newLISP need a bigger stack configured, most programs run on the internal default of 2048. Each stack position takes an average of 80 bytes. Other options are available to start newLISP. See the Users Manual for details.</p>
+
+<h3>Scripts as pipes</h3>
+
+<pre>
+	The following examples shows how a file can be piped into a newLISP script.
+	#!/usr/bin/newlisp
+	#
+	# uppercase - demo filter script as pipe
+	#
+	# usage: 
+	#          ./uppercase &lt; file-spec
+	#
+	# example: 
+	#          ./uppercase &lt; my-text
+	#
+	#
+
+	(while (read-line) (println (upper-case (current-line))))
+
+	(exit)
+</pre>
+
+
+<p>The file will be printed to stdout translated to uppercase.</p>
+
+<h3>File filters</h3>
+
+<p>The following script works like a Unix grep utility iterating through files and filtering each line in a file using a regular expression pattern.</p>
+
+<pre>
+	#!/usr/bin/newlisp
+	#
+	# nlgrep - grep utility on newLISP
+	#
+	# usage: 
+	#          ./nlgrep "regex-pattern" file-spec
+	#
+	# file spec can contain globbing characters
+	#
+	# example: 
+	#          ./nlgrep "this|that" *.c
+	#
+	# will print all line containing 'this' or 'that' in *.c files
+	#
+
+	(dolist (file-name (3 (main-args))) 
+		(set 'file (open file-name "read"))
+		(println "file ---> " file-name)
+		(while (read-line file)
+			(if (find (main-args 2) (current-line) 0)
+			(write-line)))
+		(close file))
+                
+	(exit)
+</pre>
+
+<p>The expression:</p>
+<pre>
+	(3 (main-args))
+</pre>
+
+<p>is a short form of writing:</p>
+
+<pre>
+	(rest (rest (rest (main-args))))
+</pre>
+
+<p>It returns a list of all the filenames. This form of specifying indices for rest is called implicit indexing. See the Users Manual for implicit indexing with other functions.
+The expression <tt>(main-args 2)</tt> extracts the 3rd argument from the commandline containing the regular expression pattern.</p>
+<center>&sect;</center>
+
+<br>
+<a name="modules"></a>
+<h2>3. Writing software in modules</h2>
+
+
+<h3>Structuring an application</h3>
+
+<p>When writing bigger applications or when several programmers are working on the same code base it is necessary to divide the code base into modules. Modules in newLISP are implemented using contexts, which are namespaces. Namespaces allow lexical isolation between modules. Variables of the same name in one module cannot clash with variables of the same name in another module.</p>
+
+<p>Typically moudules will be organized in one context per file. One file module may contain database access routines.</p>
+
+<pre>
+	; database.lsp
+	;
+	(context 'db)
+	
+	
+	(define (update x y z)
+	...
+	)
+	
+	(define (erase x y z)
+	...
+	)
+</pre>
+
+<p>Another module may contain various utilities</p>
+
+<pre>
+	; auxiliary.lsp
+	;
+	(context 'aux)
+	
+	(define (getval a b)
+	...
+	)
+</pre>
+
+<p>Typically there will be one MAIN module loading and controlling all others:</p>
+
+<pre>
+	; application.lsp
+	;
+	
+	(load "auxiliary.lsp")
+	(load "database.lsp")
+	
+	(define (run)
+		(db:update ....)
+		(aux:putval ...)
+		...
+		...
+	)
+	
+	(run)
+</pre>
+
+<h3>More than one context per file</h3>
+
+<p>When using more than one context per file, each context section should be closed with a <tt>(context MAIN)</tt> statement:</p>
+
+<pre>
+	; myapp.lsp
+	;
+	(context 'A)
+	
+	(define (foo ...)
+	...
+	)
+	
+	(context MAIN)
+	
+	(context 'B)
+	
+	(define (bar ...)
+	...
+	)
+	
+	(context MAIN)
+	
+	(define (main-func)
+	    (A:foo ...)
+	    (B:bar ...)
+	...
+	)
+</pre>
+
+<p>Note that in the namespace statements for contexts <tt>A</tt> and <tt>B</tt> the context names are quoted because they are newly created, while <tt>MAIN</tt> already exists when newLISP starts up and can stay unquoted, although quoting it would not represent a problem.</p>
+
+<h3>Simple objects and the default function</h3>
+
+<p>A function in a context may have the same name as the host context itself. This function has special characteristics:</p>
+
+<pre>
+	(context 'foo)
+	
+	(define (foo:foo a b c)
+	...
+	)
+</pre>
+
+<p>The function <tt>foo:foo</tt> is called the <em>default function</em>, because when using the context name <tt>foo</tt> like a function it will default to <tt>foo:foo</tt>:</p>
+
+<pre>
+	(foo x y z)
+	; same as
+	(foo:foo x y z)
+</pre>
+
+<p>The default function make is possible to write functions which look like normal functions but carry their own lexical namespace. We can use this to write functions which keep state:</p>
+
+<pre>
+	(context 'generator)
+	
+	(set 'acc 0)
+	
+	(define (generator:generator)
+		(inc 'acc))
+	
+	(context MAIN)
+	
+	(generator) &rarr; 1
+	(generator) &rarr; 2
+	(generator) &rarr; 3
+</pre>
+
+<p>The following is a more complex example for a function generating a fibonacci sequence:</p>
+
+<pre>
+	(define (fibo:fibo)
+		(if (not fibo:mem) (set 'fibo:mem '(0 1)))
+		(push (+ (fibo:mem -1) (fibo:mem -2)) fibo:mem -1))
+	
+	(fibo) &rarr; 1
+	(fibo) &rarr; 2
+	(fibo) &rarr; 3
+	(fibo) &rarr; 5
+	(fibo) &rarr; 8
+	...
+</pre>
+
+<p>This example also shows how a default function is defined <i>on the fly</i> wihtout the need of explicit <tt>context</tt> statements. As an alternative the function could also have been written creating the context explicitely:</p>
+
+<pre>
+	(context 'fibo)
+	(define (fibo:fibo)
+			(if (not mem) (set 'mem '(0 1)))
+			(push (+ (mem -1) (mem -2)) mem -1))
+	(context MAIN)
+	
+	(fibo) &rarr; 1
+	(fibo) &rarr; 2
+	(fibo) &rarr; 3
+	(fibo) &rarr; 5
+	(fibo) &rarr; 8
+</pre>
+
+<p>while the first form is shorter, the second form is more readable.</p>
+
+<h3>Packaging data with contexts</h3>
+
+<p>The previous examples already presented functions packaged with data in a namespace. In the <tt>generator</tt> example the <tt>acc</tt> variable kept state. In the <tt>fibo</tt> example the variable <tt>mem</tt> kept a growing list. In both cases functions and data are living together in a namespace. The follwing example shows how a namespace just holds data only in a  default functor:</p>
+
+<pre>
+	(set 'db:db '(a "b" (c d) 1 2 3 x y z))
+</pre>
+
+<p>Just like we used the default function to refer to <tt>fibo</tt> and <tt>generator</tt> we can refer to the list in <tt>db:db</tt> by only using <tt>db</tt>. This will work in all situations wher we do list indexing:</p>
+
+<pre>
+	(db 0)    &rarr; a
+	(db 1)    &rarr; "b"
+	(db 2 1)  &rarr; d
+	(db -z)   &rarr; p
+	(db -x)   &rarr; o
+ 
+	(3 db)    &rarr; (1 2 3 x y z)
+	(2 1 db)  &rarr; ((c d))
+	(-6 2 db) &rarr; (1 2)
+</pre>
+
+<h3>Passing context objects by reference</h3>
+
+<p>The default functor when used as an argument in a user defined function, is passed by reference. That means that no copy of the list or string is passed but a reference to the original contents. This is useful when handling large lists or strings:</p>
+
+<pre>
+	(define (update data idx expr)
+		(if (not (or (lambda? expr) (primitive? expr)))
+			(nth-set (data idx) expr)
+			(nth-set (data idx) (expr $0))))
+		
+	(update db 0 99) &rarr; a
+	db:db &rarr; (99 "b" (c d) 1 2 3 x y z)
+	
+	(update db 1 upper-case) &rarr; "b"
+	db:db &rarr; (99 "B" (c d) 1 2 3 x y z)
+	
+	(update db 4 (fn (x) (mul 1.1 x))) &rarr;
+	db:db &rarr; (99 "B" (c d) 1 2.2 3 x y z)
+</pre>
+
+<p>The data in <tt>db:db</tt> is passed via the <tt>update</tt> function parameter <tt>data</tt>, which now holds a reference to the context <tt>db</tt>. The <tt>expr</tt> parameter passed is checked if a built-in function, operator or a user defined lambda expression and than works on <tt>$0</tt>, the system variable containing the old content referenced by <tt>(data idx)</tt>.</p>
+
+<p>The function <tt>update</tt> is also a good example how to pass operators or functions as function argument. Read more about thois in chapter <a href="#functions">9. Functions as data</a>.</p>
+
+<p>when using destructive functions which take the un-indexed list like <tt>replace</tt>, <tt>rotate</tt>, <tt>sort</tt> and <tt>swap</tt> the function <tt>default</tt> can be used to extract the default functor and access the list or string in it by reference:</p>
+
+<pre>
+	(set 'foo:foo '( 6 3 5 8 6 7 4 1))
+
+	(define (my-sort clist)
+		(sort (eval (default clist))))
+
+	(my-sort foo) 
+
+	foo:foo  &rarr; (1 3 4 5 6 6 7 8)
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="locals"></a>
+<h2>4. Local variables</h2> 
+
+<h3>Locals in looping functions</h3>
+
+<p>All looping functions like <tt>dolist</tt>, <tt>dotimes</tt>, <tt>dotree</tt> and <tt>for</tt>, use local variables. During loop execution the variable takes different values, but after leaving the looping function the variable regains its old value. <tt>let</tt>, <tt>define</tt>, and <tt>lambda</tt> expressions are another method for making variables local:</p>
+
+<h3>Local symbols using <tt>let</tt>, <tt>letn</tt> and <tt>local</tt></h3>
+
+<p><tt>let</tt> is the usual way in LISP to declare symbols as local to a block.</p>
+<pre>
+	(define (sum-sq a b)
+    	(let ((x (* a a)) (y (* b b)))
+        	(+ x y)))
+
+	(sum-sq 3 4) &rarr; 25
+
+	; alternative syntax
+	(define (sum-sq a b)         
+    	(let (x (* a a) y (* b b))
+        	(+ x y)))
+
+	; using local
+	(define (sum-sq a b)
+		(local (x y)
+			(set 'x (* a a))
+			(set 'y (* b b))
+			(+ x y)))
+</pre>
+
+<p>The variables x and y are initialized, then the expression (+ x y) is evaluated. The <tt>let</tt> form is just an optimized version and syntactic convenience for writing:</p>
+
+<pre>
+	((lambda (sym1 [sym2 ...]) exp-body ) exp-init1 [ exp-init2 ...])
+</pre>
+
+<p>When initializing several parameters, a nested <tt>let</tt>, <tt>letn</tt> can be used to reference previously initialized variables in subsequent initializer expressions:</p>
+
+<pre>
+	(letn ((x 1) (y (+ x 1))) 
+	    (list x y))          	&rarr; (1 2)
+</pre>
+
+<p>The function <tt>local</tt> works like a <tt>let</tt> but initializing all variables to <tt>nil</tt>.</p>
+
+<h3>Unused parameters as local symbols</h3>
+
+<p>In newLISP all parameters in user defined functions are optional. Unused parameters are filled with <tt>nil</tt> and local to the dynamic scope of the function. Defining a user function with more parameters than required is a convenient method to create local variable symbols:</p>
+
+<pre>
+	(define (sum-sq a b , x y)
+		(set 'x (* a a))
+		(set 'y (* b b))
+		(+ x y))
+</pre>
+
+<p>The comma is not a special syntax feature but only a visual helper to separate normal parameters from local variable symbols.</p>
+
+<h3>Using <tt>args</tt> as local substitute</h3>
+
+<p>Using the <tt>args</tt> function no parameter symbols need to be used at all and <tt>args</tt> returns a list of all parameters passed but not taken by declared parameters:</p>
+
+<pre>
+	(define (foo)
+		(args))
+    
+	(foo 1 2 3)   &rarr; (1 2 3)
+	
+	
+	(define (foo a b)
+		(args))
+    
+	(foo 1 2 3 4 5)   &rarr; (3 4 5)
+</pre>
+
+<p>The second example shows how <tt>args</tt> only contains the list of arguments not bound by the variable symbols <tt>a</tt> and <tt>b</tt>.</p>
+
+<p>Indices can be used to access members of the <tt>(args)</tt> list:</p>
+
+<pre>
+	(define (foo) 
+	  	(+ (args 0) (args 1)))
+	  
+	(foo 3 4)   &rarr; 7 
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="walking"></a>
+<h2>5. Walking through lists</h2>
+
+<h3>Recursion or iteration?</h3>
+
+<p>Although recursion is a powerful feature to express many algorithms in a readable form, they are also inefficient in some instances. newLISP has many iterative constructs and high level functions like <tt>flat</tt> or the built-in XML functions, which use recursion internally. In many cases this makes defining a recursive algorithm not necessary.</p>
+
+
+<p>Some times a non-recursive solution can be much faster and lighter on system resources.</p>
+
+<pre>
+	;; classic recursion
+	;; slow and resource hungry
+	 (define (fib n)
+		(if (< n 2) 1
+  			(+  (fib (- n 1))
+	  			(fib (- n 2)))))
+</pre>
+
+<p>The recursive solution is slow because of frequent calling overhead incurred. The recursive solution uses also a lot of memory for holding intermediate results.</p>
+
+<pre>	
+	;; iteration
+	;; fast and also returns the whole list
+	(define (fibo n , f)
+		(set 'f '(1 0))
+		(dotimes (i n)
+ 			(push (+ (f 0) (f 1)) f) -1)
+		(rest f))
+</pre>
+
+<p>The iterative solution is fast and uses very little memory.</p>
+
+<h3>Generators</h3>
+
+<p>A generator is a function which keeps and changed state between invocations and returns a new value on each call:</p>
+
+<pre>
+	;; generator uses a namespace to keep state
+	;; the default funcion (fibo) gets called repeatedly
+	;;
+	;; (fibo) &rarr; 1
+	;; (fibo) &rarr; 2
+	;; (fibo) &rarr; 3, 5, 8, 13, 21 ...
+	;;
+	;; fibo:mem &rarr; (0 1 1 2 3 5 8 13 21 ...)
+	(define (fibo:fibo)
+		(if (not fibo:mem) (set 'fibo:mem '(0 1))) 
+		(push (+ (fibo:mem -2) (fibo:mem -1)) fibo:mem -1))
+</pre>
+
+<p>Namespaces in newLISP together with default functions are a convenient method to 
+package a function with local static variables. <tt>mem</tt> is used in the <tt>fibo</tt> 
+name space to keep the Fibonacci sequence.</p>
+
+<h3>Speed up with memoization</h3>
+
+<p>A memoizing function caches results for faster retrieval when called with the 
+same parameters again. The following function makes a memoizing function
+from any built-in or user defined function with an arbitrary number of arguments:<p>
+
+<blockquote><pre>
+;; speed up a recursive function using memoization
+(define-macro (memoize mem-func func) 
+  (set (sym mem-func mem-func) 
+    (letex (f func  c mem-func) 
+      (lambda () 
+        (or (context c (string (args))) 
+            (context c (string (args)) (apply f (args))))))))
+
+(memoize fibo-m fibo)
+
+(time (fibo-m 25)) &rarr; 148
+(time (fibo-m 25)) &rarr; 0
+</pre></blockquote>
+
+<p>The function  creates a context and <em>default</em> function for the original
+function with a new name and stores all results in symbols in the same context.</p>
+
+<p>When memoizing recursive functions, include the the raw lambda specification
+of the function so recursive calls are memoized too:</p>
+
+<blockquote><pre>
+(memoize fibo
+  (lambda (n)
+    (if(< n 2) 1
+      (+  (fibo (- n 1))
+          (fibo (- n 2))))))
+
+(time (fibo 100)) &rarr; 1
+(fibo 80)         &rarr; 37889062373143906
+</pre></blockquote>
+
+<p>The <tt>fibo</tt> function in the last example would take hours to calculate
+without memoization. The memoized version takes only about a milli second for
+an argument of <tt>100</tt>.</p>
+
+<h3>Walking a tree</h3>
+
+<p>Tree walks are a typical pattern in traditional LISP and in newLISP as well for walking through a nested list. But many times a tree walk is only used to iterate through all elements of an existing tree or nested list. In this case the built-in <tt>flat</tt> function is much faster than using recursion:</p>
+
+<pre>
+	(set 'L '(a b c (d e (f g) h i) j k))
+
+	;; classic car/cdr and recursion
+	;; 
+	(define (walk-tree tree)
+		(cond ((= tree '()) true)
+   			((atom? (first tree))
+	 			(println (first tree)) 
+	 			(walk-tree (rest tree)))
+   			(true
+	 			(walk-tree (first tree)) 
+	 			(walk-tree (rest tree)))))
+
+	;; classic recursion
+	;; 3 times faster
+	;;
+	(define (walk-tree tree)
+		(dolist (elmnt tree)
+  			(if (list? elmnt) 
+	  		(walk-tree elmnt)
+	  		(println elmnt))))
+	  
+	(walk-tree L) &rarr;
+	a
+	b
+	c
+	d
+	e
+	...
+</pre>
+
+<p>Using the built-in <tt>flat</tt> in newLISP a nested list can be transformed int a flat list. Now the list can be processed with a <tt>dolist</tt> or <tt>map</tt>:</p>
+
+<pre>
+	;; fast and short using 'flat'
+	;; 30 times faster with map
+	;;
+	(map println (flat L))
+
+	(dolist (item (flat L)) (println item)
+</pre>
+
+
+<h3>Walking a directory tree</h3>
+<p>Walking a directory tree is a task where recursion works well:</p>
+
+<pre>
+	; walks a disk directory and prints all path-file names
+	;
+	(define (show-tree dir)
+	(if (directory dir)
+		(dolist (nde (directory dir))
+		   (if (and (directory? (append dir "/" nde)) 
+					(!= nde ".") (!= nde ".."))
+				 (show-tree (append dir "/" nde))
+				 (println (append dir "/" nde))))))
+</pre>
+
+<p>In this example recursion is the only solution, because the entire nested list off files is not available when the function is called but gets created recursively during function execution.</p>
+
+<center>&sect;</center>
+<br>
+<a name="creating"></a>
+<h2>6. Creating, accessing, modifying and searchung lists</h2>
+
+<p>newLISP has facilities for multidimensional indexing into nested lists. There are 
+<i>destructive</i> functions like <tt>push</tt>, <tt>pop</tt>, <tt>set-nth</tt>, 
+<tt>nth-set</tt>, <tt>ref-set</tt>, <tt>set-ref</tt>, <tt>set-ref-all</tt>, 
+<tt>sort</tt> and <tt>reverse</tt> and many others for 
+<i>non-destructive</i> operations, like <tt>nth</tt>, <tt>ref</tt>, <tt>ref-all</tt>,
+<tt>first</tt>, <tt>last</tt> and <tt>rest</tt> etc.. 
+Many of the list functions in newLISP also work on strings.</p>
+
+<p>Note that any list or string index in newLISP can be negative starting with -1 
+from the right side of a list:</p>
+
+<pre>
+	(set 'L '(a b c d))
+	(L -1)   &rarr; d
+	(L -2)   &rarr; c
+	(-3 2 L) &rarr; (b c)
+
+	(set 'S  "abcd")
+
+	(S -1)   &rarr; d
+	(S -2)   &rarr; c
+	(-3 2 S) &rarr; "bc")
+</pre>
+
+
+<h3><tt>push</tt> and <tt>pop</tt></h3>
+
+<p>To add to a list use <tt>push</tt>, to eliminate an element from a list use <tt>pop</tt>. 
+Both functions are destructive, changing the contents of a list:</p>
+
+<pre>
+	(set 'L '(b c d e f))
+
+	(push 'a L)
+	(push 'g L -1) ;; push at the end with negative index
+	(pop L) ; pop first
+	(pop L -1) ; pop last
+	(pop L -2) ; pop second to last
+	(pop L 1)  ; pop second
+	; multidimensional push / pop
+	(set 'L '(a b (c d (e f) g) h i))
+	(push 'x L 2 1)
+	L &rarr; (a b (c x d (e f) g) h i)
+	(pop L 2 1) &rarr; x 
+</pre>
+
+<p>Pushing to the end of a list repeatedly is optimized in newLISP and as fast as pushing in front of a list.</p>
+
+<p>When pushing an element with index vector V it can be popped with the same index vector V:</p>
+
+<pre>
+	(set 'L '(a b (c d (e f) g) h i))
+	(set 'V '(2 1))
+	(push 'x L V)
+	L &rarr; (a b (c x d (e f) g) h i))
+	(ref 'x L) &rarr; (2 1) ; search for a nested member
+	(pop L V) &rarr; 'v
+</pre>
+
+<h3>Accessing lists</h3>
+
+<p>Multiple indexes can be specified to access elements in a nested list structure:</p>
+
+<pre>
+	(set 'L '(a b (c d (e f) g) h i))
+
+	; old syntax only for one index
+	(nth 2 L) &rarr; (c d (e f) g)
+
+	; use new syntax for multiple indices
+	(nth (L 2 2 1)) &rarr; f
+	(nth (L 2 2)) &rarr; (e f)
+
+	; implicit indexing
+	(L 2 2 1) &rarr; f
+	(L 2 2)   &rarr; (e f)
+
+	; implicit indexing with vector
+	(set 'vec '(2 2 1))
+	(L vec)   &rarr; f
+</pre>
+
+<p>When using the <tt>(nth (L idx))</tt> syntax, <tt>L</tt> may be a context representing a 
+default functor for passing a list by reference.</p>
+
+<p>Implicit indexing shown in the last example makes code more readable. Implicit indexing also allows an unlimited number of indices, while nth is limited to 16. Indices after a list select list elements. Indices before a list select subsections of a list, which in turn are always lists.</p>
+
+<p>Implicit indexing is also available for rest and slice </p>
+
+<pre>
+	(rest '(a b c d e))      &rarr; (b c d e)
+	(rest (rest '(a b c d e) &rarr; (c d e)
+	; same as
+	(1 '(a b c d e)) &rarr; (b c d e)
+	(2 '(a b c d e)) &rarr; (c d e)
+	; negative indices
+	(-2 '(a b c d e)) &rarr; (d e)
+	; slicing
+	(2 2 '(a b c d e f g))   &rarr; (c d)
+	(-5 3 '(a b c d e f g)) &rarr; (c d e)
+</pre>
+
+<h3>Selecting more than one element</h3>
+<p>Sometimes more than one element must be selected from a list.
+This is done using select:</p>
+
+<pre>
+	;; pick several elements from a list
+	(set 'L '(a b c d e f g))
+	(select L 1 2 4 -1) &rarr; (b c e g)
+
+	;; The indices can be delivered in an index vector:
+	(set 'vec '(1 2 4 -1))
+	(select L vec) &rarr; (b c e g)
+</pre>
+
+<p>The selecting process can re-arrange or double elements at the same time:</p>
+
+<pre>
+	(select L 2 2 1 1) &rarr; (c c b b)
+</pre>
+
+<h3>Filtering and differencing lists</h3>
+
+<p>Sometimes lists need to be filterer for a specific conditions applied to its elements:</p>
+
+<pre>
+	(filter (fn(x) (&lt; 5 x)) '(1 6 3 7 8))    &rarr; (6 7 8)
+	(filter symbol? '(a b 3 c 4 "hello" g)) &rarr; (a b c g)
+	(difference '(1 3 2 5 5 7) '(3 7)) &rarr; (1 2 5)
+</pre>
+
+<p>The first example could be rewritten shorter as follows:</p>
+
+<pre>
+	(filter (curry &lt; 5) '(1 6 3 7 8))
+</pre>
+
+<p>The <tt>curry</tt> function makes a one-argument function out of a two argument
+function:</p>
+
+<pre>
+	(curry &lt; 5) &rarr; (lambda (_x) (&lt; 5 _x))
+</pre>
+
+<p>Using <tt>curry</tt> a function taking two arguments quickly is converted into
+a predicate taking one argument.</p> 
+
+<h3>Changing list elements</h3>
+
+<p>set-nth and nth-set have the same effect on the list they are working on but the first returns the whole list while nth-set returns the changed old element:</p>
+
+<pre>
+	(set 'L '(a b (c d (e f) g) h i))
+	; return the changed list (old deprecated syntax)
+	(set-nth (L 2 2 1) 'x) &rarr; (a b (c d (e x) g) h i)
+
+	; return the old replaced element
+	(nth-set (L 2 2 1) 'z) &rarr; z
+</pre>
+
+<h3>The new element as a function of the replaced</h3>
+
+<p>An internal system variable $0 in newLISP holds the old list element. This can be used to configure the new one:</p>
+
+<pre>
+	(set 'L '(0 0 0))
+	(nth-set (L 1) (+ $0 1)) &rarr; 0 ; the old value
+	(nth-set (L 1) (+ $0 1)) &rarr; 1
+	(nth-set (L 1) (+ $0 1)) &rarr; 2
+	L &rarr; '(0 3 0)
+	</pre>
+
+<h3>Search and replace in simple lists</h3>
+
+<p>Replace, which can also be used on strings, can search for and replace
+multiple elements in a list at once. Together with <tt>match</tt> and <tt>unify</tt>
+complex search pattersn can be specified. Like with <tt>set-nth</tt> and <tt>nth-set</tt>,
+the replacement expression can use the old elelement contents to form the replacement.</p>
+
+<pre>
+	(set 'aList '(a b c d e a b c d))
+
+	(replace 'b aList 'B) &rarr; (a B c d e a B c d)
+</pre>
+
+<p>The function <tt>replace</tt> can take a comparison function for picking
+list elements:</p>
+ 
+<pre>
+	; replace all numbers where 10 &lt; number
+	(set 'L '(1 4 22 5 6 89 2 3 24))
+
+	(replace 10 L 10 &lt;) &rarr; (1 4 10 5 6 10 2 3 10)
+</pre>
+
+<p>Using the built-in functions <tt>match</tt> and <tt>unify</tt> more complex selection
+criteria can be defined:</p>
+
+<pre>
+	; replace only sublists starting with 'mary'
+
+	(replace '(mary *)  AL (list 'mary (apply + (rest $0))) match)
+	&rarr; ((john 5 6 4) (mary 14) (bob 4 2 7 9) (jane 3))
+
+	; make sum in all expressions
+
+	(set 'AL '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
+
+	(replace '(*) AL (list ($0 0) (apply + (rest $0))) match)
+	&rarr; ((john 15) (mary 14) (bob 22) (jane 3))
+
+	$0 &rarr; 4  ; replacements made
+
+	; change only sublists where both elements are the same
+
+	(replace '(X X) '((3 10) (2 5) (4 4) (6 7) (8 8)) (list ($0 0) 'double ($0 1)) unify)
+	&rarr; ((3 10) (2 5) (4 double 4) (6 7) (8 double 8))
+
+	$0 &rarr; 2  ; replacements made
+</pre>
+
+<p>After a replacement statement is executed the newLISP system variable <tt>$0</tt>
+contains the number of replacements made.</p>
+
+<h3>Search and replace in nested lists</h3>
+
+<p>Sometimes lists are nested, e.g. the SXML results fropm parsing XML. The functions
+<tt>ref-set</tt>, <tt>set-ref</tt> and <tt>set-ref-all</tt> can be used to find and
+replace a single or all elelent in a nested list and replace it or all.</p>
+
+<pre>
+	(set 'data '((monday (apples 20 30) (oranges 2 4 9)) (tuesday (apples 5) (oranges 32 1))))
+
+	(set-ref (data 'monday) tuesday) 
+	&rarr; ((tuesday (apples 20 30) (oranges 2 4 9)) (tuesday (apples 5) (oranges 32 1)))
+</pre>
+
+<p>The function <tt>ref-set</tt> works just like <tt>set-ref</tt> but instead of the 
+whole changed version of the list, only the old element is returned</p>
+
+<pre>
+	(set 'data '((monday (apples 20 30) (oranges 2 4 9)) (tuesday (apples 5) (oranges 32 1))))
+
+	(ref-set  (data 'monday) 'tuesday) &rarr; monday
+</pre>
+
+<p>The function <tt>set-ref-all</tt> does a <tt>set-ref</tt> multiple times, replacing all
+found occurrences of and element.</p>
+
+<pre>
+	(set 'data '((monday (apples 20 30) (oranges 2 4 9)) (tuesday (apples 5) (oranges 32 1))))
+
+	(set-ref-all (data 'apples) "Apples") 
+	&rarr; ((monday ("Apples" 20 30) (oranges 2 4 9)) (tuesday ("Apples" 5) (oranges 32 1)))
+</pre>
+
+<p>Like <tt>find</tt>, <tt>replace</tt>, <tt>ref</tt> and <tt>ref-all</tt>, more
+complex searches can be expressed using <tt>match</tt> or <tt>unify</tt>:</p>
+
+<pre>
+	(set 'data '((monday (apples 20 30) (oranges 2 4 9)) (tuesday (apples 5) (oranges 32 1))))
+
+	(set-ref-all (data '(oranges *)) (list (first $0) (apply + (rest $0))) match)
+	&rarr; ((monday (apples 20 30) (oranges 15)) (tuesday (apples 5) (oranges 33)))
+</pre>
+
+<p>The last exampls shows how <tt>$0</tt> can be used to access the old list element
+in the updating expression. In this case the numbers for <tt>oranges</tt> records
+have been summed up.</p>
+
+<h3>Passing lists by reference using the default functor</h3>
+
+<p>Sometimes a larger list (more than a few hundred elements) must passed to a function 
+for changing elemements in it. Normally newLISP passes all parameters to user-defined
+functions by value. The following snipped shows a technique that can be used to pass a 
+bigger list or string object by reference:</p>
+
+<pre>
+	(set 'data:data '(a b c d e f g h))
+
+	(define (change db i value)
+	    (nth-set (db i) value))
+
+	(change data 3 999) &rarr; d
+	data:data &rarr; '(a b c 999 d e f g h)
+</pre>
+
+<p>In this example the list is encapsulated in a context named <tt>data</tt> holding a variable <tt>data</tt> with the same name.</p>
+
+<p>Wheneve the syntactic form <tt>(<em>func</em> (L x) ...)</tt> is encounterd in newLISP as in the
+functions: <tt>nth</tt>, <tt>nth-set</tt>, <tt>set-nth</tt>, <tt>set-ref</tt>, <tt>set-ref-all</tt>, 
+<tt>ref-set</tt>,<tt>-set-assoc</tt> and <tt>assoc-set</tt> the same techinique of reference passing 
+can be employed.</p>
+
+<center>&sect;</center>
+<br>
+<a name="flow"></a>
+<h2>7. Program flow</h2>
+
+<p>Program flow in newLISP is mostly functional but it also has looping and branching constructs and a catch and throw to break out of normal flow.</p>
+
+<p>Looping expressions as a whole behave like a function or block returning the last expression evaluated inside. </p>
+
+<h3>Loops</h3>
+<p>Most of the traditional looping patterns are supported. Whenever there is a looping variable, it is local in scope to the loop, behaving according the rules of dynamic scoping inside the current name-space or context:</p>
+
+
+<pre>
+	; loop a number of times
+	; i goes from 0 to N - 1
+	(dotimes (i N)
+	   ....
+	)
+	
+	; demonstrate locality of i
+	(dotimes (i 3) 
+	    (print i ":") 
+	    (dotimes (i 3) (print i))
+	    (println))
+	
+	&rarr; ; will output
+	0:012
+	1:012
+	2:012
+	
+	; loop through a list
+	; takes the value of each top level element in aList
+	(dolist (e aList)
+	   ...
+	)
+
+	; loop through a sring
+	; takes the ASCII or UTF-8 value of each character in aString
+	(dostring (e aString)
+	   ...
+	)
+	
+	; loop through the symbols of a context in
+	; alphabetical order of the symbol name
+	(dotree (s CTX)
+	   ...
+	)
+	
+	; loop from to with optional step size
+	; i goes from init to <= N inclusive with step size step
+	; Note that the sign in step is irrelevant, N can be greater
+	; or less then init.
+	(for i init N step)
+	   ...
+	)
+	
+	; loop while a condition is true
+	; first test condition then perform body
+	(while condition
+	   ...
+	)
+	
+	; loop while a condition is false
+	; first test condition then perform body
+	(until condition
+	   ....
+	)
+	
+	; loop while a condition is true
+	; first perform body then test
+	; body is performed at least once
+	(do-while condition
+	  ...
+	)
+	
+	; loop while a condition is false
+	; first perform body then test
+	; body is performed at least once
+	(do-until condition
+	  ...
+	)
+</pre>
+
+<p>Note that the looping functions <tt>dolist</tt>, <tt>dotimes</tt> and <tt>for</tt> can also
+take a break condition as an additional argument. When the break condition evaluates to true
+the loop finishes:</p>
+
+<pre>
+	(dolist (x '(a b c d e f g) (= x 'e)) 
+    	(print x))
+	&rarr; ; will output
+	abcd
+</pre>
+
+<h3>Blocks</H3>
+<p>Blocks are collections of s-expressions evaluated sequentially. All looping constructs may have expression blocks after the condition expression as a body.</p>
+
+<p>Blocks can also be constructed by enclosing them in a begin expression:</p>
+
+ <pre>
+	(begin
+	    s-exp1
+	    s-exp2
+	    .....
+	    s-expN)
+</pre>
+
+<p>Looping constructs do not need to use an explicit begin after the looping conditions. <tt>begin</tt>
+is mostly used to block expressions in <tt>if</tt> and <tt>cond</tt> statements.</p>
+
+<p>The functions <tt>and</tt>, <tt>or</tt>, <tt>let</tt>, <tt>letn</tt> and <tt>local</tt> 
+can also be used to form blocks and do not require <tt>begin</tt> for blocking statements.</p>
+
+<H3>Branching</H3>
+
+<pre>
+	(if condition true-expr false-expr)
+	 
+	;or
+	(if condition true-expr)
+	
+	;or unary if for (filter if '(...))
+	(if condition)  
+	
+	;; more then one statement in the true or false
+	;; part must be blocked with (begin ...)
+	(if (= x Y)
+	   (begin
+	      (some-func x)
+	      (some-func y)
+	   (begin
+	      (do-this x y)
+	      (do-that x y)))
+</pre>
+
+<p>Depending on condition the true-expr or false-expr part is evaluated and returned.</p>
+
+<p>More then one condition true-expr pair can occur in an if expression, making it look like a cond:</p>
+
+<pre>
+	(if condition-1 true-expr-1 
+	    condition-2 true-expr-2 
+	          .....
+	    condition-n true-expr-n
+	    false-expr)
+</pre>
+
+<p>The first true-expr-i of which the condition-i is not nil is evaluated and returned or the false-expr if none of the condition-i is true.</p>
+
+<p>cond works like the multiple condition form of if but each part of condition-i true-expr-i must be braced in parenthesis:</p>
+
+ <pre>
+	(cond 
+	     (condition-1 true-expr-1 )
+	     (condition-2 true-expr-2 )
+	           .....
+	     (condition-n true-expr-n )
+	     (true true-expr))
+</pre>
+
+<H3>Fuzzy flow</H3>
+
+<p>Using amb the program flow can be regulated in a probabilistic fashion:</p>
+
+<pre>
+	(amb
+	    expr-1
+	    expr-2
+	    .....
+	    expr-n)
+</pre>
+<p>One of the alternative expressions expr-1 to expr-n is evaluated with a probability of 1 / n and the result is returned from the amb expression.</p>
+
+<h3>Change flow with <tt>catch</tt> and <tt>throw</tt></h3>
+
+<p>Any loop or other expression block can be enclosed in a catch expression. The moment a throw expression is evaluated, the whole catch expression returns the value of the throw expression.</p>
+<pre>
+	(catch 
+	   (dotimes (i 10)
+	       (if (= i 5) (throw "The End"))
+	        (print i " ")))
+	; will output
+	 
+	0 1 2 3 4
+	; and the return value will be
+	&rarr; "The End"
+</pre>
+<p>Several catch may be nested.</p>
+
+<h3>Leave loops with a break condition</h3>
+
+<p>Loops built using <tt>dotimes</tt>, <tt>dolist</tt> of <tt>for</tt> can specify a break condition 
+under which the loop is left early:</p>
+
+<pre>
+	(dotimes (x 10 (&gt; (* x x) 9)) 
+	    (println x))
+	&rarr;
+	0
+	1
+	2
+	3
+	
+	(dolist (i '(a b c nil d e) (not i))
+	    (println i))
+	&rarr;
+	a
+	b
+	c
+</pre>
+<h3>Change flow with <tt>and</tt> or <tt>or</tt></h3>
+
+<p>Similar to programming in Prolog the logical and and or can be used to control program flow depending on the outcome of expressions logically connected:</p>
+
+<pre>
+	(and
+	   expr-1
+	   expr-2
+	    ...
+	   expr-n)
+</pre>
+<p>Expressions are evaluated sequentially until one expr-i evaluates to nil or the empty list'() or until all expr-i are exhausted. The last expression evaluated is the return value of the whole and expression.</p>
+
+<pre>
+	(or
+	   expr-1
+	   expr-2
+	    ...
+	   expr-n)
+</pre>
+
+<p>Expressions are evaluated sequentially until one expr-i evaluates to not nil and not '() or until all expr-i are exhausted. The last expression evaluated is the return value of the whole or expression.</p>
+<center>&sect;</center>
+<br>
+
+<a name="error"></a>
+<h2>8. Error handling</h2>
+
+<p>Several conditions during evaluation of a newLISP expression can cause error exceptions. For a complete list of errors see the newLISP Reference Manual Appendix.</p>
+
+<h3>System errors</h3>
+
+<p>System errors are caused by wrong syntax, of function invocation, not supplying the right amount of parameters, or supplying parameters with the wrong data type. Other system errors are caused by trying to evaluate non existing functions.</p>
+
+<pre>
+	 ; examples of system errors
+	 ;
+	 (foo foo)   &rarr; invalid function : (foo foo)
+	 (+ "hello") &rarr; value expected in function + : "hello"
+</pre>
+
+<h3>User defined errors</h3>
+
+<p>User errors are error exceptions thrown using the function throw-error:</p>
+
+<pre>
+	; user defined error
+	;
+	(define (double x)
+	    (if (= x 99) (throw-error "illegal number"))
+	    (+ x x))
+
+	(double 8)   &rarr; 16
+	(double 10)  &rarr; 20
+	(double 99) 
+	&rarr;
+	user error : illegal number
+	called from user defined function double
+</pre>
+
+<h3>Error event handlers</h3>
+<p>System and user defined errors can be caught using the function error-event to define an event handler.</p>
+
+<pre>
+	; define an error event handler
+	;
+	(define (MyHandler)
+	   (println "An error #" (error-number) " has occurred"))
+
+	(error-event 'MyHandler)
+
+	(foo) &rarr; An error #23 has occurred
+</pre>
+
+<h3>Catching errors</h3>
+<p>A fine grainier, more specific error exception handling can be achieved using a special syntax of the function catch.</p>
+
+<pre>
+	(define (double x)
+	    (if (= x 99) (throw-error "illegal number"))
+	    (+ x x))
+</pre>
+
+<p>catch with a second parameter can be used to catch both, system and user defined errors:</p>
+
+<pre>
+	(catch (double 8) 'result) &rarr; true
+	result &rarr; 16
+	(catch (double 99) 'result) &rarr; nil
+	(print result) 
+	&rarr; 
+	user error : illegal number
+	called from user defined function double
+
+	(catch (double "hi") 'result) &rarr; nil
+	(print result)  
+	&rarr; 
+	value expected in function + : x
+	called from user defined function double
+</pre>
+
+<p>The catch expression returns true when no error exception occurred and the result of the expression is found in the symbol result specified as a second parameter.</p>
+
+<p>If an error exception occurs, it is caught and the catch clause returns nil. In this case the symbol result contains the error message.</p>
+<center>&sect;</center>
+<br>
+
+<a name="functions"></a>
+<h2>9. Functions as data</h2>
+<h3>Manipulate functions after definition</h3>
+
+<pre>
+	(define (double x) (+ x x)) 
+	&rarr; (lambda (x) (+ x x))
+	
+	(first double) &rarr; (x)
+	(last double) &rarr; (+ x x)
+	
+	;; make a ''fuzzy'' double
+	(nth-set (double 1) '(mul (normal x (div x 10)) 2))
+	
+	(double 10) &rarr; 20.31445313
+	(double 10) &rarr; 19.60351563
+</pre>
+
+<p>lambda in newLISP is not an operator or symbol, but rather a special s-expression or list attribute:</p>
+
+<pre>
+	(first double) &rarr; (x)   ; not lambda
+</pre>
+
+<p>The lambda attribute of an s-expression is right-associative in append:</p>
+
+<pre>
+	(append (lambda) '((x) (+ x x))) &rarr; (lambda (x) (+ x x))
+	(set 'double (append (lambda) '((x) (+ x x)))
+	
+	(double 10) &rarr; 20
+</pre>
+
+<p>and left-associative when using cons:</p>
+
+<pre>
+	(cons '(x) (lambda) &rarr; (lambda (x))
+</pre>
+
+<p>Lambda expressions in newLISP never loose their first class object property.</p>
+
+<h3>Mapping and applying functions</h3>
+
+<p>Functions or operators can be applied to a list of data at once and all results are returned in a list</p>
+
+<pre>
+	(define (double (x) (+ x x))
+	  (map double '(1 2 3 4 5)) &rarr; (2 4 6 8 10)
+</pre>
+  
+  
+<p>Functions can be applied to parameters occurring in a list:</p>
+
+<pre>
+	(apply + (sequence 1 10)) &rarr; 55
+</pre>
+
+<a name="functions"></a>
+  
+<h3>Function currying: functions making functions</h3>
+
+<p>Here and expression is passed as a parameter:</p>
+
+<pre>
+	(define (raise-to power)
+	   (expand (fn (base) (pow base power)) 'power))
+
+	(define square (raise-to 2))
+
+	(define cube (raise-to 3))
+
+	(square 5) &rarr; 25
+	(cube 5)   &rarr; 125
+</pre>
+
+<p>The built-in function <tt>curry</tt> can be used to make a function taking
+one argument from a function taking two arguments.</p>
+
+<pre>
+	(define add-one (curry add 1))  &rarr; (lambda (_x) (add 1 _x))
+
+	(define by-ten (curry mul 10))  &rarr; (lambda (_x) (mul 10 _x))
+
+	(add-one 5)  &rarr; 6
+
+	(by-ten 1.23)  &rarr; 12.3
+</pre>
+
+<p>Note that the <em>curried</em> parameter is always the first (left) one.</p>
+
+<center>&sect;</center>
+<br>
+
+<a name="text"></a>
+<h2>10. Text processing</h2>
+<h3>Regular expressions</h3>
+
+<p>Regular expression in newLISP can be used together with a variety of functions:</p>
+
+<center>
+<table border="0" width="90%" cellpadding="5">
+
+<tr><td><tt>directory</tt></td><td>Returns a list of files, can use a regex patterns for filtering</td></tr>
+
+<tr><td><tt>find</tt></td><td>is used to find the position / offset of a pattern.</td></tr>
+
+<tr><td><tt>find-all</tt></td><td>Assemble a list of all patterns found.</td></tr>
+
+<tr><td><tt>parse</tt></td><td>breaks a string into token at patterns found between tokens.</td></tr>
+
+<tr><td><tt>regex</tt></td><td>finds patterns and lists all sub patterns with offset and length found</td></tr>.
+
+<tr><td><tt>replace</tt></td><td>replaces found patterns with a user defined function, which can take the as input the patterns itself.</td></tr>
+
+<tr><td><tt>search</tt></td><td>searches for a pattern in a file.</td></tr>
+</table>
+</center>
+
+<p>The functions find, regex, replace and search store pattern matching results in the system variable $0 to $15. See the newLISP Users Manual for details.</p>
+
+<p>The following paragraphs show frequently used algorithms for scanning and tokenizing text.</p>
+
+<h3>Scanning text</h3>
+
+<p>replace together with a regular expression pattern can be used to scan text. The pattern in this case describes the tokens scanned for. As each token is found it is pushed on a list. The work is done in the replacement expression part of replace. This example saves all files linked on a web page:</p>
+
+<pre>
+	; tokenize using replace with regular expressions
+	
+	(set 'page (get-url "http://www.nodep.nl/newlisp/index.html"))
+	
+	(replace {href="(http://.*lsp)"} page (push $1 links) 0)
+	
+	(dolist (link links)
+	   (set 'file (last (parse link "/")))
+	   (write-file file (get-url link))
+	   (println "-&gt;" file))
+</pre>
+
+<p>Curly braces <tt>{</tt>,<tt>}</tt> are used in the regular expression pattern to avoid escaping the quotes <tt>"</tt>.</p>
+
+<p>The following technique is better but could not be used before version 8.9.0 of newLISP. The new
+<tt>find-all</tt> function puts all pattern matching strings into a list:</p>
+
+<pre>
+	(set 'links (find-all {href="(http://.*lsp)"} page))
+
+	(dolist (link links)
+	   (set 'file (last (parse link "/")))
+	   (write-file file (get-url link))
+	   (println "-&gt;" file))
+</pre>
+
+<p><tt>find-all</tt> works in this example similar to <tt>replace</tt> with the <tt>push</tt> expression,
+but the <tt>find-all</tt> approach is more readable.</p>
+	
+
+<p>In an additional expressions <tt>find-all</tt> can be directed to do additional
+work with subexpressions found:</p>
+
+<pre>
+	(find-all {(new)(lisp)} "newLISPisNEWLISP" (append $2 $1) 1)
+	
+	&rarr; ("LISPnew" "LISPNEW")
+</pre>
+
+<p>In the last example <tt>find-all</tt> appends the sub expressions found in reverse
+order before returning them in the result list.</p>
+
+<p>Another technique for tokenizing text uses <tt>parse</tt>. While with <tt>replace</tt> 
+and <tt>find-all</tt> the regular expression defined the token, when using <tt>parse</tt>
+the regex pattern describes the space between the tokens:</p>
+
+<pre>
+	; tokenize using parse
+	(set 'str "1 2,3,4 5, 6 7  8"
+	(parse str {,\ *|\ +,*} 0) 
+	&rarr; ("1" "2" "3" "4" "5" "6" "7" "8")
+</pre>
+
+<p>Without the curly braces <tt>{</tt>,<tt>}</tt> in the parse pattern the backslashes would need to be doubled.</p>
+
+<h3>Appending strings</h3>
+
+<p>When appending strings append and join can be used to form a new string:</p>
+
+<pre>
+	(set 'lstr (map string (rand 1000 100))) 
+	&rarr; ("976" "329" ... "692" "425")
+
+	;; the wrong slowest way
+	(dolist (s lstr) 
+	    (set 'bigStr (append bigStr s)))
+
+	;; smarter way - 50 times faster
+	;;
+	(apply append lstr)
+</pre>
+
+<p>Sometimes strings are not readily available in a list like in the above examples. In this case push can be used to push strings on a list while they get produced. The list then can be used as an argument for join, making the fastest method for putting strings together from existing pieces:</p>
+
+<pre>
+	;; smartest way - 300 times faster
+	;; join an existing list of strings
+	;;
+	(join lstr) &rarr; "97632936869242555543 ...."
+
+	;; join can specify a string between the elements
+	;; to be joined	 
+	(join lstr "-") &rarr; "976-329-368-692-425-555-43 ...." 
+</pre>
+
+<h3>Growing strings in place</h3>
+
+<p>Very often the best method is to grow a string in place. The functions <tt>write-buffer</tt>,
+<tt>write-line</tt> and <tt>push</tt> can be used not only to write to file handles or push on
+lists but also to write/append to existing strings:</p>
+
+<pre>
+	;; smartest way - 150 times faster
+	;; grow a string in place
+	;;
+	;; using write-buffer
+	(set 'bigStr "")
+	(dolist (s lstr) (write-buffer bigStr s))
+	
+	;; using push
+	(set 'bigStr "")
+	(dolist (s lstr) (push s bigStr -1))
+</pre>
+
+<h3>Rearranging strings</h3>
+
+<p>The function select for selecting elements from lists can also be used to select and re-arrange characters from strings:</p>
+
+<pre>
+	(set 'str "eilnpsw")
+	(select str '(3 0 -1 2 1 -2 -3)) &rarr; "newlisp"
+	
+	; alternative syntax
+	(select str 3 0 -1 2 1 -2 -3) &rarr; "newlisp"
+</pre>
+
+<p>The second syntax is useful when ineces are specied not as constants but occur as variables.
+</p>
+
+<center>&sect;</center>
+<br>
+
+<a name="dicts"></a>
+<h2>11. Dictionaries</h2>
+
+<h3>Creating and modifying symbols</h3>
+
+<p>After scanning and tokenizing text frequently dictionaries are built to store tokens together with their frequencies or other statistics or attributes. </p>
+
+<pre>
+	; create a symbol from a string and set it to a value
+	;
+	(set 'token "hello")
+	(set (sym token 'Words) '(0 0 0 0))
+	
+	; a shorter method since 8.7.4
+	(context 'Words token '(0 0 0 0))
+	
+	; read contents of a word in dictionary
+	;
+	(eval (sym token 'Words)) &rarr; (0 0 0 0)
+	
+	; a shorter method since 8.7.4
+	(context 'Words token)    &rarr; (0 0 0 0)
+	
+	; update a word, using the old data
+	; incrementing a counter by one
+	;
+	(nth-set 0 (eval (sym token 'Words)) (+ $0 1)) &rarr; 0  ; the old value
+	(nth-set 0 (eval (sym token 'Words)) (+ $0 1)) &rarr; 1
+	(nth-set 0 (eval (sym token 'Words)) (+ $0 1)) &rarr; 2
+	; same as previous, but alternative shorter syntax
+	(nth-set ((context 'Word token) 0) (+ $0 1)) &rarr; 3
+	(nth-set ((context 'Word token) 0) (+ $0 1)) &rarr; 4
+	
+	(eval (sym token 'Words)) &rarr; (5 0 0 0)
+	; same in alternative shorter syntax
+	(context 'Words token) &rarr; (5 0 0 0)
+</pre>
+
+<p>The dictionary can be easily saved to a file by serializing the context Words:</p>
+
+<pre>
+	; save the dictionary to a file
+	;
+	(save "words.db" 'Words)
+	Just as easy you can reload the dictionary:
+	; load dictionary from a file
+	;
+	(load "words.db")
+</pre>
+
+<p>Test if a symbol exist in a namespace:</p>
+
+<pre>
+	(context 'foo "abc" 123)
+
+	(context? 'foo "abc") &rarr; true
+	(context? 'foo "def") &rarr; nil
+</pre>
+
+<h3>Iterating through dictionaries</h3>
+
+<p>Dictionaries are a collection of symbols in a namespace, constructed via a binary tree.
+Yhe functions <tt>symbols</tt> or <tt>dotree</tt> can be used to iterate through all
+symbols in a namespace in alphabbetical fashion:</p>
+
+<pre>
+	; make a dictionary 
+	(context 'foo "sdfg" 111) 
+	(context 'foo "yete" 222) 
+	(context 'foo "asdf" 333) 
+
+	; display all key value pairs in alphabetical order 
+
+	(dotree (s foo) 
+		(println s "-&gt;" (eval s))) 
+
+	; or an alternative method 
+
+	(dolist (s (symbols foo)) 
+		(println s "-&gt;" (eval s))) 
+
+	; generates the output 
+
+	foo:asdf-&gt;333 
+	foo:sdfg-&gt;111 
+	foo:yete-&gt;222 
+</pre>
+
+<p>The first method using <tt>dotree</tt> is really only a faster shortcut
+od the second method using symbols.</p>
+
+
+<h3>Object oriented implementation of a dictionary</h3>
+
+<p>The quickest shortest way to define and handle dictionaries is the folllowing function definition
+using a default functor for the dictionary:</p>
+
+<pre>
+	(define (myhash:myhash key value) 
+		(if value 
+			(context 'myhash key value) 
+		(context 'myhash key)))
+       
+	(myhash "hello" 123)
+
+	(myhash "hello")     &rarr; 123
+</pre>
+
+<p>The default functor is the getter/setter function and namespace identifier for the
+dictionary at the same time.</p>
+
+<center>&sect;</center>
+<br>
+
+<a name="tcpip"></a>
+<h2>12. TCP/IP client server communications</h2>
+
+<h3>Client - server TCP/IP - open connection</h3>
+
+<p>In this pattern the server keeps the connection open until the client closes the connection, then the server loops into a new listen:</p>
+
+<pre>
+	;;;;;;;;;;;;;;;;;;;;;; the server
+	; maximum bytes to receive
+	(constant 'max-bytes 1024)
+	(if (not (set 'listen (net-listen 123)))
+	    (print (net-error)))
+	(while (not (net-error))
+	    (set 'connection (net-accept listen)) ;; blocking here
+	    (while (not (net-error))
+	         (net-receive connection 'message-from-client max-bytes)
+	         .... process message from client ...
+	         .... configure message to client ...
+	         (net-send connection message-to-client)) )
+	         
+	;;;;;;;;;;;;;;;;;;;;; the client
+	; client connect
+	(if (not (set 'connection (net-connect "host.com" 123)))
+	    (println (net-error)))
+	; maximum bytes to receive
+	(constant 'max-bytes 1024)
+	; message send-receive loop
+	(while (not (net-error))
+	  .... configure message to server ...
+	  (net-send connection message-to-server)
+	  (net-receive connection 'message-from-server max-bytes)
+	  .... process message-from-server ...
+	  )
+</pre>
+
+<h3>Client - server TCP/IP - closed transaction</h3>
+
+<p>In this pattern the server closes the connection after each transaction exchange of messages.</p>
+
+<pre>
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; server
+	(while (not (net-error))
+	    (set 'connection (net-accept listen)) ;; blocking here
+	    (net-receive connection 'message-from-client max-bytes)
+	         .... process message from client ...
+	         .... configure message to client ...
+	    (net-send connection message-to-client)
+	    (close connection))
+	    
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; client 
+	(if (not (set 'connection (net-connect "host.com" 123)))
+	    (println (net-error)))
+	; maximum bytes to receive
+	(constant 'max-bytes 1024)
+	  .... configure message to server ...
+	(net-send connection message-to-server)
+	(net-receive connection 'message-from-server max-bytes)
+	  .... process message-from-server ...
+</pre>
+
+<p>There are many different ways to set up a client/server connection, see also the examples in the newLISP manual.</p>
+
+<center>&sect;</center>
+<br>
+<a name="udp"></a>
+
+<h2>13. UDP communications</h2>
+
+<p>They are fast and need less setup than TCP/IP and offer ''multi casting''. UDP is also less reliable because the protocol does less checking, i.e. of correct packet sequence or if all packets are received. This is normally no problem when not working on the Internet but in a well controlled local network or when doing machine control. A simple more specific protocol could be made part of the message.</p>
+
+<h3>Open communications with UDP</h3>
+
+<p>In this example the server keeps the connection open. UDP communications with net-listen, net-receive-from and net-send-to can block on receiving.</p>
+
+<pre>
+	;;;;;;;;;;;;;;;;;; server
+	(set 'socket (net-listen 10001 "" "udp"))
+	(if socket (println "server listening on port " 10001)
+	   (println (net-error)))
+	(while (not (net-error))
+	   (set 'msg (net-receive-from socket 255))
+	   (println "->" msg)
+	   (net-send-to (nth 1 msg) (nth 2 msg) 
+	   (upper-case (first msg)) socket))
+
+	;;;;;;;;;;;;;;;;;; client
+	(set 'socket (net-listen 10002 "" "udp"))
+	(if (not socket) (println (net-error)))
+	(while (not (net-error))
+	   (print "->")
+	   (net-send-to "127.0.0.1" 10001 (read-line) socket)
+	   (net-receive socket 'buff 255)
+	   (println "&rarr;" buff))
+	closed transaction oriented UDP
+</pre>
+
+<h3>Closed transaction oriented UDP</h3>
+
+<p>This form is some times used for controlling hardware or equipment. No setup is required, just one function for sending, another one for receiving:</p>
+
+<pre>
+	;;;;;;;;;;;;;;;;;; server
+	;; wait for data gram with maximum 20 bytes 
+	(net-receive-udp 1001 20) 
+	;; or
+	(net-receive-udp 1001 20 5000000)  ;; wait for max 5 seconds
+
+	;;;;;;;;;;;;;;;;;; client
+	(net-send-udp "host.com" 1001 "Hello")
+</pre>
+
+<p>Win32 and Linux show different behavior when sending less or more bytes then specified on the receiving end.</p>
+
+<h3>UDP multi-cast communications</h3>
+
+<p>In this scheme the server subscribes to one of a range of multi cast addresses using the net-listen function.</p>
+
+<pre>
+	;; example server
+	(net-listen 4096 "226.0.0.1" "multi") &rarr; 5
+	(net-receive-from 5 20)             
+	;; example client
+	(net-connect "226.0.0.1" 4096 "multi") &rarr; 3
+	(net-send-to "226.0.0.1" 4096 "hello" 3)
+</pre>
+
+<p>The connection in the example is blocking on <tt>net-receive</tt> but could be de-blocked using <tt>net-select</tt> or <tt>net-peek</tt></p>
+
+<center>&sect;</center>
+<br>
+
+<a name="nonblock"></a>
+<h2>14. Non-blocking communications</h2>
+
+<h3>Using net-select</h3>
+
+<p>In all previous patterns the client blocks when in receive. The net-select call can be used to unblock communications:</p>
+
+<pre>
+	;; optionally poll for arriving data with 100ms timeout
+	(while (not (net-select connection "r" 100000)) 
+	    (do-something-while-waiting ...))
+	
+	(net-receive...)
+</pre>
+
+<p><tt>connection</tt> can be a single number for a connection socket or a list of numbers to wait on various sockets.</p>
+
+
+<h3>Using net-peek</h3>
+
+
+<pre>
+	(while ( = (net-peek aSock) 0) 
+	   (do-something-while-waiting ...))
+	(net-receive...)
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="controlling"></a>
+<h2>15. Controlling other apps.</h2>
+
+<p>In this chapter all external applications are launched using process. This function returns immediately after launching the other application and does not block.</p>
+
+<p>In all of the following patterns the server is not independent but controlled by the client, which launches the server and then communicated via a line oriented protocol:</p>
+
+<pre>
+	-&gt; launch server
+	-&gt; talk to server
+	&lt;- wait for response from server
+	-&gt; talk to server
+	&lt;- wait for response from server
+	    .....
+</pre>
+
+<p>Often a sleep time is necessary on the client side to wait for the server to be ready loading. Most of these examples are condensed snippets from GTK-Server from www.gtk-server.org.</p>
+
+<h3>Communications via STD I/O </h3>
+
+<p>process allows specifying 2 pipes for communications with the launched application.</p>
+
+<pre>
+	# Define communication function
+	(define (gtk str)
+	   (write-line str myout)
+	   (if (!= str "gtk_exit 0") 
+	       (read-line myin)))
+	       
+	# Launch gtk-server
+	(map set '(myin gtkout) (pipe))
+	(map set '(gtkin myout) (pipe))
+	(process "gtk-server stdin" gtkin gtkout)
+	(gtk "gtk_init NULL NULL")
+	(gtk "gtk_window_new 0")
+	          .....
+</pre>
+
+<h3>communications via TCP/IP</h3>
+
+<pre>
+	; Define communication function
+	(define (gtk str , tmp)
+	    (net-send connection str)
+	    (net-receive connection 'tmp 64)
+	    tmp)
+	
+	; Start the gtk-server
+	(process "gtk-server tcp localhost:50000")
+	(sleep 1000)
+
+	; Connect to the GTK-server
+	(set 'connection (net-connect "localhost" 50000))
+	(set 'result (gtk "gtk_init NULL NULL"))
+	(set 'result (gtk "gtk_window_new 0"))
+	          .....
+</pre>
+
+
+<h3>Communicate via named FIFO</h3>
+
+<p>Make a FIFO first (looks like a special file node):</p>
+
+<pre>
+	 (exec "mkfifo myfifo")
+
+	;; or alternatively
+	
+	(import "/lib/libc.so.6" "mkfifo")
+	(mkfifo "/tmp/myfifo" 0777)
+	
+	; Define communication function
+	(define (gtk str)
+	    (set 'handle (open "myfifo" "write"))
+	    (write-buffer handle str)
+	    (close handle)
+	    (set 'handle (open "myfifo" "read"))
+	    (read-buffer handle 'tmp 20)
+	    (close handle)
+	    tmp)
+</pre>
+
+<h3>Communicate via UDP</h3>
+
+<p>Note that the listen function with "udp" option just binds the sockets to a address/hardware but not actually listens as in TCP/IP.</p>
+
+<pre>
+	; Define communication function
+	(define (gtk str , tmp)
+	   (net-send-to "localhost" 50000 str socket)
+	   (net-receive socket 'tmp net-buffer)
+	   tmp)
+	   
+	; Start the gtk-server
+	(define (start)
+	   (process "gtk-server udp localhost:50000")
+	   (sleep 500)
+	   (set 'socket (net-listen 50001 "localhost" "udp")) )
+	
+	(set 'result (gtk "gtk_init NULL NULL"))
+	
+	(set 'result (gtk "gtk_window_new 0"))
+	         .....
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="launching"></a>
+<h2>16. Launching applications blocking</h2>
+
+<h3>Shell execution</h3>
+
+<p>This is frequently used from newLISP's interactive command line to execute processes in a blocking fashion, which need a shell to run:</p>
+
+<pre>
+	(! "ls -ltr")
+</pre>
+
+<p>There is an interesting variant of this form working not inside a newLISP expression, but only on the command line:</p>
+
+<pre>
+	!ls -ltr
+</pre>
+
+<p>The <tt>!</tt> should be the first character on the command line. This form works like as shell escape like in the VI editor. It is useful for invoking an editor or doing quick shell work without completely leaving the newLISP console.</p>
+
+<h3>Execution capturing std-out in a list</h3>
+
+<pre>
+	(exec "ls /") &rarr; ("bin" "etc" "home" "lib")
+</pre>
+
+
+<h3>Execution feeding std-in</h3>
+
+<pre>
+	(exec "script.cgi" cgi-input)
+</pre>
+
+<p>In this example cgi-input contains a string feeding. i.e.: a query input, normally coming from a web server. Note that output in this case is written directly to the screen, and cannot be returned to newLISP. Use process and pipe for two way std i/o communications with other applications.</p>
+
+<center>&sect;</center>
+<br>
+
+<a name="threads"></a>
+
+<h2>17. Threads, semaphores and shared memory</h2>
+
+<p>Shared memory, semaphores and threads work frequently together. Semaphores can synchronize tasks in different threads and shared memory can be used to communicate between threads.</p>
+
+<p>The following is a more complex example showing the working of all three mechanisms at the same time.</p>
+
+<p>The producer loops through all n values from i = 0 to n - 1 and puts each value into shared memory where it is picked up by the consumer thread. Semaphores are used to signal that a data value is ready for reading.</p>
+
+<pre>
+	#!/usr/bin/newlisp
+	# prodcons.lsp -  Producer/consumer
+	#
+	# usage of 'fork', 'wait-pid', 'semaphore' and 'share'
+	
+	(if (> (& (last (sys-info)) 0xF) 4) 
+	   (begin
+	       (println "this will not run on Win32")
+	       (exit)))
+	       
+	(constant 'wait -1 'signal 1 'release 0)
+	
+	(define (consumer n)
+	    (set 'i 0)
+	    (while (< i n)
+	       (semaphore cons-sem wait)
+	       (println (set 'i (share data)) " <-")
+	       (semaphore prod-sem signal))  
+	       (exit))
+	                
+	(define (producer n)
+	    (for (i 1 n)
+	       (semaphore prod-sem wait)
+	       (println "-> " (share data i))
+	       (semaphore cons-sem signal))   
+	       (exit))
+	       
+	(define (run n)
+	    (set 'data (share)) 
+	    (share data 0)
+	    (set 'prod-sem (semaphore)) ; get semaphores
+	    (set 'cons-sem (semaphore))
+	    (set 'prod-pid (fork (producer n))) ; start threads
+	    (set 'cons-pid (fork (consumer n)))
+	    (semaphore prod-sem signal) ; get producer started
+	    (wait-pid prod-pid) ; wait for threads to finish
+	    (wait-pid cons-pid) ; 
+	    (semaphore cons-sem release) ; release semaphores
+	    (semaphore prod-sem release))
+	    
+	(run 10)
+	
+	(exit)
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="databases"></a>
+<h2>18. Databases and lookup tables</h2>
+
+<p>While association lists are the traditional means for associative data access in LISP and newLISP, other modern scripting languages use hashing to build memory based associative data tables. A hash is a table position calculated from a association key.</p>
+
+<p>newLISP uses symbols instead of hashes. Symbols in name spaces can also be serialized to a file, as will be shown in the chapter about symbol creation and lookup.</p>
+
+<h3>Association lists</h3>
+
+<p>The association list is a classic LISP data structure for storing information for associative retrieval:</p>
+
+<pre>
+	;; creating association lists
+	;; pushing at the end with -1 is optimized and 
+	;; as fast as pushing in front
+	
+	(push '("John Doe" "123-5555" 1200.00) Persons -1)
+	(push '("Jane Doe" "456-7777" 2000.00) Persons -1)
+	    .....
+	
+	Persons &rarr;  (
+	    ("John Doe" "123-5555" 1200.00) 
+	    ("Jane Doe" "456-7777" 2000.00) ...)
+	    
+	;; access/lookup data records
+	(assoc "John Doe" Persons) 
+	
+	&rarr; ("John Doe" "123-5555" 1200.00 male)
+	
+	(assoc "Jane Doe" Persons) 
+	 
+	&rarr; ("Jane Doe" "456-7777" 2000.00 female)
+</pre>
+
+<p>newLISP has a lookup function similar to what is used in spreadsheet software. This function which works like a combination of assoc and nth can find the association and pick a specific member of the data record at the same time:</p>
+
+<pre>
+	(lookup "John Doe" Persons 0)   &rarr; "123-555"
+	(lookup "John Doe" Persons -1)  &rarr; make
+	(lookup "Jane Doe" Persons 1)   &rarr; 2000.00
+	(lookup "Jane Doe" Persons -2)  &rarr; 2000.00
+	
+	;; update data records
+	(replace-assoc "John Doe" Persons 
+	               '("John Doe" "123-5555" 900.00 male))
+	
+	;; replace as a function of existing/replaced data
+	(replace-assoc "John Doe" Persons (update-person $0))
+	
+	;; delete data records
+	(replace (assoc "John Doe" Persons) Persons)
+</pre>
+
+<h3>Nested associations</h3>
+
+<p>If the data part of an association is itself an association llist, we have a nested association:</p>
+
+<pre>
+	(set 'persons '(
+		("Anne" (address (country "USA") (city "New York")))
+		("Jean" (address (country "France") (city "Paris")))
+	))
+</pre>
+
+<p>A different syntax of the <tt>assoc</tt> function can be used to specify multiple ketys:</p>
+
+<pre>
+	; one key
+	(assoc (persons "Anne")) &rarr; ("Anne" (address (country "USA") (city "New York")))
+
+	; two keys
+	(assoc (persons "Anne" 'address)) &rarr; (address (country "USA") (city "New York"))
+
+	; three keys
+	(assoc (persons "Anne" 'address 'city)) &rarr; (city "New York")
+</pre>
+
+<p>When all keys are symbols, as is in <tt>address</tt>, <tt>country</tt>
+and <tt>city</tt>, simple and nested associations in newLISP have the same format as newLISP
+<tt>FOOP</tt> (Functional Object Oriented Programming) objects. See the users manual chapter
+"17. Object Oriented Programming in newLISP" for details.</p>
+
+<h3>Updating nested associations</h3>
+
+<p>The functions <tt>set-assoc</tt> and <tt>assoc-set</tt> can be used to update simple
+or nested associations:</p>
+
+<pre>
+	(assoc-set (persons "Anne" 'address 'city) '(city "Boston")) &rarr; (city "New York")
+</pre>
+
+<p>The function <tt>assoc-set</tt> returns the old association element. When usinf <tt>set-assoc</tt>, the while <tt>persons</tt> list would be returned.</p>
+
+<h3>Symbol creation and lookup</h3>
+
+<p><tt>lookup</tt> and <tt>assoc</tt> are fine for small tables and databases with only a few hundred data records, but are too slow for look-ups in thousands or millions of records.</p>
+
+<p>newLISP has a fast and highly scalable symbol implementation. Together with name spaces and object serialization symbols can be used to maintain large data sets in memory and on disk with associative access.</p>
+
+<pre>
+	;; creating the database
+	(set (sym "John Doe" 'Persons) '("123-5555" 1200.00 male))
+	(set (sym "Jane Doe" 'Persons) '("456-7777" 2000.00 female))
+	;; alternative shorter syntax
+	
+	(context 'Persons "John Doe") '("123-5555" 1200.00 male))
+	(context 'Persons "Jane Doe") '("456-7777" 2000.00 female))
+	     .....
+	;; save the database to a file (serialization of context Persons)
+	(save "persons.db" 'Persons)
+	
+	;; load database from a file
+	(load "persons.db")
+	
+	;; access data records
+	(eval (sym "John Doe" 'Persons)) &rarr; '("123-5555" 1200.00 male)
+	
+	;; alternative shorter syntax to access data records
+	(context 'Persons "John Doe") &rarr; '("123-5555" 1200.00 male)
+	
+	;; update data records
+	(set (sym "John Doe" 'Persons) '("John Doe" "123-5555" 900.00 male))
+	
+	;; update using alternative syntax
+	(context 'Persons "John Doe") &rarr; '("John Doe" "123-5555" 900.00 male))
+	
+	;; delete data records
+	(delete (sym "John Doe" 'Persons))
+</pre>
+
+<center>&sect;</center>
+<br>
+
+<a name="distributed"></a>
+<h2>19. Distributed computing</h2>
+
+<p>Many of todays applications are distributed on to several computers on the 
+network or distibuted on to several processes on one CPU. Often both methods
+of distributing an application are used at the same time.</p>
+
+<p>newLISP has facilities to evaluate many expressions in parallel 
+on different network nodes or processes running newLISP. The <tt>net-eval</tt> function
+does all the work necessary to communicate to other nodes, distribute expressions
+for evaluation and collect results in either a blocking or event driven fashion.</p>
+
+<p>The functions <tt>read-file</tt>, <tt>write-file</tt>, <tt>append-file</tt>
+and <tt>delete-file</tt> can also be used to access with files on remote nodes when using
+URLs in file specifications. In a similar way the functions <tt>load</tt> and
+<tt>save</tt> can be used to load and save code from and to remote nodes.</p>
+
+<p>newLISP uses existing HTTP protocols and newLISP commandline behaviour to implement
+this functionality. This means that programs can be debugged and tested using standard
+UNIX applications like terminal, telnet or a web browser. This also enables 
+easy integration of other tools and programs into distributed applications built with newLISP. 
+For example the UNIX utility <i>netcat</i>, <tt>nc</tt> could be used to evaluate expressions
+remotely or a web browser could be used to retrieve webpages from nodes running a newLISP 
+server.</p>
+
+
+<h3>Setting up a newLISP server node</h3>
+
+<p>A newLISP server node is essentially a newLISP process listening to a network
+port and behaving like a newLISP commandline console and HTTP server for HTTP 
+<tt>GET</tt>, <tt>PUT</tt>, <tt>POST</tt> and <tt>DELETE</tt> requests. Since version 9.1 newLISP
+server mode also answers <tt>CGI</tt> queries received by either <tt>GET</tt>
+or <tt>POST</tt> request.</p>
+
+<p>Two methods are used to start a newLISP server node. One results in a stateful
+server, maintaining state in between communications with different clients, the other
+method a server with no state, reloading for every new client connection.</p>
+
+<b>Start a newLISP stateful server</b>
+
+<pre>
+	newlisp -c -d 4711 &amp;
+
+	newlisp myprog.lsp -c -d 4711 &amp;
+
+	newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;
+</pre>
+
+<p>newLISP is now listening on port 4711, the &amp; (ampersand) sign tells
+newLISP to run in the background (UNIX only). The <tt>-c</tt> switch suppresses command line
+prompts. newLISP now behaves like a newLISP console without prompts listening on port
+4711 for command line like input. Any other available port could have been chosen. Note that 
+on UNIX ports below 1024 need administrator access rights.</p>
+
+<p>The second example also preloads code. The third example also specifies a working
+directory using the <tt>-w</tt> option. If no working directory is specified using <tt>-w</tt>
+the startup directoruy is assumed to be the working directory.</p>
+
+<b>Start a newLISP <tt>inetd</tt> stateless server</b>
+
+<p>On UNIX the <i>inetd</i> or <i>xindetd</i> facility can be used to start a stateless
+server. In this case the TCP/IP net connections are managed by a special UNIX utility
+with the ability to handle multiple requests at the same time. For each connection
+made by a client the <i>inetd</i> or <i>xinetd</i> utility will start a fresh newLISP
+process. After the connection is closed the newLISP process will shut down.</p>
+
+<p>When nodes are not required to keep state, this is the preferred method for a 
+newLISP server node, for handeling multiple connections at the same time.</p>
+
+<p>The <i>inetd</i> or <i>xinetd</i> process needs to be configured using configuration
+files found in the <tt>/etc</tt> directory of most UNIX installations.</p>
+
+<p>For both the <i>inetd</i> and <i>xinetd</i> configurations add the following line
+to the <tt>/etc/services</tt> file:</p>
+
+<pre>
+	net-eval        4711/tcp     # newLISP net-eval requests
+</pre>
+
+<p>Note that any other port than <tt>4711</tt> could be supplied.</p>
+
+<p>When configuring <i>inetd</i> add also the following lines to the <tt>/etc/inetd.conf</tt>
+file:</p>
+
+<pre>
+	net-eval  stream  tcp  nowait  root  /usr/bin/newlisp -c
+											 
+	# as an alternative, a program can also be preloaded
+											 
+	net-eval  stream  tcp  nowait  root  /usr/bin/newlisp myprog.lsp -c
+
+	# a working directory can also be specified
+
+	net-eval  stream  tcp  nowait  newlisp  /usr/bin/newlisp -c -w /usr/home/newlisp
+</pre>
+
+<p>The last line also specified a working directory and a user <tt>newlisp</tt>
+instead of the <tt>root</tt> user. This is a more secure mode limiting newLISP
+server node access to a specific user account with restricted permissions.</p>
+
+<p>On Mac OS X and some other UNIX system a modern flavor of <i>inetd</i>: the 
+<i>xinetd</i> facility is used. Add the following configuration to a file 
+<tt>/etc/xinet.d/net-eval</tt>:</p>
+
+<pre>
+	service net-eval
+	{
+    	socket_type = stream
+    	wait = no
+    	user = root
+    	server = /usr/bin/newlisp
+    	port = 4711
+    	server_args = -c -w /home/node
+	}
+</pre>
+
+<p>Note that a variety of parameter combinations are possible to restrict access from
+different places or limit access to certain users. Consult the manpages for <i>inetd</i> 
+and <i>xinetd</i> for details.</p>
+
+<p>After condiguring <i>inetd</i> or <i>xinetd</i> either process must be restarted
+to re-read the configuration files. This can be accomplished by sending the 
+UNIX <tt>HUP</tt> signal to either the <i>inetd</i> or <i>xinetd</i> process using
+the UNIX <i>kill</i> or UNIX <i>nohup</i> utility.</p>
+
+
+<b>Testing the server using <i>telnet</i></b>
+
+<p>A newLISP server node can be tested using the UNIX <i>telnet</i> utility:</p>
+
+<pre>
+	telnet localhost 4711
+
+	; or when running on a different computer i.e. ip 192.168.1.100
+
+	telnet 192.168.1.100 4711
+</pre>
+
+<p>Multi-line expressions can be entered by enclosing them in <tt>[cmd]</tt>, <tt>[/cmd]</tt>
+tags, each tag on a separate line. Both, the openeing and closing tags should be on separate lines.</p>
+
+
+<b>Testing the server using <i>netcat</i> (named <tt>nc</tt> on most UNIX)</b>
+
+<pre>
+	echo '(symbols) (exit)' | nc localhost 4711
+</pre>
+
+<p>Or talking to a remote node:</p>
+
+<pre>
+	echo '(symbols) (exit)' | nc 192.168.1.100 4711
+</pre>
+
+<p>In both examples <i>netcat</i> will echo back the result of evaluating the
+<tt>(symbols)</tt> expression.</p>
+
+<p>Multi-line expressions can be entered by enclosing them in <tt>[cmd]</tt>, <tt>[/cmd]</tt>
+tags, each tag on a separate line.</p>
+
+<b>Testing the server from a newLISP commandline</b>
+
+<p>The <tt>net-eval</tt> function as a syntax form for connecting to only one remote
+server node. This mode is practical for quick testing from the newLISP command line:</p>
+
+<pre>
+	(net-eval "localhost" 4711 "(+ 3 4)" 1000) &rarr; 7
+
+	; to a remote node
+
+	(net-eval "192.168.1.100" 4711 {(upper-case "newlisp")} 1000) &rarr; "NEWLISP"
+</pre>
+
+<p>In the second example curly braces <tt>{,}</tt> are used to limit the program string
+for evaluation. This way quotes can be used to limit a string inside the expression.</p>
+
+<p>No <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags are required when sending multi-line expressions.
+<tt>net-eval</tt> supplies these tags automatically.</p>
+
+<b>Testing the server HTTP mode using a web browser</b>
+
+<p>A newLISP server also understands simple HTTP <tt>GET</tt> and <tt>PUT</tt>
+requests (currently UNIX only). Enter the full path of a file 
+in the addressbar of the browser:</p>
+
+<pre>
+	http://localhost:4711//usr/share/newlisp/doc/newlisp_manual.html
+</pre>
+
+<p>The manual file is almost 800 Kbyte in size and will take a few seconds to load into
+the browser. Specify the portnumber with a colon separated from the hostname or host IP.
+Note the double slash <tt>//</tt> necessary to specify a file address relative to the root
+directory.</p>
+
+<h3>Evaluating multiple expressions remotely</h3>
+
+<p>When testing the correct installation of newLISP server nodes, we were already
+sending expressions to remote node for evaluation. Many times remote evlaluation is
+used to split up a lengthy task into shorter subtasks for remote evaluation on different
+nodes.</p>
+
+<p>The first example is trivial, because it only evaluates several very simple
+expressions remotely, but it shows the principles involved in a way easy to
+understand:</p>
+
+<pre>
+	#!/usr/bin/newlisp
+
+	(set 'result (net-eval '(	
+		("192.168.1.100" 4711 {(+ 3 4)})
+		("192.168.1.101" 4711 {(+ 5 6)})
+		("192.168.1.102" 4711 {(+ 7 8)})
+		("192.168.1.103" 4711 {(+ 9 10)})
+		("192.168.1.104" 4711 {(+ 11 12)})  
+	) 1000))
+
+
+	(println "result: " result)
+
+	(exit)
+</pre>
+
+<p>Running this program will produce the following output:</p>
+
+<pre>
+	result: (7 11 15 19 23)
+</pre>
+
+<p>When running UNIX and using an <i>inetd</i> or <i>xinetd</i> configured newLISP
+server, the servers and programs can be run on just one CPU replacing all IP numbers with 
+<tt>"localhost"</tt> or the same local IP number. The <i>indetd</i> or <i>xinetd</i>
+daemon will then start 5 independent newLISP processes. On Win32 5 statefull
+newLISP servers could be started on different port numbers to accomplish the same.</p>
+
+<p>Instead of collecting all results at one on the return of <tt>net-eval</tt>, a
+call back function can be used to receive and process results as they become available:</p>
+
+<pre>
+	#!/usr/bin/newlisp
+
+	(define (idle-loop p)
+		(if p (println p)))
+
+	(set 'result (net-eval '(	
+		("192.168.1.100" 4711 {(+ 3 4)})
+		("192.168.1.101" 4711 {(+ 5 6)})
+		("192.168.1.102" 4711 {(+ 7 8)})
+		("192.168.1.103" 4711 {(+ 9 10)})
+		("192.168.1.104" 4711 {(+ 11 12)})  
+	) 1000 idle-loop))
+
+	(exit)
+</pre>
+
+<p>While <tt>net-eval</tt> is waiting for results it calls the function <tt>idle-loop</tt>
+repeatedly with parameter <tt>p</tt>. The parameter <tt>p</tt> is <tt>nil</tt> when no result
+was received during the last 100 micro seconds or <tt>p</tt> contains a list sent back 
+from the remote node. The list contains the remote address and port and the evaluation result. 
+The example shown would generate the following output:</p>
+
+<pre>
+	("192.168.1.100" 4711 7)
+	("192.168.1.101" 4711 11)
+	("192.168.1.102" 4711 15)
+	("192.168.1.103" 4711 19)
+	("192.168.1.104" 4711 23)
+</pre>
+
+<p>For testing on just one CPU replace addresses with <tt>"localhost"</tt>
+the UNIX <i>inetd</i> or <i>xinetd</i> daemon will start a separate process
+for each connection made and all listening on port <tt>4711</tt>. When using
+a stateful server on the same Win32 CPU specify a different port number for 
+each server</p>
+
+<b>Setting up the <tt>net-eval</tt> parameter structure</b>
+
+<p>In a networked environment where an application gets moved around, or server
+nodes with changing IP nubers are used, it is necessary to set up the node
+parameters in the <tt>net-eval</tt> parameter list as variables. The following 
+more complex example shows how this can be done. The example also shows how
+a bigger piece of program text can be transferred to a remote node for evaluation
+and how this program piece can be customized for each node differently:</p>
+
+<pre>
+	#!/usr/bin/newlisp
+
+	; node parameters
+	(set 'nodes '(
+		("192.168.1.100" 4711)
+		("192.168.1.101" 4711)
+		("192.168.1.102" 4711)
+		("192.168.1.103" 4711)
+		("192.168.1.104" 4711)
+	))
+
+	; program template for nodes
+	(set 'program [text]
+	(begin
+		(map set '(from to node) '(%d %d %d))
+		(for (x from to)
+			(if (= 1 (length (factor x)))
+			(push x primes -1)))
+		primes)
+	[/text])
+
+	; call back routine for net-eval
+	(define (idle-loop p)
+		(if p
+			(begin
+				(println (p 0) ":" (p 1))
+				(push (p 2) primes))))
+
+	(println "Sending request to nodes, and waiting ...")
+
+	; machines could be on different IP addresses.
+	; For this test 5 nodes are started on localhost
+	(set 'result (net-eval '(
+		((nodes 0 0) (nodes 0 1) (format program 0 99999 1))
+		((nodes 1 0) (nodes 1 1) (format program 100000 199999 2))
+		((nodes 2 0) (nodes 2 1) (format program 200000 299999 3))
+		((nodes 3 0) (nodes 3 1) (format program 300000 399999 4))
+		((nodes 4 0) (nodes 4 1) (format program 400000 499999 5))
+	) 20000 idle-loop))
+
+	(set 'primes (sort (flat primes)))
+	(save "primes" 'primes)
+
+	(exit)
+</pre>
+
+<p>At the beginning of the program a <tt>nodes</tt> list structure
+contains all the relevant node information for hostname and port.</p>
+
+<p>The <tt>program</tt> calculates all prime numbers in a given
+range. The <tt>from</tt>, <tt>to</tt> and <tt>node</tt> variables
+are configured into the program text using <tt>format</tt>. All
+instructions are placed into a <tt>begin</tt> expression block, so
+only one expression result will be send back from the remote node.</p>
+
+<p>Many other schemes to configure a <tt>net-eval</tt> paramneter list 
+are possible. The example shows, that <tt>net-eval</tt> evaluates
+the node parameter specifications inside the quoted list. The following
+scheme would give the same resuls:</p> 
+
+<pre>
+	(set 'node-eval-list '(
+		((nodes 0 0) (nodes 0 1) (format program 0 99999 1))
+		((nodes 1 0) (nodes 1 1) (format program 100000 199999 2))
+		((nodes 2 0) (nodes 2 1) (format program 200000 299999 3))
+		((nodes 3 0) (nodes 3 1) (format program 300000 399999 4))
+		((nodes 4 0) (nodes 4 1) (format program 400000 499999 5))
+	))
+
+	(set 'result (net-eval node-eval-list  20000 idle-loop))
+</pre>
+
+<p>The function <tt>idle-loop</tt> aggregates all lists of primes
+received and generates the following output:</p>
+
+<pre>
+	192.168.1.100:4711
+	192.168.1.101:4711
+	192.168.1.102:4711
+	192.168.1.103:4711
+	192.168.1.104:4711
+</pre>
+
+<p>As with the previous examples all IP numbers could be replaced
+with <tt>"localhost"</tt> or any other hostname or IP number to test a distributed 
+application on a single host before deployment in a distributed environment 
+with many networked hosts.</p>
+
+<h3>Transferring files to and from remote nodes</h3>
+
+<p>Files can be read from or written to remote nodes with the same functions
+used to read and write files to a local file system. This functionality is
+currently only available on UNIX systems when talking to newLISP servers. As
+functions are based on standard <tt>GET</tt> and <tt>PUT</tt> HTTP protocols
+they can also be used communicating with web servers. Note that few Apache
+webserver installations have enabled the <tt>PUT</tt> protocol by default.</p>
+
+<p>The functions <tt>read-file</tt>, <tt>write-file</tt> and <tt>append-file</tt>
+can all take URLs in their filename specifications for reading from and
+writing to remote nodes running a newLISP server or a webserver:</p>
+
+<pre>
+	(write-file "http://127.0.0.1:4711//Users/newlisp/afile.txt" "The message - ")
+	&rarr; "14 bytes transferred for /Users/lutz/afile.txt\r\n"
+
+	(append-file "http://127.0.0.1:4711//Users/newlisp/afile.txt" "more text")
+	&rarr; "9 bytes transferred for /Users/lutz/afile.txt\r\n"
+
+	(read-file "http://127.0.0.1:4711//Users/newlisp/afile.txt")
+	&rarr; "The message - more text"
+</pre>
+
+<p>The first two function return a message starting with the numbers of bytes
+transferred and the name of the remote file affected. The <tt>-read-file</tt>
+function returns the contents received.</p>
+
+<p>Under all error conditions an error message startriong with the characters
+<tt>ERR:</tt> would be returned:</p>
+
+<pre>
+	(read-file "http://127.0.0.1:4711//Users/newlisp/somefile.txt")
+	&rarr; "ERR:404 File not found: /Users/newlisp/somefile.txt\r\n"
+</pre>
+
+<p>Note the double backslash necessary to reference files relative to root on the server
+node.</p>
+
+<p>All functions can be used to transfer binary non-ascii contents containing zero
+characters. Internally newLISP uses the functions <tt>get-url</tt> and <tt>put-url</tt>,
+which could be used instead of the functions <tt>read-file</tt>, <tt>write-file</tt> and
+<tt>append-file</tt>. Additional options like used with <tt>get-url</tt> and <tt>put-url</tt>
+could be used with the functions <tt>read-file</tt>, <tt>write-file</tt> and
+<tt>append-file</tt> as well. For more detail see the newLISP function reference for these
+functions.</p>
+
+
+<h3>Loading and saving data from and to remote nodes</h3>
+
+<p>The same <tt>load</tt> and <tt>save</tt> fuctions used to load program or LISP data
+from a local file system can be used to load or save programs and LISP data from or
+to remote nodes.</p>
+
+<p>By using URLs in the file specifications of <tt>load</tt> and <tt>save</tt> these
+functions can work over the network commuicating with a newLISP server node.:</p>
+
+<pre>
+	(load "http://192.168.1.2:4711//usr/share/newlisp/mysql5.lsp")
+
+	(save "http://192.168.1.2:4711//home/newlisp/data.lsp" 'db-data)
+</pre>
+
+<p>Although the <tt>load</tt> and <tt>save</tt> functions inernally use <tt>get-url</tt> and <tt>put-url</tt> to perform its works they behave  exactly as when used on a local filesystem, but instead of a 
+file path URLs are specified. Both function will timeout after 60 seconds if a connection could
+not be established. When finer control is necessary use the functions <tt>get-url</tt> and 
+<tt>put-url</tt> together with <tt>eval-string</tt> and <tt>source</tt> to realize a similar
+result as when using the <tt>load</tt> and <tt>save</tt> in HTTP mode.</p>
+
+<h3>HTTPD-only mode, newLISP as a webserver</h3>
+
+<p>In all previous chapters the <tt>-c</tt> server mode was used. This mode can act as
+a <tt>net-eval</tt> server and at the same time answer <tt>HTTP</tt> requests for serving
+web pages or transfer of files and programs. The <tt>-c</tt> mode is the preferred mode
+for secure operation behind a firewall. newLISP also has a <tt>-http</tt> mode which works
+like a resticted <tt>-c</tt> mode. In <tt>-http</tt> mode only <tt>HTTP</tt> requests are
+served and commandline like formatted requests and <tt>net-eval</tt> requests are not answered.
+In this mode newLISP can act like a web server answering HTTP <tt>GET</tt>, <tt>PUT</tt>, 
+<tt>POST</tt> and <tt>DELETE</tt> requests as well as <tt>CGI</tt> requests, but additional
+efforts should be made to restrict the access to aunauthorized files and directories to secure
+the server when exposed to the internet.</p>
+
+<p>When newLISP server answers any <tt>HTTP</tt> request, it first calls a function
+<tt>httpd-conf</tt>. This function can be supplied in a startup file:</p>
+
+<pre>
+    server_args = httpd-conf.lsp -http -w /home/node
+</pre>
+
+<p>The above snippet shows part of a <i>xinetd</i> configuration file. A startup
+program <tt>httpd-conf.lsp</tt> has been added which will be loaded upon invocation
+of newLISP. The <tt>-c</tt> options has been replaced with the <tt>-http</tt> option.
+Now neither <tt>net-eval</tt> nor commandline requests will be answered but only
+HTTP requests.</p> 
+
+<p>The file <tt>httpd-conf.lsp</tt> contains a user-defined function
+<tt>http-conf</tt> which takes as arguments the HTTP path-name string of the request and the
+query string part of the request string. If the <tt>http-conf</tt> function
+returns <tt>nil</tt> the request will be aborted, else whatever string is returned will
+be taken as the path-name for further processing. This can be used to transform or
+redirect requested file names. <tt>http-conf</tt> can also be used to analyze headers for
+redirection or to respond with customized error pages. The function does not need to
+process the query string but must either return a valid path-name
+for further processing or <tt>nil</tt> to abort request processing.</p>
+
+<p>The following small <tt>httpd-conf.lsp</tt> file will transform the path-name
+into a request for <tt>errorpage.html</tt> if the original path-name ends
+either with <tt>.exe</tt> or starts with <tt>/</tt> trying to access the root
+directory of the server, or tries the access any other directory outside
+the current directory:</p>
+
+<pre>
+	(define (httpd-conf path-name query)
+		(if (or
+				(ends-with path-name ".exe")
+				(starts-with path-name "/")
+				(find ".." path-name)
+			)
+		"errorpage.html"
+		; else
+		path-name
+))
+</pre>
+
+<p>The following requests would all be rejected:</p>
+
+<pre>
+	http://asite.com/cgi-bin/prog.exe   ; trying to access prog.exe
+	http://asite.com//usr/etc/passwd    ; trying to access path from / root
+	http://asite.com/../../var/log      ; trying to hop out of web directory
+</pre>
+
+<p>A more elaborate <tt>httpd-conf</tt> file can be found in the source
+distribution of newLISP in the example directory. On UNIX systems this
+file is also installed as <tt>/usr/share/newlisp/httpd-conf.lsp</tt>.
+This fille contains a <tt>httpd-conf</tt> function which also sends back a
+<tt>Location:</tt> response with appended forward slash (<tt>/</tt>) for directory
+requests without a trailing <tt>/</tt>. When a directory is requested,
+newLISP HTTP mode will try to access either <tt>index.html</tt> or 
+<tt>index.cgi</tt> in that directory.</p>
+    
+<h3>Media types in HTTP modes</h3>
+
+<p>In both the <tt>-c</tt> and <tt>-http</tt> HTTP modes the following file types are
+recognized and a correctly formatted <tt>Content-Type:</tt> header is sent back:</p>
+
+<center>
+<table border="1" cellpadding="3"  width="50%">
+<tr align="left"><th>file extension</th><th>media type</th></tr>
+<tr><td><tt>.jpg</tt></td><td><tt>image/jpg</tt></td></tr>
+<tr><td><tt>.pgn</tt></td><td><tt>image/png</tt></td></tr>
+<tr><td><tt>.gif</tt></td><td><tt>image/gif</tt></td></tr>
+<tr><td><tt>.pdf</tt></td><td><tt>application/pdf</tt></td></tr>
+<tr><td><tt>.mp3</tt></td><td><tt>image/mpeg</tt></td></tr>
+<tr><td><tt>.mov</tt></td><td><tt>image/quicktime</tt></td></tr>
+<tr><td><tt>.mpg</tt></td><td><tt>image/mpeg</tt></td></tr>
+<tr><td><em>any other</em></td><td><tt>text/html</tt></td></tr>
+</table>
+<p><font size="-1">media types in newLISP HTTP request handling</font></p>
+</center>
+
+<h3>Environment variables set</h3>
+
+<p>When receiving HTTP requests newLISP server mode will extract information from the HTTP request header and configure <tt>HTTP_HOST</tt>, <tt>HTTP_USER_AGENT</tt> and <tt>HTTP_COOKIE</tt> (v.9.1.4) in the environment of the host operating system. If a <tt>httpd-conf</tt> functions was loaded on newLISP server startup header processing will happen afer processing <tt>httpd-conf</tt>. The environment variables can be accessed by a CGI process.</p>
+
+<h3>Local domain UNIX sockets</h3>
+
+<p>newLISP supports named local domain sockets in newLISP server mode and using the built-in functions <tt>net-eval</tt>, <tt>net-listen</tt>, <tt>net-connect</tt> together with the functions <tt>net-accept</tt>, <tt>net-receive</tt>, <tt>net-select</tt> and <tt>net-send</tt>.</p>
+
+<p>Using local domain sockets fast communications between processes on the same file system and with newLISP servers is possible. See the Users Manual for more details.</p>
+
+<br /><br />
+
+<center>&sect;</center>
+
+<a name="extending"></a>
+<h2>20. Extending newLISP</h2>
+
+
+<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/UNIX (ending in .so).</p>
+
+<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/UNIX platforms. We will compile a DLL and a Linux/UNIX shared library from the following 'C' program:</p>
+
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+	#include &lt;ctype.h>&gt;
+	
+	int foo1(char * ptr, int number)
+	{
+	printf("the string: %s the number: %d\n", ptr, number);
+	return(10 * number);
+	}
+	
+	char * foo2(char * ptr, int number)
+	{
+	char * upper;
+	printf("the string: %s the number: %d\n", ptr, number);
+	upper = ptr;
+	while(*ptr) { *ptr = toupper(*ptr); ptr++; }
+	return(upper);
+	}
+	
+	/* eof */ 
+</pre>
+
+<p>Both functions foo1 and foo2 print their arguments, but while foo1 returns the number multiplied 10 times, foo2 returns the uppercase of a string to show how to return strings from 'C' functions.</p>
+
+<h3>Compile a shared library on Linux/UNIX/MacOSX</h3>
+
+<p>On Linux/UNIX we can compile and link testlib.so in one step:</p>
+
+<pre>
+	gcc testlib.c -shared -o testlib.so
+</pre>
+
+<p>Or On Mac OSX/darwin do:</p>
+
+<pre>
+	gcc -bundle -o testlib.so
+</pre>
+
+<p>The library testlib.so will be built with Linux/UNIX default cdecl conventions. Importing the library is very similar on both Linux and Win32 platforms, but on Win32 the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
+
+<pre>
+	 newLISP v.8.4.3 on Linux, execute 'newlisp -h' for more info.
+	
+	&gt; (import "/home/newlisp/testlib.so" "foo1")
+	foo1 &lt;6710118F&gt;
+	
+	&gt; (import "/home/newlisp/testlib.so" "foo2")
+	foo2 &lt;671011B9&gt;
+	
+	&gt; (foo1 "hello" 123)
+	the string: hello the number: 123
+	1230
+	
+	&gt; (foo2 "hello" 123)
+	the string: hello the number: 123
+	4054088
+	
+	&gt; (get-string (foo2 "hello" 123))
+	the string: hello the number: 123
+	"HELLO"
+	&gt;	
+</pre>
+
+<p>Again, the number returned from foo2 is the string address pointer and get-string can be used to access the string. When using get-string only character up to a zero byte are returned. When returning the addresses to binary buffers different techniques using unpack are used to access the information.</p>
+
+<h3>Compile a DLL on Win32</h3>
+
+<p>DLLs on Win32 can be made using the MinGW, Borland or CYGWIN compilers. This example shows, how to do it using the MinGW compiler.</p>
+
+<p>Compile it:</p>
+
+<pre>
+	gcc -c testlib.c -o testlib.o
+</pre>
+
+<p>Before we can transform testlib.o into a DLL we need a testlib.def declaring the exported functions:</p>
+
+<pre>
+	LIBRARY    testlib.dll 
+	EXPORTS
+	    foo1 @1 foo1
+	    foo2 @2 foo2
+</pre>
+
+<p>Now wrap the DLL:</p>
+
+<pre>
+	dllwrap testlib.o --def testlib.def -o testlib.dll -lws2_32
+</pre>
+
+<p>The library testlib.dll will be built with default Win32 stdcall conventions. The following shows an interactive session, importing the library and using the functions:</p>
+
+<pre>
+	 newLISP v.8.4.3 on Win32 MinGW, execute 'newlisp -h' for more info.
+	&gt; (import "testlib.dll" "foo1")
+	foo1 &lt;6710118F&gt;
+
+	&gt; (import "testlib.dll" "foo2")
+	foo2 &lt;671011B9&gt;
+
+	&gt; (foo1 "hello" 123)
+	the string: hello the number: 123
+	1230
+
+	&gt; (foo2 "hello" 123)
+	the string: hello the number: 123
+	4054088
+
+	&gt; (get-string (foo2 "hello" 123))
+	the string: hello the number: 123
+	"HELLO"
+
+	&gt;
+	; import a library compiled for cdecl
+	; calling conventsions
+	&gt; (import "foo.dll" "func" "cdecl")
+</pre>
+
+<p>Note that the first time using foo2 the return value 4054088 is the memory address of the string returned. Using get-string the string belonging to it can be accessed. If the library is compiled using cdecl calling conventions, the cdecl keyword must be used in the import expression.</p>
+
+<h3>Using data structures in imported libraries</h3>
+
+<p>Just like 'C' strings are returned using string pointers, 'C' structures can be returned using structure pointers and functions like get-string, get-int or get-char can be used to access the members. The following example illustrates this:</p>
+
+<pre>
+	typedef struct mystruc 
+	   {
+	   int number;
+	   char * ptr;
+	   } MYSTRUC;
+	
+	MYSTRUC * foo3(char * ptr, int num )
+	   {
+	   MYSTRUC * astruc;
+	   astruc = malloc(sizeof(MYSTRUC));
+	   astruc-&gt;ptr = malloc(strlen(ptr) + 1);
+	   strcpy(astruc-&gt;ptr, ptr);
+	   astruc-&gt;number = num;
+	   return(astruc);
+	   }
+</pre>
+
+<p>The newLISP program would access the structure members as follows:</p>
+
+<pre>
+	&gt; (set 'astruc (foo3 "hello world" 123))
+	4054280
+
+	&gt; (get-string (get-integer (+ astruc 4)))
+	"hello world"
+
+	&gt; (get-integer astruc)
+	123
+	&gt;
+</pre>
+
+<p>The return value from foo is the address to the structure astruc. To access the string pointer, 4 must be added as the size of an integer type in the 'C' programming language. The string in the string pointer then gets accessed using get-string.</p>
+
+<h3>Unevenly aligned data structures</h3>
+
+<p>Sometimes data structures contain data types of different length than the normal CPU register word:</p>
+
+<pre>
+	sruct mystruct 
+	   {
+	   short int x;
+	   int z;
+	   short int y;
+	   } data;
+	
+	struct mystruct * foo(void)
+	   {
+	   data.x = 123;
+	   data.y = 456;
+	   data.z = sizeof(data);
+	   return(&amp;data);
+	   }
+</pre>
+
+<p>The x and y variables are 16 bit wide and only z takes 32 bit. When a compiler on a 32bit CPU packs this structure the variables x and y will each fill up 32 bits instead of the 16 bit each. This is necessary so the 32 bit variable z can be aligned properly. The following code would be necessary to access the structure members:</p>
+
+<pre>
+	&gt; (import "/usr/home/nuevatec/test.so" "foo")
+	   foo &lt;281A1588&gt;
+
+	&gt; (unpack "lu lu lu" (foo))
+	   (123 12 456)
+</pre>
+<p>The whole structure consumes 3 by 4 = 12 bytes, because all members have to be aligned to 32 bit borders in memory.</p>
+<p>The following data structure packs the short 16 bit variables next to each other. This time only 8 bytes are required: 2 each for x and y and 4 bytes or z. Because x and y are together in one 32 bit word, none of the variables needs to cross a 32 bit boundary: </p>
+
+<pre>
+	struct mystruct 
+	    {
+	    short int x;
+	    short int y;
+	    int z;
+	    } data;
+	
+	struct mystruct * foo(void)
+	   {
+	   data.x = 123;
+	   data.y = 456;
+	   data.z = sizeof(data);
+	   return(&amp;data);
+	   }
+</pre>
+
+<p>This time the access code in newLISP reflects the size of the structure members:</p>
+
+<pre>
+	&gt; (import "/usr/home/nuevatec/test.so" "foo")
+	   foo &lt;281A1588&gt;
+
+	&gt; (unpack "u u lu" (foo))
+	   (123 456 8)
+</pre>
+
+<br>
+
+<h3>Passing parameters in library calls</h3>
+
+<center>
+<table border="1" cellpadding="3" width="95%">
+<tr><th>Data Type</th><th>newLISP call</th><th>C Function call</th></tr>
+<tr><td><em>integer</em></td><td><tt>(foo 123)</tt></td><td><tt>foo(int number)</tt></td></tr>
+<tr><td><em>double float</em></td><td><tt>(foo 1.234)</tt></td><td><tt>foo(double number)</tt></td></tr>
+<tr><td><em>float</em></td><td><tt>(foo (flt 1.234))</tt></td><td><tt>foo(float number)</tt></td></tr>
+<tr><td><em>string</em></td><td><tt>(foo "Hello World!")</tt></td><td><tt>foo(char * string)</tt></td></tr>
+<tr><td><em>integer array</em></td><td><tt>(foo (pack "d d d" 123 456 789))</tt></td><td><tt>foo(int numbers[])</tt></td></tr>
+<tr><td><em>float array</em></td><td><tt>(foo (pack "f f f" 1.23 4.56 7.89))</tt></td><td><tt>foo(float[])</tt></td></tr>
+<tr><td><em>double array</em></td><td><tt>(foo (pack "lf lf lf) 1.23 4.56 7.89)</tt></td><td><tt>foo(double[])</tt></td></tr>
+<tr><td><em>string array</em></td><td><tt>(foo (pack "lu lu lu" "one" "two" "three")))</tt></td><td><tt>foo(char * string[])</tt></td></tr>
+</table>
+</center>
+<br>
+
+<p>Note that <em>floats</em> and <em>double floats</em> are only passed correctly on x86 platforms 
+with <em>cdecl</em> calling conventions or when passed by pointer reference as in variable argument
+functions, i.e: <em>printf()</em>.</p>
+
+<br />
+
+<h3>Extracting return values from library calls</h3>
+<center>
+<table border="1" cellpadding="3" width="95%">
+<tr><th>Data Type</th><th>newLISP to extract return value</th><th>C return</th></tr>
+<tr><td><em>integer</em></td><td><tt>(set 'number (foo x y z))</tt></td><td><tt>return(int number)</tt></td></tr>
+<tr><td><em>double float</em></td><td>n/a - only 32bit returns, use double float pointer instead</td><td>not available</td></tr>
+<tr><td><em>double float ptr</em></td><td><tt>(set 'number (get-float (foo x y z)))</tt></td><td><tt>return(double * numPtr)</tt></td></tr>
+<tr><td><em>float</em></td><td>not available</td><td>not available</td></tr>
+<tr><td><em>string</em></td><td><tt>(set 'string (get-string (foo x y z)</tt></td><td><tt>return(char * string)</tt></td></tr>
+<tr><td><em>integer array</em></td><td><tt>(set 'numList (unpack "ld ld ld" (foo x y z)))</tt></td><td><tt>return(int numList[])</tt></td></tr>
+<tr><td><em>float array</em></td><td><tt>(set 'numList (unpack "f f f" (foo x y z)))</tt></td><td><tt>return(float numList[])</tt></td></tr>
+<tr><td><em>double array</em></td><td><tt>(set 'numList (unpack "lf lf lf") (foo x y z)))</tt></td><td><tt>return(double numList[])</tt></td></tr>
+<tr><td><em>string array</em></td><td><tt>(set 'stringList (map get-string (unpack "ld ld ld" (foo x y z))))</tt>
+</td><td><tt>return(char * string[])</tt></td></tr>
+</table>
+</center>
+
+<p><em>Floats</em> and <em>doubles</em> can only be returned via address pointer references.</p>
+
+<p>When returning array types the number of elements in the array must be known. The examples always assume 3 elements.</p>
+
+<p>All pack and unpack and formats can also be given without spaces, but are spaced in the examples for better readability.</p>
+
+<p>The formats "ld" and "lu" are interchangeable, but the 16 bit formats "u" and "d" may produce different results, because of sign expansion from 16 to 32 bits.</p>
+
+<p>Flags are available for changing endian byte order during <tt>pack</tt> and <tt>unpack</tt>.</p>
+
+<center>&part;</center>
+
+<br><br><br><br>
+
+<hr>
+
+<br><br>
+
+<a NAME="appendix"></a>
+<a NAME="GFDL"></a>
+<center>
+<h2><font color="#EE0000">GNU Free Documentation License</font></h2>
+<p>Version 1.2, November 2002</p>
+
+<p>
+Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.</p>
+</center>
+
+<br><br>
+
+<b>0. PREAMBLE</b>
+
+<p>The purpose of this License is to make a manual, textbook, or other
+functional and useful document "free" in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+</p>
+<p>This License is a kind of "copyleft", which means that derivative
+works of the document must themselves be free in the same sense. It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+</p>
+<p>We have designed this License in order to use it for manuals for
+free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does. But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book. We recommend this License
+principally for works whose purpose is instruction or reference.
+</p>
+<p><b>1. APPLICABILITY AND DEFINITIONS</b>
+</p>
+<p>This License applies to any manual or other work, in any medium,
+that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License. Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein. The "Document", below,
+refers to any such manual or work. Any member of the public is a
+licensee, and is addressed as "you". You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+</p>
+<p>A "Modified Version" of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+</p>
+<p>A "Secondary Section" is a named appendix or a front-matter section
+of
+the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall subject
+(or to related matters) and contains nothing that could fall directly
+within that overall subject. (Thus, if the Document is in part a
+textbook of mathematics, a Secondary Section may not explain any
+mathematics.) The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+</p>
+<p>The "Invariant Sections" are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License. If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant. The Document may contain zero
+Invariant Sections. If the Document does not identify any Invariant
+Sections then there are none.
+</p>
+<p>The "Cover Texts" are certain short passages of text that are
+listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License. A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+</p>
+<p>A "Transparent" copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters. A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text. A copy that is not "Transparent" is called "Opaque".
+</p>
+<p>Examples of suitable formats for Transparent copies include plain
+ASCII without markup, Texinfo input format, LaTeX input format, SGML
+or XML using a publicly available DTD, and standard-conforming simple
+HTML, PostScript or PDF designed for human modification. Examples of
+transparent image formats include PNG, XCF and JPG. Opaque formats
+include proprietary formats that can be read and edited only by
+proprietary word processors, SGML or XML for which the DTD and/or
+processing tools are not generally available, and the
+machine-generated HTML, PostScript or PDF produced by some word
+processors for output purposes only.
+</p>
+<p>The "Title Page" means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page. For works in
+formats which do not have any title page as such, "Title Page" means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.
+</p>
+<p>A section "Entitled XYZ" means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language. (Here XYZ stands for a
+specific section name mentioned below, such as "Acknowledgements",
+"Dedications", "Endorsements", or "History".) To "Preserve the Title"
+of such a section when you modify the Document means that it remains a
+section "Entitled XYZ" according to this definition.
+</p>
+<p>The Document may include Warranty Disclaimers next to the notice
+which
+states that this License applies to the Document. These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+</p>
+<p><b>2. VERBATIM COPYING</b>
+</p>
+<p>You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License. You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute. However, you may accept
+compensation in exchange for copies. If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+</p>
+<p>You may also lend copies, under the same conditions stated above,
+and
+you may publicly display copies.
+</p>
+<p><b>3. COPYING IN QUANTITY</b>
+</p>
+<p>If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover. Both covers must also clearly and legibly identify
+you as the publisher of these copies. The front cover must present
+the full title with all words of the title equally prominent and
+visible. You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+</p>
+<p>If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+</p>
+<p>If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+</p>
+<p>It is requested, but not required, that you contact the authors of
+the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+</p>
+<p><b>4. MODIFICATIONS</b>
+</p>
+<p>You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it. In addition, you must do these things in the Modified Version:
+</p>
+<ul>
+  <li><b>A.</b> Use in the Title Page (and on the covers, if
+any) a title distinct from that of the Document, and from those of
+previous versions (which should, if there were any, be listed in the
+History section of the Document). You may use the same title as a
+previous version if the original publisher of that version gives
+permission.
+  </li>
+  <li><b>B.</b> List on the Title Page, as authors, one or
+more persons or entities responsible for authorship of the
+modifications in the Modified Version, together with at least five of
+the principal authors of the Document (all of its principal authors, if
+it has fewer than five), unless they release you from this requirement.
+  </li>
+  <li><b>C.</b> State on the Title page the name of the
+publisher of the Modified Version, as the publisher.
+  </li>
+  <li><b>D.</b> Preserve all the copyright notices of the
+Document.
+  </li>
+  <li><b>E.</b> Add an appropriate copyright notice for your
+modifications adjacent to the other copyright notices.
+  </li>
+  <li><b>F.</b> Include, immediately after the copyright
+notices, a license notice giving the public permission to use the
+Modified Version under the terms of this License, in the form shown in
+the Addendum below.
+  </li>
+  <li><b>G.</b> Preserve in that license notice the full
+lists of Invariant Sections and required Cover Texts given in the
+Document's license notice.
+  </li>
+  <li><b>H.</b> Include an unaltered copy of this License.
+  </li>
+  <li><b>I.</b> Preserve the section Entitled "History",
+Preserve its Title, and add to it an item stating at least the title,
+year, new authors, and publisher of the Modified Version as given on
+the Title Page. If there is no section Entitled "History" in the
+Document, create one stating the title, year, authors, and publisher of
+the Document as given on its Title Page, then add an item describing
+the Modified Version as stated in the previous sentence.
+  </li>
+  <li><b>J.</b> Preserve the network location, if any, given
+in the Document for public access to a Transparent copy of the
+Document, and likewise the network locations given in the Document for
+previous versions it was based on. These may be placed in the "History"
+section. You may omit a network location for a work that was published
+at least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+  </li>
+  <li><b>K.</b> For any section Entitled "Acknowledgements"
+or "Dedications", Preserve the Title of the section, and preserve in
+the section all the substance and tone of each of the contributor
+acknowledgements and/or dedications given therein.
+  </li>
+  <li><b>L.</b> Preserve all the Invariant Sections of the
+Document, unaltered in their text and in their titles. Section numbers
+or the equivalent are not considered part of the section titles.
+  </li>
+  <li><b>M.</b> Delete any section Entitled "Endorsements".
+Such a section may not be included in the Modified Version.
+  </li>
+  <li><b>N.</b> Do not retitle any existing section to be
+Entitled "Endorsements" or to conflict in title with any Invariant
+Section.
+  </li>
+  <li><b>O.</b> Preserve any Warranty Disclaimers.
+  </li>
+</ul>
+<p>
+If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant. To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.
+</p>
+<p>You may add a section Entitled "Endorsements", provided it contains
+nothing but endorsements of your Modified Version by various
+parties--for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+</p>
+<p>You may add a passage of up to five words as a Front-Cover Text, and
+a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version. Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity. If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+</p>
+<p>The author(s) and publisher(s) of the Document do not by this
+License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+</p>
+<p><b>5. COMBINING DOCUMENTS</b>
+</p>
+<p>You may combine the Document with other documents released under
+this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+</p>
+<p>The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy. If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+</p>
+<p>In the combination, you must combine any sections Entitled "History"
+in the various original documents, forming one section Entitled
+"History"; likewise combine any sections Entitled "Acknowledgements",
+and any sections Entitled "Dedications". You must delete all sections
+Entitled "Endorsements."
+</p>
+<p><b>6. COLLECTIONS OF DOCUMENTS</b>
+</p>
+<p>You may make a collection consisting of the Document and other
+documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+</p>
+<p>You may extract a single document from such a collection, and
+distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+</p>
+<p><b>7. AGGREGATION WITH INDEPENDENT WORKS</b>
+</p>
+<p>A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an "aggregate" if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation's users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+</p>
+<p>If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+</p>
+<p><b>8. TRANSLATION</b>
+</p>
+<p>Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections. You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers. In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+</p>
+<p>If a section in the Document is Entitled "Acknowledgements",
+"Dedications", or "History", the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+</p>
+<p><b>9. TERMINATION</b>
+</p>
+<p>You may not copy, modify, sublicense, or distribute the Document
+except
+as expressly provided for under this License. Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License. However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.
+</p>
+<p><b>10. FUTURE REVISIONS OF THIS LICENSE</b>
+</p>
+<p>The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns. See
+http://www.gnu.org/copyleft/.
+</p>
+<p>Each version of the License is given a distinguishing version
+number.
+If the Document specifies that a particular numbered version of this
+License "or any later version" applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation. If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.
+</p>
+<br><br>
+
+
+<center>&part;</center>
+
+
+
+
+</body>
+</html>

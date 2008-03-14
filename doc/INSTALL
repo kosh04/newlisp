@@ -1,0 +1,169 @@
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2007-02-15)
+-------------------------------------------------------------------
+
+CONTENTS
+
+(1) WIN32 BINARY DISTRIBUTION INSTALLATION
+(2) BUILD newLISP FROM SOURCE for LINUX, free/net/openBSD, MacOSX, Solaris
+(3) COMMENTS FOR COMPILING AND LINKING
+(4) TOOLS
+(5) LOCALIZATION
+(6) INSTALLING AFTER BUILDING FROM SOURCE
+(7) UNINSTALL
+(8) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
+(9) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
+
+
+(1) WIN32 BINARY DISTRIBUTION INSTALLATION
+------------------------------------------
+
+The Win32 binary distribution comes packed asa Win32 installer
+application. After downloading a file:
+
+    newlisp-xxxx-win-gs-xxx.exe
+
+douuble click on it and follow instructtions. xxxx and xxx are
+the version numbers for newLISP and the newLISP-tk the GUI frontend.
+
+
+(2) BUILD newLISP FROM SOURCE for LINUX, free/net/openBSD, MacOSX, Solaris
+---------------------------------------------------------------------------
+
+Un-tar/gunzip the distribution file newlisp_9.x.x.tgz :
+
+    tar xzvf newlisp_9.x.x.tgz
+
+Change the current directory in to newlisp_x.x.x/
+From the command line do:
+
+    make
+
+this will automatically detect one of the platforms Linus, MacOS X, FreeBSD,
+OpenBSD, NetBSD and SunOS/Solaris.
+
+To just check what OS flavor make would detect, type:
+
+    ./configure
+
+ther are many other flavors for different OS and compilers type
+make with help to see all options: 
+
+    make help
+
+If 'make' comes back with error messages try gmake, or any other 
+make compatible with gmake.
+
+to remove objects and before switching make flavors:
+
+    make clean
+
+Since version 9.0.14 newLISP can also be compiled for 64-bit Linux
+with 64-bit memory pointers. See the file: Makefile for details.
+
+
+(3) COMMENTS FOR COMPILING AND LINKING
+--------------------------------------
+
+Some OS's and installations may not support 'readline' or support for
+milli seconds resolution in the time functions or library import functionality.
+See the options NANOSLEEP, READLINE and NOIMPORT in the makefile_xxx
+for your platform and compilation flavor. When using the READLINE option
+on some OSs the library options -lreadline and -lncurses or -ltermcap have
+to be replaced. Study the makefile of your platorm.
+
+On MacOSX the flavor 'osx' is without readline support the flavor 'darwin'
+is with readline support.
+
+On some platforms the warning message "ANSI does not support long long" will be
+issued for every file compiled. This message can be discarded and does not occur
+on newer versions of GCC. The 'long long' data type is not used anywhere in the 
+newLISP source but part of some header files of the GCC installation.
+
+The Linux version is without readline support by default, because readline
+support does not come in the default install of many Linux distributions.
+
+When creating Win32 versions read the file README_WIN32 first.
+
+
+(4) TOOLS
+---------
+
+Besides gcc for the 'C' compiler, several other tools are used for packaging
+the installer for Win32, configuring PCRE etc. These tools can be found at: 
+http://newlisp.org/download/Tools/
+
+For a normal installation from the source distribution only the GCC or
+compatible compiler is required.
+
+
+(5) LOCALIZATION
+----------------
+
+The PCRE Regular Expressions code can be localized to your country/language 
+(see comments in file 'makefile'), it comes with default character tables for
+English. For correct working of other string functions in your country/language
+a localizable 'C' library/OS may have to be used. The names of newLISP functions can
+be localized during runtime without performance loss, (see newlisp_manual.html).
+
+There are also UTF-8 versions/makefiles available in the source distribution.
+See the chapter about 'Customization, localization and UTF-8' in the manual.
+
+
+(6) INSTALLING AFTER BUILDING FROM SOURCE
+-----------------------------------------
+
+To install log in as super user or root and do:
+
+    make install
+
+On Mac OSX when not running as superuser (but with admin rights):
+
+    sudo make install
+
+If you cannot get super user or root privileges, newslisp can be installed
+in yur home directory in $HOME/bin and $HOME/share instead of /usr/bin
+and /usr/share
+
+    make install_home
+
+This will create /usr/share/newlisp  or $HOME/bin and $HOME/share/newlisp and
+/usr/share/doc/newlisp or $HOME/share/doc/newlisp
+
+(7) UNINSTALL
+--------------
+
+sto uninstall if installed with make install do:
+
+    make uninstall
+
+or if installed with install_home
+
+    make uninstall_home
+
+    
+make and executables are tested on Mandrake Linux, FreeBSD, Solaris
+Darwin/Mac OSX and WinXP Home
+
+(8) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
+-------------------------------------------------
+
+On all platforms simply execute:
+ 
+ newlisp <enter>
+
+on the command line. On Win32 the execution path of newlisp.exe was added
+to the environment during installation. On all other platforms the newlisp
+binary is in /usr/bin/newlisp or when using the home install in $HOME/bin
+where $HOME is the the home directory of the user taken from the environment
+variable HOME.
+
+
+(9) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
+
+On Win32 and Mac OS X a Java based syntaxhighlighting editor is installed in
+in the Applications menus. The editor needs a Java runtime environment JRE
+versin 1.5 as a minimum. In case it is not installed it can be obtained from
+http://java.sun.com .
+
+                                 +++
+

@@ -1,0 +1,27 @@
+# makefile for newLISP v. 9.x.x on LINUX with UTF-8 support
+#
+# Note, that readline support may require different libraries on different OSs
+# 
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+#CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DSUPPORT_UTF8 -DLINUX
+
+CC = gcc
+
+
+default: $(OBJS)
+#	$(CC) $(OBJS) -g -lm -ldl -lreadline -ltermcap -o newlisp
+#	$(CC) $(OBJS) -g -lm -ldl -lreadline -lncurses -o newlisp
+	$(CC) $(OBJS) -g -lm -ldl -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_linux_utf8
+
+
+

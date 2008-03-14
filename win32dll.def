@@ -1,0 +1,8 @@
+LIBRARY     NEWLISP.DLL
+
+
+EXPORTS
+    WEP             @1 WEP
+    dllEvalStr      @2 dllEvalStr
+    dllName         @3 dllName
+    newlispEvalStr  @4 newlispEvalStr

@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<style type="text/css" media="screen">
+<!--
+body, h1, h2, h3, h4, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 120%;
+ 	}
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+-->
+</style>
+</head>
+
+<body text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
+
+<br />
+<blockquote>
+<center><h2>Expression evaluation, Implicit Indexing, Contexts and Default Functors in the newLISP Scripting Language</h2></center>
+<center><font size="-1">Lutz Mueller, November 8th 2007, rev 4<br>
+</font></center>
+
+<center><blockquote><blockquote><i>
+Implicit indexing and Default Functors in newLISP are an extension of normal LISP expression evaluation rules. Contexts provide lexically closed state-full namespaces in a dynamically scoped programming language.
+</i></blockquote></blockquote></center>
+<br />
+
+<h3>S-expression evaluation and implicit indexing</h3>
+
+<p>In an earlier paper it was explained how s-expression evaluation in newLISP relates to ORO (One Reference Only) automatic memory management [1]. The following pseudo code of the expression evaluation function in newLISP shows how implicit indexing is an extension of Lisp s-expression evaluation rules:
+
+<blockquote><pre>
+function evaluateExpression(expr)
+    {
+    if typeOf(expr) is constant (BOOLEAN, NUMBER, STRING, CONTEXT)
+        return(expr)
+
+    if typeOf(expr) is SYMBOL
+        return(symbolContents(expr))
+
+    if typeOf(expr) is QUOTED
+        return(unQuotedContents(expr))
+
+    if typeOf(expr) is LIST
+        {    
+        func = evaluateExpression(firstOf(expr))
+        args = rest(expr)
+        if typeOf(func) is BUILTIN_FUNCTION
+            result = evaluateFunc(func, args)
+        else if typeOf(func) = LAMBDA_FUNCTION
+            result = evaluateLambda(func, args)
+        /* extensions for implicit indexing */
+        else if typeOf(func) = LIST
+            result = implicitIndexList(func, args)
+        else if typeOf(func) = STRING
+            result = implicitIndexString(func, args)
+        else if typeOf(func) = ARRAY
+            result = implicitIndexArray(func, args)
+        else if typeOf(func) = NUMBER
+            result = implicitNrestSlice(func, args)
+        }
+    }
+
+    return(result)
+    }
+</pre></blockquote>
+
+<p>The general working of the function reflects the general structure of the <i>eval</i> function as described by <i>John McCarthy</i> in 1960, [2].</p> 
+
+<p>The function first processes atomic expression types. Constants evaluate to themselves and are returned. Symbols evaluate to their contents.</p> 
+
+<p>If the expression is a list the first element gets applied to the rest elements. As in Scheme, newLISP evaluates the first element before applying it the result to its arguments.</p>
+
+<p>Traditional Lisp or Scheme only permit a built-in function, operator or user defined lambda expression in the first, functor position of the s-expression list for evaluation. In newLISP the context symbol type, list, array and number type also act as functions when in the functor position.</p>
+
+<p>Built-in functions are evaluated calling <i>evaluateFunc(func, args)</i>, functors which are lambda expressions call the <i>evaluateLambda(func, args)</i> function. Both functions in turn will call <i>evaluateExpression(expr)</i> again for evaluation of function arguments.</p>
+
+<p>The working of a context symbol in the functor position of an s-expression will be explained further down in the chapter about <i>namespaces and default functors</i>.</p>
+
+<p>The list type causes newLISP to evaluate the whole s-expression to the element indexed by the number(s) following the list and interpreted as index or indices (in newLISP elements in nested lists can be addressed using multiple indices):</p>
+
+<blockquote><pre>
+(set 'lst '(a b (c d e) f g))
+(lst 2) => (c d e)
+(lst 2 1) => d
+
+(set 'str "abcdefg")
+(str 2) => "c"
+</pre></blockquote>
+
+<p>A number in the functor position will assume slicing functionality and slice the following list at the offset expressed by the number. When the number is followed by a second number, the second number specifies the size or length of the sliced part of the list:</p>
+
+<blockquote><pre>
+(1 lst) => (b (c d e) f g)
+(1 2 lst) => (b (c d e))
+
+(1 2 str) => "bc"
+</pre></blockquote>
+
+<p>On first sight it seems logical to extend the same principle to the boolean data type. A ternary conditional expressions could be constructed without the necessity of the <tt>if</tt> operator, but in practical programming this leads to difficulties when reading code and causes too much ambiguity in error messages. Most of the time implicit indexing leads to better readable code, because the data object is grouped together with it's indices. Implicit indexing performs faster, but is also optional. The keywords <tt>nth</tt>, <tt>set-nth</tt> and <tt>nth-set</tt> can be used in the few cases where readability is better when using the explicit form of indexing.</p>
+
+<h3>The environment stack and dynamic scoping</h3>
+
+<p>In the original Lisp <i>eval</i> function a <i>variable environment</i> is implemented as an association list of symbols and their values. In newLISP a symbol is implemented as a data structure with one value slot and the environment is not an association list but a binary tree structure of symbols and an <i>environment stack</i> storing previous values of symbols in higher evaluation levels.</p>
+
+<p>When entering a lambda function, the parameter symbols and their current values are pushed on to the environment stack. When leaving the function, the symbols are restored to their previous values when popping the environment stack. Any other function called will see symbol values as currently defined in the scope of the calling function. The variable environment changes dynamically while calling and returning from functions. The scope of a variable extends dynamically into lower call levels.<p>
+
+<p>The following example sets two variables and defines two lambda functions. After the function definitions the functions are used in a nested fashion. The changing parts of the variable environment are shown in bold type face:</p>
+
+<blockquote><pre>
+; x -> nil, y -> nil;
+; foo -> nil
+; double -> nil
+; environment stack: [ ]
+
+(define (foo x y)       
+	(+ (double (+ x 1)) y))
+
+; x -> nil, y -> nil, 
+<b>; foo -> (lambda (x y) (+ (double (+ x 1)) y))</b>
+; double -> nil
+; environment stack: [ ]
+
+(define (double x)
+	(* 2 x))
+
+; x -> nil, y -> nil
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+<b>; double -> (lambda (x) (* 2 x)))</b>
+; environment stack: [ ]
+
+(set 'x 10) (set 'y 20)
+
+<b>; x -> 10, y -> 20</b>
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+; double -> (lambda (x) (* 2 x)))
+; environment stack: [ ]
+</pre></blockquote>
+
+<p>Similar to Scheme newLISP uses the same namespace for variable symbols and symbols holding user-defined lambda functions. The <tt>define</tt> function is just a short-cut for writing:</p>
+
+<blockquote><pre>
+(set 'foo (lambda (x y) (+ (double (+ x 1)) y)))
+</pre></blockquote>
+
+<p>During all these operations the environment stack stays empty <tt>[ ]</tt>. Symbol variables holding lambda expressions are part of the same namespace and treated the same way as variables holding data. Now the the first function  <tt>foo</tt> gets called:</p>
+
+<blockquote><pre>
+(foo 2 4)
+
+; after entering the function foo
+<b>; x -> 2, y -> 4</b>
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+; double -> (lambda (x) (* 2 x)))
+<b>; environment stack: [x -> 10, y -> 20]</b>
+</pre></blockquote>
+
+<p>After entering the functions, the old values of <tt>x</tt> and <tt>y</tt> are pushed on the environment stack. This push-operation is initiated by the function <i>evaluateLambda(func, args)</i>, discussed later in this paper. Inside <tt>foo</tt> the second function <tt>double</tt> is called:</p>
+
+<blockquote><pre>
+(double 3)
+; after entering the function double
+<b>; x -> 3, y -> 4</b>
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+; double -> (lambda (x) (* 2 x)))
+<b>; environment stack: [x -> 10, y -> 20, x -> 2]</b>
+
+; after return from double
+<b>; x -> 2, y -> 4</b>
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+; double -> (lambda (x) (* 2 x)))
+<b>; environment stack: [x -> 10, y -> 20]</b>
+
+; after return from foo
+<b>; x -> 10, y -> 20</b>
+; foo -> (lambda (x y) (+ (double (+ x 1)) y))
+; double -> (lambda (x) (* 2 x)))
+<b>; environment stack: [ ]</b>
+</pre></blockquote>
+
+<p>Note that in newLISP dynamic scoping of parameter symbols in lambda expressions does not create lexical state-full closures around those symbols as in the Scheme dialect of Lisp. On return from the lambda function the symbol contents gets destroyed and memory is reclaimed. The parameter symbols regain their old values on exit from the lambda function by popping them from the environment stack. <p>
+
+<p>In newLISP lexical state-full closures are not realized using lambda closures but using lexical namespaces. Lambda functions in newLISP do not create closures but can create a new scope and new temporary content for existing symbols during lambda function execution.</p>
+
+<h3>Lambda function evaluation</h3>
+
+<p>All of the processing just described happens in <tt>evaluateLambda(func, args)</tt>. The following pseudo code shows more detail:</p>
+
+<blockquote><pre>
+function evaluateLambda(lambda-func, args)
+    {
+    for each parameter symbol in lambda-func
+        pushEnvironmentStack(symbol, value)
+
+    for each arg in args and the symbol belonging to arg
+        ; evaluation of arg happens in old symbol environment
+        assignSymbolValue(symbol, evaluateExpression(arg))
+
+    for each body expression expr in lambda-func
+        result = evaluateExpression(expr)
+
+    for each parameter symbol in lambda-func
+        popEnvironmentStack()
+
+    return(result)
+    }	
+</pre></blockquote>
+
+<p>The <tt>evaluateExpression(args)</tt> function and <tt>evaluateLambda(func, args)</tt> call each other in a recursive cycle.</p>
+
+<p>Note that arguments to lambda functions are evaluated in the variable environment as defined previous to the lambda function call. Assignments to parameters symbols do happen after all argument evaluations. Only the arguments are evaluated which have a corresponding parameter symbol. If there are more parameter symbols than arguments passed, then parameter symbols are assigned <tt>nil</tt> or a default value.</p>
+
+<h3>Namespaces and the translation and evaluation cycle</h3>
+
+<p>All memory data objects in newLISP are bound directly or indirectly to a symbol. Either memory objects are directly referenced by a symbol or they are part of an enclosing s-expression memory object referenced by a symbol. Unbound objects only exist as transient objects as returned values from evaluations and are referenced on the result stack for later deletion [1].</p> 
+
+<p>Except for symbols, all data and program objects are referenced only once. Symbols are created and organized in a binary tree structure. Namespaces, called <i>contexts</i> in newLISP, are sub-branches in this binary tree. A context is bound to a symbol in the root context <tt>MAIN</tt>, which itself is a symbol in the root context.</p>
+
+<p>With few exceptions all symbols are created during the code loading and translation phase of the newLISP interpreter. Only the functions <tt>load</tt>, <tt>sym</tt>, <tt>eval-string</tt> and a special syntax of <tt>context</tt> create symbols during runtime execution.<p>
+
+<p>The two symbols <tt>MAIN:x</tt> and <tt>CTX:x</tt> are two different symbols at all times. A symbol under no circumstances can change it's context after it was created. A context, e.g <tt>CTX</tt>, itself is a symbol in <tt>MAIN</tt> containing the root pointer to a sub-branch in the symbol tree.</p>
+
+<p>The working of context switching is explained using the following two code pieces:</p>
+
+<blockquote><pre>
+(set 'var 123)
+(define (foo x y)
+    (context 'CTX)
+    (println var " " x " " y))
+</pre></blockquote>
+
+<p>The <tt>(context 'CTX)</tt> statement only has been included here to show, it has no effect in this position. A switch to a different namespace context will only have influence on subsequent symbol creation using <tt>sym</tt> or <tt>eval-string</tt>. By the time <tt>(context 'CTX)</tt> is executed <tt>foo</tt> has already been defined and all symbols used in it have been looked up and translated. Only when using <tt>(context ...)</tt> on the top level it will influence the symbol creation of code following it:</p>
+
+<blockquote><pre>
+(context 'CTX)
+(set 'var 123)
+(define (foo x y)
+    (println var " " x " " y))
+(context MAIN)
+</pre></blockquote>
+
+<p>Now the context is created and switched to on the top-level. When newLISP translates the subsequent set-statement and function definition, all symbols will be part of <tt>CTX</tt> as <tt>CTX:var</tt>, <tt>CTX:foo</tt>, <tt>CTX:x</tt> and <tt>CTX:y</tt>.
+
+<p>When loading code newLISP reads a top-level expression translating then evaluating it. This cycle is repeated until all top-level expression are read and evaluated.</p>
+
+<blockquote><pre>
+(set 'var 123)
+(define (foo x y)
+    (println var " " x " " y))
+</pre></blockquote>
+
+<p>In the previous code snippet two top-level expressions are translated and evaluated resulting in the creation of the three symbols: <tt>MAIN:var</tt>, <tt>MAIN:foo</tt>, <tt>MAIN:x</tt>, <tt>MAIN:y</tt> and <tt>MAIN:CTX</tt>.</p> 
+
+<p>The symbol <tt>MAIN:var</tt> will contain the number <tt>123</tt> and the <tt>MAIN:foo</tt> symbols will contain the lambda expression <tt>(lambda (x y) (println var " " x " " y))</tt>. The symbols <tt>MAIN:x</tt> and <tt>MAIN:y</tt> both will contain <tt>nil</tt>. The <tt>var</tt> inside the definition of <tt>foo</tt> is the same as the <tt>var</tt> previously set to <tt>123</tt> and will be printed as <tt>123</tt> during execution of <tt>foo</tt>.</p>
+
+<p>In detail the following steps are happening:</p>
+
+<ol>
+<li> current context is <tt>MAIN</tt>
+<li> read the opening top-level parenthesis <tt>I</tt> and create a Lisp cell of type <tt>EXPRESSION</tt>. 
+<li> read and lookup <tt>set</tt> in <tt>MAIN</tt> and find it to be a built-in primitive in <tt>MAIN</tt>, translate it to the address of this primitive function in memory. Create a Lisp cell of type <tt>PRIMITIVE</tt> containing the functions address in its contents slot.
+<li> read the quote <tt>'</tt> and create a Lisp cell of type <tt>QUOTE</tt>.
+<li> read and lookup lookup <tt>var</tt> in <tt>MAIN</tt>, it is not found in <tt>MAIN</tt>, create it in <tt>MAIN</tt> and translate it to the address in the binary symbol tree. Create a Lisp cell of type <tt>SYMBOL</tt> containing the symbols address in its contents slot. The previously created quote cell serves as an envelop for the symbols cell.
+<li> read <tt>123</tt> and create a Lisp cell of type <tt>INTEGER</tt> with <tt>123</tt> in its contents slot.
+<li> read the closing top-level parenthesis finish the following list structure in memory:<br />
+
+
+<blockquote><pre>
+[ ]                             ; cell of type: EXPRESSION
+  \
+ [MAIN:set] -> ['] -> [123]     ; three cells of type: PRIMITIVE, QUOTE, INTEGER
+                 \
+               [MAIN:var]       ; cell of type: SYMBOL
+</pre></blockquote>
+
+<p>The above list diagram shows the five Lisp cells, which are created. List and quote cells are envelope cells containing a list or a quoted expression.</p>
+
+<p>The statement <tt>(set 'var 123)</tt> is not executed yet, but symbol translation and creation have finished and the statement exists as a list structure in memory. The whole list structure can be referenced with one memory address, the address of the first created cell of type <tt>EXPRESSION</tt>.</p>
+
+<li>Evaluate the statement
+</ol>
+
+<p>In similar fashion newLISP will read and translate the next top-level expression, which is the function definition of <tt>foo</tt>. Evaluating this top-level expression will result in an assignment of a lambda expression to the <tt>foo</tt> symbol.
+
+<p>In the above code snippet both instances of <tt>var</tt> refer to <tt>MAIN:var</tt>. The <tt>(context  'CTX)</tt> statement only changes the context, namespaces for newly created symbols. The symbol <tt>var</tt> was created during loading translating the <tt>foo</tt> function. By the time <tt>foo</tt> is called and executed <tt>var</tt> already exists inside the <tt>foo</tt> function as <tt>MAIN:var</tt>. The <tt>(context 'CTX)</tt> statement doesn't have any effect of the subsequent execution of <tt>(println var)</tt>.</p>
+
+<p>Context statements like <tt>(context 'CTX)</tt> above, change the current context for symbol creation during the loading and translation phase. The current context defines under which branch in the symbol tree new symbols are created. This affects only the the functions <tt>sym</tt>, <tt>eval-string</tt> and a special syntax of <tt>context</tt> to create symbols. Once a symbol belongs to a context it stays there.</p>
+
+<h3>Namespaces and the default functor</h3>
+
+<p>In newLISP a symbol is a <i>default functor</i> if it has the same name as the context it belongs too, e.g. <tt>Foo:Foo</tt> is the default functor symbol in the context <tt>Foo</tt>. In newLISP when using a context symbol in the functor position, it is taken as the default functor:</p>
+
+<blockquote><pre>
+(define (double:double x) (* 2 x))
+(double 3) => 6
+
+(set 'my-list:my-list '(a b c d e f))
+(my-list 3) => d
+</pre></blockquote>
+
+<p>The second example combines implicit indexing with usage of a default functor.</p>
+
+<p>Default functors can be applied and mapped using <tt>apply</tt> and <tt>map</tt> like any other function or functor symbol:</p>
+
+<blockquote><pre>
+(map my-list '(3 2 1 2)) => (d c b c)
+
+(apply double '(10)) => 20
+</pre></blockquote>
+
+<p>Default functors are a convenient way in newLISP to pass lists or other big data objects by reference:</p>
+
+<blockquote><pre>
+(set 'my-list:my-list '(a b c d e f))
+
+(define (set-last ctx val) 
+	(nth-set (ctx -1) val))
+
+(set-last my-list 99) => f
+
+my-list:my-list => (a b c d e 99)
+</pre></blockquote>
+
+<p>Default functors are also a convenient way to define functions with a closed state-full
+name space:</p>
+
+<blockquote><pre>
+(context 'accumulator)
+(define (accumulator:accumulator x) 
+	(if (not value) 
+		(set 'value x)
+		(inc 'value x)))
+(context MAIN)
+
+(accumulator 10) => 10
+(accumulator 2) => 12
+(accumulator 3) => 15
+</pre></blockquote>
+
+<p>Note that the symbols <tt>x</tt> and <tt>value</tt> both belong to the namespace <tt>accumulator</tt>. Because <tt>(context 'accumulator)</tt> is at the top level, the translation of following function definition for <tt>accumulator:accumulator</tt> happens inside the current namespace <tt>accumulator</tt>.</p>
+
+<p>Namespaces in newLISP can be passed by reference and can be used to create state-full lexical closures.</p>
+
+<h3>Namespace context switching</h3>
+
+<p>Previous chapters showed how to use context switching on the top-level of a newLISP source file to influence symbol creation and translation during the source loading process. Once different namespaces exist, calling a function which belongs to different context, will cause a context switch to the namespace the called lambda function resides in. If the called function doesn't execute any <tt>sym</tt> or <tt>eval-string</tt> statements, then these context switches don't have any effect. Even the <tt>load</tt> command will always start file loading relative to context <tt>MAIN</tt> unless a different context is specified as a special parameter in <tt>load</tt>. Inside the file loaded context switches will have an effect of symbol creation during the load process as explained previously.</p>
+
+<p>What causes the context switch is the symbol holding the lambda function. In the following code examples bold face is used for output generated by <tt>println</tt> statements:</p>
+
+<blockquote><pre>
+(context 'Foo)
+(set 'var 123)
+(define (func) 
+    (println "current context: " (context))
+    (println "var: " var))
+(context 'MAIN)
+
+(Foo:func)
+<b>current context: Foo</b>
+<b>var: 123</b>
+
+(set 'aFunc Foo:func)
+(set 'var 999)
+
+(aFunc)
+<b>current context: MAIN</b>
+<b>var: 123</b>
+</pre></blockquote>
+
+<p>Note that the call to <tt>aFunc</tt> causes the current context to be shown as <tt>MAIN</tt>, because the symbol <tt>aFunc</tt> belongs to context <tt>MAIN</tt>. In both cases <tt>var</tt> is printed as <tt>123</tt>. The symbol <tt>var</tt> was put into the <tt>Foo</tt> namespace during translation of <tt>func</tt> and will always stay there, even if a copy of the lambda function is made and assigned to a symbol in a different context.</p>
+
+<p>This context switching behaviour follows the same rules when applying or mapping functions:</p>
+
+<blockquote><pre>
+(apply 'Foo:func)
+<b>current context: Foo
+var: 123</b>
+
+(apply Foo:func)
+<b>current context: MAIN
+var: 123</b>
+</pre></blockquote>
+
+<p>The first time <tt>Foo:func</tt> is applied as a symbol &ndash; quoted, the second time the lambda function contained in <tt>Foo:func</tt> is applied directly, because <tt>apply</tt> evaluates it's first argument first.</p> 
+
+<h3>References</h3>
+[1] <i>Lutz Mueller</i>, 2004<br /> 
+<a href="http://newlisp.org/MemoryManagement.html">Automatic Memory Management in newLISP</a>.
+<br /><br />
+
+[2] <i>John McCarthy</i>, 1960<br />
+<a href="http://www-formal.stanford.edu/jmc/recursive.html">Recursive Functions of Symbolic Expressions and their Computation by Machine</a>.
+<br /><br />
+</blockquote>
+</body>
+</html>

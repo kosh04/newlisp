@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>newLISPdoc</title>
+
+<style type="text/css" media="screen">
+<!--
+span.arw {
+	color:#666666;
+	font-size: 100%;
+	}
+	
+body, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 115%;
+ 	}
+
+h1 {
+	font-family: Georgia, Times New Roman, Times, serif;
+   	font-size: 130%;
+	}
+
+h2, h3, h4 {
+	font-family: Georgia, Times New Roman, Times, serif;
+   	font-size: 110%;
+	}
+
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+-->
+</style>
+</head>
+<body style="margin: 20px;" text="#222222" bgcolor="#FFFFFF" 
+			link="#376592" vlink="#551A8B" alink="#ffAA28">
+
+<center>
+<h1>newLISPdoc - the newLISP documentation program</h1>
+<font size="-1">last edited 2008-02-27</font>
+</center>
+
+<p>Comments in newLISP source files can be converted
+to HTML documentation using only a few tags in comments. The newLISPdoc system 
+is designed to use a minimum of tags and leave the tagged comments still readable.</p>
+
+<p>newLISPdoc also generates an index page for all newLISP source files
+generated.</p>
+
+<p>See here for the <a href="http://newlisp.org/syntax.cgi?code/newlispdoc.txt">source of newLISPdoc</a> .
+The program and this documentation are also part of the
+source distribution of newLISP since version 9.0. Since newLISP version 9.1 syntax
+highlighting is built into <tt>newlispdoc</tt> which is installed
+in the same directory as the main newLISP executable program. The script
+<tt>syntax.cgi</tt> is still available for web site installations, but is not
+required anymore for <tt>newlispdoc</tt>.</p>
+
+<h3>Usage</h3>
+<p>From within the directory where the modules are, execute with all module filenames 
+to process on the commandline. For example to process the files <tt>mysql.lsp</tt>, 
+<tt>odbc.lsp</tt> and <tt>sqlite3.lsp</tt> do:</p>
+
+<blockquote><pre>
+newlispdoc mysql.lsp odbc.lsp sqlite.lsp
+</pre></blockquote>
+
+<p>Or on Win32:</p>
+
+<blockquote><pre>
+newlisp newlispdoc mysql.lsp odbc.lsp sqlite.lsp
+</pre></blockquote>
+
+<p>This will generate <tt>index.html</tt>, <tt>mysql.lsp.html</tt>, <tt>odbc.lsp.html</tt>
+and <tt>sqlite.lsp.html</tt> all in the same directory, where the command was executed.
+ The page <tt>index.html</tt> contains links to all other pages.</p>
+
+<p>The command line flag <tt>-s</tt> can be supplied to additionally
+generate syntax highlighted HTML versions of the source files and put a link
+to the highlighted version of the source file on the documentation page:</p>
+
+<blockquote><pre>
+newlispdoc -s mysql.lsp odbc.lsp sqlite.lsp
+newlispdoc -s *.lsp
+</pre></blockquote>
+
+<p>Or on Win32:</p>
+    
+<blockquote><pre>
+newlisp newlispdoc -s mysql.lsp odbc.lsp sqlite.lsp
+</pre></blockquote>
+
+<p>Since version 1.3 of newLISPdoc a file containing URLs of source file locations
+can be specified. This allows indexing and documenting of newLISP source code distributed
+on different sites:</p>
+
+<blockquote><pre>
+newlispdoc -url file-with-urls.txt 
+newlispdoc -s -url file-with-urls.txt 
+</pre></blockquote>
+
+<p>Or on Win32:</p>
+
+<blockquote><pre>
+newlisp newlispdoc -url file-with-urls.txt 
+newlisp newlispdoc -s -url file-with-urls.txt 
+</pre></blockquote>
+
+<p><tt>http://</tt> and <tt>file://</tt> URLs can be used. Like with individual files,
+the <tt>-s</tt> switch can be specified to generate also syntax highlighted source files.
+A URL file contains one URL per line. No other information is allowed in the file. The
+following is a sample URL file:</p>
+
+<blockquote><pre>
+http://asite.com/code/afile.lsp
+http://othersite.org/somefile.lsp
+file:///usr/home/joe/program.lsp
+</pre></blockquote>
+
+<p>The last line shows a file URL from the local filesystem.</p>
+
+<p>All generated files will be written to the current directory.</p>
+
+<h3>Tags</h3>
+
+<p>The following tags start at the beginning of a line with
+2 semicolons and one space before the tag:</p>
+
+<blockquote><pre>
+;; @module one word for module name
+;; @index Title and URL for index page
+;; @description one line description of the module
+;; @location the original URL location of the source file
+;; @version one line version info
+;; @author one line for author info
+;; @syntax one line syntax pattern
+;; @param name description on one line
+;; @return description on one line
+;; @example multiline code example starting on next line
+</pre></blockquote>
+
+<p>The only required tag is either the <tt>@module</tt> tag or alternatively
+the <tt>@index</tt> tag. If neither one tag is present in the file, it will 
+not be processed. All other tags are optional. Only lines starting with ;; 
+(2 semicolons) are processed. Program comment text which should not appear 
+in the documentation should start with only one semicolon.</p>
+
+<p>The one line description of the <tt>@description</tt> tag will be put under the module
+name on the index and module doc page. This and the <tt>@location</tt> where added in
+June 2007, and are not part of the newlispdoc program in the newLISP v. 9.1 release.</p>
+
+<p>A function may have multiple <tt>@syntax</tt> tags each on consecutive lines.</tt>
+
+<p>The following is the only tag, which can be embedded anywhere in
+the text. Between the tag link specificaton and description is exactly on
+space:</p>
+
+<blockquote><pre>
+@link link description
+</pre></blockquote>
+
+<p>All words between <tt>&lt;...&gt;</tt> angle braces are displayed in italic. 
+Internally newLISPdoc uses <tt>&lt;em&gt;,&lt;/em&gt;</tt> tags for formatting. They
+should be used for parameter specs after the @param tag and in text referring
+to those parameters..</p>
+
+<p>All words between single quotes <tt>' ... '</tt> are printed in monospace.
+Internally newLISPdoc uses <tt>&lt;tt&gt;,&lt;/tt&gt;</tt> tags for formatting.</p>
+
+<p>All other lines starting with 2 semicolons contain descriptive
+text. An empty line with only 2 semicolons at the beginning
+is a break between paragraphs of text.</p>
+
+<p>Lines not starting with 2 semicolons are ignored by newLISPdoc. This
+allows doing code comments with just one semicolon.</p>
+
+<p>If more formatting is required than what is offered by newLISPdoc, the
+following simple HTML tags and their closing forms may also be used: 
+<tt>&lt;h1&gt;</tt>,<tt>&lt;h2&gt;</tt>,<tt>&lt;h3&gt;</tt>,<tt>&lt;h4&gt;</tt>,
+<tt>&lt;i&gt;</tt>,<tt>&lt;em&gt;</tt>,<tt>&lt;b&gt;</tt>,<tt>&lt;tt&gt;</tt>,<tt>&lt;p&gt;</tt>,
+<tt>&lt;br&gt;</tt>,<tt>&lt;pre&gt;</tt>,<tt>&lt;center&gt;</tt>,<tt>&lt;blockquote&gt;</tt>
+and <tt>&lt;hr&gt;</tt>.</p>
+<h3>Linking to other module collections</h3>
+<p>newLISPdoc generates and index page for all modules documented. A special tag <tt>@index</tt>
+can be used to show a link on the index page to an index of other module collections. This way 
+multilevel indices of modules can be created. To display a link to another module collection
+ on the index page, create a file containing a <tt>@index</tt> and a <tt>@descrption</tt> link:</p>
+
+<blockquote><pre>
+; - other-collection.txt -
+;; @index OtherCollection http://example.com/modules
+;; @description Modules from OtherCollection
+</pre></blockquote>
+
+<p>Use one or more of these files on the newLISPdoc command line as any other 
+source file:</p>
+
+<blockquote><pre>
+newlispdoc -s other-collection.txt *.lsp
+</pre></blockquote>
+
+<p>This will show the index entry for OtherCollection on the module index before listing
+all modules in <tt>*.lsp</tt>.</p>
+
+<hr>
+
+<a name="source"></a>
+<h3>Examples</h3>
+
+<p>The following is the commented source of and example program
+followed by the pages generated in HTML:</p>
+
+<blockquote><pre>
+;; @module example.lsp
+;; @author John Doe, johndoe@example.com
+;; @version 1.0
+;; 
+;; This module is an example module for the newlispdoc
+;; program, which generates automatic newLISP module
+;; documentation.
+
+
+;; @syntax (example:foo &lt;num-repeat&gt; &lt;str-message&gt;)
+;; @param &lt;num-repeat&gt; The number of times to repeat.
+;; @param &lt;str-message&gt; The messsage string to be printed.
+;; @return Returns the message in &lt;str-message&gt;
+;;
+;; The function 'foo' repeatedly prints a string to 
+;; standard out terminated by a line feed.
+;;
+;; @example
+;; (example:foo 5 "hello world")
+;; =&gt;
+;; "hello world"
+;; "hello world"
+;; "hello world"
+;; "hello world"
+;; "hello world"
+
+(context 'example)
+
+(define (foo n msg)
+	(dotimes (i n)
+		(println msg))
+)
+
+;; See the @link http://example.com/example.lsp source .
+</pre></blockquote>
+
+<p>Below the <tt>example.lsp.html</tt> and <tt>index.html</tt>  page generated:</p>
+
+<hr>
+<a name="example"></a>
+<p><a href="#index">Module index</a></p><h2>Module:&nbsp;example.lsp</h2><b>Author: </b>John Doe, johndoe@example.com<br/>
+<b>Version: </b>1.0<br/>
+<p></p>
+ This module is an example module for the newlispdoc
+ program, which generates automatic newLISP module
+ documentation.
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="example_foo"></a><h3>Syntax: (<font color=#CC0000>example:foo</font> <em>num-repeat</em> <em>str-message</em>)</h3>
+<b>parameter: </b><em>num-repeat</em> - The number of times to repeat.<br/>
+<b>parameter: </b><em>str-message</em> - The messsage string to be printed.<br/>
+<p><b>return: </b>Returns the message in <em>str-message</em></p>
+<p></p>
+ The function <tt>foo</tt> repeatedly prints a string to 
+ standard out terminated by a line feed.
+<p></p>
+<p></p><b>example:</b><blockquote><pre>
+ (example:foo 5 "hello world")
+ =&gt;
+ "hello world"
+ "hello world"
+ "hello world"
+ "hello world"
+ "hello world"</pre></blockquote>
+ See the <a href="#source">source</a>.
+<p></p><center>- &part; -</center><br/>
+<center><font face='Arial' size='-2' color='#444444'>
+generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
+and <a href="http://newlisp.org/newLISPdoc.html">newlispdoc</a>
+</font></center>
+</blockquote>
+
+<hr>
+
+<p>Below the index page <tt>index.html</tt> which was generated. When more than one module is
+specified on the command line, the index page will show one link line for
+each module.</p>
+
+<hr>
+
+<a name="index"></a>
+<blockquote>
+<a href="#example"><h2>Module:&nbsp;example.lsp</h2></a>
+<a href="#example_foo">foo</a>&nbsp; &nbsp; 
+<p></p><center>- &part; -</center><br/>
+<center><font face='Arial' size='-2' color='#444444'>
+generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
+and <a href="http://newlisp.org/newLISPdoc.html">newlispdoc</a>
+</font></center>
+</blockquote>
+
+<hr>
+
+</body>
+</html>

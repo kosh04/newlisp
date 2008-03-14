@@ -1,0 +1,2 @@
+replace-filename "(.*?)-icon-(.*)" ".*png" "(string \$1 \$2)"
+

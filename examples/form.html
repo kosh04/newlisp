@@ -1,0 +1,35 @@
+<html>
+<head><title>A form to check newLISP CGI</title></head>
+<body>
+<h3>A test form for checking out the POST method in HTTP.</h3>
+<p>Change "localhost" in the action statement to the correct hostname, if trying this remotely.</p>
+<form action="form.cgi" method="POST">
+Name (text entry field) <input type="text" name="name"> <p>
+Check Me (checkbox)
+<p><input type="checkbox" name="checkMe"></p>
+<p>
+Select me (radio buttons)<br>
+<input type="radio" name=color value="Red">red<BR>
+<input type="radio" name=color value="Green">green<BR>
+<input type="radio" name=color value="Blue">blue<BR>
+</p>
+<p>
+Choose one (select)
+<select name="chooseOne">
+<option> First
+<option> Second
+<option> Third
+<option> Fourth
+</select>
+</p>
+<p>
+<p>Enter text (textarea)</p>
+<textarea name=textField rows=4 cols=40>
+</textarea>
+</p>
+<p>
+Submit It (submit) <input type="submit" value="Go">
+</p>
+</form>
+</body>
+</html>

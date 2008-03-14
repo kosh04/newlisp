@@ -1,0 +1,41 @@
+#!/usr/bin/newlisp
+
+;; server for client/server demo
+;;
+;; USAGE: server
+;;
+;; Start the client programm in a different
+;; terminal window or on a different computer
+;; See the 'client' file for more info.
+;;
+;; v 1.1
+;;
+
+(define (net-server-accept listenSocket)
+(while online (begin
+    (set 'connect (net-accept listenSocket)) 
+	(net-send connect "Connected!\n")
+	(while (net-server-receive connect)))))
+
+(define (net-server-receive socket , str)
+  (net-receive socket 'str 256)
+  (print "received:" str "\n")
+  (if (= str "quit") 
+   (begin 
+    (net-send socket "bye bye!") 
+    (net-close socket) nil) 
+   (net-send socket (upper-case str))))
+
+(define (server)
+  (if (not (set 'socket (net-listen 1111))) 
+   (print "Listen failed:\n" (net-error)) 
+   (begin
+	(set 'online true)
+   	(print "\nServer started\n")
+	(net-server-accept socket)
+	)))
+
+(server)
+
+; eof ;
+

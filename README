@@ -1,0 +1,99 @@
+newLISP version 9.x.x for LINUX, FreeBSD, Mac OSX Solaris and Win32
+===================================================================
+
+
+INTRODUCTION
+------------
+newLISP(tm) is LISP like scripting language for general programming
+artificial intelligence and statistics. 
+
+For more details about newLISP see the Users Manual and Reference in the
+distribution file: 'newlisp_manual.html' and for newlisp-tk: 
+'./newlisp-tk/newlisp-tk.html'
+
+Code contributions, bug fixes, reports and comments are welcome. New
+versions are available at:
+
+ http://newlisp.org
+    or
+ http://newlisp.org/downloads
+    or
+ http://sourceforge.net/projects/newlisp
+
+See the file CHANGES in the source distribtion for changes over 
+previous versions or
+
+ http://newlisp.org/downloads/newLISP_xx_Release_Notes.html
+
+New versions in development are available at:
+
+ http://newlisp.org/downloads/development
+
+Please contact me via email at: lutz@nuevatec.com.
+
+
+BUILD and INSTALL
+----------------
+
+See the files doc/INSTALL, doc/LOCALIZATION and doc/FILES for detailed 
+info or type: 
+
+  make
+
+to discover the current platform and make for Linux, MacOSX, FreeBSD, OpenBSD,
+NetBSD and Solaris/SunOS automatically.
+
+then to install with superuser permissions in /usr/bin
+
+  make install
+
+or from a user account if the sudo command is available
+
+  sudo make install
+
+or to install in ~/bin (bin in home directory) without root permissions
+
+  make install_home
+
+see all flavors and platform available for install:
+
+  make help
+
+will list all available platforms and flavors, newLISP can also be made as
+a shared, dhynamic library: newlisp.so. newlisp.dylib and  newlisp.dll
+
+The file configure is not required, but can be used to discover the
+makefile the make utility would use. The file configure has been
+included for compatibility with packageing/installing systems requiring
+the autoconf/automake system which is *not* required to make newLISP.
+
+
+MINIMUM INSTALL
+---------------
+Note that for a minumum install only the executable newlisp or newlisp.exe
+ion Win32 is necessary. 
+
+On Mac OS X or other UNIX copy  newlisp to /usr/bin or to ~/bin and give
+it executable permissions.
+
+
+LICENSE
+-------
+newLISP and Nuevatec are trademarks of Lutz Mueller. Files in the newLISP
+distribution are protected by the "GNU General Public License Version 3, June 2007". 
+For the full text of this license see the accompanying file COPYING in the doc
+directory, or the appendix in the file newlisp_manual.html. Documentation files
+are protected by the "GNU Free Doumentation License Version 1.2, November 2002".
+A copy of this license is also included in the file COPYING.
+
+This and information about lcensing from other contributors to newLISP is
+contained in the file COPYING in the source distribution.
+
+MORE INFO
+---------
+See in the doc/ directory of the source distribution
+
+Lutz Mueller, January 2008
+
+                                  +++
+

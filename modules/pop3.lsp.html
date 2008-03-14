@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>pop3.lsp</title>
+
+<style type="text/css" media="screen">
+<!--
+span.arw {
+	color:#666666;
+	font-size: 100%;
+	}
+	
+body, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 115%;
+ 	}
+
+h1, h2, h3, h4 {
+	font-family: Georgia, Times New Roman, Times, serif;
+   	font-size: 110%;
+	}
+
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+-->
+</style>
+</head>
+
+<body style="margin: 20px;" text="#333333" bgcolor="#FFFFFF" 
+			link="#376590" vlink="#551A8B" alink="#ffAA28">
+<blockquote>
+<center><h1>pop3.lsp</h1></center>
+<p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;pop3.lsp</h2><p>POP3 mail retrieval routines</p>
+<b>Version: </b>1.9 - comments redone for automatic documentation<br/>
+<b>Author: </b>Lutz Mueller et al., 2001, 2002<br/>
+<p></p>
+ <h2>POP3 mail retrieval routines</h2>
+<p></p>
+ Only the module <tt>pop3.lsp</tt> is required, not other libraries need to be
+ present. Not all mailservers support all functions.
+<p></p>
+ To use the module put a <tt>load</tt> statement at the top of your file:
+ <pre>
+ (load "/usr/share/newlisp/modules/pop3.lsp")
+ </pre>
+<p></p>
+ <h2>Function overview</h2>
+ Load down all messages and put them in a directory <tt>messages/</tt>:
+ <pre>
+ (POP3:get-all-mail "user" "password" "pop.my-isp.com" "messages/")
+ </pre>
+<p></p>
+ Load down only new messages:
+ <pre>
+ (POP3:get-new-mail "user" "password" "pop.my-isp.com" "messages/")
+ </pre>
+<p></p>
+ Delete messages, which have not been read:
+ <pre>
+ (POP3:delete-old-mail "user" "password" "pop.my-isp.com")
+ </pre>
+<p></p>
+ Delete all messages:
+ <pre>
+ (POP3:delete-all-mail "user" "password" "pop.my-isp.com")
+ </pre>
+<p></p>
+ Get a list of status numbers <tt>(<em>totalMessages</em>, <em>totalBytes</em>, <em>lastRead</em>)</tt>:
+ <pre>
+ (POP3:get-mail-status "user" "password" "pop.my-isp.com")
+ </pre>
+<p></p>
+ Get error message for failed all/new/status function:
+ <pre>
+ (POP3:get-error-text)
+ </pre>
+ All functions return <tt>nil</tt> on error and <tt>POP3:get-error-text</tt> can be used to
+ retrieve the error text. 
+<p></p>
+ The variable <tt>POP3:debug-flag</tt> can be set to <tt>true</tt> to display all of the
+ dialog with the pop2 mail server.
+
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_get-all-mail"></a><h3><font color=#CC0000>POP3:get-all-mail</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:get-all-mail</font> <em>str-user</em> <em>str-password</em> <em>str-server</em> <em>str-dir</em>)</b><br/>
+<b>parameter: </b><em>str-user</em> - The user ID.<br/>
+<b>parameter: </b><em>str-password</em> - The password for the user ID.<br/>
+<b>parameter: </b><em>str-dir</em> - The local directory for the retrieved mail.<br/>
+<p><b>return: </b>On success <tt>true</tt> else <tt>nil</tt>.</p>
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_get-new-mail"></a><h3><font color=#CC0000>POP3:get-new-mail</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:get-new-mail</font> <em>str-user</em> <em>str-password</em> <em>str-server</em> <em>str-dir</em>)</b><br/>
+<b>parameter: </b><em>str-user</em> - The user ID.<br/>
+<b>parameter: </b><em>str-password</em> - The password for the user ID.<br/>
+<b>parameter: </b><em>str-dir</em> - The local directory for the retrieved mail.<br/>
+<p><b>return: </b>On success returns <tt>true</tt> else <tt>nil</tt>.</p>
+ On failure use <tt>POP3:get-error-text</tt> to retrieve the text of
+ the last error which occured.
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_get-mail-status"></a><h3><font color=#CC0000>POP3:get-mail-status</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:get-mail-status</font> <em>str-user</em> <em>str-password</em> <em>str-server</em>)</b><br/>
+<b>parameter: </b><em>str-user</em> - The user ID.<br/>
+<b>parameter: </b><em>str-password</em> - The password for the user ID.<br/>
+<p><b>return: </b>A list of status information.</p>
+ The list of status information returned contains the following items:
+ (<em>totalMessages</em>, <em>totalBytes</em>, <em>lastRead</em>)
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_delete-old-mail"></a><h3><font color=#CC0000>POP3:delete-old-mail</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:delete-old-mail</font> <em>str-user</em> <em>str-password</em> <em>str-server</em>)</b><br/>
+<b>parameter: </b><em>str-user</em> - The user ID.<br/>
+<b>parameter: </b><em>str-password</em> - The password for the user ID.<br/>
+<p><b>return: </b>The number of messages left on the server.</p>
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_delete-all-mail"></a><h3><font color=#CC0000>POP3:delete-all-mail</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:delete-all-mail</font> <em>str-user</em> <em>str-password</em> <em>str-server</em>)</b><br/>
+<b>parameter: </b><em>str-user</em> - The user ID.<br/>
+<b>parameter: </b><em>str-password</em> - The password for the user ID.<br/>
+<p><b>return: </b>The number of the message last read.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="POP3_get-error-text"></a><h3><font color=#CC0000>POP3:get-error-text</font></h3>
+<b>syntax: (<font color=#CC0000>POP3:get-error-text</font>)</b><br/>
+<p><b>return: </b>The text of the last error occurred.</p>
+
+
+
+
+
+
+
+<p></p><center>- &part; -</center><br/>
+<center><font face='Arial' size='-2' color='#444444'>
+generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
+and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
+</font></center>
+</blockquote>
+</body>
+</html>

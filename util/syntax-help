@@ -1,0 +1,21 @@
+;; syntax-help
+;; include this in your init.lsp for syntax commandline help on Mac OS X
+;; or other UNIX operating systems.
+;; example:
+;;   > (help starts-with)
+;;   syntax: (starts-with <str str-key> [<num-option>] )
+;;   syntax: (starts-with <list> [<expr>] )
+;;
+;; For Win32 change the manual path accordingly
+
+(define-macro (help)
+	(let (func-name (name (args 0)))
+		(dolist (item 
+			(find-all (format {<b>(syntax: \(%s.*?)</b>} func-name) 
+				(read-file "/usr/share/doc/newlisp/newlisp_manual.html") $1)) ; UNIX
+			(replace "<em>" item "<")
+			(replace "</em>" item ">")
+			(println  item ""))))
+
+;; eof
+	

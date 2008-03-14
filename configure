@@ -1,0 +1,71 @@
+#!/bin/sh
+# this script tries to discover the OS platform and configuration
+# and then makes newLISP using the appropiate makefile
+# if this script fails and for other special flavors, like
+# making shared libraries etc., type: 
+#
+#      make help
+# to see all options
+#
+
+echo
+case `uname` in 
+	Darwin)
+		echo Discovered Darwin MacOS X with readline suport, enter:
+		echo "     make"
+		echo to make a UTF-8 version for MacOS X with readline support
+		exit
+		;;
+	Linux)
+		echo Discovered Linux, enter:
+		echo "     make"
+		echo to make for linux
+		exit
+		;;
+	FreeBSD)
+		echo Discovered FreeBSD, enter
+		echo "     make"
+		echo to make for FeeBSD
+		exit
+		;;
+	NetBSD)
+		echo Discoverd NetBSD, enter:
+		echo "     make"
+		echo to make for NetBSD
+		exit
+		;;
+	OpenBSD)
+		echo Discoverd OpenBSD, enter:
+		echo "     make"
+		echo to make for OpenBSD
+		exit
+		;;
+	SunOS)
+		echo  Discovered SunOS, enter:
+		echo "     make"
+		echo to make for SunOS
+		exit
+		;;
+	OSF1)
+		echo Discovered True64 Unix, please read doc/TRU64BUILD and enter:
+		echo "     make"
+		echo to make for True64 Unix
+		exit
+		;;
+MINGW32_NT-5.1)
+		echo Discoverd MINGW32 on NT-5.1, enter:
+		echo "     make"
+		echo to make for MinGW32 on Win32
+		exit
+		;;
+	OS/2)
+		echo Discoverd OS/2
+		echo "     make"
+		echo to make for OS/2
+		exit
+		;;
+esac
+
+echo Could not discover your OS platform use one of the following commands:
+
+make help
