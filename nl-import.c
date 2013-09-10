@@ -21,11 +21,6 @@
 #include "newlisp.h"
 #include "protos.h"
 
-
-#ifdef WINCE
-#define _stdcall __stdcall
-#endif
-
 #ifndef WIN_32
 #ifdef MAC_102
 #include "osx-dlfcn.h"

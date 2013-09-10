@@ -90,26 +90,26 @@ int opsys = 7;
 char ostype[]="OS/2"; 
 #endif 
 
-int version = 9403;
+int version = 9405;
 
 char copyright[]=
-"\nnewLISP v.9.4.3 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.9.4.5 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.3 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.5 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.3 on %s IPv%d%s\n\n";
+"newLISP v.9.4.5 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.3 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.5 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.3 64-bit on %s IPv%d%s\n\n";
+"newLISP v.9.4.5 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -845,8 +845,8 @@ while(envStackIdx > index)
 		{
 		deleteList((CELL*)symbol->contents);
 		symbol->contents = (UINT)cell;
-		if(isProtected(symbol->flags))
-			symbol->flags &= ~SYMBOL_PROTECTED;
+		if(isProtected(symbol->flags) && !(symbol->flags & SYMBOL_BUILTIN))
+			symbol->flags &= ~SYMBOL_PROTECTED; /* unprotect */
 		}
 	}
 }
@@ -4411,7 +4411,7 @@ for(;;)
 	params = params->next;
 	next = params->next;
 	if(params == nilCell)
-		return(copyCell((CELL*)symbol->contents));
+		return((CELL*)symbol->contents);
 	if(next == nilCell) return(setDefine(symbol, params, SET_SET));
 	setDefine(symbol, params, SET_SET);
 	params = next;
@@ -4429,10 +4429,9 @@ for(;;)
 	params = getSymbol(params, &symbol);
 	next = params->next;
 	if(params == nilCell)
-		return(copyCell((CELL*)symbol->contents));
+		return((CELL*)symbol->contents);
 	if(next == nilCell) return(setDefine(symbol, params, SET_SET));
 	setDefine(symbol, params, SET_SET);
-	pushResultFlag = TRUE;
 	params = next;
 	}
 }
@@ -4455,8 +4454,14 @@ for(;;)
 	symbol->flags |= SYMBOL_PROTECTED;
 	if(params == nilCell)
 		return(copyCell((CELL*)symbol->contents));
-	if(next == nilCell) return(setDefine(symbol, params, SET_CONSTANT));
+	if(next == nilCell) 
+		{
+		next = setDefine(symbol, params, SET_CONSTANT);
+		pushResultFlag = TRUE;
+		return(copyCell(next));
+		}
 	setDefine(symbol, params, SET_CONSTANT);
+	pushResultFlag = TRUE;
 	params = next;
 	}
 }
@@ -4923,6 +4928,18 @@ return((copyCell(evaluateExpression(params->next))));
 }
 
 
+CELL * p_ifNot(CELL * params)
+{
+CELL * cell;
+
+cell = evaluateExpression(params);
+if(!isNil(cell) && !isEmpty(cell))
+	params = params->next;
+
+return((copyCell(evaluateExpression(params->next)))); 
+}
+
+
 CELL * p_when(CELL * params)
 {
 CELL * cell;
@@ -4940,18 +4957,24 @@ WHEN_END:
 return(copyCell(cell));
 }
 
-
+#ifdef UNLESS
 CELL * p_unless(CELL * params)
 {
 CELL * cell;
 
 cell = evaluateExpression(params);
-if(!isNil(cell) && !isEmpty(cell))
+if(!isNil(cell) && !isEmpty(cell)) goto UNLESS_END;
+
+while(params->next != nilCell)
+	{
+	cell = evaluateExpression(params->next);
 	params = params->next;
+	}
 
-return((copyCell(evaluateExpression(params->next)))); 
+UNLESS_END:
+return(copyCell(cell));
 }
-
+#endif
 
 CELL * p_condition(CELL * params)
 {
@@ -5015,7 +5038,10 @@ CELL * repeat(CELL * params, int type)
 {
 CELL * result;
 CELL * cell;
+CELL * cellIdx;
 int resultIdxSave;
+
+cellIdx = initIteratorIndex();
 
 resultIdxSave = resultStackIdx;
 result = nilCell;
@@ -5028,30 +5054,34 @@ while(TRUE)
             if(isNil(cell) || isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
             result = evaluateBlock(params->next);
-            continue;
+            break;
         case REPEAT_DOWHILE:
             result = evaluateBlock(params->next);
             cell = evaluateExpression(params);
             if(isNil(cell) || isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
-            continue;
+            break;
         case REPEAT_UNTIL:
             cell = evaluateExpression(params);
             if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
             result = evaluateBlock(params->next);
-            continue;
+            break;
         case REPEAT_DOUNTIL:
             result = evaluateBlock(params->next);
             cell = evaluateExpression(params);
             if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
-            continue;
+            break;
         default:
             break;
         }
+
+   	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
     }
+
 END_REPEAT:
+recoverIteratorIndex(cellIdx);
 return(copyCell(result));
 }
 
@@ -5079,6 +5109,24 @@ symbol->contents = (UINT)nilCell;
 return(cell->next);
 }
 
+
+CELL * initIteratorIndex(void)
+{
+CELL * cell = stuffInteger(0);
+
+pushEnvironment(dolistIdxSymbol->contents);
+pushEnvironment(dolistIdxSymbol);
+dolistIdxSymbol->contents = (UINT)cell;
+
+return(cell);
+}
+
+void recoverIteratorIndex(CELL * cellIdx)
+{
+deleteList(cellIdx);
+dolistIdxSymbol = (SYMBOL*)popEnvironment();
+dolistIdxSymbol->contents = (UINT)popEnvironment();
+}
 
 CELL * loop(CELL * params, int forFlag)
 {
@@ -5150,6 +5198,7 @@ for(i = 0; i <= stepCnt; i++)
 	}
 
 cell = copyCell(cell);
+
 deleteList((CELL *)symbol->contents);
 symbol = (SYMBOL*)popEnvironment();
 symbol->flags &= ~SYMBOL_PROTECTED;
@@ -5210,11 +5259,7 @@ CELL * cellIdx;
 int resultIdxSave;
 
 cell = getPushSymbolParam(params, &symbol);
-
-pushEnvironment(dolistIdxSymbol->contents);
-pushEnvironment(dolistIdxSymbol);
-cellIdx = stuffInteger(0);
-dolistIdxSymbol->contents = (UINT)cellIdx;
+cellIdx = initIteratorIndex();
 
 switch(doType)
 	{
@@ -5256,7 +5301,7 @@ switch(doType)
 				if(!isNil(cell)) break;
 				}
 			cell = evaluateBlock(params->next);
-			cellIdx->contents += 1;
+			if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 			}
 		goto FINISH_DO;
 		break;
@@ -5279,15 +5324,15 @@ while(list!= nilCell)
 		if(!isNil(cell)) break;
 		}
 	cell = evaluateBlock(params->next);
-	cellIdx->contents += 1;
+	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 	list = list->next;
 	}
 
 FINISH_DO:
-pushResult(cellIdx);
 cell = copyCell(cell);
-dolistIdxSymbol = (SYMBOL*)popEnvironment();
-dolistIdxSymbol->contents = (UINT)popEnvironment();
+
+recoverIteratorIndex(cellIdx);
+
 deleteList((CELL *)symbol->contents);
 symbol = (SYMBOL*)popEnvironment();
 symbol->contents = (UINT)popEnvironment();
@@ -6244,7 +6289,7 @@ CELL * cell;
 ssize_t idx;
 
 cell = (CELL*)mainArgsSymbol->contents;
-if(params != nilCell)
+if(params != nilCell && cell->type == CELL_EXPRESSION)
     {
     getInteger(params, (UINT *)&idx);
     cell = (CELL *)cell->contents;

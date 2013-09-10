@@ -1,4 +1,0 @@
-# usage: ./make-os-image x.x.x-ppc or x.x.x-intel
-#/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker -d newLISPpackage-project.pmdoc/ -o newLISP-image/newLISPpackage.pkg
-hdiutil create -srcfolder newLISP-image newlisp-$1
-

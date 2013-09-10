@@ -1028,6 +1028,9 @@ true
    (= result '("1.00  a001  g" "2.00  a101  c" "3.00  c220  g"))
    (not (catch (format "%%" 1) 'result))
    (not (catch (format "%10.2lf" 123) 'result))
+   (= (test-format-r '(("foo" "bar") ("foo" "baz"))) 
+      "[ [ 'foo', 'bar' ], [ 'foo', 'baz' ] ]")
+   ; test 64-bit formatting
    (if (and (> opsys 5) (< opsys 9) (!= opsys 7)) ;; Win32 
       (begin
         (and
@@ -1091,6 +1094,12 @@ true
           )
       )
 ))))
+
+(define (test-format-r obj , s) 
+  (cond 
+   ((string? obj)	(format "'%s'" obj)) 
+   ((list? obj) (format "[ %s ]" (join (map test-format-r obj) ", ")))
+)) 
 
 (define (test-fv )
   (< (sub (fv 0.1 10 1000 0 0) -15937.4246) 1e-05))
@@ -1165,6 +1174,10 @@ true
    (= (if nil 1 nil 2 nil 3 true 4 3) 4)
    (= (if nil 1 nil 2 nil 3 nil 4 3) 3)
    ))
+
+(define (test-if-not )
+  (if-not nil 
+   true nil))
 
 (define (test-ifft )
   (= '((1 2) (3 4)) (ifft (fft '((1 2) (3 4))))))

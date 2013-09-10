@@ -625,9 +625,6 @@ while(params->type != CELL_NIL)
         return(errorProcExt2(ERR_FORMAT_STRING, stuffString(format)));
 		}
 
-	saveChar = *nextfmt;
-	*nextfmt = 0;
-
 	if(evalFlag) 
 		cell = evaluateExpression(params);
 	else
@@ -642,10 +639,12 @@ while(params->type != CELL_NIL)
 
     if(fType == 0)
 		{
-		*nextfmt = saveChar;
 		closeStrStream(&fmtStream);
         return(errorProcExt(ERR_FORMAT_NUM_ARGS, params));
 		}
+
+	saveChar = *nextfmt;
+	*nextfmt = 0;
 
     if(fType == CELL_LONG)
         {

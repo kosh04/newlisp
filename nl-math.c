@@ -20,10 +20,6 @@
 #include "newlisp.h"
 #include "protos.h"
 
-#ifdef WINCE
-#define _exception exception
-#endif
-
 #define OP_ADD 1
 #define OP_SUBTRACT 2
 #define OP_MULTIPLY 3
@@ -96,7 +92,10 @@ if(isProtected(sPtr->flags))
 
 if(type == 0)
 	{
-	getFloat(cell, &fValue);
+	if(isNil((CELL *)sPtr->contents))
+		fValue = 0.0;
+	else
+		getFloat(cell, &fValue);
 	deleteList((CELL *)sPtr->contents);
 	fValue = fValue + adjust;
 	cell = getCell(CELL_FLOAT);
@@ -109,7 +108,10 @@ if(type == 0)
 	}
 else
 	{
-	getInteger64(cell, &lValue);
+	if(isNil((CELL *)sPtr->contents))
+		lValue = 0;
+	else
+		getInteger64(cell, &lValue);
 	deleteList((CELL *)sPtr->contents);
 	sPtr->contents = (UINT)stuffInteger64(lValue + type);
 	}

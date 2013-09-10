@@ -3,6 +3,7 @@
 ; newlisp-edit.lsp - multiple tab LISP editor and support for running code from the editor
 
 ; version 1.20
+; version 1.21 removed deprecated replace-assoc using set-assoc and pop-assoc instead
 
 (set-locale "C")
 
@@ -593,7 +594,7 @@
 		(if (> (length tabs-stack) 1)
 			(begin
 				(gs:remove-tab 'EditorTabs currentTabIndex)
-				(replace-assoc currentEdit tabs-stack)
+				(pop-assoc (tabs-stack currentEdit))
 				(if (= currentTabIndex (length tabs-stack)) ; it was the right most tab
 					(dec 'currentTabIndex)
 					(begin ; its was not the most roght which was removed
@@ -1324,7 +1325,7 @@
 (define (update-current-tab)
 	(set 'currentStatus (list edit-buffer-clean currentDot currentMark currentSyntaxStatus))
 	; save previous tab edit area settings
-	(replace-assoc currentEdit tabs-stack (list currentEdit currentDir currentFile currentStatus))
+	(set-assoc (tabs-stack currentEdit) (list currentEdit currentDir currentFile currentStatus))
 )
 
 ;; help about box

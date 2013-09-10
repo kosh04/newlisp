@@ -73,7 +73,7 @@ if(setjmp(errorJump))
 
 	if(errorReg) 
 		{
-		executeSymbol(errorEvent, NULL);
+		executeSymbol(errorEvent, NULL, NULL);
 		return(libStrStream.buffer);
 		}
 	else

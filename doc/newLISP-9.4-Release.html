@@ -1,10 +1,12 @@
 <html>
 <body>
-<blockquote><h1>newLISP<font size=-2>tm</font> v.9.4.3 Release Notes 
-<font size=-1>July 14th, 2008</font> </h1>
+<blockquote><h1>newLISP<font size=-2>tm</font> v.9.4.5 Release Notes 
+<font size=-1>August 5th, 2008</font> </h1>
 
-<p>Versions 9.4.1 to 9.4.3 are corrective updates to the 9.4.0 release.</p>
-
+<p>Versions 9.4.1 to 9.4.5 are corrective updates to the 9.4.0 release with minor additions
+in functionality in version 9.4.4. These additions are marked: <font size=-1>(v9.4.4)</font>
+in the following text.</p>
+ 
 <h3> New API for hash-like dictionary access </h3>
 <p>newLISP has always used names-paces to build dictionaries for associative memory access, but
  the API (application programming interface) was lengthy and the created dictionaries where not 
@@ -69,12 +71,20 @@ newLISP interactive mode. See the reference of the <tt>command-event</tt> functi
 
 <h3> Other API changes and additions </h3>
 <ul>
+<li>The <tt>$idx</tt> system variable is now updated by all non-counting iterating functions
+including <tt>map</tt>. <font size=-1>(v.9.4.4)</font></li>
 <li><tt>bind</tt> has a new optional flag to force evaluation of bound parameters.</li>
 <li><tt>env</tt> now removes an environment variable when set to an empty string 
 (except Solaris, where it stays as an empty string).</li>
+<li><tt>if-not</tt> works like <tt>unless</tt> which will lose the <em>else</em> clause in
+a future version</tt> to be symmetrical to <tt>when</tt>. <font size=-1>(v.9.4.4)</font></li>
+<li><tt>inc</tt> and <tt>dec</tt> now can operate on symbols containing <tt>nil</tt> assuming
+they contain <tt>0</tt> (zero). <font size=-1>(v.9.4.4)</font></li>
 <li><tt>lookup</tt> can take an optional default expression to return when lookup failed.</li>
 <li><tt>randomize</tt> has been rewritten using a better algorithm.</li>
 <li>new <tt>regex-comp</tt> allows pre-compilation of regular expressions.</li>
+<li>Deprecated <tt>replace-assoc</tt> has been removed. Use <tt>set-assoc</tt> and 
+<tt>pop-assoc</tt> instead. <font size=-1>(v.9.4.4)</font></li>
 <li><tt>search</tt> has a new parameter to put the file pointer to either the beginning or end 
 of the searched string.</li>
 <li><tt>series</tt> can take a lambda function instead of a multiplication factor.<br>

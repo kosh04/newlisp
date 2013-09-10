@@ -27,6 +27,7 @@ extern SYMBOL * plusSymbol;
 extern SYMBOL * sysSymbol[];
 
 extern CELL * firstFreeCell;
+extern SYMBOL * dolistIdxSymbol;
 
 /* following used in count, difference, intersect, uniwue and sort 8.6.2 */
 CELL * * listToSortedVector(CELL * list, ssize_t * length, CELL * func, int indexFlag);
@@ -43,6 +44,7 @@ CELL * expr;
 CELL * results;
 CELL * res;
 CELL * qCell;
+CELL * cellIdx;
 int resultIdxSave;
 
 sPtr = evaluateExpression(params);
@@ -67,6 +69,9 @@ while (params != nilCell)
 results = getCell(CELL_EXPRESSION);
 res = NULL;
 resultIdxSave = resultStackIdx;
+
+cellIdx = initIteratorIndex();
+
 while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 	{
 	expr = getCell(CELL_EXPRESSION);
@@ -92,8 +97,12 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 	else
 		res->next = cell;
 	res = cell;
+	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 	}
 deleteList(argsPtr);
+
+recoverIteratorIndex(cellIdx);
+
 return(results);
 }
 
@@ -780,64 +789,6 @@ return(result);
 }
 
 #endif
-
-
-CELL * p_replaceAssoc(CELL * params)
-{
-CELL * key;
-CELL * repList;
-CELL * list;
-CELL * cell;
-CELL * previous = NULL;
-
-key = evaluateExpression(params);
-params = params->next;
-
-cell = evalCheckProtected(params, NULL);
-
-if(!isList(cell->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, cell));
-
-cell->aux = (UINT)nilCell; /* undo last element optimization */
-
-if(isList(cell->type))
-	{
-	list = (CELL *)cell->contents;
-
-	while(list != nilCell)
-		{
-		if(isList(list->type))
-			if(compareCells(key, (CELL *)list->contents) == 0)
-				{
-				deleteList((CELL*)sysSymbol[0]->contents);
-				sysSymbol[0]->contents = (UINT)copyCell(list);
-				/* deleteList((CELL *)list->contents); */
-				if(params->next != nilCell)
-					{
-					getListHead(params->next, &repList);
-					deleteList((CELL *)list->contents);
-					list->contents = (UINT)copyList(repList);
-					}
-				else /* if no replacement given, remove association found */
-					{
-					deleteList((CELL *)list->contents);
-					list->contents = (UINT)nilCell;
-					if(previous == NULL)
-						cell->contents = (UINT)list->next;
-					else
-						previous->next = list->next;
-					list->next = nilCell;
-					deleteList(list);
-					}
-				return(copyCell(cell));
-				}
-		previous = list;
-		list = list->next;
-		}
-	}
-
-return(nilCell);
-}
 
 
 #define SET_ASSOC 0

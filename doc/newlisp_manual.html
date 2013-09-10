@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.9.4.3 Manual and Reference</title>
+   <title>newLISP v.9.4.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -130,7 +130,7 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.9.4.3</h2>
+<h2>Users Manual and Reference v.9.4.5</h2>
 </center>
 
 <br><br><br><br>
@@ -337,6 +337,7 @@ newLISP is a registered trademark of Lutz Mueller.
 
 <ul>
 <li><a href="#error_codes">Error Codes</a></li>
+<li><a href="#system_symbols">System Symbols</a></li>
 <li><a href="#GNUFDL">GNU Free Documentation License</a></li>
 <li><a href="#GNUGPL">GNU General Public License</a></li>
 </ul>
@@ -530,10 +531,8 @@ anymore and may be eliminated in the future. </p>
 
 <h3>Other changes</h3>
 
-<p>The <a href="#set-assoc">set-assoc</a>  or <a href="#pop-assoc">pop-assoc</a> functions 
-should be used instead of the deprecated <tt>replace-assoc</tt> to replace or remove an 
-association in an association list. The deprecated <tt>replace-assoc</tt> has been removed from 
-the documentation and will be removed in a future version.</p>
+<p>The deprecated <tt>replace-assoc</tt> has been removed. The <a href="#set-assoc">set-assoc</a>
+or <a href="#pop-assoc">pop-assoc</a> function should be used instead.</p>
 
 <p>The function <tt>default</tt> has been deprecated and taken out of the documentation. 
 Now that all functions demanding a string or list can interpret a context symbol as a 
@@ -542,6 +541,12 @@ default functor, this function has no usage any more.</p>
 <p>The <tt>command-line</tt> function has been eliminated;
 <a href="#command-event">command-event</a> should be used instead to modify behavior
 of the command-line.</p>
+
+<p>The current form of <a href="#unless">unless</a> will be changed, lose its
+optional <em>else clause</em> and rather work like a <tt>(<a href="#when">when</a>
+(<a href="#not">not</a> ... ) ... )</tt> with no
+else clause. <a href="#if-not">if-not</a> has been introduced in this release
+to work like the deprecated form of <a href="#unless">unless</a>.</p>
 
 <br>
 <center>
@@ -2102,13 +2107,20 @@ are a few destructive functions, however, that <em>do</em> change the contents o
 <td class="left"><a href="#bind">bind</a></td>
 <td class="right">binds variable associations in a list</td>
 </tr>
+
 <tr>
 <td class="left"><a href="#constant">constant</a></td>
 <td class="right">sets the contents of a variable and protects it</td>
 </tr>
+
 <tr>
 <td class="left"><a href="#dec">dec</a></td>
 <td class="right">decrements the value in a variable</td>
+</tr>
+
+<tr>
+<td class="left"><a href="#define">define</a></td>
+<td class="right">sets the contents of a variable</td>
 </tr>
 
 <tr>
@@ -2137,11 +2149,6 @@ are a few destructive functions, however, that <em>do</em> change the contents o
 </tr>
 
 <tr>
-<td class="left"><a href="#push-assoc">push-assoc</a></td>
-<td class="right">removes an association from an association list</td>
-</tr>
-
-<tr>
 <td class="left"><a href="#read-buffer">read-buffer</a></td>
 <td class="right">reads into a buffer variable</td>
 </tr>
@@ -2149,11 +2156,6 @@ are a few destructive functions, however, that <em>do</em> change the contents o
 <tr>
 <td class="left"><a href="#replace">replace</a></td>
 <td class="right">replaces elements in a list or string</td>
-</tr>
-
-<tr>
-<td class="left"><a href="#replace-assoc">replace-assoc</a></td>
-<td class="right">replaces an element in an association list</td>
 </tr>
 
 <tr>
@@ -10730,6 +10732,20 @@ x              <span class=arw>&rarr;</span> 8.75
 </pre>
 </blockquote>
 
+<p>If the symbol in <em>sym</em> contains <tt>nil</tt>, it is treated
+as if containing <tt>0</tt> or <tt>0.0</tt>:</p>
+
+<blockquote>
+<pre>
+z              <span class=arw>&rarr;</span> nil
+(dec 'z)       <span class=arw>&rarr;</span> -1
+
+(set 'z nil)
+(dec 'z 0.01)  <span class=arw>&rarr;</span> -0.01
+</pre>
+</blockquote>
+
+
 <p>
 	Use the <a HREF="#inc">inc</a> function to increment numbers.
 </p>
@@ -11540,6 +11556,8 @@ This second syntax is not available on Win32.</p>
 	is the last evaluation of the <em>body</em> expression.
 </p>
 
+<p><tt>do-until</tt> also updates the system symbol <tt>$idx</tt>.</p>
+
 <b>example:</b>
 <blockquote>
 <pre>
@@ -11583,6 +11601,7 @@ x  <span class=arw>&rarr;</span> 1
 	is the last evaluation of the <em>body</em> expression.
 </p>
 
+<p><tt>do-while</tt> also updates the system symbol <tt>$idx</tt>.</p>
 
 <b>example:</b>
 <blockquote>
@@ -11616,14 +11635,12 @@ x  <span class=arw>&rarr;</span> 10
 inside a user-defined function or macro. This function or macro can be defined using <a href="#define">define</a>, 
 <a href="#define-macro">define-macro</a>, <a href="#lambda">lambda</a>, or
 <a href="#lambda-macro">lambda-macro</a>.
-The variable in <em>sym</em> 
-is set sequentially to all members in the argument list 
-until the list is exhausted 
-or an optional break expression 
-(defined in <em>exp-break</em>) 
-evaluates to <tt>true</tt> or a logical true value. 
-The <tt>doargs</tt> expression always returns 
-the result of the last evaluation.</p>
+The variable in <em>sym</em> is set sequentially to all members in the argument list 
+until the list is exhausted or an optional break expression 
+(defined in <em>exp-break</em>) evaluates to <tt>true</tt> or a logical true value. 
+The <tt>doargs</tt> expression always returns the result of the last evaluation.</p>
+
+<p><tt>doargs</tt> also updates the system symbol <tt>$idx</tt>.</p>
 
 <b>example:</b>
 <blockquote>
@@ -11657,8 +11674,7 @@ true</b>
 </pre>
 </blockquote>
 
-<p>Use the <a href="#args">args</a> function 
-to access the entire argument list at once.</p>
+<p>Use the <a href="#args">args</a> function to access the entire argument list at once.</p>
 
 <br><br>
 
@@ -11785,7 +11801,7 @@ x  <span class=arw>&rarr;</span> 123  ; x has still its old value
 <p>
 	The internal system variable <tt>$idx</tt> 
 	keeps track of the current offset 
-	into the list passed to <tt>dostring</tt>,
+	into the string passed to <tt>dostring</tt>,
 	and it can be accessed during its execution.
 </p>
 <br><br>
@@ -11842,23 +11858,21 @@ x  <span class=arw>&rarr;</span> 123  ; x has still its old value
 	to the <tt>dotree</tt> expression 
 	and behaves according the rules of dynamic scoping. 
 </p>
+<p><tt>dotree</tt> also updates the system symbol <tt>$idx</tt>.</p>
 
 <b>example:</b>
 <blockquote>
 <pre>
 ;; faster and less memory overhead
-(dotree (s 'SomeCTX) (print s " ")) 
-
-;; the quote can be omitted
 (dotree (s SomeCTX) (print s " "))
 
-;; slower and more memory usage
-(dolist (s (symbols 'SomeCTX)) (print s " "))
+;; slower and higher memory usage
+(dolist (s (symbols SomeCTX)) (print s " "))
 </pre>
 </blockquote>
 
 <p>
-	This example prints the names of all symbols inside SomeCTX to the console window.
+This example prints the names of all symbols inside SomeCTX to the console window.
 </p>
 
 <br><br>
@@ -14798,6 +14812,30 @@ global? 'print)   <span class=arw>&rarr;</span> true
 
 <br><br>
 
+<a NAME="if-not"></a>
+<h2><span class="function">if-not</span></h2>
+<b>syntax: (if-not <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])</b>
+
+<p>
+<tt>if-not</tt> is equivalent to (<a HREF="#if">if</a> (<a HREF="#not">not</a> 
+<em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])).
+If the value of <em>exp-condition</em> is <tt>nil</tt> 
+or the empty list <tt>()</tt>, <em>exp-1</em> is evaluated;
+otherwise, the optional <em>exp-2</em> is evaluated.
+</p>	
+
+<b>example:</b> 
+<blockquote> 
+<pre>
+(set 'x 50)                       <span class=arw>&rarr;</span> 50 
+(if-not (&lt; x 100) "big" "small")  <span class=arw>&rarr;</span> "small"
+(set 'x 1000)                     <span class=arw>&rarr;</span> 1000 
+(if-not (&lt; x 100) "big" "small")  <span class=arw>&rarr;</span> "big" 
+</pre>
+</blockquote>
+
+<br><br>
+
 <a NAME="ifft"></a>
 <h2><span class="function">ifft</span></h2>
 <b>syntax: (ifft <em>list-num</em>)</b>
@@ -15072,6 +15110,20 @@ x              <span class=arw>&rarr;</span> 1.25
 (inc 'x)  <span class=arw>&rarr;</span> 2  ; gets truncated
 </pre>
 </blockquote>
+
+<p>If the symbol in <em>sym</em> contains <tt>nil</tt>, it is treated
+as if containing <tt>0</tt> or <tt>0.0</tt>:</p>
+
+<blockquote>
+<pre>
+z              <span class=arw>&rarr;</span> nil
+(inc 'z)       <span class=arw>&rarr;</span> 1
+
+(set 'z nil)
+(inc 'z 0.01)  <span class=arw>&rarr;</span> 0.01
+</pre>
+</blockquote>
+
 
 <p>
 	Use the <a href="#dec">dec</a> function for decrementing.
@@ -16228,21 +16280,24 @@ we can do the following:
 </pre>
 </blockquote>
 
+<p><tt>map</tt> also sets the internal list index <tt>$idx</tt>.</p>
+
+<blockquote>
+<pre>
+(map (fn (x) (list $idx x)) '(a b c)) <span class=arw>&rarr;</span> ((0 a) (1 b) (2 c))
+</pre>
+</blockquote>
+
 <p>
-The number of arguments used is determined 
-by the length of the first argument list. 
-Arguments missing in other argument lists 
-cause an error message. 
-If an argument list contains too many elements, 
-the extra ones will be ignored.
+The number of arguments used is determined by the length of the first argument list. 
+Arguments missing in other argument lists cause an error message. 
+If an argument list contains too many elements, the extra ones will be ignored.
 </p>
 
 <p>
-Note that only functions with <em>applicative 
-order of evaluation</em> can be mapped. 
-Functions with conditional or delayed evaluation 
-of their arguments (e.g., <a href="#if">if</a> 
-or <a href="#case">case</a>) cannot be mapped.
+Note that only functions with <em>applicative order of evaluation</em> can be 
+mapped. Functions with conditional or delayed evaluation of their arguments 
+(e.g., <a href="#if">if</a> or <a href="#case">case</a>) cannot be mapped.
 </p>
 
 <br><br>
@@ -25818,25 +25873,12 @@ B <span class=arw>&rarr;</span> (g xyz)
 <h2><span class="function">unless</span></h2>
 <b>syntax: (unless <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])</b>
 
-<p>
-	<tt>unless</tt> is equivalent to 
-	(<a HREF="#if">if</a> (<a HREF="#not">not</a> 
-	<em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])).
-	If the value of <em>exp-condition</em> is <tt>nil</tt> 
-	or the empty list <tt>()</tt>,
-	<em>exp-1</em> is evaluated;
-	otherwise, <em>exp-2</em> is evaluated.
-</p>	
+<p>This function is deprecated in its current form. Use <a href="#if-not">if-not</a> 
+instead.</p>
 
-<b>example:</b> 
-<blockquote> 
-<pre>
-(set 'x 50)                       <span class=arw>&rarr;</span> 50 
-(unless (&lt; x 100) "big" "small")  <span class=arw>&rarr;</span> "small"
-(set 'x 1000)                     <span class=arw>&rarr;</span> 1000 
-(unless (&lt; x 100) "big" "small")  <span class=arw>&rarr;</span> "big" 
-</pre>
-</blockquote>
+<p>In a future release <tt>unless</tt> will lose the <em>else clause</em> in <em>exp-2</em>
+amd work like a <tt>(<a href="#when">when</a> (<a href="#not">not</a> ...) ... )</tt> 
+expression.</p>
 
 <br><br>
 
@@ -26038,6 +26080,8 @@ The result of the last expression evaluated in <em>body</em>
 is the return value of the <tt>until</tt> expression.  <tt>until</tt> works like 
 (<a HREF="#while">while</a> (<a HREF="#not">not</a> &hellip;)).
 </p>
+
+<p><tt>until</tt> also updates the system symbol <tt>$idx</tt>.</p>
 
 <b>example:</b>
 <blockquote>
@@ -26309,6 +26353,8 @@ The result of the body's last evaluated expression
 is the return value of the <tt>while</tt> expression.
 </p>
 
+<p><tt>while</tt> also updates the system symbol <tt>$idx</tt>.</p>
+
 <b>example:</b>
 <blockquote>
 <pre>
@@ -26321,9 +26367,8 @@ is the return value of the <tt>while</tt> expression.
 </blockquote>
 
 <p>
-	Use the <a href="#do-while">do-while</a> function
-	to evaluate the condition 
-	<em>after</em> evaluating the body of expressions.
+Use the <a href="#do-while">do-while</a> function to evaluate the condition 
+<em>after</em> evaluating the body of expressions.
 </p>
 
 <br><br>

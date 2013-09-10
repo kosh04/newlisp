@@ -1,14 +1,22 @@
 ;; @module gmp.lsp
 ;; @description GNU MP Bignum Library interface
-;; @version 1.51
+;; @version 1.52 updated for new install locations and GMP website
 ;; @author Lutz Mueller, 2007
 ;;
 ;; <h3>The GNU MP Bignum Library</h3>
 ;; This modules interfaces to libgmp which can be obtained from 
-;; @link http://www.swox.com/gmp/ www.swox.com/gmp/ .
+;; @link http://gmplib.org/ http://gmplib.org/ .
 ;;
 ;; Source code for libgmp.so (UNIX) or lbgmp.dll (Win32) or libgmp.dylib (Mac OS X) 
 ;; is available at this site.
+;;
+;; When compiling for Mac OS X on Intel CPUs use:
+;;
+;; <pre>
+;;     ./configure CFLAGS="-m32" ABI=32
+;;     make
+;;     sudo make install
+;; </pre>
 ;;
 ;; This interface module presets the maximum precision to 1024.
 ;; The precision can be changed to any other value by changing the 
@@ -115,6 +123,12 @@
 (define gmp-divzero-error "Division by zero in GMP module")
 
 (set 'files '(
+    "/usr/lib/libgmp.3.4.2.dylib" ;Mac OSX
+    "/usr/lib/libgmp.3.dylib" ;Mac OSX
+    "/usr/lib/libgmp.dylib" ;Mac OSX
+    "/usr/local/lib/libgmp.3.4.2.dylib" ;Mac OSX
+    "/usr/local/lib/libgmp.3.dylib" ;Mac OSX
+    "/usr/local/lib/libgmp.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.4.2.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.3.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX

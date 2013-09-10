@@ -1,4 +1,4 @@
-G6.0.25
+6.0.25
 'find', 'replace' and 'search' now have an option for case insensitive
 search, updated source and manual
 
@@ -4544,4 +4544,32 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
   cleanup -h help message
   
   don't let newlispdoc accept ;;;
+  
+9.4.4
+  fixed reentrance bug in format
+ 
+  fixed compilation as Unix library
+
+  fixed $args losing protection under error conditions
+
+  updated gmp.lsp module documentation and library load locations
+  
+  new 'if-not' works like current 'unless' which will loose the else-clause
+  in a future version to work like a (when (not ... ) ..)
+  
+  'inc' and 'dec' on a variable containing 'nil' assumes 0 contents, this
+  makes initialization of variables used in 'inc' and 'dec' un-necessary,
+  but is also compatible with existing code
+
+  additionally to doargs, dolist, dostring, dotree now all other non-counting
+  iterators: map, while, until, do-while, do-until upate the internal $idx symbol, 
+  e.g: (map (fn (x) (list $idx x)) '(a b c)) => ((0 a) (1 b) (2 c))
+    
+  eliminated deprecated (in 9.3) replace-assoc, use set-assoc and pop-assoc 
+  instead
+  
+9.4.5  
+  cleanup in define constant, define, set, setq  assignment group of functions, 
+  'constant' should not return a reference as the others in the group. Same 
+  optimization will be introduced for all other destructive functions in the future.
   

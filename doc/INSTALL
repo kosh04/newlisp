@@ -1,17 +1,18 @@
-BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2008-06-18)
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2008-07-23)
 -------------------------------------------------------------------
 
 CONTENTS
 
-(1) WIN32 BINARY DISTRIBUTION INSTALLATION
-(2) BUILD newLISP FROM SOURCE for LINUX, free/net/openBSD, MacOSX, Solaris
-(3) COMMENTS FOR COMPILING AND LINKING
-(4) TOOLS
-(5) LOCALIZATION
-(6) INSTALLING AFTER BUILDING FROM SOURCE
-(7) UNINSTALL
-(8) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
-(9) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
+ (1) WIN32 BINARY DISTRIBUTION INSTALLATION
+ (2) Mac OS X BINARY DISTRIBUTION INSTALLATION
+ (3) UBUNTU Linux DEBIAN DISTRIBUTION INSTALLATION
+ (4) MINIMUM INSTALL
+ (5) BUILD newLISP FROM SOURCE AND INSTALL ON ALL UNIX
+ (6) COMMENTS FOR COMPILING AND LINKING
+ (7) LOCALIZATION
+ (8) UNINSTALL
+ (9) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
+(10) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
 
 
 (1) WIN32 BINARY DISTRIBUTION INSTALLATION
@@ -22,30 +23,86 @@ application. After downloading a file:
 
     newlisp-xxxx-win-gs-xxx.exe
 
-douuble click on it and follow instructtions. xxxx and xxx are
-the version numbers for newLISP and the newLISP-tk the GUI frontend.
+double click on it and follow instructtions. xxxx and xxx are the version 
+numbers for newLISP and the newLISP-tk the GUI frontend. On Win32 a ASCII 
+version of newlisp.exe capable of ISO/IEC 8859 code pages is installed. A 
+UTF-8 capable version is available from the newlisp download directory at: 
+http://www.newlisp.org/downloads/UTF-8_win32/
 
 
-(2) BUILD newLISP FROM SOURCE for LINUX, free/net/openBSD, MacOSX, Solaris
----------------------------------------------------------------------------
+(2) Mac OS X BINARY DISTRIBUTION INSTALLATION
+---------------------------------------------
+
+After downloading double-click on the Mac OS X disk image file:
+
+    newlisp-xxxx-ppc.dmg  
+or
+    newlisp-xxxx-intel.dmg
+    
+This installes an applications icon in the Mac OS X Applications folder.
+On Mac OS X a UTF-8 capable version is installed by default.
+
+
+(3) UBUNTU Linux DEBIAN DISTRIBUTION INSTALLATION
+-------------------------------------------------
+
+Double click the file:
+
+    newlisp-xxxx-x_i386.deb
+or
+    newlisp-xxxx-utf8_i386.deb
+    
+This will bring up the debian installer application.
+
+
+(4) MINIMUM INSTALL
+-------------------
+
+For a minumum install only the executable file: newlisp (or newlisp.exe on Win32)
+needs to be moved to a directory in the executable path, i.e. /usr/bin/newlisp
+or ~/bin in the home directory. No other files are required.
+
+To reduce an exisiting UNIX install to a minimum installation, remove all files
+in /usr/share/newlisp and /usr/share/doc/newlisp and the executable files
+/usr/bin/newlisp-edit and /usr/bin/newlispdoc.
+
+On Mac OX X remove also the files under the Applications icon in the Applications
+folder. On Windows remove all file except newlisp.exe in C:/Program Files/newlisp.
+
+
+(5) BUILD newLISP FROM SOURCE AND INSTALL ON ALL UNIX
+-----------------------------------------------------
 
 Un-tar/gunzip the distribution file newlisp_9.x.x.tgz :
 
     tar xzvf newlisp_9.x.x.tgz
 
 Change the current directory in to newlisp_x.x.x/
-From the command line do:
 
-    make
-
-this will automatically detect one of the platforms Linus, MacOS X, FreeBSD,
-OpenBSD, NetBSD and SunOS/Solaris.
-
-To just check what OS flavor make would detect, type:
+and check what OS flavor make would detect, type:
 
     ./configure
 
-ther are many other flavors for different OS and compilers type
+This will automatically detect the platforms Linus, MacOS X, FreeBSD,
+OpenBSD, NetBSD and SunOS/Solaris.
+
+If you agree with the platform detected by configure type:
+
+    make
+    
+After building has finished type:
+
+    sudo make install
+    
+or if already in superuser mode:
+
+    make install
+    
+
+(6) COMMENTS FOR COMPILING AND LINKING
+--------------------------------------
+
+There are many other flavors for different OS and compilers type
 make with help to see all options: 
 
     make help
@@ -57,12 +114,12 @@ to remove objects and before switching make flavors:
 
     make clean
 
-Since version 9.0.14 newLISP can also be compiled for 64-bit Linux
-with 64-bit memory pointers. See the file: Makefile for details.
+A makefile for a specific platform and flavor can also be used explicitly 
+by typing:
 
-
-(3) COMMENTS FOR COMPILING AND LINKING
---------------------------------------
+    make -f makefile_xxxxxx
+    
+where xxxx is one of the many flavors available in many makefile included.
 
 Some OS's and installations may not support 'readline' or support for
 milli seconds resolution in the time functions or library import functionality.
@@ -85,18 +142,7 @@ support does not come in the default install of many Linux distributions.
 When creating Win32 versions read the file README_WIN32 first.
 
 
-(4) TOOLS
----------
-
-Besides gcc for the 'C' compiler, several other tools are used for packaging
-the installer for Win32, configuring PCRE etc. These tools can be found at: 
-http://newlisp.org/download/Tools/
-
-For a normal installation from the source distribution only the GCC or
-compatible compiler is required.
-
-
-(5) LOCALIZATION
+(7) LOCALIZATION
 ----------------
 
 The PCRE Regular Expressions code can be localized to your country/language 
@@ -110,47 +156,41 @@ There are UTF-8 versions/makefiles available in the source distribution.
 See the chapter about 'Customization, localization and UTF-8' in the manual.
 
 
-(6) INSTALLING AFTER BUILDING FROM SOURCE
------------------------------------------
+(8) UNINSTALL
+-------------
 
-To install log in as super user or root and do:
+On Win32 use the uninstall application from the newlisp applications
+menu.
 
-    make install
+On Mac OS X double click on the uninstall script in the diskimage of
+the installer package.
 
-On Mac OSX when not running as superuser (but with admin rights):
+On UBUNTU Linux execute:
 
-    sudo make install
+    dpkg -r newlisp
 
-If you cannot get super user or root privileges, newslisp can be installed
-in yur home directory in $HOME/bin and $HOME/share instead of /usr/bin
-and /usr/share
-
-    make install_home
-
-This will create /usr/share/newlisp  or $HOME/bin and $HOME/share/newlisp and
-/usr/share/doc/newlisp or $HOME/share/doc/newlisp
-
-(7) UNINSTALL
---------------
-
-sto uninstall if installed with make install do:
+On all other UNIX to uninstall on other if installed with make install do:
 
     make uninstall
 
-or if installed with install_home
+or if installed with: make install_home
 
     make uninstall_home
-
     
-make and executables are tested on Mandrake Linux, FreeBSD, Solaris
-Darwin/Mac OSX and WinXP Home
+To manually uninstall on Win32 remove all files in c:\Program files\newlisp
 
+On Mac OS X and other UNIX remove all files in /usr/share/newlisp and
+/usr/share/doc/newlisp and the executable files /usr/bin/newlisp,
+/usr/bin/newliso-edit and /usr/bin/newlispdoc. On Mac OX X also remove
+the newLISP icon in the Applications folder.
+
+   
 (8) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
--------------------------------------------------
+------------------------------------------------
 
 On all platforms simply execute:
  
- newlisp <enter>
+    newlisp
 
 on the command line. On Win32 the execution path of newlisp.exe was added
 to the environment during installation. On all other platforms the newlisp
@@ -159,12 +199,18 @@ where $HOME is the the home directory of the user taken from the environment
 variable HOME.
 
 
-(9) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
+(10) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
+----------------------------------------------
 
 On Win32 and Mac OS X a Java based syntaxhighlighting editor is installed in
-in the Applications menus. The editor needs a Java runtime environment JRE
-versin 1.5 as a minimum. In case it is not installed it can be obtained from
-http://java.sun.com .
+in the Applications menus. In other UNIX execute:
+    
+    newlis-edit
+ 
+from the command line in a terminal window.
+The editor needs a Java runtime environment JRE version 1.5 as a minimum. 
+In case it is not installed it can be obtained from http://java.sun.com .
 
                                  +++
+
 
