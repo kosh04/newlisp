@@ -12,7 +12,7 @@ OutFile "c:\lutz\newLISP\newlisp-10000-win-gs-125.exe"
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.25 and newLISP 9.9.97 on your computer.\r\nIf not installing in the default directory reboot."
+DirText "This will install the newLISP-GS 1.25 and newLISP 10.0 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3

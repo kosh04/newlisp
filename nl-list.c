@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -632,6 +632,7 @@ if(lref == NULL)
 return(copyCell((CELL *)lref->contents));
 }
 
+
 CELL * p_count(CELL * params)
 {
 CELL * items;
@@ -705,8 +706,11 @@ return(result);
 
 
 #ifdef TSEARCH_COUNT
-void freeTnode(void * node) {};
 
+/* not used anymore because of memory leaks,
+   becuase tree cannot be properly destoryed 
+*/
+void freeTnode(void * node) {};
 
 typedef struct 
 	{

@@ -13,7 +13,6 @@
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/sqlite3.lsp")
 ;; </pre>
-;;
 ;; SQLite version 3.0 introduced a new database format and is incompatible
 ;; whith the previous 2.1 to 2.8 format. Old SQLite 2.x based databases can
 ;; be converted  using the old and new sqlite client application:
@@ -115,7 +114,6 @@
 ;; @syntax (sql3:open <str-db-name>)
 ;; @param <str-db-name> The name of the database.
 ;; @return A database handle (discard), or 'nil' on failure.
-;;
 ;; Opens or creates a database. If the database does exist it gets opened, 
 ;; else a new database with the name given is created.
 ;; If trying to open a database that already has been opened 'nil' is returned
@@ -136,7 +134,6 @@
 
 ;; @syntax (sql3:close)
 ;; @return Returns 'true' on success;
-;;
 ;; Closes the currently open database.
 
 (define (sql3:close) 		;;  overwrite the close in MAIN
@@ -281,7 +278,6 @@
 
 ;; @syntax (sql3:timeout <num-milli-seconds>)
 ;; @return 'true' on success or 'nil' on failure.
-;;
 ;; Sets busy timeout in milliseconds.
 
 (define (timeout ms)

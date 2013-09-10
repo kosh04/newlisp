@@ -1,14 +1,12 @@
 #!/usr/bin/newlisp
 
-# this utility formats a newLISP source file as an HTML file with
-# syntax highlighting
+# - syntax.cgi - this utility formats a newLISP source file as an HTML 
+# file with syntax highlighting
 #
 # comment following line out when using as CGI utilty
 # in this case files to convert which are local must end with .txt
-#(define cgi-use true)
+(define cgi-use true)
 
-# syntax.cgi 2.1
-#
 # v.1.7 - switch for using as commandline or cgi utility
 # v.1.9 - fixed highlighting problem with escaped quotes
 # v.2.0 - fixed \r\n translation
@@ -16,6 +14,9 @@
 # v.2.3 - changed syntax for write-line
 # v.2.4 - added handling of < ? ... > XML tag
 # v.2.5 - generate more compliant HTML 4.01 transitional
+# v.2.6 - handle number scientific format with e
+# v.2.7 - improved keyword regex
+# v.2.8 - scientific format with E
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
@@ -44,6 +45,7 @@
 #    - multiline quoted strings, use [text] [/text] instead
 #    - multiline braced strings, use [text] [/text] instead
 #    - comments starting with # but not starting at beginning of line
+#    - more than one keywords in a row, the second stays black
 #      use ; as comment starter when comment appears after code
 
 
@@ -71,7 +73,7 @@
 (replace "+" keyword-regex "\\+")
 (replace "*" keyword-regex "\\*")
 (replace "||" keyword-regex "|\\|")
-(set 'keyword-regex (append {(\s+|\(|\))(} keyword-regex {)(\s+|\(|\))}))
+(set 'keyword-regex (append {(\G|\s+|\(|\))(} keyword-regex {)(\s+|\(|\))}))
 
 (set 'file (if cgi-use 
 	(or (read-line) (env "QUERY_STRING"))
@@ -147,9 +149,17 @@
 
 ; color keywords
 (replace keyword-regex file (format {%s<font color='%s'>%s</font>%s} $1 keyword-color $2 $3) 0)
+;(replace keyword-regex file (println "->" $0 "<-<br>") 0)
+;(exit)
+
+; old color numbers
+;    (replace {(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?\d+\.\d+|[+-]?\d+|\.\d+)} file
+;         (format {%s<font color='%s'>%s</font>} $1 number-color $2) 0)
 
 ; color numbers
-(replace {(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?\d+\.\d+|[+-]?\d+|\.\d+)} file 
+(replace  
+;   <-- lead --><---- hex ---->|<- oct ->|<------- decimal ----- and ----- scientific -->
+	{(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?0\d+|([+-]?(0|[1-9]\d*)(\.\d*)?|\.\d+)([eE][+-]?\d+)?)} file 
          (format {%s<font color='%s'>%s</font>} $1 number-color $2) 0)
 
 

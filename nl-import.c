@@ -1,6 +1,6 @@
 /* nl-import.c --- shared library interface for newLISP
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -328,18 +328,42 @@ return(stuffInteger(number));
 }
 
 
-/* 8 callback functions for up to 4 parameters */
+/* 16 callback functions for up to 8 parameters */
 
-long template(long n, long p1, long p2, long p3, long p4);
+long template(long n, long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8);
 
-long callback0(long p1, long p2, long p3, long p4) {return template(0, p1, p2, p3, p4);}
-long callback1(long p1, long p2, long p3, long p4) {return template(1, p1, p2, p3, p4);}
-long callback2(long p1, long p2, long p3, long p4) {return template(2, p1, p2, p3, p4);}
-long callback3(long p1, long p2, long p3, long p4) {return template(3, p1, p2, p3, p4);}
-long callback4(long p1, long p2, long p3, long p4) {return template(4, p1, p2, p3, p4);}
-long callback5(long p1, long p2, long p3, long p4) {return template(5, p1, p2, p3, p4);}
-long callback6(long p1, long p2, long p3, long p4) {return template(6, p1, p2, p3, p4);}
-long callback7(long p1, long p2, long p3, long p4) {return template(7, p1, p2, p3, p4);}
+long callback0(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(0, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback1(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(1, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback2(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(2, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback3(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(3, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback4(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(4, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback5(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(5, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback6(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(6, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback7(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(7, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback8(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(8, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback9(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(9, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback10(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(10, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback11(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(11, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback12(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(12, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback13(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(13, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback14(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(14, p1, p2, p3, p4, p5, p6, p7, p8);}
+long callback15(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+	{return template(15, p1, p2, p3, p4, p5, p6, p7, p8);}
 
 typedef struct {
 	SYMBOL * sym;
@@ -355,10 +379,18 @@ LIBCALLBACK callback[] = {
 	{ NULL, (UINT)callback5 },
 	{ NULL, (UINT)callback6 },
 	{ NULL, (UINT)callback7 },
+	{ NULL, (UINT)callback8 },
+	{ NULL, (UINT)callback9 },
+	{ NULL, (UINT)callback10 },
+	{ NULL, (UINT)callback11 },
+	{ NULL, (UINT)callback12 },
+	{ NULL, (UINT)callback13 },
+	{ NULL, (UINT)callback14 },
+	{ NULL, (UINT)callback15 },
 };
 
 
-long template(long n, long p1, long p2, long p3, long p4) 
+long template(long n, long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
 {
 CELL * args;
 CELL * cell;
@@ -374,7 +406,7 @@ if(setjmp(errorJump))
 	goto FINISH_CALLBACK;
 	}
 
-args = stuffIntegerList(4, p1, p2, p3, p4);
+args = stuffIntegerList(8, p1, p2, p3, p4, p5, p6, p7, p8);
 executeSymbol(callback[n].sym, (CELL *)args->contents, &cell);
 result = cell->contents;
 deleteList(cell);
@@ -386,15 +418,16 @@ memcpy(errorJump, errorJumpSave, sizeof(errorJump));
 return(result);
 }
 
+
 CELL * p_callback(CELL * params)
 {
 SYMBOL * sPtr;
 UINT n;
 
 params = getInteger(params, &n);
-if(n > 7) n = 7;
-getSymbol(params, &sPtr);
+if(n > 15) return(errorProc(ERR_NUMBER_OUT_OF_RANGE));
 
+getSymbol(params, &sPtr);
 callback[n].sym = sPtr;
 
 return(stuffInteger(callback[n].func));

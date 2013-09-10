@@ -3,8 +3,7 @@
 ;; @version 1.1 - comments redone for automatic documentation
 ;; @version 1.2 - new library detection routine
 ;; @author April 13th 2006, L.M.
-;;
-;; <h2>Functions for compression/decompression with zlib</h2> 
+;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
 ;; from @link http://www.zlib.net/ www.zib.net is needed.
 ;;

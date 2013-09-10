@@ -1,0 +1,325 @@
+<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>stat.lsp</title>
+
+<link rel="stylesheet" type="text/css" href="newlispdoc.css" />
+</head>
+
+<body style="margin: 20px;" text="#111111" bgcolor="#FFFFFF" 
+			link="#376590" vlink="#551A8B" alink="#ffAA28">
+<blockquote>
+<center><h1>stat.lsp</h1></center>
+<p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;stat.lsp</h2><p>Basic statistics and plotting library</p>
+<b>Version: </b>2.0 - fixed plot an plotXY routines for gnuplot<br/>
+<b>Author: </b>Lutz Mueller, 2001<br/>
+<br/><br/>
+ <h2>Functions for statistics and plotting with GNU plot</h2>
+ To use this module it has to be loaded at the beginning of the
+ program file:
+ <pre>
+ (load (append (env "NEWLISPDIR") "/modules/stat.lsp"))
+ </pre>
+ All functions work on integers and floats or a mix of both. <em>lists</em> are normal
+ LISP lists. <em>matrices</em> are lists of lists, one list for each row in the
+ two dimensional data matrix. See the function <tt>stat:matrix</tt> on how to make matrices
+ from lists.
+<br/><br/>
+ This file also shows how to use some of the built in matrix math functions
+ like <tt>multiply</tt>, <tt>transpose</tt>, <tt>invert</tt> and <tt>fft</tt>. 
+<br/><br/>
+ Note, that the plot functions need <tt>gnuplot</tt> installed, a free graphing 
+ package available for most operating systems.
+ See: <a href="http://www.gnuplot.info/">http://www.gnuplot.info/</a> <br/><br/>
+ If no Gnuplot program is found by the module all non-plot routines are still
+ usable.
+<br/><br/>
+ <center><h2>Plot functions (requires <tt>gnuplot</tt>)</h2></center>
+ The plot functions rely on a $HOME/tmp directory on Mac OS X and other Unix
+ or <tt>c:\tmp</tt> or <tt>c:\tmp</tt> on Windows. When loading the module,
+ a message will be printed to stdout if either the gnuplot executable or a 
+ temporary directory cannot be found.
+<br/><br/>
+ The plot functions are designed for interactive use with no special options,
+ titles on the top or the X and Y axes. Only a legend is printed in the top
+ right corner to identify different data ranges. On Win32 plot functions 
+ should only be used when using newLISP in a command shell, not inside the 
+ newLISP-GS application.
+<br/><br/>
+ To produce more refined graphics the file <tt>tmp/plot</tt> can be edited
+ to produce a different output. The Gnuplot command-file <tt>plot</tt> will
+ look for data files in the same directory. One file for each data range.
+
+
+
+
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_plot"></a><h3><font color=#CC0000>stat:plot</font></h3>
+<b>syntax: (<font color=#CC0000>stat:plot</font> <em>p1</em> <em>p2</em> ... <em>pN</em>)</b><br/>
+<b>parameter: </b><em>p1</em> - First list of data.<br/>
+<b>parameter: </b><em>p2</em> - Second list of data.<br/>
+<b>parameter: </b><em>pN</em> - Nth list o data<br/>
+<p><b>return: </b>The process ID of the gnuplot process.</p>
+<b>example:</b><blockquote><pre>    (stat:plot '(1 2 3 4 5 4 3 2 1))
+
+    (set 'data-A '(1 2 3 2 1 2 3))
+    (set 'data-B '(2 2 2 2 2 2 2))
+    (stat:plot data-A data-B)</pre></blockquote>
+ The first example plots one data range. It will appear as <tt>series-1</tt>
+ in the legend. In the second example two data ranges are drawn each in a 
+ distinct color the variable names <tt>data-X</tt> and <tt>data-Y</tt> will
+ be used as labeld in the legend.
+
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_plotXY"></a><h3><font color=#CC0000>stat:plotXY</font></h3>
+<b>syntax: (<font color=#CC0000>stat:plotXY</font> <em>list-X</em> <em>list-Y</em> [<em>srt-style</em>])</b><br/>
+<b>parameter: </b><em>list-X</em> - List of x-coordinates to plot.<br/>
+<b>parameter: </b><em>list-Y</em> - List of y-coordinates to plot.<br/>
+<b>parameter: </b><em>str-style</em> - Optional style parameter, e.g. "line"<br/>
+<p><b>return: </b>The process ID of the gnuplot process.</p>
+<b>example:</b><blockquote><pre>    (set 'data-X (random 1 10 100))
+    (set 'data-Y (random 2 8 100))
+    (stat:plotXY data-X data-Y)</pre></blockquote>
+ Data points X,Y are plotted on the plane. If no style is specyfied points
+ appear as little crosses. The style <tt>"line"</tt> would connect all data
+ points.
+
+ <br/>
+ <center><h2>General uni- and bi- variate statistics</h2></center>
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sum"></a><h3><font color=#CC0000>stat:sum</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sum</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers,<br/>
+<p><b>return: </b>Sum of data in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_mean"></a><h3><font color=#CC0000>stat:mean</font></h3>
+<b>syntax: (<font color=#CC0000>stat:mean</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>The mean of data in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_var"></a><h3><font color=#CC0000>stat:var</font></h3>
+<b>syntax: (<font color=#CC0000>stat:var</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>The variance of the data in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sdev"></a><h3><font color=#CC0000>stat:sdev</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sdev</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Standard deviation of data in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sum-sq"></a><h3><font color=#CC0000>stat:sum-sq</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sum-sq</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Sum of <em>x*x</em> data elements in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sum-xy"></a><h3><font color=#CC0000>stat:sum-xy</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sum-xy</font> <em>X</em> <em>Y</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>Y</em> - A list of numbers.<br/>
+<p><b>return: </b>Sum of products <em>x*y</em> data elements in lists <em>X</em> and <em>Y</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_cov"></a><h3><font color=#CC0000>stat:cov</font></h3>
+<b>syntax: (<font color=#CC0000>stat:cov</font> <em>X</em> <em>Y</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>Y</em> - A list of numbers.<br/>
+<p><b>return: </b>Covariance of data in lists <em>X</em> and <em>Y</em></p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sum-d2"></a><h3><font color=#CC0000>stat:sum-d2</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sum-d2</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Sum of squared diffs <em>(x - mean(X))^2</em> in list <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_corr"></a><h3><font color=#CC0000>stat:corr</font></h3>
+<b>syntax: (<font color=#CC0000>stat:corr</font> <em>X</em> <em>Y</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>Y</em> - A list of numbers.<br/>
+<p><b>return: </b>Correlation coefficient of lists <em>X</em> and <em>Y</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_regression"></a><h3><font color=#CC0000>stat:regression</font></h3>
+<b>syntax: (<font color=#CC0000>stat:regression</font> <em>X</em> <em>Y</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>Y</em> - A list of numbers.<br/>
+ returns <em>(b0 b1)</em> coefficients of regression <em>Y = b0 + b1*X</em>.
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_fit"></a><h3><font color=#CC0000>stat:fit</font></h3>
+<b>syntax: (<font color=#CC0000>stat:fit</font> <em>X</em> <em>Y</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>Y</em> - A list of numbers.<br/>
+<p><b>return: </b>fitted line based on <tt>(stat:regression X Y)</tt>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_sum-d2xy"></a><h3><font color=#CC0000>stat:sum-d2xy</font></h3>
+<b>syntax: (<font color=#CC0000>stat:sum-d2xy</font> <em>X</em> <em>Y</em>)</b><br/>
+<p><b>return: </b>Sum of squared differences <em>(x - y)^2</em> of elements in lists <em>X</em> and <em>Y</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_moments"></a><h3><font color=#CC0000>stat:moments</font></h3>
+<b>syntax: (<font color=#CC0000>stat:moments</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Calculates all moments of list <em>X</em>.</p>
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_f-prob"></a><h3><font color=#CC0000>stat:f-prob</font></h3>
+<b>syntax: (<font color=#CC0000>stat:f-prob</font> <em>F</em> <em>df1</em> <em>df2</em>)</b><br/>
+<b>parameter: </b><em>F</em> - The variance ratio.<br/>
+<b>parameter: </b><em>df1</em> - Degrees of freedom.<br/>
+<b>parameter: </b><em>df2</em> - Degrees of freedom.<br/>
+<p><b>return: </b>Probablity of F variance ratio for <em>df1</em>, <em>df2</em> degress of freedom.</p>
+
+ <br/>
+ <center><h2>Multi variate statistics</h2></center>
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_multiple-reg"></a><h3><font color=#CC0000>stat:multiple-reg</font></h3>
+<b>syntax: (<font color=#CC0000>stat:multiple-reg</font> <em>X</em> <em>offY</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>offY</em> - Zero based offset into <em>Y</em>.<br/>
+<p><b>return: </b>Multiple regression of vars in <em>X</em> onto <em>Y</em> at <em>offsetY</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_cov-matrix"></a><h3><font color=#CC0000>stat:cov-matrix</font></h3>
+<b>syntax: (<font color=#CC0000>stat:cov-matrix</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Covariance matrix of <em>X</em> with <em>N</em> rows and <em>k</em> columns.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_corr-matrix"></a><h3><font color=#CC0000>stat:corr-matrix</font></h3>
+<b>syntax: (<font color=#CC0000>stat:corr-matrix</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>Correlation matrix of <em>X</em> with <em>N</em> rows and <em>k</em> columns.</p>
+
+ <br/>
+ <center><h2>Time series</h2></center>
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_smooth"></a><h3><font color=#CC0000>stat:smooth</font></h3>
+<b>syntax: (<font color=#CC0000>stat:smooth</font> <em>X</em> <em>alpha</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>alpha</em> - Smoothing coefficient <em>0 &lt; alpha &lt; 1</em>.<br/>
+<p><b>return: </b>Exponentially smoothed sequence in <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_lag"></a><h3><font color=#CC0000>stat:lag</font></h3>
+<b>syntax: (<font color=#CC0000>stat:lag</font> <em>X</em> <em>n</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<b>parameter: </b><em>n</em> - Lag n.<br/>
+<p><b>return: </b>A differenced list of <em>X</em> with a lag of <em>n</em>.</p>
+ If the length of list <em>X</em> is <em>l</em> then the length of the resulting
+ differenced list is <em>l - n</em>.
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_cumulate"></a><h3><font color=#CC0000>stat:cumulate</font></h3>
+<b>syntax: (<font color=#CC0000>stat:cumulate</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - A list of numbers.<br/>
+<p><b>return: </b>The cumulated list of <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_power"></a><h3><font color=#CC0000>stat:power</font></h3>
+<b>syntax: (<font color=#CC0000>stat:power</font> <em>TS</em>)</b><br/>
+<b>parameter: </b><em>TS</em> - A time series of numbers.<br/>
+<p><b>return: </b>The power spectrum of a time series</p>
+
+ <br/>
+ <center><h2>Matrix and list utilities</h2></center>
+<br/><br/>
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_matrix"></a><h3><font color=#CC0000>stat:matrix</font></h3>
+<b>syntax: (<font color=#CC0000>stat:matrix</font> <em>C1</em> .... <em>CN</em>)</b><br/>
+<b>parameter: </b><em>C1</em> - The first column list of values.<br/>
+<b>parameter: </b><em>CN</em> - The Nth column list of values.<br/>
+<p><b>return: </b>A matrix off  <em>1</em> to <em>N</em> columns <em>C</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_diagonal"></a><h3><font color=#CC0000>stat:diagonal</font></h3>
+<b>syntax: (<font color=#CC0000>stat:diagonal</font> <em>item</em> <em>N</em>)</b><br/>
+<b>parameter: </b><em>item</em> - The diagonal element.<br/>
+<p><b>return: </b>A diagonal matrix of length <em>N</em> with <em>item</em> in the diagonal.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_get-diagonal"></a><h3><font color=#CC0000>stat:get-diagonal</font></h3>
+<b>syntax: (<font color=#CC0000>stat:get-diagonal</font> <em>X</em>)</b><br/>
+<b>parameter: </b><em>X</em> - An matrix filled with numbers.<br/>
+<p><b>return: </b>A list from the diagonal elements of <em>X</em>.</p>
+
+<br/><br/><center>- &sect; -</center><br/>
+<a name="stat_mat-map"></a><h3><font color=#CC0000>stat:mat-map</font></h3>
+<b>syntax: (<font color=#CC0000>stat:mat-map</font> <em>op</em> <em>A</em> <em>B</em>)</b><br/>
+<p><b>return: </b>Matrix map, e.g. <tt>(stat:mat-map + A B)</tt>.</p>
+ Used for adding and subtracting matrices.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br/><br/>
+
+<br/><br/><center>- &part; -</center><br/>
+<center><font face='Arial' size='-2' color='#444444'>
+generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
+and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
+</font></center>
+</blockquote>
+</body>
+</html>

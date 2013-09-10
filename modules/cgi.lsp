@@ -43,7 +43,6 @@
 
 ;; @syntax (CGI:put-page <str-file-name>)
 ;; @return The page output to standard out.
-;;
 ;; Processes an HTML page by evaluating newLISP source
 ;; embedded into the HTML text between '&lt;%' and '%&gt;' tags.
 ;; The newLISP source typically contains 'print' and 'println'
@@ -81,7 +80,6 @@
 
 ;; @syntax (CGI:url-translate <str-url-format>)
 ;; @return An ASCII formatted string.
-;;
 ;; Translates all URL formatted characters to ASCII. Translates '+' into spaces 
 ;; and '%nn' hexdigits into characters. 'nn' is a 2-nibble hex number. 
 ;;
@@ -145,7 +143,6 @@
 ;; @param <str-domain> The domain where to set the cookie.
 ;; @param <str-path> The path for the domain.
 ;; @return The string sent to standard out by 'CGI:set-cookie'.
-;;
 ;; This function should be called immedeately before
 ;; closing the header with '(print "Content-type: text/html\r\n\r\n")',
 ;; which is typically the first statement in a CGI script written in
@@ -166,7 +163,6 @@
 ;; @syntax (CGI:get-cookie <str-key>)
 ;; @param <str-key> The string for the cookie variable name.
 ;; @return The string for the cookie value.
-;;
 ;; @example
 ;; (CGI:get-cookie "login")   =>  "somebody" 
 

@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -609,18 +609,17 @@ size_t utf8_wlen(char * utf8str);
 int wchar_utf8(int cvalue, char *buffer);
 
 #ifdef USE_WIN_UTF16PATH
-WCHAR * utf8_to_utf16(const char *utf8str);
-int utf16_to_utf8ptr(const WCHAR *utf16str, char * utf8str, int size);
 char * utf16_to_utf8(const WCHAR *utf16str);
+INT64 fileSize_utf16(char * pathName8);
 char *win32_realpath(const char *filepath, char *realpath);
-int rename_utf16(const char* a, const char* b);
-int stat_utf16(const char* a, struct stat* b);
-int chdir_utf16(const char* a);
-int open_utf16(const char* a, int b, int c);
-int mkdir_utf16(const char* a);
-int rmdir_utf16(const char* a);
-int unlink_utf16(const char* a);
-_WDIR * opendir_utf16(const char* a);
+int	rename_utf16(const char* oldname8, const char* newname8);
+int stat_utf16(const char* filename8, struct stat* buf);
+int chdir_utf16(const char* filename8);
+int open_utf16(const char* filename8, int flags, int mode);
+int mkdir_utf16(const char* filename8);
+int rmdir_utf16(const char* filename8);
+int unlink_utf16(const char* filename8);
+_WDIR * opendir_utf16(const char* dirname8);
 #endif
 #endif
 

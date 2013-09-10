@@ -2,7 +2,7 @@
 #
 # Demo of CGI 1.1 interface 
 #
-# version 1.1
+# version 1.2 changed for newLISP v.10.0
 #
 # get form data from CGI STDIN parse and
 # write back to the client browser
@@ -30,7 +30,7 @@
 #
 # print environment variables
 (println "<h3>Environment Variables</h3>")
-(dolist (e (env)) (print e "<br>"))
+(dolist (e (env)) (print (e 0) "=" (e 1) "<br>"))
 (println "<br>")
 (println "CGI by newLISP v." (sys-info -2))
 (exit)

@@ -196,7 +196,16 @@
 		(= new-ctx 'First First)
 		(setq new-ctx (new CTX 'Second))
 		(= new-ctx 'Second Second)
-		
+
+		; loops
+		(not (set 'lsy '()))
+		(setf (last (for (i 0 5) (push i lst))) 100)
+		(= lst '(5 4 3 2 1 100))
+		(setq str "")
+		(setf (first (dotimes (i 5) (push "X" str))) "Y")
+		(= str "YXXXX")
+		(not (set 'lst '()))
+		(= (dostring (c str) (push c lst)) '(88 88 88 88 89))	
 		)
 )
 

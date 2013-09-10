@@ -13,9 +13,9 @@
 (if (not socket) (println (net-error)))
 (while (not (net-error))
 	(print "enter something -> ")
-	(net-send-to "127.0.0.1" 10001 (read-line) socket)
+	(net-send-to  "127.0.0.1" 10001 (read-line) socket)
 	(net-receive socket buff 255)
-	(println "=>" buff))
+	(println "=> " buff))
 
 ; eof
 

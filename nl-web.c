@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -473,7 +473,7 @@ memset(buff, 0, BUFFSIZE);
 if(listFlag || headRequest)
     headerCell = stuffString("");
 
-/* printf("retrieving headers\n"); */
+/* printf("%s", "retrieving headers\n"); */
 
 /* Retrieve header */
 while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
@@ -883,7 +883,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 #define STATUS_HEADER "HTTP/1.0 200 OK\r\n"
-#define SERVER_SOFTWARE "newLISP/10.0.0"
+#define SERVER_SOFTWARE "newLISP/10.0.1"
 
 int sendHTTPmessage(char * fmt, char * str);
 void handleHTTPcgi(char * command, char * query);
@@ -899,8 +899,8 @@ if(strncmp(content, "HTTP/", 5))
 	varPrintf(OUT_CONSOLE, STATUS_HEADER);
 	varPrintf(OUT_CONSOLE, "Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
 #ifdef DEBUGHTTP
-	printf("# Header sent:\r\n");
-	printf(STATUS_HEADER);
+	puts("# Header sent:");
+	puts(STATUS_HEADER);
 	printf("Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
 #endif
 	}
@@ -958,7 +958,8 @@ char * fileMode = "w";
 char * mediaType;
 CELL * result = NULL;
 
-chdir(startupDir);
+if(chdir(startupDir) < 0)
+	fatalError(ERR_IO_ERROR, 0, 0);
 query = sptr = request;
 
 setenv("DOCUMENT_ROOT", startupDir, 1);
@@ -987,7 +988,7 @@ if(*sptr == '/')
 	{
 	*sptr = 0;
 	sptr++;
-	chdir(request);
+	if(chdir(request) < 0) fatalError(ERR_IO_ERROR, 0, 0);
 	request = sptr;
 	}
 
@@ -1092,7 +1093,7 @@ switch(type)
 		break;
 	}
 
-chdir(startupDir);
+if(chdir(startupDir) < 0) fatalError(ERR_IO_ERROR, 0, 0);
 if(result != NULL) deleteList(result);
 return(TRUE);
 }
@@ -1261,7 +1262,9 @@ if((handle = popen(command, "w")) == NULL)
 	return;
 	}
 
-fwrite(query, 1, strlen(query), handle);
+if((size = fwrite(query, 1, strlen(query), handle)) < 0)
+	fatalError(ERR_IO_ERROR, 0, 0);
+
 fflush(handle);
 pclose(handle);
 

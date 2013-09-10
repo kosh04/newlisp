@@ -1,6 +1,6 @@
 /* nl-math.c
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
 
 #include "newlisp.h"
 #include "protos.h"
+
+/* turn on for extra debugging output */
+/* #define BAYES_DEBUG */
 
 #define OP_ADD 1
 #define OP_SUBTRACT 2
@@ -2268,10 +2271,9 @@ return(copyCell((CELL *)totalPtr->contents));
    categories B. All token in L should occur in D, for tokens which are not in D
    equal probability is asssumed over categories.
    
-   Token can be strings or symbols. If token are strings or symbols they are 
-   prepended with an underscore when looked up in D. When frequencies in D wehere 
-   learned using bayes-train, the underscore was automatically prepended during 
-   learning.
+   Token can be strings or symbols. If token are strings, they are prepended with 
+   an underscore when looked up in D. When frequencies in D were learned using 
+   bayes-train, the underscore was automatically prepended during learning.
 
    for 2 categories:
    
@@ -2279,28 +2281,27 @@ return(copyCell((CELL *)totalPtr->contents));
    p(A|tkn) = ---------------------------------
               p(tkn|A) * p(A) + p(tkn|B) * p(B)
               
-   p(A|tkn) is the posterior for A which gets prior p(A) for the next token
-   the priors p(A) and p(B) = p(not A) = 1 are substituted after every token
+   p(A|tkn) is the posterior for A which gets prior p(A) for the next token the 
+   priors: p(A) and p(B) = 1 are substituted after every token. p(A) = p(not B).
 
    for N categories:
    
                     p(tkn|Mc) * p(Mc)
-   p(Mc|tkn = -------------------------------    ; Mc is one of N categories
+   p(Mc|tkn) = -------------------------------    ; Mc is one of N categories
                 sum-i-N( p(tkn|Mi) * p(Mi) ) 
               
    
-   When in chain Bayes mode p(Mc|tkn) is the posterior for Mc and replaces
-   the prior p(Mc) for the next token. In chain Bayes mode tokens with 0 frequency 
+   When in chain Bayes mode p(Mc|tkn) is the posterior for Mc and replaces the 
+   prior p(Mc) for the next token. In chain Bayes mode tokens with 0 frequency 
    in one category will effectiviely put the probability of this category to 0. 
-   This causes queries resulting in 0 probabilities for all categories to yield NaN values. 
+   This causes queries resulting in 0 probabilities for all categories to yield 
+   NaN values. 
    
-   The pure chain Bayes mode is the more sensitive one for changes, when a token count of 0
-   occurs the resulting probability goes to a complete 0 in this category, while other
-   categories gain higher probabilities. In the Fisher's  Chi2 mode the the zero-category is 
-   still assigned a probability resulting from other tokens with non-zero counts.
-   
-   Use same or simlar total in training categries when using Fisher Chi2.
-   
+   The pure chain Bayes mode is the more sensitive one for changes, when a token 
+   count of 0 occurs the resulting probability goes to a complete 0 in this 
+   category, while other categories gain higher probabilities. In the Fisher's  
+   Chi2 mode the the zero-category is still assigned a probability resulting from 
+   other tokens with non-zero counts.
 */
 
 CELL * p_bayesQuery(CELL * params)
@@ -2343,8 +2344,10 @@ total = (CELL *)totPtr->contents;
 if(total->type != CELL_EXPRESSION)
     return(errorProcExt(ERR_LIST_EXPECTED, (CELL *)totPtr->contents));
 
-/* get number of categories maxIdx and total N for when
-   no probabilities are specified but frequencies/counts  */
+/* 
+   Get number of categories maxIdx and total N in all categories.
+   If no probabilities are specified get frequencies/counts  
+*/
 total = (CELL *)total->contents;
 while(total != nilCell)
     {
@@ -2360,16 +2363,20 @@ while(total != nilCell)
     total = total->next;
     maxIdx++;
     }
- 
+
+/* allocate memory for priors and posts for each category */ 
 priorP = alloca(maxIdx * sizeof(double));
 postP = alloca(maxIdx * sizeof(double));
 p_tkn_and_cat = alloca(maxIdx * sizeof(double));
+
+/* allocate memory fo Chi-2 probs for each category */
 if(!chainBayes)
     {
     Pchi2 = alloca(maxIdx * sizeof(double));
     Qchi2 = alloca(maxIdx * sizeof(double));
     }
 
+/* calculate the prior prob for each category */
 total = (CELL *)((CELL *)totPtr->contents)->contents;
 for(idx = 0; idx < maxIdx; idx++) 
     {
@@ -2389,9 +2396,12 @@ for(idx = 0; idx < maxIdx; idx++)
 #endif
 		}
 
-/*    printf("priorP[%d]=%f\n", idx, priorP[idx]);  */
-                                    
+#ifdef BAYES_DEBUG
+    printf("priorP[%d]=%f probability of category %d\n", idx, priorP[idx], idx);  
+#endif                                    
+
     total = total->next;
+    /* initialize Fisher's Chi-2 probs */
     if(!chainBayes) Pchi2[idx] = Qchi2[idx] = 0.0;
     }
 
@@ -2399,6 +2409,7 @@ token = alloca(MAX_STRING + 1);
 tkn = tokens;
 while(tkn != nilCell) tkn = tkn->next, nTkn++;
 
+/* for each token  calculate p(tkn|M) in each category M */
 tkn = tokens;
 for(i = 0; i < nTkn; i++)
     {
@@ -2414,14 +2425,20 @@ for(i = 0; i < nTkn; i++)
         break;
       }
 
-    if((sPtr = lookupSymbol((char *)token, ctx)) == NULL) continue;
-    
+    if((sPtr = lookupSymbol((char *)token, ctx)) == NULL) 
+        {
+		/* skip the token if it doesn't occur in data */
+        tkn = tkn->next;
+        continue;
+        }
+
     count = (CELL *)sPtr->contents;
     if(count->type != CELL_EXPRESSION) continue;
   
     count = (CELL *)(CELL *)count->contents;
     total = (CELL *)((CELL *)totPtr->contents)->contents;
-      
+     
+    /* in each category M[idx] */ 
     p_tkn_and_all_cat = 0.0;
     for(idx = 0; idx < maxIdx; idx++)
         {
@@ -2433,17 +2450,20 @@ for(i = 0; i < nTkn; i++)
 #endif	
 		else /*   p(M) * p(tkn|M) */         
 			{
-			getInteger(count, (UINT *)&countNum);
-			getInteger(total, (UINT *)&totalNum);
+			/* count of token in category idx */
+			getInteger(count, (UINT *)&countNum); 
+            /* total of all tokens in category idx */
+			getInteger(total, (UINT *)&totalNum); 
           	p_tkn_and_cat[idx] = priorP[idx] * countNum / totalNum;
 			}
-        
+       	
+		/* accumulate probability of token in all cataegories */
         p_tkn_and_all_cat += p_tkn_and_cat[idx];
-/*
-        printf("token[%d] p(tkn(M) * p(tkn|M)[%d]=%lf prior[%d]=%lf\n", i, idx, 
-            (double)p_tkn_and_cat[idx], idx, priorP[idx]);
-*/
 
+#ifdef BAYES_DEBUG
+        printf("token[%d] p(M[%d]) * p(tkn|M[%d])=%lf * %ld / %ld = %lf\n", i, idx, idx, 
+            priorP[idx], countNum, totalNum, (double)p_tkn_and_cat[idx]);
+#endif
         count = count->next;
         total = total->next;
         }  
@@ -2456,6 +2476,7 @@ for(i = 0; i < nTkn; i++)
             
             priorP[idx] = 1.0 / maxIdx; /* will cancel out */
             
+			/* handle probability limits of 0 and using very small value */
             if(postP[idx] == 0.0)
                 Qchi2[idx] += log(3e-308) * -2.0;
             else
@@ -2471,10 +2492,10 @@ for(i = 0; i < nTkn; i++)
             postP[idx] = p_tkn_and_cat[idx] / p_tkn_and_all_cat;
             priorP[idx] = postP[idx];
             }
-/*
-        printf("p_tkn_and_cat[%d] / p_tkn_and_all_cat = %lf / %lf = %lf\n", 
-          idx, p_tkn_and_cat[idx], p_tkn_and_all_cat, postP[idx]);
-*/
+#ifdef BAYES_DEBUG
+        printf("postP[%d] = p_tkn_and_cat[%d] / p_tkn_and_all_cat = %lf / %lf = %lf\n", 
+          idx, idx, p_tkn_and_cat[idx], p_tkn_and_all_cat, postP[idx]);
+#endif
         }
         
     tkn = tkn->next;
@@ -2493,7 +2514,7 @@ if(!chainBayes)
     
 for(idx = 0; idx < maxIdx; idx++)
     {
-    /* normalize probs from fisher's Chi2 */
+    /* normalize probs from Fisher's Chi-2 */
     if(!chainBayes) 
         postP[idx] /= sumS;
 

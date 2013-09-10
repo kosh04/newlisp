@@ -9,7 +9,6 @@
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/xmlrpc-client.lsp")
 ;; </pre>
-;;
 ;; The script 'xmlrpc.cgi' together with a webserver or the script
 ;; 'xmlrpc-server' for a freestanding XML-RPC server can be used for
 ;; testing. Both scripts implement a method 'newLISP.evalString'. This

@@ -1,21 +1,4 @@
-#!/usr/local/bin/newlisp
-
-# newlispdoc - generates html documentation from newLISP source files
-
-# Copyright (C) 1992-2007 Lutz Mueller <lutz@nuevatec.com>
- 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2, 1991,
-# as published by the Free Software Foundation.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
- 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#!/usr/bin/newlisp
 
 ;; @module newlispdoc
 ;; @description Generates documentation and hightligted source from newLISP source files.
@@ -30,8 +13,12 @@
 ;; @version 2.1 - generate more compliant HTML 4.01 for doc and syntax highlighting
 ;;                but special arithmetik op characters in functionnames still cause
 ;;                non-compliant HTML (this occurs only in modules/gmp.lsp)
+;; @version 2.2 - fix issue with paragraph spacing and module text font from 2.1
+;; @version 2.3 - handle scientific notation with e
+;; @version 2.4 - improved keyword regex for syntax highlighting
+;; @version 2.5 - scientific notation with E
 ;;
-;; @author Lutz Mueller, 2006-2008
+;; @author Lutz Mueller, 2006-2009
 ;; @location http://newlisp.org
 ;;
 ;; <h3>Usage:</h3>
@@ -109,7 +96,7 @@
 (set 'prolog3 {<p><a href="index.html">Module index</a></p>})
 
 (set 'epilog [text]
-<p>&nbsp;</p><center>- &part; -</center><br/>
+<br/><br/><center>- &part; -</center><br/>
 <center><font face='Arial' size='-2' color='#444444'>
 generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
 and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
@@ -140,7 +127,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 (replace "+" keyword-regex "\\+")
 (replace "*" keyword-regex "\\*")
 (replace "||" keyword-regex "|\\|")
-(set 'keyword-regex (append {(\s+|\(|\))(} keyword-regex {)(\s+|\(|\))}))
+(set 'keyword-regex (append {(\G|\s+|\(|\))(} keyword-regex {)(\s+|\(|\))}))
 
 (define (clean-comment str)
 	(replace {<font color='#......'>} str "" 0)
@@ -196,8 +183,10 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 		(format {%s<font color='%s'>%s</font>%s} $1 keyword-color $2 $3) 0)
 
 	; color numbers
-	(replace {(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?\d+\.\d+|[+-]?\d+|\.\d+)} src-file 
-         (format {%s<font color='%s'>%s</font>} $1 number-color $2) 0)
+	(replace 
+    ;   <-- lead --><---- hex ---->|<- oct ->|<------- decimal ----- and ----- scientific -->
+		{(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?0\d+|([+-]?(0|[1-9]\d*)(\.\d*)?|\.\d+)([eE][+-]?\d+)?)} src-file 
+			(format {%s<font color='%s'>%s</font>} $1 number-color $2) 0)
 
 	; color parens
 	(replace "(" src-file (format {<font color='%s'>(</font>} paren-color))
@@ -353,17 +342,17 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 (define (format-example text)
 	(replace "<" text "&lt;")
 	(replace ">" text "&gt;")
-	(string "<p>&nbsp;</p><b>example:</b><blockquote><pre>" (replace ";;" text "") "</pre></blockquote>\n")
+	(string "<b>example:</b><blockquote><pre>" (replace ";;" text "") "</pre></blockquote>\n")
 )
 
 ; write the module tag link on the index page
 ; put source link on doc page if -s flag
 (define (format-module text desc filename , module)
-	(set 'module (string "<br/><br/>Module:&nbsp;" text))
+	(set 'module (string "<br/><br/><h2>Module:&nbsp;" text "</h2>"))
 	(write-buffer indexpage (string {<a href="} filename {.html">} module "</a>\n" ))
 	(write-buffer indexpage (string "<p>" desc "</p>\n"))
 	(if source-link
-		(string {<h2><a href="} filename {.src.html">source</a></h2>} module)
+		(string {<a href="} filename {.src.html">source</a>} module)
 		(string "<br/>" module))
 )
 
@@ -387,7 +376,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 				(set 'old-syntax $1)
 				(set 'tag (format-func-link $1 file-name))
 				(set 'tag (string {<a name="} tag {"></a>}))
-				(string "<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>\n" tag
+				(string "<br/><br/><center>- &sect; -</center><br/>\n" tag
 						"<h3><font color=#CC0000>" old-syntax "</font></h3>\n"))
 		"")
 		"<b>syntax: " (trim text) "</b><br/>\n")
@@ -456,7 +445,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 			(replace ";; *@syntax (.*?)\n" page (format-syntax $1 outfile) 0)
 			(replace ";; *@param (.*?) (.*?)\n" page (format-parameter $1 $2) 0)
 			(replace ";; *@return (.*?)\n" page (format-return $1)  0)
-			(replace ";;\\s*\n" page "<p>&nbsp;</p>\n" 0)
+			(replace ";;\\s*\n" page "<br/><br/>\n" 0)
 			(replace ";;(.*\n)" page (format-text $1) 0)
 			(replace {@link ([^ ]*?) ([^ ]*?)\s} page (string {<a href="} $1 {">} $2 {</a> }) 0)
 			(set 'page (unprotect-html page))

@@ -2,7 +2,7 @@
 
     directory and file functions working on UTF-16 file and path names
 
-    Copyright (C) 2007,2008 Michael Sabin
+    Copyright (C) 2007,2008,2009 Michael Sabin
 
     This software is provided 'as-is', without any express or implied
     warranty.  In no event will the authors be held liable for any damages
@@ -72,8 +72,8 @@ WCHAR * utf8_to_utf16(const char *utf8str)
 
 /*
 utf16_to_utf8ptr
-Used in win32_realpath.
-Generally wrapped by utf16_to_utf8.
+Used in win32_realpath,
+but otherwise wrapped by utf16_to_utf8.
 */
 int utf16_to_utf8ptr(const WCHAR *utf16str, char * utf8str, int size)
 {
@@ -175,124 +175,140 @@ char *win32_realpath(const char *filepath, char *realpath)
 
 
 /*
-fileSizeW
+fileSize_utf16
 Same behavior as fileSize() in nl-filesys.c
-but accepts a WCHAR path.
-Primarily for use in p_fileInfo()
+but accepts a UTF-8 string which is converted to UTF-16
+and the wide-character open function is used.
 */
-INT64 fileSizeW(WCHAR * pathName)
+INT64 fileSize_utf16(char * pathName8)
 {
-int handle;
-INT64 size;
+	int handle;
+	INT64 size = 0;
 
-handle = _wopen(pathName,O_RDONLY | O_BINARY, 0);
-size = lseek(handle, 0, SEEK_END);
-close(handle);
-if(size == -1) size = 0;
-return(size);
+	WCHAR * pathName16 = utf8_to_utf16(pathName8);
+	if (pathName16)
+	{
+		handle = _wopen(pathName16, O_RDONLY | O_BINARY, 0);
+		size = lseek(handle, 0, SEEK_END);
+		close(handle);
+		if(size == -1) size = 0;
+		free(pathName16);
+	}
+	return(size);
 }
 
 
 /* ---------------------------------------------------------------------------- 
 Wrappers for wide-character functions.
-Same interface as the standard functions.
+Same interface as the standard functions, but accepts UTF-8 strings.
 Adds the following functionality:
 * first converts the UTF-8 string to UTF-16
 * if there a conversion error, return fail
 * calls the wide-character function
+Note that errno is not set on UTF conversion failures.
 ---------------------------------------------------------------------------- */
 
-int	rename_utf16(const char* a, const char* b)
+int	rename_utf16(const char* oldname8, const char* newname8)
 {
-	int i;
-	WCHAR * utf16a;
-	WCHAR * utf16b;
+	int i = -1;
+	WCHAR * oldname16;
+	WCHAR * newname16;
 	
-	utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1); 
-	utf16b = utf8_to_utf16(b);
-	if (utf16b == NULL) return (-1); 
-	
-	i = _wrename(utf16a, utf16b);
-	free(utf16a);
-	free(utf16b);
+	oldname16 = utf8_to_utf16(oldname8);
+	if (oldname16)
+	{
+		newname16 = utf8_to_utf16(newname8);
+		if (newname16)
+		{
+			i = _wrename(oldname16, newname16);
+			free(oldname16);
+		}
+		free(newname16);
+	}
 	return i;
 }
 
-int stat_utf16(const char* a, struct stat* b)
+int stat_utf16(const char* filename8, struct stat* buf)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1); 
-	
-	i = _wstat(utf16a, (struct _stat*)b);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wstat(filename16, (struct _stat*)buf);
+		free(filename16);
+	}
 	return i;
 }
 
-int chdir_utf16(const char* a)
+int chdir_utf16(const char* filename8)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1); 
-	
-	i = _wchdir(utf16a);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wchdir(filename16);
+		free(filename16);
+	}
 	return i;
 }
 
-int open_utf16(const char* a, int b, int c)
+int open_utf16(const char* filename8, int flags, int mode)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1);
-	
-	i = _wopen(utf16a, b, c);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wopen(filename16, flags, mode);
+		free(filename16);
+	}
 	return i;
 }
 
-int mkdir_utf16(const char* a)
+int mkdir_utf16(const char* filename8)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1);
-	
-	i = _wmkdir(utf16a);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wmkdir(filename16);
+		free(filename16);
+	}
 	return i;
 }
 
-int rmdir_utf16(const char* a)
+int rmdir_utf16(const char* filename8)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1);
-	
-	i = _wrmdir(utf16a);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wrmdir(filename16);
+		free(filename16);
+	}
 	return i;
 }
 
-int unlink_utf16(const char* a)
+int unlink_utf16(const char* filename8)
 {
-	int i;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (-1);
-	
-	i = _wunlink(utf16a);
-	free(utf16a);
+	int i = -1;
+	WCHAR * filename16 = utf8_to_utf16(filename8);
+	if (filename16)
+	{
+		i = _wunlink(filename16);
+		free(filename16);
+	}
 	return i;
 }
 
-_WDIR * opendir_utf16(const char* a)
+_WDIR * opendir_utf16(const char* dirname8)
 {
-	_WDIR * dir;
-	WCHAR * utf16a = utf8_to_utf16(a);
-	if (utf16a == NULL) return (NULL);
-	
-	dir = _wopendir(utf16a);
-	free(utf16a);
+	_WDIR * dir = NULL;
+	WCHAR * dirname16 = utf8_to_utf16(dirname8);
+	if (dirname16)
+	{
+		dir = _wopendir(dirname16);
+		free(dirname16);
+	}
 	return dir;
 }
 

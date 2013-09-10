@@ -143,7 +143,6 @@
 ;; @param <str-password> The password for authentication.
 ;; @param <str-db> The name of the database to connect to.
 ;; @return 'true' for success or 'nil' for failure.
-;;
 ;; Connects to a database on server and authenticates a user ID.
 ;; '(MySQL:init)' must have been called previously.
 
@@ -152,9 +151,7 @@
 
 ;; @syntax (MySQL:query <str-sql>)
 ;; @param <str-sql> A valid SQL query string.
-;; @return For 'insert' queries rerturns the inserted ID else 'true' 
-;; for success or 'nil' for failure.
-;;
+;; @return For 'insert' queries rerturns the inserted ID else 'true' for success or 'nil' for failure.
 ;; Sends a SQL query string to the database server for evaluation.
 
 (define (MySQL:query sql)
@@ -203,7 +200,6 @@
 
 ;; @syntax (MySQL:fetch-row)
 ;; @return A list of field elements.
-;;
 ;; Fetches a row from a previous SQL 'MySQL:query'  'select' statement.
 ;; Subsequent calls fetch row by row from the result table until the
 ;; end of the table is reached.
@@ -224,7 +220,6 @@
 
 ;; @syntax (MySQL:fetch-all)
 ;; @return All rows/fields from the last query.
-;;
 ;; The whole result set from the query is returned at once as a list of row lists.
 
 (define (fetch-all , all)
@@ -234,7 +229,6 @@
 
 ;; @syntax (MySQL:databases)
 ;; @return A list of databases.
-;;
 ;; Performs a 'show databases;' query.
 
 (define (databases)
@@ -243,7 +237,6 @@
 
 ;; @syntax (MySQL:table)
 ;; @return A list of tables in the database.
-;;
 ;; Performs a 'show tables;' query.
 
 (define (tables)
@@ -253,7 +246,6 @@
 ;; @syntax (MySQL:fields <str-table>)
 ;; @param <str-table> The name of the table.
 ;; @return A list of field description lists.
-;;
 ;; For each field name in the table a list of specifications
 ;; for that field is returned. The list starts with the name
 ;; for the field followed by the type size/precision and
@@ -266,7 +258,6 @@
 ;; @syntax (MySQL:data-seek <num-offset>)
 ;; @param <num-offset> The <tt>0</tt> based offset to position inside the data set.
 ;; @return Always 'true'. 
-;; 
 ;; Positions in the result set at a zero based offset
 ;; for a subsequent 'MySQL:fetch-row' call. If the offset
 ;; is out of the allowed range for the result set a subsequent
@@ -303,7 +294,6 @@
 
 ;; @syntax (MySQL:escape <str-sql>)
 ;; @return escaped string
-;;
 ;; This function will escape special characters in <str-sql>, so that it 
 ;; is safe to place it in a MySQL query.
 (define (escape value , safe-value) 
@@ -313,7 +303,6 @@
 
 ;; @syntax (MySQL:close-db)
 ;; @return Always 'true'.
-;;
 ;; Closes database access. For new database acess, both 'MySQL:init' and 
 ;; 'MySQL:connect' functions have to be called.
 

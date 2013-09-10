@@ -9696,4 +9696,45 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
 10.0 Release December 8th, 2008
 
+10.0.1
+     Eliminated warning messages for new gcc version 4.3.2 compile.
+
+     Fixed stat:plot and stat:plotXY routines in stat.lsp for gnupot. Tested 
+     on Gnuplot version 4.2.4 on Mac OS X and Win32. The routines broke in 9.3 
+     when process required the full pathnam for the process launched.
+
+     Documentation for syntax pattern for stat:plot was wrong. The stat.lsp
+     module now looks for the gnuplot executable and gives a message if gnuplot
+     cannot be found. The module also looks for $HOME/tmp or c:/temp on Windows.
+
+     Additional offset parameter in 'read-expr' and 'eval-string'
+
+     Allow default functors to contain FOOP objects. This allows writing destructive 
+     FOOP procedures, e.g.: 
+        (new Class 'Foo)
+        (define (Foo:modify obj val) (setf (obj 1) val))
+        (define (Foo:show obj) (default obj))
+        (set 'MyFoo:MyFoo (Foo 123)) =>  (Foo 123)
+        (:modify MyFoo 999) => 999
+        (:show MyFoo) => (Foo 999)
+
+     All looping functions with locals variables: for, dotimes, dolist, doargs
+     and dotree now can return references too. Now all built-in functions
+     except: let, letn, letx and local return references when possible. 
+
+     Fixed potential memory leaks in the Win32 utf16 functions.
+
+     'bayes-query' produced wrong results for non-existing tokens when using 
+     Fisher's Chi2 method 
+
+     'last' on strings as reference in non-UTF8 versions always referenced first.
+
+     The link.lsp feature was broken in 9.9.95
+
+     'callback' expanded to 8 parameters and 16 callbacks
+
+     changes in examples/upload.cgi demo
+
+     redone documentation and examples for UDP communications in Code Patterns
+     and reference documentation
 

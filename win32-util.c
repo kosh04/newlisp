@@ -1,7 +1,7 @@
 /* 
    win32-util.c, utitity routines for native win32 port of newLISP 
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,46 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-//
-// for function: gettimeofday() 
-//
-// Copyright (C) 1992-2002 Steve Adams
-// 
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2, 1991,
-// as published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
 */
-
-/*
-//
-// Copyright (c) 1992-2007 Lutz Mueller 
-// 
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2, 1991,
-// as published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-*/
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,38 +25,14 @@
 #include <windows.h>
 #include <io.h>
 
-/* ------------------------  gettimeofday() ------------------------ */
-/* not needed with MinGW gcc 3.4.5
-
-struct timezone {
-       int     tz_minuteswest;
-       int     tz_dsttime;
-};
-
-int gettimeofday( struct timeval *tp, struct timezone *tzp )
-{
-  SYSTEMTIME lpt;
-  TIME_ZONE_INFORMATION tzi;
-  int result = 0;
-
-  time_t        Now;
-  Now         = time( NULL );
-  tp->tv_sec  = Now;
-
-  GetSystemTime(&lpt);
-  tp->tv_usec = lpt.wMilliseconds * 1000;
-
-  if(tzp != NULL)
-  {
-    result = GetTimeZoneInformation(&tzi);
-    tzp->tz_minuteswest = tzi.Bias;
-    tzp->tz_dsttime = tzi.DaylightBias;
-  }
-
-  return(result);
-}
+/*
+typedef struct _PROCESS_INFORMATION { // pi  
+    HANDLE hProcess; 
+    HANDLE hThread; 
+    DWORD dwProcessId; 
+    DWORD dwThreadId; 
+} PROCESS_INFORMATION; 
 */
-
 
 /* ---------------------------- pipes -------------------------------------- */
 
@@ -131,22 +68,8 @@ else
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
 	return(0); 
 
-/* let this be handled by parent process
-CloseHandle((HANDLE)fin);
-CloseHandle((HANDLE)fout);
-*/
-
 return((UINT)process.hProcess);
 }
-
-/*
-typedef struct _PROCESS_INFORMATION { // pi  
-    HANDLE hProcess; 
-    HANDLE hThread; 
-    DWORD dwProcessId; 
-    DWORD dwThreadId; 
-} PROCESS_INFORMATION; 
-*/
 
 
 int winPipe(UINT * inpipe, UINT * outpipe)

@@ -5,6 +5,7 @@
 
 ; version 1.26 fixed old tab-switching bug when closing a tab
 ; version 1.27 took out writing debug edit.txt to Application folder
+; version 1.28 decrementing font size exited editor (missing dec conversion for 10.0)
 
 (set-locale "C")
 
@@ -1077,7 +1078,7 @@
 ;; view menu fonts bigger/smaller handlers
 
 (define (viewfontsmaller-handler)
-	(dec 'currentFontSize)
+	(dec currentFontSize)
 	(gs:set-text 'FontSizeLabel (string currentFontSize))
 	(gs:set-font currentEdit currentFontName currentFontSize "plain"))
 

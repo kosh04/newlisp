@@ -1,6 +1,6 @@
 /* nl-sock.c
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -403,6 +403,10 @@ if(prot != NULL) if(*prot == 'M' || *prot == 'B')
         }
     }
 
+/* 10.0.1 */
+if(type == SOCK_DGRAM && *remoteHostName == 0)
+	return(sock);
+
 if((pHe = gethostbyname2(remoteHostName, ADDR_TYPE)) == NULL)
     {
     errorIdx = ERR_INET_HOST_UNKNOWN;
@@ -494,7 +498,9 @@ if(params != nilCell)
 #ifdef IPV6
 	inet_ntop(AF_INET6, &defaultInAddr, IPaddress, 40); 
 #else
-	snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); 
+	/* snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); */
+	strncpy(IPaddress, inet_ntoa(defaultInAddr), 16);
+	
 #endif
 return(stuffString(IPaddress));
 }
@@ -574,7 +580,8 @@ struct sockaddr_in address_sin;
 
 if(getSocketFamily(sock) == AF_UNIX)
 	{
-	snprintf(IPaddress, 6, "local");
+	/* snprintf(IPaddress, 6, "local"); */
+	strncpy(IPaddress, "local", 5);
 	return(0);
 	}
 
@@ -600,7 +607,8 @@ else
 inet_ntop(AF_INET6, &address_sin.sin6_addr, IPaddress, 40); 
 return(ntohs(address_sin.sin6_port));
 #else
-snprintf(IPaddress, 16, inet_ntoa(address_sin.sin_addr)); 
+/* snprintf(IPaddress, 16, inet_ntoa(address_sin.sin_addr)); */
+strncpy(IPaddress, inet_ntoa(address_sin.sin_addr), 16);
 return(ntohs(address_sin.sin_port));
 #endif
 }
@@ -698,7 +706,8 @@ memcpy((char *)&(address.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
 inet_ntop(AF_INET6, &address.sin6_addr, IPaddress, 40); 
 #else
 memcpy((char *)&(address.sin_addr), pHe->h_addr_list[0], pHe->h_length);
-snprintf(IPaddress, 16, inet_ntoa(address.sin_addr));
+/* snprintf(IPaddress, 16, inet_ntoa(address.sin_addr)); */
+strncpy(IPaddress, inet_ntoa(address.sin_addr), 16);
 #endif
 
 errorIdx = 0;
@@ -842,7 +851,8 @@ if(bytesReceived == SOCKET_ERROR)
 inet_ntop(AF_INET6, &remote_sin.sin6_addr, IPaddress, 40); 
 portNo = ntohs(remote_sin.sin6_port);
 #else
-snprintf(IPaddress, 16, inet_ntoa(remote_sin.sin_addr)); 
+/* snprintf(IPaddress, 16, inet_ntoa(remote_sin.sin_addr));  */
+strncpy(IPaddress, inet_ntoa(remote_sin.sin_addr), 16); 
 portNo = ntohs(remote_sin.sin_port);
 #endif
 
@@ -954,7 +964,7 @@ struct sockaddr_in6 dest_sin;
 #else
 struct sockaddr_in dest_sin;
 #endif
-struct hostent * pHe;
+struct hostent * pHe = NULL;
 size_t size;
 char * buffer;
 ssize_t bytesSent;
@@ -966,8 +976,11 @@ params = getString(params, &remoteHost);
 params = getInteger(params, &remotePort);
 params = getStringSize(params, &buffer, &size, TRUE);
 
-if((pHe = gethostbyname2(remoteHost, ADDR_TYPE)) == NULL)
+if(*remoteHost != 0) /* 10.0.1 */
+	{
+	if((pHe = gethostbyname2(remoteHost, ADDR_TYPE)) == NULL)
         return(netError(ERR_INET_HOST_UNKNOWN));
+	}
 
 if(type == SEND_TO_UDP) /* for 'net-send-udp' */
 	{
@@ -982,19 +995,27 @@ else /* SEND_TO_SOCK , socket may or may not be UDP, for 'net-send-to' */
     params = getInteger(params, &sock);
     }
 
+if(pHe != NULL)
+	{
 #ifdef IPV6
-memcpy((char *)&(dest_sin.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
-dest_sin.sin6_port = htons((u_short)remotePort);
-dest_sin.sin6_family = AF_INET6;
+	memcpy((char *)&(dest_sin.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
+	dest_sin.sin6_port = htons((u_short)remotePort);
+	dest_sin.sin6_family = AF_INET6;
 #else
-memcpy((char *)&(dest_sin.sin_addr), pHe->h_addr_list[0], pHe->h_length);
-dest_sin.sin_port = htons((u_short)remotePort);
-dest_sin.sin_family = AF_INET;
-memset(&(dest_sin.sin_zero), '\0', 8);
+	memcpy((char *)&(dest_sin.sin_addr), pHe->h_addr_list[0], pHe->h_length);
+	dest_sin.sin_port = htons((u_short)remotePort);
+	dest_sin.sin_family = AF_INET;
+	memset(&(dest_sin.sin_zero), '\0', 8);
 #endif
+	}
 
-bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET,
-        (struct sockaddr *)&dest_sin, sizeof(dest_sin));
+/* for socket opened with ip-address in (net-connect host port "udp") 
+   in this case issue (net-send-to "" port message socket) 10.0.1 */
+if(*remoteHost == 0) 
+	bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET, NULL, 0);
+else
+	bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET,
+		(struct sockaddr *)&dest_sin, sizeof(dest_sin));
 
 if(type == SEND_TO_UDP) close((int)sock);
 
@@ -1357,8 +1378,9 @@ handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
           S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH); /* rw-rw-rw */
 #endif
 
-write(handle, text, strlen(text));
-if(newLine) write(handle, &LINE_FEED, strlen(LINE_FEED));
+if(write(handle, text, strlen(text)) < 0) return;
+if(newLine) 
+	if(write(handle, &LINE_FEED, strlen(LINE_FEED)) < 0) return;
 close(handle);
 }
 

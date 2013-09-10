@@ -6,13 +6,13 @@
 				" the Win32 UTF8 enabled versions.")
 )
 
-(setq Yuki "\230\162\182\230\181\166\231\148\177\232\168\152")
-(setq InvalidUTF8 "\xC0\xC1")
+(set 'Yuki "\230\162\182\230\181\166\231\148\177\232\168\152")
+(set 'InvalidUTF8 "\xC0\xC1")
 
-(setq UnicodeStr Yuki)
+(set 'UnicodeStr Yuki)
 
-(setq h 1) ; pre allocate mem so changes should be minimal
-(setq sRand 
+(set 'h 1) ; pre allocate mem so changes should be minimal
+(set 'sRand 
 	(join (map char (map (curry + 32)
 		(rand 
 			(- 127 32)
@@ -20,12 +20,12 @@
 		)
 	)
 )))
-(setq buff sRand)
+(set 'buff sRand)
 
 
 (define-macro (assert any)
 	(local (result)
-		(unless (setq result (eval any))
+		(if (not (set 'result (eval any)))
 			(throw-error (string "Expression failed! " any))
 		)
 		result
@@ -52,6 +52,8 @@
 (println (time (assert (file? UnicodeStr)) 100000))
 (println (time (begin
 	(assert (directory))
+	(assert (directory "." UnicodeStr))
+	(assert (= 1 (length (directory "." UnicodeStr))))
 	(assert (real-path UnicodeStr))
 	(assert (change-dir UnicodeStr))
 	(assert (real-path))
@@ -84,17 +86,21 @@
 (println "Step 5")
 
 (println (time (begin
-	(assert (setq h (open UnicodeStr "w")))
+	(assert (set 'h (open UnicodeStr "w")))
 	(assert (write-buffer h sRand))
 	(assert (close h))
-	(assert (setq h (open UnicodeStr "a")))
+	(assert (set 'h (open UnicodeStr "a")))
 	(assert (write-buffer h (reverse sRand)))
 	(assert (close h))
-	(assert (setq h (open UnicodeStr "r")))
-	(assert (read-buffer h 'buff 1024))
+	(assert (set 'h (open UnicodeStr "r")))
+	(assert (read-buffer h buff 1024))
 	(assert (close h))
 	(assert (rename-file UnicodeStr "foo"))
 	(assert (rename-file "foo" UnicodeStr))
+	(assert (rename-file UnicodeStr UnicodeStr))
+	(assert (not (rename-file UnicodeStr InvalidUTF8)))
+	(assert (not (rename-file InvalidUTF8 InvalidUTF8)))
+	(assert (not (rename-file InvalidUTF8 UnicodeStr)))
 ) 10000))
 
 (assert (delete-file UnicodeStr))

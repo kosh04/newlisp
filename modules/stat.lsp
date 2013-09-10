@@ -1,16 +1,13 @@
 ;; @module stat.lsp
-;; @description Basic statistics library
-;; @version 1.3 - comments redone for automatic documentation
-;; @version 1.4 - changed nth-set to setf for versions 9.9.02 and later
-;; @version 1.5 - changed write-line syntax for v9.9.9 and later
-;; @version 1.6 - changed inc/dec syntax for v9.9.92 and later
+;; @description Basic statistics and plotting library
+;; @version 2.0 - fixed plot an plotXY routines for gnuplot
 ;; @author Lutz Mueller, 2001
 ;;
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
 ;; <pre>
-;; (load "/usr/share/newlisp/stat.lsp")
+;; (load (append (env "NEWLISPDIR") "/modules/stat.lsp"))
 ;; </pre>
 ;; All functions work on integers and floats or a mix of both. <lists> are normal
 ;; LISP lists. <matrices> are lists of lists, one list for each row in the
@@ -21,25 +18,74 @@
 ;; like 'multiply', 'transpose', 'invert' and 'fft'. 
 ;;
 ;; Note, that the plot functions need 'gnuplot' installed, a free graphing 
-;; package available for most operating systems, see: @link http://www.gnuplot.org www.gnuplot.org
+;; package available for most operating systems.
+;; See: @link http://www.gnuplot.info/ http://www.gnuplot.info/
 ;;
-;; This is the oldest module written in newLISP. Some parts could be rewritten for faster
-;; performance on big data sets using arrays instead of lists.
-;; <br/>
+;; If no Gnuplot program is found by the module all non-plot routines are still
+;; usable.
+;; 
 ;; <center><h2>Plot functions (requires 'gnuplot')</h2></center>
+;; The plot functions rely on a $HOME/tmp directory on Mac OS X and other Unix
+;; or <tt>c:\tmp</tt> or <tt>c:\tmp</tt> on Windows. When loading the module,
+;; a message will be printed to stdout if either the gnuplot executable or a 
+;; temporary directory cannot be found.
 ;;
-;; The current directory for newLISP should be writable to use these functions.
+;; The plot functions are designed for interactive use with no special options,
+;; titles on the top or the X and Y axes. Only a legend is printed in the top
+;; right corner to identify different data ranges. On Win32 plot functions 
+;; should only be used when using newLISP in a command shell, not inside the 
+;; newLISP-GS application.
+;;
+;; To produce more refined graphics the file <tt>tmp/plot</tt> can be edited
+;; to produce a different output. The Gnuplot command-file <tt>plot</tt> will
+;; look for data files in the same directory. One file for each data range.
+
+(constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
+(constant '$TEMP (if (= ostype "Win32") (or (env "TEMP") "C:\\temp") (string $HOME "/tmp")))
+
+(if-not $HOME (println "Cannot find home directory"))
+(if-not $TEMP (println "Cannot find tmp or temp directory"))
+
+(set 'files '(
+	"/usr/local/bin/gnuplot" ; Unix
+	"c:/gnuplot/bin/pgnuplot.exe" ; Win32
+))
+
+(set 'stat:gnuplot-program (files (or
+                (find true (map file? files))
+                (begin (println "Cannot find the gnuplot executable") (exit)))))
 ;;
 ;; @syntax (stat:plot <p1> <p2> ... <pN>)        
-;; @param <p1> First value to plot.
-;; @param <p2> Second value to plot.
-;; @param <pN> Nth value to plot.
+;; @param <p1> First list of data.
+;; @param <p2> Second list of data.
+;; @param <pN> Nth list o data
 ;; @return The process ID of the gnuplot process.
+;; @example
+;;    (stat:plot '(1 2 3 4 5 4 3 2 1))
 ;;
-;; @syntax (stat:plotXY X Y)
-;; @param <X> List of x-coordinates to plot.
-;; @param <Y> List of y-coordinates to plot.
+;;    (set 'data-A '(1 2 3 2 1 2 3))
+;;    (set 'data-B '(2 2 2 2 2 2 2))
+;;    (stat:plot data-A data-B)
+
+;; The first example plots one data range. It will appear as <tt>series-1</tt>
+;; in the legend. In the second example two data ranges are drawn each in a 
+;; distinct color the variable names <tt>data-X</tt> and <tt>data-Y</tt> will
+;; be used as labeld in the legend.
+
+
+;; @syntax (stat:plotXY <list-X> <list-Y> [<srt-style>])
+;; @param <list-X> List of x-coordinates to plot.
+;; @param <list-Y> List of y-coordinates to plot.
+;; @param <str-style> Optional style parameter, e.g. "line"
 ;; @return The process ID of the gnuplot process.
+;; @example
+;;    (set 'data-X (random 1 10 100))
+;;    (set 'data-Y (random 2 8 100))
+;;    (stat:plotXY data-X data-Y)
+
+;; Data points X,Y are plotted on the plane. If no style is specyfied points
+;; appear as little crosses. The style <tt>"line"</tt> would connect all data
+;; points.
 
 ;; <br/>
 ;; <center><h2>General uni- and bi- variate statistics</h2></center>
@@ -169,14 +215,9 @@
 
 ;---------------------------- gnuplot interface -------------------------------
 ; 
-;  These plot functions need gnuplot installed and works fine under UNIX 
-;  or WIN32.
-; 
 ;  The plot functions produce data files for the plot data and acommand files
-;  for gnuplot, then execute gnuplot.
-; 
-;  The routines need write access to the current directory to produce temporary files
-;  used by gnuplot:
+;  for gnuplot, then execute gnuplot. Thye data and command files are produced
+;  in the platforms $HOME/tmp directory
 ; 
 ;  The file 'plot' contains the generated plot commands for gnuplot
 ;  data is saved in files with the names of symbols containing the data
@@ -185,41 +226,56 @@
 ;  e.g.: (plot '(1 3 2 5 4)) will produce a 'series-1' ascii file 
 ;  but (plot age height) will produce 'age' and 'height' data files
 ; 
-  
 
 ;
 ; plot one or more lists of numbers 'args' is used to access the list of
 ; input parameters to 'plot'
 ;
-(define (plot)
-    (let  ( fileList '()
+(define-macro (plot)
+  (let  ( filelist '()
             cnt 0
             unix (< (& 0xF (last (sys-info))) 5)
-            fileName "")
+            filepath ""
+            filename ""
+			data "")
 	; for each list write an ascii file
 	(dolist (elmnt (args))
-	    (if (list? elmnt)
-		(begin
-			(inc cnt)
-			(if (symbol? elmnt)
-				(set 'fileName (string elmnt))
-				(if unix
-					(set 'fileName (append (env "HOME") "/tmp/series-" (string cnt)))
-					(set 'fileName (append "series-" (string cnt)))))
-			
-			(write-file fileName (list2ascii elmnt))
-			(push (append "'" fileName "'") fileList))))
+		(if (symbol? elmnt)
+			(begin
+				(set 'filepath (string $TEMP "/" (name elmnt)))
+				(set 'filename (name elmnt))
+				(set 'data (eval elmnt)))
+	   		(begin 
+				(set 'filepath (string $TEMP "/series-" cnt))
+				(set 'filename (string "series-" cnt))
+				(set 'data (eval elmnt))))
 
-	(set 'fileList (join (reverse fileList) ","))
+
+		(inc cnt)
+		(write-file filepath (list2ascii data))
+		(push (append "'" filepath "' t \"" filename "\"") filelist))
+
+
+	(set 'filelist (join (reverse filelist) ","))
 	; write file with plot commands depending on OS - Windows doesn't have PWD
-	(if unix
-		(write-file (append (env "HOME") "/tmp/plot") (append "set data style lines; plot " fileList "\r\n"))
-		(write-file "plot" (append "set data style lines; plot " fileList ";pause -1;\r\n")))
+
+;	(println "$TEMP:" $TEMP)
+;	(println "filelist:" filelist)
+;	(println "filepath:" filepath)
+;	(println "filename:" filename)
+;	(println "program:" gnuplot-program)
 
 	(if unix
-		(process (append "gnuplot -persist "  (env "HOME") "/tmp/plot"))
-		(process "gnuplot plot"))))
-
+		(begin
+			(write-file (append $TEMP "/plot") 
+					(append "set data style lines; plot " filelist "\r\n"))
+			(process (append gnuplot-program " -persist "  (env "HOME") "/tmp/plot")))
+	/* else Win32 */
+		(begin
+			(write-file (append $TEMP "/plot") 
+					(append "set data style lines; plot " filelist ";pause -1;\r\n"))
+			(process (append gnuplot-program " " $TEMP "/plot")))
+)))
 
 ;
 ; plot to lists of numbers in XY-fashion
@@ -227,28 +283,28 @@
 ; optionally define a style e.g: "line"
 ; if style is unused dots are plotted
 ;
-(define (plotXY X Y style , lst st fle unix tempDir)
-        (set 'tempDir (append (env "HOME") "/tmp"))
+(define (plotXY X Y style , data st fle unix)
 	(set 'unix (< (& 0xF (last (sys-info))) 5 ))
-	(set 'lst (map list (map string X) (map string Y)))
-	(if unix
-		(set 'fle (open (append (env "HOME") "/tmp/plot-XY") "write"))
-		(set 'fle (open "plot-XY" "write")))
-	(dolist (x lst)	
-		(if (< (sys-info -2) 9909)
-			(write-line (join x " ") fle)
-			(write-line fle (join x " "))))
+	(set 'data (map list (map string X) (map string Y)))
+	(set 'filepath (append $TEMP "/plot-XY"))
+	(set 'fle (open filepath "write"))
+	(dolist (x data)	
+		(write-line fle (join x " ")))
 	(close fle)
 	(if (not style) 
 		(set 'st "")
 		(set 'st (append "set data style " style "; ")))
 
 	(if unix
-		(write-file (append tempDir "/plot") (append st "plot '" tempDir "/plot-XY';"))
-		(write-file "plot" (append st "plot 'plot-XY'; pause -1;")))
-	(if unix
-		(process (append "gnuplot -persist " tempDir "/plot"))
-		(process "gnuplot plot")))
+		(begin
+			(write-file (append $TEMP "/plot") (append st "plot '" filepath "' t \"\";"))
+			(process (append gnuplot-program " -persist " $TEMP "/plot")))
+		/* else Win32 */
+		(begin
+			(write-file (append $TEMP "/plot") (append st "plot '" filepath "' t \"\"; pause -1;"))
+			(process (append gnuplot-program " " $TEMP "/plot")))
+	)
+)
 
 
 ;-------------------  General uni and bi-variate statistics --------------------
@@ -307,7 +363,6 @@
   (apply add (map (lambda (x y) (mul (sub x y) (sub x y))) X Y)))
 
 
-
 ; moments of a vector of numbers
 ;
 (define (moments vector, n median mean avg-dev std-dev var skew kurtosis dev sum)
@@ -361,7 +416,6 @@
    (push previous slist))
   (reverse slist)) ; could be written shorter starting v.9.9.5
                    ; because push returns the modified list
-
 
 ;
 ; seasonal difference list with variable lag

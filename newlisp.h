@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -411,7 +411,8 @@ This is for 64bit large file support (LFS),
 #define ERR_CANNOT_BE_PROTECTED 60
 #define ERR_IS_NOT_REFERENCED 61
 #define ERR_LIST_EMPTY 62
-#define MAX_ERROR_NUMBER 62
+#define ERR_IO_ERROR 63
+#define MAX_ERROR_NUMBER 63
 
 /* I/O routines */
 
@@ -508,7 +509,7 @@ extern SYMBOL * currentContext;
 extern SYMBOL * errorEvent;
 extern SYMBOL * symbolCheck;
 extern SYMBOL sentinel;
-extern char * symbolCheckPtr;
+extern void * symbolCheckPtr;
 extern int traceFlag;
 extern int errorReg;
 extern char * errorMessage[];

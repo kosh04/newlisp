@@ -83,7 +83,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font></h1>
-Version 2008 December 3<sup>rd</sup><br>
+Version 2009 January 7<sup>th</sup><br>
 <a href="http://newlisp.org">newLISP</a> v.10.0 
 </center>
 
@@ -92,7 +92,7 @@ Version 2008 December 3<sup>rd</sup><br>
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2008 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
+Copyright &copy; 2009 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
 Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br>
 Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br>
 and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br>
@@ -227,7 +227,7 @@ newLISP is a registered trademark of Lutz Mueller.
     <li>Communicate via UDP</li>
 </ul>
 </li>
-<li><a href="#launch">Launching applications blocking</a>
+<li><a href="#launching">Launching applications blocking</a>
 <ul>
     <li>Shell execution</li> 
     <li>Execution capturing std-out in a list</li>
@@ -1044,7 +1044,7 @@ Indexes before a list select subsections of a list, which in turn are always lis
     (-2 '(a b c d e)) &rarr; (d e)
 
     ; slicing
-    (2 2 '(a b c d e f g))   &rarr; (c d)
+    (2 2 '(a b c d e f g))  &rarr; (c d)
     (-5 3 '(a b c d e f g)) &rarr; (c d e)
 </pre>
 
@@ -1124,9 +1124,9 @@ This can be used to configure the new one:</p>
 
 <pre>
     (set 'L '(0 0 0))
-    (setf (L 1) (+ $it 1)) &rarr; 0 ; the old value
-    (setf (L 1) (+ $it 1)) &rarr; 1
+    (setf (L 1) (+ $it 1)) &rarr; 1 ; the new value
     (setf (L 1) (+ $it 1)) &rarr; 2
+    (setf (L 1) (+ $it 1)) &rarr; 4
     L &rarr; '(0 3 0)
     </pre>
 
@@ -1405,7 +1405,16 @@ can also be used to form blocks and do not require <tt>begin</tt> for blocking s
         exp-2
         ...
     )
-    
+
+    ; if-not works like (if (not ...) ...)
+    (if-not true-expr false-expr)
+
+    ; unless works like (when (not ...) ...)
+    (unless condition
+        exp-1
+        exp-2 
+        ...
+    )
 </pre>
 
 <p>Depending on condition the <tt>exp-true</tt> or <tt>exp-false</tt> part is evaluated and 
@@ -1621,7 +1630,15 @@ inspected using the function <tt>sys-error</tt>. For example the failure to open
 have different causes:</p>
 
 <pre>
-    ;; trying to open a nonexistent file    (open "blahbla" "r")  → nil    (sys-error)  → 2 ; no such file    (sys-error 0)  → 0  ; clear errno
+    ;; trying to open a nonexistent file
+    (open "blahbla" "r")  → nil
+    (sys-error)    → 2
+
+    ;; get error text from OS
+    (sys-error 2)  → "No such file or directory"
+
+    ;; clear errno, set to 0
+    (sys-error 0)  → 0
 </pre>
 
 <p>Numbers returned may be different on different UNIX platforms. Consult the file <tt>/usr/include/sys/errno.h</tt> on your platform.</p>
@@ -1636,7 +1653,7 @@ have different causes:</p>
     &rarr; (lambda (x) (+ x x))
     
     (first double) &rarr; (x)
-    (last double) &rarr; (+ x x)
+    (last double)  &rarr; (+ x x)
     
     ;; make a ''fuzzy'' double
     (setf (double 1) '(mul (normal x (div x 10)) 2))
@@ -2092,6 +2109,12 @@ simple more specific protocol could be made part of the message.</p>
 <p>In this example the server keeps the connection open. UDP communications with net-listen, 
 net-receive-from and net-send-to can block on receiving.</p>
 
+<p>Note that both, the client and server use <tt>net-listen</tt> with the <tt>"udp"</tt>
+option. In this case <tt>net-listen</tt> is only used for binding the socket to the
+address, it is not used for listening for an connection. The server could receive messages
+from several clients. The <tt>net-send-to</tt> function extracts the target address from 
+the message received.</p>
+
 <pre>
     ;;;;;;;;;;;;;;;;;; server
     (set 'socket (net-listen 10001 "" "udp"))
@@ -2101,7 +2124,7 @@ net-receive-from and net-send-to can block on receiving.</p>
        (set 'msg (net-receive-from socket 255))
        (println "-&gt;" msg)
        (net-send-to (nth 1 msg) (nth 2 msg) 
-       (upper-case (first msg)) socket))
+                    (upper-case (first msg)) socket))
 
     ;;;;;;;;;;;;;;;;;; client
     (set 'socket (net-listen 10002 "" "udp"))
@@ -2111,7 +2134,6 @@ net-receive-from and net-send-to can block on receiving.</p>
        (net-send-to "127.0.0.1" 10001 (read-line) socket)
        (net-receive socket buff 255)
        (println "&rarr;" buff))
-    closed transaction oriented UDP
 </pre>
 
 <h3>Closed transaction oriented UDP</h3>
@@ -2142,8 +2164,13 @@ net-listen function.</p>
     ;; example server
     (net-listen 4096 "226.0.0.1" "multi") &rarr; 5
     (net-receive-from 5 20)             
-    ;; example client
+
+    ;; example client I
     (net-connect "226.0.0.1" 4096 "multi") &rarr; 3
+    (net-send 3 "hello")
+
+    ;; example client II
+    (net-connect "" 4096 "multi") &rarr; 3
     (net-send-to "226.0.0.1" 4096 "hello" 3)
 </pre>
 
@@ -2342,7 +2369,7 @@ but only on the command line:</p>
 </pre>
 
 <p>The <tt>!</tt> should be the first character on the command line. This form works like 
-as shell escape like in the VI editor. It is useful for invoking an editor or doing quick 
+a shell escape in the VI editor. It is useful for invoking an editor or doing quick 
 shell work without completely leaving the newLISP console.</p>
 
 <h3>Execution capturing std-out in a list</h3>
@@ -2677,8 +2704,8 @@ file:</p>
 instead of the <tt>root</tt> user. This is a more secure mode limiting newLISP
 server node access to a specific user account with restricted permissions.</p>
 
-<p>On Mac OS X and some other UNIX system a modern flavor of <i>inetd</i>: the 
-<i>xinetd</i> facility is used. Add the following configuration to a file 
+<p>On some UNIX system a modern flavor of <i>inetd</i>: the 
+<i>xinetd</i> facility can be used. Add the following configuration to a file 
 <tt>/etc/xinet.d/net-eval</tt>:</p>
 
 <pre>
@@ -2701,6 +2728,11 @@ and <i>xinetd</i> for details.</p>
 to re-read the configuration files. This can be accomplished by sending the 
 UNIX <tt>HUP</tt> signal to either the <i>inetd</i> or <i>xinetd</i> process using
 the UNIX <i>kill</i> or UNIX <i>nohup</i> utility.</p>
+
+<p>On Mac OS X the <tt>launchd</tt> facility can be used in a similar fashion.
+The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt>
+in the <tt>util/</tt> directory. This file can be used to launch newlisp server during 
+OS boot time as a persisten server.</p>
 
 
 <b>Testing the server using <i>telnet</i></b>
@@ -3030,7 +3062,7 @@ to realize a similar result as when using the <tt>load</tt> and <tt>save</tt> in
 <center>&sect;</center>
 
 <a name="http_mode"></a>
-<h2>22. HTTPD-only mode, newLISP as a webserver</h2>
+<h2>21. HTTPD-only mode, newLISP as a webserver</h2>
 
 <p>In all previous chapters the <tt>-c</tt> server mode was used. This mode can act as
 a <tt>net-eval</tt> server and at the same time answer <tt>HTTP</tt> requests for serving
@@ -3157,7 +3189,7 @@ recognized and a correctly formatted <tt>Content-Type:</tt> header is sent back:
 
 <center>&part;</center>
 <a name="extending"></a>
-<h2>23. Extending newLISP</h2>
+<h2>22. Extending newLISP</h2>
 
 
 <p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/UNIX (ending in .so).</p>
@@ -3167,7 +3199,7 @@ recognized and a correctly formatted <tt>Content-Type:</tt> header is sent back:
 <pre>
     #include &lt;stdio.h&gt;
     #include &lt;stdlib.h&gt;
-    #include &lt;ctype.h>&gt;
+    #include &lt;ctype.h&gt;
     
     int foo1(char * ptr, int number)
     {

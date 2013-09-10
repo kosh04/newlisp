@@ -4,7 +4,6 @@
 ;; @author Lutz Mueller et al., 2001, 2002, 2008
 ;;
 ;; <h2>POP3 mail retrieval routines</h2>
-;;
 ;; Only the module 'pop3.lsp' is required, not other libraries need to be
 ;; present. Not all mailservers support all functions.
 ;;
@@ -18,27 +17,22 @@
 ;; <pre>
 ;; (POP3:get-all-mail "user" "password" "pop.my-isp.com" "messages/")
 ;; </pre>
-;;  
 ;; Load down only new messages:
 ;; <pre>
 ;; (POP3:get-new-mail "user" "password" "pop.my-isp.com" "messages/")
 ;; </pre>
-;;
 ;; Delete messages, which have not been read:
 ;; <pre>
 ;; (POP3:delete-old-mail "user" "password" "pop.my-isp.com")
 ;; </pre>
-;;
 ;; Delete all messages:
 ;; <pre>
 ;; (POP3:delete-all-mail "user" "password" "pop.my-isp.com")
 ;; </pre>
-;;
 ;; Get a list of status numbers '(<totalMessages>, <totalBytes>, <lastRead>)':
 ;; <pre>
 ;; (POP3:get-mail-status "user" "password" "pop.my-isp.com")
 ;; </pre>
-;;
 ;; Get error message for failed all/new/status function:
 ;; <pre>
 ;; (POP3:get-error-text)

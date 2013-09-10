@@ -1,7 +1,7 @@
 /* nl-filesys.c --- I/O process control, date/time - functions for newLISP
 
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -704,7 +704,8 @@ copyBuffer = allocMemory(MAX_FILE_BUFFER);
 do
 	{
 	bytesRead = read(fromHandle, copyBuffer, MAX_FILE_BUFFER);
-	write(toHandle, copyBuffer, (int)bytesRead);
+	if(write(toHandle, copyBuffer, (int)bytesRead) < 1) 
+		fatalError(ERR_IO_ERROR, 0, 0);
 	} while (bytesRead == MAX_FILE_BUFFER);
 
 free(copyBuffer);
@@ -836,12 +837,8 @@ while((dEnt = readdir(dir)) != NULL)
 #else
 	fileName = dEnt->d_name;
 #endif
-	if(pattern)
-		{
-		if(searchBufferRegex(fileName, 0, pattern, strlen(fileName), options, NULL) == -1)
-			continue;
-		}
-	addList(dirList, stuffString(fileName));
+	if(!pattern || searchBufferRegex(fileName, 0, pattern, strlen(fileName), options, NULL) != -1)
+		addList(dirList, stuffString(fileName));
 #ifdef USE_WIN_UTF16PATH
 	free(fileName);
 #endif
@@ -871,36 +868,29 @@ return(stuffString(path));
 
 CELL * p_fileInfo(CELL * params)
 {
-#ifdef USE_WIN_UTF16PATH
-WCHAR * pathName;
-struct _stat fileInfo;
-#else
 char * pathName;
 struct stat fileInfo;
-#endif
 CELL * list;
 int result = 0;
 
-#ifdef USE_WIN_UTF16PATH
-char * utf8pathName;
-params = getString(params, &utf8pathName);
-pathName = utf8_to_utf16(utf8pathName);
-#else
 params = getString(params, &pathName);
+
+#ifdef WIN_32 /* has no link-flag */
+#ifdef USE_WIN_UTF16PATH
+result = stat_utf16(pathName, &fileInfo);
+#else
+result = stat(pathName, &fileInfo);
 #endif
 
+#else /* Unix */
 if(getFlag(params->next))
 	result = stat(pathName, &fileInfo);
 else
 	result = lstat(pathName, &fileInfo);
+#endif
 
 if(result != 0)
-	{
-#ifdef USE_WIN_UTF16PATH
-	free(pathName);
-#endif
 	return(nilCell);
-	}
 
 list = stuffIntegerList(
 	8,
@@ -918,16 +908,12 @@ list = stuffIntegerList(
 #ifdef LFS
 ((CELL *)list->contents)->type = CELL_INT64;
 #ifdef USE_WIN_UTF16PATH
-*(INT64 *)&((CELL *)list->contents)->aux = fileSizeW(pathName);
+*(INT64 *)&((CELL *)list->contents)->aux = fileSize_utf16(pathName);
 #else
 *(INT64 *)&((CELL *)list->contents)->aux = fileSize(pathName);
 #endif /* UTF16PATH */
 #endif /* LFS */
 #endif /* NEWLISP64 */
-
-#ifdef USE_WIN_UTF16PATH
-free(pathName);
-#endif
 
 if(params != nilCell)
 	{
@@ -1937,7 +1923,8 @@ UINT init;
 if(params != nilCell)
 	{
 	getInteger(params, (UINT*)&init);
-	errno=(int)init;
+	if(init == 0) errno = 0;
+	else return(stuffString(strerror(init)));
 	}
 
 return(stuffInteger((UINT)errno));

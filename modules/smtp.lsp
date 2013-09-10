@@ -8,7 +8,7 @@
 ;; for sending email. To use this module include the following 'load' statement 
 ;; at the beginning of the program file: 
 ;; <pre> 
-;; (load "/usr/share/modules/newlisp/smtp.lsp") 
+;; (load "/usr/share/newlisp/modules/smtp.lsp") 
 ;; </pre> 
 ;; To see debugging information: 
 ;; <pre>(set 'debug-flag true)</pre> 

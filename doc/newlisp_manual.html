@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.10.0 Manual and Reference</title>
+   <title>newLISP v.10.0.1 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -129,14 +129,14 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.10.0</h2>
+<h2>Users Manual and Reference v.10.0.1 <font size=-1>rev 2</font></h2>
 </center>
 
 <br><br><br><br>
 <center>
 <span style="line-height:80%;">
 <font size=1>
-<br>Copyright &copy;&nbsp;Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br>Copyright &copy; 2009 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br><br>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br> Version 1.2 or any later version 
@@ -319,7 +319,7 @@ newLISP is a registered trademark of Lutz Mueller.
 <a href="newlisp_manual.html#base64-dec">Ba</a>&nbsp;
 <a href="newlisp_manual.html#callback">Ca</a>&nbsp;
 <a href="newlisp_manual.html#clean">Cl</a>&nbsp;
-<a href="newlisp_manual.html#copy">Co</a>&nbsp;
+<a href="newlisp_manual.html#command-event">Co</a>&nbsp;
 <a href="newlisp_manual.html#current-line">Cu</a>&nbsp;
 <a href="newlisp_manual.html#dec">De</a>&nbsp;
 <a href="newlisp_manual.html#difference">Di</a>&nbsp;
@@ -1103,7 +1103,7 @@ environment variable <tt>NEWLISPDIR</tt>.
 <p>When newLISP is run as a shared libraryi, an initialization file is looked 
 for in the environment variable <tt>NEWLISPLIB_INIT</tt>. The full path-name 
 of the initialization file must be specified. If <tt>NEWLISPLIB_INIT</tt> is 
-not defined, no initilization file will be loded by the library module.</p>
+not defined, no initialization file will be loaded by the library module.</p>
 
 <p> Although newLISP does not require <tt>init.lsp</tt> to run, it is convenient for 
 defining functions and system-wide variables.</p>
@@ -2516,7 +2516,7 @@ to itself, existing contexts like MAIN do not require quoting.</p>
 <p>When newLISP reads the above code, it will read, then evaluate the first
 statement: <tt>(context 'FOO)</tt>. This causes newLISP to switch the namespace
 to FOO and the following symbols <tt>var</tt>, <tt>x</tt>, <tt>y</tt> and <tt>z</tt>
-will all be created in the FOO context when reading and evaluating the ramaining
+will all be created in the FOO context when reading and evaluating the remaining
 expressions.</p>
 
 <p>To refer to <tt>var</tt> or <tt>func</tt> from anywhere else outside  the 
@@ -2638,7 +2638,7 @@ aVar            <span class=arw>&rarr;</span> 123
 </pre></blockquote>		
 
 <p>Without the <tt>global</tt> statement, the second <tt>aVar</tt> would have 
-eturned <tt>nil</tt> instead of <tt>123</tt>. If <tt>FOO</tt> had a previously 
+returned <tt>nil</tt> instead of <tt>123</tt>. If <tt>FOO</tt> had a previously 
 defined symbol (<tt>aVar</tt> in this example) <em>that</em> symbol's value 
 &mdash; and not the global's &mdash; would be returned instead. Note that only 
 symbols from the <tt>MAIN</tt> context can be made global.</p>
@@ -2833,7 +2833,7 @@ the filename should be similar if not identical to the context name used:</p>
 ;; Variables used throughout this namespace
 
 (define db:handle)
-(define db:host "http://loalhost)
+(define db:host "http://localhost)
 
 ;; Constants
 
@@ -3050,7 +3050,7 @@ contained inside its namespace:</p>
 (define (Gen:Gen x)
     (if Gen:acc
         (inc Gen:acc x)
-        (set Gen:acc x)))
+        (setq Gen:acc x)))
 
 (Gen 1)  <span class=arw>&rarr;</span> 1
 (Gen 1)  <span class=arw>&rarr;</span> 2
@@ -3065,8 +3065,8 @@ its accumulator is set to the value of the argument.
 Each successive call increments <tt>Gen</tt>'s accumulator
 by the argument's value.</p>
 
-<p>The definition of <tt>Gen:Gen</tt> shows, how a fuction is put in its own namespace 
-without using the surroundng <tt>(context 'Gen)</tt> and <tt>(context MAIN)</tt> 
+<p>The definition of <tt>Gen:Gen</tt> shows, how a function is put in its own namespace 
+without using the surrounding <tt>(context 'Gen)</tt> and <tt>(context MAIN)</tt> 
 statements. In that case only symbols qualified by the namespace prefix will 
 end up in the <tt>Gen</tt> context. In the above example the variable 
 <tt>x</tt> is still part of <tt>MAIN</tt>.</p>
@@ -3534,6 +3534,19 @@ the symbol following the colon and the context name (the first element of the ob
 Rather than changing the <tt>x</tt> and <tt>y</tt> coordinates directly in 
 <tt>myrect</tt> and <tt>mycircle</tt>, newLISP constructs and then reassigns the moved shapes.</p>
 
+<p>To write destructive functions using the colon operator, objects have to passed
+in a default functor:
+
+<blockquote><pre>
+(new Class 'Foo)
+(define (Foo:modify obj val) (setf (obj 1) val))
+(define (Foo:show obj) (default obj))
+
+(set 'MyFoo:MyFoo (Foo 123)) =>  (Foo 123)
+
+(:modify MyFoo 999) => 999
+(:show MyFoo) => (Foo 999)
+</pre></blockquote>
 
 <br>
 <center>
@@ -3874,8 +3887,8 @@ locale -a
 <blockquote>Australia, Botswana, Canada (English-speaking), China, Costa Rica, 
 Dominican Republic, El Salvador, Guatemala, Honduras, Hong Kong, India, Ireland, 
 Israel, Japan, Korea (both North and South), Malaysia, Mexico, Nicaragua, 
-New Zealand, Panama, Philippines, Puerto Rico, Saudi Arabia, Singapore, Thailand, 
-United Kingdom, and United States
+New Zealand, Panama, Philippines, Puerto Rico, Saudi Arabia, Singapore, Switzerland, 
+Thailand, United Kingdom, and United States
 </blockquote>
 <p>
 	The following countries use
@@ -3887,7 +3900,7 @@ Czech Republic, Denmark, Ecuador, Estonia, Faroes, Finland, France, Germany,
 Greece, Greenland, Hungary, Indonesia, Iceland, Italy, Latvia, Lithuania, 
 Luxembourg, Macedonia, Moldova, Netherlands, Norway, Paraguay, Peru, Poland, 
 Portugal, Romania, Russia, Serbia, Slovakia, Slovenia, Spain, South Africa, 
-Sweden, Switzerland, Ukraine, Uruguay, Venezuela, and Zimbabwe
+Sweden, Ukraine, Uruguay, Venezuela, and Zimbabwe
 </blockquote>
 <br>
 <a name="unicode_utf8"></a>
@@ -7483,7 +7496,7 @@ function <a href="#spawn">spawn</a> for a full discussion of the Cilk API.</p>
 <b>syntax: (acos <em>num</em>)</b>
 
 <p>
-	The arccosine function is calculated 
+	The arc-cosine function is calculated 
 	from the number in <em>num-radians</em>.
 </p>
 
@@ -8606,11 +8619,11 @@ absolute value of <em>num-radians</em> is greater than 1,
 (load "DoyleDowson.lsp")
 (bayes-query (parse "he was putting the last touches to a picture") 
     'DoyleDowson)
-<span class=arw>&rarr;</span> (0.03801673331 0.9619832667)
+<span class=arw>&rarr;</span> (0.03802079132 0.9619792087) 
 
 (bayes-query (parse "immense faculties and extraordinary powers of observation") 
     'DoyleDowson)
-<span class=arw>&rarr;</span> (0.9851075608 0.01489243923)
+<span class=arw>&rarr;</span> (0.985108793 0.01489120699) 
 </pre>
 </blockquote>
 
@@ -9095,13 +9108,15 @@ indexing and program control switching on the result.</p>
 <h2><span class="function"> callback </span></h2>
 <b>syntax: (callback <em>int-index</em> <em>sym-function</em>)</b>
 
-<p>Up to eight <em>callback</em> functions 
-can be registered with imported libraries.
-The <tt>callback</tt> function returns a procedure address 
-that invokes a user-defined function in <em>sym-function</em>. 
-The following example shows the usage of callback functions 
-when importing the 
-<a href="http://www.opengl.org">OpenGL</a> graphics library:</p>
+<p>Up to sixteen (0 to 15) <em>callback</em> functions for up to eight 
+parameters can be registered with imported libraries. The <tt>callback</tt> 
+function returns a procedure address that invokes a user-defined function 
+in <em>sym-function</em>. The following example shows the usage of callback 
+functions when importing the <a href="http://www.opengl.org">OpenGL</a> 
+graphics library:</p>
+
+<p>If more than sixteen callback functions are required, slots can be 
+reassigned to a different callback function.</p>
 
 <b>example:</b>
 <blockquote>
@@ -9131,8 +9146,8 @@ when importing the
 </pre>
 </blockquote>
 
-<p>The address returned by <tt>callback</tt> 
-is registered with the <a href="http://www.opengl.org/documentation/specs/glut/spec3/spec3.html">Glut</a> library. 
+<p>The address returned by <tt>callback</tt> is registered with the 
+<a href="http://www.opengl.org/documentation/specs/glut/spec3/spec3.html">Glut</a> library. 
 The above code is a snippet from the file <tt>opengl-demo.lsp</tt>, 
 in the <tt>examples/</tt> directory of the source distribution of newLISP.</p>
 
@@ -9367,7 +9382,7 @@ but <tt>(char 0)</tt> will return <tt>"\000"</tt>. </p>
 
 <a name="chop"></a>
 <h2><span class="function">chop <font size="-1"><a href="#utf8_capable">utf8</a></font></span></h2>
-<b>syntax: (chop <em>str</em> [<em>int-chars</em>]</b><br>
+<b>syntax: (chop <em>str</em> [<em>int-chars</em>])</b><br>
 <b>syntax: (chop <em>list</em> [<em>int-elements</em>])</b>
 
 <p>
@@ -9617,7 +9632,7 @@ window.</p>
 <a name="cond"></a>
 <h2><span class="function">cond</span></h2>
 
-<b>syntax: (cond (<em>exp-condition-1</em> <em>body-1</em>) [(<em>exp-condition-2</em> <em>body-2</em>) ... ]</b>
+<b>syntax: (cond (<em>exp-condition-1</em> <em>body-1</em>) [(<em>exp-condition-2</em> <em>body-2</em>) ... ])</b>
 
 <p>
 	Like <tt>if</tt>, <tt>cond</tt> conditionally evaluates the expressions 
@@ -10705,7 +10720,7 @@ z             <span class=arw>&rarr;</span> nil
 </pre>
 </blockquote>
 
-<p>Places in a list structurei or a number returned by another expression
+<p>Places in a list structure or a number returned by another expression
 can be updated too:</p>
 
 <blockquote>
@@ -11786,13 +11801,13 @@ x  <span class=arw>&rarr;</span> 123  ; x has still its old value
 (set 'str "abcdefg")
 (dostring (c str) (println c " - " (char c)))
 
-<b>97
-98 - a
-99 - b
-100 - c
-101 - d
-102 - e
-103 - f</b>
+<b>97 - a
+98 - b
+99 - c
+100 - d
+101 - e
+102 - f
+103 - g</b>
 
 ; UTF8 example
 (set 'utf8str "我能吞下玻璃而不伤身体。")
@@ -12394,7 +12409,7 @@ parameter in the function.</p>
 
 <a name="eval-string"></a>
 <h2><span class="function">eval-string</span></h2>
-<b>syntax: (eval-string <em>str-source</em> [<em>sym-context</em> [<em>exp-error</em>]])</b>
+<b>syntax: (eval-string <em>str-source</em> [<em>sym-context</em> [<em>exp-error</em> [<em>int-offset</em>]]])</b>
 
 <p>
 The string in <em>str-source</em> is compiled into newLISP's internal format
@@ -12408,6 +12423,9 @@ the string should be parsed and translated.</p>
 <p>If and error occurs while parsig and evaluating <em>str-source</em> then
 <em>exp-error</em> will be evaluated and the result returned.</p>
 
+<p><em>int-offset</em> specifies an optional offset into <em>str-source</em>, 
+where to start evaluation.</p>
+
 <b>example:</b>
 <blockquote>
 <pre>
@@ -12417,7 +12435,7 @@ the string should be parsed and translated.</p>
 
 (define (repl) ; read print eval loop
   (while true
-    (println "=> " (eval-string (read-line) MAIN (error-text)))
+    (println "=&gt; " (eval-string (read-line) MAIN (error-text)))
   )
 )
 
@@ -12449,7 +12467,7 @@ without evaluating it.</p>
 
 <p>In the first form, <tt>exec</tt> launches a process described in <em>str-process</em>
 and returns all standard output as a list of strings 
-(one for each line in standrad out (STDOUT)).  <tt>exec</tt> returns <tt>nil</tt>
+(one for each line in standard out (STDOUT)).  <tt>exec</tt> returns <tt>nil</tt>
 if the process could not be launched. If the process could be launched but 
 only returns and error and no valid output, the empty list will be returned.
 </p> 
@@ -16900,51 +16918,44 @@ This type of connection is not available on Win32 platforms.</p>
 <h3>UDP communications</h3>
 
 <p>
-As a third parameter, 
-the string <tt>"udp"</tt>
-or <tt>"u"</tt> can be specified 
-in the optional <em>str-mode</em> 
-to create a socket suited for 
-UDP (User Datagram Protocol) communications.
-In UDP mode, <tt>net-connect</tt> 
-does <em>not</em> try to connect 
-to the remote host, 
-but only binds the socket 
-to the remote address. 
-A subsequent <a href="#net-send">net-send</a>
-will send a UDP packet 
+As a third parameter, the string <tt>"udp"</tt>
+or <tt>"u"</tt> can be specified in the optional <em>str-mode</em> 
+to create a socket suited for UDP (User Datagram Protocol) communications.
+In UDP mode, <tt>net-connect</tt> does <em>not</em> try to connect 
+to the remote host, but creates the socket and binds it to the
+remote address, if an address is specified. 
+A subsequent <a href="#net-send">net-send</a> will send a UDP packet 
 containing that target address. 
-Using <a href="#net-send-to">net-send-to</a>
-causes that address to be overwritten.
-</p>
+When using <a href="#net-send-to">net-send-to</a>, only one of the
+two functions <tt>net-connect</tt> or <tt>net-send-to</tt> should 
+provide a target address. The other function should specify and empty
+string <tt>""</tt> as the target address.</p>
 
-<p>
-The functions <a href="#net-receive">net-receive</a> 
-and <a href="#net-receive-from">net-receive-from</a>
-can also be used 
-and will perform UDP communications. 
-<a href="#net-select">net-select</a>
-and <a href="#net-peek">net-peek</a> 
-can be used to check 
-for received data 
-in a non-blocking fashion.
-</p>
+<blockquote><pre>
+;; example server
+(net-listen 4096 "226.0.0.1" "udp") &rarr; 5
+(net-receive-from 5 20)
 
-<p>
-If data is never received when 
-opening a client connection 
-using <tt>net-connect</tt>, 
-then calling <a href="#net-listen">net-listen</a> 
-with the <tt>"udp"</tt> option 
-may be preferable for starting 
-the client side of the connection.
-<a href="#net-listen">net-listen</a> binds a specific 
-local address and port to the socket.
-When <tt>net-connect</tt> is used,
-the local address and port 
-will be picked by the socket-stack 
-functions of the host OS.
-</p>
+;; example client I
+(net-connect "226.0.0.1" 4096 "udp") &rarr; 3
+(net-send 3 "hello")
+
+;; example client II
+(net-connect "" 4096 "udp") &rarr; 3
+(net-send-to "226.0.0.1" 4096 "hello" 3)
+</pre></blockquote>
+
+<p>The functions <a href="#net-receive">net-receive</a> and 
+<a href="#net-receive-from">net-receive-from</a>
+can both be used and will perform UDP communications when the <tt>"udp"</tt>
+option as been used in <tt>net-listen</tt> or <tt>net-connect</tt>. 
+<a href="#net-select">net-select</a> and <a href="#net-peek">net-peek</a> 
+can be used to check for received data in a non-blocking fashion.</p>
+
+<p><a href="#net-listen">net-listen</a> binds a specific 
+local address and port to the socket. When <tt>net-connect</tt> is used,
+the local address and port will be picked by the socket-stack 
+functions of the host OS.</p>
 
 <h3>UDP multicast communications</h3>
 <p>
@@ -16972,35 +16983,29 @@ together with the UDP multicast option.
 <b>example:</b>
 <blockquote>
 <pre>
-;; example client
-
-(net-connect "226.0.0.1" 4096 "multi")  <span class=arw>&rarr;</span> 3
-
+;; example client I
+(net-connect "" 4096 "multi")  <span class=arw>&rarr;</span> 3
 (net-send-to "226.0.0.1" 4096 "hello" 3)
 
+;; example client II
+(net-connect "226.0.0.1" 4096 "multi")  <span class=arw>&rarr;</span> 3
+(net-send 3 4096 "hello")
+
 ;; example server
-
 (net-listen 4096 "226.0.0.1" "multi")  <span class=arw>&rarr;</span> 5
-
 (net-receive-from 5 20)               
 <span class=arw>&rarr;</span> ("hello" "192.168.1.94" 32769)
 </pre>
 </blockquote>
 
 <p>
-On the server side, 
-<a href="#net-peek">net-peek</a> or <a href="#net-select">net-select</a>
-can be used for non-blocking communications. 
-In the above example, the server would block
-until a datagram is received.
-</p>
+On the server side, <a href="#net-peek">net-peek</a> or <a href="#net-select">net-select</a>
+can be used for non-blocking communications.  In the above example, the server would block
+until a datagram is received.</p>
 
-<p>
-The address <tt>226.0.0.1</tt> 
-is just one multicast address 
-in the Class D range of multicast addresses 
-from <tt>224.0.0.0</tt> to <tt>239.255.255.255</tt>.
-</p>
+<p>The address <tt>226.0.0.1</tt> is just one multicast address 
+in the Class D range of multicast addresses from <tt>224.0.0.0</tt> 
+to <tt>239.255.255.255</tt>.</p>
 
 <p>
 The <a href="#net-send">net-send</a> and 
@@ -17024,21 +17029,15 @@ ending in 255 is used.
 <blockquote>
 <pre>
 ;; example client
-
 (net-connect "192.168.2.255" 3000 "broadcast")  <span class=arw>&rarr;</span> 3
-
 (net-send 3 "hello")
 
 ;; example server
-
 (net-listen 3000 "" "udp")  <span class=arw>&rarr;</span> 5
 
 (net-receive 5 buff 10)
-
 buff  <span class=arw>&rarr;</span> "hello"
-
 ;; or
-
 (net-receive-from 5 10)
 <span class=arw>&rarr;</span> ("hello" "192.168.2.1" 46620)
 </pre>
@@ -17493,7 +17492,7 @@ except when overwritten by an optional interface address given in
 <a href="#net-listen">net-listen</a>.</p>
 
 <p>When no <em>str-ip-addr</em> is specified, the current default is returned.
-If the <tt>net-interface</tt> has not been used yet to specifiy an IP address,
+If the <tt>net-interface</tt> has not been used yet to specify an IP address,
 the address <tt>0.0.0.0</tt> is returned. This means that all network routines
 will use the default address preconfigured by the underlying operating system.</p>
 
@@ -18385,59 +18384,53 @@ the second <tt>net-send</tt> sends only the string <tt>"hello"</tt>.
 <h2><span class="function">net-send-to</span></h2>
 <b>syntax: (net-send-to <em>str-remotehost</em> <em>int-remoteport</em> <em>str-buffer</em> <em>int-socket</em>)</b>
 
-<p>
-Sends UDP data packets on open connections. 
-The socket in <em>int-socket</em> 
+<p>Can be used for either UDP or TCP/IP communications. The socket in <em>int-socket</em> 
 must have previously been opened with a <a href="#net-connect">net-connect</a> 
-or <a href="#net-listen">net-listen</a> function. 
-Both functions must be opened 
-with their <tt>"udp"</tt> option. 
-The host in <em>str-remotehost</em> 
-can be specified either as a hostname 
-or as an IP-number string.
-</p>
+or <a href="#net-listen">net-listen</a> function. If the opening functions was used 
+with the <tt>"udp"</tt> option, <tt>net-listen</tt> or <tt>net-connect</tt>
+are not used to listen or to connect but only to create the UDP socket.
+The host in <em>str-remotehost</em> can be specified either as 
+a hostname or as an IP-number string.</p>
+
+<p>When using <tt>net-connect</tt> together with <tt>net-send-to</tt>, then 
+only one of the functions should specify the remote host. The other should leave 
+the address as an empty string.</p>
 
 <b>example:</b>
 <blockquote>
 <pre>
-(net-connect "asite.com" 1010 "udp") 
-<span class=arw>&rarr;</span> 2058  ; get a UDP socket
+;;;;;;;;;;;;;;;;;; UDP server
+(set 'socket (net-listen 10001 "" "udp"))
+(if socket (println "server listening on port " 10001)
+       (println (net-error)))
+(while (not (net-error))
+   (set 'msg (net-receive-from socket 255))
+   (println "-&gt; " msg)
+   (net-send-to (nth 1 msg) (nth 2 msg) 
+                (upper-case (first msg)) socket))
 
-(net-send-to "asite.com" 1010 "hello" 2058)
-
-;; optionally poll for answer
-(while (not (net-select 2058 "r" 100000)) 
-(do-something &hellip;))
-
-;; receive answering data from UDP server
-(net-receive-from 2058 20) 
-<span class=arw>&rarr;</span> ("hello to you" "10.20.30.40" 1010)
-
-(net-close 2058)
+;;;;;;;;;;;;;;;;;; UDP client
+(set 'socket (net-listen 10002 "" "udp"))
+(if (not socket) (println (net-error)))
+(while (not (net-error))
+   (print "&gt; ")
+   (net-send-to "127.0.0.1" 10001 (read-line) socket)
+   (net-receive socket buff 255)
+   (println "-&gt; " buff))
 </pre>
 </blockquote>
 
-<p>
-The second line in the example is optional. 
-Without it, 
-the <a href="#net-receive-from"> net-receive-from</a> call 
-would block until data arrives. 
-Using polling, 
-a client could maintain conversations with several UDP servers 
-at the same time.
-</p>
+<p>In the examples both, the client and the server use <tt>net-listen</tt> to
+create the UDP socket for sending and receiving. The server extracts 
+the client address and port from the message received and uses it in the 
+<tt>net-send-to</tt> statement.</p>
 
-<p>
-See also the <a href="#net-receive-from">net-receive-from</a> function
-and the <a href="#net-listen">net-listen</a> function 
-with the <tt>"udp"</tt> option.
-</p>
+<p>See also the <a href="#net-receive-from">net-receive-from</a> function
+and the <a href="#net-listen">net-listen</a> function with the 
+<tt>"udp"</tt> option.</p>
 
-<p>
-For blocking short UDP transactions, 
-see <a href="#net-send-udp">net-send-udp"</a> 
-and <a href="#net-receive-udp">net-receive-udp</a>.
-</p>
+<p>For blocking short UDP transactions use <a href="#net-send-udp">net-send-udp</a> 
+and <a href="#net-receive-udp">net-receive-udp</a>.</p>
 
 <br><br>
 
@@ -18956,7 +18949,7 @@ and <a HREF="#pv">pv</a> functions.
 
 <p>
 In the first syntax group <tt>nth</tt> uses <em>int-index</em> an index into the 
-<em>list</em>, <em>array</em> or <em>str</em> found amnd returning the element found 
+<em>list</em>, <em>array</em> or <em>str</em> found and returning the element found 
 at that index. See also <a HREF="#indexing">Indexing elements of strings and lists</a>.</p>
 
 <p>Multiple indices may be specified to recursively access elements in nested lists
@@ -20976,17 +20969,21 @@ functions.</p>
 
 <a name="read-expr"></a>
 <h2><span class="function">read-expr</span></h2>
-<b>syntax: (read-expr <em>str-source</em> [<em>sym-context</em> [<em>exp-error</em>]])</b>
+<b>syntax: (read-expr <em>str-source</em> [<em>sym-context</em> [<em>exp-error</em> [<em>int-offset</em>]]])</b>
 
 <p><tt>read-expr</tt> parses the first expressions it finds in <em>str-source</em> and 
 an returns the translated expression without evaluating it. An optional context in 
 <em>sym-context</em> specifies a namespace for the translated expression.</p>
 
-<p>The system variable <tt>$0</tt> contains the number of characters processed.</p>
+<p>After a call to <tt>read-expr</tt> the system variable <tt>$0</tt> contains the 
+number of characters scanned.</p>
 
 <p>If an error occurs when translating <em>str-source</em> the expression in
 <em>exp-error</em> is evaluated and the result returned.</p>
 
+<p><em>int-offset</em> specifies an optional offset into <em>str-source</em> where
+processing should start. When calling <tt>read-expr</tt> repeatedly this number
+can be updated using <tt>$0</tt>.</p>
 
 <b>example:</b>
 <blockquote>
@@ -22458,66 +22455,53 @@ space and is called a <em>sparse file</em>.</p>
 
 <b>syntax: (semaphore <em>int-id</em> <em>0</em>)</b>
 
-<p>
-	A semaphore is an interprocess synchronization object 
-	that maintains a count between <tt>0</tt> (zero) and some maximum value.
-	Useful in controlling 
-	access to a shared resource, 
-	a semaphore is set to signaled 
-	when its count is greater than zero 
-	and to non-signaled
-	when its count is zero.
+<p>A semaphore is an interprocess synchronization object 
+that maintains a count between <tt>0</tt> (zero) and some maximum value.
+Useful in controlling access to a shared resource, 
+a semaphore is set to signaled when its count is greater than zero 
+and to non-signaled when its count is zero.</p>
+
+<p>A semaphore is created using the first syntax.  This returns 
+the semaphore ID, an integer used subsequently as <em>int-id</em> 
+when the <em>semaphore</em> function is called.  Initially, the 
+semaphore has a value of zero, which represents the non-signaled state.
 </p>
 
 <p>
-	A semaphore is created using the first syntax. 
-	This returns the semaphore ID, 
-	an integer used subsequently as <em>int-id</em> 
-	when the <em>semaphore</em> function is called.
-	Initially, the semaphore has a value of zero, which 
-	represents the non-signaled state.
+If calling <tt>semaphore</tt> with a negative value in <em>int-wait</em> 
+causes it to be decremented below zero,
+the function call will block until another process
+signals the semaphore with a positive value in <em>int-signal</em>.
+Calls to the semaphore with <em>int-wait</em> or <em>int-signal</em>
+effectively try to increment or decrement the semaphore value 
+by a positive or negative value specified in <em>int-signal</em> 
+or <em>int-wait</em>.
+Because the value of a semaphore must never fall below zero,
+the function call will block when this is attempted
+(i.e., a semaphore with a value of zero 
+will block until another process
+increases the value with a positive <em>int-signal</em>).
 </p>
 
-<p>
-	If calling <tt>semaphore</tt> with a negative value in <em>int-wait</em> 
-	causes it to be decremented below zero,
-	the function call will block until another process
-	signals the semaphore with a positive value in <em>int-signal</em>.
-	Calls to the semaphore with <em>int-wait</em> or <em>int-signal</em>
-	effectively try to increment or decrement the semaphore value 
-	by a positive or negative value specified in <em>int-signal</em> 
-	or <em>int-wait</em>.
-	Because the value of a semaphore must never fall below zero,
-	the function call will block when this is attempted
-	(i.e., a semaphore with a value of zero 
-	will block until another process
-	increases the value with a positive <em>int-signal</em>).
-</p>
+<p>The second syntax is used to inquire about the value of a semaphore
+ by calling <tt>semaphore</tt> with the <em>int-id</em> only.
+This form is not available on Win32.</p>
 
-<p>
-	The second syntax is used to inquire about the value of a semaphore
- 	by calling <tt>semaphore</tt> with the <em>int-id</em> only.
-	This form is not available on Win32.
-</p>
+<p>Supplying <tt>0</tt> (zero) as the last argument will release system 
+resources for the semaphore, which then becomes unavailable.
+Any pending waits on this semaphore in other child processes 
+will be released.</p>
 
-<p>
-	Supplying <tt>0</tt> (zero) as the last argument 
-	will release system resources for the semaphore,
-	which then becomes unavailable.
-	Any pending waits on this semaphore 
-	in other child processes 
-	will be released.
-</p>
+<p>On Win32, only parent and child processes can share a semaphore.
+On Linux/Unix, independent processes can share a semaphore.</p>
 
-<p>
-	On Win32, only parent and child processes can share a semaphore.
-	On Linux/Unix, independent processes can share a semaphore.
-</p>
+<p>On failure the <tt>semaphore</tt> function returns <tt>nil</tt>.
+<a href="#sys-error">sys-error</a> can be used to retrieve the error
+number and text from the underlying operating system.</p>
 
-<p>
-	The following code examples summarize the different syntax forms:
-</p>
+<p>The following code examples summarize the different syntax forms:</p>
 
+<b>example:</b>
 <blockquote>
 <pre>
 ;; init semaphores 
@@ -22543,9 +22527,7 @@ space and is called a <em>sparse file</em>.</p>
 </pre>
 </blockquote>
 
-<p>
-	The following example shows semaphores controlling a child process:
-</p> 
+<p>The following example shows semaphores controlling a child process:</p> 
 
 <b>example:</b>
 <blockquote>
@@ -22920,7 +22902,7 @@ db:db <span class=arw>&rarr;</span> (fruits (Apples 123 44) (Oranges 1 5 3))
 <p>For examples on how to use <em>func-compare</em> see <a href="#set-ref-all">set-ref-all</a></p>
 
 <p>See also <a href="#set-ref">set-ref</a>, which returns the whole changed list
-instead of the old element, but otherwis works identically. For changing all
+instead of the old element, but otherwise works identically. For changing all
 occurrences of an element in a list use <a href="#set-ref-all">set-ref-all</a>.</p>
 
 <br><br>
@@ -23011,7 +22993,7 @@ x  <span class=arw>&rarr;</span> 1
 y  <span class=arw>&rarr;</span> 2
 z  <span class=arw>&rarr;</span> 3
 
-; with nth or implixit indices
+; with nth or implicit indices
 (setq L '(a b (c d) e f g))
 
 (setf (L 1) 'B)      <span class=arw>&rarr;</span> B
@@ -24448,55 +24430,43 @@ create, set and evaluate symbols.
 
 <a name="sys-error"></a>
 <h2><span class="function">sys-error</span></h2>
-<b>syntax: (sys-error)</b>
+<b>syntax: (sys-error)</b><br>
+<b>syntax: (sys-error <em>int-error</em>)</b><br>
+<b>syntax: (sys-error 0)</b>
 
-<p>
-	Reports error numbers generated 
-	by the underlying OS 
-	newLISP is running on.
-	The error numbers reported 
-	may differ on the platforms 
-	newLISP has been compiled for.
-	Consult the platform's C library information,
-	(e.g., the GNU <tt>libc</tt> reference).
-	Most errors reported 
-	refer to system resources such as files and semaphores.
-</p>
+<p>Reports error numbers generated by the underlying OS 
+newLISP is running on.  The error numbers reported 
+may differ on the platforms newLISP has been compiled for.
+Consult the platform's C library information. The second
+syntax form can be used to retrieve the error text.</p>
 
-<p>
-	Whenever a function in newLISP 
-	within the system resources area
-	returns <tt>nil</tt>, 
-	<tt>sys-error</tt> can be checked 
-	for the underlying reason.
-	For file operations, 
-	<tt>sys-error</tt> may be set 
-	for nonexistent files 
-	or wrong permissions 
-	when accessing the resource.
-	Another cause of error 
-	could be the exhaustion of certain system resources 
-	like file handles or semaphores.
-</p>
+<p>Whenever a function in newLISP within the system resources area
+returns <tt>nil</tt>, <tt>sys-error</tt> can be checked 
+for the underlying reason. For file operations, 
+<tt>sys-error</tt> may be set for nonexistent files 
+or wrong permissions when accessing the resource.
+Another cause of error could be the exhaustion of certain system 
+resources like file handles or semaphores.</p>
 
 <br><br> 
 <b>example:</b>
 <blockquote>
 <pre>
 ;; trying to open a nonexistent file
-(open "blahbla" "r")  <span class=arw>&rarr;</span> nil
+(open "xyz" "r")  <span class=arw>&rarr;</span> nil
 
-(sys-error)  <span class=arw>&rarr;</span> 2
+(sys-error)    <span class=arw>&rarr;</span> 2
 
-(sys-error 0)  <span class=arw>&rarr;</span> 0  ; clear OS sytem error number
+;; retrieve the error text
+(sys-error 2)  <span class=arw>&rarr;</span> "No such file or directory"
+
+;; reset errno with 0
+(sys-error 0)  <span class=arw>&rarr;</span> 0 
 </pre>
 </blockquote>
 
-<p>
-	The error number can be cleared
-	by giving a <tt>0</tt> (zero) 
-	for the optional argument.
-</p>
+<p>The error number can be cleared by giving a <tt>0</tt> (zero) 
+for the optional argument.</p>
 
 <br><br>
 
@@ -26019,7 +25989,7 @@ list <tt>()</tt> if <em>body</em> was not executed.</p>
 <blockquote><pre>
 (when (read-line)
 	(set 'result (analyze (current-line)))
-	(report result
+	(report result)
 	(finish)
 )	
 </pre></blockquote>
@@ -26230,7 +26200,7 @@ writes to  to standard out (STDOUT) or to whatever device is set by
 ;; using a string device:
 
 (set 'str "")
-(dotimes (x 4) (write-line "hello" str))
+(dotimes (x 4) (write-line str "hello"))
 
 str  <span class=arw>&rarr;</span> "hello\r\nhello\r\nhello\r\nhello\r\n"  ; on Win32
 
@@ -26759,6 +26729,8 @@ them as they occur.</p>
     function is not reentrant         59
     local symbol is protected         60
     no symbol reference found         61
+    list is empty                     62
+    I/O error                         63			
     
 </pre>
 </blockquote>
@@ -26807,7 +26779,7 @@ functions or expressions.</p>
 <table width="90%" border="1" summary="system vars">
 <tr><th>name</th><th>purpose</th><th>&nbsp;protection&nbsp;</th><th>&nbsp;reentrant&nbsp;</th></tr>
 <tr><td width="20%"><tt>&nbsp;$0 - $15</tt></td><td>Used primarily in regular expressions. <tt>$0</tt>
-is also used to record the last state or count of exection of a function.</td>
+is also used to record the last state or count of execution of a function.</td>
 <td>&nbsp;no</td><td>&nbsp;no</td></tr>
 
 <tr><td><tt>&nbsp;$args</tt></td><td>Contains the list parameters not bound to local
@@ -26818,14 +26790,14 @@ the contents of this variable.</td><td>&nbsp;cannot write</td><td>&nbsp;yes</td>
 maintains this as a list index or offset. The functions 
 <a href="#while">while</a>, <a href="#until">until</a>,
 <a href="#do-while">do-while</a> and <a href="#do-until">do-until</a>
-maintain this variable as an interation counter starting with 0 (zero) for
+maintain this variable as an iteration counter starting with 0 (zero) for
 the first iteration.</td>
 <td>&nbsp;cannot write</td><td>&nbsp;yes</td></tr>
 
 <tr><td><tt>&nbsp;$it</tt></td><td>The <em>anaphoric</em> <tt>$it</tt> refers to the
 result inside an executing expression, i.e. in self referential assignments. In
 some functions <tt>$0</tt> servers the same purpose and both carry the same value.
-<tt>$it</tt> is only avalailable inside the function expression setting it, and
+<tt>$it</tt> is only available inside the function expression setting it, and
 is set to <tt>nil</tt> on exit of that expression.</td>
 <td>&nbsp;cannot write</td><td>&nbsp;no</td></tr>
 
@@ -26848,7 +26820,7 @@ one two write platform independent code.</p>
 which can be used together with <tt>new</tt> to create new FOOP classes, e.g:
 <tt>(new Class 'Rectangle)</tt> would create a class and object constructor for
 a user class <tt>Rectangle</tt>. See the 
-<a href="#newlisp_classes">FOOP classes and constructors</a> chapter in the useres 
+<a href="#newlisp_classes">FOOP classes and constructors</a> chapter in the users 
 manual for details.</td>
 <td>&nbsp;no</td><td>&nbsp;n/a</td></tr>
 
@@ -26857,7 +26829,7 @@ for which the running newLISP version has been compiled. See the reference secti
 <a href="#ostype">details</a></td>
 <td>&nbsp;cannot write</td><td>&nbsp;n/a</td></tr>
 
-<tr><td><tt>&nbsp;Tree</tt></td><td>Is a prefined namespace to serve as a hash like
+<tr><td><tt>&nbsp;Tree</tt></td><td>Is a predefined namespace to serve as a hash like
 dictionary. Instead of writing <tt>(define Foo:Foo)</tt> to create a <tt>Foo</tt>
 dictionary, the expression <tt>(new Tree 'Foo)</tt> can be used as well. See the chapter
 <a href="#hash">Hash functions and dictionaries</a> foe details.</td>

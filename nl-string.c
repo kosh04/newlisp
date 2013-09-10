@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -895,7 +895,7 @@ return(NULL);
 */
 void makeStreamFromString(STREAM * stream, char * str)
 {
-memset(stream, 0, sizeof(STREAM));
+stream->handle = stream->position = 0;
 stream->buffer = stream->ptr = str;
 /* make getToken work to the end of str */
 stream->size = strlen(str) + 4 * MAX_STRING;

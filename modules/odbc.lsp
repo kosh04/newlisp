@@ -4,24 +4,20 @@
 ;; @author Lutz Mueller, 2003 
 ;;
 ;; <h2>OCBC Interface functions</h2>
-;; 
 ;; This module has only been tested on Win32 but should work on UNIX too
 ;; with few modifications. At the beginning of the program file include
 ;; a 'load' statement for the module:
 ;; <pre>
 ;; (load "odbc.lsp")
 ;; </pre>
-;; 
 ;; Some of the code assumes Intel (low -> high) little-endian byte order.
 ;;
 ;; See the end of file for a test function 'test-odbc', which demonstrates the 
 ;; usage of the module and can be used to test a correct ODBC installation and 
 ;; data source setup.
-;;
 ;; <h2>Requirements</h2>
 ;; On Win32 platforms required 'odbc32.dll' is part of the OS's installations. 
 ;; There is no UNIX function import tested or adapted for this ODBC module.
-;;
 ;; <h2>Function overview</h2>
 ;; <pre>
 ;;  (ODBC:connect data-source-name-str user-name-str password-str) ; connect to a data source
@@ -190,7 +186,6 @@
 ;; @param <str-user> The user name.
 ;; @param <str-password> The password of the user.
 ;; @return 'true' on success, 'nil' on failure.
-;;
 ;; Connect to a data-source with a user name and password.
 ;; The data-source name must be configured first via ODBC
 ;; administrative tools, i.e. a control applet on Win32.
@@ -234,7 +229,6 @@
 ;; @syntax (ODBC:query <str-sql>)
 ;; @param <str-sql> The SQL statement string.
 ;; @return 'true' on success, 'nil' on failure.
-;;
 ;; Send and SQL string for database manipulation
 ;;
 ;; @example
@@ -288,7 +282,6 @@
 ;; @syntax (ODBC:columns-atts <num-col>)
 ;; @param <num-col> The number of the column, starting witth 1 for the first.
 ;; @return A list of attributes for a column in a result set.
-;;
 ;; Returns a list with the columname SQL, data type number and required column size
 ;; when displaying in a string. For the data type number and SQL data type see
 ;; the file 'sql.h' on your platform OS, i.e. 'SQL_VARCHAR', 'SQL_INTEGER' etc.
@@ -322,7 +315,6 @@
 
 ;; @syntax (ODBC:fetch-row)
 ;; @return A list of items of a result set row.
-;;
 ;; Fetches a row of data after a previously executed 'ODBC:query'. Each data is formatted as
 ;; a string, and can be converted using newLISP conversion functions 
 ;; like: 'int', 'float' or 'string'.
@@ -345,7 +337,6 @@
 
 ;; @syntax (ODBC:affected-rows)
 ;; @return Number of rows affected by the last SQL statement.
-;;
 ;; Returns the number of rows affected by an 'insert', 'update' or 'delete', 'ODBX:query'
 ;; operation. After a 'select' operation the number -1 will be returned.
 
@@ -445,7 +436,6 @@
 
 ;; @syntax (ODBC:close-db)
 ;; @return 'true' on success, 'nil' on failure.
-;;
 ;; Closes a database connection.
 
 (define (close-db)

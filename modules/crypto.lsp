@@ -48,7 +48,6 @@
 ;; @param <string> The string buffer for which to calculate a MD5 hash
 ;; @param <bool-raw> Return the raw binay buffer when 'true'.
 ;; @return The 16 Byte MD5 hash as a 32 Byte long hex string or as a 16 byte binary buffer.
-;;
 ;; @example
 ;; (crypto:md5 "ABC") => "902fbdd2b1df0c4f70b4a5d23525e932"
 ;;
@@ -69,7 +68,6 @@
 ;; @param <string> The string buffer for which to calculate a SHA-1 hash
 ;; @param <bool-raw> Return the raw binay buffer when 'true'.
 ;; @return The 20 Byte SHA-1 hash as a 40 Byte long hex string or as a 20 byte binary buffer.
-;;
 ;; @example
 ;; (crypto:sha1 "ABC") => "3c01bdbb26f358bab27f267924aa2c9a03fcfdb8"
 ;;
@@ -94,7 +92,7 @@
 ;;
 ;; This function is part of the amazon.com
 ;; @link http://docs.amazonwebservices.com/AWSEC2/2007-08-29/DeveloperGuide/using-query-api.html Query-API
-;; and based on @link http://www.faqs.org/rfcs/rfc2104.html RFC2104 - HMAC: Keyed-Hashing for Message Authentication
+;; and based on @link http://www.faqs.org/rfcs/rfc2104.html RFC2104 - HMAC: Keyed-Hashing for Message Authentication.
 ;;
 ;; @example
 ;; (set 'output (crypto:hmac crypto:md5 "Hello World" "secret"))

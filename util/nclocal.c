@@ -17,7 +17,7 @@
 //  for multiline send a [cmd] before and a [/cmd] after the code
 //  each on an extra line.
 //      
-// Copyright (C) 2007 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 2007-2009 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,
@@ -51,7 +51,7 @@ char * sock_path;
 
 if(argc < 2)
 	{
-	printf("nclocal - (c) Lutz Mueller, 2007\n");
+	printf("nclocal - (c) Lutz Mueller, 2009\n");
 	printf("Send stdin to <socket-path> and output response to stdout\n\n");
 	printf("USAGE: nclocal <socket-path> < message-file\n");
 	exit(0);

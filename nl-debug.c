@@ -1,6 +1,6 @@
 /* nl-debug.c --- debugging functions for newLISP
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -262,7 +262,8 @@ while(TRUE)
 		varPrintf(OUT_CONSOLE, "\n[%s %d %s]%s", msg, recursionCount, context, footerStr);
 	else evalSilent = FALSE;
 
-	fgets(command, MAX_LINE - 1, IOchannel);
+	if(fgets(command, MAX_LINE - 1, IOchannel) == NULL)
+		fatalError(ERR_IO_ERROR, 0, 0);
 
 	if( (strcmp(command, "n\n") == 0) || (strcmp(command, "n\r\n") == 0))
 		{

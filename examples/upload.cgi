@@ -1,9 +1,10 @@
-#!/usr/bin/newlisp
+#!/home/htdocs/cgi-bin/newlisp
 #
 # Upload script v. 1.0
 # v 1.1 - changed 'integer' to 'int'
 # v 1.2 - eliminated quote in write-buffer syntax
 # v 1.3 - change in read-buffer for version 10.0
+# v 1.4 - change in exit condition for reader loop
 # serves POST request from upload.html
 # 
 #
@@ -24,10 +25,9 @@
 
 	; read data into intermediate file
 	(set 'infile (open "upload-file" "write"))
-	(while (!= (read-buffer (device) buffer 1024) 0)
+	(while (read-buffer (device) buffer 1024)
 	    (write-buffer infile buffer))
 	(close infile)
-
 	; get filename and boundaries
 	(set 'infile (open "upload-file" "read"))
 	(set 'boundary (read-line infile)) ; get boundary string

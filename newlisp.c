@@ -1,6 +1,6 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
-    Copyright (C) 2008 Lutz Mueller
+    Copyright (C) 2009 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,26 +82,26 @@ int opsys = 6;
 int opsys = 7; 
 #endif 
 
-int version = 10000;
+int version = 10001;
 
 char copyright[]=
-"\nnewLISP v.10.0.0 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.0.1 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.0 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.1 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.0 on %s IPv%d%s\n\n";
+"newLISP v.10.0.1 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.0 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.1 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.0 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.0.1 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -173,7 +173,7 @@ SYMBOL * symHandler[32];
 int currentSignal = 0;
 
 SYMBOL * symbolCheck = NULL;
-char * symbolCheckPtr = NULL;
+void * symbolCheckPtr = NULL;
 
 jmp_buf errorJump;
 
@@ -281,7 +281,7 @@ setupSignalHandler(SIGINT, ctrlC_handler);
 traceFlag |= TRACE_SIGINT;
 
 printErrorMessage(ERR_SIGINT, NULL, 0);
-printf("(c)ontinue, e(x)it, (r)eset:");
+printf("%s", "(c)ontinue, e(x)it, (r)eset:");
 fflush(NULL);
 chr = getchar();
 if(chr == 'x') exit(1);
@@ -379,7 +379,7 @@ switch(sig)
 #ifdef WIN_32
         traceFlag |= TRACE_SIGINT;
 #else
-        printf("\n(c)ontinue, (d)ebug, e(x)it, (r)eset:");
+        printf("%s", "\n(c)ontinue, (d)ebug, e(x)it, (r)eset:");
         fflush(NULL);
         chr = getchar();
         if(chr == 'x') exit(1);
@@ -425,7 +425,7 @@ name = EXEName;
 #endif
 
 /* normal newLISP start up */
-if(strncmp(linkOffset, "@@@@@@@@", 8) == 0)
+if(strncmp(linkOffset, "@@@@", 4) == 0)
 	{
 	if(getenv("HOME"))
 		strncpy(initFile, getenv("HOME"), MAX_LINE - 16);
@@ -606,7 +606,8 @@ if(argc < 2 || strncmp(argv[1], "-n", 2))
 
 errno = 0;
 
-realpath(".", startupDir);
+if(realpath(".", startupDir) == NULL)
+	fatalError(ERR_IO_ERROR, 0, 0);
 
 for(idx = 1; idx < argc; idx++)
 	{
@@ -653,7 +654,8 @@ for(idx = 1; idx < argc; idx++)
 	if(strncmp(argv[idx], "-l", 2) == 0 || strncmp(argv[idx], "-L", 2) == 0)
 		{
 		logTraffic = (strncmp(argv[idx], "-L", 2) == 0) ? LOG_MORE : LOG_LESS;
-		realpath(getArg(argv, argc, &idx), logFile);
+		if(realpath(getArg(argv, argc, &idx), logFile) == NULL)
+			fatalError(ERR_IO_ERROR, 0, 0);
 		continue;
 		}
 
@@ -669,8 +671,9 @@ for(idx = 1; idx < argc; idx++)
 
 	if(strncmp(argv[idx], "-w", 2) == 0)
 		{
-		realpath(getArg(argv, argc, &idx), startupDir);
-		chdir(startupDir);	
+		if(realpath(getArg(argv, argc, &idx), startupDir) == NULL 
+										|| chdir(startupDir) < 0)
+			fatalError(ERR_IO_ERROR, 0, 0);
 		continue;
 		}	
 
@@ -854,8 +857,7 @@ if(promptEvent != nilSymbol && !isNil((CELL *)promptEvent->contents))
 	{
 	if(executeSymbol(promptEvent, stuffSymbol(currentContext), &result) == CELL_STRING)
 		{
-		snprintf(string, 63, "%s", (char *)result->contents);
-		strncpy(string, (char *)result->contents, 63);
+		strncpy(string, (char *)result->contents, 64);
 		string[63] = 0;
 		deleteList(result);
 		return(string);
@@ -924,7 +926,7 @@ while(envStackIdx > index)
 
 void executeCommandLine(char * command, int outDevice, STREAM * cmdStream)
 {
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream;
 CELL * result;
 char buff[MAX_LINE];
 char cmd[MAX_LINE];
@@ -977,7 +979,7 @@ if(noPromptMode)
 
 if(noPromptMode == FALSE && *command == '!' && *(command + 1) != ' ' && strlen(command) > 1)
 	{
-	system((command + 1));
+	if(system((command + 1)) < 0) return;
 	return;
 	}
 	
@@ -1031,6 +1033,7 @@ printf("\n");
 }
 */
 
+/* used for loadFile() and and executeCommandLine() */
 CELL * evaluateStream(STREAM * stream, UINT outDevice, int flag)
 {
 CELL * program;
@@ -1203,30 +1206,37 @@ lambdaStackIdx = lambdaStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * siz
 CELL * evaluateExpression(CELL * cell)
 {
 CELL * result;
+UINT * resultIdxSave = resultStack;
 CELL * args = NULL;
 CELL * pCell = NULL;
 SYMBOL * newContext = NULL;
 SYMBOL * sPtr = NULL;
-UINT * resultIdxSave = resultStack;
 
-symbolCheckPtr = NULL;
-
-if(cell->type & EVAL_SELF_TYPE_MASK) 
-	{
-	symbolCheck = NULL;
-	return cell;
-	}
-	
+symbolCheck = symbolCheckPtr = NULL;
 
 switch(cell->type)
 	{
+	case CELL_NIL:
+	case CELL_TRUE:
+	case CELL_INT:
+	case CELL_LONG:
+	case CELL_INT64:
+	case CELL_FLOAT:
+	case CELL_STRING:
+	case CELL_PRIMITIVE:
+	case CELL_IMPORT_CDECL:
+	case CELL_IMPORT_DLL:
+	case CELL_LAMBDA:
+	case CELL_MACRO:
+	case CELL_ARRAY:
+		return(cell);
+
 	case CELL_SYMBOL:
 	case CELL_CONTEXT:
 		symbolCheck = (SYMBOL *)cell->contents;
 		return((CELL *)symbolCheck->contents);
 
 	case CELL_QUOTE:
-		symbolCheck = NULL;
 		return((CELL *)cell->contents);
 
 	case CELL_EXPRESSION:
@@ -1394,7 +1404,6 @@ switch(cell->type)
 	case CELL_DYN_SYMBOL:
 		symbolCheck = getDynamicSymbol(cell);
 		return((CELL *)symbolCheck->contents);
-/*		return((CELL*)(getDynamicSymbol(cell))->contents); */
 		
 	default:
 		result = nilCell;
@@ -2258,7 +2267,8 @@ switch(device)
 	case OUT_DEVICE:
 		if(printDevice != 0)
 			{
-			write(printDevice, buffer, strlen(buffer));
+			if(write(printDevice, buffer, strlen(buffer)) < 0)
+				fatalError(ERR_IO_ERROR, 0, 0);
 			break;
 			}
 	case OUT_CONSOLE:
@@ -2930,7 +2940,7 @@ if(evalCatchFlag && !(traceFlag & TRACE_SIGINT)) return;
 if(errorEvent == nilSymbol)
 	{
 	if(errorNumber == ERR_SIGINT)
-		printf(errorStream.buffer);
+		printf("%s", errorStream.buffer);
 	else
 		varPrintf(OUT_CONSOLE, "\n%.1024s\n", errorStream.buffer);
 	}
@@ -2943,7 +2953,7 @@ if(errorEvent == nilSymbol)
 CELL * loadFile(char * fileName, UINT offset, int encryptFlag, SYMBOL * context)
 {
 CELL * result;
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream;
 int errNo, dataLen;
 jmp_buf errorJumpSave;
 SYMBOL * contextSave;
@@ -4036,15 +4046,22 @@ READ_EXPR  used by p_sync() in nl-filesys.c
 CELL * sysEvalString(char * evalString, SYMBOL * context, CELL * proc, int mode)
 {
 CELL * program;
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream;
 CELL * resultCell = nilCell;
 SYMBOL * contextSave = NULL;
 UINT * resultIdxSave;
 jmp_buf errorJumpSave;
 int recursionCountSave;
 UINT * envStackIdxSave;
+UINT offset;
 
 makeStreamFromString(&stream, evalString);
+if(proc->next != nilCell)
+	{
+	getInteger(proc->next, &offset);
+	stream.ptr += offset;
+	}
+
 resultIdxSave = resultStackIdx;
 contextSave = currentContext;
 currentContext = context;
@@ -4974,8 +4991,10 @@ getEvalDefault(params, &list);
 if(list->type == CELL_STRING)
 	{
 	str = (char *)list->contents;
+	if(*str == 0) return(copyCell(list));
 #ifndef SUPPORT_UTF8
-	result = stuffString(str + list->aux - 2);
+	str += (list->aux - 2);
+	result = stuffString(str);
 #else
 	ptr = str;
 	while((len = utf8_1st_len(str)) != 0)
@@ -5401,7 +5420,10 @@ for(i = 0; i <= stepCnt; i++)
 	cell = evaluateBlock(block);
 	}
 
-cell = copyCell(cell);
+if(symbolCheck && cell != (CELL *)symbol->contents)
+	pushResultFlag = FALSE;
+else
+	cell = copyCell(cell);
 
 deleteList((CELL *)symbol->contents);
 symbol = (SYMBOL*)popEnvironment();
@@ -5533,7 +5555,10 @@ while(list!= nilCell)
 	}
 
 FINISH_DO:
-cell = copyCell(cell);
+if(symbolCheck && cell != (CELL *)symbol->contents)
+	pushResultFlag = FALSE;
+else
+	cell = copyCell(cell);
 
 recoverIteratorIndex(cellIdx);
 
@@ -6328,7 +6353,7 @@ return(nilCell);
 
 int isLegalSymbol(char * source)
 {
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream;
 char token[MAX_SYMBOL + 1];
 int tklen;
 
@@ -6670,6 +6695,7 @@ CELL * p_colon(CELL * params)
 {
 SYMBOL * contextSymbol = NULL;
 SYMBOL * methodSymbol;
+SYMBOL * sPtr;
 CELL * proc;
 CELL * cell;
 CELL * obj;
@@ -6681,9 +6707,22 @@ if(params->type != CELL_SYMBOL)
 methodSymbol = (SYMBOL *)params->contents;
 params = params->next;
 obj = evaluateExpression(params);
-if(obj->type != CELL_EXPRESSION)
-	return(errorProcExt(ERR_LIST_EXPECTED, obj));
-cell = (CELL *)obj->contents;
+
+if(obj->type == CELL_EXPRESSION)
+	cell = (CELL *)obj->contents;
+else
+	{
+	if(obj->type == CELL_CONTEXT)
+		{
+		sPtr = translateCreateSymbol( ((SYMBOL*)obj->contents)->name, CELL_NIL,
+			(SYMBOL*)obj->contents, TRUE);
+		cell = (CELL *)sPtr->contents;
+		if(cell->type != CELL_EXPRESSION)
+			return(errorProcExt(ERR_LIST_EXPECTED, cell));
+		cell = (CELL *)cell->contents;
+		}
+	else return(errorProcExt(ERR_LIST_EXPECTED, obj));
+	}
 
 if(cell->type == CELL_SYMBOL || cell->type == CELL_CONTEXT)
     contextSymbol = (SYMBOL *)cell->contents;

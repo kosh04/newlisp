@@ -2,8 +2,11 @@
 <html>
 <title>newLISP  v.10.0 Release Notes </title>
 <body>
-<blockquote><h1>newLISP<font size=-2>&#174;</font> v.10.0 Release Notes 
-<font size=-1>December 8th, 2008</font></h1>
+<blockquote><h1>newLISP<font size=-2>&#174;</font> v.10.0.1 Release Notes 
+<font size=-1>January 8th, 2009</font></h1>
+
+<p>Version 10.0.1 is a maintenance update to release 10.0.1. Some minor
+feature enhancements are noted in the next (search for 10.0.1).</p>
 
 <p>newLISP version 10.0 marks a new generation of newLISP with new abilities, such as
 reference returns instead of copies for many built-in functions and a
@@ -73,8 +76,18 @@ last returned value in the statement block, if that value was a reference:</p>
 <tt>do-until</tt>, <tt>cond</tt> and <tt>case</tt>.
 </blockquote>
 
-<p>In all other cases a copy is returned. To force the return of a copy instead 
-of a reference, enclose the expression in the new <tt>copy</tt> function:</p>
+... and added in v.10.0.1:
+
+<blockquote>
+<tt>for</tt>, <tt>doargs</tt>, <tt>dolist</tt>, <tt>dostring</tt>, 
+<tt>dotimes</tt>, <tt>dotree</tt>.
+</blockquote>
+
+<p>Now all built-in functions except <tt>let</tt>, <tt>letn</tt>, <tt>letx</tt> and
+<tt>local</tt> can return references.</p>
+
+<p>To force the return of a copy instead of a reference, enclose the expression 
+in the new <tt>copy</tt> function:</p>
 
 <blockquote><pre>
 ; sort a copy not the original list
@@ -203,6 +216,9 @@ and <tt>pop</tt>. Using index vectors in impicit indexing and the syntax of 'nth
 <li><tt>dec</tt> does not need the quote before a symbol and also can decrement
 places like <tt>setf</tt> does.</li>
 
+<li><tt>callback</tt> now can pass up to eight parameters (before four). Sixteen
+callback functions can be assigned (before eight) v.10.0.1.</li>
+
 <li><tt>default</tt> returns the contents of a default functor when given a context. 
 This function was not documented since v9.4.5. It was previously documented in version
 9.3, but now works differently.</li>
@@ -240,7 +256,8 @@ model queues: <tt>(pop (push tail Q -1)) =&gt; head</tt></li>
 
 <li><tt>read-expr</tt> has a revised syntax identical to the syntax pattern
 of <tt>eval-string</tt>. The workings of <tt>read-expr</tt> have changed too
-(see the Reference manual for details).<br></li>
+(see the Reference manual for details). Version 10.0.1 adds an additional
+offset parameter for the source.<br></li>
     
 <li><tt>read-buffer</tt> no longer needs the quote before the buffer symbol. It also
 accepts a default functor specified by a context name as a buffer, for reference
@@ -251,6 +268,9 @@ was tolerated in previous versions.<br></li>
 
 <li><tt>set-locale</tt> now returns a list of locale string and decimal point character,
 previously only the locale string was returned.</li>
+
+<li><tt>sys-error</tt> can return the error text when supplying the number 
+in version 10.0.1.</li>
 
 <li><tt>unless</tt> is reintroduced, and works like <tt>(when (not ...) ...)</tt>
  with no <em>alternate</em> clause.<br></li>
@@ -304,9 +324,9 @@ changes. The following files needed minor changes.</p>
 <tr><td><tt>example/upload.cgi</tt></td><td>&nbsp;CGI file upload example</td></tr>
 <tr><td><tt>modules/ftp.lsp</tt></td><td>&nbsp;ftp module</td></tr>
 <tr><td><tt>modules/postscript.lsp</tt></td><td>&nbsp;postscript module</td></tr>
-<tr><td><tt>modules/stat.lsp</tt></td><td>&nbsp;statistics module</td></tr>
+<tr><td><tt>modules/stat.lsp</tt></td><td>&nbsp;statistics module (v.10.0.1)</td></tr>
 <tr><td><tt>modules/xmlrpc-client.lsp</tt></td><td>&nbsp;XML RPC client module</td></tr>
-<tr><td><tt>util/newlispdoc</tt></td><td>&nbsp;documentation generator</td></tr>
+<tr><td><tt>util/newlispdoc</tt></td><td>&nbsp;documentation generator (v.10.0.1)</td></tr>
 <tr><td><tt>util/syntax.lsp</tt></td><td>&nbsp;syntax highlighter</td></tr>
 <tr><td><tt>guiserver/newlisp-edit.lsp</tt></td><td>&nbsp;The editor in newLISP-GS</td></tr>
 <tr><td><tt>guiserver/pinballs-demo.lsp</tt></td><td>&nbsp;A demo file in newLISP-GS</td></tr>

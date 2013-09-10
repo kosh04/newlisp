@@ -6,9 +6,5 @@ C compiler for the Alpha CPU:
 
 	make
 
-Note that since version 8.9.4 ffi libraries are not required anymore.
-
-Note that since version 9.0.14 newLisp compiles in 64-bit completely.
-
 Please contact Peter van Eerten (peter AT gtk-server DOT org) for any 
 remaining questions.

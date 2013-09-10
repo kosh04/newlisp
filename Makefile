@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.0.0
-INT_VERSION = 10000
+VERSION = 10.0.1
+INT_VERSION = 10001
 GUISERVER = /usr/share/newlisp/guiserver
 
 default:
