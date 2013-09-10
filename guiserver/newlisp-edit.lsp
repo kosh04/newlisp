@@ -1,9 +1,10 @@
 #!/usr/bin/newlisp
 
 ; newlisp-edit.lsp - multiple tab LISP editor and support for running code from the editor
+; needs 9.9.2 version minimum to run
 
-; version 1.20
-; version 1.21 removed deprecated replace-assoc using set-assoc and pop-assoc instead
+; version 1.26 fixed old tab-switching bug when closing a tab
+; version 1.27 took out writing debug edit.txt to Application folder
 
 (set-locale "C")
 
@@ -60,6 +61,7 @@
 (set 'config:currentAltShell "")
 (set 'config:currentMonitorForeground '(0.1 0.1 0.5))
 (set 'config:currentMonitorBackground '(0.95 0.95 0.95))
+(set 'config:currentExtension "")
 
 ;; configure themes
 
@@ -201,10 +203,9 @@
 (set 'currentAltShell config:currentAltShell)
 (set 'currentMonitorForeground config:currentMonitorForeground)
 (set 'currentMonitorBackground config:currentMonitorBackground)
-
+(set 'currentExtension config:currentExtension)
 (set 'currentPath (string currentDir "/" currentFile))
 (set 'currentSyntaxStatus "lsp")
-
 
 ;(gs:set-look-and-feel "com.sun.java.swing.plaf.motif.MotifLookAndFeel")
 ;(gs:set-look-and-feel "javax.swing.plaf.metal.MetalLookAndFeel")
@@ -214,8 +215,10 @@
 
 (define (start-newlisp-shell)
 	(if (= ostype "Win32")
-		(gs:run-shell 'OutputArea (string newlispDir "/newlisp.exe -C -w \"" $HOME "\""))
-		(gs:run-shell 'OutputArea (string "/usr/bin/newlisp -C -w " $HOME))
+		(gs:run-shell 'OutputArea 
+			(string newlispDir "/newlisp.exe " currentExtension " -C -w \"" $HOME "\""))
+		(gs:run-shell 'OutputArea 
+			(string "/usr/bin/newlisp " currentExtension " -C -w " $HOME))
 	)
 )
 
@@ -590,14 +593,18 @@
 )
 
 (define (fileclose-action id result)
+;(println "in fileclose-action")
 	(if (= result 0)
 		(if (> (length tabs-stack) 1)
 			(begin
 				(gs:remove-tab 'EditorTabs currentTabIndex)
-				(pop-assoc (tabs-stack currentEdit))
+;(println "currentTabIndex before pop:" currentTabIndex)
+;(println (assoc currentEdit tabs-stack))
+				(pop-assoc currentEdit tabs-stack)
+;(println "currentTabIndex after pop:" currentTabIndex)
 				(if (= currentTabIndex (length tabs-stack)) ; it was the right most tab
-					(dec 'currentTabIndex)
-					(begin ; its was not the most roght which was removed
+					(dec currentTabIndex)
+					(begin ; its was not the most right which was removed
 						(set 'currentEdit (first (tabs-stack currentTabIndex)))
 						(switch-to-tab currentEdit)
 					)
@@ -1005,7 +1012,7 @@
 			(gs:set-text 'FindDialog "Not found")
 			(gs:disable 'FindTextReplaceNextButton)
 			(when (and (= currentDot currentMark) (= currentSearchDirection "next"))
-				(set 'currentMark (inc 'currentDot))
+				(set 'currentMark (inc currentDot))
 				(gs:set-caret currentEdit currentMark)
 			)
 		)
@@ -1075,7 +1082,7 @@
 	(gs:set-font currentEdit currentFontName currentFontSize "plain"))
 
 (define (viewfontbigger-handler)
-	(inc 'currentFontSize)
+	(inc currentFontSize)
 	(gs:set-text 'FontSizeLabel (string currentFontSize))
 	(gs:set-font currentEdit currentFontName currentFontSize "plain"))
 
@@ -1148,7 +1155,7 @@
 	(if text
 		(begin
 			(set 'text (base64-dec text))
-			(write-file "editor.txt" text)
+			;;(write-file "editor.txt" text)
 			(gs:eval-shell 'OutputArea (string "[cmd]\n" text "\n[/cmd]\n"))))
 	(after-exec-or-process)
 )
@@ -1248,7 +1255,7 @@
 	(if undo (gs:enable 'EditUndo) (gs:disable 'EditUndo))
 	(if redo (gs:enable 'EditRedo) (gs:disable 'EditRedo))
 	(set 'currentDot dot 'currentMark mark)
-;	(println code ":" mods)
+	;(println code ":" mods)
 	(if (= code 65535) ; crtl or meta keys wit or w/o shift
 		; caret movement only
 		(if (not is-selection)
@@ -1263,7 +1270,7 @@
 		)
 		; character typed
 		(if edit-buffer-clean
-			(when (<  mods 128)
+			(when (or (<  mods 128) (and (= mods 256) (= code 118)))
 				(set 'edit-buffer-clean nil)
 				(gs:set-icon 'EditorTabs "/local/red10.png" currentTabIndex)
 				(gs:enable 'FileSave 'FileSaveAs 'SaveButton)
@@ -1281,14 +1288,19 @@
 
 ;; tabs have switched or a new tab has been inserted
 (define (editortabs-handler id tab title idx)
-	(update-current-tab)
+;(println "id:" id " tab:" tab " title:" title " idx:" idx)
+	; update statis of previous tab if it still exists
+	(if (assoc tab tabs-stack) (update-current-tab))
 	(set 'currentTabIndex idx)
 	; get new tab edit area settings
-	(set 'currentEdit tab)
-	(switch-to-tab tab idx)
+	(switch-to-tab tab)
 )
 
 (define (switch-to-tab tab)
+;(println "in switch-to-tab")
+;(println "currentTabIndex:" currentTabIndex)
+	(set 'currentEdit tab)
+;(println (assoc currentEdit tabs-stack))
 	(set 'currentDir (lookup currentEdit tabs-stack 1))
 	(set 'currentFile (lookup currentEdit tabs-stack 2)) 
 	(set 'currentPath (string currentDir "/" currentFile))
@@ -1325,7 +1337,9 @@
 (define (update-current-tab)
 	(set 'currentStatus (list edit-buffer-clean currentDot currentMark currentSyntaxStatus))
 	; save previous tab edit area settings
-	(set-assoc (tabs-stack currentEdit) (list currentEdit currentDir currentFile currentStatus))
+	(if (assoc currentEdit tabs-stack)
+		(setf (assoc currentEdit tabs-stack) 
+			(list currentEdit currentDir currentFile currentStatus)) )
 )
 
 ;; help about box
@@ -1403,7 +1417,7 @@
 	(if (and console (net-select console "read" 10000))
 		(begin
 			(if (> (net-peek console) 0) (begin
-				(net-receive console 'response 10024)
+				(net-receive console response 10024)
 				(output-monitor (or response ""))
 				(sleep 100)
 				))

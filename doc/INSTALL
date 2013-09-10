@@ -39,7 +39,7 @@ After downloading double-click on the Mac OS X disk image file:
 or
     newlisp-xxxx-intel.dmg
     
-This installes an applications icon in the Mac OS X Applications folder.
+This installs an applications icon in the Mac OS X Applications folder.
 On Mac OS X a UTF-8 capable version is installed by default.
 
 
@@ -126,10 +126,12 @@ milli seconds resolution in the time functions or library import functionality.
 See the options NANOSLEEP, READLINE and NOIMPORT in the makefile_xxx
 for your platform and compilation flavor. When using the READLINE option
 on some OSs the library options -lreadline and -lncurses or -ltermcap have
-to be replaced. Study the makefile of your platorm.
+to be replaced. 'readline' support enables command line editing and key-word
+expansion using the TAB-key. Study the makefile of your platform to see
+what options are supported.
 
-On MacOSX the flavor 'osx' is without readline support the flavor 'darwin'
-is with readline support.
+On Linux makefile_linux is without readline support, use make_debian instead
+even on non-debian Linux to gain readline support.
 
 On some platforms the warning message "ANSI does not support long long" will be
 issued for every file compiled. This message can be discarded and does not occur
@@ -205,12 +207,10 @@ variable HOME.
 On Win32 and Mac OS X a Java based syntaxhighlighting editor is installed in
 in the Applications menus. In other UNIX execute:
     
-    newlis-edit
+    newlisp-edit
  
 from the command line in a terminal window.
 The editor needs a Java runtime environment JRE version 1.5 as a minimum. 
 In case it is not installed it can be obtained from http://java.sun.com .
 
                                  +++
-
-

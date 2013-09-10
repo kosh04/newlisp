@@ -13,13 +13,35 @@
 (define Lex:Lex)
 
 (define (qa-dictionary)
-    (set 'data (map string (rand 1000000 N)))
-    (set 'ass (map list data (sequence 1 N)))
+    (set 'data (randomize (sequence 1 N)))
+    (set 'ass (map list (map string data) data))
 	(println "N associations: " N)
 	(println "cells before creating Lex: " (sys-info 0))
     (println "aquire from association list: " (set 'ta (time (Lex ass))) " ms")
 	(println "time to aquire one entry: " 
 		(format "%5.3f" (mul 1000 (div ta N))) (append " " (char  956) "s"))
+
+	(print "time reading and verifying entries ... : ")
+	(set 'start (time-of-day))
+	(set 'sum 0)
+	(dolist (a ass)
+		(if (!= (Lex (a 0)) (a 1)) 
+			(begin
+				(println "Error: " (Lex (a 0)) " != " (a 1))
+				(set 'read-error true))))
+	(set 'ta (- (time-of-day) start))
+	(println ta " ms")
+	(println "time to read and verify one entry: "
+			(format "%5.3f" (mul 1000 (div ta N))) (append " " (char  956) "s"))
+
+	(set 'start (time-of-day))
+	(set 'sum 0)
+	(dolist (a ass)
+		(Lex (a 0)) )
+	(set 'ta (- (time-of-day) start))
+	(println "time to only read one entry: "
+			(format "%5.3f" (mul 1000 (div ta N))) (append " " (char  956) "s"))
+
 	(println "cells after creating Lex: " (sys-info 0))
 	(println "N symbols in Lex: " (set 'ns (length (Lex))))
 	(println "save to file: " (time (save "Lex.lsp" 'Lex)) " ms")
@@ -29,9 +51,9 @@
 	(println "cells after deleting Lex: " (sys-info 0))
 	(println "time to load namespace: " (time (load "Lex.lsp")) " ms")
 	(println "cells after loading Lex: " (sys-info 0))
-	(println "time to save Lex1: " (time (save "Lex2.lsp" 'Lex)) " ms")
+	(println "time to save Lex2: " (time (save "Lex2.lsp" 'Lex)) " ms")
 	(println)
-	(if (not (exec "cmp Lex.lsp Lex2.lsp"))
+	(if (and (not read-error) (not (exec "cmp Lex.lsp Lex2.lsp")))
 		(println ">>>>> DICTIONARY API TESTED SUCCESSFUL")
 		(println ">>>>> ERROR: PROBLEM IN DICTIONARY API"))
 )

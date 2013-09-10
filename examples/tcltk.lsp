@@ -1,21 +1,18 @@
 #!/usr/bin/newlisp
 ;
-; This demo shows how to write Tcl/Tk GUIs
-; controlled from newLISP
+; demo how to write Tcl/Tk GUIs controlled from newLISP
 ;
-; newlisp-tk is not required, only newlisp
-; and a Tcl/Tk installation
+;  a Tcl/Tk installation is required
+;  the example has been tested on Mac OS X and Unix
 ;
 
 ; setup communications
-;
 (map set '(myin tcout) (pipe))
 (map set '(tcin myout) (pipe))
 (println "wait ...")
 (process "/usr/bin/wish" tcin tcout)
 
 ; make GUI
-;
 (write-buffer myout 
 [text]
 wm geometry . 250x90
@@ -37,13 +34,13 @@ bind . <Destroy> {puts {(exit)}}
 [/text])
 
 (define (call-back color)
-	(write-line (append ".colorlabel config -background " color) myout)
-	)
+	(write-line myout (append ".colorlabel config -background " color))
+)
 
 
 ; run event loop
-;
 (while (read-line myin)
-	(eval-string (current-line)))
+	(eval-string (current-line))
+)
 
 ;; eof

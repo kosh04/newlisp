@@ -247,7 +247,7 @@ void getDebuggerInput(char * msg)
 char command[MAX_LINE];
 char * context;
 jmp_buf errorJumpSave;
-int resultStackIdxSave;
+UINT * resultStackIdxSave;
 SYMBOL * contextSave;
 
 while(TRUE)

@@ -1,0 +1,212 @@
+;; qa reference returns from functions
+
+(define (qa-ref)
+	(and
+		; replace -> nth
+		(set 'L '(a b (c d e f g)))
+		(= (replace 'f (nth (+ 1 1) L) 'z) '(c d e z g))
+		(= L '(a b (c d e z g)))
+		
+		; protection
+		(constant 'C '(a b c d e (f g)))
+		(not (catch (replace 'f (nth (- 1 2) C) 'z) 'result))
+
+		; copied return from append
+		(set 's1 "ABC" 's2 "DEF")
+		(= (replace "D" (append s1 s2) "Z") "ABCZEF")
+		(= s1 "ABC")
+		(= s2 "DEF")
+
+		; replace -> rotate string
+		(set 's "ABCDEFG")
+		(= (replace "D" (rotate s) "Z") "GABCZEF")
+		(= s "GABCZEF")
+
+		; replace -> rotate list
+		(set 'r '(A B D E F G))
+		(= (replace 'D (rotate r) 'Z) '(G A B Z E F))
+		(= r '(G A B Z E F))
+
+		; replace -> swap string
+		(set 's "ABCDEFG")
+		(= (swap 2 3 s) "ABDCEFG")	
+		(= (replace "D" (swap (+ 1 1) (+ 2 1) s) "Z") "ABCZEFG")
+		(= s "ABCZEFG")
+		
+		; replace -> swap list
+		(set 's '(A B C D E F G))
+		(= (swap 2 3 s) '(A B D C E F G))	
+		(= (replace 'D (swap 2 3 s) 'Z) '(A B C Z E F G))
+		(= s '(A B C Z E F G))
+		
+		; pop -> sort list
+		(set 's '(K U Q A J P T))
+		(= (pop (sort s)) 'A)
+		(= s '(J K P Q T U))
+
+		; push -> reverse list
+		(set 'l '(A B C D E F))
+		(= (push 'D (reverse l)) '(D F E D C B A))
+		(= l '(D F E D C B A))
+
+		; setq -> assoc list
+		(set 'l '((a 1) (b 2)))
+		(= (setq (assoc 'b l) '(b 3)) '(b 3))
+		(= l '((a 1) (b 3)))
+	
+		; push -> setq -> assoc list
+		(= (push 'b (setq (assoc 'b l) '(b 4))) '(b b 4))
+		(= l '((a 1) (b b 4)))
+
+		; setq -> first, setq -> last list
+		(set 'l '(a b c d e f))
+		(= (setq (first l) 99) 99)
+		(= l '(99 b c d e f))
+		(= (setq (last l) 990) 990)
+		(= l '(99 b c d e 990))
+
+		; push -> setq
+		(= (push 'z (setq x '(a b c d e f)) -1) '(a b c d e f z))
+		(= x '(a b c d e f z))
+		
+		; pop -> set-ref list
+		(set 'l '("AA" ("BB" "CC")))
+		(= (pop (set-ref "BB" l "aa")) "AA")
+		(= l '(("aa" "CC")))
+		
+		; setq -> nth -> set-ref-all list
+		(set 'l '("AA" ("BB" ("CC" "BB"))))
+		(= (setq (nth 0 (set-ref-all "BB" l "aa")) "xx") "xx")
+		(= l '("xx" ("aa" ("CC" "aa"))))
+		
+		; if returns reference
+		(set 'l '((a b) c))
+		(= (pop (if true (l 0) '(x y z))) 'a)
+		(= l '((b) c))
+		
+		; if-not returns reference
+		(set 'l '((a b) c))
+		(= (pop (if-not nil (l 0) '(x y z))) 'a)
+		(= l '((b) c))
+		                       
+		; when returns reference
+		(set 'l '((a b) c))
+		(= (pop (when true (l 0))) 'a)
+		(= l '((b) c))
+		
+		; unless returns reference
+		(set 'l '((a b) c))
+		(= (pop (unless nil (l 0))) 'a)
+		(= l '((b) c))
+
+		; pop -> lookup
+		(set 'L '((a 1) (b 1 (2 3) 4) (c 3)))
+		(= (push 99 (lookup 'b L -2)) '(99 2 3))
+		(= L '((a 1) (b 1 (99 2 3) 4) (c 3)))
+		
+		; pop and push a as a queue
+		(set 'Q '(a b c d e))
+		(= (pop (push 'f Q -1)) 'a)
+		(= (pop (push 'g Q -1)) 'b)
+		(= Q '(c d e f g))
+		
+		; pop on list elements
+		(set 'L '(a "abc"))
+		(push 1 (eval (L 0)))
+		(push "z" (L 1))
+		(= a '(1))
+		(= L '(a "zabc"))
+				
+		; an evaluated symbol returns reference
+		(set 'l '(a b c d e f g))
+		(= (pop (if true l)) 'a)
+		(= (pop (if true l)) 'b)
+		(= (pop (if true l)) 'c)
+		(= l '(d e f g))
+
+		; begin, and, or
+		(set 'L '(a b c d e f g))
+		(replace 'b (begin (and (or L))) 'B)
+		(= L '(a B c d e f g))
+
+		; case cond
+		(set 'L '(a b c d e f g))
+		(pop (case 1 (1 L)))
+		(= L '(b c d e f g))
+		(pop (cond (nil 123) (true L)))
+		(= L '(c d e f g))
+
+		; nested implicit indexes
+		(set 'L '(a b (c d) e f g))
+		(= (setf ((L 2) 0) 99) 99)
+		(= L '(a b (99 d) e f g))
+		
+		; setf with $it
+		(setf x 1)
+		(= (setf x (+ $it 1)) 2)
+		
+		; hash with $it
+		(not (define foo:foo))
+		(foo "var" 123)
+		(= (foo "var" (* $it 2)) 246)
+
+		; nested eval implicit indexing
+		(set 'x '(0))
+		(set 'y 'x)
+		(setf ((eval y) 0) (+ $it 1))
+		(setf ((eval y) 0) (+ $it 1))
+		(= x '(2))
+	
+		; nested eval i assoc
+		(set 'L '((a 1) (b 2)))
+		(set 'K 'L)
+		(setf (assoc 'b (eval K)) '(b 3))
+		(= L '((a 1) (b 3)))
+		; check protection
+		(constant 'L)
+		(not (catch (setf (assoc 'b (eval K)) '(b 3)) 'err))		
+		
+		; apply should keep ref
+		(= (push 'z (apply set '(a ()))) '(z))
+		(= a '(z))
+
+		; setf on strings
+		(set 's "abcdefg")
+		(= (setf (s 3) "D") "D")
+		(= s "abcDefg")
+		(= (setf ((replace "a" s "A") 1) "B") "B")
+		(= s "ABcDefg")
+
+		; setf on strings with anaphoric $it
+		(set 's "abcdefg")
+		(set 'idx 0)
+		(= (setf (s (+ idx 1)) (upper-case $it)) "B")
+		(= s "aBcdefg")
+
+		; other nested expression and $it
+		(set 's "a-b-c-d-e-f-g")
+        (= (setf (first (replace "-" s "")) (upper-case $it)) "A")
+        (= s "Abcdefg")
+		                
+		; don't mistake context in setf/setq symbol for default symbol
+		; and take as equal a context symbol and a context
+		(context 'CTX) 
+		(context 'MAIN) 
+		(setq new-ctx (new CTX 'First))
+		(= new-ctx 'First First)
+		(setq new-ctx (new CTX 'Second))
+		(= new-ctx 'Second Second)
+		
+		)
+)
+
+(println)
+
+(if (qa-ref)
+	(println ">>>>> REFERENCE TESTING SUCCESSFUL")
+	(println ">>>>> ERROR in reference testing")
+)
+
+
+(exit)
+

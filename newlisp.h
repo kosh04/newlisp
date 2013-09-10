@@ -17,6 +17,34 @@
 
 */
 
+#ifdef LINUX
+#define OSTYPE "Linux"
+#endif
+
+#ifdef _BSD
+#define OSTYPE "BSD"
+#endif
+
+#ifdef MAC_OSX
+#define OSTYPE "OSX"
+#endif
+
+#ifdef SOLARIS
+#ifdef TRU64
+#define OSTYPE "Tru64Unix"
+#else
+#define OSTYPE "Solaris"
+#endif
+#endif
+
+#ifdef WIN_32
+#define OSTYPE "Win32"
+#endif
+
+#ifdef OS2 
+#define OSTYPE "OS/2" 
+#endif 
+
 #ifdef TRU64
 #define strtoll strtol
 #define strtoull strtoul
@@ -194,11 +222,11 @@ This is for 64bit large file support (LFS),
 #define UINT64 unsigned long
 #endif
 
-#define pushEnvironment(A) (*(envStack + envStackIdx++) = (UINT)(A))
-#define popEnvironment() (*(envStack + --envStackIdx))
+#define pushEnvironment(A) (*(envStackIdx++) = (UINT)(A))
+#define popEnvironment() (*(--envStackIdx))
 
-#define pushResult(A) (*(resultStack + resultStackIdx++) = (UINT)(A))
-#define popResult() ((CELL *)*(resultStack + --resultStackIdx))
+#define pushResult(A) (*(resultStackIdx++) = (UINT)(A))
+#define popResult() ((CELL *)*(--resultStackIdx))
 
 #define freeMemory free
 
@@ -381,7 +409,9 @@ This is for 64bit large file support (LFS),
 #define ERR_SIGINT 58
 #define ERR_NOT_REENTRANT 59
 #define ERR_CANNOT_BE_PROTECTED 60
-#define MAX_ERROR_NUMBER 60
+#define ERR_IS_NOT_REFERENCED 61
+#define ERR_LIST_EMPTY 62
+#define MAX_ERROR_NUMBER 62
 
 /* I/O routines */
 
@@ -400,9 +430,8 @@ This is for 64bit large file support (LFS),
 
 /* sysEvalString() in newlisp.c */
 #define EVAL_STRING 0 /* the classic eval-string: read, xlate, evaluate */
-#define READ_STRING 1 /* read one toplevel expression: read */
-#define READ_XLATE_STRING 2 /* read toplevel expression read, xlate */
-#define READ_XLATE_NO_CALLBACK 3 /* used by p_sync() in nl-filesys.c */
+#define READ_EXPR 1 /* read one toplevel expression: read */
+#define READ_EXPR_SYNC 2 /* called from sync */
 
 /* used inf setDefine() define in newlisp.c */
 #define SET_SET 1
@@ -463,9 +492,9 @@ extern size_t symbolCount;
 extern int recursionCount;
 extern UINT printDevice;
 extern UINT * resultStack;
+extern UINT * resultStackIdx;
 extern UINT * envStack;
-extern int resultStackIdx;
-extern int envStackIdx;
+extern UINT * envStackIdx;
 extern CELL * trueCell;
 extern CELL * nilCell;
 extern STREAM strStream;
@@ -477,7 +506,9 @@ extern SYMBOL * atSymbol;
 extern SYMBOL * mainContext;
 extern SYMBOL * currentContext;
 extern SYMBOL * errorEvent;
+extern SYMBOL * symbolCheck;
 extern SYMBOL sentinel;
+extern char * symbolCheckPtr;
 extern int traceFlag;
 extern int errorReg;
 extern char * errorMessage[];
@@ -487,5 +518,7 @@ extern int prettyPrintFlags;
 #define PRETTYPRINT_DOUBLE 1
 #define PRETTYPRINT_STRING 2
 extern char lc_decimal_point;
+extern CELL * xmlTags;
+extern CELL * xmlCallback;
 /* end of file */
 

@@ -21,6 +21,10 @@
 #include "newlisp.h"
 #include "protos.h"
 
+#define str2cmp(s1,s2) \
+	(( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
+	 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )
+                         
 
 extern CELL * cellMemory;
 extern SYMBOL * trueSymbol;
@@ -127,9 +131,9 @@ char * token;
 token = alloca(cell->aux + 1);
 *token = '_';
 memcpy(token + 1, (char *)cell->contents, cell->aux);
-
+	
 if(flag)
-	return(translateCreateSymbol(token, CELL_NIL, context, TRUE));
+		return(translateCreateSymbol(token, CELL_NIL, context, TRUE));
 
 root = (SYMBOL *)((CELL *)context->contents)->aux;
 return(findInsertSymbol(token, LOOKUP_ONLY));
@@ -254,22 +258,24 @@ CELL * p_deleteSymbol(CELL * params)
 {
 SYMBOL * sPtr = NULL;
 CELL * cell;
+CELL * ctx;
 int checkReferences = TRUE;
 
 cell = evaluateExpression(params);
-if(cell->type == CELL_SYMBOL || cell->type == CELL_CONTEXT)
-	sPtr = (SYMBOL*)cell->contents;
-else if(cell->type == CELL_DYN_SYMBOL)
-	sPtr = getDynamicSymbol(cell);
-else return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
+if(cell->type != CELL_SYMBOL)
+	return(errorProcExt(ERR_SYMBOL_EXPECTED, params));
+sPtr = (SYMBOL*)cell->contents;
 
 if(sPtr == mainContext) return(nilCell);
 
 if(symbolType(sPtr) == CELL_CONTEXT)
 	{
- 	if(cell->type == CELL_SYMBOL) 
-		cell = (CELL*)sPtr->contents;
-	sPtr->flags &= ~SYMBOL_PROTECTED;
+	ctx = (CELL*)sPtr->contents;
+	if(ctx->contents == (UINT)sPtr)
+		{
+		sPtr->flags &= ~SYMBOL_PROTECTED;
+		cell = ctx;
+		}
 	}
 
 if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
@@ -297,9 +303,9 @@ if(getFlag(params->next))
 if(cell->type == CELL_CONTEXT)
 	{
 	deleteContextSymbols(cell, checkReferences);
-	cell->type = CELL_SYMBOL;
+	cell->type = CELL_SYMBOL; /* demote */
 	deleteList((CELL *)sPtr->contents);
-	sPtr->contents = (UINT)nilCell;
+	sPtr->contents = (UINT)copyCell(nilCell);
 	}
 else 
 	deleteFreeSymbol(sPtr, checkReferences);
@@ -492,6 +498,7 @@ void deleteFixup(SYMBOL *x);
 SYMBOL * findInsertSymbol(char * key, int forceCreation) 
 {
 SYMBOL *current, *parent, *x;
+int c;
 
 /* find future parent */
 current = (root == NULL) ? NIL_SYM : root;
@@ -499,12 +506,11 @@ parent = 0;
 
 while (current != NIL_SYM)
 	{
-	if(strcmp(key, current->name) == 0) /* already exists */
+	if( ((c = str2cmp(key, current->name)) == 0) && ((c = strcmp(key, current->name)) == 0) )
             return(current);
 
 	parent = current;
-	current = (strcmp(key, current->name) < 0) ? 
-		current->left : current->right;
+	current = (c < 0) ? current->left : current->right;
 	}
 
 /* if forceCreation not specified just return */
@@ -519,18 +525,21 @@ x->right = NIL_SYM;
 x->color = RED;
 
 /* insert node in tree */
-if(parent) 
+if(parent)
 	{
-      if(strcmp(key, parent->name) < 0)
-            parent->left = x;
-      else
-            parent->right = x;
-	} 
-else 
-	root = x;
+	if( (c = str2cmp(key, parent->name)) < 0)
+		parent->left = x;
+	else if(c > 0)
+		parent->right = x;
+	else if(strcmp(key, parent->name) < 0)
+		parent->left = x;
+	else
+		parent->right = x;
+	}
+else
+	root =x;
 
 insertFixup(x);
-
 
 /* return new node */
 
@@ -548,17 +557,17 @@ return(x);
 int deleteSymbol(char * key)
 {
 SYMBOL *x, *y, *z;
-int color;
+int color, c;
 
 /* find node in tree */
 z = (root == NULL) ? NIL_SYM : root;
 
 while(z != NIL_SYM)
 	{
-	if(strcmp(key, z->name) == 0) 
+	if( ((c = str2cmp(key, z->name)) == 0) && ((c = strcmp(key, z->name)) == 0) )
 		break;
 	else
-		z = (strcmp(key, z->name) < 0) ? z->left : z->right;
+		z = (c < 0) ? z->left : z->right;
 	}
 
 if (z == NIL_SYM) return(0); /* key to delete not found */

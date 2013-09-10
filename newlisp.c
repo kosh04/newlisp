@@ -42,13 +42,12 @@
 
 #define freeMemory free
 
-#ifdef WIN_32
 #define INIT_FILE "init.lsp"
+
+#ifdef WIN_32
 #define fprintf win32_fprintf
 #define fgets win32_fgets
 #define fclose win32_fclose
-#else
-#define INIT_FILE "/usr/share/newlisp/init.lsp"
 #endif
 
 #ifdef LIBRARY
@@ -57,59 +56,52 @@ extern STREAM libStrStream;
 
 #ifdef LINUX
 int opsys = 1;
-char ostype[]="Linux";
 #endif
 
 #ifdef _BSD
 int opsys = 2;
-char ostype[]="BSD";
 #endif
 
 #ifdef MAC_OSX
 int opsys = 3;
-char ostype[]="OSX";
 #endif
 
 #ifdef SOLARIS
 #ifdef TRU64
 int opsys = 9;
-char ostype[]="Tru64Unix";
 #else
 int opsys = 4;
-char ostype[]="Solaris";
 #endif
 #endif
 
 #ifdef WIN_32
 int opsys = 6;
-char ostype[]="Win32";
 #endif
 
 #ifdef OS2 
 int opsys = 7; 
-char ostype[]="OS/2"; 
 #endif 
 
-int version = 9405;
+int version = 10000;
 
 char copyright[]=
-"\nnewLISP v.9.4.5 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.0.0 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.5 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.0 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.5 on %s IPv%d%s\n\n";
+"newLISP v.10.0.0 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.5 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.0 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.5 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.0.0 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -117,8 +109,11 @@ char banner2[]=
 ", execute 'newlisp -h' for more info.";
 
 char linkOffset[] = "@@@@@@@@";
+char preLoad[] = 
+	"(define Tree:Tree) (define (Class:Class) (cons (context) (args)))";
 
 void printHelpText(void);
+char ** newlisp_completion (char * text, int start, int end);
 
 /* --------------------- globals -------------------------------------- */
 
@@ -163,6 +158,7 @@ SYMBOL * currentFunc;
 SYMBOL * argsSymbol;
 SYMBOL * mainArgsSymbol;
 SYMBOL * dolistIdxSymbol;
+SYMBOL * itSymbol;
 
 SYMBOL * sysSymbol[MAX_REGEX_EXP];
 
@@ -175,6 +171,9 @@ SYMBOL * commandEvent;
 
 SYMBOL * symHandler[32];
 int currentSignal = 0;
+
+SYMBOL * symbolCheck = NULL;
+char * symbolCheckPtr = NULL;
 
 jmp_buf errorJump;
 
@@ -200,10 +199,16 @@ int parStackCounter = 0;
 /* expression evaluation */
 
 static CELL * (*evalFunc)(CELL *) = NULL;
+
 UINT * envStack = NULL;
+UINT * envStackIdx;
+UINT * envStackTop;
 UINT * resultStack = NULL;
+UINT * resultStackIdx;
+UINT * resultStackTop;
 UINT * lambdaStack = NULL;
-int envStackIdx, resultStackIdx, lambdaStackIdx;
+UINT * lambdaStackIdx;
+
 int evalSilent = 0;
 
 extern PRIMITIVE primitive[];
@@ -211,7 +216,6 @@ extern PRIMITIVE primitive[];
 int traceFlag = 0;
 int evalCatchFlag = 0;
 int recursionCount = 0;
-int symbolProtectionLevel = 0; 
 
 int prettyPrintPars = 0;
 int prettyPrintCurrent = 0;
@@ -222,8 +226,8 @@ char * prettyPrintTab = " ";
 UINT prettyPrintMaxLength =  MAX_PRETTY_PRINT_LENGTH;
 int stringOutputRaw = TRUE;
 
-#define pushLambda(A) (*(lambdaStack + lambdaStackIdx++) = (UINT)(A))
-#define popLambda() ((CELL *)*(lambdaStack + --lambdaStackIdx))
+#define pushLambda(A) (*(lambdaStackIdx++) = (UINT)(A))
+#define popLambda() ((CELL *)*(--lambdaStackIdx))
 
 int pushResultFlag = TRUE;
 
@@ -233,6 +237,9 @@ char logFile[PATH_MAX]; /* logFile, is define with -l, -L */
 /* memory management in nl-filesys.c */
 
 int pagesize;
+
+/* -x experimental */
+int implicitIf = FALSE;
 
 /* ============================== MAIN ================================ */
 
@@ -406,40 +413,43 @@ switch(sig)
 
 void loadStartup(char * name)
 {
+char initFile[MAX_LINE];
+char * envPtr;
 #ifdef WIN_32
 #ifndef LIBRARY
-char * ptr;
 char EXEName[MAX_LINE];
-char initFile[MAX_LINE];
 
 GetModuleFileName(NULL, EXEName, MAX_LINE);
 name = EXEName;
-#endif 
+#endif
 #endif
 
-if(strncmp(linkOffset, "@@@@", 4) == 0)
-        {
-#ifdef WIN_32
-#ifndef LIBRARY
-        ptr = name + strlen(name) - 1;
-        while(ptr != name)
-          {
-          if(*ptr == '/' || *ptr == '\\') break;
-          ptr--;
-          }
-        *ptr = 0;
-        strncpy(initFile, name, MAX_LINE - 9);
-        strcat(initFile, "/");
-        strcat(initFile, INIT_FILE);
-        loadFile(initFile, 0, 0, mainContext);
-#else
-        loadFile(INIT_FILE, 0, 0, mainContext);
-#endif
-#else        
-        loadFile(INIT_FILE, 0, 0, mainContext);
-#endif
-        }
-else    /* load encrypted part at offset */ 
+/* normal newLISP start up */
+if(strncmp(linkOffset, "@@@@@@@@", 8) == 0)
+	{
+	if(getenv("HOME"))
+		strncpy(initFile, getenv("HOME"), MAX_LINE - 16);
+	else if(getenv("USERPROFILE"))
+		strncpy(initFile, getenv("USERPROFILE"), MAX_LINE - 16);
+	else if(getenv("DOCUMENT_ROOT"))
+		strncpy(initFile, getenv("DOCUMENT_ROOT"), MAX_LINE - 16);
+
+	strcat(initFile, "/.");
+	strcat(initFile, INIT_FILE);
+	if(loadFile(initFile, 0, 0, mainContext) == NULL)
+		{
+		envPtr = getenv("NEWLISPDIR");
+	  	if(envPtr)
+	  		{
+			strncpy(initFile, envPtr, MAX_LINE - 16);
+	   		strcat(initFile, "/");
+			strcat(initFile, INIT_FILE);
+			loadFile(initFile, 0, 0, mainContext);		
+			}
+		}
+	}
+/* load encrypted part at offset */ 
+else
 	loadFile(name, *(UINT*)linkOffset, 1, mainContext);
 }
 
@@ -487,8 +497,9 @@ if(getenv("NEWLISPDIR") == NULL)
 	else setenv("NEWLISPDIR", "newlisp", TRUE);
 	}
 #else
+int result;
 if(getenv("NEWLISPDIR") == NULL)
-	setenv("NEWLISPDIR", "/usr/share/newlisp", TRUE);
+	result = setenv("NEWLISPDIR", "/usr/share/newlisp", TRUE);
 #endif
 }
 
@@ -544,6 +555,7 @@ int idx;
 char * cmd;
 #endif
 
+
 #ifdef WIN_32
 WSADATA WSAData;
 WSAStartup(MAKEWORD(1,1), &WSAData);
@@ -572,6 +584,7 @@ IOchannel = stdin;
 
 initialize();
 initStacks();
+initDefaultInAddr();
 
 mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
@@ -585,7 +598,12 @@ if((errorReg = setjmp(errorJump)) != 0)
 
 setupAllSignals();
 
-loadStartup(argv[0]);
+sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
+
+/* loading of init.lsp can be suppressed with -n as first option */
+if(argc < 2 || strncmp(argv[1], "-n", 2))
+	loadStartup(argv[0]);
+
 errno = 0;
 
 realpath(".", startupDir);
@@ -656,6 +674,9 @@ for(idx = 1; idx < argc; idx++)
 		continue;
 		}	
 
+	if(strncmp(argv[idx], "-x", 2) == 0)
+		implicitIf = TRUE;
+
 	if(strcmp(argv[idx], "-h") == 0)
 		{
 		printHelpText();
@@ -672,7 +693,7 @@ if(isatty(fileno(IOchannel)))
 	{
 	isTTY = TRUE;
 	if(!noPromptMode) 	
-		varPrintf(OUT_CONSOLE, banner, ostype, IPV, banner2);
+		varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, banner2);
 	}
 else
 	{
@@ -682,7 +703,7 @@ else
 #endif
 		setbuf(IOchannel,0);
 	if(forcePromptMode)
-		varPrintf(OUT_CONSOLE, banner, ostype, IPV, banner2);
+		varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, banner2);
 	}
 
 
@@ -694,6 +715,12 @@ initStacks();
 
 if(errorReg && !isNil((CELL*)errorEvent->contents) ) 
 	executeSymbol(errorEvent, NULL, NULL);
+
+
+#ifdef READLINE
+rl_readline_name = "newlisp";
+rl_attempted_completion_function = (CPPFunction *)newlisp_completion;
+#endif
 
 while(TRUE)
 	{
@@ -733,24 +760,62 @@ return 0;
 }
 #endif
 
+#ifdef READLINE
+char * command_generator(char * text, int state)
+{
+static int list_index, len;
+char * name;
+char * cptr;
+     
+if (!state)
+	{
+	list_index = 0;
+	len = strlen (text);
+	}
+     
+while((name = primitive[list_index].name))
+	{
+	list_index++;
+     
+	if (strncmp (name, text, len) == 0)
+		{
+		cptr = malloc(strlen(name) + 1);
+		strcpy(cptr, name);
+		return (cptr);
+		}
+	}
+     
+return ((char *)NULL);
+}
+
+#ifndef _BSD
+char ** completion_matches(const char * text, CPFunction commands);
+#endif
+
+char ** newlisp_completion (char * text, int start, int end)
+{
+return(completion_matches(text, (CPFunction *)command_generator));
+}
+#endif
 
 void printHelpText(void)
 {
 varPrintf(OUT_CONSOLE, copyright, 
 		"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
-varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
+varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
 	" -h this help",
+	" -n no init (must be first)",
 	" -s <stacksize>",
 	" -m <max-mem-megabyte>",
-	" -l log connections only",
-	" -L log all",
-	" -p <port-number>",
-	" -d <port-number>",
 	" -e <quoted lisp expression>",
+	" -l <path-file> log connections",
+	" -L <path-file> log all",
+	" -w <working-directory>",
 	" -c no prompts, HTTP",
 	" -C force prompts",
+	" -p <port-number>",
+	" -d <port-number>",
 	" -http HTTP only",
-	" -w <working-directory>",
 	"more information at http://newlisp.org");
 }
 
@@ -769,7 +834,7 @@ if(!isSocketStream(IOchannel))
 	setbuf(IOchannel,0);
 
 if(!reconnect && !noPromptMode)
-	varPrintf(OUT_CONSOLE, banner, ostype, IPV, ".");
+	varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, ".");
 }
 
 
@@ -787,7 +852,7 @@ if(evalSilent || noPromptMode)
 
 if(promptEvent != nilSymbol && !isNil((CELL *)promptEvent->contents))
 	{
-	if(executeSymbol(promptEvent, NULL, &result) == CELL_STRING)
+	if(executeSymbol(promptEvent, stuffSymbol(currentContext), &result) == CELL_STRING)
 		{
 		snprintf(string, 63, "%s", (char *)result->contents);
 		strncpy(string, (char *)result->contents, 63);
@@ -819,20 +884,25 @@ return(string);
 
 void reset()
 {
-recoverEnvironment(0);
+recoverEnvironment(envStack);
 
 collectGarbage();
 
 if(printDevice) close((int)printDevice);
-printDevice = recursionCount = resultStackIdx = envStackIdx = lambdaStackIdx = 0;
-symbolProtectionLevel = traceFlag = prettyPrintFlags = 0;
+envStackIdx = envStack;
+lambdaStackIdx = lambdaStack;
+resultStackIdx = resultStack;
+printDevice = recursionCount  = traceFlag = prettyPrintFlags = 0;
 evalFunc = NULL;
 pushResultFlag = TRUE;
+xmlTags = NULL; /* force recreation */
+/* xmlCallback = NULL; */
 currentContext = mainContext;
+itSymbol->contents = (UINT)nilCell;
 }
 
 
-void recoverEnvironment(int index)
+void recoverEnvironment(UINT * index)
 {
 SYMBOL * symbol;
 CELL * cell;
@@ -947,12 +1017,25 @@ evaluateStream(&stream, outDevice, 0);
 return;
 }
 
+/*
+void printResultStack()
+{
+printf("result stack:\n");
+while(resultStackIdx > resultStack)
+	{
+	--resultStackIdx;
+	printCell(*resultStackIdx, TRUE, OUT_CONSOLE);
+	printf("\n");
+	}
+printf("\n");
+}
+*/
 
 CELL * evaluateStream(STREAM * stream, UINT outDevice, int flag)
 {
 CELL * program;
 CELL * eval = nilCell;
-int resultIdxSave;
+UINT * resultIdxSave;
 int result = TRUE;
 
 resultIdxSave = resultStackIdx;
@@ -988,14 +1071,13 @@ int executeSymbol(SYMBOL * symbol, CELL * params, CELL * * result)
 {
 CELL * program;
 CELL * cell;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 resultIdxSave = resultStackIdx;
 if(symbol == nilSymbol || symbol == NULL)   return(0);
 pushResult(program = getCell(CELL_EXPRESSION));
-cell = getCell(CELL_SYMBOL);
+cell = makeCell(CELL_SYMBOL, (UINT)symbol);
 program->contents = (UINT)cell;
-cell->contents = (UINT)symbol;
 if(params != NULL) cell->next = params;
 
 if(result == NULL)
@@ -1009,6 +1091,18 @@ if(result == NULL)
 cleanupResults(resultIdxSave);
 
 return((*result)->type);
+}
+
+
+SYMBOL *  makeStringSymbol(char * name, char * str, int flags)
+{
+SYMBOL * symbol;
+
+symbol = translateCreateSymbol(name, CELL_STRING, mainContext, TRUE);
+symbol->contents = (UINT)stuffString(str);
+symbol->flags = flags;
+
+return(symbol);
 }
 
 
@@ -1057,6 +1151,7 @@ atSymbol = translateCreateSymbol("@", CELL_NIL, mainContext, TRUE);
 argsSymbol = translateCreateSymbol("$args", CELL_NIL, mainContext, TRUE);
 mainArgsSymbol = translateCreateSymbol("$main-args", CELL_NIL, mainContext, TRUE);
 dolistIdxSymbol = translateCreateSymbol("$idx", CELL_NIL, mainContext, TRUE);
+itSymbol = translateCreateSymbol("$it", CELL_NIL, mainContext, TRUE);
 
 for(i = 0; i < MAX_REGEX_EXP; i++)
 	{
@@ -1074,11 +1169,10 @@ atSymbol->flags |=  SYMBOL_GLOBAL | SYMBOL_BUILTIN;
 argsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 mainArgsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 dolistIdxSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
+itSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 argsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 
-symbol = translateCreateSymbol("ostype", CELL_STRING, mainContext, TRUE);
-symbol->contents = (UINT)stuffString(ostype);
-symbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
+makeStringSymbol("ostype", OSTYPE, SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED);
 
 /* init signal handlers */
 for(i = 0; i < 32; i++)
@@ -1088,7 +1182,6 @@ for(i = 0; i < 32; i++)
 openStrStream(&readLineStream, 16, 0);
 }
 
-
 void initStacks()
 {
 MAX_ENV_STACK = (MAX_CPU_STACK * 8 * 2);
@@ -1096,10 +1189,11 @@ MAX_RESULT_STACK = (MAX_CPU_STACK * 2);
 if(envStack != NULL) freeMemory(envStack);
 if(resultStack != NULL) freeMemory(resultStack);
 if(lambdaStack != NULL) freeMemory(lambdaStack);
-envStack = (UINT *)allocMemory((MAX_ENV_STACK + 16) * sizeof(UINT));
-resultStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * sizeof(UINT));
-lambdaStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * sizeof(UINT));
-envStackIdx = resultStackIdx = lambdaStackIdx = 0;
+envStackIdx = envStack = (UINT *)allocMemory((MAX_ENV_STACK + 16) * sizeof(UINT));
+envStackTop = envStack + MAX_ENV_STACK;
+resultStackIdx = resultStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * sizeof(UINT));
+resultStackTop = resultStack + MAX_RESULT_STACK;
+lambdaStackIdx = lambdaStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * sizeof(UINT));
 }
 
 	
@@ -1112,30 +1206,41 @@ CELL * result;
 CELL * args = NULL;
 CELL * pCell = NULL;
 SYMBOL * newContext = NULL;
-SYMBOL * sPtr;
-int resultIdxSave = 0;
+SYMBOL * sPtr = NULL;
+UINT * resultIdxSave = resultStack;
 
-if(cell->type & EVAL_SELF_TYPE_MASK) return cell;
+symbolCheckPtr = NULL;
+
+if(cell->type & EVAL_SELF_TYPE_MASK) 
+	{
+	symbolCheck = NULL;
+	return cell;
+	}
+	
+
 switch(cell->type)
 	{
 	case CELL_SYMBOL:
 	case CELL_CONTEXT:
-		return((CELL*)((SYMBOL *)cell->contents)->contents);
+		symbolCheck = (SYMBOL *)cell->contents;
+		return((CELL *)symbolCheck->contents);
 
 	case CELL_QUOTE:
+		symbolCheck = NULL;
 		return((CELL *)cell->contents);
 
 	case CELL_EXPRESSION:
 		args = (CELL *)cell->contents;
 		resultIdxSave = resultStackIdx;                
-		
+
 		if(++recursionCount > (int)MAX_CPU_STACK)
 			fatalError(ERR_OUT_OF_CALL_STACK, args, 0);
 		
 		if(args->type == CELL_SYMBOL) /* precheck for speedup */
 			{
-			newContext = ((SYMBOL *)args->contents)->context;
-			pCell =  (CELL*)((SYMBOL *)args->contents)->contents;
+			sPtr = (SYMBOL *)args->contents;
+			newContext = sPtr->context;
+			pCell =  (CELL*)sPtr->contents;
 			}
 		else if(args->type == CELL_DYN_SYMBOL)
 			{
@@ -1151,6 +1256,7 @@ switch(cell->type)
 
 		if(traceFlag) traceEntry(cell, pCell, args);
 
+		/* pCell is evaluated op element */
 		if(pCell->type == CELL_PRIMITIVE)
 			{
 			evalFunc = (CELL *(*)(CELL*))pCell->contents;
@@ -1232,17 +1338,53 @@ switch(cell->type)
 		if(args->next != nilCell)
 			{
 			if(pCell->type == CELL_EXPRESSION)
-				result = copyCell(implicitIndexList(pCell, args->next));
+				{
+				if(sPtr || (sPtr = symbolCheck))
+					{
+					result = implicitIndexList(pCell, args->next);
+					symbolCheck = sPtr;
+					pushResultFlag = FALSE;
+					}
+				else
+					result = copyCell(implicitIndexList(pCell, args->next));
+				}
 
 			else if(pCell->type == CELL_ARRAY)
-				result = copyCell(implicitIndexArray(pCell, args->next));
-
+				{
+				if(sPtr || (sPtr = symbolCheck))
+					{
+					result = implicitIndexArray(pCell, args->next);
+					symbolCheck = sPtr;
+					pushResultFlag = FALSE;
+					}
+				else
+					result = copyCell(implicitIndexArray(pCell, args->next));
+				}	
+				
 			else if(pCell->type == CELL_STRING)
-				result = implicitIndexString(pCell, args->next);
-                              
+				{
+				if(sPtr || (sPtr = symbolCheck))
+					{
+					/* implicitIndexString() always returns copy */
+					result = implicitIndexString(pCell, args->next);
+					pushResult(result);
+					symbolCheck = sPtr;
+					--recursionCount;
+					return(result);
+					}
+				else
+					result = implicitIndexString(pCell, args->next); 
+				}
+                                             
 			else if(isNumber(pCell->type))
 				result = implicitNrestSlice(pCell, args->next);
-                              
+	
+			else if(implicitIf && isTrue(pCell))
+				result = copyCell(evaluateExpression(args->next));
+				
+			else if(implicitIf && isNil(pCell))
+				result = copyCell(evaluateExpression(((CELL*)args->next)->next));
+	
 			else result = errorProcExt(ERR_INVALID_FUNCTION, cell);                              
 			}
 		else 
@@ -1250,22 +1392,32 @@ switch(cell->type)
 		break;
 
 	case CELL_DYN_SYMBOL:
-		return((CELL*)(getDynamicSymbol(cell))->contents);
+		symbolCheck = getDynamicSymbol(cell);
+		return((CELL *)symbolCheck->contents);
+/*		return((CELL*)(getDynamicSymbol(cell))->contents); */
 		
 	default:
 		result = nilCell;
 	}
 
+/* moved below for p_nth on strings
 while(resultStackIdx > resultIdxSave)
 	deleteList(popResult());
+*/
+
 
 if(pushResultFlag) 
 	{
-	if(resultStackIdx > MAX_RESULT_STACK)
+	while(resultStackIdx > resultIdxSave)
+		deleteList(popResult());
+
+	if(resultStackIdx > resultStackTop)
 		fatalError(ERR_OUT_OF_CALL_STACK, pCell, 0);
 	pushResult(result);
+	symbolCheck = NULL;
 	}
-else pushResultFlag = TRUE;
+else 
+	pushResultFlag = TRUE;
 
 if(traceFlag) traceExit(result, cell, pCell, args);
 --recursionCount;
@@ -1295,25 +1447,28 @@ CELL * evaluateNamespaceHash(CELL * args, SYMBOL * newContext)
 {	
 SYMBOL * sPtr;
 CELL * pCell;
-CELL * new;
 
 pCell = evaluateExpression(args);
-
 if(pCell->type == CELL_STRING)
 	{
 	if(args->next != nilCell)
 		{
 		sPtr = makeSafeSymbol(pCell, newContext, TRUE);
-		new = copyCell(evaluateExpression(args->next));
+		
+		itSymbol->contents = sPtr->contents;
+		itSymbol->contents = (UINT)copyCell(evaluateExpression(args->next));
 		deleteList((CELL *)sPtr->contents);
-		sPtr->contents = (UINT)new;
-		pushResultFlag = FALSE;
+		sPtr->contents = itSymbol->contents;
+		itSymbol->contents = (UINT)nilCell;
+		
 		if(isNil((CELL *)sPtr->contents))
 			{
 			deleteFreeSymbol(sPtr, TRUE);
 			return(nilCell);
 			}
 
+		symbolCheck = sPtr;
+		pushResultFlag = FALSE;
 		return((CELL *)sPtr->contents);
 		}
 	else 
@@ -1323,6 +1478,7 @@ if(pCell->type == CELL_STRING)
 			return(nilCell);
 		else
 			{
+			symbolCheck = sPtr;
 			pushResultFlag = FALSE;
 			return((CELL *)sPtr->contents);
 			}
@@ -1373,56 +1529,11 @@ return(translateCreateSymbol(
 		TRUE));
 }
 
-
-CELL * evalCheckProtected(CELL * cell, CELL * * flagPtr)
+void cleanupResults(UINT * from)
 {
-CELL * result;
-SYMBOL * sPtr;
-
-if(isSymbol(cell->type))
-	{
-	if(cell->type == CELL_SYMBOL)
-		sPtr = (SYMBOL *)cell->contents;
-	else
-		sPtr = getDynamicSymbol(cell);
-
-	result = (CELL*)sPtr->contents;
-	
-	if(result->type == CELL_CONTEXT)
-        {
-        sPtr = translateCreateSymbol( ((SYMBOL*)result->contents)->name, CELL_NIL,
-            (SYMBOL*)result->contents, TRUE);
-        result = (CELL *)sPtr->contents;
-	    }
-
- 	if(isProtected(sPtr->flags))
-		return(errorProcExt(ERR_SYMBOL_PROTECTED, cell));
-
-	return(result);
-	}
-
-symbolProtectionLevel = recursionCount;
-result = evaluateExpression(cell);
-if(symbolProtectionLevel == 0xFFFFFFFF)
-	{
-	if(flagPtr == NULL)
-		return(errorProcExt(ERR_SYMBOL_PROTECTED, cell));
-	else *flagPtr = cell;
-	}
-symbolProtectionLevel = 0;
-
-if(result->type == CELL_CONTEXT)
-    {
-    sPtr = translateCreateSymbol( ((SYMBOL*)result->contents)->name, CELL_NIL,
-        (SYMBOL*)result->contents, TRUE);
-    result = (CELL *)sPtr->contents;
- 	if(isProtected(sPtr->flags))
-        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
-	}
-
-return(result);
+while(resultStackIdx > from)
+	deleteList(popResult());
 }
-
 
 /* -------------------- evaluate lambda function ----------------------- */
 
@@ -1435,7 +1546,7 @@ SYMBOL * symbol;
 SYMBOL * contextSave;
 int localCount = 0;
 
-if(envStackIdx > (UINT)MAX_ENV_STACK)
+if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
 
 if(localLst->type != CELL_EXPRESSION)
@@ -1467,7 +1578,7 @@ currentContext = newContext;
 
 /* save environment and get parameters */
 local = (CELL*)localLst->contents;
-GET_LOCAL:
+for(;;)
 	{
 	if(local->type == CELL_SYMBOL)
 		symbol = (SYMBOL *)local->contents;
@@ -1483,11 +1594,11 @@ GET_LOCAL:
 				if(result == nilCell)
 					result = copyCell(evaluateExpression(cell->next));
 				}
-			else goto GOT_LOCALS;
+			else break;
 			}
-		else goto GOT_LOCALS;
+		else break;
 		}
-	else goto GOT_LOCALS;
+	else break;
 
 	if(isProtected(symbol->flags))
 		return(errorProcExt(ERR_SYMBOL_PROTECTED, local));
@@ -1497,6 +1608,7 @@ GET_LOCAL:
 	pushEnvironment((UINT)symbol);
 
 	/* fill local symbols */
+	if(result == nilCell) result = copyCell(nilCell);
 	symbol->contents = (UINT)result;
 	cell = result;
 	result = result->next;
@@ -1507,15 +1619,11 @@ GET_LOCAL:
 	local = local->next;
 	localCount++;
 	}
-goto GET_LOCAL;
 
-GOT_LOCALS:
 /* put unassigned args in $args */
 pushEnvironment(argsSymbol->contents);
 pushEnvironment((UINT)argsSymbol);
-argsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
-if(result != nilCell)
-  ((CELL*)argsSymbol->contents)->contents = (UINT)result;
+argsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)result);
 ++localCount;
 
 /* evaluate body expressions */
@@ -1543,6 +1651,7 @@ while(localCount--)
 	}
 
 currentContext = contextSave;
+symbolCheck = NULL;
 return(result);
 }
 
@@ -1556,7 +1665,7 @@ SYMBOL * symbol;
 SYMBOL * contextSave;
 int localCount;
 
-if(envStackIdx > (UINT)MAX_ENV_STACK)
+if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
 
 if(localLst->type != CELL_EXPRESSION)
@@ -1634,8 +1743,10 @@ while(localCount--)
 	}
 
 currentContext = contextSave;	
+symbolCheck = NULL;
 return(result);
 }
+
 
 
 /* -------------- list/cell creation/deletion routines ---------------- */
@@ -1736,7 +1847,6 @@ cell = getCell(CELL_FLOAT);
 #endif
 return(cell);
 }
-
 
 CELL * stuffSymbol(SYMBOL * sPtr)
 {
@@ -1997,23 +2107,26 @@ if( (ptr = realloc(prevPtr, size)) == NULL)
 return(ptr);
 }
 
-/* ----------- garbage collection , only required on error --------------- */
+/* ----------- garbage collection , only used on error conditions ---------------
+   if environment stack recovery is done correctly and all error conditions
+   cleanup unused cells they created, then marking references where not
+   necessary and the routines would only be used to recover free blocks
+   on reset.
+*/
 
 void markReferences(SYMBOL * sPtr);
 void markList(CELL * cell);
 void sweepGarbage(void);
 void relinkCells(void);
 
-
 void collectGarbage()
 {
-resultStackIdx = 0;
+resultStackIdx = resultStack;
 nilCell->type |= (UINT)0x00008000; 
 markReferences((SYMBOL *)((CELL *)mainContext->contents)->aux);
 sweepGarbage();
 relinkCells();
 }
-
 
 void markReferences(SYMBOL * sPtr)
 {
@@ -2033,7 +2146,6 @@ if(sPtr != NIL_SYM && sPtr != NULL)
 	}
 }
 
-
 void markList(CELL * cell)
 {
 while(cell != nilCell)
@@ -2049,7 +2161,6 @@ while(cell != nilCell)
 	cell = cell->next;
 	}
 }
-
 
 void sweepGarbage()
 {
@@ -2092,7 +2203,6 @@ while(blockPtr != NULL)
 	}
 }
 
-
 void relinkCells(void)
 {
 CELL * blockPtr;
@@ -2123,12 +2233,6 @@ while(blockPtr != NULL)
 lastFreeCell->next = NULL;
 }
 
-
-void cleanupResults(int from)
-{
-while(resultStackIdx > from)
-	deleteList(popResult());
-}
 
 /* -------------------------- I/O routines ------------------------------ */
 
@@ -2707,8 +2811,10 @@ char * errorMessage[] =
 	"user error",	                /* 56 */
 	"user reset -",		 	 		/* 57 */
 	"received SIGINT -",		 	/* 58 */
-	"function is not reentrant",		/* 59 */
-	"local symbol cannot be context or constant" /* 60 */
+	"function is not reentrant",	/* 59 */
+	"local symbol is protected",    /* 60 */
+	"no symbol reference found",	/* 61 */
+	"list is empty",				/* 62 */
 	};
 
 
@@ -2763,7 +2869,7 @@ longjmp(errorJump, errorReg);
 void printErrorMessage(UINT errorNumber, CELL * expr, int deleteFlag)
 {
 CELL * lambdaFunc;
-UINT lambdaStackIdxSave;
+UINT * lambdaStackIdxSave;
 SYMBOL * context;
 int i;
 
@@ -2797,7 +2903,7 @@ if(expr != NULL)
 	}
 
 lambdaStackIdxSave = lambdaStackIdx;
-while(lambdaStackIdx)
+while(lambdaStackIdx > lambdaStack)
 	{
 	lambdaFunc = popLambda();
 	if(lambdaFunc->type == CELL_SYMBOL)
@@ -2861,7 +2967,7 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
 	pushResult(result);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-	return(copyCell(sysEvalString((char *)result->contents, nilCell, context, 0)));
+	return(copyCell(sysEvalString((char *)result->contents, context, nilCell, EVAL_STRING)));
 	}
 
 if(my_strnicmp(fileName, "file://", 7) == 0)
@@ -3589,8 +3695,8 @@ if(cell->type != CELL_STRING)
 	*stringPtr = "";
 	return(errorProcArgs(ERR_STRING_EXPECTED, params));
 	}
-*stringPtr = (char *)cell->contents;
 
+*stringPtr = (char *)cell->contents;
 return(params->next);
 }
 
@@ -3600,23 +3706,18 @@ CELL * getStringSize(CELL * params, char * * stringPtr, size_t * size, int evalF
 CELL * cell;
 SYMBOL * sPtr;
 
-/*
-if(params == nilCell)
-	return(errorProc(ERR_MISSING_ARGUMENT));
-*/
-
 if(evalFlag)
-	{
-    cell = evaluateExpression(params);
+	cell = evaluateExpression(params);
+else 
+	cell = params;
 
-	if(cell->type == CELL_CONTEXT)
-		{
-		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
-				(SYMBOL*)cell->contents, TRUE);
-		cell = (CELL *)sPtr->contents;
-		}
+if(cell->type == CELL_CONTEXT)
+	{
+	sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+		(SYMBOL*)cell->contents, TRUE);
+	symbolCheck = sPtr;
+	cell = (CELL *)sPtr->contents;
 	}
-else cell = params;
 
 if(cell->type != CELL_STRING)
 	{
@@ -3625,6 +3726,7 @@ if(cell->type != CELL_STRING)
 	}
 
 *stringPtr = (char *)cell->contents;
+
 if(size) *size = cell->aux - 1;
 return(params->next);
 }
@@ -3704,18 +3806,17 @@ return(params->next);
 }
 
 
-CELL * getDefaultOrEval(CELL * params, CELL * * result)
+CELL * getEvalDefault(CELL * params, CELL * * result)
 {
 CELL * cell;
-SYMBOL * sPtr;
 
 cell = evaluateExpression(params);
 
 if(cell->type == CELL_CONTEXT)
 	{
-	sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+	symbolCheck = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
 		(SYMBOL*)cell->contents, TRUE);
-	cell = (CELL *)sPtr->contents;
+	cell = (CELL *)symbolCheck->contents;
 	}
 
 *result = cell;
@@ -3751,65 +3852,6 @@ if(!isList(cell->type))
 return(params->next);
 }
 
-/* gets a list from an expression or default functor
-   inside the (L foo) parameter form in nth and ref functions 
-   returns the params ptr for foo */
-CELL * getListSpec(CELL * params, CELL * * result, int setFlag)
-{
-SYMBOL * sPtr;
-CELL * list;
-
-list = (CELL *)params->contents;
-params = list->next;	
-if(isSymbol(list->type))
-	{
-	if(list->type == CELL_SYMBOL)
-		sPtr = (SYMBOL *)list->contents;
-	else 
-		sPtr =	getDynamicSymbol(list);
-
-	list = (CELL *)sPtr->contents;
-
-	if(list->type == CELL_CONTEXT)
-		{
-		sPtr = (translateCreateSymbol(
-			((SYMBOL*)list->contents)->name,
-			CELL_NIL,
-			(SYMBOL*)list->contents,
-			TRUE));
-		list = (CELL *)sPtr->contents;
-		}
-
-	if(isProtected(sPtr->flags) && setFlag)
-		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
-	}
-else
-	{
-	if(setFlag)
-		list = evalCheckProtected(list, NULL);
-	else
-		list = evaluateExpression(list);
-
-	if(list->type == CELL_CONTEXT)
-		{
-		sPtr = (translateCreateSymbol(
-			((SYMBOL*)list->contents)->name,
-			CELL_NIL,
-			(SYMBOL*)list->contents,
-			TRUE));
-
-		if(setFlag && isProtected(sPtr->flags))
-			return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
-
-		list = (CELL *)sPtr->contents;
-		}
-	}
-
-*result = list;
-
-return(params);
-}
-
 /* ------------------------------- core predicates ------------------------ */
 
 CELL * p_setLocale(CELL * params)
@@ -3817,6 +3859,8 @@ CELL * p_setLocale(CELL * params)
 struct lconv * lc;
 char * locale;
 UINT category;
+CELL * result;
+char decimal[6];
 
 if(params != nilCell)
 	params = getString(params, &locale);
@@ -3836,7 +3880,12 @@ stringOutputRaw = (strcmp(locale, "C") == 0);
 lc = localeconv();	
 lc_decimal_point = *lc->decimal_point;
 
-return(stuffString(locale));
+result = getCell(CELL_EXPRESSION);
+addList(result, stuffString(locale));
+snprintf(decimal, 5, "%c", lc_decimal_point);
+addList(result, stuffString(decimal));
+
+return(result);
 }
 
 CELL * p_quote(CELL * params)
@@ -3854,12 +3903,7 @@ else
 
 if(params->type == CELL_SYMBOL)
 	{
-	if(symbolProtectionLevel && symbolProtectionLevel == (recursionCount - 1))
-		{
-		if(isProtected(((SYMBOL *)params->contents)->flags))
-			symbolProtectionLevel = 0xFFFFFFFF;
-		}
-	/* eval returns original symbol contents for usage in macros */
+	symbolCheck = (SYMBOL *)params->contents;
 	pushResultFlag = 0;
 	return((CELL*)((SYMBOL *)params->contents)->contents);
 	}
@@ -3871,8 +3915,8 @@ return(copyCell(evaluateExpression(params)));
 CELL * p_catch(CELL * params)
 {
 jmp_buf errorJumpSave;
-int envStackIdxSave;
-int lambdaStackIdxSave;
+UINT * envStackIdxSave;
+UINT * lambdaStackIdxSave;
 int recursionCountSave;
 int value;
 CELL * expr;
@@ -3893,6 +3937,7 @@ envStackIdxSave = envStackIdx;
 recursionCountSave = recursionCount;
 lambdaStackIdxSave = lambdaStackIdx;
 contextSave = currentContext;
+itSymbol->contents = (UINT)nilCell;
 
 if((value = setjmp(errorJump)) != 0)
     {
@@ -3960,23 +4005,8 @@ return(nilCell);
 
 CELL * evalString(CELL * params, int mode);
 
-/* modes:
-EVAL_STRING  the classic eval-string: read, xlate, evaluate
-READ_STRING  read one toplevel expression: read 
-READ_XLATE_STRING  read toplevel expression read, xlate 
-READ_XLATE_NO_CALLBACK  used by p_sync() in nl-filesys.c 
-*/
-
-CELL * p_evalString(CELL * params)
-{
-return(evalString(params, EVAL_STRING));
-}
-
-CELL * p_readExpr(CELL * params)
-{
-return(evalString(params, READ_STRING));
-}
-
+CELL * p_evalString(CELL * params) { return(evalString(params, EVAL_STRING)); }
+CELL * p_readExpr(CELL * params) { return(evalString(params, READ_EXPR)); }
 
 CELL * evalString(CELL * params, int mode)
 {
@@ -3984,39 +4014,42 @@ SYMBOL * context = currentContext;
 char * evalString;
 
 params = getString(params, &evalString);
-if(params->next != nilCell && mode == READ_STRING)
-	mode = READ_XLATE_STRING;
 
-if(params->next != nilCell)
+if(params != nilCell)
 	{
-	if((context = getCreateContext(params->next, TRUE)) == NULL)
-		return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params->next));
+	if((context = getCreateContext(params, TRUE)) == NULL)
+		return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
 	}
 
-return(copyCell(sysEvalString(evalString, params, context, mode)));
+if(mode == EVAL_STRING)
+	return(copyCell(sysEvalString(evalString, context, params->next, mode)));
+
+return(sysEvalString(evalString, context, params->next, mode));
 }
 
+/* modes:
+EVAL_STRING  the classic eval-string: read, xlate, evaluate
+READ_EXPR  used by p_sync() in nl-filesys.c 
+*/
 
-CELL * sysEvalString(char * evalString, CELL * proc, SYMBOL * context, int mode)
+
+CELL * sysEvalString(char * evalString, SYMBOL * context, CELL * proc, int mode)
 {
 CELL * program;
 STREAM stream = {0, NULL, NULL, 0, 0};
 CELL * resultCell = nilCell;
-CELL * cell = NULL;
+SYMBOL * contextSave = NULL;
+UINT * resultIdxSave;
 jmp_buf errorJumpSave;
 int recursionCountSave;
-int envStackIdxSave;
-int resultIdxSave;
-SYMBOL * contextSave = NULL;
-char * prevPtr = NULL;
+UINT * envStackIdxSave;
 
 makeStreamFromString(&stream, evalString);
-prevPtr = stream.buffer;
 resultIdxSave = resultStackIdx;
 contextSave = currentContext;
 currentContext = context;
 
-if(mode == EVAL_STRING && proc != nilCell)
+if(proc != nilCell)
 	{
 	recursionCountSave = recursionCount;
 	envStackIdxSave = envStackIdx;
@@ -4030,6 +4063,8 @@ if(mode == EVAL_STRING && proc != nilCell)
 		evalCatchFlag--;
 		recursionCount = recursionCountSave;
 		currentContext = contextSave;
+		if(mode == READ_EXPR)
+			return(copyCell(evaluateExpression(proc)));
 		return(evaluateExpression(proc));
 		}
 	}
@@ -4037,67 +4072,34 @@ if(mode == EVAL_STRING && proc != nilCell)
 while(TRUE)
 	{
 	program = getCell(CELL_QUOTE);
+	pushResult(program);
 	if(compileExpression(&stream, program) == 0) 
+		break;
+	if(mode == EVAL_STRING)
+		resultCell = evaluateExpression((CELL *)program->contents);
+	else /* READ_EXPR or READ_EXPR_SYNC */
 		{
-		deleteList(program);
+		deleteList((CELL *)sysSymbol[0]->contents);
+		sysSymbol[0]->contents = (UINT)stuffInteger(stream.ptr - stream.buffer); 
+		resultCell = (CELL *)program->contents;
+		program->contents = (UINT)nilCell;
 		break;
 		}
-	if(mode == EVAL_STRING)
-		{
-		pushResult(program);
-		resultCell = evaluateExpression((CELL *)program->contents);
-		}
-	else 
-		{
-		if(mode == READ_STRING)
-			{
-			cell = stuffStringN(prevPtr, (stream.ptr - prevPtr));
-			prevPtr = stream.ptr;
-			deleteList((CELL *)program->contents); 
-			program->type = CELL_EXPRESSION;
-			}
-		else if(mode == READ_XLATE_STRING)
-			{
-			cell = program;
-			program = getCell(CELL_EXPRESSION);
-			}
-		else  /* READ_XLATE_NO_CALLBACK */
-			{
-			currentContext = contextSave;
-			cell = (CELL *)program->contents;
-			program->contents = (UINT)nilCell;
-			deleteList(program);
-			return(cell);
-			}
 
-		if(proc != nilCell)
-			{
-			program->contents = (UINT) copyCell(proc);	
-			((CELL *)program->contents)->next = cell;
-			resultCell = evaluateExpression(program);
-			}
-		pushResult(program);
-		}
-
-	if(resultStackIdx > (MAX_RESULT_STACK - 256))
+	if(resultStackIdx > resultStackTop - 256)
 		{
-		program = popResult();
+		program = popResult(); /* leave last result */
 		cleanupResults(resultIdxSave);
 		pushResult(program);
 		}
 	}
 
-if(mode == EVAL_STRING && proc != nilCell)
-	{
-	memcpy(errorJump, errorJumpSave, (sizeof(jmp_buf)));
-	evalCatchFlag--;
-	}
-
 currentContext = contextSave;
+
 return(resultCell);
 }
 
-
+#ifdef old_curry
 CELL * p_curry(CELL * params)
 {
 CELL * lambda;
@@ -4120,7 +4122,28 @@ cell->next = stuffSymbol(xPtr);
 
 return(lambda);
 }
+#endif
 
+CELL * p_curry(CELL * params)
+{
+CELL * lambda;
+CELL * cell;
+
+cell = getCell(CELL_EXPRESSION);
+lambda = makeCell(CELL_LAMBDA, (UINT)cell);
+cell->next = getCell(CELL_EXPRESSION);
+cell = cell->next;
+cell->contents = (UINT)copyCell(params);
+cell = (CELL *)cell->contents;
+cell->next = copyCell(params->next);
+cell = cell->next;
+cell->next = makeCell(CELL_EXPRESSION, (UINT)stuffSymbol(argsSymbol));
+cell = cell->next;
+cell = (CELL *)cell->contents;
+cell->next = stuffInteger(0);
+
+return(lambda);
+}
 
 CELL * p_apply(CELL * params)
 {
@@ -4130,13 +4153,13 @@ CELL * cell;
 CELL * result;
 CELL * func;
 ssize_t count, cnt;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 func = evaluateExpression(params);
 
 cell = copyCell(func);
 expr = makeCell(CELL_EXPRESSION, (UINT)cell);
-params = getDefaultOrEval(params->next, &args);
+params = getEvalDefault(params->next, &args);
 
 if(args->type != CELL_EXPRESSION)
 	{
@@ -4149,8 +4172,8 @@ if(args->type != CELL_EXPRESSION)
 		return(errorProcExt(ERR_LIST_EXPECTED, args));
 	}
 
-if(params->next != nilCell)
-	getInteger(params->next, (UINT *)&count);
+if(params != nilCell)
+	getInteger(params, (UINT *)&count);
 else count = -1;
 if(count < 2) count = MAX_LONG;
 
@@ -4175,9 +4198,25 @@ for(;;)
 			}
 		args = args->next;
 		}
+#define REF_APPLY
+#ifdef REF_APPLY
+	pushResult(expr);
+	if(args == nilCell)
+		{
+		result = evaluateExpression(expr);
+		if(symbolCheck) 
+			{
+			pushResultFlag = FALSE;
+			return(result);
+			}
+		else return(copyCell(result));
+		}		
+	result = copyCell(evaluateExpression(expr));
+#else
 	pushResult(expr);
 	result = copyCell(evaluateExpression(expr));
 	if(args == nilCell) return(result);
+#endif
 	cell = copyCell(func);
 	expr = makeCell(CELL_EXPRESSION, (UINT)cell);
 	cell->next = getCell(CELL_QUOTE);
@@ -4196,7 +4235,7 @@ if(params != nilCell)
 return(copyCell((CELL*)argsSymbol->contents));
 }
 
-/* in-place expansion, if symbol==NULL all uppercase, nil vars are expanded */
+/* in-place expansion, if symbol==NULL all uppercase, non-nil vars are expanded */
 CELL * expand(CELL * expr, SYMBOL * symbol)
 {
 CELL * cell = nilCell;
@@ -4281,8 +4320,7 @@ CELL * next;
 CELL * list;
 CELL * cell;
 
-expr = evaluateExpression(params);
-params = getDefaultOrEval(params, &expr);
+params = getEvalDefault(params, &expr);
 if(!isList(expr->type) && expr->type != CELL_QUOTE)
 	return(errorProcExt(ERR_LIST_EXPECTED, expr));
 
@@ -4392,30 +4430,75 @@ return(defineOrMacro(params, CELL_MACRO));
 }
 
 
-CELL * p_setq(CELL * params)
+/* also called from setq */
+CELL * p_setf(CELL *params)
 {
-SYMBOL * symbol;
-CELL * next;
+CELL * cell;
+CELL * new;
+SYMBOL * symbolRef;
+char * symbolRefPtr;
 
-for(;;)
+SETF_BEGIN:
+if(params->next == nilCell)
+	return(errorProc(ERR_MISSING_ARGUMENT));
+		
+cell = evaluateExpression(params);
+		
+if(symbolCheck == NULL)
+	return(errorProc(ERR_IS_NOT_REFERENCED));
+
+symbolRef = symbolCheck;
+symbolRefPtr = symbolCheckPtr;
+itSymbol->contents = (UINT)cell;
+
+new = copyCell(evaluateExpression(params->next));
+
+itSymbol->contents = (UINT)nilCell;
+	
+if(isProtected(symbolRef->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
+
+params = params->next;
+params = params->next;
+
+if(symbolRefPtr && ((CELL *)symbolRef->contents)->type == CELL_STRING)
 	{
-	if(params->type != CELL_SYMBOL)
-		{
-		if(params->type == CELL_DYN_SYMBOL)
-			symbol = getDynamicSymbol(params);
-		else
-			return(errorProcExt(ERR_SYMBOL_EXPECTED, params));
-		}
-	else
-		symbol = (SYMBOL *)params->contents;
-	params = params->next;
-	next = params->next;
-	if(params == nilCell)
-		return((CELL*)symbol->contents);
-	if(next == nilCell) return(setDefine(symbol, params, SET_SET));
-	setDefine(symbol, params, SET_SET);
-	params = next;
+	cell = setNthStr((CELL *)symbolRef->contents, new, symbolRefPtr);
+	if(params != nilCell) goto SETF_BEGIN;
+	return(cell);
 	}
+
+/* delete contents of original cell */
+if(isEnvelope(cell->type))
+	{
+	if(cell->type == CELL_ARRAY)
+		deleteArray(cell);
+	else
+		deleteList((CELL *)cell->contents);
+	}
+else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
+	freeMemory( (void *)cell->contents);
+	
+	
+/* get new contents */	
+cell->type = new->type;
+cell->aux = new->aux;
+cell->contents = new->contents;
+
+/* free cell */
+new->type = CELL_FREE;
+new->aux = 0;
+new->contents = 0;
+new->next = firstFreeCell;
+firstFreeCell = new;
+--cellCount;
+
+if(params != nilCell) goto SETF_BEGIN;
+
+/* return modified cell */
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -4429,7 +4512,7 @@ for(;;)
 	params = getSymbol(params, &symbol);
 	next = params->next;
 	if(params == nilCell)
-		return((CELL*)symbol->contents);
+		return(errorProc(ERR_MISSING_ARGUMENT));
 	if(next == nilCell) return(setDefine(symbol, params, SET_SET));
 	setDefine(symbol, params, SET_SET);
 	params = next;
@@ -4487,7 +4570,9 @@ cell = copyCell(evaluateExpression(params));
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)(cell);
 
+symbolCheck = symbol;
 pushResultFlag = FALSE; 
+
 return(cell);
 }
 
@@ -4551,7 +4636,7 @@ if(type == LET_LOCAL)
         		return(errorProcExt(ERR_SYMBOL_PROTECTED, inits));
 		pushEnvironment(symbol->contents);
 		pushEnvironment(symbol);
-		symbol->contents = (UINT)nilCell;
+		symbol->contents = (UINT)copyCell(nilCell);
 		localCount++;
 		inits = inits->next;
 		}
@@ -4668,25 +4753,53 @@ CELL * p_first(CELL * params)
 {
 char str[2];
 CELL * cell;
+CELL * result;
 
-getDefaultOrEval(params, &cell);
+getEvalDefault(params, &cell);
 
 if(cell->type == CELL_STRING)
 	{
 	if((str[0] = *(char *)cell->contents) == 0)
-	return(stuffString(""));
+		return(stuffString(""));
+	
 #ifndef SUPPORT_UTF8
 	str[1] = 0;
-	return(stuffString(str));
+	result = stuffString(str);
 #else
-	return(stuffStringN((char*)cell->contents, utf8_1st_len((char*)cell->contents)));
+	result = stuffStringN((char*)cell->contents, utf8_1st_len((char*)cell->contents));
 #endif
+
+	if(symbolCheck)
+		{
+		symbolCheckPtr = (char *)cell->contents;
+		pushResult(result);
+		pushResultFlag = FALSE;
+		}
+	return(result);
 	}
 
 else if(isList(cell->type))
+	{
+	if(cell->contents == (UINT)nilCell)
+		return(errorProcExt(ERR_LIST_EMPTY, params));
+
+	if(symbolCheck)
+		{
+		pushResultFlag = FALSE;
+		return((CELL *)cell->contents);
+		}
 	return(copyCell((CELL *)cell->contents));
+	}
+
 else if(cell->type == CELL_ARRAY)
+	{
+	if(symbolCheck)
+		{
+		pushResultFlag = FALSE;
+		return(*(CELL * *)cell->contents);
+		}	
 	return(copyCell(*(CELL * *)cell->contents)); 
+	}
 
 return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, params));
 }
@@ -4698,7 +4811,7 @@ CELL * cell;
 CELL * tail;
 
 /* cell = evaluateExpression(params); */
-getDefaultOrEval(params, &cell);
+getEvalDefault(params, &cell);
 
 if(cell->type == CELL_STRING)
 	{
@@ -4815,14 +4928,13 @@ return(cons);
 }
 
 
-
 CELL * p_list(CELL * params)
 {
 CELL * list;
 CELL * lastCopy = NULL;
 CELL * copy;
 CELL * cell;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 list = getCell(CELL_EXPRESSION);
 
@@ -4846,24 +4958,24 @@ return(list);
 }
 
 
-
 CELL * p_last(CELL * params)
 {
 CELL * list;
 CELL * listptr;
+CELL * result;
 char * str;
 #ifdef SUPPORT_UTF8
 char * ptr;
 int len;
 #endif
 
-getDefaultOrEval(params, &list);
+getEvalDefault(params, &list);
 
 if(list->type == CELL_STRING)
 	{
 	str = (char *)list->contents;
 #ifndef SUPPORT_UTF8
-	return(stuffString(str + list->aux - 2));
+	result = stuffString(str + list->aux - 2);
 #else
 	ptr = str;
 	while((len = utf8_1st_len(str)) != 0)
@@ -4871,21 +4983,53 @@ if(list->type == CELL_STRING)
 		ptr = str;
 		str += len;
 		}
-	return(stuffStringN(ptr, utf8_1st_len(ptr)));
+	result = stuffStringN(ptr, utf8_1st_len(ptr));
+	str = ptr;
 #endif
+	if(symbolCheck)
+		{
+		symbolCheckPtr = (char *)str;
+		pushResult(result);
+		pushResultFlag = FALSE;
+		}
+	return(result);
 	}
 
 else if(isList(list->type))
 	{
-	if(list->aux != (UINT)nilCell) return(copyCell((CELL *)list->aux));
+	if(list->contents == (UINT)nilCell)
+		return(errorProcExt(ERR_LIST_EMPTY, params));
+
+	if(list->aux != (UINT)nilCell) 
+		{
+		if(symbolCheck)
+			{
+			pushResultFlag = FALSE;
+			return((CELL *)list->aux);
+			}
+		return(copyCell((CELL *)list->aux));
+		}
+		
 	listptr = (CELL *)list->contents;
 	while(listptr->next != nilCell) listptr = listptr->next;
 	list->aux = (UINT)listptr;
+	if(symbolCheck)
+		{
+		pushResultFlag = FALSE;
+		return(listptr);
+		}
 	return(copyCell(listptr));
 	}
 
 else if(list->type == CELL_ARRAY)
+	{
+	if(symbolCheck)
+		{
+		pushResultFlag = FALSE;
+		return(*((CELL * *)list->contents + (list->aux - 1) / sizeof(UINT) - 1));
+		}
 	return(copyCell(*((CELL * *)list->contents + (list->aux - 1) / sizeof(UINT) - 1)));
+	}
 
 return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, params));
 }
@@ -4922,9 +5066,16 @@ while(isNil(cell) || isEmpty(cell))
 	cell = evaluateExpression(params);
 	}
 
-if(params->next == nilCell) return(copyCell(cell));
+if(params->next != nilCell) 
+	cell = evaluateExpression(params->next);
+	
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
 
-return((copyCell(evaluateExpression(params->next)))); 
+return(copyCell(cell));
 }
 
 
@@ -4936,7 +5087,15 @@ cell = evaluateExpression(params);
 if(!isNil(cell) && !isEmpty(cell))
 	params = params->next;
 
-return((copyCell(evaluateExpression(params->next)))); 
+cell = evaluateExpression(params->next);
+
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+
+return(copyCell(cell));
 }
 
 
@@ -4954,10 +5113,15 @@ while(params->next != nilCell)
 	}
 
 WHEN_END:
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+
 return(copyCell(cell));
 }
 
-#ifdef UNLESS
 CELL * p_unless(CELL * params)
 {
 CELL * cell;
@@ -4972,9 +5136,15 @@ while(params->next != nilCell)
 	}
 
 UNLESS_END:
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+
 return(copyCell(cell));
 }
-#endif
+
 
 CELL * p_condition(CELL * params)
 {
@@ -4990,12 +5160,18 @@ while(params != nilCell)
 		if(!isNil(eval) && !isEmpty(eval))
 			{
 			if(condition->next != nilCell)
-				return(copyCell(evaluateBlock(condition->next)));
-			return(copyCell(eval));
+				eval = evaluateBlock(condition->next);
+			break;
 			}
 		params = params->next;
 		}
 	else return(errorProc(ERR_LIST_EXPECTED));
+	}
+
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(eval);
 	}
 
 return(copyCell(eval));
@@ -5006,6 +5182,7 @@ CELL * p_case(CELL * params)
 {
 CELL * cases;
 CELL * cond;
+CELL * eval;
 
 cases = params->next;
 params = evaluateExpression(params);
@@ -5017,10 +5194,19 @@ while(cases != nilCell)
     if(compareCells(params, cond) == 0
 	  || (cond->type == CELL_SYMBOL && symbolType((SYMBOL *)cond->contents) == CELL_TRUE)
           || cond->type == CELL_TRUE)
-	return(copyCell(evaluateBlock(cond->next)));
+		{
+		eval = evaluateBlock(cond->next);
+        if(symbolCheck)
+        	{
+        	pushResultFlag = FALSE;
+        	return(eval);
+        	}
+		return(copyCell(eval));
+		}
     }
 	cases = cases->next;
   }
+
 return(nilCell);
 }
 
@@ -5034,12 +5220,19 @@ CELL * p_doWhile(CELL * params) { return(repeat(params, REPEAT_DOWHILE)); }
 CELL * p_until(CELL * params) { return(repeat(params, REPEAT_UNTIL)); }
 CELL * p_doUntil(CELL * params) { return(repeat(params, REPEAT_DOUNTIL)); }
 
+
 CELL * repeat(CELL * params, int type)
 {
 CELL * result;
 CELL * cell;
 CELL * cellIdx;
-int resultIdxSave;
+UINT * resultIdxSave;
+SYMBOL * symbolRef = NULL;
+
+/*
+if(params == nilCell)
+	return(errorProc(ERR_MISSING_ARGUMENT));
+*/
 
 cellIdx = initIteratorIndex();
 
@@ -5054,9 +5247,11 @@ while(TRUE)
             if(isNil(cell) || isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
             result = evaluateBlock(params->next);
+            symbolRef = symbolCheck;
             break;
         case REPEAT_DOWHILE:
             result = evaluateBlock(params->next);
+            symbolRef = symbolCheck;
             cell = evaluateExpression(params);
             if(isNil(cell) || isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
@@ -5066,9 +5261,11 @@ while(TRUE)
             if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
             result = evaluateBlock(params->next);
+            symbolRef = symbolCheck;
             break;
         case REPEAT_DOUNTIL:
             result = evaluateBlock(params->next);
+            symbolRef = symbolCheck;
             cell = evaluateExpression(params);
             if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
             cleanupResults(resultIdxSave);
@@ -5082,6 +5279,13 @@ while(TRUE)
 
 END_REPEAT:
 recoverIteratorIndex(cellIdx);
+
+if((symbolCheck = symbolRef))
+	{
+	pushResultFlag = FALSE;
+	return(result);
+	}
+	
 return(copyCell(result));
 }
 
@@ -5138,7 +5342,7 @@ double fromFlt, toFlt, interval, step, cntFlt;
 INT64 stepCnt, i;
 INT64 fromInt64, toInt64;
 int intFlag;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 cell = getPushSymbolParam(params, &symbol);
 
@@ -5256,7 +5460,7 @@ CELL * cond = nilCell;
 SYMBOL * symbol;
 SYMBOL * context;
 CELL * cellIdx;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 cell = getPushSymbolParam(params, &symbol);
 cellIdx = initIteratorIndex();
@@ -5265,7 +5469,7 @@ switch(doType)
 	{
 	case DOLIST:
 		/* list = copyCell(evaluateExpression(cell)); */
-		getDefaultOrEval(cell, &list);
+		getEvalDefault(cell, &list);
 		list = copyCell(list);
 		if(!isList(list->type))
 			return(errorProcExt(ERR_LIST_EXPECTED, cell));
@@ -5343,15 +5547,36 @@ return(cell);
 
 CELL * p_evalBlock(CELL * params)
 {
-return(copyCell(evaluateBlock(params)));
+CELL * cell;
+
+cell = evaluateBlock(params);
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+	
+return(copyCell(cell));
 }
 
+CELL * p_copy(CELL * params)
+{
+return(copyCell(evaluateExpression(params)));
+}
 
 CELL * p_silent(CELL * params)
 {
+CELL * cell;
 evalSilent  = TRUE;
 
-return(copyCell(evaluateBlock(params)));
+cell = evaluateBlock(params);
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+	
+return(copyCell(cell));
 }
 
 
@@ -5366,6 +5591,12 @@ while(params != nilCell)
 	params = params->next;
 	}
 
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(result);
+	}
+	
 return(copyCell(result));     
 }
 
@@ -5378,7 +5609,14 @@ while(params != nilCell)
 	{
 	result = evaluateExpression(params);
 	if(!isNil(result) && !isEmpty(result)) 
+		{
+		if(symbolCheck)
+			{
+			pushResultFlag = FALSE;
+			return(result);
+			}
 		return(copyCell(result));
+		}
 	params = params->next;
 	}
 
@@ -5505,7 +5743,7 @@ if(currentContext != mainContext)
 	if((sPtr = lookupSymbol("set", currentContext)) != NULL)
 		{
 		deleteList((CELL *)sPtr->contents);
-		sPtr->contents = (UINT)nilCell;
+		sPtr->contents = (UINT)copyCell(nilCell);
 		}
 	}
 			
@@ -5513,7 +5751,7 @@ if(currentContext != mainContext)
 saveSymbols((SYMBOL *)((CELL*)currentContext->contents)->aux, device);
 
 if(currentContext != mainContext)
-	varPrintf(device, "%s(context 'MAIN)%s%s", 
+	varPrintf(device, "%s(context MAIN)%s%s", 
 		LINE_FEED, LINE_FEED, LINE_FEED);
 
 currentContext = contextSave;
@@ -5557,6 +5795,7 @@ UINT printDeviceSave;
 CELL * result;
 SYMBOL * contextSave;
 CELL * dataCell;
+int errorFlag = 0;
 
 contextSave = currentContext;
 currentContext = mainContext;
@@ -5571,22 +5810,28 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
 	serializeSymbols(params, (UINT)&strStream);
 	dataCell = stuffString(strStream.buffer);
 	result = getPutPostDeleteUrl(fileName, dataCell, HTTP_PUT_URL, 60000);
+	pushResult(result);
 	closeStrStream(&strStream);
 	deleteList(dataCell);
-	return(result);
+	errorFlag = (strncmp((char *)result->contents, "ERR:", 4) == 0);
 	}
 else
 	{
 	if(my_strnicmp(fileName, "file://", 7) == 0)
 		fileName = fileName + 7; 
 	if( (printDevice = (UINT)openFile(fileName, "write", NULL)) == (UINT)-1)
-		return(errorProcExt2(ERR_SAVING_FILE, stuffString(fileName)));
-	serializeSymbols(params, OUT_DEVICE);
+		errorFlag = 1;
+	else
+		serializeSymbols(params, OUT_DEVICE);
 	close((int)printDevice);
 	}
 
 currentContext = contextSave;
 printDevice = printDeviceSave;
+
+if(errorFlag)
+	return(errorProcExt2(ERR_SAVING_FILE, stuffString(fileName)));
+
 return(trueCell);
 }
 
@@ -5725,7 +5970,7 @@ if(sPtr != NIL_SYM && sPtr != NULL && !(sPtr->flags & SYMBOL_BUILTIN))
 	iterateSymbols(sPtr->left);
 	type = symbolType(sPtr);
 
-	/* check for default symbol */
+	/* optimized check for default symbol, translate default symbol to default symbol */
 	if(*sPtr->name == *fromContext->name && strcmp(sPtr->name, fromContext->name) == 0)
 		{
 		if((newPtr = lookupSymbol(newContext->name, newContext)) == NULL)
@@ -5850,7 +6095,7 @@ CELL * p_isEmpty(CELL * params)
 {
 CELL * cell;
 
-getDefaultOrEval(params, &cell);
+getEvalDefault(params, &cell);
 return(isEmptyFunc(cell));
 }
 
@@ -6282,6 +6527,25 @@ while(blockPtr != NULL)
 return(trueCell);
 }
 
+#ifdef ESTACK
+/* returns the variable environment, pure experimental, has no application */
+CELL * p_estack(CELL * params)
+{
+CELL * entry;
+UINT * idx = envStackIdx;
+CELL * result = getCell(CELL_EXPRESSION);
+
+while(idx > envStack)
+	{
+	entry = getCell(CELL_EXPRESSION);
+	addList(entry, stuffSymbol((SYMBOL *)*(--idx)));
+	addList(entry, copyCell((CELL *)*(--idx)));
+	addList(result, entry);
+	}
+
+return(result);
+}
+#endif
 
 CELL * p_mainArgs(CELL * params)
 {
@@ -6397,7 +6661,9 @@ SYMBOL * contextSymbol;
 
 getContext(params, &contextSymbol);
 
-return(stuffSymbol(translateCreateSymbol(contextSymbol->name, CELL_NIL, contextSymbol, TRUE)));
+symbolCheck = translateCreateSymbol(contextSymbol->name, CELL_NIL, contextSymbol, TRUE);
+pushResultFlag = FALSE;
+return((CELL *)symbolCheck->contents);
 }
 
 CELL * p_colon(CELL * params)

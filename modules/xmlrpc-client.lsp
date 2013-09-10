@@ -1,6 +1,7 @@
 ;; @module xmlrpc-client.lsp 
 ;; @description XMLRPC protocol client routines
 ;; @version 0.3 - comments redone for automatic documentation
+;; @version 0.4 - multiple indices with <tt>nth</tt> redone to be compatible with future versions
 ;; @author Lutz Mueller, 2005
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
@@ -98,31 +99,31 @@
     (if (match '(("methodResponse" ("fault" *))) sxml) 
         (begin
             (set 'error-msg 
-                (let (fault (nth 0 1 1 1 1 2 1 1 sxml) 
-                      text (nth 0 1 1 1 2 2 1 1 sxml))
+                (let (fault (sxml 0 1 1 1 1 2 1 1) 
+                      text (sxml 0 1 1 1 2 2 1 1))
                      (append "Fault " fault ": " text)))
                 (throw nil)))
 
-    (get-value (nth 0 1 1 1 sxml)))
+    (get-value (sxml 0 1 1 1)))
    
 
 ; get contents from expr = (value ...)
 ;
 (define (get-value expr)
     (if (empty? expr) nil
-        (case (nth 1 0 expr)
-            ("i4" (int (nth 1 1 expr)))
-            ("int" (int (nth 1 1 expr)))
-            ("boolean" (if (= "0" (nth 1 1 expr)) nil true))
-            ("double" (float (nth 1 1 expr)))
-            ("base64" (base64-dec (nth 1 1 expr)))
-            ("dateTime.iso8601" (nth 1 1 expr))
-            ("array" (if (= (nth 1 expr) "array") 
+        (case (expr 1 0)
+            ("i4" (int (expr 1 1)))
+            ("int" (int (expr 1 1)))
+            ("boolean" (if (= "0" (expr 1 1) ) nil true))
+            ("double" (float (expr 1 1)))
+            ("base64" (base64-dec (expr 1 1)))
+            ("dateTime.iso8601" (expr 1 1))
+            ("array" (if (= (expr 1) "array") 
                          "array" ;; if untagged string "array"
-                         (get-array (rest (nth 1 1 expr)))) )
-            ("struct" (get-struct (rest (nth 1 expr))))
-            ("string" (nth 1 1 expr))
-            (true (nth 1 expr)))))
+                         (get-array (rest (expr 1 1)))) )
+            ("struct" (get-struct (rest (expr 1))))
+            ("string" (expr 1 1))
+            (true (expr 1)))) )
 
 ; get contents from expr = ((value ...) (value ...) ...)
 ;
@@ -143,7 +144,7 @@
 ; get contents from expr = (member ...)
 ;
 (define (get-member expr)
-    (list (nth 1 1 expr) (get-value (last expr))))
+    (list (expr 1 1)  (get-value (last expr))))
 
 
 ################################ standard system methods #######################

@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x UTF-8 on 64 bit LINUX and 64-bit memory pointers tested on AMD64
+# makefile for newLISP v. 10.x.x UTF-8 on 64 bit LINUX and 64-bit memory pointers tested on AMD64
 #
 # Note, that readline support may require different libraries on different OSs
 #

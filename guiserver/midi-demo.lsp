@@ -3,7 +3,7 @@
 ;; - midi-demo.lsp -
 ;;
 ;; using gs:play-note in this demo only one channel can be played at the same time
-;; to play several tracks/channels in parallel use gs:play-track as chown in
+;; to play several tracks/channels in parallel use gs:play-track as shown in
 ;; the file midi2-demo.lsp
 
 (set-locale "C")
@@ -15,7 +15,7 @@
 ; initialize MIDI subsystem
 (gs:midi-init)
 ; get all instruments into the gs:instruments variable
-; enable this to see a list of intruments in the terminal
+; enable this to see a list of instruments in the terminal
 ;(gs:get-instruments)
 
 ; assign instruments to channels

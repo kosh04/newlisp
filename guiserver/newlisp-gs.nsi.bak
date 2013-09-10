@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\lutz\newLISP\newlisp-9405-win-gs-122.exe"
+OutFile "c:\lutz\newLISP\newlisp-10000-win-gs-125.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.22 and newLISP 9.4.4 on your computer.\r\nIf not installing in the default directory reboot."
+DirText "This will install the newLISP-GS 1.25 and newLISP 9.9.97 on your computer.\r\nIf not installing in the default directory reboot."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3
@@ -277,7 +277,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\manual_frame.html"
   File "c:\newlisp\CodePatterns.html"
   File "c:\newlisp\newLISPdoc.html"
-  File "c:\newlisp\newLISP-9.4-Release.html"
+  File "c:\newlisp\newLISP-10.0-Release.html"
   File "c:\newlisp\COPYING"
   File "c:\newlisp\guiserver.lsp"
   File "c:\newlisp\guiserver.jar"
@@ -357,18 +357,22 @@ Section "newLISP program (required) and DLL"
   ; make menu in startmenus
   CreateDirectory "$SMPROGRAMS\newLISP"
   CreateShortCut "$SMPROGRAMS\newLISP\newLISP.lnk" "$INSTDIR\newlisp.exe" "" "$INSTDIR\newlisp.exe" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\Release Notes.lnk" "$INSTDIR\newLISP-10.0-Release.html" "" "$INSTDIR\newLISP-10.0-Release.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Manual and Reference.lnk" "$INSTDIR\manual_frame.html" "" "$INSTDIR\manual_frame.html" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\Code Patterns.lnk" "$INSTDIR\CodePatterns.html" "" "$INSTDIR\CodePatterns.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\GS Manual and Reference.lnk" "$INSTDIR\guiserver\index.html" "" "$INSTDIR\guiserver\index.html" 0
-  #CreateShortCut "$SMPROGRAMS\newLISP\CodePatterns.lnk" "$INSTDIR\guiserver\CodePatterns.html" "" "$INSTDIR\guiserver\CodePatterns.html" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\newLISP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
-  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
 SectionEnd ; end the section
 
 Section "Add to path"
   Push $INSTDIR
   Call AddToPath
+SectionEnd
+
+Section "Create desktop shortcut"
+  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
 SectionEnd
 
 ; uninstall stuff
@@ -398,7 +402,7 @@ Section "Uninstall"
   Delete $INSTDIR\manual_frame.html
   Delete $INSTDIR\CodePatterns.html
   Delete $INSTDIR\newLISPdoc.html
-  Delete $INSTDIR\newLISP-9.4-Release.html
+  Delete $INSTDIR\newLISP-10.0-Release.html
   Delete $INSTDIR\COPYING
   Delete $INSTDIR\httpd-conf.lsp
   Delete $INSTDIR\guiserver.lsp

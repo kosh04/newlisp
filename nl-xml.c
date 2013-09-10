@@ -20,11 +20,10 @@
 #include "newlisp.h"
 #include "protos.h"
 
-#define XML_NONE 0
-#define XML_TEXT 1
-#define XML_CDATA 2
-#define XML_COMMENT 3
-#define XML_ELEMENT 4
+#define XML_TEXT 0
+#define XML_CDATA 1
+#define XML_COMMENT 2
+#define XML_ELEMENT 3
 
 int isWhiteSpaceStringN(char * source, int tagPos);
 CELL * makeTagSymbolCell(char * tagStart, int tagLen);
@@ -32,14 +31,14 @@ void performXmlCallback(CELL * cell, char * start);
 
 char * typeNames[] =
   {
-  "none",
   "TEXT",
   "CDATA",
   "COMMENT",
   "ELEMENT"
   };
 
-CELL typeCells[5] = {{0}, {0}, {0}, {0}, {0}};
+CELL * xmlTags = NULL;
+CELL * typeCell[4];
 
 static char * xmlError;
 static char xmlMsg[64];
@@ -72,22 +71,40 @@ CELL * setupTypeTagCells(void)
 {
 int i;
 
-/* if never done, initialize defaults */
-if(typeCells[0].contents == 0)
-    for(i = 0; i < 5; i++)
+if(xmlTags == NULL)
+	{
+	xmlTags = getCell(CELL_EXPRESSION);
+	for(i = 0; i < 4; i++)
+		typeCell[i] = stuffString(typeNames[i]);
+	}
+	
+/* link cells in a list */
+xmlTags->contents = (UINT)typeCell[0];
+for(i = 0; i < 3; i++)
+    typeCell[i]->next = typeCell[i+1];
+    
+return(xmlTags);
+}
+
+CELL * p_XMLtypeTags(CELL * params)
+{
+int i;
+
+if(params == nilCell) 
+    return(copyCell(setupTypeTagCells()));
+
+if(xmlTags != NULL)
+	deleteList(xmlTags);
+
+xmlTags = getCell(CELL_EXPRESSION);
+	
+for(i = 0; i < 4; i++)
     {
-    typeCells[i].type = (i == 0) ? CELL_EXPRESSION : CELL_STRING;
-    typeCells[i].next = nilCell;
-    typeCells[i].aux = (i == 0) ? (UINT)nilCell : strlen(typeNames[i]) + 1;
-    typeCells[i].contents = (UINT)typeNames[i];
+	typeCell[i] = copyCell(evaluateExpression(params));
+	params = params->next;
     }
 
-/* link cells in a list */
-typeCells[0].contents = (UINT)&typeCells[1];
-for(i = 1; i < 4; i++)
-    typeCells[i].next = &typeCells[i+1];
-
-return(&typeCells[0]);
+return(copyCell(setupTypeTagCells()));
 }
 
 CELL * p_XMLparse(CELL * params)
@@ -126,31 +143,12 @@ deleteTagStack();
 result = parseDoc();
 deleteTagStack();
 
+xmlCallback = NULL;
+
 if(xmlError != NULL)
 	return nilCell;
 else
 	return result;
-}
-
-
-CELL * p_XMLtypeTags(CELL * params)
-{
-int i;
-CELL * cell;
-
-if(params == nilCell) 
-    return(copyCell(setupTypeTagCells()));
-
-setupTypeTagCells();
-
-for(i = 1; i < 5; i++)
-    {
-    cell = evaluateExpression(params);
-    memcpy(&typeCells[i], cell, sizeof(CELL));
-    params = params->next;
-    }
-
-return(copyCell(setupTypeTagCells()));
 }
 
 
@@ -588,10 +586,10 @@ CELL * makeTextNode(int type, CELL * contents)
 CELL * cell;
 
 /* unwrap text node if nil xml-type-tag */
-if(typeCells[type].type == CELL_NIL)
+if(typeCell[type]->type == CELL_NIL)
     return(contents);
 
-cell = copyCell(&typeCells[type]);
+cell = copyCell(typeCell[type]);
 cell->next = contents;
 
 return(makeCell(CELL_EXPRESSION, (UINT)cell));
@@ -604,7 +602,7 @@ CELL * newNode;
 CELL * cell;
 
 /* unwrap children node, if nil in xml-type-tag */
-if(typeCells[XML_ELEMENT].type == CELL_NIL)
+if(typeCell[XML_ELEMENT]->type == CELL_NIL)
     {
     cell = childrenNode;
     childrenNode = (CELL *)childrenNode->contents;
@@ -613,11 +611,11 @@ if(typeCells[XML_ELEMENT].type == CELL_NIL)
     }
 
 newNode = getCell(CELL_EXPRESSION);
-if(typeCells[XML_ELEMENT].type == CELL_NIL)
+if(typeCell[XML_ELEMENT]->type == CELL_NIL)
     newNode->contents = (UINT)tagNode;
 else
     {
-    cell = copyCell(&typeCells[XML_ELEMENT]);
+    cell = copyCell(typeCell[XML_ELEMENT]);
     newNode->contents = (UINT)cell;
     cell->next = tagNode;
     }

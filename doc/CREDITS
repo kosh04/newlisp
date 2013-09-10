@@ -117,6 +117,10 @@ Dmitri Cherniak from http://en.feautec.pp.ru/
 Cyril Slobin from http://wagner.pp.ru/~slobin/
   contributed a new newlisp.vim syntax-highlighing file for the vim editor.
 
+Jeff Ober from http://www.artfulcode.net/
+  many of his ideas and comments have improved newLISP. On his blog a variety 
+  of interesting and useful code examples and modules can be found
+  
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel
   wrote the PCRE (Perl Regular Expressions) library, it is an essential

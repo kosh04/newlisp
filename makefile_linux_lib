@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on LINUX as a shared library - newlisp.so -
+# makefile for newLISP v. 10.x.x on LINUX as a shared library - newlisp.so -
 #
 # Note, that readline support may require different libraries on different OSs
 # 

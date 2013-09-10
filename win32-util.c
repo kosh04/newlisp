@@ -106,17 +106,27 @@ PROCESS_INFORMATION process;
 int result;
 long fin, fout; 
 
-/* GetStartupInfo(&si);  */
-si.cb = sizeof(si);
-si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
+if(inpipe == -1 && outpipe == -1)
+	{
+	memset(&si, 0, sizeof(si));
+	si.cb = sizeof(si);
+	si.wShowWindow = option; 
+	memset(&process, 0, sizeof(process));
+	}
+else
+	{
+	/* GetStartupInfo(&si);  */
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+	si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
 
-fin = _get_osfhandle(inpipe);
-fout = _get_osfhandle(outpipe);
+	fin = _get_osfhandle(inpipe);
+	fout = _get_osfhandle(outpipe);
 
-si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
-si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
-si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+	si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
+	si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+	si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+	}
 
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
 	return(0); 

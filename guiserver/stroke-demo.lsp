@@ -1,6 +1,7 @@
 #!/usr/bin/newlisp
 ;;
 ;; strokes-demo.lsp - demonstrate strokes with round endings in different lines and outlines
+;; v. 1.0
 
 ;;;; initialization
 (set-locale "C")
@@ -76,16 +77,15 @@
 ;; action handler
 
 (define (select-action id flag)
-	(set 'tag (case id
-		("MAIN:LineSelect" 'L)
-		("MAIN:RectangleSelect" 'R)
-		("MAIN:CircleSelect" 'C)
-		("MAIN:EllipseSelect" 'E)
-		("MAIN:ArcSelect" 'A))
-	)
-	(if flag 
-		(gs:show-tag tag) 
-		(gs:hide-tag tag)
+	(let (tag (case id
+			("MAIN:LineSelect" 'L)
+			("MAIN:RectangleSelect" 'R)
+			("MAIN:CircleSelect" 'C)
+			("MAIN:EllipseSelect" 'E)
+			("MAIN:ArcSelect" 'A)))
+		(if flag 
+			(gs:show-tag tag) 
+			(gs:hide-tag tag))
 	)
 )
 

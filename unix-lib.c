@@ -21,14 +21,19 @@
 #include "protos.h"
 
 extern void setupAllSignals(void);
+extern void loadStartup(char * name);
 extern int evalSilent;
 extern int opsys;
 extern SYMBOL * mainArgsSymbol;
+extern char linkOffset[];
 
 int libInitialized = 0;
 
 void initializeMain(void)
 {
+char name[MAX_LINE + 1];
+char * initFile;
+
 opsys += 64;
 
 #ifdef SUPPORT_UTF8
@@ -43,11 +48,19 @@ opsys += 512
 
 initLocale();
 initialize();
-
 mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 setupAllSignals();
-
 initStacks();
+
+initFile = getenv("NEWLISPLIB_INIT");
+if(initFile)
+	{
+	strncpy(name, initFile, MAX_LINE);
+	loadFile(name, 0, 0, mainContext);
+	}
+
+if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
+	loadFile("newlisp.so", *(UINT*)linkOffset, 1, mainContext);
 
 libInitialized = 1;
 reset();

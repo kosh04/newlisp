@@ -41,8 +41,13 @@ wchar_t     4
 #include <stdlib.h>
 #include <wchar.h>
 
+#define str2cmp(s1,s2) ( ( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
+						 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )		 
+
 int main(int argc, char * argv[])
 {
+int x = 1;
+
 printf("\n");
 printf("type      bytes\n");
 printf("---------------\n");
@@ -91,6 +96,21 @@ printf("%%ld   0x7fffffffffffffffLL %ld\n", 0x7FFFFFFFFFFFFFFFLL);
 printf("%%lu   0x7fffffffffffffffLL %lu\n", 0x7FFFFFFFFFFFFFFFLL);
 printf("%%ld   0x8000000000000000LL %ld\n", 0x8000000000000000LL);
 printf("%%lu   0x8000000000000000LL %lu\n", 0x8000000000000000LL);
+#endif
+
+printf("\n");
+
+if(*(char *)&x == 1)
+	printf("CPU is little endian\n");
+else
+	printf("CPU is big endian\n");
+	
+#ifdef __LITTLE_ENDIAN__
+printf("The constant __LITTLE_ENDIAN__ is defined by the compiler\n");
+#endif
+
+#ifdef __BIG_ENDIAN__
+printf("The constant __BIG_ENDIAN__ is defined by the compiler\n");
 #endif
 
 exit(0);

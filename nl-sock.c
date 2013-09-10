@@ -138,6 +138,13 @@ int errorIdx = 0;
 extern int logTraffic;
 extern int noPromptMode;
 
+#ifdef IPV6
+struct in6_addr defaultInAddr;
+#else
+struct in_addr defaultInAddr;
+#endif
+
+
 /********************** session functions *******************/
 
 int createInetSession(int sock, int family)
@@ -371,12 +378,16 @@ if((sock = socket(ADDR_TYPE, type, 0)) == INVALID_SOCKET)
 if(prot != NULL) if(*prot == 'M' || *prot == 'B')
     {
     memset(&iaddr, 0, sizeof(iaddr));
+
+	iaddr = defaultInAddr;
+
+/*
 #ifdef IPV6
-	/* iaddr = IN6ADDR_ANY_INIT; */
 	iaddr = in6addr_any;
 #else
     iaddr.s_addr = INADDR_ANY;
 #endif
+*/
 
     if(*prot == 'M')
         {
@@ -423,6 +434,69 @@ for(idx = 0; ; idx++)
 
 errorIdx = 0;
 return(sock);
+}
+
+
+/* set the default interface */
+
+void initDefaultInAddr()
+{
+#ifdef IPV6
+defaultInAddr = in6addr_any;
+#else
+defaultInAddr.s_addr = INADDR_ANY;
+#endif
+}
+
+#ifdef IPV6
+int getHost(char * ifAddr, struct in6_addr * inAddr)
+#else
+int getHost(char * ifAddr, struct in_addr * inAddr)
+#endif
+{
+struct hostent * pHe;
+
+if(ifAddr != NULL && *ifAddr != 0)
+	{
+	if((pHe = gethostbyname2(ifAddr, ADDR_TYPE)) == NULL)
+		{
+		errorIdx = ERR_INET_HOST_UNKNOWN;
+		return(SOCKET_ERROR);
+		}
+	memcpy((char *)inAddr, pHe->h_addr_list[0], pHe->h_length);
+	}
+else 
+	*inAddr = defaultInAddr;
+
+return(0);
+}
+
+
+CELL * p_netInterface(CELL * params)
+{
+char * ifAddr;
+#ifdef IPV6
+char IPaddress[40];
+#else
+char IPaddress[16];
+#endif
+
+if(params != nilCell)
+	{
+	getString(params, &ifAddr);
+
+	if(getHost(ifAddr, &defaultInAddr) == SOCKET_ERROR)
+		return(netError(ERR_INET_HOST_UNKNOWN));
+
+	errorIdx = 0;
+	}
+
+#ifdef IPV6
+	inet_ntop(AF_INET6, &defaultInAddr, IPaddress, 40); 
+#else
+	snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); 
+#endif
+return(stuffString(IPaddress));
 }
 
 /********* should be called after listen/accept notification **********/
@@ -572,6 +646,7 @@ CELL * p_netLookup(CELL * params)
 {
 #ifdef IPV6
 struct sockaddr_in6 address;
+char IPaddress[40];
 #else
 union ipSpec 
     {
@@ -580,10 +655,10 @@ union ipSpec
     } ip;
 
 struct sockaddr_in address;
+char IPaddress[16];
 #endif
 struct hostent * pHe;
 char * hostString;
-char IPaddress[16];
 int forceByName = 0;
 
 params = getString(params, &hostString);
@@ -632,18 +707,26 @@ return(stuffString(IPaddress));
 
 CELL * netReceive(int sock, SYMBOL * readSymbol, size_t readSize, CELL * params);
 
+
 CELL * p_netReceive(CELL * params) 
 { 
 UINT sock;
 SYMBOL * readSymbol;
 size_t readSize;
+CELL * cell;
 
 params = getInteger(params, &sock);
-params = getSymbol(params, &readSymbol);
+params = getEvalDefault(params, &cell);
+
+if(!symbolCheck)
+	return(errorProcExt2(ERR_SYMBOL_EXPECTED, params));
+
+readSymbol = symbolCheck;
 params = getInteger(params, (UINT *)&readSize);
 
 return(netReceive((int)sock, readSymbol, readSize, params));
 }
+
 
 CELL * netReceive(int sock, SYMBOL * readSymbol, size_t readSize, CELL * params)
 {
@@ -722,8 +805,10 @@ int portNo;
 char * buffer;
 ssize_t bytesReceived;
 #ifdef IPV6
+char IPaddress[40];
 struct sockaddr_in6 remote_sin;
 #else
+char IPaddress[16];
 struct sockaddr_in remote_sin;
 #endif
 CELL * cell;
@@ -737,7 +822,6 @@ unsigned long remote_sin_len;
 socklen_t remote_sin_len;
 #endif
 #endif
-char IPaddress[16];
 
 buffer = (char *)allocMemory(readSize + 1);
 remote_sin_len = sizeof(remote_sin);
@@ -1034,8 +1118,8 @@ struct sockaddr_in6 local_sin;
 #else
 struct sockaddr_in local_sin; 
 #endif
-struct hostent * pHe;
 struct ip_mreq mcast;
+/* struct hostent * pHe; */
 
 if((sock = socket(ADDR_TYPE, type, 0)) == INVALID_SOCKET)
     {
@@ -1045,6 +1129,14 @@ if((sock = socket(ADDR_TYPE, type, 0)) == INVALID_SOCKET)
 
 memset(&local_sin, 0, sizeof(local_sin));
 
+#ifdef IPV6
+if(getHost(ifAddr, &local_sin.sin6_addr) == SOCKET_ERROR)
+#else
+if(getHost(ifAddr, &local_sin.sin_addr) == SOCKET_ERROR)
+#endif
+	return(SOCKET_ERROR);
+
+/*
 if(ifAddr != NULL && *ifAddr != 0)
 	{
 	if((pHe = gethostbyname2(ifAddr, ADDR_TYPE)) == NULL)
@@ -1065,6 +1157,9 @@ else
 else 
 	local_sin.sin_addr.s_addr = INADDR_ANY; 
 #endif
+*/
+
+/* printf("sin_addr.s_addr %x\n", local_sin.sin_addr.s_addr);  */
 
 #ifdef IPV6
 local_sin.sin6_port = htons((u_short)portNo); 
@@ -1164,6 +1259,8 @@ else if(isList(cell->type))
     {
     cell = (CELL*)cell->contents;
     if(cell == nilCell) return(getCell(CELL_EXPRESSION));
+	if(!isNumber(cell->type))
+		return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
     sockList = sockPtr = allocMemory(sizeof(SOCKLIST));
     sockPtr->sock = cell->contents;
     sockPtr->next = NULL;
@@ -1171,6 +1268,8 @@ else if(isList(cell->type))
     value = 1;
     while((cell = cell->next) != nilCell)
         {
+		if(!isNumber(cell->type))
+			return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
         sockPtr->next = allocMemory(sizeof(SOCKLIST));
         sockPtr = sockPtr->next;
         sockPtr->sock = cell->contents;        
@@ -1267,7 +1366,11 @@ close(handle);
 FILE * serverFD(int port, char * domain, int reconnect)
 {
 static int sock, connection;
-char name[18];
+#ifdef IPV6
+char name[40];
+#else
+char name[16];
+#endif
 char text[80];
 time_t t;
 
@@ -1347,12 +1450,11 @@ CELL * result;
 STREAM * netStream;
 CELL * netEvalIdle = NULL;
 char buffer[MAX_BUFF];
-STREAM evalStream = {0, NULL, NULL, 0, 0};
 int rawMode = FALSE;
 int singleSession = FALSE;
 jmp_buf errorJumpSave;
 int errNo;
-int resultStackIdxSave;
+UINT * resultStackIdxSave;
 
 list  = evaluateExpression(params);
 if(list->type == CELL_STRING)
@@ -1435,8 +1537,6 @@ if( sendall(sock, "[cmd]\n", 6)  == SOCKET_ERROR ||
 session->netStream = (void *)allocMemory(sizeof(STREAM));
 memset(session->netStream, 0, sizeof(STREAM));
 openStrStream(session->netStream, MAX_BUFF, 0);
-/* prepend quote for evaluation */
-writeStreamChar(session->netStream, '\'');
 createInetSession(sock, AF_INET);
 count++;
 CONTINUE_CREATE_SESSION:
@@ -1495,10 +1595,9 @@ while(count)
         /* printf("count=%ld ready=%d bytes=%ld elapsed=%d\n", count, ready, bytes, elapsed); */
         if(elapsed >= timeOut) result = copyCell(nilCell); 
         else if(rawMode || errNo) /* get raw buffer without the quote */
-            result = stuffStringN(netStream->buffer + 1, netStream->position - 1);
+            result = stuffStringN(netStream->buffer, netStream->position);
         else 
             {
-            makeStreamFromString(&evalStream, netStream->buffer);
             memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
             if((errNo = setjmp(errorJump)) != 0)
                 {
@@ -1506,7 +1605,7 @@ while(count)
                 freeSessions(base);
                 longjmp(errorJump, errNo);
                 }
-            result = evaluateStream(&evalStream, 0, TRUE);
+			result = sysEvalString(netStream->buffer, currentContext, nilCell, READ_EXPR_SYNC);
             memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
             }
 
@@ -1693,7 +1792,7 @@ UINT maxwait = 1000, listmode = 0;
 UINT flag = 0;
 UINT count = 0;
 
-params = getDefaultOrEval(params, &address);
+params = getEvalDefault(params, &address);
 if(address->type == CELL_EXPRESSION)
 	{
 	address = (CELL *)address->contents;

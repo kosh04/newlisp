@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
 <html>
 <head>
+<title>Expression Evaluation in newLISP</title>
 <style type="text/css" media="screen">
 <!--
 body, h1, h2, h3, h4, p {
@@ -25,7 +26,7 @@ tt {
 <br />
 <blockquote>
 <center><h2>Expression evaluation, Implicit Indexing, Contexts and Default Functors in the newLISP Scripting Language</h2></center>
-<center><font size="-1">Lutz Mueller, November 8th 2007, rev 4<br>
+<center><font size="-1">Lutz Mueller, October 26th 2008, rev 5<br>
 </font></center>
 
 <center><blockquote><blockquote><i>
@@ -57,6 +58,11 @@ function evaluateExpression(expr)
             result = evaluateFunc(func, args)
         else if typeOf(func) = LAMBDA_FUNCTION
             result = evaluateLambda(func, args)
+		/* extensions for default functor */
+        if typeOf(func) is CONTEXT
+            func = defaultFunctor(func)
+                if typeOf(func) = LAMBDA_FUNCTION
+                    result = evaluateLambda(defaultFunctor(func), args)
         /* extensions for implicit indexing */
         else if typeOf(func) = LIST
             result = implicitIndexList(func, args)
@@ -89,20 +95,20 @@ function evaluateExpression(expr)
 
 <blockquote><pre>
 (set 'lst '(a b (c d e) f g))
-(lst 2) => (c d e)
-(lst 2 1) => d
+(lst 2)  &rarr; (c d e)
+(lst 2 1)  &rarr; d
 
 (set 'str "abcdefg")
-(str 2) => "c"
+(str 2)  &rarr; "c"
 </pre></blockquote>
 
 <p>A number in the functor position will assume slicing functionality and slice the following list at the offset expressed by the number. When the number is followed by a second number, the second number specifies the size or length of the sliced part of the list:</p>
 
 <blockquote><pre>
-(1 lst) => (b (c d e) f g)
-(1 2 lst) => (b (c d e))
+(1 lst)  &rarr; (b (c d e) f g)
+(1 2 lst)  &rarr; (b (c d e))
 
-(1 2 str) => "bc"
+(1 2 str)  &rarr; "bc"
 </pre></blockquote>
 
 <p>On first sight it seems logical to extend the same principle to the boolean data type. A ternary conditional expressions could be constructed without the necessity of the <tt>if</tt> operator, but in practical programming this leads to difficulties when reading code and causes too much ambiguity in error messages. Most of the time implicit indexing leads to better readable code, because the data object is grouped together with it's indices. Implicit indexing performs faster, but is also optional. The keywords <tt>nth</tt>, <tt>set-nth</tt> and <tt>nth-set</tt> can be used in the few cases where readability is better when using the explicit form of indexing.</p>
@@ -111,37 +117,42 @@ function evaluateExpression(expr)
 
 <p>In the original Lisp <i>eval</i> function a <i>variable environment</i> is implemented as an association list of symbols and their values. In newLISP a symbol is implemented as a data structure with one value slot and the environment is not an association list but a binary tree structure of symbols and an <i>environment stack</i> storing previous values of symbols in higher evaluation levels.</p>
 
-<p>When entering a lambda function, the parameter symbols and their current values are pushed on to the environment stack. When leaving the function, the symbols are restored to their previous values when popping the environment stack. Any other function called will see symbol values as currently defined in the scope of the calling function. The variable environment changes dynamically while calling and returning from functions. The scope of a variable extends dynamically into lower call levels.<p>
+<p>When entering a lambda function, the parameter symbols and their current values are pushed 
+on to the environment stack. When leaving the function, the symbols are restored to their 
+previous values when popping the environment stack. Any other function called will see symbol 
+values as currently defined in the scope of the calling function. The variable environment 
+changes dynamically while calling and returning from functions. The scope of a variable extends 
+dynamically into lower call levels.</p>
 
 <p>The following example sets two variables and defines two lambda functions. After the function definitions the functions are used in a nested fashion. The changing parts of the variable environment are shown in bold type face:</p>
 
 <blockquote><pre>
-; x -> nil, y -> nil;
-; foo -> nil
-; double -> nil
+; x  &rarr; nil, y  &rarr; nil;
+; foo  &rarr; nil
+; double  &rarr; nil
 ; environment stack: [ ]
 
 (define (foo x y)       
 	(+ (double (+ x 1)) y))
 
-; x -> nil, y -> nil, 
-<b>; foo -> (lambda (x y) (+ (double (+ x 1)) y))</b>
-; double -> nil
+; x &rarr; nil, y  &rarr; nil, 
+<b>; foo  &rarr; (lambda (x y) (+ (double (+ x 1)) y))</b>
+; double  &rarr; nil
 ; environment stack: [ ]
 
 (define (double x)
 	(* 2 x))
 
-; x -> nil, y -> nil
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-<b>; double -> (lambda (x) (* 2 x)))</b>
+; x  &rarr; nil, y  &rarr; nil
+; foo  &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+<b>; double  &rarr; (lambda (x) (* 2 x)))</b>
 ; environment stack: [ ]
 
 (set 'x 10) (set 'y 20)
 
-<b>; x -> 10, y -> 20</b>
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-; double -> (lambda (x) (* 2 x)))
+<b>; x  &rarr; 10, y  &rarr; 20</b>
+; foo  &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+; double  &rarr; (lambda (x) (* 2 x)))
 ; environment stack: [ ]
 </pre></blockquote>
 
@@ -157,9 +168,9 @@ function evaluateExpression(expr)
 (foo 2 4)
 
 ; after entering the function foo
-<b>; x -> 2, y -> 4</b>
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-; double -> (lambda (x) (* 2 x)))
+<b>; x &rarr; 2, y &rarr; 4</b>
+; foo &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+; double &rarr; (lambda (x) (* 2 x)))
 <b>; environment stack: [x -> 10, y -> 20]</b>
 </pre></blockquote>
 
@@ -169,24 +180,24 @@ function evaluateExpression(expr)
 (double 3)
 ; after entering the function double
 <b>; x -> 3, y -> 4</b>
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-; double -> (lambda (x) (* 2 x)))
+; foo &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+; double &rarr; (lambda (x) (* 2 x)))
 <b>; environment stack: [x -> 10, y -> 20, x -> 2]</b>
 
 ; after return from double
-<b>; x -> 2, y -> 4</b>
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-; double -> (lambda (x) (* 2 x)))
+<b>; x &rarr; 2, y &rarr; 4</b>
+; foo &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+; double &rarr; (lambda (x) (* 2 x)))
 <b>; environment stack: [x -> 10, y -> 20]</b>
 
 ; after return from foo
-<b>; x -> 10, y -> 20</b>
-; foo -> (lambda (x y) (+ (double (+ x 1)) y))
-; double -> (lambda (x) (* 2 x)))
+<b>; x &rarr; 10, y &rarr; 20</b>
+; foo &rarr; (lambda (x y) (+ (double (+ x 1)) y))
+; double &rarr; (lambda (x) (* 2 x)))
 <b>; environment stack: [ ]</b>
 </pre></blockquote>
 
-<p>Note that in newLISP dynamic scoping of parameter symbols in lambda expressions does not create lexical state-full closures around those symbols as in the Scheme dialect of Lisp. On return from the lambda function the symbol contents gets destroyed and memory is reclaimed. The parameter symbols regain their old values on exit from the lambda function by popping them from the environment stack. <p>
+<p>Note that in newLISP dynamic scoping of parameter symbols in lambda expressions does not create lexical state-full closures around those symbols as in the Scheme dialect of Lisp. On return from the lambda function the symbol contents gets destroyed and memory is reclaimed. The parameter symbols regain their old values on exit from the lambda function by popping them from the environment stack. </p>
 
 <p>In newLISP lexical state-full closures are not realized using lambda closures but using lexical namespaces. Lambda functions in newLISP do not create closures but can create a new scope and new temporary content for existing symbols during lambda function execution.</p>
 
@@ -224,7 +235,7 @@ function evaluateLambda(lambda-func, args)
 
 <p>Except for symbols, all data and program objects are referenced only once. Symbols are created and organized in a binary tree structure. Namespaces, called <i>contexts</i> in newLISP, are sub-branches in this binary tree. A context is bound to a symbol in the root context <tt>MAIN</tt>, which itself is a symbol in the root context.</p>
 
-<p>With few exceptions all symbols are created during the code loading and translation phase of the newLISP interpreter. Only the functions <tt>load</tt>, <tt>sym</tt>, <tt>eval-string</tt> and a special syntax of <tt>context</tt> create symbols during runtime execution.<p>
+<p>With few exceptions all symbols are created during the code loading and translation phase of the newLISP interpreter. Only the functions <tt>load</tt>, <tt>sym</tt>, <tt>eval-string</tt> and a special syntax of <tt>context</tt> create symbols during runtime execution.</p>
 
 <p>The two symbols <tt>MAIN:x</tt> and <tt>CTX:x</tt> are two different symbols at all times. A symbol under no circumstances can change it's context after it was created. A context, e.g <tt>CTX</tt>, itself is a symbol in <tt>MAIN</tt> containing the root pointer to a sub-branch in the symbol tree.</p>
 
@@ -276,7 +287,7 @@ function evaluateLambda(lambda-func, args)
 <blockquote><pre>
 [ ]                             ; cell of type: EXPRESSION
   \
- [MAIN:set] -> ['] -> [123]     ; three cells of type: PRIMITIVE, QUOTE, INTEGER
+ [MAIN:set]  &rarr; [']  &rarr; [123]     ; three cells of type: PRIMITIVE, QUOTE, INTEGER
                  \
                [MAIN:var]       ; cell of type: SYMBOL
 </pre></blockquote>
@@ -300,10 +311,10 @@ function evaluateLambda(lambda-func, args)
 
 <blockquote><pre>
 (define (double:double x) (* 2 x))
-(double 3) => 6
+(double 3)  &rarr; 6
 
 (set 'my-list:my-list '(a b c d e f))
-(my-list 3) => d
+(my-list 3)  &rarr; d
 </pre></blockquote>
 
 <p>The second example combines implicit indexing with usage of a default functor.</p>
@@ -311,9 +322,9 @@ function evaluateLambda(lambda-func, args)
 <p>Default functors can be applied and mapped using <tt>apply</tt> and <tt>map</tt> like any other function or functor symbol:</p>
 
 <blockquote><pre>
-(map my-list '(3 2 1 2)) => (d c b c)
+(map my-list '(3 2 1 2))  &rarr; (d c b c)
 
-(apply double '(10)) => 20
+(apply double '(10))  &rarr; 20
 </pre></blockquote>
 
 <p>Default functors are a convenient way in newLISP to pass lists or other big data objects by reference:</p>
@@ -324,9 +335,9 @@ function evaluateLambda(lambda-func, args)
 (define (set-last ctx val) 
 	(nth-set (ctx -1) val))
 
-(set-last my-list 99) => f
+(set-last my-list 99)  &rarr; f
 
-my-list:my-list => (a b c d e 99)
+my-list:my-list  &rarr; (a b c d e 99)
 </pre></blockquote>
 
 <p>Default functors are also a convenient way to define functions with a closed state-full
@@ -340,9 +351,9 @@ name space:</p>
 		(inc 'value x)))
 (context MAIN)
 
-(accumulator 10) => 10
-(accumulator 2) => 12
-(accumulator 3) => 15
+(accumulator 10)  &rarr; 10
+(accumulator 2)  &rarr; 12
+(accumulator 3)  &rarr; 15
 </pre></blockquote>
 
 <p>Note that the symbols <tt>x</tt> and <tt>value</tt> both belong to the namespace <tt>accumulator</tt>. Because <tt>(context 'accumulator)</tt> is at the top level, the translation of following function definition for <tt>accumulator:accumulator</tt> happens inside the current namespace <tt>accumulator</tt>.</p>

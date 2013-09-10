@@ -1,6 +1,7 @@
 ;; @module ftp.lsp
 ;; @description FTP file transfer routines
 ;; @version 1.4 - comments redone for automatic documentation
+;; @version 1.5 - change in read-buffer for v.10.0
 ;; @author Eddie Rucker, Lutz Mueller, 2003
 ;;
 ;; <h2>FTP file transfer routines</h2>
@@ -78,7 +79,7 @@
             (net-send socket (append "STOR " file-name "\r\n"))
             (send-get-result "STAT\r\n" "1")
             (set 'fle (open file-name "r"))
-            (while (> (read-buffer fle 'buffer 512) 0)
+            (while (> (read-buffer fle buffer 512) 0)
                 (if debug-mode (print "."))
                 (net-send socket2 buffer 512))
             (close fle)) true)

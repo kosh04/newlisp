@@ -120,7 +120,7 @@
     
 
 (define (system.methodHelp params, methodName)
-    (set 'methodName (nth 0 1 1 1 1 params))
+    (set 'methodName (nth (params 0 1 1 1 1)))
     (case methodName
         ("system.listMethods" (format normal-response "Lists all methods implemented."))
         ("system.methodHelp" (format normal-response "Documents a method."))
@@ -130,7 +130,7 @@
 )
 
 (define (system.methodSignature params)
-    (set 'methodName (nth 0 1 1 1 1 params))
+    (set 'methodName (nth (params 0 1 1 1 1)))
     (case methodName
         ("system.listMethods" (format normal-response 
 "<array>

@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on LINUX with readline lib support
+# makefile for newLISP v. 10.x.x on LINUX with readline lib support
 #
 # Note, that readline support may require different libraries on different OSs
 # 
@@ -13,9 +13,9 @@ CC = gcc
 
 
 default: $(OBJS)
-#	$(CC) $(OBJS) -g -lm -ldl -lreadline -ltermcap -o newlisp
-	$(CC) $(OBJS) -g -lm -ldl -lreadline -lncurses -o newlisp
-#	$(CC) $(OBJS) -g -lm -ldl -o newlisp
+#	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -ltermcap -o newlisp
+	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
+#	$(CC) $(OBJS) -m32 -g -lm -ldl -o newlisp
 	strip newlisp
 
 .c.o:

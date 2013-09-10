@@ -4,7 +4,8 @@
 ;; @version 1.7 - a fix getting types when null values are present (thanks Dmitry)
 ;; @version 1.8 - a fix to make 64-Bit integers work (thanks Dmitry)
 ;; @version 1.9 - new library detection routine
-;; @author Lutz Mueller, 2004-7
+;; @version 2.0 - added documentation for close
+;; @author Lutz Mueller, 2004-2008
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
 ;; To use this module include the following 'load' statement at the
@@ -133,9 +134,11 @@
       nil))
 )
 
-; close the currently open database ;;;
-;
-;
+;; @syntax (sql3:close)
+;; @return Returns 'true' on success;
+;;
+;; Closes the currently open database.
+
 (define (sql3:close) 		;;  overwrite the close in MAIN
 	(if db (begin
 		(sqlite3_close db)

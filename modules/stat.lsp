@@ -1,6 +1,9 @@
 ;; @module stat.lsp
 ;; @description Basic statistics library
 ;; @version 1.3 - comments redone for automatic documentation
+;; @version 1.4 - changed nth-set to setf for versions 9.9.02 and later
+;; @version 1.5 - changed write-line syntax for v9.9.9 and later
+;; @version 1.6 - changed inc/dec syntax for v9.9.92 and later
 ;; @author Lutz Mueller, 2001
 ;;
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
@@ -197,7 +200,7 @@
 	(dolist (elmnt (args))
 	    (if (list? elmnt)
 		(begin
-			(inc 'cnt)
+			(inc cnt)
 			(if (symbol? elmnt)
 				(set 'fileName (string elmnt))
 				(if unix
@@ -231,8 +234,10 @@
 	(if unix
 		(set 'fle (open (append (env "HOME") "/tmp/plot-XY") "write"))
 		(set 'fle (open "plot-XY" "write")))
-	(dolist (x lst)
-		(write-line (join x " ") fle))
+	(dolist (x lst)	
+		(if (< (sys-info -2) 9909)
+			(write-line (join x " ") fle)
+			(write-line fle (join x " "))))
 	(close fle)
 	(if (not style) 
 		(set 'st "")
@@ -354,7 +359,8 @@
   (dolist (elmnt lst) 
    (set 'previous (add (mul alpha elmnt) (mul (sub 1 alpha) previous))) 
    (push previous slist))
-  (reverse slist))
+  (reverse slist)) ; could be written shorter starting v.9.9.5
+                   ; because push returns the modified list
 
 
 ;
@@ -375,8 +381,9 @@
 	(set 'sc 0.0)
 	(set 'cum '())
 	(dolist (x lst)
-		(push (inc 'sc x) cum))
-	(reverse cum))
+		(push (inc sc x) cum))
+	(reverse cum)) ; could be written shorter after 9.9.5
+	               ; because push returns the list
 
 ;
 ; power spectrum
@@ -400,7 +407,10 @@
 	(set 'ps (map (lambda (x y) (add (mul x x) (mul y y))) (nth 0 fts) (nth 1 fts)))
 	(set 'ps (map (lambda (x) (mul (div x n2) 2)) ps))
 	; the first and last are not multiplied by 2, divide them back
-	(nth-set (ps 0) (div (first ps) 2))
+	; use deprecated nth-set in versions older than 9.9.02
+	(if (< (sys-info -2) 9902)
+		(nth-set (ps 0) (div (first ps) 2))
+		(setf (ps 0) (div (first ps) 2)))
 	(set 'mid (sub (div n 2) 1))
 	(replace mid ps (div (nth mid ps) 2))
 	; calc a vector with frequencies, adjusted for the new power-2 length
@@ -528,9 +538,12 @@
 	(set 'm '())
 	(dotimes (i n)
 		(set 'lst (dup 0 n))
-		(nth-set (lst i) elmnt)
+		; use deprecated nth-set in versions older than 9.9.02
+		(if (< (sys-info -2) 9902)
+			(nth-set (lst i) elmnt)
+			(setf (lst i) elmnt))
 		(push lst m))
-	(reverse m))
+	(reverse m)) ; make shorter starting v.9.9.5
 		
 ;
 ; get the diagonal from a square matrix

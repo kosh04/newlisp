@@ -2,6 +2,8 @@
 ;; @description Basic CGI processing tools for GET and POST requests
 ;; @version v 2.2 - comments redone for automatic documentation
 ;; @version v 2.3 - a fix in CGI:url-translate when translating utf-8 strings
+;; @version v 2.4 - check for empty string when aquiring HTTP_COOKIE environment
+;; @version v 2.5 - cleanup put-page for 10.0
 ;; @author Lutz Mueller, lutz@nuevatec.com
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -50,7 +52,7 @@
 ;; @example
 ;; <html>
 ;; <body>
-;; <% (set 'site "example.com") %>;
+;; <% (set 'site "example.com") %>
 ;; <a href="http://<% (print site) %>"><% (print site) %></a>
 ;; </body>
 ;; </html>
@@ -71,9 +73,7 @@
     (set 'end (find "%>" page))
     (while (and start end)
         (print (slice page 0 start))
-        (context MAIN)
-        (eval-string (slice page (+ start 2) (- end start 2)))
-        (context CGI)
+        (eval-string (slice page (+ start 2) (- end start 2)) MAIN)
         (set 'page (slice page (+ end 2)))
         (set 'start (find "<%" page))
         (set 'end (find "%>" page)))
@@ -112,7 +112,7 @@
 	      (set 'var elmnt)
 	      (set 'value "")))
 	(push (list var (url-translate value)) var-value))
-    var-value)
+    var-value) ; no necessary after v.9.9.5
 
 
 ; get QUERY_STRING parameters from GET method if present
@@ -132,12 +132,11 @@
 
 ; get cookies
 ;
-(if (env "HTTP_COOKIE")
+(if (and (env "HTTP_COOKIE") (not (empty? (env "HTTP_COOKIE"))))
     (dolist (elmnt (parse (env "HTTP_COOKIE") ";"))
-	(set 'var (trim (first (parse elmnt "="))))
-;	(set 'value (trim (last (parse elmnt "="))))
-	(set 'value (slice elmnt (+ 1 (find "=" elmnt))))
-	(push (list var value) cookies))
+		(set 'var (trim (first (parse elmnt "="))))
+		(set 'value (slice elmnt (+ 1 (find "=" elmnt))))
+		(push (list var value) cookies))
     (set 'cookies '()))
 
 ;; @syntax (CGI:set-cookie <str-var> <str-value> <str-domain> <str-path>)

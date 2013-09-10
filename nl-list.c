@@ -25,6 +25,7 @@
 extern SYMBOL * starSymbol;
 extern SYMBOL * plusSymbol;
 extern SYMBOL * sysSymbol[];
+extern SYMBOL * itSymbol;
 
 extern CELL * firstFreeCell;
 extern SYMBOL * dolistIdxSymbol;
@@ -45,12 +46,12 @@ CELL * results;
 CELL * res;
 CELL * qCell;
 CELL * cellIdx;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 sPtr = evaluateExpression(params);
 
 /* get first of argument lists */
-params = getDefaultOrEval(params->next, &cell);
+params = getEvalDefault(params->next, &cell);
 argsPtr = cell = copyCell(cell);
 
 if(!isList(cell->type))
@@ -58,7 +59,7 @@ if(!isList(cell->type))
 
 while (params != nilCell)
 	{
-	params = getDefaultOrEval(params, &results);
+	params = getEvalDefault(params, &results);
 	cell->next = copyCell(results);
 	cell = cell->next;
 
@@ -321,25 +322,6 @@ return(result);
 }    
 
 /* ----------------------------------------------------------------------- */
-/*
-CELL * p_match(CELL * params)
-{
-CELL * cell;
-CELL * next;
-CELL * result;
-
-cell = evaluateExpression(params);
-if(!isList(cell->type)) return(nilCell);
-params = params->next;
-next = evaluateExpression(params);
-if(!isList(next->type)) return(nilCell);
-
-result = patternMatchL((CELL *)cell->contents, (CELL *)next->contents, getFlag(params->next));
-if(result) return(result);
-return(getCell(CELL_EXPRESSION));
-}
-
-*/
 
 CELL * p_match(CELL * params)
 {
@@ -347,9 +329,9 @@ CELL * cell;
 CELL * next;
 CELL * result;
 
-params = getDefaultOrEval(params, &cell);
+params = getEvalDefault(params, &cell);
 if(!isList(cell->type)) return(nilCell);
-params = getDefaultOrEval(params, &next);
+params = getEvalDefault(params, &next);
 if(!isList(next->type)) return(nilCell);
 
 result = patternMatchL((CELL *)cell->contents, (CELL *)next->contents, getFlag(params));
@@ -512,43 +494,43 @@ return(nilCell);
 CELL * p_assoc(CELL * params)
 {
 CELL * key;
-CELL * eKey;
 CELL * list;
+int listMode;
 
-if(params->type == CELL_EXPRESSION && params->next == nilCell)
+key = evaluateExpression(params);
+if((listMode = isList(key->type)))
+	key = (CELL *)key->contents;
+
+getEvalDefault(params->next, &list);
+if(!isList(list->type))
+	return(errorProcExt(ERR_LIST_EXPECTED, list));
+
+list = (CELL *)list->contents;
+
+while(key != nilCell)
 	{
-	key = getListSpec(params, &list, FALSE);
-	if(list->type != CELL_EXPRESSION)
-		return(errorProcExt(ERR_LIST_EXPECTED, params));
-	list = (CELL *)list->contents;
-
-	while(key != nilCell)
-		{
-		eKey = evaluateExpression(key);
-		while(list != nilCell)
-			{
-			if(isList(list->type))
-				if(compareCells(eKey, (CELL *)list->contents) == 0) break;
-			list = list->next;
-			}
-
-		if((key = key->next) == nilCell) break;
-		list = ((CELL *)list->contents)->next;
-		}
-	}
-else
-	{
-	key = evaluateExpression(params);
-	getListHead(params->next, &list);
 	while(list != nilCell)
 		{
 		if(isList(list->type))
-			if(compareCells(key, (CELL *)list->contents) == 0) break;
+			{
+			if(compareCells(key, (CELL *)list->contents) == 0)
+				break;
+			}
 		list = list->next;
 		}
+
+	if(!listMode || (key = key->next) == nilCell) break;
+	list = ((CELL *)list->contents)->next;
 	}
 
 if(list == nilCell) return(nilCell);
+
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(list);
+	}
+	
 return(copyCell(list));
 }
 
@@ -557,20 +539,38 @@ CELL * p_lookup(CELL * params)
 {
 CELL * key;
 CELL * list;
+int listMode;
 ssize_t index;
 CELL * deflt = nilCell;
+SYMBOL * symbolRef;
 
 key = evaluateExpression(params);
-params = getListHead(params->next, &list);
+if((listMode = isList(key->type)))
+	key = (CELL *)key->contents;
+	
+params = getEvalDefault(params->next, &list);
+symbolRef = symbolCheck;
+
+if(!isList(list->type))
+	return(errorProcExt(ERR_LIST_EXPECTED, list));
+
+list = (CELL *)list->contents;
+
 if(params != nilCell)
 	deflt = getInteger(params, (UINT *)&index);
 else index = -1;
 
-while(list != nilCell)
+while(key != nilCell)
 	{
-	if(isList(list->type))
-		if(compareCells(key, (CELL *)list->contents) == 0) break;
-	list = list->next;
+	while(list != nilCell)
+		{
+		if(isList(list->type))
+			if(compareCells(key, (CELL *)list->contents) == 0) break;
+		list = list->next;
+		}
+
+	if(!listMode || (key = key->next) == nilCell) break;
+	list = ((CELL *)list->contents)->next;
 	}
 
 if(list == nilCell)
@@ -586,8 +586,15 @@ while(index--)
         list = list->next;
         }
 
+if((symbolCheck = symbolRef))
+	{
+	pushResultFlag = FALSE;
+	return(list);
+	}
+
 return(copyCell(list));
 }
+
 
 /* bind an association list, works like:
    (define (bind L) (dolist (i L) (apply set i))) 
@@ -791,98 +798,62 @@ return(result);
 #endif
 
 
-#define SET_ASSOC 0
-#define ASSOC_SET 1
-#define POP_ASSOC 2
-
-CELL * setAssoc(CELL * params, int mode)
+CELL * p_popAssoc(CELL * params)
 {
 CELL * key;
-CELL * eKey;
-CELL * repList;
 CELL * list;
 CELL * original = NULL;
 CELL * previous = NULL;
+int listMode;
 
-if(params->type != CELL_EXPRESSION)
-	return(errorProcExt(ERR_SYNTAX_WRONG, params));
+key = evaluateExpression(params);
+if((listMode = isList(key->type)))
+	key = (CELL *)key->contents;
 
-key = getListSpec(params, &list, TRUE);
-if(list->type != CELL_EXPRESSION)
+getEvalDefault(params->next, &list);
 
-	return(errorProcExt(ERR_LIST_EXPECTED, params));
+if(!isList(list->type))
+	return(errorProcExt(ERR_LIST_EXPECTED, list));
+if(symbolCheck && isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+
 list->aux = (UINT)nilCell; /* undo last element optimization */
 original = list;
 list = (CELL *)list->contents;
 
 while(key != nilCell)
 	{
-	eKey = evaluateExpression(key);
 	while(list != nilCell)
 		{
 		if(isList(list->type))
-			if(compareCells(eKey, (CELL *)list->contents) == 0) break;
+			if(compareCells(key, (CELL *)list->contents) == 0) break;
 		previous = list;
 		list = list->next;
 		}
 
-	if((key = key->next) == nilCell) break;
+	if(!listMode || (key = key->next) == nilCell) break;
 	previous = (CELL *)list->contents;
 	list = ((CELL *)list->contents)->next;
 	}
 
 if(list == nilCell) return(nilCell); /* key not found */
 
-if(mode == POP_ASSOC)
-	{
-	if(previous == NULL)
-		original->contents = (UINT)list->next;
-	else
-		previous->next = list->next;
-	list->next = nilCell;
-	return(list);	
-	}
+if(previous == NULL)
+	original->contents = (UINT)list->next;
+else
+	previous->next = list->next;
 
-deleteList((CELL*)sysSymbol[0]->contents);
-sysSymbol[0]->contents = (UINT)copyCell(list);
-
-if(params->next != nilCell)
-	{
-	getListHead(params->next, &repList);
-	deleteList((CELL *)list->contents);
-	list->contents = (UINT)copyList(repList);
-	}
-
-if(mode == SET_ASSOC)
-	return(copyCell(original));
-
-return(copyCell((CELL *)sysSymbol[0]->contents));
+/* unlink */
+list->next = nilCell;
+return(list);	
 }
-
-
-CELL * p_setAssoc(CELL * params)
-{
-return(setAssoc(params, SET_ASSOC));
-}
-
-
-CELL * p_assocSet(CELL * params)
-{
-return(setAssoc(params, ASSOC_SET));
-}
-
-CELL * p_popAssoc(CELL * params)
-{
-return(setAssoc(params, POP_ASSOC));
-}
-
 
 void binsort(CELL * * x, ssize_t n, CELL * pCell)
 {
 ssize_t i,j,k,l,m,kf,lf;
 CELL * expr;
 CELL * cell;
-int resultIndexSave;
+UINT * resultIndexSave;
 jmp_buf errorJumpSave;
 int errNo;
 CELL * * y;
@@ -985,21 +956,27 @@ CELL * * listToSortedVector(CELL * list, ssize_t * length, CELL * func, int inde
 CELL * p_sort(CELL * params)
 {
 CELL * list;
+CELL * cell;
 CELL * * vector;
 ssize_t length, i;
+SYMBOL * refSymbol;
 
 list = params;
 
-params = evalCheckProtected(params, NULL);
+getEvalDefault(params, &cell);
+refSymbol = symbolCheck;
 
-if(isList(params->type))
+if(symbolCheck && isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+
+if(isList(cell->type))
 	{
-	if(params->contents == (UINT)nilCell)
+	if(cell->contents == (UINT)nilCell)
 		return(getCell(CELL_EXPRESSION));
 	
-	params->aux = (UINT)nilCell; /* undo last element optimization */
+	cell->aux = (UINT)nilCell; /* undo last element optimization */
 
-	vector = listToSortedVector((CELL *)params->contents, &length, list->next, 0);
+	vector = listToSortedVector((CELL *)cell->contents, &length, list->next, 0);
 
 	/* relink cells */
 	list = vector[0];
@@ -1013,13 +990,13 @@ if(isList(params->type))
 		}
 	list->next = nilCell;
 
-	params->contents = (UINT)vector[0];
+	cell->contents = (UINT)vector[0];
 	freeMemory(vector);
 	}
-else if(isArray(params->type))
+else if(isArray(cell->type))
 	{
-	vector = (CELL **)params->contents;
-	length = (params->aux - 1) / sizeof(UINT);
+	vector = (CELL **)cell->contents;
+	length = (cell->aux - 1) / sizeof(UINT);
 	if(list->next == nilCell)
 		binsort(vector, length, NULL);
 	else
@@ -1028,7 +1005,13 @@ else if(isArray(params->type))
 else
 	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, list));
 
-return(copyCell(params));
+if((symbolCheck = refSymbol))
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+	
+return(copyCell(cell));
 }
 
 
@@ -1092,6 +1075,7 @@ ssize_t index;
 int evalFlag;
 
 cell = evaluateExpression(params);
+
 if(isNumber(cell->type))
 	{
 	getIntegerExt(cell, (UINT *)&index, FALSE);
@@ -1226,11 +1210,11 @@ CELL * resultList = NULL;
 CELL * result;
 CELL * cell;
 ssize_t count;
-int resultIndexSave;
+UINT * resultIndexSave;
 int errNo, trueFlag;
 
 pCell = evaluateExpression(params);
-getDefaultOrEval(params->next, &args);
+getEvalDefault(params->next, &args);
 
 if(!isList(args->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, params->next));
@@ -1336,7 +1320,7 @@ void ref(CELL * keyCell, CELL * list, CELL * funcCell, CELL * result,
 						CELL * * next, REFSTACK * refStack, int mode)
 {
 size_t idx = 0;
-int resultIdxSave = resultStackIdx;
+UINT * resultIdxSave = resultStackIdx;
 
 while(list != nilCell)
 	{
@@ -1389,17 +1373,8 @@ REFSTACK refStack;
 refStack.base = alloca((MAX_REF_STACK + 2) * sizeof(size_t));
 refStack.idx = 0;
 
-if(params->type == CELL_EXPRESSION)
-	{
-	cell = getListSpec(params, &list, FALSE);
-	params = params->next;
-	keyCell = evaluateExpression(cell);
-	}
-else
-	{
-	keyCell = evaluateExpression(params);
-	params = getDefaultOrEval(params->next, &list);
-	}
+keyCell = evaluateExpression(params);
+params = getEvalDefault(params->next, &list);
 
 if(params != nilCell)
 	funcCell = evaluateExpression(params);
@@ -1434,32 +1409,21 @@ return(reference(params, REF_ALL));
 }
 
 
-#define SETREF_ELMNT 0
-#define SETREF_LIST 1
+#define SETREF_SINGLE 1
 #define SETREF_ALL 2
 
 CELL * modRef(CELL * key, CELL * list, CELL * func, CELL * new, int mode, int * count)
 {
 CELL * result;
-int resultIdxSave = resultStackIdx;
+UINT * resultIdxSave = resultStackIdx;
 
 while(list != nilCell)
 	{
 	if(compareFunc(key, list, func) == 0)
 		{
 		*count += 1;
-		if(mode == SETREF_ELMNT)
-			{
-			return(updateCell(list, new));
-			}
-		else
-			{
-			deleteList(updateCell(list, new));
-			if(mode == SETREF_LIST) return(list);
-			}
-
-		list = list->next;
-		continue;
+		updateCell(list, new);
+		if(mode == SETREF_SINGLE) return(list);
 		}
 	else if(isList(list->type))
 		{
@@ -1482,34 +1446,40 @@ CELL * list;
 CELL * new = NULL;
 CELL * funcCell = NULL;
 CELL * result;
+SYMBOL * refSymbol;
 int count = 0;
 
-new = params->next;
-if(params->type != CELL_EXPRESSION)
-	return(errorProcExt(ERR_SYNTAX_WRONG, params));
-
-params = getListSpec(params, &list, TRUE);
 key = evaluateExpression(params);
+new = getEvalDefault(params->next, &list);
+refSymbol = symbolCheck;
+if(!isList(list->type))
+	return(errorProcExt(ERR_LIST_EXPECTED, list));
 
+if(symbolCheck && isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+	
 if(new->next != nilCell)
 	funcCell = evaluateExpression(new->next);
 
 result = modRef(key, (CELL *)list->contents, funcCell, new, mode, &count);
 
+itSymbol->contents = (UINT)nilCell;
+
 if(count == 0)
 	return(nilCell);
 
-if(mode == SETREF_ELMNT)
-	return(result);
-
+if((symbolCheck = refSymbol))
+	{
+	pushResultFlag = FALSE;
+	return(list);
+	}
 return(copyCell(list));
 }
 
 
-
 CELL * p_setRef(CELL * params)
 {
-return(setRef(params, SETREF_LIST));
+return(setRef(params, SETREF_SINGLE));
 }
 
 CELL * p_setRefAll(CELL * params)
@@ -1517,38 +1487,46 @@ CELL * p_setRefAll(CELL * params)
 return(setRef(params, SETREF_ALL));
 }
 
-CELL * p_refSet(CELL * params)
-{
-return(setRef(params, SETREF_ELMNT));
-}
-
 
 /* update a cell in-place and put a copy of previous content
    in $0 to be used in replacement expressions.
    this function is used in set-nth/nth-set and set-ref, ref-set
 */
-CELL * updateCell(CELL * cell, CELL * val)
+void updateCell(CELL * cell, CELL * val)
 {
-CELL * prev;
 CELL * new;
 
-if(cell == nilCell) return(nilCell);
+if(cell == nilCell) 
+	{
+	/* printf("nilCell\n"); */
+	return;
+	}
 
 deleteList((CELL*)sysSymbol[0]->contents);
-sysSymbol[0]->contents = (UINT)copyCell(cell);
+itSymbol->contents = (UINT)copyCell(cell);
+sysSymbol[0]->contents = itSymbol->contents; 
 
 if(val != nilCell)
 	{
 	new = copyCell(evaluateExpression(val)); 
 
-	/* save previous content */
-	prev = getCell(cell->type);
-	prev->aux = cell->aux;
-	prev->contents = cell->contents;
+
+	/* delete contents of original cell */
+	if(isEnvelope(cell->type))
+		{
+		if(cell->type == CELL_ARRAY)
+			deleteArray(cell);
+		else
+			deleteList((CELL *)cell->contents);
+		}
+	else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
+		freeMemory( (void *)cell->contents);
+
 
 	cell->type = new->type;
 	cell->aux = new->aux;
 	cell->contents = new->contents;
+
 
 	/* free the cell  */
 	new->type = CELL_FREE;
@@ -1558,10 +1536,6 @@ if(val != nilCell)
 	firstFreeCell = new;
 	--cellCount;
 	}
-else
-	return(copyCell(cell));
-
-return(prev);
 }
 
 void flat(CELL * list, CELL * result, CELL * * next)
@@ -1720,21 +1694,17 @@ while(size--)
 return(array);
 }
 
-
-
 CELL * p_arrayList(CELL * params)
 {
 CELL * array;
 
-getDefaultOrEval(params, &array);
+getEvalDefault(params, &array);
 
 if(array->type != CELL_ARRAY)
 	return(errorProcExt(ERR_ARRAY_EXPECTED, params));
 
 return(arrayList(array));
 }
-
-
 
 CELL * arrayList(CELL * array)
 {
@@ -1940,7 +1910,6 @@ while(size--)
 
 freeMemory((char *)mem);
 }
-
 
 void markArray(CELL * array)
 {

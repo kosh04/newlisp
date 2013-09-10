@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on Mac OSX LP64 memory model with readline support
+# makefile for newLISP v. 10.x.x on Mac OSX LP64 memory model with readline support
 #
 # for OS X 10.4/Tiger, Tiger comes standard with libreadline
 #

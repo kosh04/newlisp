@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 9.4.5
-INT_VERSION = 9405
+VERSION = 10.0.0
+INT_VERSION = 10000
 GUISERVER = /usr/share/newlisp/guiserver
 
 default:
@@ -38,7 +38,7 @@ default:
 help:
 	@echo "Do one of the following:"
 	@echo
-	@echo "  make linux           # newlisp for LINUX (tested Debian & Fedora)"
+	@echo "  make linux           # newlisp for LINUX
 	@echo "  make linux_utf8      # newlisp for LINUX UTF-8"
 	@echo "  make linux_readline  # newlisp for LINUX with readline support"
 	@echo "  make linux_utf8_readline  # newlisp for LINUX UTF-8 with readline support"
@@ -253,6 +253,7 @@ test:
 	./newlisp qa-setsig
 	./newlisp qa-net
 	./newlisp qa-cilk
+	./newlisp qa-ref
 
 # directory definitions
 datadir=$(DESTDIR)/usr/share
@@ -292,7 +293,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-9.4-Release.html $(datadir)/doc/newlisp/newLISP-9.4-Release.html
+	-install -m 644 doc/newLISP-10.0-Release.html $(datadir)/doc/newlisp/newLISP-10.0-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/cgi.lsp $(datadir)/newlisp/modules/cgi.lsp
@@ -390,7 +391,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-9.4-Release.html $(HOME)/share/doc/newlisp/newLISP-9.4-Release.html
+	-install -m 644 doc/newLISP-10.0-Release.html $(HOME)/share/doc/newlisp/newLISP-10.0-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/cgi.lsp $(HOME)/share/newlisp/modules/cgi.lsp
@@ -398,7 +399,6 @@ install_home:
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(HOME)/share/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
-	-install -m 644 modules/mysql.lsp $(HOME)/share/newlisp/modules/mysql.lsp
 	-install -m 644 modules/mysql5.lsp $(HOME)/share/newlisp/modules/mysql5.lsp
 	-install -m 644 modules/mysql51.lsp $(HOME)/share/newlisp/modules/mysql51.lsp
 	-install -m 644 modules/odbc.lsp $(HOME)/share/newlisp/modules/odbc.lsp
@@ -454,6 +454,7 @@ dist:
 version:
 	sed -i.bak -E 's/int version = .+;/int version = $(INT_VERSION);/' newlisp.c
 	sed -i.bak -E 's/newLISP v.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+ /newLISP v.$(VERSION) /' newlisp.c
+	sed -i.bak -E 's/newLISP\/[[:digit:]]+.[[:digit:]]+.[[:digit:]]+/newLISP\/$(VERSION)/' nl-web.c
 	sed -i.bak -E 's/newLISP v.+ Manual/newLISP v.$(VERSION) Manual/' doc/newlisp_manual.html
 	sed -i.bak -E 's/Reference v.+<\/h2>/Reference v.$(VERSION)<\/h2>/' doc/newlisp_manual.html
 	sed -i.bak -E 's/newlisp-....-win/newlisp-$(INT_VERSION)-win/' guiserver/newlisp-gs.nsi

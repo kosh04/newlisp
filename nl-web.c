@@ -1,4 +1,4 @@
-/* nl-web.c --- HTTP network protocol routines for newLISP
+/* nl-web.c --- HTTP network protocol routines for newLISPD
 
     Copyright (C) 2008 Lutz Mueller
 
@@ -45,6 +45,8 @@
 #endif
 
 #define ERROR_BAD_URL "ERR: bad formed URL"
+#define ERROR_FILE_OP "ERR: file operation failed"
+#define OK_FILE_DELETED "file deleted"
 
 
 #define MAX_PROTOCOL 8
@@ -61,6 +63,9 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp );
 #endif
 */
 
+
+ssize_t readFile(char * fileName, char * * buffer);
+int writeFile(char * fileName, char * buffer, size_t size, char * type);
 int parseUrl(char *url, char * protocol, char * host, int * port, char * path, size_t maxlen);
 void parsePath(char * url, char * path, size_t maxlen);
 size_t parseValue(char * str);
@@ -265,6 +270,29 @@ if(url == NULL)
 
 if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL || type == HTTP_POST_URL)
 	params = getStringSize(params, &putPostStr, &size, TRUE);
+
+
+if(my_strnicmp(url, "file://", 7) == 0)
+	{
+	url = url + 7;
+	if(type == HTTP_GET_URL)
+		{
+		if((size = readFile(url, &buffPtr)) == -1)
+			return(stuffString(ERROR_FILE_OP));
+		return(makeStringCell(buffPtr, size));
+		}
+	if(type == HTTP_PUT_URL)
+		{
+		if(writeFile(url, putPostStr, size, "w") == -1)
+			return(stuffString(ERROR_FILE_OP));
+		snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
+		return(stuffString(errorTxt));
+		}
+	if(type == HTTP_DELETE_URL)
+		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : stuffString(ERROR_FILE_OP));
+	return(stuffString(ERROR_BAD_URL));
+	}
+
 
 if(type == HTTP_POST_URL)
     {
@@ -849,23 +877,41 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 /* --------------------------- HTTP server mode -----------------------------
  handles GET, POST, PUT and DELETE requests
  handles queries in GET requests and sets environment variable QUERY_STRING
- sets HTTP_HOST and HTTP_USER_AGENTT when present in client request header
+ sets HTTP_HOST and HTTP_USER_AGENT when present in client request header
  no special encodings are supported
  subset HTTP/1.0 compliant
 */
+
+#define STATUS_HEADER "HTTP/1.0 200 OK\r\n"
+#define SERVER_SOFTWARE "newLISP/10.0.0"
 
 int sendHTTPmessage(char * fmt, char * str);
 void handleHTTPcgi(char * command, char * query);
 size_t readHeader(char * buff, int * pragmaFlag);
 ssize_t readPayLoad(ssize_t size, char * content, int outFile, char * request);
 int endsWith(char * str, char * ext);
+char * getMediaType(char * request);
 
 void sendHTTPpage(char * content, size_t size, char * media, int closeFlag)
 {
-varPrintf(OUT_CONSOLE, "HTTP/1.0 200 OK\r\nServer: newLISP v.%d (%s)\r\n", version, ostype);
+if(strncmp(content, "HTTP/", 5))
+	{
+	varPrintf(OUT_CONSOLE, STATUS_HEADER);
+	varPrintf(OUT_CONSOLE, "Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
+#ifdef DEBUGHTTP
+	printf("# Header sent:\r\n");
+	printf(STATUS_HEADER);
+	printf("Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
+#endif
+	}
 
-if(media != NULL) /* else Content-type: is provided by CGI page */
-  varPrintf(OUT_CONSOLE, "Content-length: %d\r\nContent-type: %s\r\n\r\n", size, media);
+if(media != NULL)
+	{
+	varPrintf(OUT_CONSOLE, "Content-length: %d\r\nContent-type: %s\r\n\r\n", size, media);
+#ifdef DEBUGHTTP
+	printf("Content-length: %ld\r\nContent-type: %s\r\n\r\n", size, media);
+#endif
+	}
 #ifndef WIN_32
 /* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
@@ -885,16 +931,18 @@ else
 	varPrintf(OUT_CONSOLE, content);
 return;
 #endif
+#ifdef DEBUGHTTP
+printf("# content:%s:\r\n", content);
+#endif
 }
 
-#define ERR_411 "ERR:411 length required for: %s\r\n"
 #define MAX_BUFF 1024
+#define ERROR_404 "ERR:404 File not found: %s\r\n"
+#define ERROR_411 "ERR:411 length required for: %s\r\n"
 #define DEFAULT_PAGE_1 "index.html"
 #define DEFAULT_PAGE_2 "index.cgi"
 #define CGI_EXTENSION ".cgi"
-#define MEDIA_TXT "text/html"
-
-#define ERROR_404 "ERR:404 File not found: %s\r\n"
+#define MEDIA_TEXT "text/plain"
 
 int executeHTTPrequest(char * request, int type)
 {
@@ -914,9 +962,10 @@ chdir(startupDir);
 query = sptr = request;
 
 setenv("DOCUMENT_ROOT", startupDir, 1);
+setenv("SERVER_SOFTWARE", SERVER_SOFTWARE, 1);
 
 #ifdef DEBUGHTTP
-printf("HTTP request:%s:%d:\n", request, type);
+printf("# HTTP request:%s:%d:\r\n", request, type);
 #endif
 
 /* stuff after request */
@@ -930,32 +979,6 @@ if(*query == '?')
 	}
 
 setenv("QUERY_STRING", query, 1);
-
-#ifdef HTTP_CONF /* obsolete, use command-event */
-/* if httpd-conf is defined call it with the request 
-   the httpd-conf procedure returns a string transformation
-   of request, for security stuff, remappping etc. */
-
-if(lookupSymbol("httpd-conf", mainContext) != NULL)
-    {
-    len = strlen(request) + strlen(query) + 32;
-    command = alloca(len);
-    snprintf(command, len - 1, "(httpd-conf \"%s\" \"%s\")", request, query);
-    result = sysEvalString(command, nilCell, mainContext, 0);
-    if(result->type == CELL_STRING)
-		request = (char *)result->contents;
-	else if (isNil(result))
-		{
-		if(IOchannel != NULL) 
-			{
-			deleteList(result);
-			fclose(IOchannel);
-			IOchannel = NULL;
-			}
-		return(TRUE);
-		}
-    }
-#endif
 
 /* change to base dir of request file */
 sptr = request + strlen(request);
@@ -986,14 +1009,7 @@ switch(type)
 			handleHTTPcgi(request, query);
 		else
 			{
-			if(endsWith(request, ".jpg")) mediaType = "image/jpeg";
-			else if(endsWith(request, ".png")) mediaType = "image/png";
-			else if(endsWith(request, ".gif")) mediaType = "image/gif";
-			else if(endsWith(request, ".pdf")) mediaType = "application/pdf";
-			else if(endsWith(request, ".mp3")) mediaType = "audio/mpeg";
-			else if(endsWith(request, ".mov")) mediaType = "video/quicktime";
-			else if(endsWith(request, ".mpg")) mediaType = "video/mpeg";
-			else mediaType = MEDIA_TXT;
+			mediaType = getMediaType(request);
 
 			if(type == HTTP_GET_HEAD)
 				{
@@ -1030,7 +1046,7 @@ switch(type)
 	case HTTP_POST_URL:
 		if(!size)
 			{
-			sendHTTPmessage(ERR_411, request);
+			sendHTTPmessage(ERROR_411, request);
 			break;
 			}
 
@@ -1052,7 +1068,7 @@ switch(type)
 
 		if(!size)
 			{
-			sendHTTPmessage(ERR_411, request);
+			sendHTTPmessage(ERROR_411, request);
 			break;
 			}
 
@@ -1068,7 +1084,7 @@ switch(type)
 		if(transferred != -1)
 			{
 			snprintf(buff, 255, "%d bytes transferred for %s\r\n", (int)transferred, request);
-			sendHTTPpage(buff, strlen(buff), MEDIA_TXT, TRUE);
+			sendHTTPpage(buff, strlen(buff), MEDIA_TEXT, TRUE);
 			}
 		break;
 
@@ -1087,7 +1103,7 @@ int sendHTTPmessage(char * fmt, char * str)
 char msg[256];
 
 snprintf(msg, 255, fmt, str);
-sendHTTPpage(msg, strlen(msg), MEDIA_TXT, TRUE);
+sendHTTPpage(msg, strlen(msg), MEDIA_TEXT, TRUE);
 return(0);
 }
 
@@ -1148,7 +1164,7 @@ ssize_t bytes;
 size_t offset = 0, transferred = 0;
 
 #ifdef DEBUGHTTP
-printf("payload size:%ld:\n", size);
+printf("# Payload size:%ld\r\n", size);
 #endif
 
 while(size > 0)
@@ -1163,7 +1179,7 @@ while(size > 0)
 #endif
 
 #ifdef DEBUGHTTP
-printf("payload bytes:%ld:%s:\n", bytes, buff + offset);
+	printf("Payload bytes:%ld:%s:\r\n", bytes, buff + offset);
 #endif
 
 	if(bytes <= 0)
@@ -1210,7 +1226,7 @@ int bytes = 0;
 srandom(milliSecTime());
 
 #ifdef DEBUGHTTP
-printf("CGI request:%s:%s:\n", request, query);
+printf("# CGI request:%s:%s:\r\n", request, query);
 #endif
 
 if(isFile(request) != 0)
@@ -1222,9 +1238,9 @@ if(isFile(request) != 0)
 if(isFile("/tmp") != 0)
     {
 #ifdef WIN_32
-    sendHTTPmessage("ERR:500 need /tmp directory: %s\n", request);
-#else
     sendHTTPmessage("ERR:500 need \\tmp directory on current drive: %s\n", request);
+#else
+    sendHTTPmessage("ERR:500 need /tmp directory: %s\n", request);
 #endif
     return;
     }
@@ -1273,7 +1289,12 @@ else
 	sendHTTPpage(content, size, NULL, TRUE);
 	}
 	
+#ifdef DEBUGHTTP
+printf("# Temporary file: %s\n", tempfile);
+#else
 unlink(tempfile);
+#endif
+
 if(content) free(content);
 }	
 
@@ -1288,5 +1309,44 @@ len =  strlen(ext);
 return(strncmp(str + size - len, ext, len) == 0);
 }
 
+
+typedef struct
+	{
+	char * extension;
+	char * type;
+	} MEDIA_TYPE;
+	
+MEDIA_TYPE mediaType[] = {
+	{".jpg", "image/jpeg"},
+	{".png", "image/png"},
+	{".gif", "image/gif"},
+	{".css", "text/css"},
+	{".js", "application/javascript"},
+	{".pdf", "application/pdf"},
+	{".mp3", "audio/mpeg"},
+	{".mov", "video/quicktime"},
+	{".mpg", "video/mpeg"},
+	{".html","text/html"},
+	{".htm", "text/html"},
+	{".mpg", "video/mpeg"},
+	{".avi", "video/x-msvideo"},
+	{".wav", "audio/x-wav"},
+	{".zip", "application/zip"},
+	{ NULL, NULL},
+};
+
+char * getMediaType(char * request)
+{
+int i;
+
+for(i = 0; mediaType[i].extension != NULL; i++)
+	{
+	if(endsWith(request, mediaType[i].extension))
+		return(mediaType[i].type);
+	}
+	
+return(MEDIA_TEXT);
+}
+ 
 /* eof */
 

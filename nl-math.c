@@ -62,7 +62,6 @@ int _matherr(struct _exception *e) {return 1;}
 
 CELL * incDec(CELL * params, int type)
 {
-SYMBOL * sPtr;
 INT64 lValue;
 double fValue;
 double adjust;
@@ -76,48 +75,46 @@ if(params->next != nilCell)
 	}
 
 cell = evaluateExpression(params);
-if(cell->type != CELL_SYMBOL)
+if(cell == nilCell)
+	return(errorProcExt(ERR_INVALID_PARAMETER, params));
+
+if(symbolCheck != NULL)
+	if(isProtected(symbolCheck->flags))
+		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+
+if(!isNumber(cell->type) && !isNil(cell))
+	return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
+
+if(type == 0) /* do float arithmetik */
 	{
-	if(cell->type == CELL_DYN_SYMBOL)
-		sPtr = getDynamicSymbol(cell);
-	else
-		return(errorProcExt(ERR_SYMBOL_EXPECTED, params));
-	}
-else
-	sPtr = (SYMBOL *)cell->contents;
-
-if(isProtected(sPtr->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
-
-
-if(type == 0)
-	{
-	if(isNil((CELL *)sPtr->contents))
+	if(cell->contents == (UINT)nilCell)
 		fValue = 0.0;
 	else
 		getFloat(cell, &fValue);
-	deleteList((CELL *)sPtr->contents);
 	fValue = fValue + adjust;
-	cell = getCell(CELL_FLOAT);
+	cell->type = CELL_FLOAT;
 #ifndef NEWLISP64
 	*(double *)&cell->aux = fValue;
 #else
 	*(double *)&cell->contents = fValue;
 #endif
-	sPtr->contents = (UINT)cell;
 	}
-else
+else /* do integer arithmetik */
 	{
-	if(isNil((CELL *)sPtr->contents))
+	if(cell->contents == (UINT)nilCell)
 		lValue = 0;
 	else
 		getInteger64(cell, &lValue);
-	deleteList((CELL *)sPtr->contents);
-	sPtr->contents = (UINT)stuffInteger64(lValue + type);
+#ifndef NEWLISP64
+	cell->type = CELL_INT64;
+	*(INT64 *)&cell->aux = lValue + type;
+#else
+	cell->type = CELL_LONG;
+	cell->contents = lValue + type;
+#endif
 	}
 
-pushResultFlag = FALSE;
-return((CELL *)sPtr->contents);
+return(copyCell(cell));
 }
 
 
@@ -150,7 +147,7 @@ if(params == nilCell)
 		}
 	}
 
-while(params != nilCell)
+else while(params != nilCell)
 	{
 	params = getInteger64(params, &number);
 	switch(op)
@@ -175,9 +172,7 @@ while(params != nilCell)
 	}
 
 #ifndef NEWLISP64
-params = getCell(CELL_INT64);
-*(INT64 *)&params->aux = result;
-return(params);
+return(stuffInteger64(result));
 #else
 return(stuffInteger(result));
 #endif
@@ -237,7 +232,8 @@ if(params == nilCell)
 	else if(op == OP_POW)
 		result = result * result;
 	}
-while(params != nilCell)
+
+else while(params != nilCell)
 	{
 	params = getFloat(params, &number);
 #ifdef WIN_32
@@ -545,6 +541,7 @@ return(dist);
 CELL * p_amb(CELL * params)
 {
 long len;
+CELL * cell;
 
 if((len = listlen(params)) == 0) return(nilCell);
 
@@ -552,7 +549,14 @@ len = random() % len;
 
 while(len--) params = params->next;
 
-return(copyCell(evaluateExpression(params)));
+cell = evaluateExpression(params);
+if(symbolCheck)
+	{
+	pushResultFlag = FALSE;
+	return(cell);
+	}
+
+return(copyCell(cell));
 }
 
 
@@ -684,6 +688,14 @@ if(left->type != right->type)
 
 	if(isSymbol(left->type) && isSymbol(right->type))
 		return(compareSymbols(left, right));
+		
+	if( (left->type == CELL_SYMBOL && right->type == CELL_CONTEXT) ||
+		(left->type == CELL_CONTEXT && right->type == CELL_SYMBOL) )
+		{
+		if((comp = strcmp( ((SYMBOL *)left->contents)->name, 
+		                   ((SYMBOL *)right->contents)->name)) == 0) return(0);
+		return (comp > 0 ? 1 : -1);
+		}
 
 	if(isNil(left))
 		{
@@ -1589,7 +1601,9 @@ CELL * sequence;
 CELL * cell;
 CELL * pCell;
 CELL * expr;
-int errNo, resultIdxSave;
+CELL * cellIdx;
+int errNo;
+UINT * resultIdxSave;
 
 params = getFloat(params, &fromFlt);
 pCell = evaluateExpression(params);
@@ -1613,6 +1627,7 @@ if(isNumber(pCell->type))
 	}
 else /* assumes lambda or primitive */
 	{
+	cellIdx = initIteratorIndex();
 	addList(sequence, cell);
 	resultIdxSave = resultStackIdx;
 	for(i = 1; i < count; i++)
@@ -1628,7 +1643,9 @@ else /* assumes lambda or primitive */
 		addList(sequence, copyCell(cell));
 		getFloat(cell, &fromFlt);
 		cleanupResults(resultIdxSave);	
+		if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 		}
+	recoverIteratorIndex(cellIdx);
 	}
 
 return(sequence);
@@ -2748,9 +2765,7 @@ return(finishUnify(trueCell));
 int unifyGetType(CELL * cell)
 {
 SYMBOL * sPtr;
-#ifdef SUPPORT_UTF8
 int wchar;
-#endif
 
 if(isSymbol(cell->type))
 	{
@@ -2760,11 +2775,11 @@ if(isSymbol(cell->type))
         sPtr = getDynamicSymbol(cell);
 	
 #ifndef SUPPORT_UTF8
-	return((toupper(*sPtr->name) == *sPtr->name) ? UNIFY_VAR : UNIFY_ATOM);
+	wchar = *sPtr->name;
 #else
     utf8_wchar(sPtr->name, &wchar);
-	return((towupper(wchar) == wchar) ? UNIFY_VAR : UNIFY_ATOM);
 #endif
+	return((wchar > 64 && wchar < 91) ? UNIFY_VAR : UNIFY_ATOM);
 	}
 else if(isList(cell->type))
 	return(UNIFY_LIST);
@@ -2949,5 +2964,36 @@ while(tset != NULL)
 	}
 }
 #endif
+
+CELL * p_bits(CELL * params) 
+{ 
+int count = 0;
+int i; 
+char temp[65];
+char result[65];
+INT64 num;
+CELL * resultList;
+
+params = getInteger64(params, &num);
+
+do 	{
+	temp[count++] = (num % 2) != 0;
+	num = num >> 1; 
+	} while (num != 0 && count < 64);
+
+if(getFlag(params))
+	{
+	resultList = getCell(CELL_EXPRESSION);
+	for(i = 0; i < count; i++) 
+		addList(resultList, (copyCell (temp[i] ? trueCell : nilCell)));
+	return(resultList);
+	}
+
+for(i = 0; i < count; i++) 
+	result[i] = temp[count - 1 - i] + 48;
+
+return(stuffStringN(result, count));
+}
+
 
 /* eof */

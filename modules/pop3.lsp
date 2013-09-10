@@ -202,7 +202,7 @@
 	(if debug-flag (println "parsed status: " result) true)
         (push (int (nth 1 (parse status))) result)
         (push (int (first (parse last-read))) result)
-        result))
+        result)) ; not necessary starting 9.9.5 because push returns the list
 
 
 ; get a message

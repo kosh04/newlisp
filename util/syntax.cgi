@@ -13,6 +13,9 @@
 # v.1.9 - fixed highlighting problem with escaped quotes
 # v.2.0 - fixed \r\n translation
 # v.2.1 - more compatible CGI
+# v.2.3 - changed syntax for write-line
+# v.2.4 - added handling of < ? ... > XML tag
+# v.2.5 - generate more compliant HTML 4.01 transitional
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
@@ -43,6 +46,9 @@
 #    - comments starting with # but not starting at beginning of line
 #      use ; as comment starter when comment appears after code
 
+
+#(define cgi-use true)
+
 (if cgi-use 
 	(print "Content-type: text/html\r\n\r\n"))
 
@@ -70,6 +76,8 @@
 (set 'file (if cgi-use 
 	(or (read-line) (env "QUERY_STRING"))
 	(main-args 2)))
+
+(set 'title file)
 
 (if cgi-use
   (begin 
@@ -133,6 +141,7 @@
 (replace "/>" file "/&gt&" 0)
 (replace "</" file "&lt&/" 0)
 (replace "<!" file "&lt&!" 0)
+(replace "<\\?" file "&lt&?" 0)
 ; replace escaped quotes
 (replace  "\092\034"  file "&#092&&#034&")
 
@@ -162,7 +171,9 @@
 (dolist (lne (parse file "\n"))
 	(replace "^\\s*#.*" lne  (clean-comment $0) 0)
 	(replace "^\\s*#.*" lne (format {<font color='%s'>%s</font>} comment-color $0) 0)
-	(write-line lne buff))
+	(if (< (sys-info -2) 9909) 
+		(write-line lne buff)
+		(write-line buff lne)))
 (set 'file buff)
 
 ; color tagged strings
@@ -181,7 +192,10 @@
 
 
 ; add pre and post tags
-(println (append "<html><body><pre>\n" file "\n</pre>" ))
+(println (append 
+	{<!DOCTYPE HTML PUBLIC "4.01 Transitional">}
+	"<html><title>" title "</title><body><pre>\n" file "\n</pre>" 
+))
 
 (println {<center><font face='Arial' size='-2' color='#444444'>}
          {syntax highlighting with <a href="http://newlisp.org">newLISP</a>&nbsp;}

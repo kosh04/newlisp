@@ -220,7 +220,7 @@
             (if (= field_addr 0)
               (push nil row -1) ;; what to do when the field contains NULL
               (push (keep-type MYSQL_RES field_addr field) row -1)))
-    row)))
+    row))) ; not necessary starting v.9.9.5 because push returns the list
 
 ;; @syntax (MySQL:fetch-all)
 ;; @return All rows/fields from the last query.
@@ -229,7 +229,8 @@
 
 (define (fetch-all , all)
   (dotimes (x (num-rows)) (push (fetch-row) all))
-  (reverse all))
+  (reverse all)) ; could be written shorter starting 9.9.5 
+                 ; because push returns the list
 
 ;; @syntax (MySQL:databases)
 ;; @return A list of databases.

@@ -1,7 +1,7 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.22
-;; @author LM, June 2008
+;; @version 1.27 changes for 10.0
+;; @author LM, August 2008
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -970,7 +970,7 @@
 
 (define (check-event us)
 	(if (net-select in "read" us)
-		(if (net-receive in 'event 1000000000 "\n")
+		(if (net-receive in event 1000000000 "\n")
 			(eval-string event)
 			(exit)))
 true
@@ -1831,7 +1831,7 @@ true
 			(begin
 				(println "Could not connect to guiserver")
 				(exit))
-			(inc 'retry))
+			(inc retry))
 		(set 'out (net-connect host portIn))
 		(sleep 100))
 
@@ -1965,7 +1965,7 @@ true
 ;; @return Never returns. Exits the application when the guiserver exits, except when <boolean-flag> is 'true'.
 
 (define (listen flag)
-	(while (net-receive in 'event 1000000000 "\n")
+	(while (net-receive in event 1000000000 "\n")
 		(eval-string event))
 	(println "server shut down")
 	(if (not flag) (exit))

@@ -2,7 +2,8 @@
 #
 # Upload script v. 1.0
 # v 1.1 - changed 'integer' to 'int'
-#
+# v 1.2 - eliminated quote in write-buffer syntax
+# v 1.3 - change in read-buffer for version 10.0
 # serves POST request from upload.html
 # 
 #
@@ -23,7 +24,7 @@
 
 	; read data into intermediate file
 	(set 'infile (open "upload-file" "write"))
-	(while (!= (read-buffer (device) 'buffer 1024) 0)
+	(while (!= (read-buffer (device) buffer 1024) 0)
 	    (write-buffer infile buffer))
 	(close infile)
 
@@ -47,9 +48,9 @@
 	(set 'outfile (open filename "write"))
 	(seek infile start)
 	(while (> size 0)
-	    (set 'bytesread (read-buffer infile 'buffer (min 1024 size)))
-	    (write-buffer outfile 'buffer bytesread)
-	    (dec 'size bytesread))
+	    (set 'bytesread (read-buffer infile buffer (min 1024 size)))
+	    (write-buffer outfile buffer bytesread)
+	    (dec size bytesread))
 	(close infile)
 	(close outfile)
 	(delete-file "upload-file"))

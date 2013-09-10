@@ -1,8 +1,7 @@
 #!/usr/bin/newlisp
 
 # OpenGL and GLUT demo - opengl-demo.lsp
-# currently tested working only on Win32
-# Linux is untested and Mac OS X not working yet
+# tested on Win32 and OS X (Intel)
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  
@@ -13,9 +12,10 @@
 # glut-3.7.so - already on your system or at:
 #     http://www.opengl.org/resources/libraries/glut/
 #
-# Mac OS X - cannot work on PPC, works well on Intel based Mac OS X
-# libGL.dylib - installed in /System/Library/Frameworks/OpenGL.Framework
-# GLUT - installed in /System/Library/Frameworks/GLUT.Framework
+# Mac OS X - works well on Intel based Mac OS X, will not work on PPC
+# nothing needs to be installed on Mac OX X 10.4 and later
+# libGL.dylib - in /System/Library/Frameworks/OpenGL.Framework
+# GLUT - in /System/Library/Frameworks/GLUT.Framework
 #
 # for a complete function reference for OpenGL look here:
 #     http://rush3d.com/reference/opengl-bluebook-1.0/index.html
@@ -43,7 +43,7 @@
 
 
 (if 
-  (= ostype "OSX") ;; drawings will be visible only on x86 based OS X (not tested)
+  (= ostype "OSX") ;; drawings will be visible only on x86 based OS X
   (begin
     (set 'GL_LIB "/System/Library/Frameworks/OpenGL.Framework/libraries/libGL.dylib")
     (set 'GLUT_LIB "/System/Library/Frameworks/GLUT.Framework/GLUT")
@@ -164,3 +164,4 @@
 (glutMainLoop)
 
 ;; eof
+

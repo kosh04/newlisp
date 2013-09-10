@@ -1,6 +1,7 @@
 ;; @module postscript.lsp
 ;; @description Routines for creating postscript files
 ;; @version 1.0 - comments redone for automatic documentation
+;; @version 1.1 - changed write-line syntax of 9.9.9 
 ;; @author Lutz Mueller, July 2006
 ;;
 ;; <h2>Routines for creating postscript files</h2>
@@ -784,7 +785,10 @@
 ; ---------- output pure postscript ---------- 
 
 (define (ps:ps str)
-	(write-line str buffer))
+	(if (< (sys-info -2) 9909)
+		(write-line str buffer)
+		(write-line buffer str)
+))
 	
 ; navigation - changes position or orient of the turtle
 	

@@ -57,7 +57,6 @@ extern char ** environ;
 #endif
 #endif
 
-
 #ifdef WIN_32
 #define fgetc win32_fgetc
 #define random rand
@@ -80,7 +79,7 @@ int setenv (const char *name, const char *value, int replace);
 INT64 fileSizeW(WCHAR * pathName);
 #endif
 
-#endif
+#endif /* Win32 */
 
 #ifndef WIN_32
 #include <sys/socket.h>
@@ -117,16 +116,12 @@ CELL * p_isFile(CELL * params) /* includes dev,socket,dir,file etc. */
 char * fileName;
 
 getString(params, &fileName);
-if(isFile(fileName) == 0)
-	return(trueCell);
-
-return(nilCell);
+return(isFile(fileName) ? nilCell : trueCell);
 }
 
 int isFile(char * fileName)
 {
 struct stat fileInfo;
-
 
 #ifdef USE_WIN_UTF16PATH
 return(stat_utf16(fileName, &fileInfo));
@@ -140,10 +135,8 @@ CELL * p_isDirectory(CELL * params)
 char * fileName;
 
 getString(params, &fileName);
-if(isDir(fileName)) return(trueCell);
-return(nilCell); 
+return(isDir(fileName) ? trueCell : nilCell);
 }
-
 
 int isDir(char * fileName)
 {
@@ -235,11 +228,14 @@ CELL * strCell;
 SYMBOL * readSptr;
 
 params = getInteger(params, &handle);
-params = getSymbol(params, &readSptr);
-params = getInteger(params, (UINT *)&size);
+params = getEvalDefault(params, &strCell);
+if(!symbolCheck)
+	return(errorProc(ERR_SYMBOL_EXPECTED));
+if(isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
-if(isProtected(readSptr->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(readSptr)));
+readSptr = symbolCheck;
+params = getInteger(params, (UINT *)&size);
 
 if(params == nilCell)
 	{
@@ -270,42 +266,39 @@ else
 			}		
 		}			
 	}
-	
+
+deleteList(strCell);
+
 if(bytesRead == 0) 
 	{ 
-	deleteList((CELL *)readSptr->contents);
-	readSptr->contents = (UINT)nilCell;
+	readSptr->contents = (UINT)copyCell(nilCell);
 	closeStrStream(&stream); 
 	return(nilCell);
 	} 
 
-/*
-strCell = getCell(CELL_STRING);
-stream.buffer = reallocMemory(stream.buffer, bytesRead +1);
-strCell->aux = bytesRead + 1;
-strCell->contents = (UINT)stream.buffer;
-*/
+stream.buffer = reallocMemory(stream.buffer, bytesRead + 1);
+readSptr->contents = (UINT)makeStringCell(stream.buffer, bytesRead);
 
-stream.buffer = reallocMemory(stream.buffer, bytesRead +1);
-strCell = makeStringCell(stream.buffer, bytesRead);
-
-deleteList((CELL *)readSptr->contents);
-readSptr->contents = (UINT)strCell;
-
-if(found)
-	return(stuffInteger(bytesRead));
+if(found) return(stuffInteger(bytesRead));
 return(nilCell);
 }
+
 
 CELL * p_readFile(CELL * params)
 {
 char * fileName;
 char * buffer = NULL;
 ssize_t size;
+CELL * result;
 
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	return(getPutPostDeleteUrl(fileName, params, HTTP_GET_URL, 0));
+	{
+	result = getPutPostDeleteUrl(fileName, params, HTTP_GET_URL, 0);
+	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
+		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
+	return(result);
+	}
 
 if(my_strnicmp(fileName, "file://", 7) == 0)
 	fileName = fileName + 7;
@@ -394,14 +387,12 @@ ssize_t bytesWritten;
 size_t size;
 char * buffer;
 CELL * strCell;
-SYMBOL * writeSptr;
 CELL * cell;
-CELL * flagPtr = NULL;
 
-cell = evalCheckProtected(params, &flagPtr);
-
-params = params->next;
-
+params = getEvalDefault(params, &cell);
+if(symbolCheck && cell->type == CELL_STRING && isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+	
 if(isNumber(cell->type))
 	{
 	getIntegerExt(cell, &handle, FALSE); 
@@ -410,34 +401,20 @@ if(isNumber(cell->type))
 else if(cell->type != CELL_STRING) 
 	return(errorProc(ERR_NUMBER_OR_STRING_EXPECTED));
 
-strCell = evaluateExpression(params);
-if(strCell->type == CELL_SYMBOL)
-    {
-    writeSptr = (SYMBOL *)strCell->contents;
-    strCell = (CELL *)writeSptr->contents;
-    }
-else if(strCell->type == CELL_DYN_SYMBOL)
-    {
-    writeSptr = getDynamicSymbol(strCell);
-    strCell = (CELL *)writeSptr->contents;
-    }
-
+params = getEvalDefault(params, &strCell);
 if(strCell->type != CELL_STRING)
-	return(errorProcExt(ERR_STRING_EXPECTED, params));
+	return(errorProcExt(ERR_STRING_EXPECTED, strCell));
 
-if(params->next == nilCell)
+if(params == nilCell)
 	size = strCell->aux - 1;
 else       
-	getInteger(params->next, (UINT *)&size);
+	getInteger(params, (UINT *)&size);
 
 buffer = (char *)strCell->contents;
 if(size > (strCell->aux - 1)) size = strCell->aux - 1;
 
 if(cell != NULL)
-	{
-	if(flagPtr) return(errorProcExt(ERR_SYMBOL_PROTECTED, flagPtr));
 	return(stuffInteger(appendCellString(cell, buffer, size)));
-	}
 
 if((bytesWritten = write((int)handle, buffer, size)) == (UINT)-1)
 	return(nilCell);
@@ -475,12 +452,18 @@ CELL * appendWriteFile(CELL * params, char * type)
 char * fileName;
 char * buffer;
 size_t size;
+CELL * result;
 
 params = getString(params, &fileName);
 
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	return(getPutPostDeleteUrl(fileName, params, 
-				(*type == 'w') ? HTTP_PUT_URL : HTTP_PUT_APPEND_URL, 0));
+	{
+	result = getPutPostDeleteUrl(fileName, params, 
+				(*type == 'w') ? HTTP_PUT_URL : HTTP_PUT_APPEND_URL, 0);
+	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
+		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
+	return(result);
+	}
 
 if(my_strnicmp(fileName, "file://", 7) == 0)
 	fileName = fileName + 7;
@@ -498,37 +481,41 @@ CELL * p_writeLine(CELL * params)
 {
 char * buffer;
 UINT handle;
-CELL * flagPtr = NULL;
 size_t size;
+CELL * cell;
+SYMBOL * symbolRef;
 
-if(params->type == CELL_NIL)
+if(params == nilCell)
+	{
+	varPrintf(OUT_DEVICE, "%s", readLineStream.buffer);
+	varPrintf(OUT_DEVICE, LINE_FEED);
+	return(stuffString(readLineStream.buffer));
+	}
+
+params = getEvalDefault(params, &cell);
+symbolRef = symbolCheck;
+
+if(params == nilCell)
 	buffer = readLineStream.buffer;
 else
 	params = getStringSize(params, &buffer, &size, TRUE);
 
-if(params != nilCell)
+if(isNumber(cell->type))
 	{
-	params = evalCheckProtected(params, &flagPtr);
-	if(isNumber(params->type))
-		{
-		getIntegerExt(params, &handle, FALSE);
-		if(write((int)handle, buffer, strlen(buffer)) == -1) return(nilCell);
-		if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
-		}
-	if(params->type == CELL_STRING)
-		{
-    	if(flagPtr) return(errorProcExt(ERR_SYMBOL_PROTECTED, flagPtr));
-		appendCellString(params, buffer, size);
-		appendCellString(params, LINE_FEED, strlen(LINE_FEED));
-		}
+	getIntegerExt(cell, &handle, FALSE);
+	if(write((int)handle, buffer, strlen(buffer)) == -1) return(nilCell);
+	if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
 	}
-else
+if(cell->type == CELL_STRING)
 	{
-	varPrintf(OUT_DEVICE, "%s", buffer);
-	varPrintf(OUT_DEVICE, LINE_FEED);
+	if(symbolRef && isProtected(symbolRef->flags))
+   		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
+
+	appendCellString(cell, buffer, size);
+	appendCellString(cell, LINE_FEED, strlen(LINE_FEED));
 	}
 
-return(stuffString(buffer));
+return(stuffInteger(size + strlen(LINE_FEED)));
 }
 
 
@@ -739,7 +726,26 @@ getString(params, &newName);
 return(rename(oldName, newName) == 0 ? trueCell : nilCell);
 }
 
+CELL * p_deleteFile(CELL * params)
+{
+char * fileName;
+CELL * result;
 
+params = getString(params, &fileName);
+if(my_strnicmp(fileName, "http://", 7) == 0)
+	{
+	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE_URL, 0);
+	return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
+	}
+
+if(my_strnicmp(fileName, "file://", 7) == 0)
+	fileName = fileName + 7;
+
+return(unlink(fileName) == 0 ? trueCell : nilCell);
+}
+
+
+#ifdef OLDDELETEFILE
 CELL * p_deleteFile(CELL * params)
 {
 char * fileName;
@@ -748,8 +754,12 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	return(getPutPostDeleteUrl(fileName, params, HTTP_DELETE_URL, 0));
 
+if(my_strnicmp(fileName, "file://", 7) == 0)
+	fileName = fileName + 7;
+
 return(unlink(fileName) == 0 ? trueCell : nilCell);
 }
+#endif
 
 
 CELL * p_makeDir(CELL * params)
@@ -868,8 +878,8 @@ struct _stat fileInfo;
 char * pathName;
 struct stat fileInfo;
 #endif
-
 CELL * list;
+int result = 0;
 
 #ifdef USE_WIN_UTF16PATH
 char * utf8pathName;
@@ -879,7 +889,12 @@ pathName = utf8_to_utf16(utf8pathName);
 params = getString(params, &pathName);
 #endif
 
-if(lstat(pathName, &fileInfo) != 0)
+if(getFlag(params->next))
+	result = stat(pathName, &fileInfo);
+else
+	result = lstat(pathName, &fileInfo);
+
+if(result != 0)
 	{
 #ifdef USE_WIN_UTF16PATH
 	free(pathName);
@@ -956,39 +971,26 @@ return(stuffInteger((UINT)system(command)));
 
 CELL * p_exec(CELL * params)
 {
+CELL * lineList;
+char * line;
 char * command, * data;
+FILE * handle;
 
 params = getString(params, &command);
 if(params == nilCell)
-    return(readProcess(command));    
+	{
+	if((handle = popen(command , "r")) == NULL)
+		return(nilCell);
+
+	lineList = getCell(CELL_EXPRESSION);
+	while((line = readStreamLine(&readLineStream, handle)) != NULL)
+		addList(lineList, stuffString(line));
+
+	pclose(handle);
+	return(lineList);
+	}
     
 getString(params, &data);
-return(writeProcess(command, data));
-}
-
-
-CELL * readProcess(char * command)
-{
-CELL * lineList;
-FILE * handle;
-char * line;
-
-if((handle = popen(command , "r")) == NULL)
-	return(nilCell);
-
-lineList = getCell(CELL_EXPRESSION);
-while((line = readStreamLine(&readLineStream, handle)) != NULL)
-	addList(lineList, stuffString(line));
-
-pclose(handle);
-
-return(lineList);
-}
-
-
-CELL * writeProcess(char * command, char * data)
-{
-FILE * handle;
 
 if((handle = popen(command, "w")) == NULL)
 	return(nilCell);
@@ -999,6 +1001,7 @@ if(fwrite(data, sizeof(char), strlen(data), handle) < strlen(data))
 pclose(handle);
 return(trueCell);
 }
+
 
 /* parses/splits a string intor substrings separated
    by spaces, strings containing spaces can be enclosed
@@ -1087,18 +1090,6 @@ int idx;
 cPtr = callocMemory(len + 1);
 memcpy(cPtr, command, len + 1);
 
-#ifdef OLD_PP
-argv[0] = cPtr;
-for(idx = 1; idx < 5; idx++)
-    {
-    cPtr = strchr(cPtr, ' ');
-    if(cPtr == NULL) break;
-    while(*cPtr == ' ') *cPtr++ = 0;
-    argv[idx] = cPtr;
-    }
-argv[idx] = NULL;
-#endif
-
 init_argv(cPtr, argv);
 
 idx = spawnvp(P_NOWAIT, argv[0], (const char * const *)argv); 
@@ -1115,6 +1106,8 @@ CELL * p_destroyProcess(CELL * params)
 UINT pid;
 
 getInteger(params, &pid);
+
+/* GetProcessId(handle) */
 
 if(TerminateProcess((HANDLE)pid, 0) == 0)
 	return(nilCell);
@@ -1294,14 +1287,13 @@ while(pidSpawn)
 			if(*(char *)pidSpawn->address)
 				{
 				/* xlate but don't evaluate shared memory and no callback */
-				cell = sysEvalString((char *)pidSpawn->address + 4, nilCell, 
-							currentContext, READ_XLATE_NO_CALLBACK);
+				cell = sysEvalString((char *)pidSpawn->address + 4, 
+							currentContext, nilCell, READ_EXPR_SYNC);
 				}
 			else /* shared address contains filename with result */
 				{
 				if((size = readFile((char *)pidSpawn->address + 4, &buffer)) != -1)
-					cell = sysEvalString(buffer, nilCell, 
-							currentContext, READ_XLATE_NO_CALLBACK);
+					cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
 				else cell = nilCell;
 				unlink((char *)pidSpawn->address + 4);
 				}
@@ -1409,7 +1401,7 @@ struct timeval tv, tp;
 SPAWN_LIST * spawnList;
 CELL * resultList = getCell(CELL_EXPRESSION);
 int inletFlag = 0;
-int resultIdxSave;
+UINT * resultIdxSave;
 CELL * cell;
 
 if(mySpawnList == NULL)
@@ -1791,7 +1783,7 @@ if(params != nilCell)
 #ifdef WIN_32
 			UnmapViewOfFile(address.ptr);
 #endif
-			return(copyList(cell));
+			return(copyCell(cell));
 			}
 #ifndef NEWLISP64
 		if(cell->type == CELL_INT64)
@@ -1802,7 +1794,7 @@ if(params != nilCell)
 #ifdef WIN_32
 			UnmapViewOfFile(address.ptr);
 #endif
-			return(copyList(cell));
+			return(copyCell(cell));
 			}
 		if(cell->type == CELL_FLOAT)
 			{
@@ -1813,7 +1805,7 @@ if(params != nilCell)
 #ifdef WIN_32
 			UnmapViewOfFile(address.ptr);
 #endif
-			return(copyList(cell));
+			return(copyCell(cell));
 			}
 
 #else /* NEWLISP64 */
@@ -1822,7 +1814,7 @@ if(params != nilCell)
 			*address.ptr = cell->type;
 			*(address.ptr + 1) = sizeof(double);
 			*(address.ptr + 2) = cell->contents;
-			return(copyList(cell));
+			return(copyCell(cell));
 			}
 #endif /* NEWLISP64 */
 		return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
@@ -1922,7 +1914,7 @@ cell = stuffIntegerList(
 	MAX_CELL_COUNT,
 	symbolCount,
 	(UINT)recursionCount,
-	(UINT)envStackIdx,
+	(UINT)(envStackIdx - envStack)/sizeof(UINT),
 	(UINT)MAX_CPU_STACK,
 	(UINT)getpid(),
 	(UINT)version,
@@ -2102,7 +2094,7 @@ CELL * p_time(CELL * params)
 {
 struct timeval start, end;
 INT64 N = 1;
-int resultIdxSave;
+UINT * resultIdxSave;
 
 gettimeofday(&start, NULL);
 if(params->next != nilCell)
@@ -2325,6 +2317,8 @@ CELL * environment(void)
 char ** env;
 CELL * envList;
 CELL * lastEntry;
+CELL * pair;
+char * ptr;
 
 lastEntry = NULL;
 envList = getCell(CELL_EXPRESSION);
@@ -2339,14 +2333,26 @@ env = environ;
 
 while(*env)
 	{
+	if((ptr = strstr(*env, "=")) != NULL)
+	    {
+	    pair = getCell(CELL_EXPRESSION);
+	    addList(pair, stuffStringN(*env, ptr - *env));
+	    addList(pair, stuffString(ptr + 1));
+	    }
+    else 
+		{
+		env++;
+		continue;
+		}
+    
 	if(lastEntry == NULL)
 		{
-		lastEntry = stuffString(*env);
+		lastEntry = pair;
 		envList->contents = (UINT)lastEntry;
 		}
 	else
 		{
-		lastEntry->next = stuffString(*env);
+		lastEntry->next = pair;
 		lastEntry = lastEntry->next;
 		}
 	env++;

@@ -1,16 +1,12 @@
 ;; init.lsp - newLISP initialization file
-;; gets loaded automatically on newLISP startup
-;; newLISP looks for it in: /usr/share/newlisp/init.lsp
+;; gets loaded from either HOME/.init.lsp or NEWLISPDIR/init.lsp
+;; NEWLISPDIR typically is /usr/share/newlisp on Mac OS X and other Unix
+;; and c:/Program Files/newlisp on MS Windows
 ;;
-;; defines some useful macros, none of these
-;; are required in the other sample programs
-;; but some implement forms frequently used
-;; in other LISPs
+;; defines some useful macros, none of these are required in the other 
+;; sample programs but some implement forms frequently used in other LISPs
 ;;
-;; v.8.7.11
-;;
-;; fixed a wrong logic in conditional making of defun macro
-;;
+
 ;; macro for 'defun' like in other LISPs
 ;; usage: (defun foo (x y z) body1 body2 ... ) 
 ;;

@@ -340,7 +340,7 @@
 		nil
 		(begin
 			(for (x result-cols 1) (push (eval (nth x vars)) row))
-			row)))
+			row))) ; not necessary starting 9.9.5 because push returns the list
 
 
 ;; @syntax (ODBC:affected-rows)

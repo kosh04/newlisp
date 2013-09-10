@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on LINUX with IPv6 protocol
+# makefile for newLISP v. 10.x.x on LINUX with IPv6 protocol
 #
 # Note, that readline support may require different libraries on different OSs
 # 

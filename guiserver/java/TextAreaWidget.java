@@ -80,16 +80,7 @@ public TextAreaWidget(StringTokenizer params)
 			
 			if(process != null)
 				{
-				// goto beggining of line
-				if(lastCharCode == 1)
-					textArea.setCaretPosition(lastDot);		
-					
-				// goto end of line
-				else if(lastCharCode == 5)
-					textArea.setCaretPosition(textArea.getText().length());		
-					
-				// clear screen with Ctrl-L
-				else if(lastCharCode == 12) 
+				if(lastCharCode == 12) 
 					{
 					textArea.setText("");
 					lastDot = 0;
@@ -99,12 +90,7 @@ public TextAreaWidget(StringTokenizer params)
 						}
 					catch (IOException ioex) { System.out.println("clear screen:" + ioex); };	
 					}
-				// get last command with Ctrl-P
-				else if(lastCharCode == 16) textArea.append(command.trim());
-				}
-				
-			if(lastDot > textArea.getCaretPosition())
-				lastDot = textArea.getCaretPosition();
+				}				
 			}
 		};
 		
@@ -116,6 +102,7 @@ public TextAreaWidget(StringTokenizer params)
 			guiserver.out.println("(" + action + " \"" + id + "\" " + lastCharCode + " " + dot + " " + mark + ")");
 			guiserver.out.flush();
 			lastCharCode = 65535;
+			//System.out.println(":" + lastDot);
 			}
 		};
 		
@@ -165,12 +152,19 @@ public void runShell(StringTokenizer tokens)
 	InputMap im = textArea.getInputMap();
 	ActionMap am = textArea.getActionMap();
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "history-up");
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK), "history-up");
 	am.put("history-up", new HistoryUpAction());
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "history-down");
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK), "history-down");
 	am.put("history-down", new HistoryDownAction());
 	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "command");
 	am.put("command", new CommandAction());
-
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK), "bol");
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "bol");
+	am.put("bol", new BeginningOfLineAction());
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_MASK), "eol");
+	im.put(KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "eol");
+	am.put("eol", new EndOfLineAction());
 
 	textArea.setText("");
 	lastCharCode = 65535;
@@ -187,8 +181,6 @@ public void setupShell(String command) throws IOException
 	String s;
 	int chr;
 	process = Runtime.getRuntime().exec(command);
-	
-	//System.out.println("set up:" + command);
 
 	if(guiserver.UTF8)
 		{
@@ -237,7 +229,6 @@ public void evalShell(StringTokenizer params)
 			catch (IOException ioex) { 
 				textArea.append("--- eval shell: must restart shell ---"); 
 				process = null;
-				//++retryCount;
 				};
 			}
 		}
@@ -307,6 +298,18 @@ class stderrorListener implements Runnable
 	}
 
 
+private class BeginningOfLineAction extends AbstractAction {
+	public void actionPerformed(ActionEvent ev) {
+		textArea.setCaretPosition(lastDot);
+		}
+	}
+
+private class EndOfLineAction extends AbstractAction {
+	public void actionPerformed(ActionEvent ev) {
+		textArea.setCaretPosition(textArea.getText().length());
+		}
+	}
+
 private class HistoryUpAction extends AbstractAction {
 	public void actionPerformed(ActionEvent ev) {
 		textArea.setCaretPosition(lastDot);
@@ -338,8 +341,7 @@ private class HistoryDownAction extends AbstractAction {
 private class CommandAction extends AbstractAction {
 	public void actionPerformed(ActionEvent ev) {
 			String text = textArea.getText();
-			//System.out.println("lastDot:" + lastDot + " length:" + text.length());
-			//System.out.println("->" + command + "<-");
+			if(text.length() < lastDot) lastDot = text.length();
 			text = text.substring(lastDot);
 			
 			if(guiserver.UTF8)
@@ -351,16 +353,14 @@ private class CommandAction extends AbstractAction {
 			command = text;
 			
 			textArea.append("\n");
+			
 			try { 
 				stdOut.write(command, 0, command.length());
 				stdOut.write(10);
 				stdOut.flush();
 				if(command.length() > 0)
 					{
-					int pos = text.lastIndexOf("\n");
-					if(pos == -1) pos = 0;
-					else pos += 1;
-					history.insertElementAt(new String(text.substring(pos)), 0);
+					history.insertElementAt(new String(command), 0);
 					}
 				historyIndex = 0;
 				}
@@ -372,11 +372,5 @@ private class CommandAction extends AbstractAction {
 
 }
 
-/*
-Thread t = new Thread () {
-	public void run() {}
-	}
-*/
- 
  
 // eof //

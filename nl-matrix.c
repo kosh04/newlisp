@@ -248,7 +248,7 @@ params = params->next;
 if( (A = getMatrix(params, &typeA, &n, &m, &err)) == NULL)
 	return(errorProcExt(err, params));
 
-getDefaultOrEval(params->next, &result);
+getEvalDefault(params->next, &result);
 if(isNumber(result->type))
 	{
 	k = n, l = m;
@@ -505,7 +505,7 @@ double * * getMatrix(CELL * params, int * type, int * n, int * m, int *err)
 CELL * data;
 double * * M;
 
-getDefaultOrEval(params, &data);
+getEvalDefault(params, &data);
 
 if(data->type != CELL_EXPRESSION && data->type != CELL_ARRAY)
 	{

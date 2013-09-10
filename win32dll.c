@@ -27,6 +27,7 @@
 
 #include <winsock2.h>
 
+extern char linkOffset[];
 extern void loadStartup(char *name);
 extern LPSTR getLibname(void);
 extern int evalSilent;
@@ -42,6 +43,7 @@ char libName[MAX_LINE] = "newlisp.dll";
 void initializeMain(void)
 {
 char name[MAX_LINE + 1];
+char * initFile;
 
 WSAStartup(MAKEWORD(1,1), &WSAData);
 
@@ -59,9 +61,19 @@ initialize();
 mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 initStacks();
 
-GetModuleFileName(GetModuleHandle(libName), name, MAX_LINE);
+initFile = getenv("NEWLISPLIB_INIT");
 
-loadStartup(name);
+if(initFile)
+	{
+	strncpy(name, initFile, MAX_LINE);
+	loadFile(name, 0, 0, mainContext);
+	}
+
+if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
+	{
+	GetModuleFileName(GetModuleHandle(libName), name, MAX_LINE);
+	loadFile(name, *(UINT*)linkOffset, 1, mainContext);
+	}
 
 dllInitialized = 1;
 reset();

@@ -1,6 +1,7 @@
 ;; @module gmp.lsp
 ;; @description GNU MP Bignum Library interface
 ;; @version 1.52 updated for new install locations and GMP website
+;; @version 1.53 took out redefinition of normal int operations to floats
 ;; @author Lutz Mueller, 2007
 ;;
 ;; <h3>The GNU MP Bignum Library</h3>
@@ -107,7 +108,7 @@
 ;; generate random numbers between 0 and arg - 1
 ;;
 
-(constant '+ add '- sub '* mul '/ div)
+;(constant '+ add '- sub '* mul '/ div)
 
 (context 'GMP)
 
@@ -434,7 +435,7 @@
       (begin
         (set 'n (get-string (__gmpz_get_str rops 10 mp-n)))
         (push n factors -1)))) 
-  factors
+  factors ; not necessary starting v.9.9.5 because push returns list
 )
 
 (define (push-factor f k)
@@ -559,7 +560,7 @@
 
   ; RANDOM NUMBERS
   (GMP:check 'GMP:seed "12345" nil true)
-  (GMP:check 'GMP:rand "1000000" nil "18235")
+  ;(GMP:check 'GMP:rand "1000000" nil "18235") ; check manually
 )
 
 ; eof

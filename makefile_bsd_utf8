@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on BSDs: FreeBSD, OpenBSD with UTF8 support
+# makefile for newLISP v. 10.x.x on BSDs: FreeBSD, OpenBSD with UTF8 support
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \

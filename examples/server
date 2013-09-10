@@ -9,6 +9,7 @@
 ;; See the 'client' file for more info.
 ;;
 ;; v 1.1
+;; v 1.2 change net-receive for 10.0
 ;;
 
 (define (net-server-accept listenSocket)
@@ -18,7 +19,7 @@
 	(while (net-server-receive connect)))))
 
 (define (net-server-receive socket , str)
-  (net-receive socket 'str 256)
+  (net-receive socket str 256)
   (print "received:" str "\n")
   (if (= str "quit") 
    (begin 

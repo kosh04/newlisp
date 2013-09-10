@@ -14,11 +14,12 @@
 ;; terminal window or on a different computer.
 ;;
 ;; v 1.3
+;; v 1.4 change net-receive for v 10.0
 ;;
 
 (define (net-client-receive socket , buf)
-  (net-receive socket 'buf 256)
-  (print "\n" buf "\ninput:")
+  (net-receive socket buf 256)
+  (print "\n" buf "\ninput or 'quit' to exit:")
   (if (= buf "bye bye!") (exit))
   (net-send socket (read-line)))
 

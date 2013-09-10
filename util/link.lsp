@@ -3,6 +3,7 @@
 ;; link.lsp - v.1.3 no code change, added note for win32 dll
 ;; link.lsp - v.1.4 no code change, reformatted comments 
 ;; link.lsp - v.1.5 no code change, changed dllEvalStr to newlispEvalStr 
+;; link.lsp - v.1.6 eliminated old quoted write-buffer syntax for 10.0
 ;;
 ;; links newLISP executable and a .lsp source file to a new
 ;; executable containing both. This way newLISp and a source
@@ -69,15 +70,15 @@
     (search handle "@@@@@@@@")
 
     ;; this field gets read by the newLISP startup
-    (write-buffer handle 'buff 4)
+    (write-buffer handle buff 4)
     (set 'buff (read-file lispSourceName))
     (set 'keylen (pack "ld" (length buff)))
-    (write-buffer handle 'keylen 4)
+    (write-buffer handle keylen 4)
 
     ;; append lisp source encrypted at the end
     (seek handle size)
     (set 'buff (encrypt buff (string (length buff))))
-    (write-buffer handle 'buff (length buff))
+    (write-buffer handle buff (length buff))
     (close handle))
 
 ;; eof

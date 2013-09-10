@@ -1,6 +1,7 @@
 ;; @module infix.lsp
 ;; @description Infix expression parser
 ;; @version 2.1 - comments redone for automatic documentation
+;; @version 2.2 - fixed bug for trailing lower priority ops
 ;; @author Lutz Mueller
 ;;
 ;; <h2>Infix expression parser</h2>
@@ -54,8 +55,15 @@
   ("*" mul 2 4) 
   ("/" div 2 4)
   ("^" pow 2 5)
+  ("abs" abs 1 9)
+  ("acos" acos 1 9)
+  ("asin" asin 1 9)
+  ("atan" atan 1 9)
   ("sin" sin 1 9)
+  ("sqrt" sqrt 1 9)
+  ("tan" tan 1 9)
   ("cos" cos 1 9)
+; add what else is needed
   ))
 
 (set 'targetContext MAIN)
@@ -100,9 +108,9 @@
 ; and make expressions
 ;
 (define (process-op tkn)
-  (if (not (empty? opstack))
-      (while (<= (lookup tkn operators 3) (lookup (first opstack) operators 3))
-        (make-expression)))
+  (while (and opstack
+              (<= (lookup tkn operators 3) (lookup (first opstack) operators 3)))
+        (make-expression))
   (push tkn opstack))
 
 ; pops an operator from the opstack and makes/returns an

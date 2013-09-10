@@ -117,17 +117,23 @@
 	)
 )
 
+
+(set 'xml-callback-result-test
+'(((NAME "apple") 88 18) ((COLOR "red") 115 18) ((PRICE "0.80") 142 19) 
+  ((NAME "orange") 196 19) ((COLOR "orange") 224 21) ((PRICE "1.00") 254 19) 
+  ((NAME "banana") 307 19) ((COLOR "yellow") 334 21) ((PRICE "0.60") 363 19)
+))
+  
+
 (println "Testing xml-parse with callback feature")
 (xml-type-tags nil 'cdata '!-- nil) 
+(set 'xml-callback-result '())
 (xml-parse example-xml (+ 1 2 8) MAIN xml-callback)
 (println)
+;(println "===>"  xml-callback-result)
+;(println "===>"  xml-callback-result-test)
 (println)
-(if (=  xml-callback-result
-	'(
-	((NAME "apple") 88 18) ((COLOR "red") 115 18) ((PRICE "0.80") 142 19) 
- 	((NAME "orange") 196 19) ((COLOR "orange") 224 21) ((PRICE "1.00") 254 19) 
- 	((NAME "banana") 307 19) ((COLOR "yellow") 334 21) ((PRICE "0.60") 363 19)	
-	) ) 
+(if (=  xml-callback-result xml-callback-result-test)
 	(println ">>>>> XML CALLBACK TESTED SUCCESSFUL")
 	(println ">>>>> ERROR: PROBLEM IN XML CALLBACK")
 )
@@ -151,3 +157,4 @@ parsed expresson:(PRICE "0.60"), source:<PRICE>0.60</PRICE>
 
 ;; eof
 	
+

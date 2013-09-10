@@ -25,6 +25,8 @@
 #include "protos.h"
 
 extern SYMBOL * sysSymbol[];
+extern SYMBOL * itSymbol;
+
 #define OVECCOUNT (MAX_REGEX_EXP * 3)    /*  max sub expressions in PCRE */
 
 void regexError(char * msg_1, int num, const char * msg_2);
@@ -159,7 +161,6 @@ return(stuffInteger(foundPosition));
 }
 
 
-
 CELL * implicitIndexString(CELL * cell, CELL * params)
 {
 ssize_t index;
@@ -173,11 +174,15 @@ ssize_t i, p;
 ptr = (char*)cell->contents;
 getInteger(params, (UINT *)&index);
 
+if(cell->aux == 1 && (index == 0 || index == -1)) 
+	return(copyCell(cell));
+
 #ifndef SUPPORT_UTF8
 index = adjustNegativeIndex(index, cell->aux - 1);
 str[0] = *(ptr + index);
 str[1] = 0;
-return(stuffString(str));
+symbolCheckPtr = ptr + index;
+return(stuffStringN(str, 1));
 #else
 index = adjustNegativeIndex(index, utf8_wlen(ptr));
 for(i = 0; i < index; i++)
@@ -185,8 +190,49 @@ for(i = 0; i < index; i++)
 	p = utf8_1st_len(ptr);
 	ptr += p;
 	}
+symbolCheckPtr = ptr;
 return(stuffStringN(ptr, utf8_1st_len(ptr)));
 #endif
+}
+
+/* only used from setf() for string insertion
+   uses the global symbolCheckPtr in insertPtr
+   the insert point set by implicitIndexString()
+*/
+
+CELL * setNthStr(CELL * cellStr, CELL * new, char * insertPtr)
+{
+char * newStr;
+char * oldStr;
+size_t newLen, oldLen, len, offset;
+char * str;
+
+getStringSize(new, &newStr, &newLen, FALSE);
+
+oldStr = (char*)cellStr->contents;
+oldLen = cellStr->aux - 1;
+if(oldLen == 0) return(copyCell(cellStr));
+
+#ifdef SUPPORT_UTF8
+len = utf8_1st_len(insertPtr);
+#else
+len = 1;
+#endif
+deleteList((CELL*)sysSymbol[0]->contents);
+sysSymbol[0]->contents = (UINT)stuffStringN(insertPtr, len);
+
+str = callocMemory(oldLen + newLen - len + 1);
+
+offset = insertPtr - oldStr;
+memcpy(str, oldStr, offset);
+memcpy(str + offset, newStr, newLen);
+memcpy(str + offset + newLen, oldStr + offset + len, oldLen - offset - len);
+
+cellStr->contents = (UINT)str;
+cellStr->aux = oldLen + newLen - len + 1;
+
+freeMemory(oldStr);
+return(new);
 }
 
 
@@ -203,7 +249,7 @@ char buff[2];
 if(params == nilCell)
 	return(errorProc(ERR_MISSING_ARGUMENT));
 
-params = getDefaultOrEval(params, &datCell);
+params = getEvalDefault(params, &datCell);
 
 
 switch(datCell->type)
@@ -303,7 +349,7 @@ int flag = 0;
 int clen, i;
 #endif
 
-params = getDefaultOrEval(params, &cell);
+params = getEvalDefault(params, &cell);
 if(isList(cell->type))
 	return(explodeList((CELL*)cell->contents, params));
 
@@ -1011,7 +1057,7 @@ long base;
 CELL * deflt, * cell;
 INT64 result;
 
-deflt = getDefaultOrEval(params, &cell);
+deflt = getEvalDefault(params, &cell);
 
 if(cell->type == CELL_STRING)
 	intString = (char *)cell->contents;
@@ -1202,7 +1248,7 @@ if(params == nilCell)
 	return(0);
 	}
 
-getDefaultOrEval(params, &params);
+getEvalDefault(params, &params);
 
 #ifndef NEWLISP64
 if(params->type == CELL_INT64)
@@ -1262,7 +1308,7 @@ CELL * p_address(CELL * params)
 if(params == nilCell)
 	return(errorProc(ERR_MISSING_ARGUMENT));
 
-getDefaultOrEval(params, &params);
+getEvalDefault(params, &params);
 
 switch(params->type)
     {
@@ -2097,6 +2143,7 @@ for(idx = 0; idx < rc; idx++)
     cell = stuffStringN(string  + ovector[2*idx], ovector[2*idx+1] - ovector[2*idx]);
     deleteList((CELL*)sysSymbol[idx]->contents);
     sysSymbol[idx]->contents = (UINT)cell;
+    if(idx == 0) itSymbol->contents = (UINT)cell;
     }
 
 if(len != NULL)
@@ -2178,7 +2225,7 @@ size_t repLen;
 char * newBuff;
 CELL * cell;
 REGEX * start_rx = NULL, * end_rx = NULL;
-int resultStackIdxSave;
+UINT * resultStackIdxSave;
 int errNo;
 int bias = 0;
 
@@ -2280,6 +2327,8 @@ printf("count %d buffLen %d offset %d bias %d str %s lencpy %d\n",
         count, buffLen, offset, bias, buff + offset - bias, buffLen - offset + bias);
 */
 memcpy(newBuff + count, buff + offset - bias, buffLen - offset + bias);
+
+itSymbol->contents = (UINT)nilCell;
 return(newBuff);
 }
 

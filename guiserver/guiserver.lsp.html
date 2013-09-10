@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
 <html>
 <head>
 <META http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -11,10 +11,10 @@
 			link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
-<p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
-<b>Version: </b>1.22<br/>
-<b>Author: </b>LM, June 2008<br/>
-<p></p>
+<p><a href="index.html">Module index</a></p><br/><br/><br/>Module:&nbsp;guiserver.lsp<p>Functions for programming GUIs and 2D graphics.</p>
+<b>Version: </b>1.27 changes for 10.0<br/>
+<b>Author: </b>LM, August 2008<br/>
+<p>&nbsp;</p>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
  those platforms. On Win32 the MIDI sound features require a soundbank file to
@@ -37,7 +37,7 @@
  <pre>
  (load "c:/Program Files/newlisp/guiserver.lsp")
  </pre>
-<p></p>
+<p>&nbsp;</p>
  <tt>guiserver.lsp</tt> expects the server <tt>guiserver.jar</tt> to be
  in the directoey specified in the environment variable NEWLISPDIR.
  When newLISP starts up and this variable is not set yet, it sets it
@@ -51,20 +51,20 @@
  <br><br>
  <h2>Architecture of a newLISP GUI application</h2>
  A GUI application in newLISP is composed of four parts:
-<p></p>
+<p>&nbsp;</p>
  <blockquote>
  <em>initialization</em> - this means starting the newLISP-GS <tt>guiserver.jar</tt> and initializing 
  communications with it. Only one function call is required to do this.
-<p></p>
+<p>&nbsp;</p>
  <em>building widgets</em> - in this step windows, buttons, text fields etc., and
  all visual aspects of the GUI are described. newLISP newLISP-GS offers a wide range
  of different control widgets.
-<p></p>
+<p>&nbsp;</p>
  <em>defining event actions</em> - in this step all the functions are defined to
  react to events coming from the GUI as a consequence of button pushes, keystrokes,
  mouse-movements etc.. These event actions send many commands back to the GUI
  to change information for the user, popup dialogs etc..
-<p></p>
+<p>&nbsp;</p>
  <em>listening for events</em> - the newLISP program sits in a loop waiting for
  events and dispatching them to the defined event actions. Only one function call
  is required for this step.
@@ -76,12 +76,12 @@
  <blockquote><pre>
  #!/usr/bin/newlisp
  ; button-demo.lsp - demonstrate the button control
-<p></p>
+<p>&nbsp;</p>
  ;;;; initialization
  (load (append (env "NEWLISPDIR") "/guiserver.lsp")) 
-<p></p>
+<p>&nbsp;</p>
  (gs:init) 
-<p></p>
+<p>&nbsp;</p>
  ;;;; describe the GUI
  (gs:frame 'ButtonDemo 100 100 400 300 "Button demo")
  (gs:set-resizable 'ButtonDemo nil)
@@ -91,21 +91,21 @@
  (gs:set-flow-layout 'ButtonDemo "center" 2 15)
  (gs:add-to 'ButtonDemo 'ColorPanel 'aButton)
  (gs:set-visible 'ButtonDemo true)
-<p></p>
+<p>&nbsp;</p>
  ;;;; define actions
  (define (abutton-action id)
      (gs:set-color 'ColorPanel (random) (random) (random)))
-<p></p>
+<p>&nbsp;</p>
  ;;;; listen for incoming action requests and dispatch
  (gs:listen)
-<p></p>
+<p>&nbsp;</p>
  ;; eof 
  </pre></blockquote>
  <br>
  <h2>Application start</h2>
  <pre>
      ./button-demo       ; on MacOS X and Unix
-<p></p>
+<p>&nbsp;</p>
      newlisp button-demo ; on Win32
  </pre>
  By default guiserver.jar uses the ports 47011 and 47012, but this setting can be overwritten 
@@ -114,13 +114,13 @@
  following it:
  <pre>
      ./button-demo 10001       ; on MacOS X and Unix
-<p></p>
+<p>&nbsp;</p>
      newlisp button-demo 10001 ; on Win32
  </pre>
  newLISP-GS <tt>guiserver.jar</tt> will now use the ports <tt>10001</tt> and <tt>10002</tt>.
  Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
  OS services and need administrator privileges to use them.
-<p></p>
+<p>&nbsp;</p>
  A second method to start a newLISP-GS application starts the <tt>guiserver.jar</tt> first, which then
  starts the newLISP application:
  <pre>
@@ -133,7 +133,7 @@
  </pre>
  The example specifies an image inside <tt>guiserver.jar</tt>. Any other image path on the local file system
  can be used.
-<p></p>
+<p>&nbsp;</p>
  On Win32 similar methods can be used replacing the appropriate file paths, but on Win32 Java jar files
  can also be treated as executables and executed directly without calling Java explicitly. By default
  <tt>guiserver.jar</tt> and <tt>guiserver.lsp</tt> are  installed in <tt>c:\Program Files\newlisp\</tt> or any other 
@@ -143,7 +143,7 @@
  </pre>
  Quotes are necessary when spaces are present in the argument string. The example also assumes that
  <tt>newlisp.exe</tt> is in the path for executables.
-<p></p>
+<p>&nbsp;</p>
  <br><br>
  <h2>Debugging</h2>
  <b>Tracing commands to newLISP-GS</b><br><br>
@@ -155,7 +155,7 @@
  Then start the application from a terminal or command shell window. Now newLISP-GS
  will output startup, version and connection messages and a trace for each <tt>gs:xxs</tt> directive
  as it is received by the newLISP-GS dispatcher:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  newLISP-GS v.0.94
  listening on 47011
@@ -174,7 +174,7 @@
  -> set-color MAIN:ColorPanel 0.8401877172 0.3943829268 0.7830992238
  server shut down
  </blockquote></pre>
-<p></p>
+<p>&nbsp;</p>
  Text strings for button names, icon paths and other texts are encode in
  Base64 strings as the first trace line for MAIN:ButtonDemo shows. To switch
  off tracing mode use:
@@ -189,60 +189,60 @@
  have an effect, depending on how a widget is configured or depending on the layout
  which hosts the widget. Sometimes the platform look-and-feel overwrites colors.
  <br><br>
-<p></p>
+<p>&nbsp;</p>
  <h2>Event handlers</h2>
  For most widgets, event handlers must be defined. Sometimes an event handler is
  not required. In this case specify <tt>'gs:no-action</tt> as the event handler
  symbol. When developing programs it is useful to watch the event handler first
  before coding for it. This can be done easily by printing out event parameters:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  (gs:button 'aButton 'abutton-handler "press")
-<p></p>
+<p>&nbsp;</p>
  (define (abutton-handler id)
      (println id))
  </pre></blockquote>
-<p></p>
+<p>&nbsp;</p>
  Sometimes the same event handler function is attached to several widgets' keyboard
  or mouse events. Some of these events receive a greater number of parameters. There
  are two easy ways to discover the nature of an event:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  (define (the-handler)
      (doargs (p)
          (println "->" p)))
  </pre></blockquote>
-<p></p>
+<p>&nbsp;</p>
  The other method looks at the source of the event as it was transmitted by the newLISP-GS.
  This is useful to recognize the data types used in the event:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  (define (the-handler)
      (println gs:event))
  </pre></blockquote>
-<p></p>
+<p>&nbsp;</p>
  All text from text fields are received as base64-encoded strings. E.g. the text: 
  <tt>"Hello World"</tt> would be received as: <tt>"SGVsbG8gV29ybGQ="</tt>:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  (gs:text-field 'TextField 'textfield-handler)
-<p></p>
+<p>&nbsp;</p>
  (define (textfield-handler id text)
      (printnl id ": " (base64-dec text)))
  </pre></blockquote>
-<p></p>
+<p>&nbsp;</p>
  When the text "Hello World" is entered in the text field, the following output
  would be generated:
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
  TextField: "Hello World"
  </pre></blockquote>
-<p></p>
+<p>&nbsp;</p>
  In case the ESC key is pressed in the text field, the event handler would
  report <tt>nil</tt> for the text field. A handler should therefore always check text
  for string contents before trying to apply the <tt>base64-dec</tt> function on it.
  <br><br>
-<p></p>
+<p>&nbsp;</p>
  <h2>Coding considerations</h2>
  <b>mapping or applying <tt>gs:xxx</tt> functions</b><br><br>
  Like any newLISP functions, <tt>gs:xxx</tt> functions can be mapped or applied to lists of 
@@ -250,16 +250,16 @@
  map or apply the quoted <tt>'gs:xxx symbol</tt>, so the <tt>gs:xx</tt> functions 
  get executed under the <tt>gs</tt> context, prefixing symbols in parameter lists
  correctly with the context prefix of their origin.
-<p></p>
+<p>&nbsp;</p>
  <blockquote><pre>
     (map 'gs:panel '(first second third fourth)) ; note quoted gs: function
  </blockquote></pre>
-<p></p>
+<p>&nbsp;</p>
  <br><br>
  <h2>Some shortcuts when writing <tt>gs:xxx</tt> functions</h2>
  Due to the nature of transfer between newLISP and the guiserver as text, the following
  convenient shortcuts can be taken when writing functions:
-<p></p>
+<p>&nbsp;</p>
  <blockquote>
  <ul>
  <li>Symbol ids of components can be expressed as strings.</li>
@@ -268,7 +268,7 @@
  <li>String constants for type and orientation constants can be given as symbols.</li>
  </ul>
  </blockquote>
-<p></p>
+<p>&nbsp;</p>
  Here are some examples:
  <pre>
      (gs:panel 'ColorPanel 360 200)
@@ -278,14 +278,14 @@
      (gs:panel "ColorPanel" "360" "200")
      ; is the same as
      (gs:panel "ColorPanel" 360.0 "200.00")
-<p></p>
+<p>&nbsp;</p>
      (gs:set-flow-layout 'ButtonDemo "center" 2 15)
      ; is the same as
      (gs:set-flow-layout 'ButtonDemo 'center 2 15)
  </pre>
  Although the first form is preferred for clarity and readability, in some cases coding
  may be more efficient using the other forms.
-<p></p>
+<p>&nbsp;</p>
  Except for the symbols used for action handlers, all symbols are used only by their
  face (name) value. This means that reserved symbols of the newLISP programming
  language can be used freely in symbol ids for all components, e.g:
@@ -305,10 +305,10 @@
  <tt>gs:fonts</tt>, <tt>gs:font-metrics</tt>, <tt>gs:instruments</tt>, <tt>gs:screen</tt>, <tt>gs:text</tt> and
  <tt>gs:version</tt>. These functions will not return right away but block until
  the return valuse is sent beack from newLISP-GS.
-<p></p>
+<p>&nbsp;</p>
  The function <tt>gs:get-text</tt> can work both ways: event driven or with a return
  value depending on the call pattern used.
-<p></p>
+<p>&nbsp;</p>
  <br><br>
  <h2>Function overview</h2>
  <ul>
@@ -319,7 +319,7 @@
  The initialization function starts <tt>guiserver.jar</tt> which will listen to the <i>server-port</i>
  and initiate another connection on <tt>server-port + 1</tt> back to newLISP. If a <em>server-port</em>
  is not supplied <tt>guiserver</tt> will assume <tt>47011</tt> and <tt>47012</tt>.
-<p></p>
+<p>&nbsp;</p>
  As the last statement in the application put:
  <pre>
     (gs:listen)
@@ -331,29 +331,29 @@
     (gs:listen true)
  </pre>
  </li>
-<p></p>
+<p>&nbsp;</p>
  Sometimes it is necessary to run other tasks while listening for events. In this case use
  <tt>gs:check-event</tt>, which will wait for certain amount of microseconds for an event
  to be executed. After the wait-time, it returns. The function is typically used in a loop:
-<p></p>
+<p>&nbsp;</p>
  <pre>
     (while (gs:check-event 10000) ; check for 10 milli seconds
 			(do-myprocess)
 	  )
-<p></p>
+<p>&nbsp;</p>
     (exit)
  </pre>
-<p></p>
+<p>&nbsp;</p>
  The loop will exit when <tt>gs:check-event</tt> returns <tt>nil</tt> on communications errors, e.g.
  when the window's close button was clicked.
-<p></p>
+<p>&nbsp;</p>
  <li><b>Containers</b><br>
  A <em>container</em> can contain any other container or control widget. Except for the 
  <tt>menu-bar</tt> and the <tt>split-pane</tt>, containers can have a special layout-manager set 
  with one of the three layout-manager function commands. By default containers have a flow layout. By
  nesting different containers and using different layout-manager settings, complex layouts
  can be configured. The function/command <tt>add-to</tt> is used to add components to containers.
-<p></p>
+<p>&nbsp;</p>
  <pre>
     (gs:dialog <em>sym-id</em> <em>sym-parent-frame</em> <em>str-message</em> <em>int-width</em> <em>int-height</em> [<em>boolean-visible</em> [<em>boolean-modal</em>]])
     (gs:frame <em>sym-id</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> [<em>str-title</em> <em>boolean-visible</em>])
@@ -386,7 +386,7 @@
  <pre>
     ; empty action definition
     (define (my-button-action) )
-<p></p>
+<p>&nbsp;</p>
     ; action handler printing the name of the button pressed
     (define (my-button-action id) (println id " has been pressed"))
  </pre>
@@ -414,7 +414,7 @@
  </pre>
  For all button widgets, and the check box and menu-item widgets, icons can be set using 
  the <tt>gs:set-icon</tt> and <tt>gs:set-pressed-icon</tt> functions.
-<p></p>
+<p>&nbsp;</p>
  </li>
  <li><b>Placing components in containers</b><br>
  For the flow and grid layouts the components are added in the sequence they are listed.
@@ -433,12 +433,12 @@
  Most of the commands set special attributes of containers or control widgets. 
  Not all functions can be applied to all containers and control widgets. A wrong
  application will either pop up an error message box or do nothing.
-<p></p>
+<p>&nbsp;</p>
  Some functions will work on certain widgets only in certain situations. For example
  <tt>set-size</tt> will work not on components in a grid layout but on components
  in a flow layout. Some widgets have a preset background color which cannot be changed
  or is overwritten by the current <tt>gs:look-and-feel</tt> settings.
-<p></p>
+<p>&nbsp;</p>
 	<pre>
     (gs:add-list-item <em>sym-list-combo</em> <em>str-text</em> [<em>str-text</em> ...])
     (gs:add-separator <em>sym-menu-tool-bar</em>)
@@ -537,20 +537,20 @@
  will persist until destroyed by a call to <tt>gs:delete-tag</tt>. Graphics objects are animated
  using the tag operations <tt>gs:move-tag</tt>, <tt>gs:rotate-tag</tt>, <tt>gs:scale-tag</tt> and 
  <tt>gs:shear-tag</tt> or using <tt>gs:hide-tag</tt> and <tt>gs:show-tag</tt>. 
-<p></p>
+<p>&nbsp;</p>
  Any <tt>gs:draw-xxx</tt> or <tt>gs:fill-xxx</tt> will create graphics objects but not force a screen update.
  The canvas is automatically redrawn when made visible for the first time using <tt>gs:set-visible</tt> or
  after a call to <tt>gs:update</tt>. Redrawing is also forced when resizing the window which hosts the canvas
  or any action covering and uncovering the canvas. 
-<p></p>
+<p>&nbsp;</p>
  After all tag operations redrawing is initiated by default, but it can be forced off by spcifying 
  <tt>nil</tt> as the last parameter in a <tt>gs:xxx-tag</tt> command. Suppressing immediate redraw is useful to avoid 
  flicker when a batch of tag operations is performed.
-<p></p>
+<p>&nbsp;</p>
  Every graphics object (line, shape, text, or image) carries a group tag. Objects are deleted
  using <tt>gs:delete-tag</tt> and will disappear immediately from the canvas. Using <tt>gs:move-tag</tt>
  lines, shapes, text and images can be moved to a different position.
-<p></p>
+<p>&nbsp;</p>
  <pre>
     (gs:color-tag <em>sym-tag</em> <em>list-rgb</em> [<em>boolean-repaint</em>])
     (gs:delete-tag <em>sym-tag</em>[<em>boolean-repaint</em>])
@@ -591,12 +591,12 @@
     (gs:update)
  </pre>
  </li>
-<p></p>
+<p>&nbsp;</p>
  <li><b>Events</b><br>
  Additionally to the event actions registered when creating a widget,
  the canvas, windows and dialogs can fire events as a result of key or mouse
  actions or when the position or size of a windows or dialog has changed.
-<p></p>
+<p>&nbsp;</p>
  <pre>
     (gs:key-event <em>sym-id</em> <em>sym-action</em>)
     (gs:mouse-clicked <em>sym-canvas</em> <em>sym-action</em> [<em>boolean-tags</em>])
@@ -611,14 +611,14 @@
     (gs:window-resized <em>sym-id</em> <em>sym-action</em>)
  </pre>
  </li>
-<p></p>
+<p>&nbsp;</p>
  <li><b>Built-in icons and images</b><br>
  The <tt>guiserver.jar</tt> file has the following icons and images built in. Each of
  them is prefixed with the path <tt>/local/</tt>. For example <tt>/local/newLISP128.png</tt>
  addresses the newLISP logo of size 128x128. To address images outside of
  <tt>guiserver.jar</tt>, use a normal file path suitable to your platform. On Win32
  use forward slashes instead of backslashes.
-<p></p>
+<p>&nbsp;</p>
  <pre>
  Image path
  ----------
@@ -690,7 +690,7 @@
  gs:white      (1.0 1.0 1.0)
  gs:yellow     (1.0 1.0 0.0)
  </pre>
-<p></p>
+<p>&nbsp;</p>
  Colors in newLISP-GS can be specified as three (four with alpha component) single
  numbers or as a list of the three RGB values followed by the alpha channel number.
  <pre>
@@ -699,7 +699,7 @@
  (gs:set-background 'aPanel '(1 0 1)
  </pre>
  All of the above statements will produce the same background color on the <tt>aPanel</tt>.
-<p></p>
+<p>&nbsp;</p>
  <li><b>Sound  and MIDI API</b><br>
  The newLISP-GS sound API uses the default saundbank and sound harware installed 
  on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be
@@ -707,20 +707,20 @@
  Soundbanks for the Java JRE can be obtained at:
  <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  The demo files shipped with the newLISP-GS installation use the midsize soundbank. Other soundbanks
  may require different naming of instruments in the <tt>gs:midi-patch</tt> statement. 
-<p></p>
+<p>&nbsp;</p>
  The sound API is capable of playing of mutliple tracks at the same time
  depending on the sound hardware installed on a specific platform. Mac OS X platforms
  and most Win32 platforms should be capable of playing 16 instruments (channels) at the
  the same time 32 on parallel sounding tracks. newLISP GS supports 128 instruments of the
  default soundbank installed.
-<p></p>
+<p>&nbsp;</p>
  On Mac OS X and Win32 channel 9 is a special channel sounding a different rythm 
  instrument for all 128 different keys/notes.
-<p></p>
+<p>&nbsp;</p>
  Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
  and <tt>midi2-demo.lsp</tt> in the <tt>/usr/share/newlisp/guiserver/</tt> or 
  <tt>c:\Program files\newlisp\guiserver\</tt> directory.
-<p></p>
+<p>&nbsp;</p>
  <pre>
     (gs:add-track <em>int channel</em><em>list-notes</em>)
     (gs:channel-bend <em>int-channel</em> <em>bend</em>)
@@ -744,41 +744,41 @@
 
  <br><br><br>
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_add-list-item"></a><h3><font color=#CC0000>gs:add-list-item</font></h3>
 <b>syntax: (<font color=#CC0000>gs:add-list-item</font> <em>sym-list-combo</em> <em>str-text</em> [<em>str-text</em> ...])</b><br/>
 <b>parameter: </b><em>sym-list-combo</em> - The name of the combo box or list box to which text entries are added.<br/>
 <b>parameter: </b><em>str-text</em> - The text of the entry to be added.<br/>
-<p></p>
+<p>&nbsp;</p>
  Items are added in the same sequence as they appear in the <tt>gs:add-list</tt> command and added to the
  end of the existing list of items.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_add-separator"></a><h3><font color=#CC0000>gs:add-separator</font></h3>
 <b>syntax: (<font color=#CC0000>gs:add-separator</font> <em>sym-menu-tool-bar</em>)</b><br/>
 <b>parameter: </b><em>sym-menu-tool-bar</em> - The name of the tool bar or menu bar to which a spacer entry is added.<br/>
-<p></p>
+<p>&nbsp;</p>
  Depending on the OS platform the separator may not be visible and only occupy space before the next 
  component added to the tool or menu bar.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_add-track"></a><h3><font color=#CC0000>gs:add-track</font></h3>
 <b>syntax: (<font color=#CC0000>gs:add-track</font> <em>int-channel</em> <em>list-of-notes</em>)</b><br/>
 <b>parameter: </b><em>int-channel</em> - The channel belonging to this track.<br/>
 <b>parameter: </b><em>list-of-notes</em> - A list of notes. Each note is a list of key duration velocity and channel.<em>br/</em>
  In case of <tt>gs:add-track</tt> the duration of a note is given in ticks.
  16 ticks are in a quarter note or <em>beat</em>.
-<p></p>
+<p>&nbsp;</p>
  A note is a list of 4 elements: <tt>(<em>int-key</em> <em>int-duration</em> <em>int-velocity</em> [<em>int-bend</em>])</tt>. <em>key</em>
  <em>duration</em>, <em>velocity</em> and <em>bend</em> can be given as variables, which will be evaluated by
  <tt>gs:add-track</tt>. The <em>int-bend</em>  parameter is optional and assumed as <tt>0</tt> if not
  present. See the command <tt>gs:play-note</tt> for more information on the note bend parameter.
  The following code is a complete example:
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
  (gs:midi-init)
 
@@ -799,7 +799,7 @@
  (gs:midi-close)
  (exit)</pre></blockquote>
  The second example shows the usage of pitch-bend in notes:
-<p></p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
  (gs:midi-init)
  
@@ -820,7 +820,7 @@
  (sleep 8000)
  (gs:midi-close)
  (exit)</pre></blockquote>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_add-to"></a><h3><font color=#CC0000>gs:add-to</font></h3>
 <b>syntax: (<font color=#CC0000>gs:add-to</font> <em>sym-container</em> <em>sym-component</em> [<em>sym-componentl</em> ...])</b><br/>
 <b>parameter: </b><em>sym-container</em> - The name of the container to which components are added.<br/>
@@ -833,14 +833,14 @@
 <b>parameter: </b><em>str-orientation</em> - The orientation of a component to add in border layout, <tt>"north"</tt>, <tt>"west"</tt>, <tt>"center"</tt>, <tt>"east"</tt> or <tt>"south"</tt>.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_append-text"></a><h3><font color=#CC0000>gs:append-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:append-text</font> <em>sym-id</em> <em>str-text</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text field or text area to which text is appended.<br/>
 <b>parameter: </b><em>str-text</em> - The text to be appended.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_button"></a><h3><font color=#CC0000>gs:button</font></h3>
 <b>syntax: (<font color=#CC0000>gs:button</font> <em>sym-id</em> <em>sym-action</em> [<em>str-text</em> [<em>int-width</em> <em>int-height</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the button.<br/>
@@ -850,11 +850,11 @@
 <b>parameter: </b><em>int-height</em> - The optional height of the button.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_canvas"></a><h3><font color=#CC0000>gs:canvas</font></h3>
 <b>syntax: (<font color=#CC0000>gs:canvas</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the canvas.<br/>
-<p></p>
+<p>&nbsp;</p>
  A canvas is a pane for drawing and receiving mouse input events. For most
  applications a background color should be specified for the canvas using
  <tt>gs:set-background</tt> or <tt>gs:set-color</tt> which call the same function internally. The
@@ -864,21 +864,21 @@
  color can be specified for the container hosting the canvas. The canvas
  background will then appear in the color of the container, but erasing
  the canvas before repainting is not enforced.
-<p></p>
+<p>&nbsp;</p>
  A canvas can also be used to host widgets like buttons etc.. In this case
  the canvas is treated like a <tt>gs:pane</tt>, with a flow layout by default.
  Similar to a panel created with <tt>gs:pane</tt> other layouts can be set.
-<p></p>
+<p>&nbsp;</p>
  When widgets are present on a canvas they appear to be floating over
  the drawing. See the file <tt>textrot-demo.lsp</tt> for an example.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_channel-bend"></a><h3><font color=#CC0000>gs:channel-bend</font></h3>
 <b>syntax: (<font color=#CC0000>gs:channel-bend</font> <em>int-channel</em> <em>bend</em>)</b><br/>
 <b>parameter: </b><em>int-channel</em> - The channel where the pitch bend is set.<br/>
 <b>parameter: </b><em>int-bend</em> - The channel bend between <tt>0</tt> and <tt>16383</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  Numbers upwards of <tt>8192</tt> bend the tone upwards, numbers smaller
  than <tt>8192</tt> bend the tone downwards. To switch off channel bend set
  the number to the middle posiotion of <tt>8192</tt>. <tt>gs:channel-bend</tt> can 
@@ -887,55 +887,55 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_check-box"></a><h3><font color=#CC0000>gs:check-box</font></h3>
 <b>syntax: (<font color=#CC0000>gs:check-box</font> <em>sym-id</em> <em>sym-action</em> [<em>str-text</em> [<em>bool-selected</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the check box.<br/>
 <b>parameter: </b><em>sym-action</em> - The name of the event handler.<br/>
 <b>parameter: </b><em>str-text</em> - The text of the check box.<br/>
 <b>parameter: </b><em>bool-selected</em> - An optional flag indicating the selection state <tt>true</tt> or <tt>nil</tt> (default).<br/>
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_check-event"></a><h3><font color=#CC0000>gs:check-event</font></h3>
 <b>syntax: (<font color=#CC0000>gs:check-event</font> <em>int-microseconds</em>)</b><br/>
 <b>parameter: </b><em>int-microseconds</em> - Wait for for an event a maximum of <em>int-microseconds</em> and execute it.<br/>
-<p></p>
+<p>&nbsp;</p>
  The function <tt>gs:check-event</tt> is used as an alternative to <tt>gs:listen</tt> when the application
  is performing some activity while waiting for user input from the GUI. Typically
  <tt>gs:check-event</tt> is used in a loop, which performs some other task and at the same time
  checks for events from the GUI part of the application. Like <tt>gs:listen</tt> the function will 
  force an exit of the application when communication between the newLISP-GS and the newLISP
  application process fails. 
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (while (gs:check-event 10000) ; check for 10 milliseconds
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (while (gs:check-event 10000) ; check for 10 milliseconds
      (do-myprocess)
  )</pre></blockquote>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_clear-list"></a><h3><font color=#CC0000>gs:clear-list</font></h3>
 <b>syntax: (<font color=#CC0000>gs:clear-list</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sum-id</em> - The name of the list component in which to clear all entries.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_clear-text"></a><h3><font color=#CC0000>gs:clear-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:clear-text</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sum-id</em> - The name of the component in which to clear the text.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_copy-text"></a><h3><font color=#CC0000>gs:copy-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:copy-text</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sum-id</em> - The name of the text component from which to copy the selection to the clipboard.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_cut-text"></a><h3><font color=#CC0000>gs:cut-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:cut-text</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id-text</em> - The name of the text component from which to cut selected text and place it on the clipboard..<br/>
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_color-dialog"></a><h3><font color=#CC0000>gs:color-dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:color-dialog</font> <em>sym-parent-frame</em> <em>sym-action</em> <em>str-title</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em>)</b><br/>
 <b>parameter: </b><em>sym-parent-frame</em> - The name symbol of the parent frame.<br/>
@@ -947,7 +947,7 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_color-tag"></a><h3><font color=#CC0000>gs:color-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:color-tag</font> <em>sym-tag</em> <em>list-color</em> [<em>boolean-update</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The name tage of the shape(s) to set a new color.<br/>
@@ -955,7 +955,7 @@
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_combo-box"></a><h3><font color=#CC0000>gs:combo-box</font></h3>
 <b>syntax: (<font color=#CC0000>gs:combo-box</font> <em>sym-id</em> <em>sym-action</em> [<em>str-item-1</em> ...])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the combo box.<br/>
@@ -967,7 +967,7 @@
 <b>parameter: </b><em>list-str-items</em> - Zero, one or more text entries in a list.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_confirm-dialog"></a><h3><font color=#CC0000>gs:confirm-dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:confirm-dialog</font> <em>sym-parent-frame</em> <em>sym-action</em> <em>str-title</em> <em>str-message</em> [<em>str-type</em>])</b><br/>
 <b>parameter: </b><em>sym-parent-frame</em> - The symbol name of the parent frame.<br/>
@@ -975,32 +975,32 @@
 <b>parameter: </b><em>str-title</em> - The title of the message box.<br/>
 <b>parameter: </b><em>str-message</em> - The message in the message box.<br/>
 <b>parameter: </b><em>str-type</em> - The type of the message box.<br/>
-<p></p>
+<p>&nbsp;</p>
  The type of the message box can be one of: <tt>"yes-no"</tt>, <tt>"yes-no-cancel"</tt>
  On return of the message box <em>sym-action</em> carries one of the responses <tt>0</tt> for the yes-,
  <tt>1</tt> for the no- or <tt>3</tt> for the cancel-button.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_delete-tag"></a><h3><font color=#CC0000>gs:delete-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:delete-tag</font> <em>sym-tag</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group to be deleted.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
+<p>&nbsp;</p>
  Deletes all 2D objects (lines, shapes, text, images) tagged with <em>sym-tag</em>.
-<p></p>
+<p>&nbsp;</p>
  Each time a <tt>gs:draw-xxx</tt> or <tt>gs:fill-xxx</tt> function is called a graphical
  object is created. The tag used during creation is a way to address one
  or more of these objects. See the file <tt>mouse-demo.lsp</tt> for an example.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_destroy-shell"></a><h3><font color=#CC0000>gs:destroy-shell</font></h3>
 <b>syntax: (<font color=#CC0000>gs:destroy-shell</font> <em>sym-text-area</em>)</b><br/>
 <b>parameter: </b><em>sym-text-area</em> - The name of the text component for which the shell process is destroyed.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_dialog"></a><h3><font color=#CC0000>gs:dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:dialog</font> <em>sym-id</em> <em>sym-parent</em> <em>str-title</em> <em>int-width</em> <em>int-height</em> [<em>boolean-visible</em> [<em>boolean-modal</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the dialog<br/>
@@ -1010,7 +1010,7 @@
 <b>parameter: </b><em>int-height</em> - The height of the dialog frame.<br/>
 <b>parameter: </b><em>boolean-visible</em> - The optional flag with a value of <tt>true</tt> or <tt>nil</tt> for visibility of the dialog.<br/>
 <b>parameter: </b><em>boolean-modal</em> - The optional flag with a value of <tt>true</tt> or <tt>nil</tt> for modality of the dialog.<br/>
-<p></p>
+<p>&nbsp;</p>
  Initially the dialog should not be visible until all widgets are added to it. 
  When no flags for visibility and modality are specified, <tt>nil</tt> is assumed. A modal dialog will
  prevent input in the parent window. Components can be added to a dialog using <tt>gs:add-to</tt>.
@@ -1018,29 +1018,29 @@
  layout.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_disable"></a><h3><font color=#CC0000>gs:disable</font></h3>
 <b>syntax: (<font color=#CC0000>gs:disable</font> <em>sym-id-1</em> [sym-id-2 ...])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component to disable.<br/>
-<p></p>
+<p>&nbsp;</p>
  Disabled components are grayed and do not accept input.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_dispose"></a><h3><font color=#CC0000>gs:dispose</font></h3>
 <b>syntax: (<font color=#CC0000>gs:dispose</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component to dispose of.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_dispose-splash"></a><h3><font color=#CC0000>gs:dispose-splash</font></h3>
 <b>syntax: (<font color=#CC0000>gs:dispose-splash</font>)</b><br/>
-<p></p>
+<p>&nbsp;</p>
  A splash screen can be specified when starting the newLISP-GS process before newLISP. 
  The function <tt>gs:dispose-splash</tt> is used to turn off the splash image after
  the newLISP GUI application has started.
-<p></p>
-<p></p><b>example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
  ; or on Win32
  java -jar "c:\Program Files\newlisp\guiserver.jar" 4711 "newlisp program.lsp" /local/newLISPsplashWin.png</pre></blockquote>
  The example starts newLISP-GS with an application <tt>program.lsp</tt> and a splash
@@ -1051,7 +1051,7 @@
  arguments to <tt>guiserver.jar</tt> which contain spaces. 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-arc"></a><h3><font color=#CC0000>gs:draw-arc</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-arc</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-start</em> <em>int-angle</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the arc.<br/>
@@ -1062,20 +1062,20 @@
 <b>parameter: </b><em>int-start-angle</em> - The start angle of the arc in 0 to 360 degrees.<br/>
 <b>parameter: </b><em>int-arc-angle</em> - The opening angle of the arc in 0 to 360 degrees.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components<br/>
-<p></p>
+<p>&nbsp;</p>
  The resulting arc begins at <em>int-start-angle</em> and extends for <em>int-arc-angle degrees</em>, 
  using the current color. Angles are interpreted such that 0 degrees is at the 3 o'clock 
  position. A positive value indicates a counter-clockwise rotation while a negative value 
  indicates a clockwise rotation.
-<p></p>
+<p>&nbsp;</p>
  The center of the arc is the center of the rectangle whose origin is (x, y) and whose size 
  is specified by the width and height arguments.
-<p></p>
+<p>&nbsp;</p>
  The resulting arc covers an area <em>int-width</em> pixels wide by <em>int-height</em> pixels tall.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-circle"></a><h3><font color=#CC0000>gs:draw-circle</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-circle</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-radius</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the circle.<br/>
@@ -1083,12 +1083,12 @@
 <b>parameter: </b><em>int-y</em> - The Y position of the circle center.<br/>
 <b>parameter: </b><em>int-radius</em> - The radius of the circle.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates the outline of a circle. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-ellipse"></a><h3><font color=#CC0000>gs:draw-ellipse</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-ellipse</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-radius-x</em> <em>int-radius-y</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the ellipse.<br/>
@@ -1097,12 +1097,12 @@
 <b>parameter: </b><em>int-radius-x</em> - The radius of the ellipse.<br/>
 <b>parameter: </b><em>int-radius-y</em> - The radius of the ellipse.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates the outline of an ellipse. The color numbers must be enterd in list form.
  If no <em>list-rgb</em> is used the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-image"></a><h3><font color=#CC0000>gs:draw-image</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-image</font> <em>sym-tag</em> <em>str-path</em> <em>int-x</em> <em>int-y</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the image.<br/>
@@ -1110,13 +1110,13 @@
 <b>parameter: </b><em>int-y</em> - The Y position of the image top left corner.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width in which to draw the image.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height in which to draw the image.<br/>
-<p></p>
+<p>&nbsp;</p>
  When <em>int-width</em> and <em>int-height</em> parameters are specified and they are not
  equal to the original size of the image (measured in pixels) the image will
  be displayed in either compressed or zoomed form.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-line"></a><h3><font color=#CC0000>gs:draw-line</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-line</font> <em>sym-tag</em> <em>int-x1</em> <em>int-y1</em> <em>int-x2</em> <em>int-y2</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tage of the line.<br/>
@@ -1124,39 +1124,39 @@
 <b>parameter: </b><em>int-y1</em> - The Y position of the first point.<br/>
 <b>parameter: </b><em>int-x2</em> - The X position of the second point.<br/>
 <b>parameter: </b><em>int-y2</em> - The Y position of the second point.<br/>
-<p></p>
+<p>&nbsp;</p>
  Draws a line. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-path"></a><h3><font color=#CC0000>gs:draw-path</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-path</font> <em>sym-tag</em> <em>list-points</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tage group of the path.<br/>
 <b>parameter: </b><em>list-points</em> - The list of x and y coordinates of the points.<br/>
-<p></p>
+<p>&nbsp;</p>
  Draws a path with the points found in <em>list-points</em>. 
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (gs:draw-path 'P '(1 0 2 2 3 0))</pre></blockquote>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:draw-path 'P '(1 0 2 2 3 0))</pre></blockquote>
  The example will draw an upwards-pointing triangle without base at the 
  points <tt>1,0</tt>, <tt>2,2</tt> and <tt>3,0</tt> 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-polygon"></a><h3><font color=#CC0000>gs:draw-polygon</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-polygon</font> <em>sym-tag</em> <em>list-points</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the polygon.<br/>
 <b>parameter: </b><em>list-points</em> - The list of x and y coordinates of the points.<br/>
-<p></p>
+<p>&nbsp;</p>
  Draws a polygon with the points found in <em>list-points</em>. 
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (gs:draw-polygon 'P '(1 0 2 2 3 0))</pre></blockquote>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:draw-polygon 'P '(1 0 2 2 3 0))</pre></blockquote>
  The example will draw an upwards-pointing triangle with the points <tt>1,0</tt>, <tt>2,2</tt>
  and <tt>3,0</tt>.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-rect"></a><h3><font color=#CC0000>gs:draw-rect</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-rect</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the rectangle.<br/>
@@ -1165,13 +1165,13 @@
 <b>parameter: </b><em>int-width</em> - The width of the rectangle.<br/>
 <b>parameter: </b><em>int-height</em> - The height of the rectangle..<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates the outline of a rectangle. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-round-rect"></a><h3><font color=#CC0000>gs:draw-round-rect</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-round-rect</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-arc-width</em> <em>int-arc-height</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the round rectangle.<br/>
@@ -1182,13 +1182,13 @@
 <b>parameter: </b><em>int-arc-width</em> - The width of the corner rectangle.<br/>
 <b>parameter: </b><em>int-arc-height</em> - The height of the corner rectangle..<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components<br/>
-<p></p>
+<p>&nbsp;</p>
  Draws a rectangle shape with round corners. The rounding is defined by the rectangle enclosing
  the rounding arc.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_draw-text"></a><h3><font color=#CC0000>gs:draw-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-text</font> <em>sym-tag</em> <em>str-text</em> <em>int-x</em> <em>int-y</em> [<em>list-rgb</em> [<em>float-angle</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the text.<br/>
@@ -1197,7 +1197,7 @@
 <b>parameter: </b><em>int-y</em> - The Y position of the text.<br/>
 <b>parameter: </b><em>list-rgb</em> - The optonal color for the text.<br/>
 <b>parameter: </b><em>float-angle</em> - The optional angle for text in degrees<br/>
-<p></p>
+<p>&nbsp;</p>
  If no <em>list-rgb</em> is used, the current paint specified with <tt>gs:set-paint</tt> is used.
  The optional angle is <tt>0</tt> by default for horizontal text. A value of <tt>90</tt>
  will rotate the text around the <tt>x</tt>, <tt>y</tt> position downwards clockwise.
@@ -1206,42 +1206,42 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_enable"></a><h3><font color=#CC0000>gs:enable</font></h3>
 <b>syntax: (<font color=#CC0000>gs:enable</font> <em>sym-id-1</em> [sym-id-2 ...])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of a component to enable.<br/>
-<p></p>
+<p>&nbsp;</p>
  Components are enabled by default.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_eva-shell"></a><h3><font color=#CC0000>gs:eva-shell</font></h3>
 <b>syntax: (<font color=#CC0000>gs:eva-shell</font> <em>sym-id-text-area</em> <em>str-command</em>)</b><br/>
 <b>parameter: </b><em>sym-id-text-area</em> - The name of the text are in which to evaluate text.<br/>
 <b>parameter: </b><em>str-command</em> - The text to evaluate in the shell.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_export"></a><h3><font color=#CC0000>gs:export</font></h3>
 <b>syntax: (<font color=#CC0000>gs:export</font> <em>str-path-file</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>str-path-file</em> - The path and file name of the image file to write to.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the image in pixels.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the image in pixels.<br/>
-<p></p>
+<p>&nbsp;</p>
  If no width and height are specified, the current size of the canvas is assumed.
-<p></p>
-<p></p><b>example:</b><blockquote><pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre>
  (gs:export "/usr/home/pictures/mypic.png")</pre></blockquote>
  This will generate a <tt>.png</tt> file exactly as the image seen on the screen.
  The color format is RGBA with 8 bit per color and an alpha channel. When
  no background color is defined for the canvas, the background will be
  transparent.
-<p></p>
+<p>&nbsp;</p>
  When specifying width and height, a smaller or bigger portion of the canvas
  than seen on the screen is printed to the image.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-arc"></a><h3><font color=#CC0000>gs:fill-arc</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-arc</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-start</em> <em>int-angle</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the arc.<br/>
@@ -1252,19 +1252,19 @@
 <b>parameter: </b><em>int-start-angle</em> - The start angle of the arc in 0 to 360 degrees.<br/>
 <b>parameter: </b><em>int-arc-angle</em> - The opening angle of the arc in 0 to 360 degrees.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components.<br/>
-<p></p>
+<p>&nbsp;</p>
  The resulting arc begins at <em>int-start-angle</em> and extends for <em>int-arc-angle degrees</em>, 
  using the current color. Angles are interpreted such that 0 degrees is at the 3 o'clock 
  position. A positive value indicates a counter-clockwise rotation while a negative value 
  indicates a clockwise rotation.
-<p></p>
+<p>&nbsp;</p>
  The center of the arc is the center of the rectangle whose origin is (x, y) and whose size 
  is specified by the width and height arguments.
-<p></p>
+<p>&nbsp;</p>
  The resulting arc covers an area <em>int-width</em> pixels wide by <em>int-height</em> pixels tall.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-circle"></a><h3><font color=#CC0000>gs:fill-circle</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-circle</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-radius</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the circle.<br/>
@@ -1272,12 +1272,12 @@
 <b>parameter: </b><em>int-y</em> - The Y position of the circle center.<br/>
 <b>parameter: </b><em>int-radius</em> - The radius of the circle.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components.<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates a filled  circle. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used, the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-ellipse"></a><h3><font color=#CC0000>gs:fill-ellipse</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-ellipse</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-radius-x</em> <em>int-radius-y</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the ellipse.<br/>
@@ -1286,22 +1286,22 @@
 <b>parameter: </b><em>int-radius-x</em> - The radius of the ellipse.<br/>
 <b>parameter: </b><em>int-radius-y</em> - The radius of the ellipse.<br/>
 <b>parameter: </b><em>list-rgb</em> - The fill color as a list of 3 numbers for the rgb components.<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates a filled ellipse. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used, the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-polygon"></a><h3><font color=#CC0000>gs:fill-polygon</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-polygon</font> <em>sym-tag</em> <em>list-points</em> [<em>list-color</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the polygon.<br/>
 <b>parameter: </b><em>list-points</em> - The list of x and y coordinates of the points.<br/>
-<p></p>
+<p>&nbsp;</p>
  Draws a polygon with the points found in <em>list-points</em> and fills it with
  the current color set with <tt>gs:set-paint</tt> or the optional color
  given in <em>list-color</em>.
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (gs:fill-polygon 'P '(1 0 2 2 3 0))
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:fill-polygon 'P '(1 0 2 2 3 0))
 
  (gs:fill-polygon 'P '(1 0 2 2 3 0) gs:gray)</pre></blockquote>
  The example will fill an upwards pointing triangle with the points <tt>1,0</tt>, <tt>2,2</tt>
@@ -1310,7 +1310,7 @@
  <tt>gs:set-paint</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-rect"></a><h3><font color=#CC0000>gs:fill-rect</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-rect</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the rectangle.<br/>
@@ -1319,12 +1319,12 @@
 <b>parameter: </b><em>int-width</em> - The width of the rectangle.<br/>
 <b>parameter: </b><em>int-height</em> - The height of the rectangle.<br/>
 <b>parameter: </b><em>list-rgb</em> - The fill color as a list of 3 numbers for the rgb components.<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates a filled rectangle. The color numbers must be entered in list form.
  If no <em>list-rgb</em> is used, the current paint specified with <tt>gs:set-paint</tt> is used.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_fill-round-rect"></a><h3><font color=#CC0000>gs:fill-round-rect</font></h3>
 <b>syntax: (<font color=#CC0000>gs:fill-round-rect</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-arc-width</em> <em>int-arc-height</em> [<em>list-rgb</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the round rectangle.<br/>
@@ -1335,18 +1335,18 @@
 <b>parameter: </b><em>int-arc-width</em> - The width of the corner rectangle.<br/>
 <b>parameter: </b><em>int-arc-height</em> - The height of the corner rectangle.<br/>
 <b>parameter: </b><em>list-rgb</em> - The outline color as a list of 3 numbers for the rgb components.<br/>
-<p></p>
+<p>&nbsp;</p>
  Paints a rectangle shape with round corners. The rounding is defined by the rectangle enclosing
  the rounding arc.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_find-text"></a><h3><font color=#CC0000>gs:find-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:find-text</font> <em>sym-id</em> <em>str-text</em> <em>sym-action</em> [<em>str-direction</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the textr area or text pane.<br/>
 <b>parameter: </b><em>boolean-next</em> - The optional direction string <tt>"next"</tt> (default) or <tt>"previous"</tt>.<br/>
 <b>parameter: </b><em>sym-action</em> - A optional action to peform after find-text.<br/>
-<p></p>
+<p>&nbsp;</p>
  The text area or text pane will be searched starting at the current caret position
  forward or backwards depending on the optional direction field. After the search
  the found text is highlighted. If the optional <em>sym-action</em> is specified an event
@@ -1355,7 +1355,7 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_frame"></a><h3><font color=#CC0000>gs:frame</font></h3>
 <b>syntax: (<font color=#CC0000>gs:frame</font> <em>sym-id</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> [<em>str-title</em> <em>boolean-visible</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the frame window.<br/>
@@ -1365,7 +1365,7 @@
 <b>parameter: </b><em>int-height</em> - The height of the windows frame.<br/>
 <b>parameter: </b><em>str-title</em> - The optional title of the window.<br/>
 <b>parameter: </b><em>boolean-visible</em> - The optional flag with a value of <tt>true</tt> or <tt>nil</tt> for the visibility of the window.<br/>
-<p></p>
+<p>&nbsp;</p>
  Initially the frame should not be visible until all widgets are added to it. 
  When no flag for visibility is specified <tt>nil</tt> is assumed. The default layout of a frame behaves
  like a grid layout with one cell. Use the <tt>set-flow-layout</tt>, <tt>set-border-layout</tt> and
@@ -1373,56 +1373,56 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-bounds"></a><h3><font color=#CC0000>gs:get-bounds</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-bounds</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the component for which to get the list of bounding values.<br/>
 <p><b>return: </b>The bounding list <tt>(<em>x</em> <em>y</em> <em>width</em> <em>height</em>)</tt></p>
  
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-fonts"></a><h3><font color=#CC0000>gs:get-fonts</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-fonts</font>)</b><br/>
 <p><b>return: </b>A list of family names for fonts on the current system.</p>
-<p></p>
+<p>&nbsp;</p>
  The function should be called only once because it may take considerable
  time in a system loaded with many fonts. The variable <tt>gs:fonts</tt> contains
  the same list of fonts originally returned by a call to <tt>gs:get-fonts</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-font-metrics"></a><h3><font color=#CC0000>gs:get-font-metrics</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-font-metrics</font> <em>sym-id</em> <em>str-text</em>)</b><br/>
 <p><b>return: </b>A list of the two values for width and height in pixels.</p>
-<p></p>
+<p>&nbsp;</p>
  The font metrics for the currently set font in <em>sym-id</em> are returned as a list
  of width and height in pixels when displaying the string in <em>str-text</em>.
  After the function call the variable <tt>gs:font-metrics</tt> contains the same list
  of values as originally returned by the call to <tt>gs:get-font-metrics</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-instruments"></a><h3><font color=#CC0000>gs:get-instruments</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-instruments</font>)</b><br/>
 <p><b>return: </b>A list of instrument names in the default MIDI soundbank.</p>
-<p></p>
+<p>&nbsp;</p>
  The function should be called only once because it may take considerable
  time in a system loaded with a big soundbank. The variable <tt>gs:instruments</tt> contains
  the same list of instruments originally returned by a call to <tt>gs:get-instruments</tt>.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-screen"></a><h3><font color=#CC0000>gs:get-screen</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-screen</font>)</b><br/>
 <p><b>return: </b>A list of screen width, height and resolution of the main computer screen.</p>
-<p></p>
+<p>&nbsp;</p>
  After calling the <tt>gs:get-screen</tt> once the screen parameters are also available
  in the variable <tt>gs:screen</tt>.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-selected-text"></a><h3><font color=#CC0000>gs:get-selected-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-selected-text</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component from which to get the selected text.<br/>
@@ -1431,12 +1431,12 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-text"></a><h3><font color=#CC0000>gs:get-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-text</font> <em>sym-id</em> [<em>sym-action</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component from which to get the text.<br/>
 <b>parameter: </b><em>sym-action</em> - The optional symbol of the event handler which will receive the text.<br/>
-<p></p>
+<p>&nbsp;</p>
  If no <em>sym-action</em> is specified the function will block until the text is returned. 
  After return the text is also available in the variable <tt>gs:text</tt>.
  If <em>sym-action</em> is specified the function will return immediately and a <em>sym-action</em> event 
@@ -1444,22 +1444,22 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-text-position"></a><h3><font color=#CC0000>gs:get-text-position</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-text-position</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text component for which the line and column position is returned.<br/>
 <p><b>return: </b>A list of line and column position of the text caret.</p>
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_get-version"></a><h3><font color=#CC0000>gs:get-version</font></h3>
 <b>syntax: (<font color=#CC0000>gs:get-version</font>)</b><br/>
 <p><b>return: </b>The version string of newLISP-GS running.</p>
-<p></p>
+<p>&nbsp;</p>
  After calling the <tt>gs:get-version</tt> once the version number is also
  available in <tt>gs:version</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_goto-text"></a><h3><font color=#CC0000>gs:goto-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:goto-text</font> <em>sym-id</em> <em>int-row</em> <em>int-column</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text widget.<br/>
@@ -1469,13 +1469,13 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_hide-tag"></a><h3><font color=#CC0000>gs:hide-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:hide-tag</font> <em>sym-tag</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag of the group to hide.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_image-button"></a><h3><font color=#CC0000>gs:image-button</font></h3>
 <b>syntax: (<font color=#CC0000>gs:image-button</font> <em>sym-id</em> <em>sym-action</em> <em>str-icon-path</em> [<em>str-down-icon-path</em> [<em>int-width</em> <em>int-height</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the image button.<br/>
@@ -1486,7 +1486,7 @@
 <b>parameter: </b><em>int-height</em> - The optional height of the image button.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_image-label"></a><h3><font color=#CC0000>gs:image-label</font></h3>
 <b>syntax: (<font color=#CC0000>gs:image-label</font> <em>sym-id</em> <em>str-icon-path</em> [<em>str-align</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the label.<br/>
@@ -1495,7 +1495,7 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_init"></a><h3><font color=#CC0000>gs:init</font></h3>
 <b>syntax: (<font color=#CC0000>gs:init</font> [<em>int-port</em> <em>str-host</em>])</b><br/>
 <b>parameter: </b><em>int-port</em> - The optional guiserver server port.<br/>
@@ -1508,19 +1508,19 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_insert-list-item"></a><h3><font color=#CC0000>gs:insert-list-item</font></h3>
 <b>syntax: (<font color=#CC0000>gs:insert-list-item</font> <em>sym-list-combo</em> <em>str-text</em> <em>int-index</em> [<em>str-text</em> <em>int-index</em>])</b><br/>
 <b>parameter: </b><em>sym-list-combo</em> - The name of the combo box or list box from which entries are removed.<br/>
 <b>parameter: </b><em>str-text</em> - The text of the list or combo box item to insert.<br/>
 <b>parameter: </b><em>int-index</em> - The index of an entry to add to the list or combo box.<br/>
-<p></p>
+<p>&nbsp;</p>
  When specifying an index of <tt>0</tt> the first item gets inserted at the beginning. 
  When specifying an index equal or greater to the number of items in the list, the item 
  is added at the end.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_insert-tab"></a><h3><font color=#CC0000>gs:insert-tab</font></h3>
 <b>syntax: (<font color=#CC0000>gs:insert-tab</font> <em>sym-tabbed-pane</em> <em>sym-component</em> [<em>str-text</em> [<em>int-index</em> [<em>str-icon-path</em>]]])</b><br/>
 <b>parameter: </b><em>sym-tabbed-pane</em> - The name of the tabbed pane.<br/>
@@ -1530,7 +1530,7 @@
 <b>parameter: </b><em>str-icon-path</em> - The file path to an optional icon.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_insert-text"></a><h3><font color=#CC0000>gs:insert-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:insert-text</font> <em>sym-id</em> <em>str-text</em> <em>int-position</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text component.<br/>
@@ -1538,34 +1538,34 @@
 <b>parameter: </b><em>int-position</em> - The offset position where to insert the text.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_key-event"></a><h3><font color=#CC0000>gs:key-event</font></h3>
 <b>syntax: (<font color=#CC0000>gs:key-event</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the component to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
-<p></p>
+<p>&nbsp;</p>
  <tt>gs:key-event</tt> can be used to register a general unspecific key event handler
  for any component in the system. Since version 1.05 of newLISP-GS this also
  includes text widgets, which alrady handle key events using their normal event 
  handler function. With <tt>gs:key-event</tt> a second handler function can be registered
  for text widgets. Both functions will fire on their respective events.
-<p></p>
+<p>&nbsp;</p>
  Components respond to the following key event types: <tt>"pressed"</tt>, <tt>"released"</tt>, <tt>"typed"</tt>.
-<p></p>
-<p></p><b>example:</b><blockquote><pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre>
  (define (key-action id type code modifiers)
      (println "id:" id " type:" type " key code:" code " modifiers:" modifiers)
  )</pre></blockquote>
  The example shows a handler which prints all key event parameters to the terminal/shell
  window where the applicaton was started.
-<p></p>
+<p>&nbsp;</p>
  In order for key events to work, the component for which a key action handler
  is registered must have the input focus. Use <tt>"gs:request-focus"</tt> to set the
  input focus for the component.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_label"></a><h3><font color=#CC0000>gs:label</font></h3>
 <b>syntax: (<font color=#CC0000>gs:label</font> <em>sym-id</em> <em>str-text</em> [<em>str-align</em> [<em>int-width</em> <em>int-height</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the label.<br/>
@@ -1573,42 +1573,42 @@
 <b>parameter: </b><em>str-align</em> - The optional alignment of the text.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the label.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the label.<br/>
-<p></p>
+<p>&nbsp;</p>
  The following alignment constants can be supplied: <tt>"left"</tt>, <tt>"center"</tt>, '"right"",
  <tt>"leading"</tt>, <tt>"trailing"</tt>, <tt>"bottom"</tt> and "<tt>top</tt>". By default each label text is
  <tt>"center"</tt> aligned.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_layout"></a><h3><font color=#CC0000>gs:layout</font></h3>
 <b>syntax: (<font color=#CC0000>gs:layout</font> <em>sym-container</em>)</b><br/>
 <b>parameter: </b><em>sym-container</em> - The id of the container to lay out.<br/>
-<p></p>
+<p>&nbsp;</p>
  Forces the container to lay out its components again, e.g. after a <tt>gs:add-to</tt> or <tt>gs:remove-from</tt>
  when the container was already visible.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_load-text"></a><h3><font color=#CC0000>gs:load-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:load-text</font> <em>sym-id</em> <em>str-path</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt>.<br/>
 <b>parameter: </b><em>str-path</em> - The full path name of the file to load.<br/>
-<p></p>
+<p>&nbsp;</p>
  <tt>gs:load-text</tt> will load text into a <tt>gs:text-pane</tt> directly by specifying
  the path name. During loading, CR-LF line terminators are automatically
  translated to LF-only line terminators by stripping all CRs from the file. All internal
  operations of guiserver on text assume LF as a line terminator.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_listen"></a><h3><font color=#CC0000>gs:listen</font></h3>
 <b>syntax: (<font color=#CC0000>gs:listen</font> [<em>boolean-flag</em>])</b><br/>
 <b>parameter: </b><em>boolean-flag</em> - Prevent exit on loss of communication.<br/>
 <p><b>return: </b>Never returns. Exits the application when the guiserver exits, except when <em>boolean-flag</em> is <tt>true</tt>.</p>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_list-box"></a><h3><font color=#CC0000>gs:list-box</font></h3>
 <b>syntax: (<font color=#CC0000>gs:list-box</font> <em>sym-id</em> <em>sym-action</em> [<em>str-item-1</em> ...])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the list box.<br/>
@@ -1630,7 +1630,7 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_message-dialog"></a><h3><font color=#CC0000>gs:message-dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:message-dialog</font> <em>sym-parent-frame</em> <em>str-title</em> <em>str-message</em> [<em>str-type</em> [<em>str-icon-path</em>]])</b><br/>
 <b>parameter: </b><em>sym-parent-frame</em> - The symbol name of the parent frame.<br/>
@@ -1638,33 +1638,33 @@
 <b>parameter: </b><em>str-message</em> - The message in the message box.<br/>
 <b>parameter: </b><em>str-type</em> - The type of the message box.<br/>
 <b>parameter: </b><em>str-icon-path</em> - The optional path for an icon.<br/>
-<p></p>
+<p>&nbsp;</p>
  The type of the message box can be one of: <tt>"error"</tt>, <tt>"information"</tt>, <tt>"warning"</tt>, <tt>"question"</tt>, <tt>"plain"</tt>.
  The function initiating the message-dialog will return when the dialog is closed.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_menu"></a><h3><font color=#CC0000>gs:menu</font></h3>
 <b>syntax: (<font color=#CC0000>gs:menu</font> <em>sym-id</em> <em>str-text</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the menu.<br/>
 <b>parameter: </b><em>str-text</em> - The title string of the menu.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_menu-popup"></a><h3><font color=#CC0000>gs:menu-popup</font></h3>
 <b>syntax: (<font color=#CC0000>gs:menu-popup</font> <em>sym-id</em> <em>str-text</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the menu.<br/>
 <b>parameter: </b><em>str-text</em> - The title string of the menu.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_menu-bar"></a><h3><font color=#CC0000>gs:menu-bar</font></h3>
 <b>syntax: (<font color=#CC0000>gs:menu-bar</font> <em>sym-frame</em> [<em>sym-menu-1</em> ...])</b><br/>
 <b>parameter: </b><em>sym-frame</em> - The name of the frame hosting the menu bar.<br/>
 <b>parameter: </b><em>sym-menu</em> - Zero or more symbol names of menus to be positioned on the menu bar.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_menu-item"></a><h3><font color=#CC0000>gs:menu-item</font></h3>
 <b>syntax: (<font color=#CC0000>gs:menu-item</font> <em>sym-id</em> <em>sym-action</em> <em>str-text</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the menu item.<br/>
@@ -1672,7 +1672,7 @@
 <b>parameter: </b><em>str-text</em> - The text to appear for the menu item.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_menu-item-check"></a><h3><font color=#CC0000>gs:menu-item-check</font></h3>
 <b>syntax: (<font color=#CC0000>gs:menu-item-check</font> <em>sym-id</em> <em>sym-action</em> <em>str-text</em> [<em>bool-selected</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the menu item.<br/>
@@ -1681,46 +1681,46 @@
 <b>parameter: </b><em>bool-selected</em> - An optional flag indicating the selection state <tt>true</tt> or <tt>nil</tt> (default).<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_midi-bpm"></a><h3><font color=#CC0000>gs:midi-bpm</font></h3>
 <b>syntax: (<font color=#CC0000>gs:midi-bpm</font> [<em>int-bpm</em> [<em>int-resolution</em>]]])</b><br/>
 <b>parameter: </b><em>int-bpm</em> - Beats per minute pay speed. Default is 120 BPM.<br/>
 <b>parameter: </b><em>int-resolution</em> - Ticks per beat. Deafult is 16 ticks per beat;<br/>
-<p></p>
+<p>&nbsp;</p>
  Sets the speed of playing a notes with with either <tt>gs:play-note</tt> or playing a 
  sequence with <tt>gs:play-sequence</tt> in beats per minute (BPM).
-<p></p>
+<p>&nbsp;</p>
  Before using <tt>gs:midi-bpm</tt> the default speed is set to 120 BPM, which corresponds
  to two beats per second, where each beat corresponds to a quarter note of 16 ticks
  default resolution.
-<p></p>
+<p>&nbsp;</p>
  While the BPM parameter controls the play-back speed of the sequencer, the
  resolution is a parameter of the sequence creation itself and must be set before
  the first <tt>gs:add-track</tt> call.
-<p></p>
+<p>&nbsp;</p>
  The preset resolution of 16 ticks per quarter note is the highest which can be set
  and should be sufficient for all applications.
 
 
 
 
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_midi-close"></a><h3><font color=#CC0000>gs:midi-close</font></h3>
 <b>syntax: (<font color=#CC0000>gs:midi-close</font>)</b><br/>
-<p></p>
+<p>&nbsp;</p>
  Shut down the MIDI subsystem.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_midi-init"></a><h3><font color=#CC0000>gs:midi-init</font></h3>
 <b>syntax: (<font color=#CC0000>gs:midi-init</font> [<em>str-file-path</em>])</b><br/>
 <b>parameter: </b><em>str-file-path</em> - The optional file path for a soundbank file.<br/>
-<p></p>
+<p>&nbsp;</p>
  Initialize the MIDI subsystem. If a soundbank file is specified load it,
  else load the built-in synthesizer's default soundbank.
-<p></p>
+<p>&nbsp;</p>
  When not using the default soundbank, the function <tt>gs:get-instruments</tt>
  should be used first to find out the correct naming of instruments
  for the <tt>gs:midi-patch</tt> statements. The soundbank used for testing the
@@ -1730,49 +1730,49 @@
  Currently only the first 128 instruments in a soundbank are accessed by newLISP-GS.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_midi-patch"></a><h3><font color=#CC0000>gs:midi-patch</font></h3>
 <b>syntax: (<font color=#CC0000>gs:midi-patch</font> <em>str-instrument</em> [<em>int-channel</em>])</b><br/>
 <b>parameter: </b><em>str-instrument</em> - The name of the instrument to attach to a channel.<br/>
 <b>parameter: </b><em>int-channel</em> - The channel for the instrument, default is <tt>0</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  An instrument from the current soundbank is attached to a
  specific channel or to channel <tt>0</tt> if no channel is specified.
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (gs:midi-patch (find "Electric Grand" gs:instruments) 0)</pre></blockquote>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:midi-patch (find "Electric Grand" gs:instruments) 0)</pre></blockquote>
  In order for the <tt>gs:instruments</tt> variable to contain a list of instruments,
  <tt>gs:get-instruments</tt> must have been called earlier, i.e. after <tt>gs:midi-init</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-clicked"></a><h3><font color=#CC0000>gs:mouse-clicked</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-clicked</font> <em>sym-canvas</em> <em>sym-action</em> [<em>boolean-tags</em>])</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 <b>parameter: </b><em>boolean-tags</em> - A <tt>true</tt> to indicate checking for tags.<br/>
-<p></p>
+<p>&nbsp;</p>
  If <em>boolean-tags</em> is <tt>true</tt>, the action event will carry a list of
  all tags which contained the X,Y coordinates of the mouse.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-dragged"></a><h3><font color=#CC0000>gs:mouse-dragged</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-dragged</font> <em>sym-canvas</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-event"></a><h3><font color=#CC0000>gs:mouse-event</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-event</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the component to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
-<p></p>
+<p>&nbsp;</p>
  <tt>gs:mouse-event</tt> can be used to register a general unspecific mouse event handler
  for any component in the system. Components respond to the following types:
  <tt>"pressed"</tt>, <tt>"released"</tt>, <tt>"clicked"</tt>,
-<p></p>
-<p></p><b>example:</b><blockquote><pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre>
  (define (mouse-action id type x y button cnt mods)
      (println "id:" id " type:" type " x:" x " y:" y " button:" button " count:" cnt " mods:" mods)
  )</pre></blockquote>
@@ -1781,80 +1781,80 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-moved"></a><h3><font color=#CC0000>gs:mouse-moved</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-moved</font> <em>sym-canvas</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 <b>parameter: </b><em>boolean-tags</em> - A <tt>true</tt> to indicate checking for tags.<br/>
-<p></p>
+<p>&nbsp;</p>
  If <em>boolean-tags</em> is <tt>true</tt>, the action event will carry a list of
  all tags which contained the X,Y coordinates of the mouse.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-pressed"></a><h3><font color=#CC0000>gs:mouse-pressed</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-pressed</font> <em>sym-canvas</em> <em>sym-action</em> [<em>boolean-tags</em>])</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 <b>parameter: </b><em>boolean-tags</em> - A <tt>true</tt> to indicate checking for tags.<br/>
-<p></p>
+<p>&nbsp;</p>
  If <em>boolean-tags</em> is <tt>true</tt>, the action event will carry a list of
  all tags which contained the X,Y coordinates of the mouse.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-released"></a><h3><font color=#CC0000>gs:mouse-released</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-released</font> <em>sym-canvas</em> <em>sym-action</em> [<em>boolean-tags</em>])</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 <b>parameter: </b><em>boolean-tags</em> - A <tt>true</tt> to indicate checking for tags.<br/>
-<p></p>
+<p>&nbsp;</p>
  If <em>boolean-tags</em> is <tt>true</tt>, the the action event will carry a list of
  all tags which contained the X,Y coordinates of the mouse.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mouse-wheel"></a><h3><font color=#CC0000>gs:mouse-wheel</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-wheel</font> <em>sym-canvas</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_move-tag"></a><h3><font color=#CC0000>gs:move-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:move-tag</font> <em>sym-tag</em> <em>int-dx</em> <em>int-dy</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag of the group of objects to move.<br/>
 <b>parameter: </b><em>int-dx</em> - The distance to move on the X-axis.<br/>
 <b>parameter: </b><em>int-dy</em> - The distance to move on the Y-axis.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
+<p>&nbsp;</p>
  <tt>gs:move-tag</tt> is the only tag operation which actually changes the 
  internal data of a drawn object. All other tag operations like
  <tt>gs:translate-tag</tt>, <tt>gs:scale-tag</tt>, <tt>gs:rotate-tag</tt> and <tt>gs:shear-tag</tt>
  will transform object coordinates only for drawing.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_mute-track"></a><h3><font color=#CC0000>gs:mute-track</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mute-track</font> <em>int-number</em> [<em>boolean-on-off</em>])</b><br/>
 <b>parameter: </b><em>int-number</em> - The number of the track starting with <tt>0</tt> for the first. Default is <tt>true</tt>.<br/>
 <b>parameter: </b><em>boolean-on-off</em> - The track will be muted with a value of <tt>true</tt><br/>
-<p></p>
+<p>&nbsp;</p>
  Any other value than <tt>true</tt> will unmute the track again. Muting tracks is practical
  during music development. The track can only be muted when th sequence has benn started
  using <tt>gs:play-sequence</tt>. To completely mute a track the <tt>gs:mute-track</tt> statement should
  come right after the <tt>gs:play-sequece</tt> statement. 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_no-action"></a><h3><font color=#CC0000>gs:no-action</font></h3>
 <b>syntax: (<font color=#CC0000>gs:no-action</font>)</b><br/>
-<p></p>
+<p>&nbsp;</p>
  Specify as <em>sym-action</em> for widgets where no action handler is defined.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_open-file-dialog"></a><h3><font color=#CC0000>gs:open-file-dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:open-file-dialog</font> <em>sym-parent-frame</em> <em>sym-action</em> [<em>str-directory</em> [<em>str-mask</em> <em>str-description</em>]])</b><br/>
 <b>parameter: </b><em>sym-parent-frame</em> - The parent frame of the file dialog.<br/>
@@ -1864,30 +1864,30 @@
 <b>parameter: </b>Mstr-description> - An optional mask description.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_panel"></a><h3><font color=#CC0000>gs:panel</font></h3>
 <b>syntax: (<font color=#CC0000>gs:panel</font> <em>sym-id</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the panel.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the panel.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the panel.<br/>
-<p></p>
+<p>&nbsp;</p>
  Panels have a flow layout by default. In a flow layout an unsized button will
  assume the natural size necessary to display the text on it.
  To change the layout use the <tt>set-flow-layout</tt> or <tt>set-grid-layout</tt> functions.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_paste-text"></a><h3><font color=#CC0000>gs:paste-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:paste-text</font> <em>sym-id</em> [<em>str-text</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text component in which to paste text.<br/>
 <b>parameter: </b><em>str-text</em> - An optional text string to paste instead of the clipboard contents.<br/>
-<p></p>
+<p>&nbsp;</p>
  If the <em>sym-id</em> contains selected text, this text gets replaced,
  otherwise the text is inserted at the current caret position.
  If no text is given in <em>str-text</em>, the text is taken from the clipboard.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_play-note"></a><h3><font color=#CC0000>gs:play-note</font></h3>
 <b>syntax: (<font color=#CC0000>gs:play-note</font> <em>int-key</em> [<em>int-duration</em> [<em>int-velocity</em> [<em>int-channel</em> [<em>int-bend</em>]]]])</b><br/>
 <b>parameter: </b><em>int-key</em> - The note or midi key <tt>0</tt> to <tt>127</tt>.<br/>
@@ -1895,21 +1895,21 @@
 <b>parameter: </b><em>int-velocity</em> - The velocity/volume of the note between <tt>0</tt> and <tt>127</tt>, default is <tt>64</tt>.<br/>
 <b>parameter: </b><em>int-channel</em> - The channel through which to play the note from <tt>0</tt> to <tt>15</tt>, default is <tt>0</tt>.<br/>
 <b>parameter: </b><em>int-bend</em> - The optional note bend to tune the note lower or higher from <tt>-8192</tt> to <tt>8191</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  Before using <tt>gs:play-note</tt>, <tt>gs:midi-init</tt> should be used to initialize the MIDI system.
  The key of the note increases in half-tone steps. The key 60 corresponds to a Middle-C.
  The velocity of the note is usually it's volume and/or brightness, i.e. the speed with which 
  a key was pressed on an instrument. The channel is <tt>0</tt> by default and assigned to
  a Piano instrument unless the function <tt>gs:midi-patch</tt> has been used to change assignment
  to a different instrument.
-<p></p>
+<p>&nbsp;</p>
  On Win32 and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
  <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  for instructions how to download and install a soundbank. For the demo files <tt>mide-demo.lsp</tt> and
  <tt>midi2-demo</tt> the midsize quality soundbank was used. On Mac OS X a soundbank is installed by default.
  The default for the bend parameer is <tt>0</tt> for no bend. Negative values down to <tt>-8192</tt>
  tune the note lower. Positive values up to <tt>8191</tt> tune the note higher. 
  The following code is a complete example:
-<p></p><b>example:</b><blockquote><pre> ; load Guiserver
+<p>&nbsp;</p><b>example:</b><blockquote><pre> ; load Guiserver
  (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
 
@@ -1923,7 +1923,7 @@
  (gs:midi-close)
 </pre></blockquote>
  The second example demonstrated usage of the <em>int-bend</em> parameter:
-<p></p><b>example:</b><blockquote><pre> ; play the same note but with different bends below and above the note
+<p>&nbsp;</p><b>example:</b><blockquote><pre> ; play the same note but with different bends below and above the note
  (gs:midi-patch "Violin" 0)
  (for (bend -2024 2024 128)
      (gs:play-note 80 1 95 0 bend))</pre></blockquote>
@@ -1931,35 +1931,35 @@
  a complete code example.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_play-sequence"></a><h3><font color=#CC0000>gs:play-sequence</font></h3>
 <b>syntax: (<font color=#CC0000>gs:play-sequence</font> [<em>int-start</em> [<em>int-loop-count</em> [<em>int-start-loop</em> [<em>int-end-loop</em>]]])</b><br/>
 <b>parameter: </b><em>int-start</em> - The starting point in the sequence in ticks. Default is <tt>0</tt> for the beginning.<br/>
 <b>parameter: </b><em>int-loop-count</em> - The number of repetitions for looping. Default is <tt>0</tt> for no looping.<br/>
 <b>parameter: </b><em>int-start-loop</em> - The start of the loop to play in ticks. Default is <tt>0</tt>.<br/>
 <b>parameter: </b><em>int-end-loop</em> - The end of the loop in ticks. Default is <tt>-1</tt> for the end.<br/>
-<p></p>
+<p>&nbsp;</p>
  All parameters are optional. When no parameters are given all tracks in the sequence are
  sequenced from start to end with no repetiton (loop count of 0). Note that the start and
  end positions refer only to loop played after playing the full track. After the sequence
  started playing <tt>gs:stop-sequence</tt> can be used to stop it at any time. The midi system
  should not be close using <tt>gs:midi-close</tt> before playing has finished or playing will
  be cut off.
-<p></p>
+<p>&nbsp;</p>
  See the function <tt>gs:add-track</tt> for complete code example.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_play-sound"></a><h3><font color=#CC0000>gs:play-sound</font></h3>
 <b>syntax: (<font color=#CC0000>gs:play-sound</font> <em>str-file-path</em>)</b><br/>
 <b>parameter: </b><em>str-file-path</em> - The path and file name of the sound file.<br/>
-<p></p>
+<p>&nbsp;</p>
  On most OS platforms <tt>.au</tt> and <tt>.wav</tt> sound file formats are supported.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_progress-bar"></a><h3><font color=#CC0000>gs:progress-bar</font></h3>
 <b>syntax: (<font color=#CC0000>gs:progress-bar</font> <em>sym-id</em> <em>int-min</em> <em>in-max</em> <em>int-initial-value</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The symbols of the progress bar.<br/>
@@ -1968,7 +1968,7 @@
 <b>parameter: </b><em>int-initial-value</em> - The initial value of the slider.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_radio-button"></a><h3><font color=#CC0000>gs:radio-button</font></h3>
 <b>syntax: (<font color=#CC0000>gs:radio-button</font> <em>sym-id</em> <em>sym-action</em> [<em>str-text</em> [<em>bool-selected</em>]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the radio button.<br/>
@@ -1977,53 +1977,53 @@
 <b>parameter: </b><em>bool-seected</em> - An optional flag <tt>true</tt> or <tt>nil</tt> (default) indicating the initial state of the radio button.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_redo-text"></a><h3><font color=#CC0000>gs:redo-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:redo-text</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt> where to perform a redo operation.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_remove-from"></a><h3><font color=#CC0000>gs:remove-from</font></h3>
 <b>syntax: (<font color=#CC0000>gs:remove-from</font> <em>sym-container</em> <em>sym-component</em> [<em>sym-component</em> ...])</b><br/>
 <b>parameter: </b><em>sym-container</em> - The container from which to remove a component.<br/>
 <b>parameter: </b><em>sym-component</em> - One or more optional components to remove.<br/>
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_remove-list-item"></a><h3><font color=#CC0000>gs:remove-list-item</font></h3>
 <b>syntax: (<font color=#CC0000>gs:remove-list-item</font> <em>sym-list-combo</em> <em>int-index</em> [<em>int-index</em> ...])</b><br/>
 <b>parameter: </b><em>sym-list-combo</em> - The name of the combo box or list box from which entries are removed.<br/>
 <b>parameter: </b><em>int-index</em> - The index of an entry to remove from the list or combo box.<br/>
-<p></p>
+<p>&nbsp;</p>
  When specifying an index of <tt>0</tt>, the first item gets removed. When specifying an
  index equal or greater to the number of items in the list, the item is added at the end.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_remove-tab"></a><h3><font color=#CC0000>gs:remove-tab</font></h3>
 <b>syntax: (<font color=#CC0000>gs:remove-tab</font> <em>sym-tabbed-pane</em> [<em>int-index</em>])</b><br/>
 <b>parameter: </b><em>sym-tabbed-pane</em> - The name of the tabbed pane.<br/>
 <b>parameter: </b><em>int-index</em> - The optional index of the tab to remove. The default is <tt>0</tt> for the first tab.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_request-focus"></a><h3><font color=#CC0000>gs:request-focus</font></h3>
 <b>syntax: (<font color=#CC0000>gs:request-focus</font> <em>sym-id</em> [<em>int-tab-index</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to request focus.<br/>
 <b>parameter: </b><em>int-tab-index</em> - The index of a tab for which focus is requested.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_reorder-tags"></a><h3><font color=#CC0000>gs:reorder-tags</font></h3>
 <b>syntax: (<font color=#CC0000>gs:reorder-tags</font> <em>list-tags</em>)</b><br/>
 <b>parameter: </b><em>list-tags</em> - The list of tag symbols or tag string names in the new order of display.<br/>
-<p></p>
+<p>&nbsp;</p>
  The re-ordering itself will not repaint the canvas use <tt>gs:update</tt> to repaint the current 
  canvas after using <tt>gs:reorder-tags</tt>. The list of tags can be given as either a list of
  tags symbols or name strings. Tags not appearing in <em>list-tags</em> will be deleted.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_rotate-tag"></a><h3><font color=#CC0000>gs:rotate-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:rotate-tag</font> <em>sym-tag</em> <em>float theta</em> <em>int-x</em> <em>int-y</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group to rotate.<br/>
@@ -2031,18 +2031,18 @@
 <b>parameter: </b><em>int-x</em> - The X-coordinate of the rotation center.<br/>
 <b>parameter: </b><em>int-y</em> - The Y-coordinate of the rotation center.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
+<p>&nbsp;</p>
  Like all tag operations, multiple <tt>gs:rotate-tag</tt> operations are cumulative.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_run-shell"></a><h3><font color=#CC0000>gs:run-shell</font></h3>
 <b>syntax: (<font color=#CC0000>gs:run-shell</font> <em>id-text-area</em> <em>str-command</em>)</b><br/>
 <b>parameter: </b><em>idx-text-area</em> - The id of the text area to wich a shell process will be attached.<br/>
 <b>parameter: </b><em>str-command</em> - The command string to start the shell process.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_save-file-dialog"></a><h3><font color=#CC0000>gs:save-file-dialog</font></h3>
 <b>syntax: (<font color=#CC0000>gs:save-file-dialog</font> <em>sym-parent-frame</em> <em>sym-action</em> [<em>str-directory</em> [<em>str-initial-file</em> [<em>str-mask</em> <em>str-description</em>]]])</b><br/>
 <b>parameter: </b><em>sym-parent-frame</em> - The parent frame of the file dialog.<br/>
@@ -2053,30 +2053,30 @@
 <b>parameter: </b><em>str-description</em> - An optional mask description.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_save-sequence"></a><h3><font color=#CC0000>gs:save-sequence</font></h3>
 <b>syntax: (<font color=#CC0000>gs:save-sequence</font> <em>str-file-path</em>)</b><br/>
 <b>parameter: </b><em>str-file-name</em> - The name of the MIDI file to save to.<br/>
-<p></p>
+<p>&nbsp;</p>
  Save the contents of a sequence created with <tt>gs:add-track</tt> to a MIDI file.
  The file always should have the extension <tt>.mid</tt>.
-<p></p>
+<p>&nbsp;</p>
  Note that all MIDI files created with <tt>gs:save-sequence</tt> will play back at a fixed
  speed of 120 BPM. Therefore, when creating sequences for recording using <tt>gs:add-track</tt>,
  they should be timed for a play-back speed of 120 BPM.
-<p></p>
+<p>&nbsp;</p>
  To change the speed for replay from a saved MIDI file the resolution parameter can
  be chaged from it's default of 16 tick per beat using the second optional parameter
  of <tt>gs:midi-bpm</tt>. In this case the resolution parameter should be adjusted before
  calling <tt>gs:add-track</tt> the first time.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_save-text"></a><h3><font color=#CC0000>gs:save-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:save-text</font> <em>sym-id</em> <em>str-path</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt>.<br/>
 <b>parameter: </b><em>str-path</em> - The full path name of the file to save.<br/>
-<p></p>
+<p>&nbsp;</p>
  This function will write text back from a <tt>gs:text-pane</tt> directly
  by specifying a path name only. Line feed characters (ASCII 10)
  are used as line terminators. If this behavior is not desired,
@@ -2087,26 +2087,26 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_scale-tag"></a><h3><font color=#CC0000>gs:scale-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:scale-tag</font> <em>sym-tag</em> <em>float-x</em> <em>float-y</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group to scale.<br/>
 <b>parameter: </b><em>float-x</em> - The X scaling factor.<br/>
 <b>parameter: </b><em>float-y</em> - The Y scaling factor.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
+<p>&nbsp;</p>
  <tt>gs:scale</tt> scales the object to draw relative to the <tt>0,0</tt> point of
  the coordinate system. This means if a object is not at the center it
  will not only change in size when scaled but also change the distance
  to the center point of the coordinate system, moving away when scaling
  up with scale factor bigger <tt>1.0</tt> and moving closer to the center
  when scaling down using factors smaller than <tt>1.0</tt>.
-<p></p>
+<p>&nbsp;</p>
  This means that objects which will be scaled should be defined in
  coordinates relative to their center point. Then a <tt>gs:translate-tag</tt>
  command should be used to place the object to correct place:
-<p></p>
-<p></p><b>example:</b><blockquote><pre> (gs:circle 'C 0 0 50)
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:circle 'C 0 0 50)
  (gs:gs:translate-tag 'C 200 100)
  ...
  (gs:scale-tag 'C 1.1 1.1)</pre></blockquote>
@@ -2116,30 +2116,30 @@
  Like all tag operations, multiple <tt>gs:scale-tag</tt> operations are cumulative.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_select-list-item"></a><h3><font color=#CC0000>gs:select-list-item</font></h3>
 <b>syntax: (<font color=#CC0000>gs:select-list-item</font> <em>sym-id</em> <em>str-item</em> [<em>boolean-flag</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the list or combo box.<br/>
 <b>parameter: </b><em>str-item</em> - The item to select.<br/>
 <b>parameter: </b><em>boolean-flag</em> - An optional flag only for list boxes to force scrolling to the selected entry.<br/>
-<p></p>
+<p>&nbsp;</p>
  On combo boxes the optional <em>boolean-flag</em> has no effect. The selected entry will always
  appear as the visible text of the combo box. The flag has either the value <tt>true</tt> or <tt>nil</tt>.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_select-text"></a><h3><font color=#CC0000>gs:select-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:select-text</font> <em>sym-id</em> <em>int-from</em> [<em>int-to</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The ame of the text component.<br/>
 <b>parameter: </b><em>int-from</em> - Start offset of selection.<br/>
 <b>parameter: </b><em>int-to</em> - Optional end offset of selection.<br/>
-<p></p>
+<p>&nbsp;</p>
  If no <em>int-to</em> end offset is given, <tt>gs:select-text</tt> will
  select to the end of the text.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_scroll-pane"></a><h3><font color=#CC0000>gs:scroll-pane</font></h3>
 <b>syntax: (<font color=#CC0000>gs:scroll-pane</font> <em>sym-id</em> <em>sym-widget</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the scroll pane.<br/>
@@ -2148,14 +2148,14 @@
 <b>parameter: </b><em>int-height</em> - The optional height of the scroll pane.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-accelerator"></a><h3><font color=#CC0000>gs:set-accelerator</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-accelerator</font> <em>sym-menu-item</em> <em>str-keystroke</em>)</b><br/>
 <b>parameter: </b><em>sym-menu-item</em> - The name of the menu item for which an accelerator key is set.<br/>
 <b>parameter: </b><em>str-keystroke</em> - A text string identifying the keystroke.<br/>
-<p></p>
+<p>&nbsp;</p>
  The following rules are used to create keystroke strings:
-<p></p>
+<p>&nbsp;</p>
  Syntax:
  <blockquote><pre>
  modifiers* (typedID | pressedReleasedID)
@@ -2179,15 +2179,15 @@
  Keys are added to the menu item display automatically on all platforms.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-anti-aliasing"></a><h3><font color=#CC0000>gs:set-anti-aliasing</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-anti-aliasing</font> <em>boolean-flag</em>)</b><br/>
 <b>parameter: </b><em>boolean-flag</em> - The anti aliasing setting for the current canvas <tt>true</tt> or <tt>nil</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  The default setting is <tt>true</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-background"></a><h3><font color=#CC0000>gs:set-background</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-background</font> <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
@@ -2195,33 +2195,33 @@
 <b>parameter: </b><em>float-green</em> - The green color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-blue</em> - The blue color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
 <b>syntax: (<font color=#CC0000>gs:set-background</font> <em>sym-id</em> <em>list-rgb</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
 <b>parameter: </b><em>list-rgb</em> - The rgb color can be given as a list of three numbers.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
  Note <tt>set-background</tt> is the same as <tt>set-color</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-bevel-border"></a><h3><font color=#CC0000>gs:set-bevel-border</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-bevel-border</font> <em>sym-id</em> <em>str-type</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component.<br/>
 <b>parameter: </b><em>str-type</em> - The type of the bevel <tt>"raised"</tt> or <tt>"lowered"</tt>.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-border-layout"></a><h3><font color=#CC0000>gs:set-border-layout</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-border-layout</font> <em>sym-container</em>  [<em>int-hgap</em> <em>int-vgap</em>])</b><br/>
 <b>parameter: </b><em>sym-container</em> - The name of the container for which border layout is set.<br/>
 <b>parameter: </b><em>int-hgap</em> - The horizontal gap between components in the border layout.<br/>
 <b>parameter: </b><em>int-vgap</em> - The vertical gap between components in the border layout.<br/>
-<p></p>
+<p>&nbsp;</p>
  Border layout divides the layout into 5 zones labeled <tt>"north"</tt>, <tt>"west"</tt>,
  <tt>"center"</tt>, <tt>"east"</tt> and <tt>"south"</tt>. These string constants are used in
  the <tt>gs:add-to</tt> command when adding components to a border layout.
-<p></p>
+<p>&nbsp;</p>
  In a border layout each component will take the maximum size if components
  are not sized. If components are sized only some dimensions will be honored.
  The <tt>"north"</tt> and <tt>"south"</tt> components will stretch to maximum width and
@@ -2231,11 +2231,11 @@
  maximum space.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-canvas"></a><h3><font color=#CC0000>gs:set-canvas</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-canvas</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the canvas to switch to.<br/>
-<p></p>
+<p>&nbsp;</p>
  The canvas in <em>sym-id</em> must have been created earlier with a <tt>gs:canvas</tt> 
  statement. All graphics operations which do not take a canvas as argument
  will automatically refer to this current canvas. If no <tt>gs:set-canvas</tt> is
@@ -2243,16 +2243,16 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-caret"></a><h3><font color=#CC0000>gs:set-caret</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-caret</font> <em>sym-id</em> <em>int-offset</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the cursor caret.<br/>
-<p></p>
+<p>&nbsp;</p>
  The functions has the same effect as calling <tt>gs:select-text</tt> with the same 
  offset for the dot and mark position.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-caret-color"></a><h3><font color=#CC0000>gs:set-caret-color</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-caret-color</font> <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
@@ -2264,7 +2264,7 @@
 <b>parameter: </b><em>list-rgb</em> - The rgb color can be given as a list of three numbers.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-color"></a><h3><font color=#CC0000>gs:set-color</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-color</font> <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
@@ -2272,21 +2272,21 @@
 <b>parameter: </b><em>float-green</em> - The green color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-blue</em> - The blue color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
 <b>syntax: (<font color=#CC0000>gs:set-color</font> <em>sym-id</em> <em>list-rgb</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
 <b>parameter: </b><em>list-rgb</em> - The rgb color can be given as a list of three numbers.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
  Note that <tt>set-color</tt> is the same as <tt>set-background</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-cursor"></a><h3><font color=#CC0000>gs:set-cursor</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-cursor</font> <em>sym-id</em> <em>str-shape</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the frame, dialog or window.<br/>
 <b>parameter: </b><em>str-shape</em> - The string describing the cursor shape.<br/>
-<p></p>
+<p>&nbsp;</p>
  The cursor shape can be one of the following:
  <pre>
   "default"
@@ -2306,38 +2306,38 @@
  </pre>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-editable"></a><h3><font color=#CC0000>gs:set-editable</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-editable</font> <em>sym-id</em> <em>boolean-editable</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text widget.<br/>
 <b>parameter: </b><em>boolean-editable</em> - The flag <tt>true</tt> or <tt>nil</tt> to indicate if this text widget can be edited.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-flow-layout"></a><h3><font color=#CC0000>gs:set-flow-layout</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-flow-layout</font> <em>sym-container</em> [<em>str-alignment</em> [<em>int-hgap</em> <em>int-vgap</em>]])</b><br/>
 <b>parameter: </b><em>sym-container</em> - The name of the container for which flow layout is set.<br/>
 <b>parameter: </b><em>sym-alignment</em> - The alignment of the flow layout <tt>"left"</tt>, <tt>"center"</tt> or <tt>"right"</tt>.<br/>
 <b>parameter: </b><em>int-hgap</em> - The horizontal gap between components in the flow layout.<br/>
 <b>parameter: </b><em>int-vgap</em> - The vertical gap between components in the flow layout.<br/>
-<p></p>
+<p>&nbsp;</p>
  The flow layout lets components appear in their natural or preferred size. The preferred
  size of a component is set using the function <tt>gs:set-size</tt>. Button-type widgets and
  combo boxes will take as much space as necessary to show the included text.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-font"></a><h3><font color=#CC0000>gs:set-font</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-font</font> <em>sym-id</em> <em>str-family</em> <em>int-size</em> <em>str-type</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the text font.<br/>
 <b>parameter: </b><em>str-familiy</em> - The family of the font, e.g.: <tt>"Monospaced"</tt>, <tt>"Serif"</tt>, <tt>"Sans Serif"</tt>.<br/>
 <b>parameter: </b><em>int-size</em> - The font size in points.<br/>
 <b>parameter: </b><em>str-type</em> - The type of the font, one or more of <tt>"plain"</tt>, <tt>"bold"</tt>, <tt>"italic"</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  More than the above noted families are available depending on the platform.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-foreground"></a><h3><font color=#CC0000>gs:set-foreground</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-foreground</font> <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
@@ -2345,17 +2345,17 @@
 <b>parameter: </b><em>float-green</em> - The green color component expressed as a  number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-blue</em> - The blue color component expressed as a  number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
 <b>syntax: (<font color=#CC0000>gs:set-foreground</font> <em>sym-id</em> <em>list-rgb</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the color.<br/>
 <b>parameter: </b><em>list-rgb</em> - The rgb color can be given as a list of three numbers.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
  The foreground color is the color of the text in a component.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-grid-layout"></a><h3><font color=#CC0000>gs:set-grid-layout</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-grid-layout</font> <em>sym-container</em> <em>int-rows</em> <em>int-columns</em> [<em>int-hgap</em> <em>int-vgap</em>])</b><br/>
 <b>parameter: </b><em>sym-container</em> - The name of the container for which grid layout is set.<br/>
@@ -2363,14 +2363,14 @@
 <b>parameter: </b><em>int-columns</em> - The number of columns in the layout grid.<br/>
 <b>parameter: </b><em>int-hgap</em> - The horizontal gap between components in the grid layout.<br/>
 <b>parameter: </b><em>int-vgap</em> - The vertical gap between components in the grid layout.<br/>
-<p></p>
+<p>&nbsp;</p>
  In a grid layout each component will assume the maximum size the grid cell allows
  regardless of sizes preset using <tt>gs:set-size</tt> Because of this grid layout cells are
  frequently filled with panels using <tt>gs:panel</tt> which have flow layout by default
  and allow deliberate sizing of components using <tt>gs:set-size</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-icon"></a><h3><font color=#CC0000>gs:set-icon</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-icon</font> <em>sym-id</em> <em>str-icon-path</em> [<em>int-index</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of a button or label or menu-item for which to set an icon.<br/>
@@ -2378,11 +2378,11 @@
 <b>parameter: </b><em>int-index</em> - If <em>sym-id</em> is a tabbed pane <em>int-index</em> is the index of the tab.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-look-and-feel"></a><h3><font color=#CC0000>gs:set-look-and-feel</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-look-and-feel</font> <em>str-look</em>)</b><br/>
 <b>parameter: </b><em>str-look</em> - The class description string for the look and feel of the application.<br/>
-<p></p>
+<p>&nbsp;</p>
  The following strings can be tried in <em>str-look</em>, but not all will work on a specific
  platform. On the Mac the default look-and-feel is built-in to the JVM as the default
  style. The <tt>"MacLookAndFeel"</tt> is not available as an explicit flavor here, but may be
@@ -2396,57 +2396,57 @@
  </pre>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-paint"></a><h3><font color=#CC0000>gs:set-paint</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-paint</font> <em>list-rgb</em>)</b><br/>
 <b>parameter: </b><em>list-rgb</em> - The current paint used for outlines, text and fill color.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-pressed-icon"></a><h3><font color=#CC0000>gs:set-pressed-icon</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-pressed-icon</font> <em>sym-id</em> <em>str-icon-path</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the button, image button or toggle button.<br/>
 <b>parameter: </b><em>str-icon-path</em> - The file path of the icon or image to be set to the button in pressed state.<br/>
-<p></p>
+<p>&nbsp;</p>
  By default a small grey dot is shown on image buttons when in a pressed state.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-resizable"></a><h3><font color=#CC0000>gs:set-resizable</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-resizable</font> <em>sym-frame</em> <em>boolean-resizable</em>)</b><br/>
 <b>parameter: </b><em>sym-frame</em> - The name of the frame window.<br/>
 <b>parameter: </b><em>bbolean-resizable</em> - The flag <tt>true</tt> or <tt>nil</tt> to indicate if a frame can be resized by the user.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-rotation"></a><h3><font color=#CC0000>gs:set-rotation</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-rotation</font> <em>float-angle</em>)</b><br/>
 <b>parameter: </b><em>float-angle</em> - The angle in degrees (0 - 360) of the canvas rotation.<br/>
-<p></p>
+<p>&nbsp;</p>
  Unlike the <tt>gs:rotate-tag</tt> operation which is cumulative, <tt>gs:set-rotation</tt>
  will set an absolute rotation value each time it is called.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-scale"></a><h3><font color=#CC0000>gs:set-scale</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-scale</font> <em>int-x</em> <em>int-y</em>)</b><br/>
 <b>parameter: </b><em>int-x</em> - The X-scale value of the current canvas.<br/>
 <b>parameter: </b><em>int-y</em> - The Y-scale value of the current canvas.<br/>
-<p></p>
+<p>&nbsp;</p>
  Unlike the <tt>gs:scale-tag</tt> operation which is cumulative, <tt>gs:set-scale</tt>
  will set an absolute scale value each time it is called.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-selected"></a><h3><font color=#CC0000>gs:set-selected</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-selected</font> <em>sym-id</em> <em>boolean-selected</em> [<em>sym-id</em> <em>boolean-selected</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the toggle or radio button or check box or menu item.<br/>
 <b>parameter: </b><em>boolean-selected</em> - A flag of <tt>true</tt> or <tt>nil</tt> to indicated the selection state.<br/>
-<p></p>
+<p>&nbsp;</p>
  More then one toggle control may be set selected or unselected.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-selection-color"></a><h3><font color=#CC0000>gs:set-selection-color</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-selection-color</font> <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the text selection color.<br/>
@@ -2454,34 +2454,34 @@
 <b>parameter: </b><em>float-green</em> - The green color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-blue</em> - The blue color component expressed as a number between 0.0 and 1.0.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
 <b>syntax: (<font color=#CC0000>gs:set-selection-color</font> <em>sym-id</em> <em>list-rgb</em> [<em>float-alpha</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which to set the text selection color.<br/>
 <b>parameter: </b><em>list-rgb</em> - The rgb color can be given as a list of three numbers.<br/>
 <b>parameter: </b><em>float-alpha</em> - The transparency of the color expressed as a number between 0.0 (fully transparent)and 1.0 (completely opaque).<br/>
-<p></p>
+<p>&nbsp;</p>
  Note <tt>set-background</tt> is the same as <tt>set-color</tt>.
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-size"></a><h3><font color=#CC0000>gs:set-size</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-size</font> <em>sym-id</em> <em>int-width</em> <em>int-height</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component of which a preferred size is set.<br/>
 <b>parameter: </b><em>int-width</em> - The preferred width of the component.<br/>
 <b>parameter: </b><em>int-height</em> - The preferred height of the component.<br/>
-<p></p>
+<p>&nbsp;</p>
  Note that not all layouts allow setting the size of a component. The grid and
  border layouts will size the component to its maximum possible in the layout.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-stroke"></a><h3><font color=#CC0000>gs:set-stroke</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-stroke</font> <em>float-width</em> [<em>str-cap</em> [<em>str-join</em> [<em>float-miterlimit</em>]]])</b><br/>
 <b>parameter: </b><em>float-width</em> - The width for drawing lines and outlines in shapes.<br/>
 <b>parameter: </b><em>str-cap</em> - One of optional <tt>"butt"</tt> (default), <tt>"round"</tt> or <tt>"sqare"</tt>.<br/>
 <b>parameter: </b><em>str-join</em> - One of optional <tt>"miter"</tt> (default), <tt>"bevel"</tt> or <tt>"round"</tt><br/>
-<p></p>
+<p>&nbsp;</p>
  For a <em>float-width</em> 0f 0.0 the thinnest possible line width be be chosen. 
  Join is the decoration applied at the intersection of two path segments and at the 
  intersection of the endpoints.
@@ -2489,19 +2489,19 @@
  The <em>float-miterlimit</em> should be greater or equal 1.0.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-syntax"></a><h3><font color=#CC0000>gs:set-syntax</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-syntax</font> <em>sym-id</em> <em>str-type</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text pane for syntax coloring is enabled or disabled.<br/>
 <b>parameter: </b><em>str-type</em> - A string <tt>"lsp"</tt>, <tt>"c"</tt>, <tt>"cpp"</tt>, <tt>"java"</tt> or <tt>"php"</tt> to indicate the <br/>
  syntax desired, or <tt>nil</tt> to switch off syntax highlighting.
-<p></p>
+<p>&nbsp;</p>
  Colors for syntax highlighting are preselected for a white background, but can be changed using
  the following functions: <tt>gs:set-background</tt>, <tt>gs:set-foreground</tt>, <tt>gs:set-caret</tt>, <tt>gs:set-selection-color</tt>
  and <tt>gs:set-syntax-colors</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-syntax-colors"></a><h3><font color=#CC0000>gs:set-syntax-colors</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-syntax-colors</font> <em>list-rgb-comment</em> <em>list-rgb-keyword</em> <em>list-rgb-string</em> <em>list-rgb-number</em> <em>list-rgb-quoted</em> <em>list-rgb-parentheses</em>)</b><br/>
 <b>parameter: </b><em>list-rgb-comment</em> - The color for comments.<br/>
@@ -2510,23 +2510,23 @@
 <b>parameter: </b><em>list-rgb-number</em> - The color for numbers.<br/>
 <b>parameter: </b><em>list-rgb-quoted</em> - The color for the quote and quoted symbols.<br/>
 <b>parameter: </b><em>list-rgb-parentheses</em> - The color for parenthesis.<br/>
-<p></p>
+<p>&nbsp;</p>
  Syntax highlighting colors are given as lists of red, green and blue values between 0.0 and 1.0. 
  Depending on the syntax colors and the foreground and background colors set for the text pane, 
  the caret color and color for selected text should also be changed. Only text widgets created 
  using <tt>gs:text-pane</tt> feature syntax highlighting.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-tab-size"></a><h3><font color=#CC0000>gs:set-tab-size</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-tab-size</font> <em>sym-id</em> <em>int-size</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text area component.<br/>
 <b>parameter: </b><em>int-size</em> - The tabulator size.<br/>
-<p></p>
+<p>&nbsp;</p>
  Note that <tt>gs:set-tab-size</tt> will only work with fixed spaced fonts.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-text"></a><h3><font color=#CC0000>gs:set-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-text</font> <em>sym-id</em> <em>str-text</em> [<em>int-index</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which text is set.<br/>
@@ -2534,75 +2534,75 @@
 <b>parameter: </b><em>int-index</em> - The index for a tab if the <em>sym-id</em> is a tabbed pane.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-titled-border"></a><h3><font color=#CC0000>gs:set-titled-border</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-titled-border</font> <em>sym-component</em> <em>str-title</em>)</b><br/>
 <b>parameter: </b><em>sym-component</em> - The name of the component.<br/>
 <b>parameter: </b><em>str-title</em> - The text in the titled border around the component.<br/>
-<p></p>
+<p>&nbsp;</p>
  The component is usually a <tt>panel</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-tool-tip"></a><h3><font color=#CC0000>gs:set-tool-tip</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-tool-tip</font> <em>sym-id</em> <em>str-text</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the widget for which to supply a tool tip.<br/>
 <b>parameter: </b><em>str-text</em> - The text of the tool tip.<br/>
-<p></p>
+<p>&nbsp;</p>
  The tool tip text is shown when leaving the mouse over the widget for certain
  amount of time.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-trace"></a><h3><font color=#CC0000>gs:set-trace</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-trace</font> <em>boolean-flag</em>)</b><br/>
 <b>parameter: </b><em>boolean-flag</em> - The flag <tt>true</tt> or <tt>nil</tt>.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-translation"></a><h3><font color=#CC0000>gs:set-translation</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-translation</font> <em>int-x</em> <em>int-y</em>)</b><br/>
 <b>parameter: </b><em>int-x</em> - The X-translation value of the current canvas.<br/>
 <b>parameter: </b><em>int-y</em> - The Y-translation value of the current canvas.<br/>
-<p></p>
+<p>&nbsp;</p>
  Translates the current origin of the current canvas to the point in <em>int-x</em> <em>int-y</em>.
  Unlike the <tt>gs:translate-tag</tt> operation which is cumulative, <tt>gs:set-translation</tt>
  will set an absolute translation value each time it is called.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-utf8"></a><h3><font color=#CC0000>gs:set-utf8</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-utf8</font> <em>boolean-flag</em>)</b><br/>
 <b>parameter: </b><em>boolean</em> - The flag <tt>true</tt> or <tt>nil</tt> to indicate if in UTF-8 mode.<br/>
-<p></p>
+<p>&nbsp;</p>
  When set in UTF-8 mode, guiserver will convert files to UTF-8 encoding
  when loading and saving files. On Mac OX X UTF-8 mode is by default enabled.
  On startup guiserver.lsp will detect if newLISP is UTF-8 enabled and
  switch the mode in Guiserver accordingly using <tt>gs:set-utf8</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-value"></a><h3><font color=#CC0000>gs:set-value</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-value</font> <em>sym-id</em> <em>int-value</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of a slider or progress bar for which to set the value.<br/>
 <b>parameter: </b><em>int-value</em> - The integer value of the name to be set.<br/>
-<p></p>
+<p>&nbsp;</p>
  The value should not be bigger or smaller than the minimum or maximum values set
  when creating the slider or progress bar, otherwise the setting will default to either
  the minimum or maximum preset value.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_set-visible"></a><h3><font color=#CC0000>gs:set-visible</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-visible</font> <em>sym-id</em> <em>boolean-visible</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The component which is hidden or made visible.<br/>
 <b>parameter: </b><em>boolean-visible</em> - A flag indicating if the component is visible <tt>"true"</tt>, <tt>"nil"</tt>.<br/>
-<p></p>
+<p>&nbsp;</p>
  Except for frames and dialog windows, components are visible by default. Normally
  frames and dialogs are not set visible before all other components are placed inside.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_shear-tag"></a><h3><font color=#CC0000>gs:shear-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:shear-tag</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group to shear.<br/>
@@ -2611,7 +2611,7 @@
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_show-popup"></a><h3><font color=#CC0000>gs:show-popup</font></h3>
 <b>syntax: (<font color=#CC0000>gs:show-popup</font> <em>sym-tag</em> <em>sym-host</em> <em>int-x</em> <em>int-y</em>)</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The id of the popup menu.<br/>
@@ -2620,13 +2620,13 @@
 <b>parameter: </b><em>int-y</em> - The Y coordinate of the menu popup position.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_show-tag"></a><h3><font color=#CC0000>gs:show-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:show-tag</font> <em>sym-tag</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag of the group to show.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_slider"></a><h3><font color=#CC0000>gs:slider</font></h3>
 <b>syntax: (<font color=#CC0000>gs:slider</font> <em>sym-id</em> <em>sym-action</em> <em>str-orientation</em> <em>int-min</em> <em>int-max</em> <em>int-initial-value</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the slider.<br/>
@@ -2637,7 +2637,7 @@
 <b>parameter: </b><em>int-initial-value</em> - The initial value of the slider.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_split-pane"></a><h3><font color=#CC0000>gs:split-pane</font></h3>
 <b>syntax: (<font color=#CC0000>gs:split-pane</font> <em>sym-id</em> <em>str-orientation</em> [<em>float-weight</em> [<em>float-location</em> [<em>int-divider-size</em>]]])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the split-pane.<br/>
@@ -2647,14 +2647,14 @@
 <b>parameter: </b><int-divider-size) - The optional size of the draggable divider in pixels.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_stop-sequence"></a><h3><font color=#CC0000>gs:stop-sequence</font></h3>
 <b>syntax: (<font color=#CC0000>gs:stop-sequence</font>)</b><br/>
-<p></p>
+<p>&nbsp;</p>
  Stops playing tracks, as started with <tt>gs:play-sequence</tt>.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_tabbed-pane"></a><h3><font color=#CC0000>gs:tabbed-pane</font></h3>
 <b>syntax: (<font color=#CC0000>gs:tabbed-pane</font> <em>sym-id</em> <em>sym-action</em> <em>str-orientation</em> [<em>sym-tab</em> <em>sym-tab-title</em> ...])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the tabbed pane.<br/>
@@ -2663,14 +2663,14 @@
 <b>parameter: </b><em>str-title</em> - The title of the tab.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_text-area"></a><h3><font color=#CC0000>gs:text-area</font></h3>
 <b>syntax: (<font color=#CC0000>gs:text-area</font> <em>sym-id</em> <em>sym-action</em> <em>int-width</em> <em>int-height</em>)</b><br/>
 <b>parameter: </b><em>symid</em> - The name of the text area.<br/>
 <b>parameter: </b><em>sym-action</em> - The name of the event handler.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the text area..<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the text area.<br/>
-<p></p><b>example:</b><blockquote><pre> (gs:text-area 'TheText 'textarea-event 10 8)
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:text-area 'TheText 'textarea-event 10 8)
 
  (define (textarea-event id code dot mark) ...)</pre></blockquote>
  <tt>gs:text-area</tt> transmits the following parameters in its event:
@@ -2683,18 +2683,18 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_text-field"></a><h3><font color=#CC0000>gs:text-field</font></h3>
 <b>syntax: (<font color=#CC0000>gs:text-field</font> <em>sym-id</em> <em>sym-action</em> <em>int-columns</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text field.<br/>
 <b>parameter: </b><em>sym-action</em> - The name of the event handler.<br/>
 <b>parameter: </b><em>int-columns</em> - The number of columns in the text field.<br/>
-<p></p><b>example:</b><blockquote><pre> (gs:text-field 'TheText 'textfield-event)</pre></blockquote>
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:text-field 'TheText 'textfield-event)</pre></blockquote>
  The <tt>textfield-event</tt> is fired when the enter key is pressed in the
  text field.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_text-pane"></a><h3><font color=#CC0000>gs:text-pane</font></h3>
 <b>syntax: (<font color=#CC0000>gs:text-pane</font> <em>sym-id</em> <em>sym-action</em> <em>str-style</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text pane.<br/>
@@ -2702,30 +2702,30 @@
 <b>parameter: </b><em>sym-style</em> - The content type of the text pane.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the pane.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the pane.<br/>
-<p></p>
+<p>&nbsp;</p>
  The <tt>gs:text-pane</tt> is used similar to 'gs:text-area. The following styles
  are supported in <em>sym-style</em>:
  <pre>
     "text/plain"
     "text/html"
  </pre>
-<p></p>
+<p>&nbsp;</p>
  The <tt>gs:text-pane</tt> widget will automatically display scroll bars when
  text does not fit in the visible space of the pane. When entering parentheses
  they are automatically matched with their opening or closing counterparts, if they exist.
  If this is undesired behavior, the simpler <tt>gs:text-area</tt> control should
  be used instead. 
-<p></p>
+<p>&nbsp;</p>
  On each change of the caret or selection in the text pane
  an event is fired containing several parameters about the caret and selection
  positions, the last character typed, and the modifier keys used. See the
  the file <tt>newlisp-edit.lsp</tt> for a complex application using all features
  available in this widget.
-<p></p>
+<p>&nbsp;</p>
  To make hyperlinks in <tt>HTML</tt> formatted text clickable, editing must
  be disabled using the <tt>gs:set-editable</tt> function. The functions <tt>gs:set-font</tt>
  and <tt>gs:append-text</tt> will work only on the <tt>text/plain</tt> content style.
-<p></p><b>example:</b><blockquote><pre> (gs:text-pane 'TheTextPane 'textpane-event "text/plain")
+<p>&nbsp;</p><b>example:</b><blockquote><pre> (gs:text-pane 'TheTextPane 'textpane-event "text/plain")
 
  (define (textpane-event id code mods dot mark len undo redo) ...)</pre></blockquote>
  <tt>gs:text-pane</tt> transmits the following parameters in its event:
@@ -2741,7 +2741,7 @@
  </pre>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_toggle-button"></a><h3><font color=#CC0000>gs:toggle-button</font></h3>
 <b>syntax: (<font color=#CC0000>gs:toggle-button</font> <em>sym-id</em> <em>sym-action</em> <em>str-text</em> [<em>bool-selected</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the toggle button.<br/>
@@ -2750,7 +2750,7 @@
 <b>parameter: </b><em>bool-selected</em> - An optional flag <tt>true</tt> or <tt>nil</tt> (default) indicating the initial state of the toggle button.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_tool-bar"></a><h3><font color=#CC0000>gs:tool-bar</font></h3>
 <b>syntax: (<font color=#CC0000>gs:tool-bar</font> <em>sym-frame</em> [<em>bool-floatable</em> <em>int-hgap</em> <em>int-vgap</em>])</b><br/>
 <b>parameter: </b><em>sym-frame</em> - The name of the frame hosting the toolbar.<br/>
@@ -2759,42 +2759,42 @@
 <b>parameter: </b><em>int-vgap</em> - The vertical gap between the components on the toolbar.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_translate-tag"></a><h3><font color=#CC0000>gs:translate-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:translate-tag</font> <em>sym-tag</em> <em>int-x</em> <em>int-y</em> [<em>boolean-repaint</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The name tag of the group to translate.<br/>
 <b>parameter: </b><em>int-x</em> - The X-coordinate translation value.<br/>
 <b>parameter: </b><em>int-y</em> - The Y-coordinate translation value.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
-<p></p>
+<p>&nbsp;</p>
  Moves the origin of the coordinate system of all objects tagged with <em>sym-tag</em>.
  Like all tag operations multiple <tt>gs:translate-tag</tt> operations are cumulative.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_undo-text"></a><h3><font color=#CC0000>gs:undo-text</font></h3>
 <b>syntax: (<font color=#CC0000>gs:undo-text</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt> where to perform an undo operation.<br/>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_undo-enable"></a><h3><font color=#CC0000>gs:undo-enable</font></h3>
 <b>syntax: (<font color=#CC0000>gs:undo-enable</font> <em>sym-id</em> <boolean-enabled)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt> for which to enabe/disable undo.<br/>
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_update"></a><h3><font color=#CC0000>gs:update</font></h3>
 <b>syntax: (<font color=#CC0000>gs:update</font>)</b><br/>
-<p></p>
+<p>&nbsp;</p>
  Forces a repaint of the current canvas, e.g. after changing the scale or translation of a visible
  canvas. This function is rarely used, as most screen updates are performed automatically.
  All tag operations can carry an additional parameter to force update after they have been
  draw.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_window"></a><h3><font color=#CC0000>gs:window</font></h3>
 <b>syntax: (<font color=#CC0000>gs:window</font> <em>sym-id</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the invisible window.<br/>
@@ -2802,17 +2802,17 @@
 <b>parameter: </b><em>int-y</em> - The y-coordinate of the screen position.<br/>
 <b>parameter: </b><em>int-width</em> - The width of the window.<br/>
 <b>parameter: </b><em>int-height</em> - The height of the window.<br/>
-<p></p>
+<p>&nbsp;</p>
  Creates a borderless window. Note that a borderless window may treat
  some hosted components differently from normal frames and dialogs.
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_window-closed"></a><h3><font color=#CC0000>gs:window-closed</font></h3>
 <b>syntax: (<font color=#CC0000>gs:window-closed</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the frame or dialog.<br/>
 <b>parameter: </b><em>sym-action</em> - The action to perform when the frame or dialog closes.<br/>
-<p></p>
+<p>&nbsp;</p>
  A window or dialog window can be closed using the system close button in
  one of the corners of the window. In this case it is useful to specify
  a handler function which is called upon closing.
@@ -2820,21 +2820,21 @@
 
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_window-moved"></a><h3><font color=#CC0000>gs:window-moved</font></h3>
 <b>syntax: (<font color=#CC0000>gs:window-moved</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the frame or dialog.<br/>
 <b>parameter: </b><em>sym-action</em> - The action to perform when the frame or dialog moves.<br/>
-<p></p>
+<p>&nbsp;</p>
  The event will carry the <em>sym-id</em> of the window or dialog and current <tt>X</tt> and <tt>Y</tt>
  coordinates on the screen.
-<p></p>
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="gs_window-resized"></a><h3><font color=#CC0000>gs:window-resized</font></h3>
 <b>syntax: (<font color=#CC0000>gs:window-resized</font> <em>sym-id</em> <em>sym-action</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the frame or dialog.<br/>
 <b>parameter: </b><em>sym-action</em> - The action to perform when the frame or dialog is resized.<br/>
-<p></p>
+<p>&nbsp;</p>
  The event will carry the <em>sym-id</em> of the window or dialog and current width and
  height.
 
@@ -2842,7 +2842,7 @@
 
 
 
-<p></p><center>- &part; -</center><br/>
+<p>&nbsp;</p><center>- &part; -</center><br/>
 <center><font face='Arial' size='-2' color='#444444'>
 generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
 and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>

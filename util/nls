@@ -12,11 +12,15 @@
   (if (find func-name "|+*-") (push "\\" func-name))
   (set 'html-text (join (find-all (format {<b>(syntax: \(%s.*?)</b>} func-name)    
     (read-file "/usr/share/doc/newlisp/newlisp_manual.html")) "\n"))
-  (println (replace "<.*?>" html-text "" 0))
+  (replace "<.*?>" html-text "" 0)
+  (replace "&lt;" html-text "<")
+  (replace "&gt;" html-text ">")
+  (replace "&amp;" html-text "&")
+  (println html-text)
   "")
 
 ; set the prompt to the current path
-(prompt-event (fn () (append (real-path) "> ")))
+(prompt-event (fn (ctx) (string ctx ":" (real-path) "> ")))
 
 ; handle some special commands, newLISP expressions and shell commands
 (command-event (fn (s) 

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional//EN">
 <html>
 <head>
 <META http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -43,7 +43,7 @@ tt {
 
 <center>
 <h1>newLISPdoc - the newLISP documentation program</h1>
-<font size="-1">last edited 2008-05-12</font>
+<font size="-1">last edited 2008-12-07</font>
 </center>
 
 <p>Comments in newLISP source files can be converted
@@ -158,7 +158,7 @@ in the documentation should start with only one semicolon.</p>
 name on the index and module doc page. This and the <tt>@location</tt> where added in
 June 2007, and are not part of the newlispdoc program in the newLISP v. 9.1 release.</p>
 
-<p>A function may have multiple <tt>@syntax</tt> tags each on consecutive lines.</tt>
+<p>A function may have multiple <tt>@syntax</tt> tags each on consecutive lines.</p>
 
 <p>The following is the only tag, which can be embedded anywhere in
 the text. Between the tag link specificaton and description is exactly on
@@ -262,22 +262,24 @@ followed by the pages generated in HTML:</p>
 <a name="example"></a>
 <p><a href="#index">Module index</a></p><h2>Module:&nbsp;example.lsp</h2><b>Author: </b>John Doe, johndoe@example.com<br/>
 <b>Version: </b>1.0<br/>
-<p></p>
- This module is an example module for the newlispdoc
- program, which generates automatic newLISP module
- documentation.
+
+<p>
+This module is an example module for the newlispdoc
+program, which generates automatic newLISP module
+documentation.
+</p>
 
 
-<p></p><center>- &sect; -</center><p></p>
+<p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="example_foo"></a><h3>Syntax: (<font color=#CC0000>example:foo</font> <em>num-repeat</em> <em>str-message</em>)</h3>
 <b>parameter: </b><em>num-repeat</em> - The number of times to repeat.<br/>
 <b>parameter: </b><em>str-message</em> - The messsage string to be printed.<br/>
 <p><b>return: </b>Returns the message in <em>str-message</em></p>
-<p></p>
+<p>&nbsp;</p>
  The function <tt>foo</tt> repeatedly prints a string to 
  standard out terminated by a line feed.
-<p></p>
-<p></p><b>example:</b><blockquote><pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p><b>example:</b><blockquote><pre>
  (example:foo 5 "hello world")
  =&gt;
  "hello world"
@@ -286,12 +288,11 @@ followed by the pages generated in HTML:</p>
  "hello world"
  "hello world"</pre></blockquote>
  See the <a href="#source">source</a>.
-<p></p><center>- &part; -</center><br/>
+<p>#nbsp;</p><center>- &part; -</center><br/>
 <center><font face='Arial' size='-2' color='#444444'>
 generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
 and <a href="http://newlisp.org/newLISPdoc.html">newlispdoc</a>
 </font></center>
-</blockquote>
 
 <hr>
 
@@ -302,10 +303,11 @@ each module.</p>
 <hr>
 
 <a name="index"></a>
+<center><h2>Index</h2></center>
 <blockquote>
-<a href="#example"><h2>Module:&nbsp;example.lsp</h2></a>
+<h2><a href="#example">Module:&nbsp;example.lsp</a></h2>
 <a href="#example_foo">foo</a>&nbsp; &nbsp; 
-<p></p><center>- &part; -</center><br/>
+<p>&nbsp;</p><center>- &part; -</center><br/>
 <center><font face='Arial' size='-2' color='#444444'>
 generated with <a href="http://newlisp.org">newLISP</a>&nbsp;
 and <a href="http://newlisp.org/newLISPdoc.html">newlispdoc</a>

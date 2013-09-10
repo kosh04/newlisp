@@ -84,11 +84,10 @@
 	(set 'result3 (println "net-eval raw mode ->OK"))
 	(println "net-eval problem with raw mode ->ERROR"))
 
-
 ; test saving to URL
 (set 'key (uuid))
 (set 'verify key)
-(if (find "transferred" (print (save targetURL 'key)))
+(if (catch (save targetURL 'key) 'res)
 	(set 'result4 (println "save to URL ->OK"))
 	(println "save to URL ->ERROR"))
 
@@ -123,7 +122,7 @@
 
 ; delete file at remote URL
 (if (!= ostype "Win32") ; does not work on Windows when on the same machine
-	(if (starts-with (print  (delete-file targetURL)) "File deleted:")
+	(if (delete-file targetURL)
 		(set 'result8 (println "delete-file from remote URL ->OK"))
 		(println "delete-file from remote URL ->Error"))
 	(set 'result8 true)

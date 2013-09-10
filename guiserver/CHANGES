@@ -859,3 +859,22 @@
   
   gs:set-canvas did not change current canvas for guiserver.lsp
   
+1.23
+  fixed a long standing bug when copying pasting inside the monitor area
+  
+1.24
+  some code cleanup in TextAreaWidget.java
+  
+  Ctrl-A and HOME in monitor area now go to beginning of line _after_ the prompt
+  Ctrl-P goes up in history, Ctrl-N goes down in history (like cursor UP, DOWN)
+  Most Emacs (or Bash shell) commandline editing key strokes now work in the 
+  monitor area
+
+1.25 changes for 9.9.2
+
+1.26 
+  closing taabs which where not last tabs sometimes caused crashes or a wrong
+  tabs status
+ 
+1.27
+  running the editor wrote debug file of editor contents 

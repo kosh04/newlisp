@@ -15,8 +15,13 @@
 # 28 Jan 2005, L.M. made comments (did not work om Joe 3.1)
 #                   made [text] .. [/text] tags work
 # 25 June 2008, L.M updated for version 9.4.0
+# 22 Sept 2008, L.M updated for version 9.9.x -> 10.0 added setf
+# 29 Sept 2008, L.M updated for version 9.9.x -> 10.0 added copy
+# 21 Oct 2008, L.M. exclude MAIN from highlighting
+# 18 Nov 2008, L.M. eliminated old functions for 10.0
+# 27 Nov 2008, L.M. added obsolete functions
 #
-# version 1.2
+# version 1.4
 
 =Idle
 =Comment 	green
@@ -27,7 +32,7 @@
 =Quote		bold
 =Prim		bold blue
 =Tag		bold blue
-=Depr    	blink
+=Depr    	bold yellow
 
 :idle Idle
 	*		idle
@@ -84,7 +89,6 @@
 ">>"	prim
 "?"	prim
 "@"	prim
-"MAIN"	prim
 "NaN?"	prim
 "^"	prim
 "abort"	prim
@@ -105,7 +109,6 @@
 "asin"	prim
 "asinh"	prim
 "assoc"	prim
-"assoc-set"	prim
 "atan"	prim
 "atan2"	prim
 "atanh"	prim
@@ -119,6 +122,7 @@
 "betai"	prim
 "bind"	prim
 "binomial"	prim
+"bits"	prim
 "callback"	prim
 "case"	prim
 "catch"	prim
@@ -134,6 +138,7 @@
 "constant"	prim
 "context"	prim
 "context?"	prim
+"copy"	prim
 "copy-file"	prim
 "cos"	prim
 "cosh"	prim
@@ -260,6 +265,7 @@
 "net-connect"	prim
 "net-error"	prim
 "net-eval"	prim
+"net-interface" prim
 "net-listen"	prim
 "net-local"	prim
 "net-lookup"	prim
@@ -284,7 +290,6 @@
 "nper"	prim
 "npv"	prim
 "nth"	prim
-"nth-set"	prim
 "null?"	prim
 "number?"	prim
 "open"	prim
@@ -326,7 +331,6 @@
 "real-path"	prim
 "ref"	prim
 "ref-all"	prim
-"ref-set"	prim
 "regex"	prim
 "regex-comp"	prim
 "remove-dir"	prim
@@ -338,7 +342,6 @@
 "reverse"	prim
 "rotate"	prim
 "round"	prim
-"s"	prim
 "save"	prim
 "search"	prim
 "seed"	prim
@@ -348,11 +351,10 @@
 "sequence"	prim
 "series"	prim
 "set"	prim
-"set-assoc"	prim
 "set-locale"	prim
-"set-nth"	prim
 "set-ref"	prim
 "set-ref-all"	prim
+"setf"	prim
 "setq"	prim
 "sgn"	prim
 "share"	prim
@@ -415,6 +417,12 @@
 "zero?"	prim
 "|"	prim
 "~"	prim
+"set-nth"	depr
+"nth-set"	depr
+"set-assoc"	depr
+"assoc-set"	depr
+"integer"	depr
+"ref-set"	depr
 
 done		
 	"\-\"a-zA-Z_0-9!#@$%^&*+={}|/\\:';,.<>/?~`" ident
@@ -456,9 +464,7 @@ done
 :tag_closed Tag
 	*		idle		noeat
 	
-	
-
-	
 :depr Depr
   *  idle     noeat
+
 
