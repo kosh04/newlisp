@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/21/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class MenuWidget extends gsObject {
 
@@ -36,7 +37,13 @@ JMenu jmenu;
 public MenuWidget(StringTokenizer params)
 	{
 	id = params.nextToken();
-	jmenu = new JMenu(Base64Coder.decodeString(params.nextToken()));
+	String text = Base64Coder.decodeString(params.nextToken());
+	if(guiserver.UTF8)
+	try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
+	jmenu = new JMenu(text);
 	container = jmenu;
 	jcomponent = jmenu;
 	component = jmenu;

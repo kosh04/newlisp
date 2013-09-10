@@ -32,10 +32,10 @@ int matchString(char * buffer,  char * string, int * length);
 int stringComp(char * buffer, char * string);
 int printFunction(CELL * cell);
 void getDebuggerInput(char * msg);
-void allocateDebugStack(void);
 
 extern SYMBOL * currentFunc;
 extern SYMBOL * timerEvent;
+extern SYMBOL * cilkEvent;
 extern SYMBOL * symHandler[];
 extern int currentSignal;
 
@@ -54,24 +54,21 @@ char footerStr[32] = " s|tep n|ext c|ont q|uit > ";
 #define DEBUG_ENTRY "->"
 #define DEBUG_EXIT "<-"
 
-
 void openTrace(void)	
 	{
 	if(traceFlag) return;
 	traceFlag = TRUE;
 	currentFunc = nilSymbol;
 	debugStackIdx = 0;
-	allocateDebugStack();
+	debugStack = (UINT *)allocMemory(MAX_CPU_STACK * 2 * sizeof(UINT));
 	}
 
 void closeTrace(void)
 	{
-/*	printf("closing trace\n"); */
 	traceFlag = 0;
 	if(debugStack) free(debugStack);
 	debugStack = NULL;
 	}
-
 
 
 CELL * p_debug(CELL * params)
@@ -136,7 +133,7 @@ traceFlag |= TRACE_IN_ENTRY;
 if(traceFlag & TRACE_SIGNAL)
 	{
 	traceFlag &= ~TRACE_SIGNAL;
-	executeSymbol(symHandler[currentSignal - 1], stuffInteger(currentSignal));
+	executeSymbol(symHandler[currentSignal - 1], stuffInteger(currentSignal), NULL);
 	traceFlag &= ~TRACE_IN_ENTRY;
 	return;
 	}
@@ -150,11 +147,11 @@ if(traceFlag & TRACE_SIGINT)
 if(traceFlag & TRACE_TIMER)
 	{
 	traceFlag &= ~TRACE_TIMER;
-	executeSymbol(timerEvent, NULL);
+	executeSymbol(timerEvent, NULL, NULL);
 	traceFlag &= ~TRACE_IN_ENTRY;
 	return;
 	}
-	
+
 if(debugStackIdx > 1)
 	{
 	if(printFunction(cell))
@@ -351,11 +348,6 @@ free(funcStr);
 return TRUE;
 }
 
-
-void allocateDebugStack(void)
-{
-debugStack = (UINT *)allocMemory(MAX_CPU_STACK * 2 * sizeof(UINT));
-}
 
 /* search for a string skipping white space
 */

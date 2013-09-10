@@ -515,21 +515,23 @@ if(range == 0)
 	return(trueCell);
 	}
 
-rnum = ((scale * random())/(MY_RAND_MAX - 1));
+while((rnum = random()) == MY_RAND_MAX);
+rnum = (scale * rnum)/MY_RAND_MAX;
+
 if(params->type == CELL_NIL)
 	return(stuffInteger((UINT)rnum));
 	
 getInteger(params, (UINT *)&n);
 
-dist = getCell(CELL_EXPRESSION);
 
 cell = stuffInteger((UINT)rnum);
-dist->contents = (UINT)cell;
+dist = makeCell(CELL_EXPRESSION, (UINT)cell);
 
 --n;
 while(n-- > 0)
 	{
-	rnum = ((scale * random())/(MY_RAND_MAX - 1));
+	while((rnum = random()) == MY_RAND_MAX);
+	rnum = (scale * rnum)/MY_RAND_MAX;
 	cell->next = stuffInteger((UINT)rnum);
 	cell = cell->next;
 	}
@@ -1078,6 +1080,8 @@ CELL * cell;
 size_t length, i, j;
 CELL * * vector;
 int repetition = 0;
+long rnum;
+double scale;
 
 getListHead(params, &list);
 
@@ -1103,12 +1107,15 @@ for(i = 0; i < length; i++)
 /* reorganize randomly */
 RANDOMIZE:
 for(i = 0; i < (length - 1); i++)
-  {
-  j = random() % length;
-  cell = vector[i];
-  vector[i] = vector[j];
-  vector[j] = cell;
-  }
+	{
+	scale = length - i;
+	while((rnum = random()) == MY_RAND_MAX);
+	rnum = (scale * rnum)/MY_RAND_MAX;
+	j = i + rnum;
+	cell = vector[i];
+	vector[i] = vector[j];
+	vector[j] = cell;
+	}
 
 /* check that new sequence is different */
 if(!repetition)
@@ -1574,28 +1581,51 @@ return(stuffFloat(&binomial));
 
 CELL * p_series(CELL * params)
 {
-double fromFlt, factFlt, current;
-ssize_t i;
-ssize_t count;
+double fromFlt, factFlt;
+ssize_t count, i;
 CELL * sequence;
 CELL * cell;
+CELL * pCell;
+CELL * expr;
+int errNo, resultIdxSave;
 
 params = getFloat(params, &fromFlt);
-params = getFloat(params, &factFlt);
-if(isnan(fromFlt) || isnan(factFlt))
-	return(errorProc(ERR_INVALID_PARAMETER_NAN));
-getInteger(params, (UINT *)&count);
+pCell = evaluateExpression(params);
+getInteger(params->next, (UINT *)&count);
+
 sequence = getCell(CELL_EXPRESSION);
-if(count > 0)
+if(count <= 0) return(sequence);
+
+cell = stuffFloat(&fromFlt);
+
+if(isNumber(pCell->type))
 	{
-	cell = stuffFloat(&fromFlt);
 	sequence->contents = (UINT)cell;
-	current = fromFlt;
+	getFloat(pCell, &factFlt);
 	for(i = 1; i < count; i++)
 		{
-		current *= factFlt;
-		cell->next = stuffFloat(&current);
+		fromFlt *= factFlt;
+		cell->next = stuffFloat(&fromFlt);
 		cell = cell->next;
+		}
+	}
+else /* assumes lambda or primitive */
+	{
+	addList(sequence, cell);
+	resultIdxSave = resultStackIdx;
+	for(i = 1; i < count; i++)
+		{
+		expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
+   		((CELL *)expr->contents)->next = stuffFloat(&fromFlt);
+		pushResult(expr);
+		if(!(cell = evaluateExpressionSafe(expr, &errNo)))
+			{
+			deleteList(sequence);
+			longjmp(errorJump, errNo);
+			}
+		addList(sequence, copyCell(cell));
+		getFloat(cell, &fromFlt);
+		cleanupResults(resultIdxSave);	
 		}
 	}
 

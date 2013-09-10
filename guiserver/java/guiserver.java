@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/10/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ public class guiserver extends gsObject
 	static boolean connected = false;
 	static SplashWindow splash = null;
 	static Frame frame = null;
-	static double version = 1.15;
+	static double version = 1.21;
 
     public static void main (String args[]) throws IOException, InterruptedException 
 		{
@@ -137,11 +137,13 @@ public class guiserver extends gsObject
 			} catch (IOException IOexc) { System.out.println("server shutdown"); System.exit(0); }
 		}
 
+/*
 	public static void disposeSplash()
 		{
 		if(splash != null) splash.dispose();
 		if(frame != null) frame.dispose();
 		}
+*/
 		
 	public static void execCommand(String command) throws IOException
 		{
@@ -280,6 +282,76 @@ public void playSound(StringTokenizer tokens)
 	SoundSystem.playSound(Base64Coder.decodeString(tokens.nextToken()));
 	}
 
+public void midiInit(StringTokenizer tokens)
+	{
+	MidiSynth.midiInit(tokens);
+	}
+
+public void midiClose(StringTokenizer tokens)
+	{
+	MidiSynth.midiClose();
+	}
+	
+public void playNote(StringTokenizer tokens)
+	{
+	MidiSynth.playNote(tokens);
+	}
+	
+public void playSequence(StringTokenizer tokens)
+	{
+	MidiSynth.playSequence(tokens);
+	}
+
+public void stopSequence(StringTokenizer tokens)
+	{
+	MidiSynth.stopSequence();
+	}
+	
+public void saveSequence(StringTokenizer tokens)
+	{
+	MidiSynth.saveSequence(tokens);
+	}
+
+public void addTrack(StringTokenizer tokens)
+	{
+	MidiSynth.addTrack(tokens);
+	}
+
+public void getInstruments(StringTokenizer tokens)
+	{
+	MidiSynth.getInstruments();
+	}
+	
+public void midiPatch(StringTokenizer tokens)
+	{
+	MidiSynth.midiPatch(tokens);
+	}
+	
+public void channelBend(StringTokenizer tokens)
+	{
+	MidiSynth.channelBend(tokens);
+	}
+
+public void channelReverb(StringTokenizer tokens)
+	{
+	MidiSynth.channelReverb(tokens);
+	}
+
+public void midiBPM(StringTokenizer tokens)
+	{
+	MidiSynth.midiBPM(tokens);
+	}
+	
+public void muteTrack(StringTokenizer tokens)
+	{
+	MidiSynth.muteTrack(tokens);
+	}
+	
+public void soloTrack(StringTokenizer tokens)
+	{
+	MidiSynth.soloTrack(tokens);
+	}
+	
 public void setUTF8(StringTokenizer tokens)
 	{
 	if(tokens.nextToken().equals("true"))
@@ -287,7 +359,6 @@ public void setUTF8(StringTokenizer tokens)
 	else
 		guiserver.UTF8 = false;
 	}
-
 	
 // Mac OS X specific methods
 
@@ -310,8 +381,8 @@ public void setUTF8(StringTokenizer tokens)
 			((DialogWidget)gsobject).jdialog.setVisible(true);			
 		else
 			JOptionPane.showMessageDialog(null, 
-				"Software: copyright (c) 2007 Lutz Mueller http://newlisp.org\n" +
-				"Icons: copyright (c) 2007 Michael Michaels http://neglook.com\nAll rights reserved.", 
+				"Software: copyright (c) 2008 Lutz Mueller http://newlisp.org\n" +
+				"Icons: copyright (c) 2008 Michael Michaels http://neglook.com\nAll rights reserved.", 
 				"About newLISP-GS v." + version, JOptionPane.PLAIN_MESSAGE,
 				getIconFromPath("/local/newLISP64.png", this.getClass()));
    		}

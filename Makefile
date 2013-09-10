@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 9.3.3
-INT_VERSION = 9303
+VERSION = 9.4.0
+INT_VERSION = 9400
 GUISERVER = /usr/share/newlisp/guiserver
 
 default:
@@ -59,6 +59,7 @@ help:
 	@echo "  make solaris         # newLISP for Sun SOLARIS (tested on Sparc)"
 	@echo "  make solarisLP64     # newLISP for Sun SOLARIS 64-bit LP64 (tested on Sparc)"
 	@echo "  make solaris_utf8    # newLISP for Sun SOLARIS UTF-8 (tested on Sparc)"
+	@echo "  make opensolaris     # newLISP for SunOS OpenSolaris on i386 INtel/AMD CPU"
 	@echo "  make true64          # newLISP for tru64 UNIX LP64 tested on Alpha CPU"
 	@echo "  make mingw           # newlisp.exe for Win32 (MinGW compiler)"
 	@echo "  make mingw_utf8      # newlisp.exe for Win32 UTF-8 (MinGW icompiler)"
@@ -148,6 +149,9 @@ solarisLP64:
 solaris_utf8:
 	make -f makefile_solaris_utf8
 
+opensolaris:
+	make -f makefile_opensolaris
+
 mingw:
 	make -f makefile_mingw
 
@@ -185,7 +189,7 @@ wings:
 
 # this cleans up the distribution directory for a clean build
 clean:
-	-rm *~ *.bak *.o *.obj *.map core *.tgz TEST
+	-rm *~ *.bak *.o *.obj *.map core *.tgz guiserver/java/._* TEST
 	-rm guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
 	-rm  doc/*.bak util/*.bak examples/*.bak modules/*.bak
 	-chmod 644 *.h *.c *.lsp Makefile makefile*
@@ -200,9 +204,11 @@ clean:
 # run test scripts
 test:
 	./newlisp qa-dot
+	./newlisp qa-dictionary
 	./newlisp qa-xml
 	./newlisp qa-setsig
 	./newlisp qa-net
+	./newlisp qa-cilk
 
 # directory definitions
 datadir=$(DESTDIR)/usr/share
@@ -232,6 +238,7 @@ install:
 	-install -m 755 util/newlispdoc $(bindir)/newlispdoc
 	-install -m 644 util/syntax.cgi $(datadir)/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(datadir)/newlisp/util/newlisp.vim
+	-install -m 644 util/nanorc $(datadir)/newlisp/util/nanorc
 	-install -m 644 util/link.lsp $(datadir)/newlisp/util/link.lsp
 	-install -m 644 util/httpd-conf.lsp $(datadir)/newlisp/util/httpd-conf.lsp
 	-install -m 644 doc/COPYING $(datadir)/doc/newlisp/COPYING
@@ -241,7 +248,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-9.3-Release.html $(datadir)/doc/newlisp/newLISP-9.3-Release.html
+	-install -m 644 doc/newLISP-9.4-Release.html $(datadir)/doc/newlisp/newLISP-9.4-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/cgi.lsp $(datadir)/newlisp/modules/cgi.lsp
@@ -249,8 +256,8 @@ install:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
-	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/mysql5.lsp $(datadir)/newlisp/modules/mysql5.lsp
+	-install -m 644 modules/mysql51.lsp $(datadir)/newlisp/modules/mysql51.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
@@ -266,9 +273,11 @@ install:
 	-install -m 755 guiserver/newlisp-edit.lsp $(bindir)/newlisp-edit
 	-install -m 644 guiserver/guiserver.jar $(datadir)/newlisp/guiserver.jar
 	-install -m 644 guiserver/guiserver.lsp $(datadir)/newlisp/guiserver.lsp
+	-install -m 644 guiserver/images/newLISP128.png $(datadir)/newlisp/newLISP128.png
 	-install -m 644 guiserver/COPYING $(datadir)/doc/newlisp/guiserver/COPYING
 	-install -m 644 guiserver/index.html $(datadir)/doc/newlisp/guiserver/index.html
 	-install -m 644 guiserver/guiserver.lsp.html $(datadir)/doc/newlisp/guiserver/guiserver.lsp.html
+	-install -m 644 util/newlispdoc.css $(datadir)/doc/newlisp/guiserver/newlispdoc.css
 	-install -m 644 guiserver/allfonts-demo.lsp $(datadir)/newlisp/guiserver/allfonts-demo.lsp
 	-install -m 644 guiserver/animation-demo.lsp $(datadir)/newlisp/guiserver/animation-demo.lsp
 	-install -m 644 guiserver/border-layout-demo.lsp $(datadir)/newlisp/guiserver/border-layout-demo.lsp
@@ -280,6 +289,8 @@ install:
 	-install -m 644 guiserver/frameless-demo.lsp $(datadir)/newlisp/guiserver/frameless-demo.lsp
 	-install -m 644 guiserver/html-demo.lsp $(datadir)/newlisp/guiserver/html-demo.lsp
 	-install -m 644 guiserver/image-demo.lsp $(datadir)/newlisp/guiserver/image-demo.lsp
+	-install -m 644 guiserver/midi-demo.lsp $(datadir)/newlisp/guiserver/midi-demo.lsp
+	-install -m 644 guiserver/midi2-demo.lsp $(datadir)/newlisp/guiserver/midi2-demo.lsp
 	-install -m 644 guiserver/mouse-demo.lsp $(datadir)/newlisp/guiserver/mouse-demo.lsp
 	-install -m 644 guiserver/move-resize-demo.lsp $(datadir)/newlisp/guiserver/move-resize-demo.lsp
 	-install -m 644 guiserver/pinballs-demo.lsp $(datadir)/newlisp/guiserver/pinballs-demo.lsp
@@ -322,6 +333,7 @@ install_home:
 	-install -m 755 util/newlispdoc $(HOME)/bin/newlispdoc
 	-install -m 644 util/syntax.cgi $(HOME)/share/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(HOME)/share/newlisp/util/newlisp.vim
+	-install -m 644 util/nanorc $(HOME)/share/newlisp/util/nanorc
 	-install -m 644 util/link.lsp $(HOME)/share/newlisp/util/link.lsp
 	-install -m 644 util/httpd-conf.lsp $(HOME)/share/newlisp/util/httpd-conf.lsp
 	-install -m 644 guiserver/index.html $(HOME)/share/doc/newlisp/guiserver/index.html
@@ -334,7 +346,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-9.3-Release.html $(HOME)/share/doc/newlisp/newLISP-9.3-Release.html
+	-install -m 644 doc/newLISP-9.4-Release.html $(HOME)/share/doc/newlisp/newLISP-9.4-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/cgi.lsp $(HOME)/share/newlisp/modules/cgi.lsp
@@ -344,6 +356,7 @@ install_home:
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
 	-install -m 644 modules/mysql.lsp $(HOME)/share/newlisp/modules/mysql.lsp
 	-install -m 644 modules/mysql5.lsp $(HOME)/share/newlisp/modules/mysql5.lsp
+	-install -m 644 modules/mysql51.lsp $(HOME)/share/newlisp/modules/mysql51.lsp
 	-install -m 644 modules/odbc.lsp $(HOME)/share/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(HOME)/share/newlisp/modules/pop3.lsp
 	-install -m 644 modules/postscript.lsp $(HOME)/share/newlisp/modules/postscript.lsp

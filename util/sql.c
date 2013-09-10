@@ -7,12 +7,14 @@
   compile using: gcc sql.c -o sql
 
   then do: ./sql
-  to obtain a list of offsets in MySQL data structures
+  to obtain a list of offsets in MySQL data structures for different
+  versions and compile flavors of MySQL
 
   this program is only needed when designing new MySQL support functions
   in newLISP and the MySQL data structures have to be accessed directly
 
-  the values produced by this program are used in the file mysql.lsp.
+  the values produced by this program are used in the files mysql.lsp,
+  mysql5.lsp and mysql51.lsp
 
   See also /usr/share/newlisp/mysql.lsp
 

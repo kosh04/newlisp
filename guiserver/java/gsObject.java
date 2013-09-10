@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/19/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.border.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class gsObject {
 
@@ -250,7 +251,13 @@ public void setSelected(StringTokenizer tokens)
 
 public void setTitledBorder(StringTokenizer tokens)
 	{
-	jcomponent.setBorder(BorderFactory.createTitledBorder(Base64Coder.decodeString(tokens.nextToken())));
+	String text = Base64Coder.decodeString(tokens.nextToken());
+	if(guiserver.UTF8)
+	try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+		
+	jcomponent.setBorder(BorderFactory.createTitledBorder(text));
 	}
 	
 public void setBevelBorder(StringTokenizer tokens)

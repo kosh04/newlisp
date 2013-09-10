@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/13/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class CheckBoxWidget extends aButton {
 
@@ -43,8 +44,13 @@ public CheckBoxWidget(StringTokenizer params)
 	
 	if(params.hasMoreTokens())
 		{
-		String base64string = params.nextToken();
-		abutton.setText(Base64Coder.decodeString(base64string));
+		String text = Base64Coder.decodeString(params.nextToken());
+		if(guiserver.UTF8)
+		try {
+			abutton.setText(new String(text.getBytes(), "UTF-8"));
+		} catch (UnsupportedEncodingException ee) {}
+		else
+			abutton.setText(text);
 		}
 	
 	if(params.hasMoreTokens())

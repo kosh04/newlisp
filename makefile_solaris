@@ -1,11 +1,11 @@
-# makefile for newLISP v. 9.x.x on SOLARIS (32 bit app)
+# makefile for newLISP v. 9.x.x on SOLARIS (32 bit app) on Sparc CPU
 #
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
-CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -c -O2 -DSOLARIS 
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -c -O2 -DSOLARIS -DSPARC
 
 CC = gcc
 

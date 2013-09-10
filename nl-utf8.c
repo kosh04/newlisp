@@ -214,7 +214,6 @@ CELL * p_unicode(CELL * params)
 char * utf8str;
 size_t size;
 int * unicode;
-CELL * cell;
 
 getStringSize(params, &utf8str, &size, TRUE);
 unicode = allocMemory((size + 1) * sizeof(int));
@@ -222,11 +221,13 @@ unicode = allocMemory((size + 1) * sizeof(int));
 size = utf8_wstr(unicode, utf8str, size);
 unicode = reallocMemory(unicode, (size + 1) * sizeof(int) + 1);
 
+/*
 cell = getCell(CELL_STRING);
 cell->contents = (UINT)unicode;
 cell->aux = (size + 1) * sizeof(int) + 1;
+*/
 
-return(cell);
+return(makeStringCell((char *)unicode, (size + 1) * sizeof(int)));
 }
 
 
@@ -235,7 +236,6 @@ CELL * p_utf8(CELL * params)
 int * unicode;
 size_t size;
 char * utf8str;
-CELL *cell;
 
 getStringSize(params, (void *)&unicode, &size, TRUE);
 utf8str = allocMemory(size * UTF8_MAX_BYTES + 1);
@@ -243,11 +243,14 @@ utf8str = allocMemory(size * UTF8_MAX_BYTES + 1);
 size = wstr_utf8(utf8str, unicode, size);
 utf8str = reallocMemory(utf8str, size + 1);
 
+/*
 cell = getCell(CELL_STRING);
 cell->contents = (UINT)utf8str;
 cell->aux = size + 1;
-
 return(cell);
+*/
+
+return(makeStringCell(utf8str, size));
 }
 
 

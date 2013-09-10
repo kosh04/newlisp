@@ -159,7 +159,6 @@ while(params->type != CELL_NIL && count < 14)
 #endif
 			args[count++] = arg->contents;
 			break;
-
 		default:
 			args[count++] = (UINT)arg;
 			break;
@@ -367,6 +366,7 @@ LIBCALLBACK callback[] = {
 long template(long n, long p1, long p2, long p3, long p4) 
 {
 CELL * args;
+CELL * cell;
 long result;
 jmp_buf errorJumpSave;
 
@@ -380,7 +380,9 @@ if(setjmp(errorJump))
 	}
 
 args = stuffIntegerList(4, p1, p2, p3, p4);
-result = executeSymbol(callback[n].sym, (CELL *)args->contents);
+executeSymbol(callback[n].sym, (CELL *)args->contents, &cell);
+result = cell->contents;
+deleteList(cell);
 args->contents = (UINT)nilCell;
 deleteList(args);
 

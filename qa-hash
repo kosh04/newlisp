@@ -1,0 +1,10 @@
+(if (not (and
+	(nil? (define Foo:Foo)) ; create namespace and default functor
+	(= (Foo "bar" 123) 123)
+	(= (Foo "bar") 123)
+	(= (Foo "bar" (+ 100 23)) 123)
+	(= (Foo (append "b" "ar")) 123)
+	(= (Foo '(("var" 123) ("bar" 456) ("baz" 789))) 'Foo)
+	(= (Foo) '(("bar" 456) ("baz" 789) ("var" 123)))
+	)) (println ">>>>> problem with hash functions for namespaces") true)
+

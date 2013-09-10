@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/24/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import java.awt.*;
 import java.awt.color.*;
 import java.awt.geom.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 @SuppressWarnings("unchecked")
 public class TextShape extends Shape {
@@ -38,6 +39,11 @@ public TextShape(StringTokenizer tokens)
 	{
 	tag = tokens.nextToken();
 	text = Base64Coder.decodeString(tokens.nextToken());
+	if(guiserver.UTF8)
+	try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	X = Integer.parseInt(tokens.nextToken());
 	Y = Integer.parseInt(tokens.nextToken());
 	
@@ -70,6 +76,7 @@ public void drawShape(Graphics2D g2)
 	//System.out.println("font draw text with:" + textShapeFont);
 	g2.setFont(textShapeFont);
 	//g2.setComposite(currentComposite);
+	
 	g2.drawString(text, X, Y);
 	}
 	

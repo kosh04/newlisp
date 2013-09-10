@@ -1,0 +1,45 @@
+#!/usr/bin/newlisp
+
+; qa-dictionary
+; check dictionary creation
+
+(println)
+(set 'N 10000)
+
+(if (main-args 2)
+	(set 'N (int (main-args 2))))
+
+; define name-space
+(define Lex:Lex)
+
+(define (qa-dictionary)
+    (set 'data (map string (rand 1000000 N)))
+    (set 'ass (map list data (sequence 1 N)))
+	(println "N associations: " N)
+	(println "cells before creating Lex: " (sys-info 0))
+    (println "aquire from association list: " (set 'ta (time (Lex ass))) " ms")
+	(println "time to aquire one entry: " 
+		(format "%5.3f" (mul 1000 (div ta N))) (append " " (char  956) "s"))
+	(println "cells after creating Lex: " (sys-info 0))
+	(println "N symbols in Lex: " (set 'ns (length (Lex))))
+	(println "save to file: " (time (save "Lex.lsp" 'Lex)) " ms")
+	(println "time to delete namespace: " (set 'td (time (delete 'Lex))) " ms")
+	(println "time to delete one symbol: "
+		(format "%5.3f" (mul 1000 (div td ns))) (append " " (char  956) "s"))
+	(println "cells after deleting Lex: " (sys-info 0))
+	(println "time to load namespace: " (time (load "Lex.lsp")) " ms")
+	(println "cells after loading Lex: " (sys-info 0))
+	(println "time to save Lex1: " (time (save "Lex2.lsp" 'Lex)) " ms")
+	(println)
+	(if (not (exec "cmp Lex.lsp Lex2.lsp"))
+		(println ">>>>> DICTIONARY API TESTED SUCCESSFUL")
+		(println ">>>>> ERROR: PROBLEM IN DICTIONARY API"))
+)
+
+(qa-dictionary)
+(delete-file "Lex.lsp")
+(delete-file "Lex2.lsp")
+(println)
+(exit)
+
+

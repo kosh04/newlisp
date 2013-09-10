@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/13/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
-
+import java.io.UnsupportedEncodingException;
 
 @SuppressWarnings("unchecked") 
 public class ComboBoxWidget extends gsObject implements ActionListener{
@@ -44,8 +44,10 @@ public ComboBoxWidget(StringTokenizer params)
 	action = params.nextToken();
 		
 	while(params.hasMoreTokens())
-		combobox.addItem(Base64Coder.decodeString(params.nextToken()));
-
+		{
+		addListItem(params);
+		}
+		
 	gsObject.widgets.put(id, this);
 
 	combobox.addActionListener(this);
@@ -55,7 +57,14 @@ public void actionPerformed(ActionEvent e)
 	{
 	int index = combobox.getSelectedIndex();
 	String idx = Integer.toString(index);
-	String item = Base64Coder.encodeString(combobox.getSelectedItem().toString());
+	String item = combobox.getSelectedItem().toString();
+
+	if(guiserver.UTF8)	
+		try {
+			item = new String(item.getBytes("UTF-8"));
+	} catch (UnsupportedEncodingException ee) {}
+	
+	item = Base64Coder.encodeString(item);
 	guiserver.out.println("(" + action + " \"" + id + "\" " + idx + " \"" + item + "\")");
 	guiserver.out.flush();
 	}
@@ -63,7 +72,15 @@ public void actionPerformed(ActionEvent e)
 public void addListItem(StringTokenizer tokens)
 	{
 	while(tokens.hasMoreTokens()) 
-		combobox.addItem(Base64Coder.decodeString(tokens.nextToken()));
+		{
+		String text = Base64Coder.decodeString(tokens.nextToken());
+		if(guiserver.UTF8)
+			try {
+			text = new String(text.getBytes(), "UTF-8");
+			} catch (UnsupportedEncodingException ee) {}
+
+		combobox.addItem(text);
+		}
 	}
 	
 public void removeListItem(StringTokenizer tokens)
@@ -87,6 +104,11 @@ public void insertListItem(StringTokenizer tokens)
 	while(tokens.hasMoreTokens())
 		{
 		text = Base64Coder.decodeString(tokens.nextToken());
+		if(guiserver.UTF8)
+			try {
+			text = new String(text.getBytes(), "UTF-8");
+			} catch (UnsupportedEncodingException ee) {}
+		
 		index = Integer.parseInt(tokens.nextToken());
 		if(index > (combobox.getItemCount() - 1)) index = combobox.getItemCount() - 1;
 		if(index < 0) index = 0;

@@ -1,0 +1,22 @@
+# makefile for newLISP v. 9.x.x on SOLARIS (32 bit app)
+#
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -c -O2 -DSOLARIS 
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -lm -ldl -lrt -lsocket -lnsl -o newlisp
+	@echo ""
+	@echo "do not use 'make install' install files manually; see Makefile for details"
+	@echo "for a minimum install just put newlisp into /usr/bin/newlisp
+	@echo ""
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_solaris

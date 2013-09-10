@@ -1,0 +1,101 @@
+<html>
+<body>
+<blockquote>
+<h1>newLISP<font size=-2>tm</font> v.9.4 Release Notes <font size=-1>July 1st, 2008 - rev 8</font> </h1>
+<h3> New API for hash-like dictionary access </h3>
+<p>newLISP has always used names-paces to build dictionaries for associative memory access, but
+ the API (application programming interface) was lengthy and the created dictionaries where not 
+ always safe for saving and reloading, because of overwritten system symbols.</p>
+
+<p>The new API is short and safe. Dictionaries created with the <tt>bayes-count</tt> function 
+can be used as dictionaries with hash-like access and vice-versa. The new API allows for easy 
+transformation of association lists into namespaces for hash-like access and and vice-versa 
+converting association lists into namespaces.</p>
+
+<p>For details on this new API see the chapter <a href="newlisp_manual.html#hash">Dictionaries 
+and hash tables</a>  in the users manual.</p>
+
+<h3> New Cilk API for multi processing </h3>
+
+<p>The new <a href="http://supertech.csail.mit.edu/cilk/">Cilk</a>  API works with only three 
+new functions:
+
+<ul>
+<li><tt>spawn</tt> for starting the evaluation of a function in a child process.</li>
+<li><tt>sync</tt> for synchronizing data transfer from finished child processes.</li>
+<li><tt>abort</tt> for aborting s specific or all child processes.</li>
+</ul>
+
+<p>The new Cilk API takes advantage of todays multi-core CPUs as the operating system will 
+distribute different processes on to different cores inside the processor. Even on single 
+core processors the new API is useful wherever multiple processes in a program have to be 
+coordinated and with data transfer in between them. An <em>inlet</em> function for event 
+driven syncronization is also supported. The new API encapsulates exisiting functionality 
+from the <tt>fork</tt>, <tt>wait-pid</tt> and <tt>share</tt> functions.</p>
+
+<p>This new API works on Mac OS X and Linux/UNIX, on Win32 it is only simulated to make 
+source code portable.</p>
+
+<h3> A general mechanism for reference passing </h3>
+
+<p>Namespaces in newLISP always haven been passed by reference to user-defined functions, 
+but only few bult-in newLISP primitives could handle data packaged in namespaces with 
+<em>default functors</em>. Now any function in newLISP can handle strings and lists packaged 
+this way. See the chapters <a href="newlisp_manual.html#default_function">default functor</a> 
+and <a href="newlisp_manual.html#pass_big">Passing data by reference</a>  in the users manual 
+for more information.</p>
+
+<h3> More access to newLISP internals </h3>
+
+<ul>
+<li><tt>read-expr</tt> hooks into the internal source reader to access expressions before 
+evaluation.</li>
+<li><tt>prompt-event</tt> can fully customize the prompt in the interactive newLISP console.</li>
+<li><tt>command-line</tt> enables pre-processing of the command line and HTTP requests.</li>
+</ul>
+
+<p>One of newLISP's strengths is working with it interactively in a terminal. 
+<tt>prompt-event</tt> and <tt>command-event</tt> allow a full integration of a OS shell and 
+newLISP interactive mode. See the reference of the <tt>command-event</tt> function for an example.</p>
+
+<h3>Improved newLISP-GS with MIDI support</h3>
+<ul>
+<li>Several bugfixes in the newLISP-GS editor.</li>
+<li>MIDI support for internal sound synthesizer and external sound-banks.</li>
+</ul>
+
+<h3> Other API changes and additions </h3>
+<ul>
+<li><tt>bind</tt> has a new optional flag to force evaluation of bound parameters.</li>
+<li><tt>env</tt> now removes an environment variable when set to an empty string 
+(except Solaris, where it stays as an empty string).</li>
+<li><tt>lookup</tt> can take an optional default expression to return when lookup failed.</li>
+<li><tt>randomize</tt> has been rewritten using a better algorithm.</li>
+<li>new <tt>regex-comp</tt> allows pre-compilation of regular expressions.</li>
+<li><tt>search</tt> has a new parameter to put the file pointer to either the beginning or end 
+of the searched string.</li>
+<li><tt>series</tt> can take a lambda function instead of a multiplication factor.<br>
+<li><tt>sys-info</tt> now also returns the process id on Mac OS X and UNIX.</li>
+<li><tt>wait-pid</tt> has changed parameters for better control of child processes.</li>
+</ul>
+
+<h3>Added and removed files</h3>
+<ul>
+<li><tt>mysql.lsp</tt> The original MySQL v.4.0 module has been removed. Use either the 
+<tt>mysql5.lsp</tt> or <tt>mysql51.lsp</tt> module for MySQL versions 5.0 and 5.1.</li>
+ 
+<li><tt>nanorc</tt> A configuration file for newLISP syntax highlighting in the
+<a href="http://nano-editor.org">GNU nano</a> editor
+has been added to <tt>util</tt> directory in the source distribution and install directories.
+The file support syntaxhighlighting for newLISP <tt>.lsp</tt>, C <tt>.c</tt> and <tt>.h</tt>
+files and for HTML <tt>.html</tt> files. This modeless editor is installed bu default on Mac OS X, 
+UBUNTU Linux and most other Unix installations.</li>
+</ul>
+<p>All known bugs have been fixed. For a detail of bug fixes see the CHANGES notes in the 
+source distribution.</p>
+
+<center>&sect;</center>
+</blockquote>
+</body>
+</html>
+

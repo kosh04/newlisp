@@ -31,7 +31,7 @@ double * * multiply(double ** A, double ** B, int m, int n, int k, int l);
 double * * invert(double * * A, int n, int * err);
 int ludcmp(double * * a, int n, int * indx, double * d);
 void lubksb(double * * a, int n, int * indx, double * b);
-double * * getMatrix(CELL * params, int * type, int * n, int * m, int * err, int evalFlag);
+double * * getMatrix(CELL * params, int * type, int * n, int * m, int * err);
 double * * makeMatrix(CELL * number, int n, int m);
 int getDimensions(CELL * mat, int * n, int * m);
 double * * data2matrix(CELL * list, int n, int m);
@@ -75,8 +75,7 @@ for(j = 0; j < m; j++)
 	if(j > 0) Brows[j-1]->next = Brows[j];
 	}
 
-B = getCell(CELL_EXPRESSION);
-B->contents = (UINT)Brows[0];
+B = makeCell(CELL_EXPRESSION, (UINT)Brows[0]);
 
 for(i = 0; i < n; i++)
 	{
@@ -128,10 +127,10 @@ double * * M = NULL;
 int n, m, k, l;
 int err = 0;
 
-if((X = getMatrix(params, &typeX, &n, &m, &err, TRUE)) == NULL)
+if((X = getMatrix(params, &typeX, &n, &m, &err)) == NULL)
 	return(errorProcExt(err, params));
 
-if((Y = getMatrix(params->next, &typeY, &k, &l, &err, TRUE)) == NULL)
+if((Y = getMatrix(params->next, &typeY, &k, &l, &err)) == NULL)
 	{
 	freeMatrix(X, n);
 	return(errorProcExt(err, params->next));
@@ -163,7 +162,7 @@ int typeA;
 double * * A;
 double * * Y;
 
-if((A = getMatrix(params, &typeA, &n, &m, &err, TRUE)) == NULL)
+if((A = getMatrix(params, &typeA, &n, &m, &err)) == NULL)
 	return(errorProcExt(err, params));
 
 if(n != m) 
@@ -195,7 +194,7 @@ double d;
 int typeM, n, m, i, err;
 int * indx;
 
-if( (M = getMatrix(params, &typeM, &m, &n, &err, TRUE)) == NULL)
+if( (M = getMatrix(params, &typeM, &m, &n, &err)) == NULL)
 	return(errorProcExt(err, params));
 
 if(n != m) 
@@ -229,6 +228,7 @@ int n, m, k, l, err = 0;
 CELL * result;
 param = params;
 param = evaluateExpression(param);
+
 if(param->type == CELL_SYMBOL)
 	type = *((SYMBOL *)param->contents)->name;
 else if(param->type == CELL_PRIMITIVE)
@@ -238,9 +238,10 @@ else
 
 params = params->next;
 
-if( (A = getMatrix(params, &typeA, &n, &m, &err, TRUE)) == NULL)
+if( (A = getMatrix(params, &typeA, &n, &m, &err)) == NULL)
 	return(errorProcExt(err, params));
-result = evaluateExpression(params->next);
+
+getDefaultOrEval(params->next, &result);
 if(isNumber(result->type))
 	{
 	k = n, l = m;
@@ -251,10 +252,19 @@ if(isNumber(result->type))
 		}
 	typeB = CELL_EXPRESSION;
 	}
-else if( (B = getMatrix(result, &typeB, &k, &l, &err, FALSE)) == NULL)
-	{
-	freeMatrix(A, n);
-	return(errorProc(err));
+else
+	{ 
+	params = makeCell(CELL_QUOTE, (UINT)result);
+	if( (B = getMatrix(params, &typeB, &k, &l, &err)) == NULL)
+		{
+		freeMatrix(A, n);
+		return(errorProc(err));
+		}
+	else
+		{
+		params->contents = (UINT)nilCell;
+		deleteList(params);
+		}
 	}
 
 typeC = (typeA == CELL_ARRAY || typeB == CELL_ARRAY) ? CELL_ARRAY : CELL_EXPRESSION;
@@ -483,15 +493,12 @@ for (i = n; i >= 1; i--)
 
 /* ------------ make a matrix from list or array expr ----------- */
 
-double * * getMatrix(CELL * params, int * type, int * n, int * m, int *err, int evalFlag)
+double * * getMatrix(CELL * params, int * type, int * n, int * m, int *err)
 {
 CELL * data;
 double * * M;
 
-if(evalFlag)
-	data = evaluateExpression(params);
-else
-	data = params;
+getDefaultOrEval(params, &data);
 
 if(data->type != CELL_EXPRESSION && data->type != CELL_ARRAY)
 	{

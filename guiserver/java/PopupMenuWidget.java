@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 7/4/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class PopupMenuWidget extends gsObject {
 
@@ -36,7 +37,14 @@ JPopupMenu jpopup;
 public PopupMenuWidget(StringTokenizer params)
 	{
 	id = params.nextToken();
-	jpopup = new JPopupMenu(Base64Coder.decodeString(params.nextToken()));
+	
+	String text = Base64Coder.decodeString(params.nextToken());
+	if(guiserver.UTF8)
+	try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+	jpopup = new JPopupMenu(text);
+	
 	//jpopup.setLightWeightPopupEnabled(false); only if canvas extends Canvas
 	container = jpopup;
 	jcomponent = jpopup;

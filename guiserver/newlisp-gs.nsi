@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\lutz\newLISP\newlisp-9303-win-gs-114.exe"
+OutFile "c:\lutz\newLISP\newlisp-9400-win-gs-121.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.14 and newLISP 9.3.3 on your computer." \
+DirText "This will install the newLISP-GS 1.21 and newLISP 9.4.0 on your computer.\r\nIf not installing in the default directory reboot."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3
@@ -277,7 +277,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\manual_frame.html"
   File "c:\newlisp\CodePatterns.html"
   File "c:\newlisp\newLISPdoc.html"
-  File "c:\newlisp\newLISP-9.3-Release.html"
+  File "c:\newlisp\newLISP-9.4-Release.html"
   File "c:\newlisp\COPYING"
   File "c:\newlisp\guiserver.lsp"
   File "c:\newlisp\guiserver.jar"
@@ -287,6 +287,7 @@ Section "newLISP program (required) and DLL"
   SetOutPath $INSTDIR\guiserver
   File "c:\newlisp\guiserver\index.html"
   File "c:\newlisp\guiserver\guiserver.lsp.html"
+  File "c:\newlisp\guiserver\newlispdoc.css"
   File "c:\newlisp\guiserver\allfonts-demo.lsp"
   File "c:\newlisp\guiserver\animation-demo.lsp"
   File "c:\newlisp\guiserver\border-layout-demo.lsp"
@@ -298,6 +299,8 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\guiserver\frameless-demo.lsp"
   File "c:\newlisp\guiserver\html-demo.lsp"
   File "c:\newlisp\guiserver\image-demo.lsp"
+  File "c:\newlisp\guiserver\midi-demo.lsp"
+  File "c:\newlisp\guiserver\midi2-demo.lsp"
   File "c:\newlisp\guiserver\mouse-demo.lsp"
   File "c:\newlisp\guiserver\move-resize-demo.lsp"
   File "c:\newlisp\guiserver\pinballs-demo.lsp"
@@ -318,8 +321,8 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\modules\ftp.lsp"
   File "c:\newlisp\modules\gmp.lsp"
   File "c:\newlisp\modules\infix.lsp"
-  File "c:\newlisp\modules\mysql.lsp"
   File "c:\newlisp\modules\mysql5.lsp"
+  File "c:\newlisp\modules\mysql51.lsp"
   File "c:\newlisp\modules\odbc.lsp"
   File "c:\newlisp\modules\pop3.lsp"
   File "c:\newlisp\modules\postscript.lsp"
@@ -333,14 +336,18 @@ Section "newLISP program (required) and DLL"
   SetOutPath $INSTDIR\util
   File "c:\newlisp\util\httpd-conf.lsp"
   File "c:\newlisp\util\link.lsp"
-  File "c:\newlisp\util\newlisp.vim"
   File "c:\newlisp\util\newlispdoc"
+  File "c:\newlisp\util\newlisp.vim"
+  File "c:\newlisp\util\nanorc"
   File "c:\newlisp\util\syntax.cgi"
 
   SetOutPath $INSTDIR
 
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\newLISP "Install_Dir" "$INSTDIR"
+
+  ; Write envionment variable intor registry
+  WriteRegStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "NEWLISPDIR" "$INSTDIR"
 
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\newLISP" "DisplayName" "newLISP (remove only)"
@@ -354,8 +361,8 @@ Section "newLISP program (required) and DLL"
   CreateShortCut "$SMPROGRAMS\newLISP\GS Manual and Reference.lnk" "$INSTDIR\guiserver\index.html" "" "$INSTDIR\guiserver\index.html" 0
   #CreateShortCut "$SMPROGRAMS\newLISP\CodePatterns.lnk" "$INSTDIR\guiserver\CodePatterns.html" "" "$INSTDIR\guiserver\CodePatterns.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISP128.png" "$INSTDIR\newlisp-win.ico" 0
-  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISP128.png" "$INSTDIR\newlisp-win.ico" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
+  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
 
 SectionEnd ; end the section
 
@@ -378,10 +385,12 @@ Section "Uninstall"
   ; remove files
   Delete $INSTDIR\newlisp.exe
   Delete $INSTDIR\newlisp.dll
+  Delete $INSTDIR\editor.txt
   Delete $INSTDIR\util\httpd-conf.lsp
   Delete $INSTDIR\util\link.lsp
   Delete $INSTDIR\util\newlispdoc
   Delete $INSTDIR\util\newlisp.vim
+  Delete $INSTDIR\util\nanorc
   Delete $INSTDIR\util\syntax.cgi
   Delete $INSTDIR\md5-checksums.txt
   Delete $INSTDIR\newlisp_manual.html
@@ -389,9 +398,8 @@ Section "Uninstall"
   Delete $INSTDIR\manual_frame.html
   Delete $INSTDIR\CodePatterns.html
   Delete $INSTDIR\newLISPdoc.html
-  Delete $INSTDIR\newLISP-9.3-Release.html
+  Delete $INSTDIR\newLISP-9.4-Release.html
   Delete $INSTDIR\COPYING
-  Delete $INSTDIR\newlisp.vim
   Delete $INSTDIR\httpd-conf.lsp
   Delete $INSTDIR\guiserver.lsp
   Delete $INSTDIR\guiserver.jar
@@ -400,6 +408,7 @@ Section "Uninstall"
 
   Delete $INSTDIR\guiserver\index.html
   Delete $INSTDIR\guiserver\guiserver.lsp.html
+  Delete $INSTDIR\guiserver\newlispdoc.css
   Delete $INSTDIR\guiserver\allfonts-demo.lsp
   Delete $INSTDIR\guiserver\animation-demo.lsp
   Delete $INSTDIR\guiserver\border-layout-demo.lsp
@@ -411,6 +420,8 @@ Section "Uninstall"
   Delete $INSTDIR\guiserver\frameless-demo.lsp
   Delete $INSTDIR\guiserver\html-demo.lsp
   Delete $INSTDIR\guiserver\image-demo.lsp
+  Delete $INSTDIR\guiserver\midi-demo.lsp
+  Delete $INSTDIR\guiserver\midi2-demo.lsp
   Delete $INSTDIR\guiserver\mouse-demo.lsp
   Delete $INSTDIR\guiserver\move-resize-demo.lsp
   Delete $INSTDIR\guiserver\pinballs-demo.lsp
@@ -430,8 +441,8 @@ Section "Uninstall"
   Delete $INSTDIR\modules\ftp.lsp
   Delete $INSTDIR\modules\gmp.lsp
   Delete $INSTDIR\modules\infix.lsp
-  Delete $INSTDIR\modules\mysql.lsp
   Delete $INSTDIR\modules\mysql5.lsp
+  Delete $INSTDIR\modules\mysql51.lsp
   Delete $INSTDIR\modules\odbc.lsp
   Delete $INSTDIR\modules\pop3.lsp
   Delete $INSTDIR\modules\postscript.lsp

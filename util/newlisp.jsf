@@ -1,0 +1,464 @@
+# JOE syntax highlight file for newLISP v.9.4.0 
+
+# These colors are for the text console.
+# You will definitely need different colors for a terminal under X.
+# The range of colors is found in your c.jsf file.
+# Deprecated commands will blink annoyingly :-)
+#
+# on Linux UBUNTU 8.04 this file goes into /etc/joe/syntax/lisp.jsf
+# or into $HOME/.joe/syntax/lisp.jsf on all Unix
+
+# L Wix [xman-et-myrealbox-dot-com]
+# Thanks to Norman (newdep)
+# 10 Nov 2004
+# 27 Jan 2005, L.M. updated to v.8.4.1
+# 28 Jan 2005, L.M. made comments (did not work om Joe 3.1)
+#                   made [text] .. [/text] tags work
+# 25 June 2008, L.M updated for version 9.4.0
+#
+# version 1.2
+
+=Idle
+=Comment 	green
+=String 	bold black
+=Text		bold black
+=Escape 	bold green
+=Paren		red
+=Quote		bold
+=Prim		bold blue
+=Tag		bold blue
+=Depr    	blink
+
+:idle Idle
+	*		idle
+	";"		comment		recolor=-1
+	"#"		comment		recolor=-1
+	"\""	string		recolor=-1
+	"{"		brace_string	recolor=-1
+	"()"	paren		recolor=-1
+	"'"		quote		recolor=-1
+	"["		tag_o1		recolor=-1
+	"!=%&*+/<>^|~a-zA-Z_\-"	ident		buffer
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:string String
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		string
+	"\n"		string		recolor=-2
+
+:brace_string String
+	*		brace_string
+	"}"		idle
+
+:paren Paren
+	*		idle		noeat
+
+:quote Quote
+	*		idle		noeat
+	
+:ident Idle
+	*		idle		noeat strings
+"!"	prim
+"!="	prim
+"$"	prim
+"%"	prim
+"&"	prim
+"*"	prim
+"+"	prim
+"-"	prim
+"/"	prim
+":"	prim
+"<"	prim
+"<<"	prim
+"<="	prim
+"="	prim
+">"	prim
+">="	prim
+">>"	prim
+"?"	prim
+"@"	prim
+"MAIN"	prim
+"NaN?"	prim
+"^"	prim
+"abort"	prim
+"abs"	prim
+"acos"	prim
+"acosh"	prim
+"add"	prim
+"address"	prim
+"amb"	prim
+"and"	prim
+"append"	prim
+"append-file"	prim
+"apply"	prim
+"args"	prim
+"array"	prim
+"array-list"	prim
+"array?"	prim
+"asin"	prim
+"asinh"	prim
+"assoc"	prim
+"assoc-set"	prim
+"atan"	prim
+"atan2"	prim
+"atanh"	prim
+"atom?"	prim
+"base64-dec"	prim
+"base64-enc"	prim
+"bayes-query"	prim
+"bayes-train"	prim
+"begin"	prim
+"beta"	prim
+"betai"	prim
+"bind"	prim
+"binomial"	prim
+"callback"	prim
+"case"	prim
+"catch"	prim
+"ceil"	prim
+"change-dir"	prim
+"char"	prim
+"chop"	prim
+"clean"	prim
+"close"	prim
+"command-event"	prim
+"cond"	prim
+"cons"	prim
+"constant"	prim
+"context"	prim
+"context?"	prim
+"copy-file"	prim
+"cos"	prim
+"cosh"	prim
+"count"	prim
+"cpymem"	prim
+"crc32"	prim
+"crit-chi2"	prim
+"crit-z"	prim
+"current-line"	prim
+"curry"	prim
+"date"	prim
+"date-value"	prim
+"debug"	prim
+"dec"	prim
+"def-new"	prim
+"default"	prim
+"define"	prim
+"define-macro"	prim
+"delete"	prim
+"delete-file"	prim
+"delete-url"	prim
+"destroy"	prim
+"det"	prim
+"device"	prim
+"difference"	prim
+"directory"	prim
+"directory?"	prim
+"div"	prim
+"do-until"	prim
+"do-while"	prim
+"doargs"	prim
+"dolist"	prim
+"dostring"	prim
+"dotimes"	prim
+"dotree"	prim
+"dump"	prim
+"dup"	prim
+"empty?"	prim
+"encrypt"	prim
+"ends-with"	prim
+"env"	prim
+"erf"	prim
+"error-event"	prim
+"error-number"	prim
+"error-text"	prim
+"eval"	prim
+"eval-string"	prim
+"exec"	prim
+"exists"	prim
+"exit"	prim
+"exp"	prim
+"expand"	prim
+"explode"	prim
+"factor"	prim
+"fft"	prim
+"file-info"	prim
+"file?"	prim
+"filter"	prim
+"find"	prim
+"find-all"	prim
+"first"	prim
+"flat"	prim
+"float"	prim
+"float?"	prim
+"floor"	prim
+"flt"	prim
+"for"	prim
+"for-all"	prim
+"fork"	prim
+"format"	prim
+"fv"	prim
+"gammai"	prim
+"gammaln"	prim
+"gcd"	prim
+"get-char"	prim
+"get-float"	prim
+"get-int"	prim
+"get-long"	prim
+"get-string"	prim
+"get-url"	prim
+"global"	prim
+"global?"	prim
+"if"	prim
+"ifft"	prim
+"import"	prim
+"inc"	prim
+"index"	prim
+"int"	prim
+"integer"	prim
+"integer?"	prim
+"intersect"	prim
+"invert"	prim
+"irr"	prim
+"join"	prim
+"lambda?"	prim
+"last"	prim
+"legal?"	prim
+"length"	prim
+"let"	prim
+"letex"	prim
+"letn"	prim
+"list"	prim
+"list?"	prim
+"load"	prim
+"local"	prim
+"log"	prim
+"lookup"	prim
+"lower-case"	prim
+"macro?"	prim
+"main-args"	prim
+"make-dir"	prim
+"map"	prim
+"mat"	prim
+"match"	prim
+"max"	prim
+"member"	prim
+"min"	prim
+"mod"	prim
+"mul"	prim
+"multiply"	prim
+"name"	prim
+"net-accept"	prim
+"net-close"	prim
+"net-connect"	prim
+"net-error"	prim
+"net-eval"	prim
+"net-listen"	prim
+"net-local"	prim
+"net-lookup"	prim
+"net-peek"	prim
+"net-peer"	prim
+"net-ping"	prim
+"net-receive"	prim
+"net-receive-from"	prim
+"net-receive-udp"	prim
+"net-select"	prim
+"net-send"	prim
+"net-send-to"	prim
+"net-send-udp"	prim
+"net-service"	prim
+"net-sessions"	prim
+"new"	prim
+"nil"	prim
+"nil?"	prim
+"normal"	prim
+"not"	prim
+"now"	prim
+"nper"	prim
+"npv"	prim
+"nth"	prim
+"nth-set"	prim
+"null?"	prim
+"number?"	prim
+"open"	prim
+"or"	prim
+"ostype"	prim
+"pack"	prim
+"parse"	prim
+"parse-date"	prim
+"peek"	prim
+"pipe"	prim
+"pmt"	prim
+"pop"	prim
+"pop-assoc"	prim
+"post-url"	prim
+"pow"	prim
+"pretty-print"	prim
+"primitive?"	prim
+"print"	prim
+"println"	prim
+"prob-chi2"	prim
+"prob-z"	prim
+"process"	prim
+"prompt-event"	prim
+"protected?"	prim
+"push"	prim
+"put-url"	prim
+"pv"	prim
+"quote"	prim
+"quote?"	prim
+"rand"	prim
+"random"	prim
+"randomize"	prim
+"read-buffer"	prim
+"read-char"	prim
+"read-expr"	prim
+"read-file"	prim
+"read-key"	prim
+"read-line"	prim
+"real-path"	prim
+"ref"	prim
+"ref-all"	prim
+"ref-set"	prim
+"regex"	prim
+"regex-comp"	prim
+"remove-dir"	prim
+"rename-file"	prim
+"replace"	prim
+"replace-assoc"	prim
+"reset"	prim
+"rest"	prim
+"reverse"	prim
+"rotate"	prim
+"round"	prim
+"s"	prim
+"save"	prim
+"search"	prim
+"seed"	prim
+"seek"	prim
+"select"	prim
+"semaphore"	prim
+"sequence"	prim
+"series"	prim
+"set"	prim
+"set-assoc"	prim
+"set-locale"	prim
+"set-nth"	prim
+"set-ref"	prim
+"set-ref-all"	prim
+"setq"	prim
+"sgn"	prim
+"share"	prim
+"signal"	prim
+"silent"	prim
+"sin"	prim
+"sinh"	prim
+"sleep"	prim
+"slice"	prim
+"sort"	prim
+"source"	prim
+"spawn"	prim
+"sqrt"	prim
+"starts-with"	prim
+"string"	prim
+"string?"	prim
+"sub"	prim
+"swap"	prim
+"sym"	prim
+"symbol?"	prim
+"symbols"	prim
+"sync"	prim
+"sys"	prim
+"sys-error"	prim
+"sys-info"	prim
+"tan"	prim
+"tanh"	prim
+"throw"	prim
+"throw-error"	prim
+"time"	prim
+"time-of-day"	prim
+"timer"	prim
+"title-case"	prim
+"trace"	prim
+"trace-highlight"	prim
+"transpose"	prim
+"trim"	prim
+"true"	prim
+"true?"	prim
+"unicode"	prim
+"unify"	prim
+"unique"	prim
+"unless"	prim
+"unpack"	prim
+"until"	prim
+"upper-case"	prim
+"utf8"	prim
+"utf8len"	prim
+"uuid"	prim
+"wait-pid"	prim
+"when"	prim
+"while"	prim
+"write-buffer"	prim
+"write-char"	prim
+"write-file"	prim
+"write-line"	prim
+"xml-error"	prim
+"xml-parse"	prim
+"xml-type-tags"	prim
+"zero?"	prim
+"|"	prim
+"~"	prim
+
+done		
+	"\-\"a-zA-Z_0-9!#@$%^&*+={}|/\\:';,.<>/?~`" ident
+
+
+:prim Prim
+	*		idle		noeat
+
+:tag_o1 Tag
+	*		idle		noeat
+	"t"		tag_o2
+	
+:tag_o2 Tag
+	*		idle		noeat
+	"e"		tag_o3
+	
+:tag_o3 Tag
+	*		idle		noeat
+	"x"		tag_o4
+	
+:tag_o4 Tag
+	*		idle		noeat
+	"t"		tag_o5
+	
+:tag_o5 Tag
+	*		idle		noeat
+	"]"		long_text
+	
+:long_text	Text
+	*		long_text
+	"["		close_tag	buffer recolor=-1
+	
+:close_tag Tag
+	*		long_text	noeat strings
+	"[/text]"	tag_closed
+done
+	"[]/etx"	close_tag
+	
+:tag_closed Tag
+	*		idle		noeat
+	
+	
+
+	
+:depr Depr
+  *  idle     noeat
+

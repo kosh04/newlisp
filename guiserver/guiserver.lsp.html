@@ -4,47 +4,21 @@
 <META http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>guiserver.lsp</title>
 
-<style type="text/css" media="screen">
-<!--
-span.arw {
-	color:#666666;
-	font-size: 100%;
-	}
-	
-body, p {
-	font-family: Georgia, Times New Roman, Times, serif;
-	line-height: 115%;
- 	}
-
-h1, h2, h3, h4 {
-	font-family: Georgia, Times New Roman, Times, serif;
-   	font-size: 110%;
-	}
-
-pre {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-   	font-size: 100%;
-	}
-
-tt {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-	font-size: 100%;
-	}
--->
-</style>
+<link rel="stylesheet" type="text/css" href="newlispdoc.css" />
 </head>
 
-<body style="margin: 20px;" text="#333333" bgcolor="#FFFFFF" 
+<body style="margin: 20px;" text="#111111" bgcolor="#FFFFFF" 
 			link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
 <p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
-<b>Version: </b>1.14<br/>
-<b>Author: </b>Lutz Mueller, December 2007<br/>
+<b>Version: </b>1.21<br/>
+<b>Author: </b>LM, June 2008<br/>
 <p></p>
- This module has been tested on MacOS X 10.8 and Windows XP, both with the
+ This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
- those platforms.
+ those platforms. On Win32 the MIDI sound features require a soundbank file to
+ be installed. See the desription for <tt>gs:play-note</tt> for details.
  <br><br>
  <h2>What is newLISP-GS</h2>
  <tt>guiserver.lsp</tt> is a module for interfacing to <tt>guiserver.jar</tt>
@@ -54,7 +28,7 @@ tt {
  Java Swing libraries which it interfaces with. Because of this, GUI applications
  can be built much faster than when using the original Java APIs.
  <br><br>
- <h2>Requirements</h2>
+ <h2>Usage</h2>
  At the beginning of the program file, include a <tt>load</tt> statement for the module:
  <pre>
  (load "/usr/share/newlisp/guiserver.lsp")
@@ -65,14 +39,17 @@ tt {
  </pre>
 <p></p>
  <tt>guiserver.lsp</tt> expects the server <tt>guiserver.jar</tt> to be
- installed in <tt>/usr/share/newlisp</tt> on MacOS X and Unix OSs, and 
- in <tt>C:\Program Files\newlisp</tt> on MS Windows systems. On Win32 the
- standard environment variable <tt>PROGRAMFILES</tt> is used to find the exact location
- of non-English installations of Windows.. Both, the <tt>guiserver.lsp</tt> and 
- <tt>guiserver.jar</tt> are installed by default when installing newLISP with one of 
- the binary installers available.
+ in the directoey specified in the environment variable NEWLISPDIR.
+ When newLISP starts up and this variable is not set yet, it sets it
+ to a default value of <tt>/usr/share/newlisp</tt> on MacOS X and Unix OSs, and 
+ to <tt>C:\Program Files\newlisp</tt> or whatever it finds in the <tt>PROGRAMFILES</tt>
+ environment variable on Win32 systems and adding <tt>/newlisp</tt> to it.
+ This can be overwritten by specifying system wide  setting for the environment 
+ variable <tt>NEWLISPDIR</tt>, which normally is set to <tt>%PROGRAMFILES%/newlisp</tt> 
+ on Win32. When using the Win32 binary installer <tt>NEWLISPDIR</tt> is written to
+ to the registry automatically and gets into effect after rebooting.
  <br><br>
- <h3>Architecture of a newLISP GUI application</h3>
+ <h2>Architecture of a newLISP GUI application</h2>
  A GUI application in newLISP is composed of four parts:
 <p></p>
  <blockquote>
@@ -125,7 +102,7 @@ tt {
  ;; eof 
  </pre></blockquote>
  <br>
- <h3>Application start</h3>
+ <h2>Application start</h2>
  <pre>
      ./button-demo       ; on MacOS X and Unix
 <p></p>
@@ -140,7 +117,7 @@ tt {
 <p></p>
      newlisp button-demo 10001 ; on Win32
  </pre>
- newLISP-GS <tt>guiserver.jsr</tt> will now use the ports <tt>10001</tt> and <tt>10002</tt>.
+ newLISP-GS <tt>guiserver.jar</tt> will now use the ports <tt>10001</tt> and <tt>10002</tt>.
  Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
  OS services and need administrator privileges to use them.
 <p></p>
@@ -213,7 +190,7 @@ tt {
  which hosts the widget. Sometimes the platform look-and-feel overwrites colors.
  <br><br>
 <p></p>
- <b>Event handlers</b><br><br>
+ <h2>Event handlers</h2>
  For most widgets, event handlers must be defined. Sometimes an event handler is
  not required. In this case specify <tt>'gs:no-action</tt> as the event handler
  symbol. When developing programs it is useful to watch the event handler first
@@ -266,7 +243,7 @@ tt {
  for string contents before trying to apply the <tt>base64-dec</tt> function on it.
  <br><br>
 <p></p>
- <h3>Coding considerations</h3>
+ <h2>Coding considerations</h2>
  <b>mapping or applying <tt>gs:xxx</tt> functions</b><br><br>
  Like any newLISP functions, <tt>gs:xxx</tt> functions can be mapped or applied to lists of 
  parameters using the newLISP <tt>map</tt> and <tt>apply</tt> functions. When doing this, make sure to 
@@ -278,7 +255,7 @@ tt {
     (map 'gs:panel '(first second third fourth)) ; note quoted gs: function
  </blockquote></pre>
 <p></p>
- <br>
+ <br><br>
  <h2>Some shortcuts when writing <tt>gs:xxx</tt> functions</h2>
  Due to the nature of transfer between newLISP and the guiserver as text, the following
  convenient shortcuts can be taken when writing functions:
@@ -318,11 +295,19 @@ tt {
  The usage of the reserved symbol <tt>name</tt> will not pose a problem.
  <br><br>
  <h2>Return values</h2>
- The return value of all functions is usually the number of characters
- sent to newLISP-GS. In general, return values of <tt>gs:xxx</tt> functions do not have
- any specific meaning and can be discarded. Only the functions <tt>gs:get-version</tt>,
- <tt>gs:get-screen</tt> and <tt>gs:get-fonts</tt> return their respective data and copy them
- also to the variables <tt>gs:version</tt>, <tt>gs:screen</tt> and <tt>gs:fonts</tt> for later access.
+ newLISP-GS is an event driven asyncronous system. Most functions return
+ right away the number of characters sent out to the server.
+ In general, return values of <tt>gs:xxx</tt> functions do not have
+ any specific meaning and can be discarded. Only the functions <tt>gs:get-bounds</tt>,
+ <tt>gs:get-fonts</tt>, <tt>gs:get-font-metrics</tt>, <tt>gs:get-instruments</tt>
+ <tt>gs:get-screen</tt>, <tt>gs:get-text</tt> and <tt>gs:get-version</tt> return meaningful values or
+ lists of values, which are stored in similar named variables: <tt>gs:bounds</tt>,
+ <tt>gs:fonts</tt>, <tt>gs:font-metrics</tt>, <tt>gs:instruments</tt>, <tt>gs:screen</tt>, <tt>gs:text</tt> and
+ <tt>gs:version</tt>. These functions will not return right away but block until
+ the return valuse is sent beack from newLISP-GS.
+<p></p>
+ The function <tt>gs:get-text</tt> can work both ways: event driven or with a return
+ value depending on the call pattern used.
 <p></p>
  <br><br>
  <h2>Function overview</h2>
@@ -714,9 +699,44 @@ tt {
  (gs:set-background 'aPanel '(1 0 1)
  </pre>
  All of the above statements will produce the same background color on the <tt>aPanel</tt>.
- <li><b>Sound API</b><br>
+<p></p>
+ <li><b>Sound  and MIDI API</b><br>
+ The newLISP-GS sound API uses the default saundbank and sound harware installed 
+ on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be
+ installed. On Win32 and some Unix platforms a soundbank file needs to be installed.
+ Soundbanks for the Java JRE can be obtained at:
+ <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  The demo files shipped with the newLISP-GS installation use the midsize soundbank. Other soundbanks
+ may require different naming of instruments in the <tt>gs:midi-patch</tt> statement. 
+<p></p>
+ The sound API is capable of playing of mutliple tracks at the same time
+ depending on the sound hardware installed on a specific platform. Mac OS X platforms
+ and most Win32 platforms should be capable of playing 16 instruments (channels) at the
+ the same time 32 on parallel sounding tracks. newLISP GS supports 128 instruments of the
+ default soundbank installed.
+<p></p>
+ On Mac OS X and Win32 channel 9 is a special channel sounding a different rythm 
+ instrument for all 128 different keys/notes.
+<p></p>
+ Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
+ and <tt>midi2-demo.lsp</tt> in the <tt>/usr/share/newlisp/guiserver/</tt> or 
+ <tt>c:\Program files\newlisp\guiserver\</tt> directory.
+<p></p>
  <pre>
+    (gs:add-track <em>int channel</em><em>list-notes</em>)
+    (gs:channel-bend <em>int-channel</em> <em>bend</em>)
+    (gs:get-instruments)
+    (gs:instruments)
+    (gs:midi-bpm <em>int-bpm</em> [<em>int-resolution</em>])
+    (gs:midi-close)
+    (gs:midi-init [<em>str-file-path</em>])
+    (gs:midi-patch <em>int-instrument</em> [<em>int-channel</em>])
+    (gs:mute-track <em>int-track</em> <em>bool-on-off</em>)
+    (gs:play-note <em>int-key</em> [<em>int-duration</em> [<em>int-velocity</em> [<em>int-channel</em> [int-bend]]]])
+    (gs:play-sequence [<em>int-start-tick</em> [<em>int-loop-count</em> [<em>int-start-loop</em> [<em>int-end-loop</em>]]]])
+    (gs:save-sequence <em>str-file-path</em>)
+    (gs:stop-sequence)
     (gs:play-sound <em>str-file-path</em>)
+ </pre>
  </ul>
 
 
@@ -743,6 +763,63 @@ tt {
  component added to the tool or menu bar.
 
 
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_add-track"></a><h3><font color=#CC0000>gs:add-track</font></h3>
+<b>syntax: (<font color=#CC0000>gs:add-track</font> <em>int-channel</em> <em>list-of-notes</em>)</b><br/>
+<b>parameter: </b><em>int-channel</em> - The channel belonging to this track.<br/>
+<b>parameter: </b><em>list-of-notes</em> - A list of notes. Each note is a list of key duration velocity and channel.<em>br/</em>
+ In case of <tt>gs:add-track</tt> the duration of a note is given in ticks.
+ 16 ticks are in a quarter note or <em>beat</em>.
+<p></p>
+ A note is a list of 4 elements: <tt>(<em>int-key</em> <em>int-duration</em> <em>int-velocity</em> [<em>int-bend</em>])</tt>. <em>key</em>
+ <em>duration</em>, <em>velocity</em> and <em>bend</em> can be given as variables, which will be evaluated by
+ <tt>gs:add-track</tt>. The <em>int-bend</em>  parameter is optional and assumed as <tt>0</tt> if not
+ present. See the command <tt>gs:play-note</tt> for more information on the note bend parameter.
+ The following code is a complete example:
+<p></p>
+<p></p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+ (gs:init)
+ (gs:midi-init)
+
+ (map set '(C C# D D# E F F# G G# A A# B c c# d e f f# g g# a a# b) (sequence 60 82))
+ (set 'pp 30 'p 40 'm 64 'f 127) ; set velocity/volume
+
+ (gs:midi-patch "Piano" 0)
+ (gs:midi-patch "Pizzicato Strings" 1)
+ (gs:midi-patch "Woodblock" 2)
+
+ (gs:add-track 0 '( (C 12 m) (C# 4 m) (D 16 m) (c 16 f) (D 16 m)) )
+ (gs:add-track 1 (dup '(d 4 pp) 16))
+ (gs:add-track 2 '( (c 4 p) (c 12 p) (c 4 p) (c 12 p) (c 4 p) (c 12 p)  (c 4 p) (c 12 p)) )
+
+ (gs:play-sequence)
+
+ (sleep 5000)
+ (gs:midi-close)
+ (exit)</pre></blockquote>
+ The second example shows the usage of pitch-bend in notes:
+<p></p><b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+ (gs:init)
+ (gs:midi-init)
+ 
+ (gs:midi-patch "Piano" 0)
+ (gs:midi-patch "Gunshot" 1)
+ (gs:midi-patch "Telephone" 2)
+ 
+ (for (n -8192 8191 128) (push (list 64 1 95 n) track0 -1))
+ (for (n 64 96 2) (push (list n 8 76) track1 -1))
+ 
+ (gs:add-track 0 track0)
+ (gs:add-track 1 track1)
+ (gs:add-track 2 '((44 128 127)))
+ 
+ (gs:play-sequence)
+ ;(gs:save-sequence "extremeAlarm.mid")
+ 
+ (sleep 8000)
+ (gs:midi-close)
+ (exit)</pre></blockquote>
 <p></p><center>- &sect; -</center><p></p>
 <a name="gs_add-to"></a><h3><font color=#CC0000>gs:add-to</font></h3>
 <b>syntax: (<font color=#CC0000>gs:add-to</font> <em>sym-container</em> <em>sym-component</em> [<em>sym-componentl</em> ...])</b><br/>
@@ -794,6 +871,20 @@ tt {
 <p></p>
  When widgets are present on a canvas they appear to be floating over
  the drawing. See the file <tt>textrot-demo.lsp</tt> for an example.
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_channel-bend"></a><h3><font color=#CC0000>gs:channel-bend</font></h3>
+<b>syntax: (<font color=#CC0000>gs:channel-bend</font> <em>int-channel</em> <em>bend</em>)</b><br/>
+<b>parameter: </b><em>int-channel</em> - The channel where the pitch bend is set.<br/>
+<b>parameter: </b><em>int-bend</em> - The channel bend between <tt>0</tt> and <tt>16383</tt>.<br/>
+<p></p>
+ Numbers upwards of <tt>8192</tt> bend the tone upwards, numbers smaller
+ than <tt>8192</tt> bend the tone downwards. To switch off channel bend set
+ the number to the middle posiotion of <tt>8192</tt>. <tt>gs:channel-bend</tt> can 
+ be used to bring a channel in tune with an external sound source.
+
+
 
 
 <p></p><center>- &sect; -</center><p></p>
@@ -1310,6 +1401,16 @@ tt {
  of values as originally returned by the call to <tt>gs:get-font-metrics</tt>.
 
 
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_get-instruments"></a><h3><font color=#CC0000>gs:get-instruments</font></h3>
+<b>syntax: (<font color=#CC0000>gs:get-instruments</font>)</b><br/>
+<p><b>return: </b>A list of instrument names in the default MIDI soundbank.</p>
+<p></p>
+ The function should be called only once because it may take considerable
+ time in a system loaded with a big soundbank. The variable <tt>gs:instruments</tt> contains
+ the same list of instruments originally returned by a call to <tt>gs:get-instruments</tt>.
+
+
 
 <p></p><center>- &sect; -</center><p></p>
 <a name="gs_get-screen"></a><h3><font color=#CC0000>gs:get-screen</font></h3>
@@ -1399,7 +1500,6 @@ tt {
 <b>syntax: (<font color=#CC0000>gs:init</font> [<em>int-port</em> <em>str-host</em>])</b><br/>
 <b>parameter: </b><em>int-port</em> - The optional guiserver server port.<br/>
 <b>parameter: </b><em>str-host</em> - The optional remote host of the guiserver.<br/>
-
 
 
 
@@ -1582,6 +1682,69 @@ tt {
 
 
 <p></p><center>- &sect; -</center><p></p>
+<a name="gs_midi-bpm"></a><h3><font color=#CC0000>gs:midi-bpm</font></h3>
+<b>syntax: (<font color=#CC0000>gs:midi-bpm</font> [<em>int-bpm</em> [<em>int-resolution</em>]]])</b><br/>
+<b>parameter: </b><em>int-bpm</em> - Beats per minute pay speed. Default is 120 BPM.<br/>
+<b>parameter: </b><em>int-resolution</em> - Ticks per beat. Deafult is 16 ticks per beat;<br/>
+<p></p>
+ Sets the speed of playing a notes with with either <tt>gs:play-note</tt> or playing a 
+ sequence with <tt>gs:play-sequence</tt> in beats per minute (BPM).
+<p></p>
+ Before using <tt>gs:midi-bpm</tt> the default speed is set to 120 BPM, which corresponds
+ to two beats per second, where each beat corresponds to a quarter note of 16 ticks
+ default resolution.
+<p></p>
+ While the BPM parameter controls the play-back speed of the sequencer, the
+ resolution is a parameter of the sequence creation itself and must be set before
+ the first <tt>gs:add-track</tt> call.
+<p></p>
+ The preset resolution of 16 ticks per quarter note is the highest which can be set
+ and should be sufficient for all applications.
+
+
+
+
+<p></p>
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_midi-close"></a><h3><font color=#CC0000>gs:midi-close</font></h3>
+<b>syntax: (<font color=#CC0000>gs:midi-close</font>)</b><br/>
+<p></p>
+ Shut down the MIDI subsystem.
+
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_midi-init"></a><h3><font color=#CC0000>gs:midi-init</font></h3>
+<b>syntax: (<font color=#CC0000>gs:midi-init</font> [<em>str-file-path</em>])</b><br/>
+<b>parameter: </b><em>str-file-path</em> - The optional file path for a soundbank file.<br/>
+<p></p>
+ Initialize the MIDI subsystem. If a soundbank file is specified load it,
+ else load the built-in synthesizer's default soundbank.
+<p></p>
+ When not using the default soundbank, the function <tt>gs:get-instruments</tt>
+ should be used first to find out the correct naming of instruments
+ for the <tt>gs:midi-patch</tt> statements. The soundbank used for testing the
+ demo files <tt>midi-demo.lsp</tt> and <tt>midi2-demo.lsp</tt> on Win32 is the midsize
+ soundbank available here:
+ <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  This soundbank has equivalent named instruments to those used in the Mac OS X default JRE installation.
+ Currently only the first 128 instruments in a soundbank are accessed by newLISP-GS.
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_midi-patch"></a><h3><font color=#CC0000>gs:midi-patch</font></h3>
+<b>syntax: (<font color=#CC0000>gs:midi-patch</font> <em>str-instrument</em> [<em>int-channel</em>])</b><br/>
+<b>parameter: </b><em>str-instrument</em> - The name of the instrument to attach to a channel.<br/>
+<b>parameter: </b><em>int-channel</em> - The channel for the instrument, default is <tt>0</tt>.<br/>
+<p></p>
+ An instrument from the current soundbank is attached to a
+ specific channel or to channel <tt>0</tt> if no channel is specified.
+<p></p>
+<p></p><b>example:</b><blockquote><pre> (gs:midi-patch (find "Electric Grand" gs:instruments) 0)</pre></blockquote>
+ In order for the <tt>gs:instruments</tt> variable to contain a list of instruments,
+ <tt>gs:get-instruments</tt> must have been called earlier, i.e. after <tt>gs:midi-init</tt>.
+
+
+<p></p><center>- &sect; -</center><p></p>
 <a name="gs_mouse-clicked"></a><h3><font color=#CC0000>gs:mouse-clicked</font></h3>
 <b>syntax: (<font color=#CC0000>gs:mouse-clicked</font> <em>sym-canvas</em> <em>sym-action</em> [<em>boolean-tags</em>])</b><br/>
 <b>parameter: </b><em>sym-canvas</em> - The id of the canvas to register the action handler.<br/>
@@ -1673,6 +1836,18 @@ tt {
 
 
 <p></p><center>- &sect; -</center><p></p>
+<a name="gs_mute-track"></a><h3><font color=#CC0000>gs:mute-track</font></h3>
+<b>syntax: (<font color=#CC0000>gs:mute-track</font> <em>int-number</em> [<em>boolean-on-off</em>])</b><br/>
+<b>parameter: </b><em>int-number</em> - The number of the track starting with <tt>0</tt> for the first. Default is <tt>true</tt>.<br/>
+<b>parameter: </b><em>boolean-on-off</em> - The track will be muted with a value of <tt>true</tt><br/>
+<p></p>
+ Any other value than <tt>true</tt> will unmute the track again. Muting tracks is practical
+ during music development. The track can only be muted when th sequence has benn started
+ using <tt>gs:play-sequence</tt>. To completely mute a track the <tt>gs:mute-track</tt> statement should
+ come right after the <tt>gs:play-sequece</tt> statement. 
+
+
+<p></p><center>- &sect; -</center><p></p>
 <a name="gs_no-action"></a><h3><font color=#CC0000>gs:no-action</font></h3>
 <b>syntax: (<font color=#CC0000>gs:no-action</font>)</b><br/>
 <p></p>
@@ -1713,11 +1888,75 @@ tt {
 
 
 <p></p><center>- &sect; -</center><p></p>
+<a name="gs_play-note"></a><h3><font color=#CC0000>gs:play-note</font></h3>
+<b>syntax: (<font color=#CC0000>gs:play-note</font> <em>int-key</em> [<em>int-duration</em> [<em>int-velocity</em> [<em>int-channel</em> [<em>int-bend</em>]]]])</b><br/>
+<b>parameter: </b><em>int-key</em> - The note or midi key <tt>0</tt> to <tt>127</tt>.<br/>
+<b>parameter: </b><em>int-duration</em> - The duration of the note in ticks, default is <tt>16</tt> for one beat or quarter note.<br/>
+<b>parameter: </b><em>int-velocity</em> - The velocity/volume of the note between <tt>0</tt> and <tt>127</tt>, default is <tt>64</tt>.<br/>
+<b>parameter: </b><em>int-channel</em> - The channel through which to play the note from <tt>0</tt> to <tt>15</tt>, default is <tt>0</tt>.<br/>
+<b>parameter: </b><em>int-bend</em> - The optional note bend to tune the note lower or higher from <tt>-8192</tt> to <tt>8191</tt>.<br/>
+<p></p>
+ Before using <tt>gs:play-note</tt>, <tt>gs:midi-init</tt> should be used to initialize the MIDI system.
+ The key of the note increases in half-tone steps. The key 60 corresponds to a Middle-C.
+ The velocity of the note is usually it's volume and/or brightness, i.e. the speed with which 
+ a key was pressed on an instrument. The channel is <tt>0</tt> by default and assigned to
+ a Piano instrument unless the function <tt>gs:midi-patch</tt> has been used to change assignment
+ to a different instrument.
+<p></p>
+ On Win32 and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
+ <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  for instructions how to download and install a soundbank. For the demo files <tt>mide-demo.lsp</tt> and
+ <tt>midi2-demo</tt> the midsize quality soundbank was used. On Mac OS X a soundbank is installed by default.
+ The default for the bend parameer is <tt>0</tt> for no bend. Negative values down to <tt>-8192</tt>
+ tune the note lower. Positive values up to <tt>8191</tt> tune the note higher. 
+ The following code is a complete example:
+<p></p><b>example:</b><blockquote><pre> ; load Guiserver
+ (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+ (gs:init)
+
+ ; play a chromatic scale on the default instrument (piano)
+ ; each note a 16th note of 4 ticks and a moderate volume 
+
+ (gs:midi-init)
+ (gs:midi-patch "Piano" 0)
+ (for (key 24 95) (gs:play-note key 4 95 0))
+ (sleep 2000) ; wait until playing has finished
+ (gs:midi-close)
+</pre></blockquote>
+ The second example demonstrated usage of the <em>int-bend</em> parameter:
+<p></p><b>example:</b><blockquote><pre> ; play the same note but with different bends below and above the note
+ (gs:midi-patch "Violin" 0)
+ (for (bend -2024 2024 128)
+     (gs:play-note 80 1 95 0 bend))</pre></blockquote>
+ To play polyphone music of multiple parallel tracks see the function <tt>gs:add-track</tt> for
+ a complete code example.
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_play-sequence"></a><h3><font color=#CC0000>gs:play-sequence</font></h3>
+<b>syntax: (<font color=#CC0000>gs:play-sequence</font> [<em>int-start</em> [<em>int-loop-count</em> [<em>int-start-loop</em> [<em>int-end-loop</em>]]])</b><br/>
+<b>parameter: </b><em>int-start</em> - The starting point in the sequence in ticks. Default is <tt>0</tt> for the beginning.<br/>
+<b>parameter: </b><em>int-loop-count</em> - The number of repetitions for looping. Default is <tt>0</tt> for no looping.<br/>
+<b>parameter: </b><em>int-start-loop</em> - The start of the loop to play in ticks. Default is <tt>0</tt>.<br/>
+<b>parameter: </b><em>int-end-loop</em> - The end of the loop in ticks. Default is <tt>-1</tt> for the end.<br/>
+<p></p>
+ All parameters are optional. When no parameters are given all tracks in the sequence are
+ sequenced from start to end with no repetiton (loop count of 0). Note that the start and
+ end positions refer only to loop played after playing the full track. After the sequence
+ started playing <tt>gs:stop-sequence</tt> can be used to stop it at any time. The midi system
+ should not be close using <tt>gs:midi-close</tt> before playing has finished or playing will
+ be cut off.
+<p></p>
+ See the function <tt>gs:add-track</tt> for complete code example.
+
+
+
+<p></p><center>- &sect; -</center><p></p>
 <a name="gs_play-sound"></a><h3><font color=#CC0000>gs:play-sound</font></h3>
 <b>syntax: (<font color=#CC0000>gs:play-sound</font> <em>str-file-path</em>)</b><br/>
 <b>parameter: </b><em>str-file-path</em> - The path and file name of the sound file.<br/>
 <p></p>
  On most OS platforms <tt>.au</tt> and <tt>.wav</tt> sound file formats are supported.
+
 
 
 <p></p><center>- &sect; -</center><p></p>
@@ -1812,6 +2051,24 @@ tt {
 <b>parameter: </b><em>str-file</em> - The initial file name.<br/>
 <b>parameter: </b><em>str-mask</em> - An optional string mask.<br/>
 <b>parameter: </b><em>str-description</em> - An optional mask description.<br/>
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_save-sequence"></a><h3><font color=#CC0000>gs:save-sequence</font></h3>
+<b>syntax: (<font color=#CC0000>gs:save-sequence</font> <em>str-file-path</em>)</b><br/>
+<b>parameter: </b><em>str-file-name</em> - The name of the MIDI file to save to.<br/>
+<p></p>
+ Save the contents of a sequence created with <tt>gs:add-track</tt> to a MIDI file.
+ The file always should have the extension <tt>.mid</tt>.
+<p></p>
+ Note that all MIDI files created with <tt>gs:save-sequence</tt> will play back at a fixed
+ speed of 120 BPM. Therefore, when creating sequences for recording using <tt>gs:add-track</tt>,
+ they should be timed for a play-back speed of 120 BPM.
+<p></p>
+ To change the speed for replay from a saved MIDI file the resolution parameter can
+ be chaged from it's default of 16 tick per beat using the second optional parameter
+ of <tt>gs:midi-bpm</tt>. In this case the resolution parameter should be adjusted before
+ calling <tt>gs:add-track</tt> the first time.
 
 
 <p></p><center>- &sect; -</center><p></p>
@@ -2388,6 +2645,13 @@ tt {
 <b>parameter: </b><em>float-weight</em> - The optional weight distribution between <tt>0.0</tt> and <tt>1.0</tt> when re-sizing the window. The default is <tt>0.0</tt>.<br/>
 <b>parameter: </b><em>float-location</em> - The optional initial divider location between <tt>0.0</tt> and <tt>1.0</tt>.<br/>
 <b>parameter: </b><int-divider-size) - The optional size of the draggable divider in pixels.<br/>
+
+
+<p></p><center>- &sect; -</center><p></p>
+<a name="gs_stop-sequence"></a><h3><font color=#CC0000>gs:stop-sequence</font></h3>
+<b>syntax: (<font color=#CC0000>gs:stop-sequence</font>)</b><br/>
+<p></p>
+ Stops playing tracks, as started with <tt>gs:play-sequence</tt>.
 
 
 <p></p><center>- &sect; -</center><p></p>

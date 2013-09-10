@@ -89,7 +89,7 @@ John DeSanto, Gordon Fischer, John Flowers, Martin Quiroga (alphabetical order)
   sqlite.lsp (Flowers) and mysql.lsp (Fischer). In June 2006 Kozoru released
   http://byoms.com, a distributed application almost entirely built with newLISP. 
 
-Cormullion cormullion@mac.com, http://newlisper.blogspot.com
+Cormullion cormullion@mac.com, http://unbalanced-parentheses.nfshost.com
   for evangelizing newLISP on the MacOS X platform and publishing many ideas
   how to use newLISP on that platform and writing the "Introduction to newLISP"
 
@@ -97,7 +97,7 @@ Michael and Melissa Michaels, http://www.neglook.com
   for a complete review of the Users Manual and evangelizing efforts for newLISP
   and other good ideas, i.e. defaults in argument lists: (define (foo x (y 1)) ...) 
   Michael also designed the icons for newLISP-GS in v9.2 and much of the FOOP system 
-  released in 9.3.
+  released in 9.3 and has released a series of training videos.
 
 Bob Bae (aka frontera000, http://sparebandwidth.blogspot.com/)
   bringing many ideas to the advancement of newLISP and actively advocating for

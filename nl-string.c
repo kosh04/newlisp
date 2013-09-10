@@ -200,7 +200,12 @@ CELL * datCell;
 char buff[2];
 
 
-datCell = evaluateExpression(params);
+if(params == nilCell)
+	return(errorProc(ERR_MISSING_ARGUMENT));
+
+params = getDefaultOrEval(params, &datCell);
+
+
 switch(datCell->type)
 	{
 	case CELL_STRING:
@@ -208,12 +213,20 @@ switch(datCell->type)
 
 #ifndef SUPPORT_UTF8
 		len = (size_t)datCell->aux - 1;
+		if(len == 0) return(nilCell);
 #else
 		len = utf8_wlen(string);
+		if(len == 0)
+			{
+			if(datCell->aux - 1 == 0)
+				return(nilCell);
+			else
+				return(stuffInteger(0));
+			}
 #endif
 
-		if(params->next != nilCell)
-			getInteger(params->next, (UINT*)&offset);
+		if(params != nilCell)
+			getInteger(params, (UINT*)&offset);
 		else offset = 0;
 
 		offset = adjustNegativeIndex(offset, len);
@@ -290,14 +303,21 @@ int flag = 0;
 int clen, i;
 #endif
 
-cell = evaluateExpression(params);
+params = getDefaultOrEval(params, &cell);
 if(isList(cell->type))
-	return(explodeList((CELL*)cell->contents, params->next));
+	return(explodeList((CELL*)cell->contents, params));
 
-getStringSize(cell, &string, (size_t *)&size, TRUE);
-if(params->next != nilCell)
+if(cell->type == CELL_STRING)
 	{
-	params = getInteger(params->next, (UINT *)&len);
+	string = (char *)cell->contents;
+	size = cell->aux - 1;
+	}
+else
+	return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
+
+if(params != nilCell)
+	{
+	params = getInteger(params, (UINT *)&len);
 	flag = getFlag(params);
 	if(!flag && len > size) len = size;
 	}
@@ -414,9 +434,12 @@ size =  wstr_utf8(utf8str, unicode, size * UTF8_MAX_BYTES + 1);
 utf8str = reallocMemory(utf8str, size + 1);
 
 free(unicode);
+/*
 cell = getCell(CELL_STRING);
 cell->contents = (UINT)utf8str;
 cell->aux = size + 1;
+*/
+return(makeStringCell(utf8str, size));
 #endif
 
 return(cell);
@@ -690,11 +713,13 @@ if(fType != 0)
 varPrintf((UINT)&fmtStream, fmt);
 /* writeStreamStr(&fmtStream, fmt, 0); */
 
+/*
 cell = getCell(CELL_STRING);
 cell->aux = fmtStream.position + 1;
 cell->contents = (UINT)fmtStream.buffer;
+*/
 
-return(cell);
+return(makeStringCell(fmtStream.buffer, fmtStream.position));
 }
 
 void openStrStream(STREAM * stream, size_t buffSize, int reopenFlag)
@@ -760,7 +785,7 @@ stream->position = newPosition;
    the limiter is found 
 */
 
-char * readStreamText(STREAM * stream, char * limit)
+char * readStreamText(STREAM * stream, char * limit, int * size)
 {
 STREAM outStream;
 ssize_t findPos = -1;
@@ -782,6 +807,7 @@ while(findPos == -1)
         stream->ptr += findPos + llen;
         result = allocMemory(outStream.position + 1);
 		memcpy(result, outStream.buffer, outStream.position);
+		*size = outStream.position;
 		*(result + outStream.position) = 0; 
         closeStrStream(&outStream);
         return(result);
@@ -984,17 +1010,16 @@ CELL * p_integer(CELL * params)
 char * intString;
 INT64 num;
 long base;
-CELL * deflt;
+CELL * deflt, * cell;
 INT64 result;
 
-deflt = params->next;
-params = evaluateExpression(params);
+deflt = getDefaultOrEval(params, &cell);
 
-if(params->type == CELL_STRING)
-	intString = (char *)params->contents;
-else if(isNumber(params->type))
+if(cell->type == CELL_STRING)
+	intString = (char *)cell->contents;
+else if(isNumber(cell->type))
 	{
-	getInteger64(params, &num);
+	getInteger64(cell, &num);
 	return(stuffInteger64(num));
 	}
 else 
@@ -1106,6 +1131,7 @@ switch(cell->type)
 	default:
 		return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, params));
 	}
+
 params = params->next;
 	
 if(params == nilCell)
@@ -1116,7 +1142,7 @@ else if((context = getCreateContext(params, TRUE)) == NULL)
 if(params->next != nilCell)
 	{
 	cell = evaluateExpression(params->next);
-        if(cell->type == CELL_NIL)
+	if(isNil(cell))
 		{
 		sPtr = lookupSymbol(token, context);
 		if(sPtr == NULL) return(nilCell);
@@ -1171,7 +1197,14 @@ UINT getAddress(CELL * params)
 {
 UINT num;
 
-params = evaluateExpression(params);
+
+if(params == nilCell)
+	{
+	errorProc(ERR_MISSING_ARGUMENT);
+	return(0);
+	}
+
+getDefaultOrEval(params, &params);
 
 #ifndef NEWLISP64
 if(params->type == CELL_INT64)
@@ -1228,7 +1261,11 @@ return(stuffFloat((double*)getAddress(params)));
 
 CELL * p_address(CELL * params)
 {
-params = evaluateExpression(params);
+if(params == nilCell)
+	return(errorProc(ERR_MISSING_ARGUMENT));
+
+getDefaultOrEval(params, &params);
+
 switch(params->type)
     {
     case CELL_LONG:
@@ -1316,7 +1353,7 @@ else  if(*src != 0)
 
     /* error in pcre_exec() */
     if (rc < 0) 
-        regexError("error in pcre_exec()", rc, "");
+        regexError("error", rc, "when executing");
 
     *source = src + ovector[1];
     *srclen -= ovector[1];
@@ -1738,28 +1775,24 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
 	
 		case PACK_BYTE:
 			memcpy(&byteV, pPtr, 1);
-			cell = getCell(CELL_LONG);
-			cell->contents = byteV;
+			cell = makeCell(CELL_LONG, byteV);
 			break;
 
 		case PACK_CHAR:
 			memcpy(&chrV, pPtr, 1);
-			cell = getCell(CELL_LONG);
-			cell->contents = chrV;
+			cell = makeCell(CELL_LONG, chrV);
 			break;
 
 		case PACK_INT:
 			memcpy(&shortV, pPtr, 2);
 		        if(endianSwitch) swapEndian((char*)&shortV, 2);
-			cell = getCell(CELL_LONG);
-			cell->contents = (int)shortV;
+			cell = makeCell(CELL_LONG, shortV);
 			break;
 
 		case PACK_UNSIGNED_INT:
 			memcpy(&uint16V, pPtr, 2);
 		        if(endianSwitch) swapEndian((char*)&uint16V, 2);
-			cell = getCell(CELL_LONG);
-			cell->contents = uint16V;
+			cell = makeCell(CELL_LONG, uint16V);
 			break;
 
 		case PACK_LONG:
@@ -1781,8 +1814,7 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
 			cell = getCell(CELL_INT64);
 			*(INT64 *)&cell->aux = uint32V;
 #else
-			cell = getCell(CELL_LONG);
-			cell->contents = uint32V;
+			cell = makeCell(CELL_LONG, uint32V);
 #endif
 			break;
 
@@ -1794,8 +1826,7 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
 			cell = getCell(CELL_INT64);
 			memcpy(&cell->aux, &uint64V, 8);
 #else
-			cell = getCell(CELL_LONG);
-			cell->contents = uint64V;
+			cell = makeCell(CELL_LONG, uint64V);
 #endif
 			break;
 
@@ -1924,6 +1955,10 @@ return(result);
 /*                    see also http://www.pcre.org/                           */
 
 
+/* additional regex option */
+#define REPLACE_ONCE 0x8000
+#define PRECOMPILED 0x10000
+
 void regexError(char * msg_1, int num, const char * msg_2);
 
 
@@ -1937,16 +1972,20 @@ char * pattern;
 char * string;
 long options = 0;
 int len;
+size_t size;
 CELL * cell, * result, * strCell;
 
-cell = getString(params, &pattern);
+params = getString(params, &pattern);
+params = getStringSize(params, &string, &size, TRUE);
+
+/*
 strCell = evaluateExpression(cell);
 if(strCell->type != CELL_STRING)
 	return(errorProcExt(ERR_STRING_EXPECTED, cell));
-
 string = (char *)strCell->contents;
-
 params = cell->next;
+*/
+
 if(params != nilCell)
     params = getInteger(params, (UINT *)&options);
 
@@ -1958,7 +1997,7 @@ rc = pcre_exec(
     re,                    /* the compiled pattern */
     NULL,                  /* no extra data - we didn't study the pattern */
     string,                /* the subject string */
-    (int)strCell->aux - 1, /* the length of the subject */
+    size, /* the length of the subject */
     0,                     /* start at offset 0 in the subject */
     0,                     /* default options */
     ovector,               /* output vector for substring information */
@@ -1970,7 +2009,7 @@ if (rc == -1)
 
 /* error in pcre_exec() */
 if (rc < 0) 
-    regexError("error in pcre_exec()", rc, "");
+	regexError("error", rc, "when executing");
 
 /* Match succeded */
 
@@ -2005,6 +2044,31 @@ return(result);
 }
 
 
+CELL * p_regexComp(CELL * params)
+{
+char * pattern;
+long options = 0;
+pcre * re;
+int rc;
+size_t size;
+CELL * result;
+
+params = getString(params, &pattern);
+if(params != nilCell)
+    params = getInteger(params, (UINT *)&options);
+
+/* Compile the regular expression in the first argument */
+re = pcreCachedCompile(pattern, (int)options);
+rc = pcre_fullinfo(re, NULL, PCRE_INFO_SIZE, &size);
+
+if(rc < 0) return(nilCell);
+
+result = stuffStringN((char *)re, size);
+
+return(result);
+}
+
+
 ssize_t searchBufferRegex(char * string,  int offset, 
                           char * pattern, int length, int options, int * len)
 {
@@ -2013,7 +2077,7 @@ int ovector[OVECCOUNT];
 int rc, idx;
 CELL * cell;
 
-options &= ~REPLACE_ONCE; /* turn custom bit off for PCRE */
+options &= ~REPLACE_ONCE ; /* turn custom bits off for PCRE */
 
 /* Compile the regular expression in the first argument */
 re = pcreCachedCompile(pattern, options);
@@ -2027,7 +2091,7 @@ if (rc == -1)
 
 /* error in pcre_exec() */
 if (rc < 0) 
-    regexError("error in pcre_exec()", rc, "");
+	regexError("error", rc, "when executing");
 
 
 for(idx = 0; idx < rc; idx++)
@@ -2052,6 +2116,8 @@ static char * cPattern = NULL;
 static pcre * re = NULL;
 static int cacheOptions = -1;
 UINT len;
+
+if(options & 0x10000) return((pcre *)pattern);
 
 if((cPattern == NULL) || (strcmp(cPattern, pattern) != 0) || (options != cacheOptions))
     {
@@ -2084,7 +2150,7 @@ void regexError(char * msg_1, int number, const char * msg_2)
 {
 CELL * cell;
 char * errorBuff = malloc(256);
-snprintf(errorBuff, 256,  "%s %d %s:", msg_1, number, msg_2);
+snprintf(errorBuff, 256,  "%s %d %s", msg_1, number, msg_2);
 cell = stuffString(errorBuff);
 free(errorBuff);
 fatalError(ERR_REGEX, cell, 0);

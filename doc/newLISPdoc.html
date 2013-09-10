@@ -43,7 +43,7 @@ tt {
 
 <center>
 <h1>newLISPdoc - the newLISP documentation program</h1>
-<font size="-1">last edited 2008-02-27</font>
+<font size="-1">last edited 2008-05-12</font>
 </center>
 
 <p>Comments in newLISP source files can be converted
@@ -79,6 +79,10 @@ newlisp newlispdoc mysql.lsp odbc.lsp sqlite.lsp
 <p>This will generate <tt>index.html</tt>, <tt>mysql.lsp.html</tt>, <tt>odbc.lsp.html</tt>
 and <tt>sqlite.lsp.html</tt> all in the same directory, where the command was executed.
  The page <tt>index.html</tt> contains links to all other pages.</p>
+
+<p>If the current directory contains the file <tt>newlispdoc.css</tt>, HTML output
+will be formatted accordingly. For a sample file see
+<tt>util/newlispdoc.css</tt> in the source distribution.</p>
 
 <p>The command line flag <tt>-s</tt> can be supplied to additionally
 generate syntax highlighted HTML versions of the source files and put a link

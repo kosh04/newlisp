@@ -1,0 +1,82 @@
+#!/usr/bin/newlisp
+
+; note that run fibonacci with Cilk is not a good idea
+; in the real world, but it tests well the integrity
+; of the interface when applying Cilk calls recursively
+; because each call to (fibo x) branches into two other
+; calls and each caller maintains it's own list
+; of spawned processes, which it has to finish with sync
+
+; n    fibo(n) processes
+; 4     5      9
+; 5     8      15
+; 6    13      25
+; 7    21      41
+; 8    34      67
+; 9    55      109
+;10    89      177
+
+(println)
+
+(define (fibo n)
+  (local (f1 f2)
+    (if(< n 2) 1
+		(begin 
+			(spawn 'f1 (fibo (- n 1)))
+			(spawn 'f2 (fibo (- n 2)))
+			(sync 10000)
+			(+ f1 f2)))))
+
+(if (not fork) ; does not have fork
+  (if (= (fibo 7) 21)
+	(println "SIMULATED CILK API TESTED SUCCESSFUL ---")
+	(println "ERRORR: Problem simulated with Cilk API")
+))
+
+(if (not fork) (exit))
+
+; spawn 10 processes than abort them all one by one
+(time (spawn 'x (sleep 100)) 10)
+
+(set 'result0 (map abort (sync)))
+
+; create 10 processes then abort all at once
+(time (spawn 'x (sleep 100)) 10)
+(println "(abort) -> " (set 'result1 (abort)))
+(println "(sync)  -> " (set 'result2  (sync)))
+
+; create 10 processes then wait for them to finish
+(time (spawn 'x (sleep 100)) 10)
+(println "(sync) -> " (sync))
+(println "N of processes -> " (set 'result3 (length (sync))))
+(println "waiting  to sync -> " (set 'result4 (sync 5000)))
+
+; calculate (fobo 7) needs to create 21 processes
+(println "fibo(7) with 41 processes -> "(set 'result5 (fibo 7)))
+
+; check inlet function
+(define (inlet pid) 
+	(println "pid: " pid " " (lookup pid plist) ":" (eval (lookup pid plist)))
+	(push (list (lookup pid plist) (eval (lookup pid plist))) result6 -1)
+)
+
+(push (list (spawn 'p1 (sleep 400)) 'p1) plist)
+(push (list (spawn 'p2 (sleep 500)) 'p2) plist)
+
+(println (sync 2000 inlet))
+(println)
+(if (and
+         (apply and result0) 
+         (= 10 (length result0))
+         (true? result1) 
+         (empty? result2) 
+         (= 10 result3) 
+         (true? result4)
+         (= result5 21)
+         (= result6 '((p1 400) (p2 500))))
+	(println ">>>>> THE CILK API TESTED SUCESSFULL")
+	(println ">>>>> ERR: PROBLEM WITH CILK API")
+)
+(println)
+(exit)
+

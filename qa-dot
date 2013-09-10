@@ -162,14 +162,14 @@ true
 (define (qa )
   (dolist (sm (symbols 'MAIN)) 
    (if (not 
-     (if (and (primitive? (eval sm)) (< sm 'zzzz)) 
+     (if (and (primitive? (eval sm)) (< sm 'zzz)) 
        (begin 
-          (print (name sm) " ")
+          (print "  -> " (name sm) "          \r")
           (set 'func (eval (sym (append "test-" (string sm)))) )
           (and (catch (apply func) 'result)  result))
        true)) 
      (failed (string ">>>> " sm " failed " result) )))
-  (println))
+  (print "                             \n"))
 
 (define (test-$) (find "a|b" "xtzabc" 0) (= ($ 0) $0))
 
@@ -368,7 +368,7 @@ true
   (= (round (asin (sin (asin (sin 1)))) -9) 1))
 
 (define (test-asinh)
-  (= (sinh (asinh 1)) 1))
+  (= (round (sinh (asinh 1)) -12) 1))
 
 (define (test-assoc )
   (= (assoc 'b '((a 1) (b 2))) '(b 2)))
@@ -444,7 +444,9 @@ true
 	(and
 		(= a 1)
 		(= b "hello")
-		(= c '(3 4)))
+		(= c '(3 4))
+		(= 7 (bind '((a (+ 3 4))) true))
+	)
 )
 
 (define (test-binomial )
@@ -518,8 +520,7 @@ true
     (= (select '(w x y z) (inc 'a) (inc 'b) (inc 'c)) '(x y z))
 ))
 
-(define (test-command-line )
-  (and (not (command-line nil)) (command-line true)))
+(define (test-command-event) true) /* test interactively */
 
 (define (test-cond )
   (and 
@@ -542,11 +543,7 @@ true
 (define (test-constant )
   (constant 'cs 123)
   (= cs 123)
-  (define (trick z) (constant 'z 999))
-  (= (trick) 999)
-  (= (set 'z 123) 123)
-  (= (trick) 999)
-  (= z 123))
+  (protected? 'cs))
 
 
 (define (test-context )
@@ -827,7 +824,7 @@ true
 (define (test-throw-error)
     (and
         (not (catch (throw-error "message text") 'result))
-        (starts-with result "user error :")) )
+        (starts-with result "ERR: user error :")) )
 
 
 (define (test-error-event )
@@ -848,10 +845,11 @@ true
 (define (test-eval-string )
   (eval-string "(set 'x 123)")
   (eval-string "(set 'y x)")
-  (and (= 123 (eval-string "y")))
+  (= 123 (eval-string "y"))
   (= 123 (eval-string "(blah-blah)" 123))
   (set 'Foo:xyz 99999)
   (= 99999 (eval-string "xyz" nil 'Foo))
+  (delete (sym "xyz" Foo))
 )
 
 (define (test-exec )
@@ -1859,6 +1857,8 @@ true
      (delete-file "process test")
      (delete-file "test process")))
 
+(define (test-prompt-event) true) /* test interactively */
+
 (define (test-protected?)
 	(and
 		(protected? 'println)
@@ -1895,6 +1895,9 @@ true
        (= (pop lst -1 0) 'y)
        (= (pop lst -1 -1) 'x)
        (= lst '(1 2 3 (4 5)()))
+       (set 'lst '((1)))
+       (push 2 lst -1 -1)
+       (= lst '((1 2)))
        (test-push-pop)
        (test-push-optimization-bug)
        ; test string push
@@ -1971,7 +1974,7 @@ true
   )
 )
 
-(define (test-read-expr)
+(define (test-read-expr , clist)
     (set 'code "; a statement\n(+ 3 4)\n(define (double x) (+ x x))")
     (read-expr code (fn (x) (push x clist)) (context))
     (= clist '((define (double x) (+ x x)) (+ 3 4)))
@@ -2061,6 +2064,15 @@ true
    (= $1 "nuevatec.com")
    (= $2 "80")
    (= (regex "b+" "AAAABBBAAAA" 1) '("BBB" 4 3))))
+
+(define (test-regex-comp)
+	(and
+		(set 'pattern (regex-comp "http://(.*):(.*)"))
+		(find pattern "http://nuevatec.com:80" 0x10000)
+		(= $0 "http://nuevatec.com:80")
+		(= $1 "nuevatec.com")
+		(= $2 "80")
+	))
  
 (define (test-remove-dir )
   (and (make-dir "junk") (remove-dir "junk")))
@@ -2737,7 +2749,7 @@ true
 	(integer? (sys-error 0) ))
 
 (define (test-sys-info )
-   (and (list? (sys-info)) (= (length (sys-info)) 8)))
+   (and (list? (sys-info)) (= (length (sys-info)) 9)))
 
 (define (test-tan )
   (> 1 (tan (atan (tan (atan 1))))))
@@ -2928,6 +2940,30 @@ true
         (= (format "%llx" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f"))
 ))
 
+
+;;;;;;;;;;;;;;;; test Cilk interface, run qa-cilk for more tests ;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (test-abort)
+	(and 
+		(spawn 'x (+ 1 2))
+		(abort)))
+
+(define (test-spawn)
+	(and 
+		(set 'px (spawn 'x (+ 1 2 3 4)))
+		(set 'py (spawn 'y (+ 5 6 7 8)))
+		(if (!= ostype "Win32")
+			(begin
+				(find px (sync))
+        		(find py (sync)))
+			true)
+        (true? (sync 1000))
+		(empty? (sync))
+		(= x 10)
+		(= y 26)
+))
+
+(define (test-sync) true)
+(define (test-schedule) true)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MAIN ENTRY POINT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (if (or (not (or (file? "newlisp") (file? "newlisp.exe"))) (not (file? "qa-dot")))
@@ -2938,14 +2974,12 @@ true
 (cleanup)
 (println)
 (println "Testing built-in functions ...")
-(println)
 (qa)
 (cleanup)
 
 (context 'MAIN)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(println)
 (println "Testing contexts as objects and scoping rules ...")
 (println)
 
@@ -3186,22 +3220,33 @@ true
 (if (!= (map TST:test-context-change '(a b c)) '(nil nil nil))
   (QA:failed ">>>>> problem maintaining runtime context with map lambda"))
 
+;; hash-like access functions for namespaces
+(if (not (and
+	(nil? (define Foo:Foo)) ; create namespace and default functor
+	(= (Foo "bar" 123) 123)
+	(= (Foo "bar") 123)
+	(= (Foo "bar" (+ 100 23)) 123)
+	(= (Foo (append "b" "ar")) 123)
+	(= (Foo '(("var" 123) ("bar" 456) ("baz" 789))) 'Foo)
+	(= (Foo) '(("bar" 456) ("baz" 789) ("var" 123)))
+	)) (QA:failed ">>>>> problem with hash functions for namespaces") true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(println)>
+(println "total time: " (- (time-of-day) start-of-qa) "\n")
 (if QA:failed-messages
   (begin
-    (println "TESTING: " (main-args 0) " FINISHED WITH ERRORS:")
+    (println ">>>>> TESTING: " (main-args 0) " FINISHED WITH ERRORS:")
     (println)
     (dolist (func (reverse QA:failed-messages))
         (println func)))
-  (println "ALL FUNCTIONS FINISHED SUCCESSFULL: " (main-args 0)))
+  (println ">>>>> ALL FUNCTIONS FINISHED SUCCESSFULL: " (main-args 0))
+  (println)
+)
 
-(println)
 (delete-file "sharetest.lsp")
 (delete-file "udptest.lsp")
-(println "total time: " (- (time-of-day) start-of-qa))
+(sys-info)
 (exit)
 ;; eof
 

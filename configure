@@ -43,7 +43,7 @@ case `uname` in
 	SunOS)
 		echo  Discovered SunOS, enter:
 		echo "     make"
-		echo to make for SunOS
+		echo to make for SunOS on Sparc CPU
 		exit
 		;;
 	OSF1)

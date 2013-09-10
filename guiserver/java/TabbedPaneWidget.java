@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/17/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 @SuppressWarnings("unchecked")
 public class TabbedPaneWidget extends gsObject {
@@ -53,7 +54,13 @@ public TabbedPaneWidget(StringTokenizer params)
 		{
 		String cid = params.nextToken();
 		gsObject gsobject = (gsObject)gsObject.widgets.get(cid);
+
 		String title = Base64Coder.decodeString(params.nextToken());
+		if(guiserver.UTF8)
+		try {
+			title = new String(title.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 		tabbedpane.addTab(title, gsobject.component);
 		tabsHash.put(gsobject.component, cid);
 		}
@@ -84,7 +91,13 @@ public TabbedPaneWidget(StringTokenizer params)
 public void insertTab(StringTokenizer tokens)
 	{
 	String scomp = tokens.nextToken();
+	
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	if(guiserver.UTF8)
+	try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+	
 	int index = 0;
 	ImageIcon icon = null;
 	
@@ -142,6 +155,12 @@ public void setIcon(StringTokenizer tokens)
 public void setText(StringTokenizer tokens)
 	{
 	String title = Base64Coder.decodeString(tokens.nextToken());
+	
+	if(guiserver.UTF8)
+	try {
+		title = new String(title.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	int index = Integer.parseInt(tokens.nextToken());
 
 	if(index >= tabbedpane.getTabCount())

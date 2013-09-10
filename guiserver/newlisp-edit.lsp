@@ -2,9 +2,7 @@
 
 ; newlisp-edit.lsp - multiple tab LISP editor and support for running code from the editor
 
-; version 1.10
-
-;(set 'debug-on true) ; special debug for aux communications
+; version 1.20
 
 (set-locale "C")
 
@@ -51,6 +49,7 @@
 (set 'config:currentDir $HOME)
 (set 'config:currentFontName (if (= ostype "Win32") "Monospaced" "Lucida Sans Typewriter"))
 (set 'config:currentFontSize (if (= ostype "Win32") 14 13))
+(set 'config:currentMonitorFontName (if (= ostype "Win32") "Monospaced" "Lucida Sans Typewriter"))
 (set 'config:currentMonitorFontSize (if (= ostype "Win32") 14 13))
 (set 'config:currentToolbarFloatable "no")
 (set 'config:currentTabsize 16)
@@ -63,9 +62,9 @@
 
 ;; configure themes
 
-; background, foreground, caret, selection
+; name background, foreground, caret, selection
 ; comments, keywords, strings
-; numebers, quoted, parentheses
+; numbers, quoted, parentheses
 
 (set 'config:currentThemes '(
 	("Mozart" (1 1 1) (0 0 0) (0.5 0.5 0.8) (0.7 0.7 1.0)
@@ -135,7 +134,7 @@
 				; else "content"
     			(gs:get-text currentEdit 'script-execute))
 			)
-			(output-monitor (string "--- could not find script " currentScriptFile " ---\n"))
+			(output-monitor (string ";--- could not find script " currentScriptFile " ---\n"))
 		)
 	)
 )
@@ -192,6 +191,7 @@
 (set 'currentFile "Untitled.lsp")
 (set 'currentFontName config:currentFontName)
 (set 'currentFontSize config:currentFontSize)
+(set 'currentMonitorFontName config:currentMonitorFontName)
 (set 'currentMonitorFontSize config:currentMonitorFontSize)
 (set 'currentToolbarFloatable config:currentToolbarFloatable)
 (set 'currentTabsPosition config:currentTabsPosition)
@@ -213,7 +213,7 @@
 
 (define (start-newlisp-shell)
 	(if (= ostype "Win32")
-		(gs:run-shell 'OutputArea (string newlispDir "/newlisp.exe -C -w " $HOME))
+		(gs:run-shell 'OutputArea (string newlispDir "/newlisp.exe -C -w \"" $HOME "\""))
 		(gs:run-shell 'OutputArea (string "/usr/bin/newlisp -C -w " $HOME))
 	)
 )
@@ -297,7 +297,7 @@
 ;; configure text area
 (define (make-editor-tab dir file-name)
 	(let (edit-tab (append "tab-" (uuid)) )
-		(push (list edit-tab dir file-name (list true 0 0)) tabs-stack -1)
+		(push (list edit-tab dir file-name (list true 0 0 (current-file-syntax))) tabs-stack -1)
 		(gs:text-pane edit-tab 'editarea-handler "text/plain")
 		(gs:mouse-event edit-tab 'editarea-mouse-handler)
 		(gs:set-foreground edit-tab currentForeground)
@@ -325,7 +325,8 @@
 (gs:text-area 'OutputArea 'gs:no-action)
 (gs:set-background 'OutputArea currentMonitorBackground)
 (gs:set-foreground 'OutputArea currentMonitorForeground)
-(gs:set-font 'OutputArea "Monospaced" currentMonitorFontSize "plain")
+;(gs:set-font 'OutputArea "Monospaced" currentMonitorFontSize "plain")
+(gs:set-font 'OutputArea currentMonitorFontName currentMonitorFontSize "plain")
 (gs:split-pane 'TextPanel "horizontal" 0.70 0.5 5)
 (gs:add-to 'TextPanel 'EditorTabs 'OutputArea)
 (gs:add-to 'TheEditor  'TextPanel "center")
@@ -383,6 +384,7 @@
 (gs:menu-item 'ViewFontBook 'fontbookbutton-handler "Font faces ...")
 (gs:menu-item 'ViewFontSmaller 'viewfontsmaller-handler "Font smaller")
 (gs:menu-item 'ViewFontBigger 'viewfontbigger-handler "Font bigger")
+
 
 (gs:menu 'ToolMenu "Tools")
 (gs:menu-item 'ToolEditSettings 'tooleditsettings-handler "Edit Settings")
@@ -723,7 +725,7 @@
 		(save-recent-list)
 		(if (not bytes)
 			(gs:message-dialog 'TheEditor "Saving file" (append "Could not save " currentPath))
-			(output-monitor (string "--- " bytes " bytes saved to " currentPath " ---\n"))
+			(output-monitor (string ";--- " bytes " bytes saved to " currentPath " ---\n"))
 		)
 	)
 )
@@ -752,6 +754,7 @@
 	(set 'config:currentDir currentDir)
 	(set 'config:currentFontName currentFontName)
 	(set 'config:currentFontSize currentFontSize)
+	(set 'config:currentMonitorFontName currentMonitorFontName)
 	(set 'config:currentMonitorFontSize currentMonitorFontSize)
 	(set 'config:currentToolbarFloatable currentToolbarFloatable)
 	(set 'config:currentTabsPosition currentTabsPosition)
@@ -764,7 +767,7 @@
 	(set 'config:currentMonitorBackground currentMonitorBackground)
 	(save userSettingsPath 'config)
 	(output-monitor 
-		(string "--- saved settings in: " userSettingsPath " ---\n"))
+		(string ";--- saved settings in: " userSettingsPath " ---\n"))
 )
 
 (define (tooleditsettings-handler)
@@ -782,8 +785,9 @@
 		(dolist (tab tabs-stack)
 			(if (not (tab 3 0)) (set 'is-clean-tabs nil)))
 		(if (and is-clean-tabs edit-buffer-clean)
-			(gs:confirm-dialog 'TheEditor 'quitconfirm-action
-				"Quit newLISP edit" "You really want to quit?" "yes-no")
+			(quitconfirm-action nil 0)
+;			(gs:confirm-dialog 'TheEditor 'quitconfirm-action
+;				"Quit newLISP edit" "You really want to quit?" "yes-no")
 			(gs:confirm-dialog 'TheEditor 'quitconfirm-action
 				"Quit newLISP edit" "Quit and lose unsaved content?" "yes-no")
 		)
@@ -872,13 +876,16 @@
 
 (define (position-handler)
 	(gs:get-text-position currentEdit)
-	(output-monitor (string "--- line: " (gs:text-position 0) " column: " (gs:text-position 1) " ---\n"))
+	(output-monitor (string ";--- line: " (gs:text-position 0) " column: " (gs:text-position 1) " ---\n"))
 )
 
 (define (switchwindow-handler id)
 	(if (= id "MAIN:EditGotoEditor")
 		(gs:request-focus currentEdit)
-		(gs:request-focus 'OutputArea))
+		(begin
+			(gs:request-focus 'OutputArea)
+			(gs:set-caret 'OutputArea 100000))
+	)
 )
 
 ;;;;;;;;;;;;; find text ;;;;;;;;;;;;;;;
@@ -1180,6 +1187,7 @@
 (define (output-monitor str)
 	(gs:append-text 'OutputArea str)
 	(gs:enable 'ViewClearMonitor)
+	(gs:eval-shell 'OutputArea "\n")
 )
 
 ;; dtach/attach toolbar
@@ -1254,7 +1262,7 @@
 		)
 		; character typed
 		(if edit-buffer-clean
-			(begin
+			(when (<  mods 128)
 				(set 'edit-buffer-clean nil)
 				(gs:set-icon 'EditorTabs "/local/red10.png" currentTabIndex)
 				(gs:enable 'FileSave 'FileSaveAs 'SaveButton)
@@ -1330,8 +1338,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2007 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2007 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2008 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2008 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)
@@ -1374,7 +1382,9 @@
 					"/usr/bin/sensible-browser"
 					"/usr/bin/x-www-browser"
 					"/usr/bin/mozilla"
-					"/usr/bin/konqueror"))
+					"/usr/bin/firefox"
+					"/usr/bin/konqueror"
+				))
 			(set 'prog (find true (map file? files)))
 			(if prog
 				(exec (string (files prog) " file://" newlispDoc file-name))
@@ -1384,7 +1394,6 @@
 		)
 	)
 )
-
 
 ;; start listening for GUI events and output from auxiliary newLISP process
 ;; append out put from newLISP process to monitor area

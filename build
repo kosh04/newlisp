@@ -40,7 +40,7 @@ case `uname` in
 		exit
 		;;
 	SunOS)
-		echo  Discovered SunOS:
+		echo  Discovered SunOS, making for Sparc CPU:
 		make solaris
 		exit
 		;;

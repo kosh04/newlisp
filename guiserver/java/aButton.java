@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/25/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class aButton extends gsObject {
 
@@ -34,6 +35,12 @@ AbstractButton abutton;
 public void setText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	
+	if(guiserver.UTF8)
+		try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	abutton.setText(text);
 	}
 	
@@ -41,13 +48,26 @@ public void appendText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
 	String oldtext = abutton.getText();
-	abutton.setText(oldtext + text);
+	text = oldtext + text;
+
+	if(guiserver.UTF8)
+		try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
+	abutton.setText(text);
 	}
 
 public void getText(StringTokenizer params)
 	{
 	String action = params.nextToken();
 	String text = abutton.getText();
+	if(guiserver.UTF8)
+		try {
+			text = new String(text.getBytes("UTF-8"));
+			} 
+		catch (UnsupportedEncodingException e) {}
+
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else

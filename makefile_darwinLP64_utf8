@@ -1,0 +1,24 @@
+# makefile for newLISP v. 9.x.x on Mac OSX LP64 memory model with readline support and UTF8
+#
+# for OS X 10.4 and later
+#
+# needs a G5 or core 2 duo to run. Passes 'make test' on intel core 2 duo
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+CFLAGS = -m64 -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX -DNEWLISP64 -DSUPPORT_UTF8
+#CFLAGS = -m64 -Wall -I/usr/include -c -g  -DMAC_OSX -DNEWLISP64
+
+CC = cc -L/usr/lib
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m64 -g -lm -lreadline -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): newlisp.h primes.h protos.h makefile_darwinLP64_utf8
+
+

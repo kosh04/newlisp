@@ -1,0 +1,144 @@
+newlisp(1)                  Commandline Parameters                  newlisp(1)
+
+
+
+NAME
+       newlisp - lisp like programming language
+
+SYNOPSIS
+       newlisp  [-h]  [-c  |  -C | -http] [-s stacksize] [-m max-mem-megabyte]
+       [[-l path-file | -L path-file] [-p port-number | -d  port-number]]  [-w
+       diectory] [lisp-files ...] [-e programtext]
+
+DESCRIPTION
+       Invokes newLISP which first loads init.lsp if present. Then one or more
+       options and one or more newLISP source  files  can  be  specified.  The
+       options  and source files are executed in the sequence they appear. For
+       some options is makes sense to have source files loaded first like  for
+       the  -p  and -d options. For other options like -s and -m it is logical
+       to specify these before the source files to be loaded. If a  -e  switch
+       is  used  the programtext is evaluated and then newlisp exits otherwise
+       evaluation  continues  interactively  (unless  an  exit  occurs  during
+       lisp-file interpretation).
+
+OPTIONS
+       -h     Display a short help text.
+
+       -c     Suppress the commandline prompt.
+
+       -C     Force prompt when running newLISP in pipe I/O mode for Emacs.
+
+       -http  only accept HTTP commands
+
+       -s stacksize
+              Stack  size  to use when starting newLISP. When no stack size is
+              specified the stack defaults to 1024.
+
+       -m max-mem-megabyte
+              Limits memory to max-mem-megabyte megabytes for LISP  cell  mem-
+              ory.
+
+       lisp-files
+              Load  and  evaluate the specified lisp source files in sequence.
+              Source files can be specified using URLs. If an (exit)  is  exe-
+              cuted by one of the source files then newlisp exits and all pro-
+              cessing ceases.
+
+       -e programtext
+              Programtext is an expression enclosed in quotation  marks  which
+              is evaluated and the result printed to standard out device (STD-
+              OUT). In most UNIX system shells apostrophes can also be used to
+              delimit  the  expression. newLISP exits after evaluation of pro-
+              gramtext is complete.
+
+       -w directory
+              Directory is the start up directory for newLISP. Any file refer-
+              ence in a program will refer to this directory by default as the
+              current directory. This can be used to define a web root  direc-
+              tory when in server mode.
+
+       -l -L path-file
+              Log   network  connections  and  newLISP  I/O  to  the  file  in
+              path-file. -l will only log network connections  or  commandline
+              input  or  net-eval  requests.  -L  will  additionally  log HTTP
+              requests and newLISP output from commandline and net-eval input.
+
+       -p port-number
+              Listen  for commands on a TCP/IP socket connection. In this case
+              standard I/O is redirected to  the  port  specified  in  the  -p
+              option. Any specified lisp-files will be loaded the first time a
+              connection is made, that is, before text is  accepted  from  the
+              port connection.
+
+       -d port-number
+              Run  in  demon  mode. As for the -p option, but newLISP does not
+              exit after a closed connection and stays in memory listening for
+              a new connection.
+
+
+EXAMPLES
+       Start interactive session
+              newlisp
+
+
+       Excute a program
+              newlisp myprog.lsp
+
+
+       Excute a remote program
+              newlisp http://newlisp.org/example.lsp
+
+
+       Add 3 and 4, 7 prints on standard output
+              newlisp -e "(+ 3 4)"
+
+
+       newLISP  is  started  as  a server (the & indicates to LINUX to run the
+       process in the background) and can be connected to with telnet by issu-
+       ing telnet localhost 1234
+              newlisp -p 1234 &
+
+
+       newLISP  is  started as a server for another newlisp process connecting
+       with the net-eval function or HTTP requests
+              newlisp -c -d 4711 &
+
+
+       newLISP is started as a server handling HTTP requests only. Connections
+       are logged to the file /usr/home/www/log.txt
+              newlisp -l /usr/home/www/log.txt -http -d 8080 &
+
+
+       newLISP  is started as a server handling HTTP requests and defining the
+       startup/web root directory
+              newlisp -http -d 8080 -w /usr/home/www/httpdocs &
+
+       When  accepting  HTTP  commands  a file httpd.conf can be loaded, which
+       will preprocess the path-name in the HTTP request
+              newlisp httpd.conf -http -d 8080 -w /usr/home/www/httpdocs &
+
+       If the file httpd.conf contains:
+
+       (define (httpd-conf path-name)
+           (if (ends-with path-name ".exe") "errorpage.html" path-name))
+
+       then  all  files  ending  in  .exe  will  translate the request in to a
+       request for  an  error  page,  else  the  original  request  string  is
+       returned.
+
+
+EXIT STATUS
+       newLISP  returns  a  zero  exit status for normal termination unless an
+       exit command specifies a code to be returned. Non zero is  returned  in
+       case of abnormal exit.
+
+AUTHOR
+       Lutz Mueller <lutz@nuevatec.com>
+
+       http://newlisp.org/ - the newLISP home page
+
+
+
+
+version 9.4                        June 2008                        newlisp(1)
+

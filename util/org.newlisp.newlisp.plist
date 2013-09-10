@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+		"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- This file is used on Mac OS X for the launchd and launchctl
+utiities. The file should go into the $HOME/Library/LaunchAgents/
+directory or in the system wide Library/LaunchAgents/ directory -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.newlisp.newlisp</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/newlisp</string>
+		<string>-c</string>
+		<string>-d4711</string>
+		<string>-w/Users/lutzmueller/Sites</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>

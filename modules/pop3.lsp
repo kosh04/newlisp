@@ -1,7 +1,7 @@
 ;; @module pop3.lsp
 ;; @description POP3 mail retrieval routines
-;; @version 1.9 - comments redone for automatic documentation
-;; @author Lutz Mueller et al., 2001, 2002
+;; @version 2.0 - eliminated old net-send syntax
+;; @author Lutz Mueller et al., 2001, 2002, 2008
 ;;
 ;; <h2>POP3 mail retrieval routines</h2>
 ;;
@@ -165,12 +165,12 @@
 (define (logon userName password)
     (and
         (set 'sndbuff (append "USER " userName "\r\n"))
-        (net-send socket 'sndbuff)
+        (net-send socket sndbuff)
 	(if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
         (net-flush)
         (set 'sndbuff (append "PASS " password "\r\n"))
-        (net-send socket 'sndbuff)
+        (net-send socket sndbuff)
 	(if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
         (net-flush)
@@ -182,7 +182,7 @@
 (define (get-status last-flag)
     (and
         (set 'sndbuff "STAT\r\n")
-        (net-send socket 'sndbuff)
+        (net-send socket sndbuff)
 	(if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
         (net-receive socket 'status 256)
@@ -191,7 +191,7 @@
 	(if last-flag 
             (begin
                 (set 'sndbuff "LAST\r\n")
-                (net-send socket 'sndbuff)
+                (net-send socket sndbuff)
 	        (if debug-flag (println "sent: " sndbuff) true)
                 (net-confirm-request)
                 (net-receive socket 'last-read 256)
@@ -235,7 +235,7 @@
           (for (msg from to)
                (if debug-flag (println "getting message " msg) true)
 	       (set 'sndbuff (append "RETR " (string msg) "\r\n"))
-	       (net-send socket 'sndbuff)
+	       (net-send socket sndbuff)
 	       (if debug-flag (println "sent: " sndbuff) true)
 	       (set 'message (retrieve-message))
                (if debug-flag (println (slice message 1 200)) true)
@@ -252,7 +252,7 @@
 (define (delete-message msg)
     (and
         (set 'sndbuff (append "DELE " (string msg) "\r\n"))
-        (net-send socket 'sndbuff)
+        (net-send socket sndbuff)
 	(if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)))
 
@@ -272,7 +272,7 @@
 ;
 (define (log-off)
     (set 'sndbuff "QUIT\r\n")
-    (net-send socket 'sndbuff)
+    (net-send socket sndbuff)
     (if debug-flag (println "sent: " sndbuff) true)
     (net-receive socket 'rcvbuff 256)
     (if debug-flag (println rcvbuff) true)

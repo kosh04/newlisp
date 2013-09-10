@@ -138,17 +138,6 @@ int errorIdx = 0;
 extern int logTraffic;
 extern int noPromptMode;
 
-/* with MinGW gcc 3.4.5 not needed
-#ifdef WIN_32
-struct timezone {
-       int     tz_minuteswest;
-       int     tz_dsttime;
-};
-int gettimeofday(struct timeval * tv, struct timezone * tz);
-#endif
-*/
-
-
 /********************** session functions *******************/
 
 int createInetSession(int sock, int family)
@@ -244,26 +233,15 @@ CELL * p_netSessions(CELL * params)
 INET_SESSION * session;
 INET_SESSION * sPtr;
 CELL * sList;
-CELL * last;
 
 session = netSessions;
 sList = getCell(CELL_EXPRESSION);
-last = NULL;
 
 while(session)
     {
     sPtr = session;
     session = session->next;
-    if(last == NULL)
-        {
-        last = stuffInteger(sPtr->socket);
-        sList->contents = (UINT)last;
-        }
-    else
-        {
-        last->next = stuffInteger(sPtr->socket);
-        last = last->next;
-        }
+	addList(sList, stuffInteger(sPtr->socket));
     }
 
 return(sList);
@@ -579,9 +557,9 @@ UINT addressPort, sock;
 getInteger(params, &sock); 
 if((addressPort = getPeerName((int)sock, peerLocalFlag, name)) == SOCKET_ERROR)
     return(nilCell);
- 
-result = getCell(CELL_EXPRESSION); 
-result->contents = (UINT)stuffString(name); 
+
+result = makeCell(CELL_EXPRESSION, (UINT)stuffString(name));
+
 cell = (CELL *)result->contents; 
 cell->next = stuffInteger((UINT)addressPort); 
  
@@ -773,6 +751,7 @@ bytesReceived = recvfrom(sock, buffer, readSize, 0,
 if(bytesReceived == SOCKET_ERROR) 
     {
     freeMemory(buffer);
+	deleteInetSession(sock);
     close(sock); 
     return(netError(ERR_INET_READ)); 
     }
@@ -785,16 +764,19 @@ snprintf(IPaddress, 16, inet_ntoa(remote_sin.sin_addr));
 portNo = ntohs(remote_sin.sin_port);
 #endif
 
+cell = result = makeCell(CELL_EXPRESSION, (UINT)stuffStringN(buffer, bytesReceived));
 
-cell = result = getCell(CELL_EXPRESSION);
-cell->contents = (UINT)stuffStringN(buffer, bytesReceived);
 cell = (CELL *)cell->contents;
 cell->next = stuffString(IPaddress);
 ((CELL*)cell->next)->next = stuffInteger(portNo);
 
 freeMemory(buffer);
 
-if(closeFlag) close(sock);
+if(closeFlag) 
+	{
+	deleteInetSession(sock);
+	close(sock);
+	}
 
 errorIdx = 0;
 return(result);
@@ -1487,8 +1469,8 @@ while(count)
 
     if(netEvalIdle) 
         {
-        cell = getCell(CELL_EXPRESSION);
-        cell->contents = (UINT)copyCell(netEvalIdle);
+		cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
+
         pushResult(cell);
         if(!evaluateExpressionSafe(cell, &errNo))
 			{
@@ -1497,19 +1479,24 @@ while(count)
 			}
         }
 
-    bytes = -1;
+    bytes = -1; errNo = 0;
     ready = wait_ready(session->sock, 100, READY_READ);
     if(ready > 0)
         {
         memset(buffer, 0, MAX_BUFF);
         bytes = recv(session->sock, buffer, MAX_BUFF, NO_FLAGS_SET);
-        if(bytes) writeStreamStr(netStream, buffer, bytes);
+ 		/* if(bytes >= 0) printf("bytes:%ld=>%s<=\n", bytes, buffer); */
+        if(bytes) 
+			{
+			errNo = (memcmp(buffer, "\nERR: ", 6) == 0);
+			writeStreamStr(netStream, buffer, bytes);
+			}
         }
-    if(ready < 0 || bytes == 0 || elapsed >= timeOut)
+    if(ready < 0 || bytes == 0 || errNo || elapsed >= timeOut)
         {
-/*        printf("count=%d ready=%d bytes=%d elapsed=%d\n", count, ready, bytes, elapsed); */
+        /* printf("count=%ld ready=%d bytes=%ld elapsed=%d\n", count, ready, bytes, elapsed); */
         if(elapsed >= timeOut) result = copyCell(nilCell); 
-        else if(rawMode) /* get raw buffer without the quote */
+        else if(rawMode || errNo) /* get raw buffer without the quote */
             result = stuffStringN(netStream->buffer + 1, netStream->position - 1);
         else 
             {
@@ -1527,8 +1514,8 @@ while(count)
 
         if(netEvalIdle)
             {
-            session->result = cell = getCell(CELL_EXPRESSION);
-            cell->contents = (UINT)stuffString(session->host);
+			session->result = cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(session->host));
+
             cell = (CELL *)cell->contents;
             cell->next = stuffInteger(session->port);
             cell = cell->next;
@@ -1545,10 +1532,9 @@ while(count)
             
         if(netEvalIdle)
             {
-            list = getCell(CELL_EXPRESSION);
-            list->contents = (UINT)copyCell(netEvalIdle);
-            cell = getCell(CELL_QUOTE);
-            cell->contents = (UINT)session->result;
+			list = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
+			cell = makeCell(CELL_QUOTE, (UINT)session->result);
+
             ((CELL*)list->contents)->next = cell;
             pushResult(list);
         	if(!evaluateExpressionSafe(list, &errNo))
@@ -1585,8 +1571,7 @@ while(base != NULL)
 				result = base->result;
 			else
 				{
-            	result = getCell(CELL_EXPRESSION);
-            	result->contents = (UINT)base->result;
+				result = makeCell(CELL_EXPRESSION, (UINT)base->result);
             	cell = base->result;
             	}
 			}
@@ -1661,7 +1646,7 @@ char * netErrorMsg[] =
     "Socket recv failed",
     "Socket send failed",
     "Cannot bind socket",
-    "Too much sockets in net-select",
+    "Too many sockets in net-select",
     "Listen failed",
     "Badly formed IP",
     "Select failed",
@@ -1690,8 +1675,8 @@ char str[64];
 
 if(errorIdx == 0 || errorIdx > MAX_NET_ERROR) return(nilCell);
 
-cell = getCell(CELL_EXPRESSION);
-cell->contents = (UINT)stuffInteger(errorIdx);
+cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errorIdx));
+
 snprintf(str, 63, "ERR: %s", netErrorMsg[errorIdx]);
 ((CELL*)cell->contents)->next = stuffString(str);
 
@@ -1710,7 +1695,7 @@ UINT maxwait = 1000, listmode = 0;
 UINT flag = 0;
 UINT count = 0;
 
-address = evaluateExpression(params);
+params = getDefaultOrEval(params, &address);
 if(address->type == CELL_EXPRESSION)
 	{
 	address = (CELL *)address->contents;
@@ -1719,7 +1704,6 @@ if(address->type == CELL_EXPRESSION)
 else if(address->type != CELL_STRING)
   return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, address));
 
-params = params->next;
 if(params != nilCell)  
 	{
 	params = getInteger(params, &maxwait);
@@ -1987,8 +1971,7 @@ CELL * addResult(CELL * * result, CELL * cell, CELL * new)
 {
 if(*result == NULL)
 	{
-	*result = getCell(CELL_EXPRESSION);
-	((CELL *)(*result))->contents = (UINT)new;
+	*result = makeCell(CELL_EXPRESSION, (UINT)new);
 	}
 else
 	cell->next = new;	
@@ -1998,12 +1981,8 @@ return(new);
 
 CELL * makePair(CELL * left, CELL * right)
 {
-CELL * cell = getCell(CELL_EXPRESSION);
-
-cell->contents = (UINT)left;
 left->next = right;
-
-return(cell);
+return(makeCell(CELL_EXPRESSION, (UINT)left));
 }
 
 int in_cksum(unsigned short * addr, int len)
@@ -2086,7 +2065,6 @@ int win32_fclose(FILE * fPtr)
 {
 if(isSocketStream(fPtr))
    return(close(getSocket(fPtr)));
-
 
 return(fclose(fPtr));
 }

@@ -22,7 +22,7 @@
 ;; @version 1.3 - handle remote files specified in URLs in a url-file
 ;; @version 1.4 - title on page changed to index or module name and new index module option
 ;; @version 1.5 - removed font restrictions on h1,h2,h3,h4 and added hr as a legal tag
-;; @author Lutz Mueller, 2006, 2007
+;; @author Lutz Mueller, 2006-2008
 ;; @location http://newlisp.org
 ;;
 ;; <h3>Usage:</h3>
@@ -86,35 +86,13 @@
 
 (set 'stylesheet
 [text]
-<style type="text/css" media="screen">
-<!--
-span.arw {
-	color:#666666;
-	}
-	
-body, p {
-	font-family: Georgia, Times New Roman, Times, serif;
- 	}
-
-h1, h2, h3, h4 {
-	font-family: Georgia, Times New Roman, Times, serif;
-	}
-
-pre {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-	}
-
-tt {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-	}
--->
-</style>
+<link rel="stylesheet" type="text/css" href="newlispdoc.css" />
 </head>
 [/text])
 
 (set 'prolog2
 [text]
-<body style="margin: 20px;" text="#333333" bgcolor="#FFFFFF" 
+<body style="margin: 20px;" text="#111111" bgcolor="#FFFFFF" 
 			link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>%s</h1></center>

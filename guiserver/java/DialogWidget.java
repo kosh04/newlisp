@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/23/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import java.awt.color.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 // DO NOT USE, when set modal inhibits Dispather from processing incoming messages
 // this makes it imposible to serve newLISP requests from the Dialog, if modal
@@ -46,7 +47,12 @@ public DialogWidget(StringTokenizer params)
 	id = params.nextToken();
 	String owner = params.nextToken();
 	String message = Base64Coder.decodeString(params.nextToken());
-	boolean ismodal = false;
+	if(guiserver.UTF8)
+	try {
+		message = new String(message.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+ 
+		boolean ismodal = false;
 	
 	jfowner = ((WindowFrame)gsObject.widgets.get(owner)).jframe;
 		
@@ -127,7 +133,13 @@ public DialogWidget(StringTokenizer params)
 public void setText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
-	jdialog.setTitle(text);
+	
+	if(guiserver.UTF8)
+	try {
+		jdialog.setTitle(new String(text.getBytes(), "UTF-8"));
+		} catch (UnsupportedEncodingException ee) {}
+	else
+		jdialog.setTitle(text);
 	}
 
 

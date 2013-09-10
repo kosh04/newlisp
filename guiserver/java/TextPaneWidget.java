@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/11/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ import javax.swing.text.*;
 import javax.swing.text.html.*;
 import javax.swing.event.*;
 import javax.swing.undo.*;
+import java.io.UnsupportedEncodingException;
 
 @SuppressWarnings("unchecked")
 public class TextPaneWidget extends aTextWidget {
@@ -85,8 +86,8 @@ public TextPaneWidget(StringTokenizer params)
 	
 	if(params.hasMoreTokens())
 		contentType = params.nextToken();
-	if(!contentType.equals("text/html") && !contentType.equals("text/rtf"))
-		contentType = "text/plain";
+	//if(!contentType.equals("text/html") && !contentType.equals("text/rtf"))
+	//	contentType = "text/plain";
 	textPane.setContentType(contentType);
 			
 	areaScrollPane = new JScrollPane(textPane);
@@ -295,6 +296,11 @@ public void saveText(StringTokenizer tokens)
 public void findText(StringTokenizer tokens)
 	{
 	String findtext = Base64Coder.decodeString(tokens.nextToken());
+	if(guiserver.UTF8)
+		try {
+		findtext = new String(findtext.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	String direction = "next";
 	boolean isRegex = false;
 	int dot;

@@ -78,6 +78,7 @@ PRIMITIVE primitive[] =
 	{"list",		p_list,		0},
 	{"nth",			p_nth,		0},
 	{"nth-set",		p_nthSet,	0},
+	{"read-expr",	p_readExpr,	0},
 	{"ref",			p_ref,		0},
 	{"set-ref",		p_setRef,	0},
 	{"ref-set",		p_refSet,	0},
@@ -216,6 +217,7 @@ PRIMITIVE primitive[] =
 	{"format",		p_format,	0},
 	{"match",		p_match,	0},
 	{"regex",		p_regex,	0},
+	{"regex-comp",	p_regexComp,0},
 	{"int",			p_integer,	0},
 	{"integer",		p_integer,	0},
 	{"float",		p_float,	0},
@@ -246,7 +248,6 @@ PRIMITIVE primitive[] =
 #endif
 
 	/* -------------- I/O ------------------ */
-	{"command-line",	p_commandLine,	0},
 	{"pretty-print",	p_prettyPrint,	0},
 	{"print",		p_print,	0},
 	{"println",		p_println,	0},
@@ -275,10 +276,13 @@ PRIMITIVE primitive[] =
 	{"exec",        p_exec,     0},
 	{"process",		p_process,	0},
 	{"pipe",		p_pipe,		0}, 
-#ifndef WIN_32
+#ifdef HAVE_FORK /* defined in newlisp.h */
 	{"fork",		p_fork,		0},
 	{"wait-pid",	p_waitpid,	0},
 #endif
+	{"spawn",		p_spawn,	0},
+	{"sync",		p_sync,		0},
+	{"abort",		p_abort,	0},
 #ifndef OS2
 	{"share",		p_share,	0},
 #endif
@@ -289,7 +293,7 @@ PRIMITIVE primitive[] =
 #endif
 	
 	/* --------- system/predicates --------- */
-	{"set-locale",		p_setlocale,	0},
+	{"set-locale",		p_setLocale,	0},
 	{"for-all",		p_forAll,	0},
 	{"exists",		p_exists,	0},
 	{"nil?",		p_isNil,	0},
@@ -324,6 +328,8 @@ PRIMITIVE primitive[] =
 	{"reset",		p_reset,	0},
 	{"throw-error",	p_throwError,	0},
 	{"error-event",	p_errorEvent,	0},
+	{"prompt-event",p_promptEvent,	0},
+	{"command-event", p_commandEvent, 0},
 	{"error-number",p_errorNumber,0},
 	{"error-text",	p_errorText,	0},
 	{"signal",		p_signal,	0},

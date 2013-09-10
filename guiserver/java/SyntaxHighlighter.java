@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public class SyntaxHighlighter {
 static String reserved[] = {
 "!","!=","$","$0","$1","$10","$11","$12","$13","$14","$15","$2","$3","$4","$5","$6","$7","$8","$9",
 "$args","$idx","$main-args","%","&","*","+","-","/","<","<<","<=","=",">",">=",">>","?","@","MAIN",
-"NaN?","^","abs","acos","acosh","add","address","amb","and","append","append-file","apply","args",
+"NaN?","^","abort","abs","acos","acosh","add","address","amb","and","append","append-file","apply","args",
 "array","array-list","array?","asin","asinh","assoc","assoc-set","atan","atan2","atanh","atom?","base64-dec",
 "base64-enc","bayes-query","bayes-train","begin","beta","betai","bind","binomial","callback","case",
 "catch","ceil","change-dir","char","chop","clean","close","command-line","cond","cons","constant",
@@ -53,11 +53,11 @@ static String reserved[] = {
 "pack","parse","parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print","primitive?","print",
 "println","prob-chi2","prob-z","process","protected?","push","put-url","pv","quote","quote?","rand",
 "random","randomize","read-buffer","read-char","read-file","read-key","read-line","real-path","ref","ref-set",
-"ref-all","regex","remove-dir","rename-file","replace","replace-assoc","reset","rest","reverse","rotate",
+"ref-all","regex","regex-comp","remove-dir","rename-file","replace","replace-assoc","reset","rest","reverse","rotate",
 "round","save","search","seed","seek","select","semaphore","sequence","series","set","set-assoc","set-locale","set-nth",
-"set-ref","set-ref-all","setq","sgn","share","signal","silent","sin","sinh","sleep","slice","sort","source","sqrt","starts-with",
-"string","string?","sub","swap","sym","symbol?","symbols","sys-error","sys-info","tan","tanh","throw",
-"throw-error","time","time-of-day","timer","title-case","trace","trace-highlight","transpose","trim",
+"set-ref","set-ref-all","setq","sgn","share","signal","silent","sin","sinh","sleep","slice","sort","source","spawn",
+"sqrt","starts-with","sync","string","string?","sub","swap","sym","symbol?","symbols","sys-error","sys-info","tan",
+"tanh","throw","throw-error","time","time-of-day","timer","title-case","trace","trace-highlight","transpose","trim",
 "true","true?","unicode","unify","unique","unless","unpack","until","upper-case","utf8","utf8len","uuid",
 "wait-pid","when","while","write-buffer","write-char","write-file","write-line","xml-error","xml-parse",
 "xml-type-tags","zero?","|","~" };

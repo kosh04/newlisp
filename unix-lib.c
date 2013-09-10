@@ -34,6 +34,12 @@ opsys += 64;
 #ifdef SUPPORT_UTF8
 opsys += 128;
 #endif
+#ifdef NEWLISP64
+opsys += 256;
+#endif
+#ifdef IPV6
+opsys += 512
+#endif
 
 initLocale();
 initialize();

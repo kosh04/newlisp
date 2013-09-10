@@ -1,6 +1,7 @@
 ;; @module mysql51.lsp 
 ;; @description MySQL v.5.1 interface
-;; @version 2.6 - addition for mysql_escape_string (Jeff)
+;; @version 2.61 - addition for mysql_escape_string (Jeff Ober)
+;; @version 2.62 - fix for mysql_escape_string (Tim Johnson)
 ;; @author Lutz Mueller 2003-2006, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.1 interface module has been tested on version 5.1.21
@@ -226,8 +227,7 @@
 ;;
 ;; The whole result set from the query is returned at once as a list of row lists.
 
-(define (fetch-all)
-
+(define (fetch-all , all)
   (dotimes (x (num-rows)) (push (fetch-row) all))
   (reverse all))
 
@@ -306,7 +306,7 @@
 ;; This function will escape special characters in <str-sql>, so that it 
 ;; is safe to place it in a MySQL query.
 (define (escape value , safe-value) 
-  (set 'safe-value (dup " " (+ 1 (length value)))) 
+  (set 'safe-value (dup " " (+ 1 (* 2 (length value)))))
   (MySQL:mysql_real_escape_string MySQL:MYSQL safe-value value (length value)) 
   safe-value)
 

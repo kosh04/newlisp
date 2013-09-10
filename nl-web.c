@@ -172,7 +172,6 @@ return(result);
 }
 
 
-
 CELL * p_getUrl(CELL * params)
 {
 return(getPutPostDeleteUrl(NULL, params, HTTP_GET_URL, 0));
@@ -206,10 +205,8 @@ CELL * base64(CELL * params, int type)
 char * inPtr;
 char * outPtr;
 size_t sizein, sizeout;
-CELL * strCell;
 
 getStringSize(params, &inPtr, &sizein, TRUE);
-
 
 if(type == BASE64_ENC)
 	{
@@ -225,11 +222,14 @@ else    /* BASE64_DEC */
 	*(outPtr + sizeout) = 0;
 	}
 	
+/*
 strCell = getCell(CELL_STRING);
 strCell->contents = (UINT)outPtr;
 strCell->aux = sizeout + 1;
-
 return(strCell);
+*/
+
+return(makeStringCell(outPtr, sizeout));
 }
 
 
@@ -580,8 +580,7 @@ close(sock);
 
 if(listFlag)
     {
-    cell = getCell(CELL_EXPRESSION);
-    cell->contents = (UINT)headerCell;
+	cell = makeCell(CELL_EXPRESSION, (UINT)headerCell);
     headerCell->next = result;
     return(cell);
     }
@@ -909,7 +908,6 @@ int outFile;
 int pragmaFlag;
 char * fileMode = "w";
 char * mediaType;
-char * command;
 CELL * result = NULL;
 
 chdir(startupDir);
@@ -933,6 +931,7 @@ if(*query == '?')
 
 setenv("QUERY_STRING", query, 1);
 
+#ifdef HTTP_CONF /* obsolete, use command-event */
 /* if httpd-conf is defined call it with the request 
    the httpd-conf procedure returns a string transformation
    of request, for security stuff, remappping etc. */
@@ -942,7 +941,7 @@ if(lookupSymbol("httpd-conf", mainContext) != NULL)
     len = strlen(request) + strlen(query) + 32;
     command = alloca(len);
     snprintf(command, len - 1, "(httpd-conf \"%s\" \"%s\")", request, query);
-    result = sysEvalString(command, nilCell, mainContext);
+    result = sysEvalString(command, nilCell, mainContext, 0);
     if(result->type == CELL_STRING)
 		request = (char *)result->contents;
 	else if (isNil(result))
@@ -956,6 +955,7 @@ if(lookupSymbol("httpd-conf", mainContext) != NULL)
 		return(TRUE);
 		}
     }
+#endif
 
 /* change to base dir of request file */
 sptr = request + strlen(request);
@@ -1221,7 +1221,11 @@ if(isFile(request) != 0)
 
 if(isFile("/tmp") != 0)
     {
-    sendHTTPmessage("ERR:500 need /tmp directory configured: %s\n", request);
+#ifdef WIN_32
+    sendHTTPmessage("ERR:500 need /tmp directory: %s\n", request);
+#else
+    sendHTTPmessage("ERR:500 need \\tmp directory on current drive: %s\n", request);
+#endif
     return;
     }
 

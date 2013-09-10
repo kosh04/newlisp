@@ -8,3 +8,4 @@
   " Bytes: " ((file-info (main-args 2)) 0))
 
 (exit)
+

@@ -18,23 +18,26 @@ DESCRIPTION
        should  be  executed from inside the directory where the newLISP source
        files can be found. The generated documetation files  will  have  .html
        added  to the name of the source file. An index.html page is generated,
-       which is listing for each file links to all the documented functions.
+       which is listing for each file links to all the  documented  functions.
+       If  the  current directory contains the file newlispdoc.css, it will be
+       used for formatting HTML output. For a sample  see  util/newlispdoc.css
+       in the source distribution.
 
 OPTIONS
-       -s     this option causes newlispdoc to also generate  a  syntax  high-
-              lighted  HTML  file  of  the source. A link to this file will be
-              present in the HTML documentation of this  file.  The  generated
+       -s     this  option  causes  newlispdoc to also generate a syntax high-
+              lighted HTML file of the source. A link to  this  file  will  be
+              present  in  the  HTML documentation of this file. The generated
               file will have the added extension .src.html.
 
        lisp-file
-              is  a  commented  newLISP source file from which a documentation
+              is a commented newLISP source file from  which  a  documentation
               file will be generated.
 
-       -url   this option is used to retrieve newLISP source files  for  docu-
+       -url   this  option  is used to retrieve newLISP source files for docu-
               mentation from remote locations.
 
        urls-file
-              is  a  file containing urls of newLISP source files, one url per
+              is a file containing urls of newLISP source files, one  url  per
               line.
 
 EXAMPLES
@@ -42,11 +45,11 @@ EXAMPLES
               newlispdoc afile.lsp bfile.lsp
 
 
-       Generate documentation and syntax highlighted HTML  versions  from  all
+       Generate  documentation  and  syntax highlighted HTML versions from all
        lisp files in the current directory
               newlispdoc -s *.lsp
 
-       Retrieve source files for documentation  from  remote  locations.  Each
+       Retrieve  source  files  for  documentation from remote locations. Each
        file is specified on one line in urls.txt with its http:// address.
               newlispdoc -s -url urls.txt
 
@@ -65,5 +68,5 @@ SEE ALSO
 
 
 
-version 1.4                      January 2008                    newlispdoc(1)
+version 1.5                        June 2008                     newlispdoc(1)
 

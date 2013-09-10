@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/14/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.lang.*;
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class LabelWidget extends gsObject {
 
@@ -41,8 +42,8 @@ public LabelWidget(StringTokenizer params)
 	
 	id = params.nextToken();
 	String align = "center";
-	if(params.hasMoreTokens())
-		label.setText(Base64Coder.decodeString(params.nextToken()));
+
+	setText(params);
 	
 	if(params.hasMoreTokens())
 		align = params.nextToken();
@@ -70,6 +71,12 @@ public LabelWidget(StringTokenizer params)
 public void setText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	
+	if(guiserver.UTF8)
+		try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	label.setText(text);
 	}
 	
@@ -77,6 +84,12 @@ public void getText(StringTokenizer params)
 	{
 	String action = params.nextToken();
 	String text = label.getText();
+	if(guiserver.UTF8)
+		try {
+			text = new String(text.getBytes("UTF-8"));
+			} 
+		catch (UnsupportedEncodingException e) {}
+
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else

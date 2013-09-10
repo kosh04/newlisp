@@ -71,7 +71,7 @@ the autoconf/automake system which is *not* required to make newLISP.
 MINIMUM INSTALL
 ---------------
 Note that for a minumum install only the executable newlisp or newlisp.exe
-ion Win32 is necessary. 
+in Win32 is necessary. 
 
 On Mac OS X or other UNIX copy  newlisp to /usr/bin or to ~/bin and give
 it executable permissions.
@@ -93,7 +93,7 @@ MORE INFO
 ---------
 See in the doc/ directory of the source distribution
 
-Lutz Mueller, January 2008
+Lutz Mueller, June 2008
 
                                   +++
 

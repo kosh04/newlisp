@@ -28,10 +28,10 @@ extern SYMBOL * orSymbol;
 
 SYMBOL * findInsertSymbol(char * key, int forceCreation);
 int deleteSymbol(char * key);
-void deleteContextSymbols(CELL * cell);
+void deleteContextSymbols(CELL * cell, int checkReferences);
 CELL dumpSymbol(char * name);
-void collectSymbols(SYMBOL * sPtr, CELL * symbolList, CELL * * nextSymbol);
-void symbolReferences(SYMBOL * sPtr,  CELL * symbolList, CELL * * nextSymbol);
+void collectSymbols(SYMBOL * sPtr, CELL * symbolList);
+void collectSymbolAssocs(SYMBOL * sPtr, CELL * assocList);
 static SYMBOL * root;	/* root symbol derived from context */
 
 /* --------- return a list of all symbols in a context -------------- */
@@ -41,10 +41,8 @@ CELL * p_symbols(CELL * params)
 {
 SYMBOL * context;
 CELL * symbolList;
-CELL * nextSymbol;
 
 symbolList = getCell(CELL_EXPRESSION);
-nextSymbol = NULL;
 
 if(params->type == CELL_NIL) 
 	context = currentContext;
@@ -52,96 +50,66 @@ else
 	getContext(params, &context);
 
 if(context) /* check in case we are in debug mode */
-	collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList, &nextSymbol);
+	collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
 return(symbolList);
 }
 
 
-void collectSymbols(SYMBOL * sPtr, CELL * symbolList, CELL * * nextSymbol)
+void collectSymbols(SYMBOL * sPtr, CELL * symbolList)
 {
+CELL * cell;
+
 if(sPtr != NIL_SYM && sPtr != NULL)
 	{
-	collectSymbols(sPtr->left, symbolList, nextSymbol);
-	if(*nextSymbol == NULL)
+	collectSymbols(sPtr->left, symbolList);
+	if(symbolList->contents == (UINT)nilCell)
 		{
-		*nextSymbol = getCell(CELL_SYMBOL);
-		(*nextSymbol)->contents = (UINT)sPtr;
-		symbolList->contents = (UINT)*nextSymbol;
+		symbolList->contents = (UINT)stuffSymbol(sPtr);
+		symbolList->aux = symbolList->contents;
 		}
 	else 
 		{
-		(*nextSymbol)->next = getCell(CELL_SYMBOL);
-		*nextSymbol = (*nextSymbol)->next;
-		(*nextSymbol)->contents = (UINT)sPtr;
+		cell = (CELL *)symbolList->aux;
+		cell->next = stuffSymbol(sPtr);
+		symbolList->aux = (UINT)cell->next;
 		}
-	collectSymbols(sPtr->right, symbolList, nextSymbol);
+	collectSymbols(sPtr->right, symbolList);
 	}
 }
 
 
-
-/* iterate thru symbol tree for a specific context
-*/
-
-CELL * p_dotree(CELL * params)
+CELL * associationsFromTree(SYMBOL * context)
 {
-SYMBOL * context;
-SYMBOL * symbol;
-CELL * symbolList;
-CELL * nextSymbol;
-CELL * cell;
-CELL * list;
-int resultIdxSave;
+CELL * assocsList;
 
-if(params->type != CELL_EXPRESSION)
-	return(errorProcExt(ERR_LIST_EXPECTED, params));
+assocsList = getCell(CELL_EXPRESSION);
+collectSymbolAssocs((SYMBOL *)((CELL *)context->contents)->aux, assocsList);
 
-list = (CELL *)params->contents;
-if(list->type == CELL_SYMBOL)
-	symbol = (SYMBOL *)list->contents;
-else if(list->type == CELL_DYN_SYMBOL)
-	symbol = getDynamicSymbol(list);
-else
-	return(errorProcExt(ERR_SYMBOL_EXPECTED, list));
-
-if(isProtected(symbol->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
-
-pushEnvironment((CELL *)symbol->contents);
-pushEnvironment((UINT)symbol);
-
-symbol->contents = (UINT)copyCell(nilCell);
-
-getContext(list->next, &context);
-if(!context) return(nilCell); /* for debug mode */
-cell = nilCell;
-
-symbolList = getCell(CELL_EXPRESSION);
-nextSymbol = NULL;
-collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList, &nextSymbol);
-
-resultIdxSave = resultStackIdx;
-list = (CELL *)symbolList->contents;
-while(list != nilCell)
-    {
-    cleanupResults(resultIdxSave);
-    deleteList((CELL *)symbol->contents);
-    symbol->contents = (UINT)copyCell(list);
-    cell = evaluateBlock(params->next);
-    list = list->next;
-    }
-
-cell = copyCell(cell);
-deleteList((CELL *)symbol->contents);
-
-symbol = (SYMBOL*)popEnvironment();
-symbol->contents = (UINT)popEnvironment();
-
-deleteList(symbolList);
-
-return(cell);
+return(assocsList);
 }
 
+/* only for symbols starting with underscore character _ */
+void collectSymbolAssocs(SYMBOL * sPtr, CELL * assocList)
+{
+CELL * cell;
+
+if(sPtr != NIL_SYM && sPtr != NULL)
+	{
+	collectSymbolAssocs(sPtr->left, assocList);
+	if(*sPtr->name == '_')
+		{
+		cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(sPtr->name + 1));
+		((CELL *)cell->contents)->next = copyCell((CELL *)sPtr->contents);
+
+		if(assocList->contents == (UINT)nilCell)
+			assocList->contents = (UINT)cell;
+		else 
+			((CELL *)assocList->aux)->next = cell;
+		assocList->aux = (UINT)cell;
+		}
+	collectSymbolAssocs(sPtr->right, assocList);
+	}
+}
 
 
 SYMBOL * lookupSymbol(char * token, SYMBOL * context)
@@ -151,6 +119,21 @@ root = (SYMBOL *)((CELL *)context->contents)->aux;
 return(findInsertSymbol(token, LOOKUP_ONLY));
 }
 
+
+SYMBOL * makeSafeSymbol(CELL * cell, SYMBOL * context, int flag)
+{
+char * token;
+
+token = alloca(cell->aux + 1);
+*token = '_';
+memcpy(token + 1, (char *)cell->contents, cell->aux);
+
+if(flag)
+	return(translateCreateSymbol(token, CELL_NIL, context, TRUE));
+
+root = (SYMBOL *)((CELL *)context->contents)->aux;
+return(findInsertSymbol(token, LOOKUP_ONLY));
+}
 
 
 /* 
@@ -231,7 +214,6 @@ if(type != CELL_PRIMITIVE)
 else
 	sPtr->name = token;
 
-
 sPtr->context = context;
 return(sPtr);
 }
@@ -266,11 +248,13 @@ return(trueCell);
 
 /* ----------------------------- delete a symbol --------------------------- */
 int references(SYMBOL * sPtr, int replaceFlag);
+int externalReferences(SYMBOL * contextPtr, int replaceFlag);
 
 CELL * p_deleteSymbol(CELL * params)
 {
 SYMBOL * sPtr;
 CELL * cell;
+int checkReferences = TRUE;
 
 cell = evaluateExpression(params);
 if(cell->type == CELL_SYMBOL || cell->type == CELL_CONTEXT)
@@ -293,25 +277,38 @@ if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
 
 if(getFlag(params->next))
 	{
-	if(references(sPtr, FALSE) > 1)
-		return(nilCell);
+	if(cell->type == CELL_CONTEXT)
+		{
+		if(externalReferences(sPtr, FALSE) > 0)
+			{
+			sPtr->flags |= SYMBOL_PROTECTED;
+			return(nilCell);
+			}
+		checkReferences = FALSE;
+		}
+	else
+		{
+		if(references(sPtr, FALSE) > 1)
+			return(nilCell);
+		checkReferences = FALSE;
+		}
 	}
 
 if(cell->type == CELL_CONTEXT)
 	{
-	deleteContextSymbols(cell);	
+	deleteContextSymbols(cell, checkReferences);
 	cell->type = CELL_SYMBOL;
 	deleteList((CELL *)sPtr->contents);
 	sPtr->contents = (UINT)nilCell;
 	}
 else 
-	deleteFreeSymbol(sPtr);
+	deleteFreeSymbol(sPtr, checkReferences);
 
 return(trueCell);
 }
 
 
-void deleteContextSymbols(CELL * cell)
+void deleteContextSymbols(CELL * cell, int checkReferences)
 {
 SYMBOL * context;
 CELL * symbolList;
@@ -319,14 +316,16 @@ CELL * nextSymbol;
 
 context = (SYMBOL *)cell->contents;
 
+if(checkReferences)
+	externalReferences(context, TRUE);
+
 symbolList = getCell(CELL_EXPRESSION);
-nextSymbol = NULL;
-collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList, &nextSymbol);
+collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
 
 nextSymbol = (CELL *)symbolList->contents;
 while(nextSymbol != nilCell)
 	{
-	deleteFreeSymbol((SYMBOL*)nextSymbol->contents);
+	deleteFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
 	nextSymbol = nextSymbol->next;
 	}
 	
@@ -334,8 +333,7 @@ deleteList(symbolList);
 }
 
 
-
-void deleteFreeSymbol(SYMBOL * sPtr)
+void deleteFreeSymbol(SYMBOL * sPtr, int checkReferences)
 {
 SYMBOL * context;
 
@@ -349,25 +347,22 @@ if(!deleteSymbol(sPtr->name))
 
 deleteList((CELL *)sPtr->contents);
 
-references(sPtr, TRUE);
+if(checkReferences) references(sPtr, TRUE);
 freeMemory(sPtr->name);
 freeMemory(sPtr);
 }
-
-
 
 void makeContextFromSymbol(SYMBOL * symbol, SYMBOL * treePtr)
 {
 CELL * contextCell;
 
-contextCell = getCell(CELL_CONTEXT);
-contextCell->contents = (UINT)symbol;
+contextCell = makeCell(CELL_CONTEXT, (UINT)symbol);
+
 contextCell->aux = (UINT)treePtr;
 symbol->contents = (UINT)contextCell;
 symbol->context = mainContext;
 symbol->flags |= (SYMBOL_PROTECTED | SYMBOL_GLOBAL);
 }
-
 
 int references(SYMBOL * sPtr, int replaceFlag)
 {
@@ -384,7 +379,37 @@ while(blockPtr != NULL)
 			(*(UINT *)blockPtr == CELL_SYMBOL ||  *(UINT *)blockPtr == CELL_CONTEXT))
 			{
 			count++;
-			if(replaceFlag) blockPtr->contents = (UINT)nilSymbol;
+			if(replaceFlag) 
+				blockPtr->contents = (UINT)nilSymbol;
+			}
+		blockPtr++;
+		}
+	blockPtr = blockPtr->next;
+	}
+
+return(count);
+}
+
+int externalReferences(SYMBOL * contextPtr, int replaceFlag)
+{
+CELL * blockPtr;
+int i, count = 0;
+SYMBOL * sPtr;
+
+blockPtr = cellMemory;
+while(blockPtr != NULL)
+	{
+	for(i = 0; i < MAX_BLOCK; i++)
+		{
+		if(blockPtr->type == CELL_SYMBOL)
+			{
+			sPtr = (SYMBOL *)blockPtr->contents;
+			if(sPtr->context == contextPtr)		
+				{
+				count++;
+				if(replaceFlag) 
+					blockPtr->contents = (UINT)nilSymbol;
+				}
 			}
 		blockPtr++;
 		}
@@ -809,7 +834,5 @@ while (x != root && x->color == BLACK)
 x->color = BLACK;
 }
 
-
 /* eof */
-
 

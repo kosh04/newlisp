@@ -8,8 +8,8 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
-#CFLAGS = -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX
-CFLAGS = -Wall -I/usr/include -c -g -DREADLINE -DMAC_OSX
+CFLAGS = -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX
+#CFLAGS = -Wall -I/usr/include -c -g -DREADLINE -DMAC_OSX
 
 CC = cc -L/usr/lib
 
@@ -20,6 +20,6 @@ default: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_darwin
+$(OBJS): newlisp.h primes.h protos.h makefile_darwin
 
 

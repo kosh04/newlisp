@@ -296,7 +296,48 @@ else
 if(recursionCount)
   traceFlag |= TRACE_TIMER;
 else /* if idle */
-  executeSymbol(timerEvent, NULL);
+  executeSymbol(timerEvent, NULL, NULL);
+}
+
+
+extern STREAM errorStream;
+
+/* dummies for Cilk API */
+
+CELL * p_spawn(CELL * params)
+{
+SYMBOL * sPtr;
+CELL * cell;
+int errNo;
+
+params = getSymbol(params, &sPtr);
+if(isProtected(sPtr->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
+
+cell = evaluateExpressionSafe(params, &errNo);
+if(cell == NULL)
+	cell = stuffString(errorStream.buffer);
+else cell = copyCell(cell);
+
+deleteList((CELL *)sPtr->contents);
+pushResultFlag = FALSE;
+sPtr->contents = (UINT)cell;
+
+return(cell);
+}
+
+
+CELL * p_sync(CELL * params)
+{
+if(params == nilCell)
+	return(getCell(CELL_EXPRESSION));
+
+return(trueCell);
+}
+
+CELL * p_abort(CELL * params)
+{
+return(trueCell);
 }
 
 /* eof */

@@ -1,7 +1,7 @@
 ;; @module ftp.lsp
 ;; @description FTP file transfer routines
 ;; @version 1.4 - comments redone for automatic documentation
-;; @author Rudy Rucker, Lutz Mueller, 2003
+;; @author Eddie Rucker, Lutz Mueller, 2003
 ;;
 ;; <h2>FTP file transfer routines</h2>
 ;; To use the module put a 'load' statement at beginning of your

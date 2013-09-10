@@ -20,7 +20,6 @@
 #include "newlisp.h"
 #include "protos.h"
 
-/* note that DLL compile with MinGW is still in development */
 #ifdef WIN_32
 #define EXPORT __declspec(dllexport) __stdcall
 #define DLLCALL EXPORT
@@ -50,6 +49,9 @@ opsys += 64;
 
 #ifdef SUPPORT_UTF8
 opsys += 128;
+#endif
+#ifdef IPV6
+opsys += 512
 #endif
 
 initLocale();
@@ -98,7 +100,7 @@ if(setjmp(errorJump))
 	initStacks();
 	if(errorReg) 
 		{
-		executeSymbol(errorEvent, NULL);
+		executeSymbol(errorEvent, NULL, NULL);
 		return((LPSTR)libStrStream.buffer);
 		}
 	else

@@ -4104,8 +4104,50 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
 	: colon operator should not evaluate args after the object
 
-    the description - read - has been deleted, the function originally introduced
-    here in 9.3.1 has been taken out in 9.3.3
+	new 'read' exposes the internal source code reader. 'read' can be used to 
+	write preprocessor for newLISP source or specialized newLISP editors and 
+	evaluators. When using 'read' in string mode, comments are preserved.
+
+	'read' takes as argument a source string, a callback function and an optional 
+	context.  The callback function is called with each expression as either a string 
+	including comments or an expression if the context argument is present. 
+	When a context argument is present the source gets compiled in the namespace
+	specified by the context, except when overwritten by context statements in
+	the source. The string mode (no context is specified) still will check
+	the source if it is well formed, with balanced parenthesis and quotes and
+	interrupt processing with an error messages, if finding mal-formed s-expressions.
+
+	'read' returns the last return value of the callback function.
+
+	syntax: (read <str-source> <functor-callback> [<context>])
+
+	example:
+		(define (crunch sx) (println "=>" sx))
+
+		(set 'code "; a statement\n(+ 3 4)\n(define (double x) (+ x x))")
+
+		> (read code crunch)
+		=>; a statement
+		(+ 3 4)
+		=>
+		(define (double x) (+ x x))
+		"\n(define (double x) (+ x x))"
+		> 
+
+	Note, that string mode conserves orignal formatting in the expression and 
+	leading comments returned. 
+ 
+	Following a context is specified forcing 'read' to return compiled expressions:
+
+		> (read code crunch MAIN)
+		=>(+ 3 4)
+		=>(define (double x) 
+ 		(+ x x))
+		(define (double x) 
+ 		(+ x x))
+		> 
+	
+	'read' is renamed to 'read-expr' in 9.3.4
 
 9.3.2
     new compile flavor for IPv6 with the following makefiles:
@@ -4139,8 +4181,8 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 		(process "/usr/bin/wish" tcin tcout)
 	to make it work on v9.3.0 and after
 
-    'search' has a new flag parameter to put the filepointer after the seach to either
-     the beginnin (nil) or the end (true) of the searched string.
+    'search' has a new flag parameter to put the filepointer after the search to either
+     the beginnig (nil) or the end (true) of the searched string.
 
     added <hr> as a legal tag in v.1.5 newlispdoc formatted documentation 
 
@@ -4162,19 +4204,324 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
       outputs -> len: 10 width:20 height:30
 
     a fix for 'expand' when expanding upper-case characters, now limited to 65->90
-    to prevent expansion of symbils starting with special characters
+    to prevent expansion of symbols starting with special characters
 
     took out the 'read' from 9.3.1. Just couldn't see the benefit of it. Everything
-    which can be done eoth it can be done by redefining 'define', or create other
-    special def- functions which transform toplevel expressions.
+    which can be done with it can be done by redefining 'define', or create other
+    special def- functions which transform top-level expressions.
 
     'env' now removes an enviroment variable when setting it to an empty string
-	except when on Solaris, where it stays as an empty string.
+    except when on Solaris, where it stays as an empty string.
     (env "VAR" "value") (env "VAR") => "value" (env "VAR" "") (env "VAR") => nil
-    On Solaris (env "VAR") = ""
+    On Solaris (env "VAR") = "". 
+    For a platform independent check use (null? (env "VAR"))
 
-    fixed a memory leak on Won32 and Solaris when repeatedly setting the same 
+    fixed a memory leak on Win32 and Solaris when repeatedly setting the same 
     environment variable
 
-    9.3.2 did not compile on Solaris, 9.3.3 now compiles on Solaris
+    9.3.2 did not compile on Solaris, 9.3.3 now does
+
+9.3.4
+   creating dictionaries (hashes in other languages) got faster and shorter:
+   the default symbol if it contains nil works like a hash function creating
+   and setting the symbol made from the string following it:
+
+      (define Foo:Foo) ; create namespace and default functor
+
+      (Foo "bar" 123)
+      (Foo "bar") => 123 
+
+   'read' which was introduced in 9.3.1 but taken out in 9.3.3, has been put
+   back as 'read-expr' and documented. The critical advantage over using
+   eval-string on quoted strings is, theat read-epr is reading only one expr
+   at a time and its ability to return comments when returning strings
+
+   a fix when serializing illegal symbols with (save (sym <str> <context>) ...) 
+   forcing the <context> to be written with MAIN prefix, also: overwrites of 
+   'set' and 'sym' will not be saved, as they make it impossible to load 
+   serialized contexts.
+
+   newlispddoc now does create HTML files without CSS style definitions but HTML
+   files try to to read newlispdoc.css from the same directory and load it, if
+   they find one.  A sample newlispdoc.css with the usual style definitions can 
+   be found in newlisp-9.3.4/util/newlispdoc.css
+
+   (sys-info -3) is now the current process id (pid). This pid can be usedd to
+   'destroy' (kill) the process on MAc OS X and other UNIX. On Windows the pid
+   returned seems to have a different meaning and does not respond to destroy.
+   The Win32 SDK function GetCurrentProcessId() is used by newLISP internally to 
+   get the pid.
+
+9.3.5
+   Internally when using contexts as hashes, now an unserscore "_" is
+   automaically prepended. This eliminates the danger of overwriting
+   the default symbol or overwwriting 'set' or 'sym' in the namespace.
+   This way hash namespaces can be saves and loaded without taking precautions.
+
+   This is transparent to the user and the inetface has not changed:
+
+      (define Foo:Foo) ; create namespace and default functor
+      (Foo "bar" 123)
+      (Foo "bar") => 123 
+
+   an association list can be passed to create a series of association hashes:
+
+      (Foo '(("var" 123) ("bar" 456) ("baz" 789))) ; create hashes from a batch
+
+      (Foo "var") => 123 ; (foo "bar") => 456 ; (foo "baz") => 789
+
+   without any parameter the context is converted to an association list
+
+      (Foo) => (("bar" 456) ("baz" 789) ("var" 123))
+
+   internally symbols are created with a prepended underscore
+
+      (symbols Foo)
+      (Foo:Foo Foo:_bar Foo:_baz Foo:_var)
+
+   'start-with', 'ends-with'  and 'sym' now accept a quoted 'nil like other functions
+   taking flags
+
+   New 'regex-comp' allows to precompile patterns for all functions which take
+   regular expression patterns. newLISP already caches the last compiled pattern,
+   but 'regex-comp' is useful in case where repeated patterns alternate and the
+   single cache never gets reused.
+
+     (regex-comp <str-pattern> [<int-options>]) => compiled pattern
+
+   When using a regular expression function the compiled pattern gets passed
+   with the special option 0x10000, all other options are already contained in
+   the compiled pattern.
+
+     (set 'cp (regex-comp pattern))
+     (replace cp thetext replacement 0x10000)
+
+   Note that the option 0x8000 for replace once, cannot be compiled into the
+   pattern, but can be given together with 0x10000 as: 0x18000
+  
+   fixed a bug for invalid (<list> <key>) syntax
+
+9.3.6
+   smtp.lsp now can take user-name and password parameters for authorization
+
+   The behavior of 'wait-pid' has changed for finer control of child processes:
+
+   If nil is specified instead of the options number in 'wait-pid' then 'wait-pid'
+   will not block (WNOHANG option) and return 0 in the pid field of the return list,
+   if no childs exited, or -1 if no child processes are present, else the pid
+   ands status value of the signalling child are returned in a list. Previous
+   versions returned only the status value;
+
+   Using 'wait-pid' now causes the the SIGCHLD handler be set to the
+   default signal handler (SIG_DFL) of the OS as if (signal 20 true) has been
+   executed. This way 'wait-pid' can return pid values when handling child signals
+   On startup of newLISP the SIGCHLD handler is set to waitpipd(-1, 0, WNOHANG) 
+   to avoid zombie processes when 'wait-pid' is not used for processes created
+   with fork or process.
+
+   added error message to 'error-event', 'signal' and 'timer' when handler parameter
+   supplied is not a symbol, lambda function or primitive
+
+   fixed an error in new namespace hash functionality when evaulating the value
+   expression
+
+   'lookup' can take an optional default expression, which is returned when the
+   association is not found: (looup <key> <assoc-list> [<index>] [<default>])
+
+   Various smaller speed ond code size optimizations introducing makeCell() helper
+   function and inlining getCell() into various functions
+
+9.3.7
+   Cilk interface: 'spawn', 'sync' and 'abort'. See qa-cilk for workings.
+   Only available on Mac OS X and other UNIX like operating systems.
+   This API makes it easy to spawn child processes and collect results. 
+   The API can be used recursively and automizes housekeeping and zombie
+   collection of finished processes.
+
+   'spawn' forks a process and  passes a symbol for the result. 
+   A 'sync' function waits for a max timeout on all processes and assigns the 
+   results to the symbols spawned by 'spawn'. 'abort' can abort a specific or
+   processes. 'spawn' can be used recursively, so spawned child processes can
+   in turn spawn other children. newLISP uses shared memory to pass data up
+   to 4096 bytes or whatever the pageszie on the platform running. For data sizes
+   bigger than the pagesize newLISP automatically switches to a file based
+   data transfer using temporary files in /tmp/, where newLISP needs full
+   permissions to create, read, write and delete files.
+
+   SYNTAX:
+
+   (spawn <quoted-symbol> <function>) ; spawns the child process
+   returns the pid of the forked process
+
+   (sync <int-timeout>) ; waits for result up to milliseconds specified
+   returns 'nil' on timeout, or 'true' if all childs have finished. If
+   there are still pending childs 'sync' with a timeout parameter can
+   be called again.
+
+   (sync) ; only returns a list of pending child processes or an empty
+   list if nothing is pending. Does not do any other child processing.
+
+   (abort <int-pid>) ; aborts a specific child process and returns 'true'
+   (abort) ; aborts all child processes and returns 'true'
+
+   EXAMPLE:
+
+       (spawn 'x (foo-x a b c)) ; start first child
+       (spawn 'y (foo-y d e f)) ; start second child
+       (sync 10000) ; wait a maximum of 10 seconds and collect results
+       (println "x=" x " y=" y) ; print results
+
+   for more examples and a recursive application woth fibonacci see the
+   file newlisp-9.3.7/qa-cilk
+
+   For the original Cilk project (C-library API) see here:
+   http://supertech.csail.mit.edu/cilk/
+
+9.3.8
+	Cilk API in WIN32 now simulates behaviour in UNIX. 'spawn' works
+    like 'set', 'sync' always returns an empty list and 'abort' always
+    returns 'true'. This way Cilk API code written for UNIX will also 
+    run in WIN32, albeit slower.
+    
+    bugfixes and improvments in Guiserver for newlis-edit.lsp, see changes 
+    file for newLISP-GS.
+
+    added implicit indexing specific error messages.
+
+    'file-info' can be indexed (was not in docs)
+
+    second syntax in 'destroy' lets send any signal to UNIX process
+    (was not in docs)
+
+9.3.9
+    'spawn' allowed usage of protected symbols
+
+    errors in child processes launched by 'spawn' are now automatically
+    catched and returned as a result string, before control was lost
+    and child processes could not be 'sync'ed
+
+    some refactoring/streamlining in error handling code
+
+9.3.10
+	now the default functor as a container for lists or strings can be
+    used for any built-in function asking for a string or list. Until
+    now only functons of the special form (... (L idx) ...) could use:
+        (nth-set (L idx) value) when L:L => '(a b c d)
+    now any function can take lists or strings packaged this way:
+        (pop L) => a
+    or with strings:
+        (set 'S:S "abcdefg") (upper-case S) => "ABCDEFG"
+    This means that any user defined function when given a list or string
+    packed with a default functor will pass this list or string by reference
+    to any built-in function.
+
+    (char "") will return nil, caused out of range error message before,
+    'nil' more practical because one can switch on it: (if (char str) ...)
+
+    char, get-char, get-int, get-float, get-string now give an error for
+    missing parameter
+
+    server mode with -c or -http now disables commandline shell feature
+    with ! at the beginning of the commandline
+
+9.3.11
+    (last S), (first S) and (rest S) did not work  when S is a default 
+	functor S:S with a list or string.
+	
+    Fixed push when pushing at -1 on a sublist with one element
+
+	Fixed error messages text in list indexing area
+
+    Added out of bound error messages for 'swap'
+
+    Sortorder in manual should be as in (symbols) except for number ops.
+    Fixed many small HTML formatting inconsistencies in the manual. This
+    facilitates parseing out syntax lines for autimatic help functions.
+
+    'net-eval' now returns the error string if the remote server task ended
+    with error. Before the server would first time out then return 'nil'.
+    The new behaviour gives the choice of handling errors on the client
+    side and wihtout ewaiting for timeout.
+
+    New 'prompt-event' can redefine the interactive prompt with a newLISP
+    routine, e.g: 
+
+        (prompt-event (fn () (append (real-path) "$ ")))
+
+    changes the prompt to a UNIX shell-like prompt. See manual for more
+    details.
+
+    New 'command-event' can specify a function written in newLISP to pre-process
+    the newLISP command line and newLISP server mode requests before they are
+    evaluated. This can be used to write customized newLISP shells, and to
+    filter or trasform HTTP requests when running in server mode. 
+
+        (command-event 
+            (fn (s) (if (starts-with s "[a-zA-Z]" 0) (append "!" s) s)))
+
+	UNIX commands are passed to the shell via the ! operator. Lines starting
+    with a parenthesis or space are passed to the newLISP interpretor.
+    See the manual reference for 'command-event' with more examples and
+    how to write a preprocessor for HTTP requests. This new function obsolotes
+    the old 'command-line' and old way of writing 'httpd-conf.lsp' files.
+
+9.3.12
+    'series' can take lambda expression instead of number factor:
+		(series p (fn (x) (div 1 (add 1 x))) 20) => converges to Phi for any p != 0
+
+    synchronization in the Cilk multiprocessing interface can now be event driven
+    by defining a function instead of a timeout in 'sync'
+
+    Bugfixes in newlisp-edit.lsp for newLISP-GS
+
+    cleanup in nl-debug.c
+
+    restore SIGCHLD behavior after Cilk to newLISP startup conditions
+
+    using 'constant' or creating contexts on local symbols is not permitted
+    and causes an error message in: lambda, lambda-macro, ley, letn, letex, local
+
+    fixed a memory leak in net-receive-udp
+
+9.3.13
+    Better distribution with new Knuth algorithm for 'randomize'.
+
+    Several bug-fixes in newlisp-edit.lsp for newLISP-GS and new functions.
+
+9.3.14
+	New functions for MIDI sequencing several tracks/channels in parallel. 
+    See the new demo files midi-demo.lsp and  midi2-demo.lsp.
+
+9.3.15
+  Non-default directory install on Win32 now works. Windows must be rebooted
+  when not accepting the default directory, so the different path set in
+  the environment variable NEWLISPDIR can come into effect.
+
+  In newLISP-GS loading of external soundbanks and saving of sequences to
+  MIDI files and channel pitch bending. See newLISP-GS changes notes for details.
+
+  Added reference passing to some missing functions.
+
+  Cilk API for 'sync' changed handling the inlet function as an optional second
+  parameter.
+
+9.3.16
+  bug fixes in p_randomize and p_rand
+
+9.3.17
+  big speedup when deleting the entire contents of a namespace at once using
+  (delete <context-symbol>)
+
+9.4.0
+  eliminate mysql.lsp v.4.0 from the distribution
+
+  fixed an error in MySQL:escape in mysql5.lsp, mysql51.lsp (thanks Tim Johnson)
+
+  added newlisp.jsf (syntax highlighting for joe editor) and nanorc (syntax high-
+  lighting for the GNU nano editor) to the util directory
+
+  in module cgi.lsp CGI:url-translate did not translate correctly when taking a 
+  url-encoded UTF-8 strings as input and running UTF-8 enabled newLISP. The new 
+  version 2.3 does the translation correctly on  UTF-8 and non-UTF-8 url-encoded 
+  strings and on both versions of newLISP.
 

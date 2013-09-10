@@ -2,6 +2,8 @@
 
 # qa-xml - test newLISP xml-parse, xml-type-tags functions
 
+(println)
+
 (set 'example-xml
 [text]
 
@@ -84,8 +86,9 @@
 
 ;(define CTX:msg)
 
+(println "testing: xml-parse and xml-type-tags")
 (define (test-xml-parse)
-  (begin
+  (and
 	(= (xml-type-tags "TEXT" "CDATA" "COMMENT" "ELEMENT")
 		'("TEXT" "CDATA" "COMMENT" "ELEMENT"))
 	(print (= result1 (xml-parse example-xml)) " ")
@@ -94,16 +97,14 @@
 	(print (= result3 (xml-parse example-xml (+ 1 2 8))) " ")
 	(xml-type-tags nil nil nil nil)
 	(print (= (xml-parse "<msg>Hello World</msg>" (+ 1 2 4 8 16) 'CTX)
-    		'((CTX:msg "Hello World"))) " -> ")
+    		'((CTX:msg "Hello World"))) )
+	(begin (println) (println) true)
 ))
 
-(println)
 (if (test-xml-parse)
-	(println "xml-parse and xml-type-tags OK")
-    (println "ERROR with xml-parse or xml-type-tags"))
+	(println "XML API OK")
+    (println "ERROR IN XML API"))
 (println)
-
-
 
 ;; test callback feature
 (define (xml-callback s-expr start size)
@@ -111,6 +112,7 @@
 		(begin
 			(print "parsed expresson:" s-expr)
 			(println ", source:" (start size example-xml))
+			(push (list s-expr start size) xml-callback-result -1)
 		)
 	)
 )
@@ -118,6 +120,18 @@
 (println "Testing xml-parse with callback feature")
 (xml-type-tags nil 'cdata '!-- nil) 
 (xml-parse example-xml (+ 1 2 8) MAIN xml-callback)
+(println)
+(println)
+(if (=  xml-callback-result
+	'(
+	((NAME "apple") 88 18) ((COLOR "red") 115 18) ((PRICE "0.80") 142 19) 
+ 	((NAME "orange") 196 19) ((COLOR "orange") 224 21) ((PRICE "1.00") 254 19) 
+ 	((NAME "banana") 307 19) ((COLOR "yellow") 334 21) ((PRICE "0.60") 363 19)	
+	) ) 
+	(println ">>>>> XML CALLBACK TESTED SUCCESSFUL")
+	(println ">>>>> ERROR: PROBLEM IN XML CALLBACK")
+)
+
 
 ; produces this output:
 [text]
@@ -132,6 +146,7 @@ parsed expresson:(COLOR "yellow"), source:<COLOR>yellow</COLOR>
 parsed expresson:(PRICE "0.60"), source:<PRICE>0.60</PRICE>
 [/text]
 
+(println)
 (exit)
 
 ;; eof

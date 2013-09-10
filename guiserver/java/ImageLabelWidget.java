@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/23/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.lang.*;
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class ImageLabelWidget extends gsObject {
 
@@ -62,7 +63,14 @@ public ImageLabelWidget(StringTokenizer params)
 public void setText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
-	label.setText(text);
+	
+	
+	if(guiserver.UTF8)
+		try {
+		label.setText(new String(text.getBytes(), "UTF-8"));
+		} catch (UnsupportedEncodingException ee) {}
+	else
+		label.setText(text);
 	}
 	
 public void clearText(StringTokenizer tokens)

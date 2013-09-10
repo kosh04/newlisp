@@ -1,4 +1,4 @@
-# makefile for newLISP v. 9.x.x on SOLARIS woth UTF-8 support
+# makefile for newLISP v. 9.x.x on SOLARIS woth UTF-8 support on Sparc CPU
 #
 #
 
@@ -7,7 +7,7 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 
 # use following for UTF-8 support and add nl-utf8.o to the OBJS line
-CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DSOLARIS 
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DSOLARIS -DSPARC
 
 CC = gcc
 

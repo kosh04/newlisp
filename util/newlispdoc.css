@@ -1,0 +1,28 @@
+<!-- this file should reside in the same directory, where HTML
+     files generated with newlispdoc reside -->
+
+span.arw {
+	color:#666666;
+	font-size: 100%;
+	}
+	
+body, p {
+	font-family: Georgia, Times New Roman, Times, serif;
+	line-height: 115%;
+ 	}
+
+h1, h2, h3, h4 {
+	font-family: Georgia, Times New Roman, Times, serif;
+   	font-size: 110%;
+	}
+
+pre {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+   	font-size: 100%;
+	}
+
+tt {
+	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+	font-size: 100%;
+	}
+

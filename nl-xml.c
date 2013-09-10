@@ -162,9 +162,9 @@ CELL * cell;
 if(xmlError == NULL)
 	return(nilCell);
 
-errorCell = getCell(CELL_EXPRESSION);
 cell = stuffString(xmlError);
-errorCell->contents = (UINT)cell;
+errorCell = makeCell(CELL_EXPRESSION, (UINT)cell);
+
 cell->next = stuffInteger((UINT)(source - sourceOrg));
 
 return errorCell;
@@ -416,10 +416,9 @@ CELL * cell;
 CELL * next;
 int errNo;
 
-list = getCell(CELL_EXPRESSION);
-list->contents = (UINT)copyCell(xmlCallback);
-cell = getCell(CELL_QUOTE);
-cell->contents = (UINT)copyCell(result);
+list = makeCell(CELL_EXPRESSION, (UINT)copyCell(xmlCallback));
+cell = makeCell(CELL_QUOTE, (UINT)copyCell(result));
+
 cell->next = stuffInteger((UINT)(tagStart - sourceOrg));
 next = cell->next;
 next->next = stuffInteger((UINT)(source - tagStart));
@@ -586,19 +585,16 @@ return newNode;
 
 CELL * makeTextNode(int type, CELL * contents)
 {
-CELL * newNode;
 CELL * cell;
 
 /* unwrap text node if nil xml-type-tag */
 if(typeCells[type].type == CELL_NIL)
     return(contents);
 
-newNode = getCell(CELL_EXPRESSION);
 cell = copyCell(&typeCells[type]);
-newNode->contents = (UINT)cell;
 cell->next = contents;
 
-return newNode;
+return(makeCell(CELL_EXPRESSION, (UINT)cell));
 }
 
 

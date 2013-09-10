@@ -71,12 +71,17 @@
 
 ; test short syntax normal mode
 (if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
-	(println "net-eval normal mode ->OK")
+	(set 'result1 (println "net-eval normal mode ->OK"))
 	(println "net-eval poblem with normal mode ->ERROR"))
+
+; test error reporting
+(if (= (net-eval host port "(abc)") "\nERR: invalid function : (abc)\n")
+	(set 'result2 (println "net-eval error reporting ->OK"))
+	(println "net-eval problem with error reporting ->ERROR"))
 
 ; test raw mode only in list syntax
 (if (=  (net-eval '((host port {(+ 3 4)} true)) 1000) '("7\n")) 
-	(println "net-eval raw mode ->OK")
+	(set 'result3 (println "net-eval raw mode ->OK"))
 	(println "net-eval problem with raw mode ->ERROR"))
 
 
@@ -84,17 +89,17 @@
 (set 'key (uuid))
 (set 'verify key)
 (if (find "transferred" (print (save targetURL 'key)))
-	(println "save to URL ->OK")
+	(set 'result4 (println "save to URL ->OK"))
 	(println "save to URL ->ERROR"))
 
-(if (= opsys 6) (sleep 4000)) ; for Win32
+(if (= ostype "Win32") (sleep 4000)) ; for Win32
 
 ; test loading from URL
 (if (and
 	(println "loading target URL: " targetURL)
 	(= (load targetURL) verify)
 	(= key verify))
-	(println "load from URL ->OK")
+	(set 'result5 (println "load from URL ->OK"))
 	(println "load from URL ->ERROR"))
 
 ; test writing file to remote
@@ -106,26 +111,32 @@
 
 ; write content to remote URL
 (if	(find "transferred" (print (write-file targetURL content)) )
-	(println "write-file to remote URL ->OK")
+	(set 'result6 (println "write-file to remote URL ->OK"))
 	(println "write-file to remote URL ->ERROR"))
 
-(if (= opsys 6) (sleep 4000)) ; for Win32
+(if (= ostype "Win32" ) (sleep 4000)) ; for Win32
 
 ; read content from remote URL
 (if (= content (read-file targetURL))
-	(println "read-file from remote URL ->OK")
+	(set 'result7 (println "read-file from remote URL ->OK"))
 	(println "read-file from  remote URL ->ERROR"))
 
 ; delete file at remote URL
-(if (!= opsys 6)
-(if (starts-with (print  (delete-file targetURL)) "File deleted:")
-	(println "delete-file from remote URL ->OK")
-	(println "delete-file from remote URL ->Error"))
+(if (!= ostype "Win32") ; does not work on Windows when on the same machine
+	(if (starts-with (print  (delete-file targetURL)) "File deleted:")
+		(set 'result8 (println "delete-file from remote URL ->OK"))
+		(println "delete-file from remote URL ->Error"))
+	(set 'result8 true)
 )
 
 (if pid
 	(println "destroy -> " pid " ->" (destroy pid)))
 
-(println "\nduration =>" (- (time-of-day) start) " ms\n")
+(println "\nduration -> " (- (time-of-day) start) " ms\n")
 
+(if (and result1 result2 result3 result4 result5 result6 result7 result8)
+	(println ">>>>> NETWORK EVAL AND NETWORK FILE FUNCTIONS SUCCESSFUL")
+	(println ">>>>> ERROR: PROBLEM IN NETWORK EVAL AND NETWORK FILE FUNCTIONS")
+)
+(println)
 (exit)

@@ -1,4 +1,4 @@
-LIST OF FILES IN DISTRIBUTION in newLISP version 9.0
+LIST OF FILES IN DISTRIBUTION in newLISP version 9.4
 ----------------------------------------------------
 
 doc/             documentation directory
@@ -15,7 +15,7 @@ manual_frame.html         for viewing the manual in a frame with index
 newlisp_manual.html       newLISP for LINUX, Users manual and Reference
 newlisp-index.html        index for frame viewing of manual
 newLISPdoc.html           documentation for newlispdoc utility
-newLISP-9.2-Release.html  release notes for mayor release 
+newLISP-9.4-Release.html  release notes for mayor release 
 
 CodePatterns.html      frequently used patterns in newLISP programming
 MemoryManagement.html  how newLISP manages memory
@@ -23,12 +23,17 @@ MemoryManagement.html  how newLISP manages memory
 
 util/          various utility files
 
-http-conf.lsp  configuration file for newLISP HTTP server mode
-link.lsp       for 'linking' a source file together with a newlisp executeable
+http-conf.lsp   configuration file for newLISP HTTP server mode
+link.lsp        for 'linking' a source file together with a newlisp executeable
+nanorc          configuration file for nano editor syntax highlighting
 nclocal.c       nc/netcat like utility for loal domain sockets
 newlisp.vim	    syntax file for VIM editor syntax highlighting
+newlisp.jsf     syntax file for Joe editor syntax highlighting
 newlispdoc      utility to generate HTML docs from newLISP source
+newlisp.css     css style file for HTML files generated with newlispdoc
+nls             newLISP shell: integrates Bash with newLISP console
 preparepdf      preprocessese newlisp_manual.html for PDF conversion
+standard.lsp    used on the commandline of newlispdoc to build index
 syntax.cgi      syntax highlighting in HTML for newLISP source
 syntax-help     function for inclusion in init.lsp for command line syntax help
 sql.c           program to disply MySQL include file offsets
@@ -55,13 +60,10 @@ nl-web.c         special web functions
 nl-debug.c       debugging functions
 nl-utf8.c        UTF-8 versions of some newLISP string functions
 unix-lib.c       for compiling newlisp.so shared lib under Linux/UNIX
-osx-dlfcn.c      Mac OSX/Darwin dylib library interface
-osx-dlfcn.h      Mac OSX/Darwin dylib library interface
 win32-util.c     Win32 specific functions also used in CYGWIN, MinGW
 win32dll.c       for compiling a Win32 DLL also used in CYGWIN, MinGW
 win32dll.def     for compiling a Win32 DLL also used in CYGWIN, MinGW
 win32-path.c     routines for UTF-16 file and directory access
-init.lsp.example initialization file loaded from /usr/share/newlisp/init.lsp
 
 pcre.h            PCRE Perl Compatible Regular Expression header file
 pcre-config.h     PCRE config file
@@ -112,22 +114,23 @@ zlisp.lsp       Zlib compression/de-compression support
 
 examples/      various code examples and utilities
 
-finger         sample script for a finger client
-client         client/server networking sample
-form.html      sample html form for processing with form.cgi
-form.cgi       newLISP CGI processing sample script
+finger          sample script for a finger client
+client          client/server networking sample
+form.html       sample html form for processing with form.cgi
+form.cgi        newLISP CGI processing sample script
+init.lsp.example          initialization file loaded from /usr/share/newlisp/init.lsp
 newLISP-Excel-Import.xls  example how to call newlisp.dll from VB for applications
-opengl-demo.lsp  OpenGL demo using Glut, see file header for libs required
-prodcons.lsp   demo for fork, wait-pid, semaphore and share on Linux/UNIX
-server         client/server networking sample
-sqlite.cgi     simple script to call sqlite from a websever
-sqlite3.cgi    simple script to call sqlite from a websever
-tcltk.lsp      run Tcl/Tk apps without newlisp-tk frontend
-udp-client.lsp example for UDP client
-udp-server.lsp example for UDP server
-upload.html    file upload example with multipart POST request
-upload.cgi     CGI to handle upload.html
-xmlrpc.cgi     newISP XML-RPC service as a CGI request
+opengl-demo.lsp OpenGL demo using Glut, see file header for libs required
+prodcons.lsp    demo for fork, wait-pid, semaphore and share on Linux/UNIX
+server          client/server networking sample
+sqlite.cgi      simple script to call sqlite from a websever
+sqlite3.cgi     simple script to call sqlite from a websever
+tcltk.lsp       run Tcl/Tk apps without newlisp-tk frontend
+udp-client.lsp  example for UDP client
+udp-server.lsp  example for UDP server
+upload.html     file upload example with multipart POST request
+upload.cgi      CGI to handle upload.html
+xmlrpc.cgi      newISP XML-RPC service as a CGI request
 
 guiserver/
 
@@ -143,9 +146,6 @@ newlisp-edit.lsp    GUI-Server application
 *.lsp          various demos for GUI-Server
 
 CHANGES             changes notes for guiserver
-guisserver.lsp.html guiserver module file
-guisserver.lsp.html guiserver docs generated from guiserver.lsp
-index.html          index of guiserver functions generated from guiserver.lsp
 Makefile            used for guisever development
 Manifest            used by the Java compiler
 

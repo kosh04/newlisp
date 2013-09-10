@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/21/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+import java.io.UnsupportedEncodingException;
 
 public class MenuItemWidget extends aButton {
 
@@ -43,8 +44,13 @@ public MenuItemWidget(StringTokenizer params)
 	id = params.nextToken();
 	action = params.nextToken();
 	
-	menuitem.setText(Base64Coder.decodeString(params.nextToken()));
-			
+	String mtext = Base64Coder.decodeString(params.nextToken());
+	if(guiserver.UTF8)
+	try {
+		mtext = new String(mtext.getBytes(), "UTF8");
+		} catch (UnsupportedEncodingException ee) {}		
+	menuitem.setText(mtext);
+	
 	gsObject.widgets.put(id, this);
 	
 	ActionListener listener = new ActionListener() {

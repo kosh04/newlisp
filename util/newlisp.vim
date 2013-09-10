@@ -4,22 +4,21 @@
 " URL:          http://www.vim.org/scripts/script.php?script_id=2067
 " Another URL:  http://wagner.pp.ru/~slobin/vim/syntax/newlisp.vim
 " Started at:   2007 Nov 07 (The Great Revolution 90th Anniversary)
-" Last change:  2008 Feb 28
+" Last change:  2008 Jun 19
 " newLISP site: http://www.newlisp.org/
 
-" $Id: newlisp.vim,v 1.19 2008-02-28 21:10:00+03 slobin Exp $
+" $Id: newlisp.vim,v 1.22 2008/06/19 23:00:00 slobin Exp $
 
-" This was the alternative Vim syntax file for the newLISP language.
-" Now it is the official Vim syntax file! I am a celebrity! Wow!
+" This version of the syntax file attempts to meet the newLISP v.9.4.0
 
 " *** Some syntax quirks of newLISP and how this file treats them: ***
-"  
+"
 " * In the following text, the word "character" refers to the ASCII
 "   characters, and the word "symbol" to the lisp symbols (= atoms).
-" 
+"
 " * All built-in symbols are in the same class (Statement); functions,
 "   definitions, macros and control structures aren't distinguished.
-" 
+"
 " * Special syntax for : character (colon) is underway, meantime it is
 "   just highlighted and not checked otherwise.
 "
@@ -31,7 +30,7 @@
 "   from the following numbers or symbols. E.g. the sequence 1.2.3e4e5
 "   is valid and equal to three tokens 1.2 .3e4 e5. Such a monster is
 "   rather a typo than someones intent, so it is marked as an error.
-" 
+"
 " * If a backlash character \ in a quoted string is not followed by
 "   a valid escape sequence, the interpreter doesn't alarm you, it
 "   just silently removes this character from the string. E.g. the
@@ -44,14 +43,18 @@
 "   E.g. {string} is a string while string} is symbol, or [text] is
 "   a string delimiter while text] is a symbol. Such a symbols are
 "   rather typos than someones intent, so they are marked as errors.
-" 
-" * Starting from version 1.13 of this file, the feature of selective
-"   errors disabling was itself disabled. If you want NOT to highlight
-"   nested left parenthesis in the first column, just put the line:
+"
+" * You can disable any kind of highlighting by putting an appropriate
+"   "hi link" line into your .vimrc. Some examples:
+"
+"   To disable the highlighting of the nested left parentheses in the
+"   first column as an error:
 "
 "     hi link newlispLeftParenError newlispParenthesis
 "
-"   in your .vimrc file, similarly for all other errors.
+"   To disable the highlighting of the special symbols as special:
+"
+"     hi link newlispSymbolSpecial newlispSymbol
 "
 " * This syntax file is not compatible with Vim version 5.x and elder.
 "   Where have you dug them out? In fact I haven't tested it even with
@@ -85,7 +88,7 @@ syn match newlispRightParenError ")"
 
 syn match newlispSymbol "\<\([+-]\=\d\)\@!\k\+\>"
 syn match newlispSymbolSpecial "\<\([+-]\=\d\)\@!\k*\W\>"
-syn match newlispSymbolSpecial "\<[A-Z_][0-9A-Z_]*\>"
+syn match newlispSymbolSpecial "\<\u\k*\>"
 
 syn match newlispQuote "'" nextgroup=newlispQuote,newlispQuotedSymbol skipwhite
 syn match newlispQuotedSymbol "\<\([+-]\=\d\)\@!\k\+\>" contained
@@ -110,48 +113,48 @@ syn match newlispBracketError "[][}{]"
 syn region newlispStringBraced start="{" end="}" contains=newlispStringBraced
 syn region newlispStringTexted start="\[text\]" end="\[\/text\]"
 
-" This keywords list is based on newLISP v.9.3 release primes.h file 
+" This keywords list is based on newLISP v.9.3.15 build primes.h file
+" XXX Don't forget to remove colon ":" and escape vertical bar "|"
 
-syn keyword newlispFunction ! != $ % & * + - / : < << <= = > >= >> NaN? ^ abs acos acosh add address
-syn keyword newlispFunction amb and append append-file apply args array array-list array? asin asinh
-syn keyword newlispFunction assoc assoc-set atan atan2 atanh atom? base64-dec base64-enc bayes-query
-syn keyword newlispFunction bayes-train begin beta betai bind binomial callback case catch ceil
-syn keyword newlispFunction change-dir char chop clean close command-line cond cons constant context
-syn keyword newlispFunction context? copy-file cos cosh count cpymem crc32 crit-chi2 crit-z
-syn keyword newlispFunction current-line curry date date-value debug dec def-new default define
-syn keyword newlispFunction define-macro delete delete-file delete-url destroy det device difference
-syn keyword newlispFunction directory directory? div do-until do-while doargs dolist dostring
-syn keyword newlispFunction dotimes dotree dump dump-symbol dup empty? encrypt ends-with env erf
-syn keyword newlispFunction error-event error-number error-text eval eval-string exec exists exit
-syn keyword newlispFunction exp expand explode factor fft file-info file? filter find find-all first
-syn keyword newlispFunction flat float float? floor flt for for-all fork format fv gammai gammaln
-syn keyword newlispFunction gcd get-char get-float get-int get-long get-string get-url global
-syn keyword newlispFunction global? if ifft import inc index int integer integer? intersect invert
-syn keyword newlispFunction irr join lambda? last legal? length let letex letn list list? load local
-syn keyword newlispFunction log lookup lower-case macro? main-args make-dir map mat match max member
-syn keyword newlispFunction min mod mul multiply name net-accept net-close net-connect net-error
-syn keyword newlispFunction net-eval net-listen net-local net-lookup net-peek net-peer net-ping
-syn keyword newlispFunction net-receive net-receive-from net-receive-udp net-select net-send
-syn keyword newlispFunction net-send-to net-send-udp net-service net-sessions new nil? normal not
-syn keyword newlispFunction now nper npv nth nth-set null? number? open or pack parse parse-date
-syn keyword newlispFunction peek pipe pmt pop pop-assoc post-url pow pretty-print primitive? print
-syn keyword newlispFunction println prob-chi2 prob-z process protected? push put-url pv quote quote?
-syn keyword newlispFunction rand random randomize read-buffer read-char read-file read-key read-line
-syn keyword newlispFunction real-path ref ref-all ref-set regex remove-dir rename-file replace
+syn keyword newlispFunction ! != $ % & * + - / < << <= = > >= >> NaN? ^ abort abs acos acosh add
+syn keyword newlispFunction address amb and append append-file apply args array array-list array?
+syn keyword newlispFunction asin asinh assoc assoc-set atan atan2 atanh atom? base64-dec base64-enc
+syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial callback case
+syn keyword newlispFunction catch ceil change-dir char chop clean close command-event cond cons
+syn keyword newlispFunction constant context context? copy-file cos cosh count cpymem crc32
+syn keyword newlispFunction crit-chi2 crit-z current-line curry date date-value debug dec def-new
+syn keyword newlispFunction default define define-macro delete delete-file delete-url destroy det
+syn keyword newlispFunction device difference directory directory? div do-until do-while doargs
+syn keyword newlispFunction dolist dostring dotimes dotree dump dump-symbol dup empty? encrypt
+syn keyword newlispFunction ends-with env erf error-event error-number error-text eval eval-string
+syn keyword newlispFunction exec exists exit exp expand explode factor fft file-info file? filter
+syn keyword newlispFunction find find-all first flat float float? floor flt for for-all fork format
+syn keyword newlispFunction fv gammai gammaln gcd get-char get-float get-int get-long get-string
+syn keyword newlispFunction get-url global global? if ifft import inc index int integer integer?
+syn keyword newlispFunction intersect invert irr join lambda? last legal? length let letex letn list
+syn keyword newlispFunction list? load local log lookup lower-case macro? main-args make-dir map mat
+syn keyword newlispFunction match max member min mod mul multiply name net-accept net-close
+syn keyword newlispFunction net-connect net-error net-eval net-listen net-local net-lookup net-peek
+syn keyword newlispFunction net-peer net-ping net-receive net-receive-from net-receive-udp
+syn keyword newlispFunction net-select net-send net-send-to net-send-udp net-service net-sessions
+syn keyword newlispFunction new nil? normal not now nper npv nth nth-set null? number? open or pack
+syn keyword newlispFunction parse parse-date peek pipe pmt pop pop-assoc post-url pow pretty-print
+syn keyword newlispFunction primitive? print println prob-chi2 prob-z process prompt-event
+syn keyword newlispFunction protected? push put-url pv quote quote? rand random randomize
+syn keyword newlispFunction read-buffer read-char read-expr read-file read-key read-line real-path
+syn keyword newlispFunction ref ref-all ref-set regex regex-comp remove-dir rename-file replace
 syn keyword newlispFunction replace-assoc reset rest reverse rotate round save search seed seek
 syn keyword newlispFunction select semaphore sequence series set set-assoc set-locale set-nth
 syn keyword newlispFunction set-ref set-ref-all setq sgn share signal silent sin sinh sleep slice
-syn keyword newlispFunction sort source sqrt starts-with string string? sub swap sym symbol? symbols
-syn keyword newlispFunction sys-error sys-info tan tanh throw throw-error time time-of-day timer
-syn keyword newlispFunction title-case trace trace-highlight transpose trim true? unicode unify
-syn keyword newlispFunction unique unless unpack until upper-case utf8 utf8len uuid wait-pid when
-syn keyword newlispFunction while write-buffer write-char write-file write-line xml-error xml-parse
-syn keyword newlispFunction xml-type-tags zero? \| ~
-
-syn keyword newlispFunction read " introduced in newLISP 9.3.1
+syn keyword newlispFunction sort source spawn sqrt starts-with string string? sub swap sym symbol?
+syn keyword newlispFunction symbols sync sys-error sys-info tan tanh throw throw-error time
+syn keyword newlispFunction time-of-day timer title-case trace trace-highlight transpose trim true?
+syn keyword newlispFunction unicode unify unique unless unpack until upper-case utf8 utf8len uuid
+syn keyword newlispFunction wait-pid when while write-buffer write-char write-file write-line
+syn keyword newlispFunction xml-error xml-parse xml-type-tags zero? \| ~
 
 syn keyword newlispKeyword fn lambda
-syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $args $idx $main-args 
+syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $args $idx $main-args
 
 syn match newlispColon ":"
 syn match newlispComma ","
@@ -214,9 +217,15 @@ function! s:set_colors()
   exec "hi CommentUnderlined term=underline cterm=underline gui=underline" . colors
 endfunction
 
-au ColorScheme <buffer> call s:set_colors()
-call s:set_colors()
+if version < 700 || exists("g:newlisp_compat")
+  hi def link CommentItalic Identifier
+  hi def link CommentUnderlined Underlined
+else
+  au ColorScheme <buffer> call s:set_colors()
+  call s:set_colors()
+endif
 
 let b:current_syntax = "newlisp"
 
 " vim: textwidth=70
+

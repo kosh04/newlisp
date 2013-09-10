@@ -800,3 +800,56 @@
 
 1.15
   fixed highlighing for 'pop-assoc'
+
+1.16
+  highlighting for regex-comp, spawn, sync and abort
+
+  a bug fix for newlisp-edit.lsp 1.12 for an editor crash caused by index overrun
+  in switch-to-tab function
+
+  newlisp-edit.lsp will quit right away when buffers are clean without showing
+  "You really ..." dialog
+
+  fixed  gs:text-area area hangup when deleting backwards beyond beginning o line 
+  and hitting enter
+
+1.17
+  UTF-8 gs:set-text for gs:text-pane, gs:text-area and gs:text-field.
+
+1.18
+  UTF-8 text now working on all widgets and setter/getter functions. UTF-8 is
+  enabled by default on the Mac OS X installer but not on Win32 which uses 
+  ISO 8859 code pages to display some eastern European and Middle Eastern fonts.
+  Running an UTF-8 enabled version with newLISP-GS on Win32 will automatically
+  switch newLISP-GS to UTF-8.
+
+  new gs:midi-init, gs:midi-close, gs:midi-patch, gs:play-note, gs:play-sequence
+  gs:add-track and gs:mute-track for controlling an internal MIDI device. 
+  On Win32 a soundbank must be installed, see the description for gs:play-note 
+  for more details, where to get and how to install a soundbank file.
+
+1.19 
+  Non-default directory install on Win32 now works. Windows must be rebooted
+  when not accepting the default directory, so the different path set in
+  the environment variable NEWLISPDIR can come into effect.
+
+  New gs:save-sequence saves sequences created using gs:add-track to a MIDI
+  file. 
+
+  gs:midi-init now can take a file path to an external soundbank file.
+
+  gs:channel-bend can be used to tune a channel up or down by a halftone
+
+1.20
+  fixed check option in gs:menu-item-check 
+
+1.21
+  gs:channel-bend did not remember channel specific setting when using on more
+  than one channel
+
+  reworked handling of bpm and resolution (gs:midi-bpm). Now recording with
+  gs:save-sequence will work for any BPM settings correctly
+
+  notes in gs:play-note and gs:add-track now can have an optional last parameter
+  for a note specific pitch-pend
+ 

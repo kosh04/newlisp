@@ -6,27 +6,25 @@
 #
 # usage of 'fork', 'wait-pid', 'semaphore' and 'share'
 
-(if (> (& (last (sys-info)) 0xF) 4) 
-	(begin
+(when (= ostype "Win32")
 		(println "this will not run on Win32")
-		(exit)))
+		(exit))
 
-
-(constant 'wait -1 'signal 1 'release 0)
+(constant 'wait -1 'sig 1 'release 0)
 
 (define (consumer n)
 	(set 'i 0)
 	(while (< i n)
 		(semaphore cons-sem wait)
 		(println (set 'i (share data)) " <-")
-		(semaphore prod-sem signal))  
+		(semaphore prod-sem sig))  
 	(exit))
 		
 (define (producer n)
 	(for (i 1 n)
 		(semaphore prod-sem wait)
 		(println "-> " (share data i))
-		(semaphore cons-sem signal))   
+		(semaphore cons-sem sig))   
 	(exit))
 
 
@@ -39,7 +37,7 @@
 
 	(set 'prod-pid (fork (producer n))) ; start threads
 	(set 'cons-pid (fork (consumer n)))
-	(semaphore prod-sem signal) ; get producer started
+	(semaphore prod-sem sig) ; get producer started
 
 	(wait-pid prod-pid) ; wait for threads to finish
 	(wait-pid cons-pid) ; 

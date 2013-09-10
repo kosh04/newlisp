@@ -34,7 +34,7 @@
 (gs:button 'TheButton 'button-handler "button")
 ;(gs:set-color 'TheButton 1 0 0) ; just for testing
 (gs:image-button 'TheImageButton 'action-handler "/local/newLISP32.png")
-(gs:toggle-button 'TheToggleButton 'action-handler " ")
+(gs:toggle-button 'TheToggleButton 'action-handler "toggle")
 ;(gs:set-selected 'TheToggleButton true)
 (gs:radio-button 'TheRadioButton 'action-handler "radio button")
 ;(gs:set-selected 'TheRadioButton true)
@@ -116,12 +116,12 @@
 				;(amb "error" "informaton" "warning" "question" "plain")
 		))
 
-	(let (s "")
-		(doargs (item)
-			(write-buffer s (string item " ")))
-		(write-buffer s "\n")
-		(gs:append-text 'MonitorArea s)
-	)
+	(let ( (out-text (list (string (args 0)))) (len (length (args))))
+		(if (> len 1) (push (string (args 1)) out-text -1))
+		(if (> len 2) (push (base64-dec (string (args 2))) out-text -1))
+		(if (> len 3) (push (string (args 3)) out-text -1))
+		(push "\n" out-text -1)
+		(gs:append-text 'MonitorArea (join out-text " ")))
 )
 
 (define (textfield-handler id text)

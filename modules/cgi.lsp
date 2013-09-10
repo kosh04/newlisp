@@ -1,6 +1,7 @@
 ;; @module cgi.lsp  
 ;; @description Basic CGI processing tools for GET and POST requests
 ;; @version v 2.2 - comments redone for automatic documentation
+;; @version v 2.3 - a fix in CGI:url-translate when translating utf-8 strings
 ;; @author Lutz Mueller, lutz@nuevatec.com
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -8,7 +9,7 @@
 ;;
 ;; Include this file at the beginning of each file performing CGI processing:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/cgi.lsp")
+;; (load "/usr/share/newlisp/cgi.lsp")
 ;; </pre>
 ;;
 ;; <center><h2>Overview</h2></center>
@@ -89,7 +90,7 @@
 
 (define (url-translate str)
    (replace "+" str " ")
-   (replace "%([0-9A-F][0-9A-F])" str (char (int (append "0x" $1))) 1))
+   (replace "%([0-9A-F][0-9A-F])" str (format "%c" (int (append "0x" $1))) 1))
 
 
 ; This is not an user function, but used internally.

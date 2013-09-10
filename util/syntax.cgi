@@ -1,5 +1,8 @@
 #!/usr/bin/newlisp
 
+# this utility formats a newLISP source file as an HTML file with
+# syntax highlighting
+#
 # comment following line out when using as CGI utilty
 # in this case files to convert which are local must end with .txt
 #(define cgi-use true)

@@ -1,6 +1,6 @@
 ;; @module gmp.lsp
 ;; @description GNU MP Bignum Library interface
-;; @version 1.5 - new library detection rotuine
+;; @version 1.51
 ;; @author Lutz Mueller, 2007
 ;;
 ;; <h3>The GNU MP Bignum Library</h3>

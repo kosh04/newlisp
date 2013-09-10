@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/14/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -224,20 +224,34 @@ public static void init()
 	methods.put("destroy-shell", "destroyShell");
 	
 	// methods for System object (guiserver)
+	methods.put("add-track", "addTrack");
+	methods.put("channel-bend", "channelBend");
+	methods.put("channel-reverb", "channelReverb");
 	methods.put("dispose-splash", "disposeSplash");
 	methods.put("get-fonts", "getFonts");
 	methods.put("get-screen", "getScreen");
+	methods.put("get-instruments", "getInstruments");
 	methods.put("get-version", "getVersion");
+	methods.put("midi-init", "midiInit");
+	methods.put("midi-close", "midiClose");
+	methods.put("midi-patch", "midiPatch");
+	methods.put("midi-bpm", "midiBPM");
+	methods.put("mute-track", "muteTrack");
+	methods.put("solo-track", "soloTrack");
 	methods.put("set-trace", "setTrace");
 	methods.put("set-look-and-feel", "setLookAndFeel");
 	methods.put("set-syntax-colors", "setSyntaxColors");
+	methods.put("play-note", "playNote");
 	methods.put("play-sound", "playSound");
+	methods.put("play-sequence", "playSequence");
+	methods.put("stop-sequence", "stopSequence");
+	methods.put("save-sequence", "saveSequence");
 	methods.put("set-utf8", "setUTF8");
 	
 	// 2D Grapics
 	// All methods hace the current canvas as target
 	
-	// methods for creating sjapes
+	// methods for creating shapes
 	// put in Vector in current canvas
 	methods.put("draw-arc", "drawArc");
 	methods.put("draw-circle", "drawCircle");

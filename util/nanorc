@@ -1,0 +1,109 @@
+## syntax and configuration file for the nano editor from http://www.nano-editor.org
+## syntax for newLISP, C, HTML
+## this file works on nano versions 2.0.1 and later 
+## tested on 2.0.1 Mac OS X and 2.0.7 Linux, FreeBSD
+## L.M. June 2008 
+## version 1.01
+
+
+## outcomment the following to customize, see manpage for nanorc for details
+#set autoindent
+#set casesensitive
+#set morespace
+#set suspend
+#set noconvert
+#set nohelp
+#set nonewlines
+#set quickblank
+#set smooth
+#set tabsize 4
+#set tabstospaces
+
+syntax "lisp" "\.lsp$"
+## keywords
+color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|-|/|:|<|<<|<=|=|>|>=|>>|@|MAIN|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(add|address|amb|and|append|append-file|apply|args|array|array-list|array\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(asin|asinh|assoc|assoc-set|atan|atan2|atanh|atom\?|base64-dec|base64-enc)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(bayes-query|bayes-train|begin|beta|betai|bind|binomial|callback|case|catch)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(ceil|change-dir|char|chop|clean|close|command-event|cond|cons|constant|context)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(context\?|copy-file|cos|cosh|count|cpymem|crc32|crit-chi2|crit-z|current-line)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(curry|date|date-value|debug|dec|def-new|default|define|define-macro|delete)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(delete-file|delete-url|destroy|det|device|difference|directory|directory\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(div|do-until|do-while|doargs|dolist|dostring|dotimes|dotree|dump|dup|empty\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(encrypt|ends-with|env|erf|error-event|error-number|error-text|eval|eval-string)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(exec|exists|exit|exp|expand|explode|factor|fft|file-info|file\?|filter|find)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(find-all|first|flat|float|float\?|floor|flt|for|for-all|fork|format|fv|gammai)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(gammaln|gcd|get-char|get-float|get-int|get-long|get-string|get-url|global|global\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(if|ifft|import|inc|index|int|integer|integer\?|intersect|invert|irr|join|lambda\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(last|legal\?|length|let|letex|letn|list|list\?|load|local|log|lookup|lower-case)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(macro\?|main-args|make-dir|map|mat|match|max|member|min|mod|mul|multiply|name)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(net-accept|net-close|net-connect|net-error|net-eval|net-listen|net-local)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(net-lookup|net-peek|net-peer|net-ping|net-receive|net-receive-from)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(net-receive-udp|net-select|net-send|net-send-to|net-send-udp|net-service)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(net-sessions|new|nil|nil\?|normal|not|now|nper|npv|nth|nth-set|null\?|number\?)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(open|or|ostype|pack|parse|parse-date|peek|pipe|pmt|pop|pop-assoc|post-url)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(pow|pretty-print|primitive\?|print|println|prob-chi2|prob-z|process)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(prompt-event|protected\?|push|put-url|pv|quote|quote\?|rand|random|randomize)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(read-buffer|read-char|read-expr|read-file|read-key|read-line|real-path|ref)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(ref-all|ref-set|regex|regex-comp|remove-dir|rename-file|replace|replace-assoc)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(reset|rest|reverse|rotate|round|save|search|seed|seek|select|semaphore|sequence)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(series|set|set-assoc|set-locale|set-nth|set-ref|set-ref-all|setq|sgn|share)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(signal|silent|sin|sinh|sleep|slice|sort|source|spawn|sqrt|starts-with|string)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(string\?|sub|swap|sym|symbol\?|symbols|sync|sys-error|sys-info|tan|tanh|throw)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(throw-error|time|time-of-day|timer|title-case|trace|trace-highlight|transpose)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(trim|true|true\?|unicode|unify|unique|unless|unpack|until|upper-case|utf8|utf8len)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(uuid|wait-pid|when|while|write-buffer|write-char|write-file|write-line|xml-error)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(xml-parse|xml-type-tags|zero\?|\||~)([[:space:]()]|$)"
+## decimal and float numbers
+color yellow "(^|[[:space:]()-])([0-9]+|[0-9]+\.[0-9]+)"
+## hex numbers
+color yellow "(^|[[:space:]()-])0x[0-9a-fA-F]+"
+## symbols
+color cyan "'[^ ()]+"
+## parenthesis
+color red "(\(|\))"
+## quoted strings
+color green "\"(\\.|[^\"])*\""
+## braced strings
+color green start="\{" end="\}"
+## comments
+color magenta "(^|[[:space:]#])#.*"
+color magenta "(^|[[:space:];]);.*"
+## newlispdoc tags
+color green "(@module|@index|@description|@location|@version|@author|@syntax|@param|@return|@example)"
+## text block strings
+color green start="\[text\]" end="\[/text\]"
+
+
+syntax "c-file" "\.(c|h)$"
+## type ids
+color blue "(^|[[:space:](){}*])(float|double|char|int|short|long|enum|void|static|const)[[:space:](){}]"
+color blue "(^|[[:space:](){}*])(struct|union|typedef|extern|signed|unsigned|inline)[[:space:](){}]"
+## keywords
+color blue "(^|[[:space:](){}])(for|if|while|do|else|case|switch|default:|goto)([[:space:](){}]|$)"
+color blue "(^|[[:space:](){}])(continue|break|return)([[:space:](){}*;:]|$)"
+## preprocessor, macros
+color brightcyan "^ *# *(define|undef|include|ifn?def|endif|elif|else|if)"
+## decimal and float numbers
+color yellow "(\[|[[:space:](),;-]|^)([0-9]+|[0-9]+\.[0-9]+)"
+## hex numbers
+color yellow "(\[|[[:space:](),;-]|^)0x[0-9a-fA-F]+L?L?"
+## constants
+color red "(^|\[|\]|[[:space:]~(,;-])[A-Z_]+[A-Z_0-9]+([ (){},;:]|\[|\]|$)" 
+## delimiters
+color black "\[|\]|\-|\+|[(){}~,;=:]"
+## strings
+color green "<[^= ]*>" ""(\\.|[^\"])*""
+color green start=""(\\.|[^\"])*\\ *$" end="^(\\.|[^\"])*""
+## commments
+color magenta "//.*"
+color magenta start="/\*" end="\*/"
+
+
+syntax "HTML" "\.html$"
+## tags
+color blue start="<" end=">"
+## entities
+color red "&[^; ]*;"
+## quotes strings
+color green "\"(\\.|[^\"])*\""

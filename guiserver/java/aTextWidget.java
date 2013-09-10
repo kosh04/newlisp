@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/14/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -39,14 +39,25 @@ String findTextAction;
 public void setText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	
+	if(guiserver.UTF8)
+		try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	textcomp.setText(text);
-	//if(isScrollable) scrollUp();
 	}
 
 	
 public void appendText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	
+	if(guiserver.UTF8)
+		try {
+		text = new String(text.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	String oldtext = textcomp.getText();
 	int len = text.length() + oldtext.length();
 	if(len > 100000)
@@ -103,23 +114,13 @@ public void clearText(StringTokenizer params)
 	
 public void getText(StringTokenizer params)
 	{
-	String string = textcomp.getText();
-	String text;
+	String text = textcomp.getText();
 	
 	if(guiserver.UTF8)
-		{
 		try {
-			byte[] utf8 = string.getBytes("UTF-8");
-			text = new String(utf8);
+			text = new String(text.getBytes("UTF-8"));
 			} 
-		catch (UnsupportedEncodingException e) 
-			{ 
-			System.out.println("errorconverting to UTF8");
-			text = string;
-			}
-		}
-	else
-		text = string;
+		catch (UnsupportedEncodingException e) {}
 	
 	if(params.hasMoreTokens())
 		{
@@ -227,6 +228,11 @@ public void pasteText(StringTokenizer tokens)
 public void insertText(StringTokenizer tokens)
 	{
 	String text = Base64Coder.decodeString(tokens.nextToken());
+	if(guiserver.UTF8)
+		try {
+			text = new String(text.getBytes(), "UTF-8");
+			} 
+		catch (UnsupportedEncodingException e) {}
 	String oldtext = textcomp.getText();
 	int newpos = Integer.parseInt(tokens.nextToken());
 	if(newpos > textcomp.getText().length()) newpos = textcomp.getText().length();

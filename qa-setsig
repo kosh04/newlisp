@@ -13,25 +13,13 @@
 # USAGE: qa-setsig
 #
 
-(set 'opsys (& 0xF ((sys-info) -1)))
-
-(set 'library (if
-  (= opsys 1) "libc.so.6" ;; Linux
-  (= opsys 2) "libc.so"        ;; FreeBSD
-  (= opsys 3) "libc.dylib"     ;; Mac OSX
-  (= opsys 4) "libc.so"))      ;; Solaris
-
-(if (not library)
-	(begin
-		(println "Cannot run qa-signal on this platform")
-		(exit)))
-
-(import library "getpid")
-(import library "kill")
+(when (= ostype "Win32")
+	(println "Cannot run qa-signal on this platform")
+	(exit))
 
 (set 'low (int (main-args 2)))
 (set 'high (int (main-args 3)))
-(set 'pid (getpid))
+(set 'pid (sys-info -3))
 
 (if low
 	(println "low=" low " hight=" high " pid=" pid))
@@ -48,15 +36,14 @@
 
 (set 'high (last sig-list))
 
-(dolist (s sig-list) (signal s 'alarm))
-
+(dolist (s sig-list) (signal s alarm))
 
 (fork (begin
 		(dolist (s sig-list)
 			(sleep 200)
-			(kill pid (int s)))
+			(destroy pid (int s)))
 		(sleep 200)
-;		(kill pid 9)
+;		(destroy pid 9)
 ))
 
 (println)
@@ -64,9 +51,10 @@
 (println)
 (println "sent: " sig-list)
 (println "received: " result-list)
+(println)
 (if (= result-list sig-list)
-	(println "signal testing OK")
-	(println "ERROR: problem in signal testing"))
+	(println ">>>>> SIGNAL TESTING SUCCESSFUL")
+	(println ">>>>> ERROR: PROBLEM IN SIGNAL TESTING"))
 
 (println)
 (exit)

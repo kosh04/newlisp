@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/15/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
-
+import java.io.UnsupportedEncodingException;
 
 @SuppressWarnings("unchecked") 
 public class ListBoxWidget extends gsObject {
@@ -47,7 +47,11 @@ public ListBoxWidget(StringTokenizer params)
 	
 	listModel = new DefaultListModel();
 	while(params.hasMoreTokens())
-		listModel.addElement(Base64Coder.decodeString(params.nextToken()));
+		{
+		addListItem(params);
+		}
+	
+//	listModel.addElement(Base64Coder.decodeString(params.nextToken()));
 		
 	list = new JList(listModel);
 	jcomponent = list;
@@ -63,7 +67,11 @@ public ListBoxWidget(StringTokenizer params)
 		public void keyTyped(KeyEvent e)
 			{
 			int index = list.getSelectedIndex();
-			String item = Base64Coder.encodeString((String)list.getSelectedValue());
+			String item = (String)list.getSelectedValue();
+			if(guiserver.UTF8)
+				try { item = new String(item.getBytes("UTF-8"));
+				} catch (Exception exc) { }
+			item = Base64Coder.encodeString(item);
 			guiserver.out.println("(" + action + " \"" + id + "\" " + index + " \"" + item + "\")");
 			guiserver.out.flush();
 			}
@@ -78,7 +86,10 @@ public ListBoxWidget(StringTokenizer params)
 		if(action != null)
 			{
 			try {
-				String item = Base64Coder.encodeString((String)listModel.getElementAt(index));
+				String item = (String)listModel.getElementAt(index);
+				if(guiserver.UTF8)
+					item = new String(item.getBytes("UTF-8"));
+				item = Base64Coder.encodeString(item);
 				guiserver.out.println("(" + action + " \"" + id + "\" " + index + " \"" + item + "\" " + clickCount + ")");
 				guiserver.out.flush();
 				} catch (Exception exc) { }
@@ -110,8 +121,13 @@ public void addListItem(StringTokenizer tokens)
 	{
 	while(tokens.hasMoreTokens()) 
 		{
-		String item = Base64Coder.decodeString(tokens.nextToken());
-		listModel.addElement(item);
+		String text = Base64Coder.decodeString(tokens.nextToken());
+		if(guiserver.UTF8)
+			try {
+			text = new String(text.getBytes(), "UTF-8");
+			} catch (UnsupportedEncodingException ee) {}
+
+		listModel.addElement(text);
 		}
 	}
 	
@@ -145,6 +161,12 @@ public void insertListItem(StringTokenizer tokens)
 		index = Integer.parseInt(tokens.nextToken());
 		if(index > (listModel.size() - 1)) index = listModel.size() - 1;
 		if(index < 0) index = 0;
+		
+		if(guiserver.UTF8)
+			try {
+			text = new String(text.getBytes(), "UTF-8");
+			} catch (UnsupportedEncodingException ee) {}
+		
 		listModel.insertElementAt(text, index);
 		}
 	}
@@ -154,6 +176,12 @@ public void selectListItem(StringTokenizer tokens)
 	{
 	String item = Base64Coder.decodeString(tokens.nextToken());
 	Boolean flag = false;
+	
+	if(guiserver.UTF8)
+		try {
+		item = new String(item.getBytes(), "UTF-8");
+		} catch (UnsupportedEncodingException ee) {}
+
 	
 	if(tokens.hasMoreTokens())
 		flag = tokens.nextToken().equals("true");

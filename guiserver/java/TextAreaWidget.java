@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/16/07.
 //
 //
-//    Copyright (C) 2007 Lutz Mueller
+//    Copyright (C) 2008 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -100,8 +100,11 @@ public TextAreaWidget(StringTokenizer params)
 					catch (IOException ioex) { System.out.println("clear screen:" + ioex); };	
 					}
 				// get last command with Ctrl-P
-				else if(lastCharCode == 16) textArea.append(command.trim());				
+				else if(lastCharCode == 16) textArea.append(command.trim());
 				}
+				
+			if(lastDot > textArea.getCaretPosition())
+				lastDot = textArea.getCaretPosition();
 			}
 		};
 		
@@ -340,19 +343,12 @@ private class CommandAction extends AbstractAction {
 			text = text.substring(lastDot);
 			
 			if(guiserver.UTF8)
-				{
 				try {
-					byte[] utf8 = text.getBytes("UTF-8");
-					command = new String(utf8);
-					} 
-				catch (UnsupportedEncodingException e) 
-					{ 
-					System.out.println("errorconverting to UTF8");
-					command = text;
-					}
-				}
-			else
-				command = text;
+				text = new String(text.getBytes("UTF-8"));
+				} 
+			catch (UnsupportedEncodingException e) {}
+			
+			command = text;
 			
 			textArea.append("\n");
 			try { 

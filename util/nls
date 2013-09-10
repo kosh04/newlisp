@@ -1,0 +1,77 @@
+#!/usr/bin/newlisp
+
+; - nls- newLISP shell, put this script with executable permissions into
+; the executable path on UNIX.
+;
+; Use the prompt as if a Bash shell. Commands not starting with an opening
+; parenthesis or space are interpreted as UNIX shell cmomands, commands
+; starting with parenthesis or space are interpreted as interacive newLISP
+; commands.
+
+(define (help func-name)
+  (if (find func-name "|+*-") (push "\\" func-name))
+  (set 'html-text (join (find-all (format {<b>(syntax: \(%s.*?)</b>} func-name)    
+    (read-file "/usr/share/doc/newlisp/newlisp_manual.html")) "\n"))
+  (println (replace "<.*?>" html-text "" 0))
+  "")
+
+; set the prompt to the current path
+(prompt-event (fn () (append (real-path) "> ")))
+
+; handle some special commands, newLISP expressions and shell commands
+(command-event (fn (s) 
+  (if 
+    ; get syntax help
+    (starts-with s "\\?|help" 0)
+    (help (last (parse s " ")))
+
+    ; restart newLISP
+    (starts-with s "reset")
+    (reset true) ; restart
+
+    ; avoid X-windows beeing started on OS X
+    (starts-with s "x")
+    ""
+
+    ; all directory changes must be done inside newLISP
+    ; previous directory cd -
+	(starts-with s "cd -")
+    (begin
+	    (set 'new-dir prev-dir)
+	    (set 'prev-dir (real-path))
+        (string " " (true? (change-dir new-dir))))
+	
+    ; pushd
+    (starts-with s "pushd")
+    (begin
+      (set 'prev-dir (real-path))
+	  (push prev-dir dir-stack)
+	  (string " " (true? (change-dir (last (parse s " "))))))
+
+	; popd
+	(starts-with s "popd")
+    (begin
+        (set 'prev-dir (real-path))
+	    (string " " (true? (change-dir (pop dir-stack)))))
+
+    ; go to home directory
+    (= s "cd")
+    (begin
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir (env "HOME")))))
+
+    ; change directory cd
+    (starts-with s "cd") 
+    (begin
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir (last (parse s " "))))))
+
+    ; else handle as a shell command, start newLISP expressions
+    ; with either a space or a parenthesis
+    (starts-with s "[\\.a-zA-Z]" 0)
+    (append "!" s)
+
+    true s)))
+
+;; eof
+

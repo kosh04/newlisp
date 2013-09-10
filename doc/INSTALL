@@ -1,4 +1,4 @@
-BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2007-02-15)
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2008-06-18)
 -------------------------------------------------------------------
 
 CONTENTS
@@ -100,12 +100,13 @@ compatible compiler is required.
 ----------------
 
 The PCRE Regular Expressions code can be localized to your country/language 
-(see comments in file 'makefile'), it comes with default character tables for
-English. For correct working of other string functions in your country/language
-a localizable 'C' library/OS may have to be used. The names of newLISP functions can
-be localized during runtime without performance loss, (see newlisp_manual.html).
+It comes with default character tables for English, but should work well
+for other languages when using the UTF-8 version of newLISP. For correct working of 
+other string functions in your country/language a localizable 'C' library/OS 
+may have to be used. The names of newLISP functions can be localized during 
+runtime without performance loss, (see newlisp_manual.html).
 
-There are also UTF-8 versions/makefiles available in the source distribution.
+There are UTF-8 versions/makefiles available in the source distribution.
 See the chapter about 'Customization, localization and UTF-8' in the manual.
 
 

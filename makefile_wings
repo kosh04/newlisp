@@ -12,13 +12,14 @@ win-gui:
 	cp util/link.lsp /c/newlisp/util
 	cp util/newlispdoc /c/newlisp/util
 	cp util/newlisp.vim /c/newlisp/util
+	cp util/nanorc /c/newlisp/util
 	cp util/syntax.cgi /c/newlisp/util
 	cp doc/newlisp_manual.html /c/newlisp
 	cp doc/newlisp_index.html /c/newlisp
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-9.3-Release.html /c/newlisp
+	cp doc/newLISP-9.4-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	
@@ -27,6 +28,7 @@ win-gui:
 	# guiserver sub directory
 	cp guiserver/index.html /c/newlisp/guiserver
 	cp guiserver/guiserver.lsp.html /c/newlisp/guiserver
+	cp util/newlispdoc.css /c/newlisp/guiserver
 	cp guiserver/allfonts-demo.lsp /c/newlisp/guiserver
 	cp guiserver/animation-demo.lsp /c/newlisp/guiserver
 	cp guiserver/border-layout-demo.lsp /c/newlisp/guiserver
@@ -38,6 +40,8 @@ win-gui:
 	cp guiserver/frameless-demo.lsp /c/newlisp/guiserver
 	cp guiserver/html-demo.lsp /c/newlisp/guiserver
 	cp guiserver/image-demo.lsp /c/newlisp/guiserver
+	cp guiserver/midi-demo.lsp /c/newlisp/guiserver
+	cp guiserver/midi2-demo.lsp /c/newlisp/guiserver
 	cp guiserver/mouse-demo.lsp /c/newlisp/guiserver
 	cp guiserver/move-resize-demo.lsp /c/newlisp/guiserver
 	cp guiserver/pinballs-demo.lsp /c/newlisp/guiserver
@@ -57,8 +61,8 @@ win-gui:
 	cp modules/ftp.lsp /c/newlisp/modules
 	cp modules/gmp.lsp /c/newlisp/modules
 	cp modules/infix.lsp /c/newlisp/modules
-	cp modules/mysql.lsp /c/newlisp/modules
 	cp modules/mysql5.lsp /c/newlisp/modules
+	cp modules/mysql51.lsp /c/newlisp/modules
 	cp modules/odbc.lsp /c/newlisp/modules
 	cp modules/pop3.lsp /c/newlisp/modules
 	cp modules/postscript.lsp /c/newlisp/modules

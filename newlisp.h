@@ -17,11 +17,6 @@
 
 */
 
-/* 
-starting with version 9.1.9 MINGW is the default flavor for WIN_32
-and the MINGW label as been eliminated 
-*/
-
 #ifdef TRU64
 #define strtoll strtol
 #define strtoull strtoul
@@ -111,9 +106,11 @@ This is for 64bit large file support (LFS),
 
 #ifdef SOLARIS
 #define vasprintf my_vasprintf
-#define setenv my_setenv
 #define MY_VASPRINTF
-#define MY_SETENV
+#ifdef SPARC
+#define setenv my_setenv 
+#define MY_SETENV 
+#endif
 #define MY_RAND_MAX 2147483647
 #endif
 
@@ -132,6 +129,7 @@ This is for 64bit large file support (LFS),
 #define off_t off64_t
 #define lseek lseek64
 #define ftell ftello64
+#define getpid GetCurrentProcessId
 
 #ifndef SUPPORT_UTF8 
 #define mkdir  _mkdir
@@ -161,11 +159,11 @@ This is for 64bit large file support (LFS),
 
 #endif /* WIN_32 */
 
-
 #ifndef WIN_32
 #define LINE_FEED "\n"
 #define NET_PING
 #define NANOSLEEP
+#define HAVE_FORK 
 #endif
 
 #ifndef O_BINARY
@@ -243,6 +241,7 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_GLOBAL 0x20
 #define SYMBOL_BUILTIN 0x40
 #define SYMBOL_PRIMITIVE 0x80
+#define SYMBOL_UNSAFE 0x100
 
 /* cell masks */
 #define RAW_TYPE_MASK 0x0FFF
@@ -318,6 +317,7 @@ This is for 64bit large file support (LFS),
 #define TRACE_SIGINT 0x1000
 #define TRACE_TIMER  0x2000
 #define TRACE_SIGNAL 0x4000
+#define TRACE_CILK 0x8000
 
 /* error handling */
 
@@ -380,7 +380,8 @@ This is for 64bit large file support (LFS),
 #define ERR_USER_RESET 57
 #define ERR_SIGINT 58
 #define ERR_NOT_REENTRANT 59
-#define MAX_ERROR_NUMBER 59
+#define ERR_CANNOT_BE_PROTECTED 60
+#define MAX_ERROR_NUMBER 60
 
 /* I/O routines */
 
@@ -397,8 +398,16 @@ This is for 64bit large file support (LFS),
 #define HTTP_POST_URL 4
 #define HTTP_DELETE_URL 5
 
-/* additional regex option */
-#define REPLACE_ONCE 0x8000
+/* sysEvalString() in newlisp.c */
+#define EVAL_STRING 0 /* the classic eval-string: read, xlate, evaluate */
+#define READ_STRING 1 /* read one toplevel expression: read */
+#define READ_XLATE_STRING 2 /* read toplevel expression read, xlate */
+#define READ_XLATE_NO_CALLBACK 3 /* used by p_sync() in nl-filesys.c */
+
+/* used inf setDefine() define in newlisp.c */
+#define SET_SET 1
+#define SET_CONSTANT 2
+#define SET_DEFINE 3
 
 extern int vasprintf (char **, const char *, va_list);
 
@@ -437,7 +446,7 @@ typedef struct
 	{
 	char * name;
 	CELL * (*function)(CELL *);
-	short int prettyPrint;
+	short int flags;
 	} PRIMITIVE;
 
 /* --------------------------- globals -------------------------------- */
@@ -469,7 +478,6 @@ extern SYMBOL * mainContext;
 extern SYMBOL * currentContext;
 extern SYMBOL * errorEvent;
 extern SYMBOL sentinel;
-extern int commandLineFlag;
 extern int traceFlag;
 extern int errorReg;
 extern char * errorMessage[];

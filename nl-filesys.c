@@ -38,6 +38,7 @@
 #endif
 
 int init_argv(char * ptr, char *argv[]);
+char * getUUID(char * str, char * node);
 
 #ifdef OS2
 #include <conio.h>
@@ -74,18 +75,6 @@ See also http://www.mingw.org/MinGWiki/index.php/binary
 */
 unsigned int _CRT_fmode = _O_BINARY;
 
-/* not needed with MinGW gcc 3.4.5
-struct timezone
-	{
-	int tz_minuteswest;
-	int tz_dsttime;
-	};
-*/
-
-/* with MinGW gcc 3.4.5 not needed
-int gettimeofday( struct timeval *tp, struct timezone *tzp );
-*/
-
 int setenv (const char *name, const char *value, int replace);
 #ifdef USE_WIN_UTF16PATH
 INT64 fileSizeW(WCHAR * pathName);
@@ -104,9 +93,24 @@ char * strptime(const char * str, const char * fmt, struct tm * ttm);
 #endif
 
 size_t calcDateValue(int year, int month, int day, int hour, int min, int sec);
-
 extern STREAM readLineStream;
 extern FILE * IOchannel;
+extern int pagesize;
+
+extern char * errorMessage[];
+extern STREAM errorStream;
+
+/* used for shared memory in p_share and p_spaw, p_sync */
+union num_ptr {
+	UINT num;
+	UINT * ptr;
+};
+
+/* semaphore() function type */
+#define SEM_CREATE 0
+#define SEM_STATUS 1
+#define SEM_SIGNAL 2
+
 
 CELL * p_isFile(CELL * params) /* includes dev,socket,dir,file etc. */
 {
@@ -154,8 +158,6 @@ slash = *(fileName + len - 1);
 if(slash == '\\' || slash == '/')
 	*(fileName + len - 1) = 0;
 #endif
-	
-
 
 #ifdef USE_WIN_UTF16PATH
 if(stat_utf16(fileName, &fileInfo) != 0)
@@ -177,7 +179,6 @@ if(S_ISDIR(fileInfo.st_mode))
 	return(1);
 return(0);
 }
-
 
 
 CELL * p_open(CELL * params)
@@ -229,7 +230,7 @@ ssize_t bytesRead = 0;
 int found = 0;
 char * waitFor;
 char chr;
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 CELL * strCell;
 SYMBOL * readSptr;
 
@@ -239,8 +240,6 @@ params = getInteger(params, (UINT *)&size);
 
 if(isProtected(readSptr->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(readSptr)));
-
-memset(&stream, 0, sizeof(stream));
 
 if(params == nilCell)
 	{
@@ -280,10 +279,15 @@ if(bytesRead == 0)
 	return(nilCell);
 	} 
 
+/*
 strCell = getCell(CELL_STRING);
-strCell->aux = bytesRead + 1;
 stream.buffer = reallocMemory(stream.buffer, bytesRead +1);
+strCell->aux = bytesRead + 1;
 strCell->contents = (UINT)stream.buffer;
+*/
+
+stream.buffer = reallocMemory(stream.buffer, bytesRead +1);
+strCell = makeStringCell(stream.buffer, bytesRead);
 
 deleteList((CELL *)readSptr->contents);
 readSptr->contents = (UINT)strCell;
@@ -297,7 +301,6 @@ CELL * p_readFile(CELL * params)
 {
 char * fileName;
 char * buffer = NULL;
-CELL * cell;
 ssize_t size;
 
 params = getString(params, &fileName);
@@ -310,14 +313,10 @@ if(my_strnicmp(fileName, "file://", 7) == 0)
 if((size = readFile(fileName, &buffer)) == -1)
 	return(nilCell);
 
-cell = getCell(CELL_STRING);
-cell->aux = size + 1;
-cell->contents = (UINT)buffer;
-
-return(cell);
+return(makeStringCell(buffer, size));
 }
 
-/* allocate a buffer and reads a file into it */
+/* allocates a buffer and reads a file into it */
 ssize_t readFile(char * fileName, char * * buffer)
 {
 int handle; 
@@ -457,11 +456,23 @@ CELL * p_writeFile(CELL * params)
 return(appendWriteFile(params, "w"));
 }
 
+int writeFile(char * fileName, char * buffer, size_t size, char * type)
+{
+int handle;
+
+if( (handle = openFile(fileName, type, NULL)) == (int)-1)
+	return(-1);
+
+if(write(handle, buffer, size) == (int)-1)
+	return(-1);
+
+close(handle);
+return(0);
+}
 
 CELL * appendWriteFile(CELL * params, char * type)
 {
 char * fileName;
-int handle;
 char * buffer;
 size_t size;
 
@@ -476,13 +487,8 @@ if(my_strnicmp(fileName, "file://", 7) == 0)
 
 getStringSize(params, &buffer, &size, TRUE);
 
-if( (handle = openFile(fileName, type, NULL)) == (int)-1)
+if(writeFile(fileName, buffer, size, type) == (int)-1)
 	return(nilCell);
-
-if(write((int)handle, buffer, size) == -1)
-	return(nilCell);
-
-close(handle);
 
 return(stuffInteger(size));
 }
@@ -716,8 +722,8 @@ do
 
 free(copyBuffer);
 
-close((int)fromHandle);
-close((int)toHandle);
+close(fromHandle);
+close(toHandle);
 
 return(trueCell);
 }
@@ -789,7 +795,6 @@ return(chdir(newDir) == 0 ? trueCell : nilCell);
 CELL * p_directory(CELL * params)
 {
 CELL * dirList;
-CELL * lastEntry;
 char * dirPath;
 char * fileName;
 char * pattern = NULL;
@@ -810,7 +815,6 @@ if(params != nilCell)
 else dirPath = ".";
 
 dirList = getCell(CELL_EXPRESSION);
-lastEntry = NULL;
 
 dir = opendir(dirPath);
 if(dir == NULL) return(nilCell);
@@ -827,16 +831,7 @@ while((dEnt = readdir(dir)) != NULL)
 		if(searchBufferRegex(fileName, 0, pattern, strlen(fileName), options, NULL) == -1)
 			continue;
 		}
-	if(lastEntry == NULL)
-		{
-		lastEntry = stuffString(fileName);
-		dirList->contents = (UINT)lastEntry;
-		}
-	else
-		{
-		lastEntry->next = stuffString(fileName);
-		lastEntry = lastEntry->next;
-		}
+	addList(dirList, stuffString(fileName));
 #ifdef USE_WIN_UTF16PATH
 	free(fileName);
 #endif
@@ -845,6 +840,7 @@ while((dEnt = readdir(dir)) != NULL)
 closedir(dir);
 return(dirList);
 }
+
 
 #define DOT_PATH ".\000"
 
@@ -927,6 +923,7 @@ if(params != nilCell)
 return(list);
 }
 
+
 #ifdef LFS
 INT64 fileSize(char * pathName)
 {
@@ -973,29 +970,16 @@ return(writeProcess(command, data));
 CELL * readProcess(char * command)
 {
 CELL * lineList;
-CELL * lastLine;
 FILE * handle;
 char * line;
-
-lastLine = NULL;
 
 if((handle = popen(command , "r")) == NULL)
 	return(nilCell);
 
 lineList = getCell(CELL_EXPRESSION);
 while((line = readStreamLine(&readLineStream, handle)) != NULL)
-	{
-	if(lastLine == NULL)
-		{
-		lastLine= stuffString(line);
-		lineList->contents = (UINT)lastLine;
-		}
-	else
-		{
-		lastLine->next = stuffString(line);
-		lastLine = lastLine->next;
-		}
-	}
+	addList(lineList, stuffString(line));
+
 pclose(handle);
 
 return(lineList);
@@ -1016,7 +1000,10 @@ pclose(handle);
 return(trueCell);
 }
 
-
+/* parses/splits a string intor substrings separated
+   by spaces, strings containing spaces can be enclosed
+   in either a pair of single or double quotes
+*/
 int init_argv(char * ptr, char *argv[])
 {
 int argc = 0;
@@ -1230,6 +1217,285 @@ if(forkResult == 0)
 return(stuffInteger(forkResult));
 }
 
+/* Cilk like interface for spawning and syncronizing child processes */
+#ifdef HAVE_FORK
+typedef struct 
+	{
+	void * address;
+	int pid;
+	SYMBOL * symbolPtr;
+	void * next;	
+	} SPAWN_LIST;
+
+SPAWN_LIST * mySpawnList = NULL;
+
+void addSpawnedChild(void * addr, int pid, SYMBOL * sPtr)
+{
+SPAWN_LIST * spawnList;
+
+spawnList = (SPAWN_LIST  *)allocMemory(sizeof(SPAWN_LIST));
+
+spawnList->address = addr;
+spawnList->pid = pid;
+spawnList->symbolPtr = sPtr;
+spawnList->next = NULL;
+
+if(mySpawnList == NULL)
+    mySpawnList = spawnList;
+else/* insert in front */
+    {
+    spawnList->next = mySpawnList;
+    mySpawnList = spawnList;
+    }
+}
+
+void purgeSpawnList(void)
+{
+SPAWN_LIST * spawnList;
+
+/* pop and delete entries */
+while(mySpawnList != NULL)
+	{
+	spawnList = mySpawnList->next;
+	free(mySpawnList);
+	mySpawnList = spawnList;
+	}
+}
+
+/* lookup pid get result from shared memory and delete entry */
+
+#define PROCESS_SPAWN_RESULT 0
+#define PROCESS_SPAWN_ABORT 1
+
+void processSpawnList(int pid, int mode)
+{
+SPAWN_LIST * pidSpawn;
+SPAWN_LIST * previousSpawn;
+CELL * cell;
+SYMBOL * sPtr;
+char * buffer = NULL;
+ssize_t size;
+
+pidSpawn = previousSpawn = mySpawnList;
+
+while(pidSpawn)
+    {
+    if(pidSpawn->pid == pid)
+        {
+        if(pidSpawn == mySpawnList)
+            mySpawnList = pidSpawn->next;
+        else
+            previousSpawn->next = pidSpawn->next;
+
+		if(mode == PROCESS_SPAWN_RESULT)
+			{
+			if(*(char *)pidSpawn->address)
+				{
+				/* xlate but don't evaluate shared memory and no callback */
+				cell = sysEvalString((char *)pidSpawn->address + 4, nilCell, 
+							currentContext, READ_XLATE_NO_CALLBACK);
+				}
+			else /* shared address contains filename with result */
+				{
+				if((size = readFile((char *)pidSpawn->address + 4, &buffer)) != -1)
+					cell = sysEvalString(buffer, nilCell, 
+							currentContext, READ_XLATE_NO_CALLBACK);
+				else cell = nilCell;
+				unlink((char *)pidSpawn->address + 4);
+				}
+
+			sPtr = pidSpawn->symbolPtr;
+			deleteList((CELL *)sPtr->contents);
+			sPtr->contents = (UINT)cell;
+			}
+		else /* PROCESS_SPAWN_ABORT */
+			{
+			kill(pidSpawn->pid, 9);
+			waitpid(pidSpawn->pid, (int *)0, 0);
+			}
+
+		munmap(pidSpawn->address, pagesize);
+        free((char *)pidSpawn);
+        break;
+        }
+    previousSpawn = pidSpawn;
+    pidSpawn = pidSpawn->next;
+    }
+}
+
+
+/* spawn (fork) a process and assign result to the symbol given
+     (spawn <quoted-symbol> <epxression>) => pid
+   creates a memory share and passes it to the spaned process
+   when the spawned child finishes, it copies the result
+   to the memory share. If the result does not fit in the pagesize
+   store the result in a file with a unique filename which is
+   stored in the memory share. The first int32 word is -1 for
+   memshare store or 0 for file store.
+   For house keeping purpose SPAWN_LIST is maintained to find
+   the memshare adddress from the child pid.
+*/
+CELL * p_spawn(CELL * params)
+{
+int forkResult;
+void * address;
+SYMBOL * symPtr;
+CELL * cell;
+STREAM strStream;
+int errNo;
+
+/* make signals processable by waitpid() in p_sync() */
+signal(SIGCHLD, SIG_DFL);
+
+if((address = mmap( 0, pagesize, 
+	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
+		return(nilCell);
+
+params = getSymbol(params, &symPtr);
+if(isProtected(symPtr->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symPtr)));
+
+if((forkResult = fork()) == -1)
+	{
+	munmap(address, pagesize);
+    return(nilCell);
+	}
+
+if(forkResult == 0)
+    {
+	purgeSpawnList(); /* purge inherited spawnlist */
+	cell = evaluateExpressionSafe(params, &errNo);
+	if(cell == NULL)
+		cell = stuffString(errorStream.buffer);
+	openStrStream(&strStream, MAX_STRING, 0);
+	prettyPrintFlags |= PRETTYPRINT_STRING;
+ 	printCell(cell , TRUE, (UINT)&strStream);
+	if(strStream.position < pagesize + 4)
+		{
+		memset(address, 0xf, 4);
+		memcpy((char *)address + 4, strStream.buffer, strStream.position);
+		}
+	else
+		{
+		memset(address, 0, 64);
+		strncpy((char *)address + 4, "/tmp/nls-", 10);
+		getUUID((char *)address + 9, 0);
+		writeFile((char *)address + 4, strStream.buffer, strStream.position, "w");
+		}
+    exit(0);
+    }
+
+addSpawnedChild(address, forkResult, symPtr);
+
+return(stuffInteger(forkResult));
+}
+
+/* wait for spawned processes to finish for the timeout specified:
+     (sync <timeout-milli-seconds>) => true
+   if no timeout is not specified only return a list of pending
+   child pids:
+     (sync) => list of pids
+   For each finished child get the result and assign it to the 
+   symbol looked up in SPAWN_LIST.
+*/
+CELL * p_sync(CELL * params)
+{
+int result;
+int pid;
+UINT timeout = 0;
+struct timeval tv, tp;
+SPAWN_LIST * spawnList;
+CELL * resultList = getCell(CELL_EXPRESSION);
+int inletFlag = 0;
+int resultIdxSave;
+CELL * cell;
+
+if(mySpawnList == NULL)
+	return(resultList); /* nothing pending */
+
+if(params == nilCell)
+	{
+	spawnList = mySpawnList;
+	while(spawnList != NULL)
+		{
+		addList(resultList, stuffInteger(spawnList->pid));
+		spawnList = spawnList->next;
+		}
+	return(resultList);
+	}
+
+deleteList(resultList);
+
+
+params = getInteger(params, &timeout);
+if(params == nilCell || isNil((CELL *)((SYMBOL *)params->contents)->contents))
+	signal(SIGCHLD, SIG_DFL);
+else
+	inletFlag = TRUE;
+	
+gettimeofday(&tv, NULL);
+
+while(mySpawnList != NULL)
+	{
+	gettimeofday(&tp, NULL);
+	if(timediff(tp, tv) > timeout) return(nilCell);
+	pid = waitpid(-1, &result, WNOHANG);
+	if(pid) 
+		{
+		processSpawnList(pid, PROCESS_SPAWN_RESULT);
+		if(inletFlag)
+			{
+			resultIdxSave = resultStackIdx;
+			pushResult(cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(params)));
+			((CELL *)cell->contents)->next = stuffInteger((UINT)pid);
+			evaluateExpression(cell);
+			cleanupResults(resultIdxSave);
+			}
+		}
+	}
+
+/* put initial behaviour back */
+#ifdef SOLARIS
+setupSignalHandler(SIGCHLD, sigchld_handler);
+#else
+setupSignalHandler(SIGCHLD, signal_handler);
+#endif
+
+return(trueCell);
+}
+
+/* if abort a specific pid if specified:
+     (abort <pid>)
+   or abort all:
+     (abort)
+*/
+CELL * p_abort(CELL * params)
+{
+UINT pid;
+ 
+if(params != nilCell)
+	{
+	getInteger(params, &pid);
+	processSpawnList(pid, PROCESS_SPAWN_ABORT);
+	}
+else /* abort all */
+	{
+	while(mySpawnList != NULL) 
+		processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT);
+	/* put initial behaviour back */
+#ifdef SOLARIS
+	setupSignalHandler(SIGCHLD, sigchld_handler);
+#else
+	setupSignalHandler(SIGCHLD, signal_handler);
+#endif
+	}
+
+return(trueCell);
+}
+
+#endif /* HAVE_FORK */
+
+
 CELL * p_destroyProcess(CELL * params)
 {
 UINT pid;
@@ -1247,20 +1513,31 @@ if(kill(pid, sig) != 0)
 return(trueCell);
 }
 
+extern SYMBOL * symHandler[];
+
 CELL * p_waitpid(CELL * params)
 {
 UINT pid, options;
-int result;
+int result, retval;
+
+symHandler[SIGCHLD - 1] = nilSymbol;
+signal(SIGCHLD, SIG_DFL);
 
 params = getInteger(params, (UINT *)&pid);
 if(params != nilCell)
-	getInteger(params, (UINT *)&options);
+	{
+	params = evaluateExpression(params);
+	if(isNil(params))
+		options = WNOHANG;
+	else
+		getIntegerExt(params, (UINT *)&options, FALSE);
+	}
 else
 	options = 0;
 
-waitpid((int)pid, &result, (int)options);
+retval = waitpid((int)pid, &result , (int)options);
 
-return(stuffInteger(result));
+return(stuffIntegerList(2, (UINT)retval, (UINT)result));
 }
 
 #endif
@@ -1320,34 +1597,56 @@ return(stuffInteger(sem_id));
 #endif
 
 #ifndef WIN_32
-/* only available on Linux/UNIX */
-
+/* Mac OS X, Linux/UNIX */
 
 CELL * p_semaphore(CELL * params)
 {
-UINT sem_id, value = 0;
+long sem, value, result;
+
+if(params == nilCell)
+	{
+	result = semaphore(0, 0, SEM_CREATE);
+	goto SEMAPHORE_END;
+	}
+
+params = getInteger(params, (UINT *)&sem);
+if(params == nilCell)
+	return(stuffInteger((UINT)semaphore(sem, 0, SEM_STATUS)));
+
+getInteger(params, (UINT *)&value);
+	{
+	result = semaphore(sem, value, SEM_SIGNAL);
+	if(result != -1) return(trueCell);
+	}
+
+SEMAPHORE_END:
+if(result == -1) return(nilCell);
+return(stuffInteger((UINT)result));
+}
+
+int semaphore(UINT sem_id, int value, int type)
+{
 struct sembuf sem_b;
-#ifdef SOLARIS
+#ifdef SPARC
 #ifndef NEWLISP64
 int semun_val = 0;
 #endif
 #endif
+
 #ifdef MAC_OSX
 union semun semu;
 
 semu.val = 0;
 #endif
 
-if(params != nilCell)
+if(type != SEM_CREATE)
 	{
-	params = getInteger(params, (UINT*)&sem_id);
-	if(params != nilCell)
+	if(type == SEM_SIGNAL)
 		{
-		getInteger(params,(UINT*)&value);
 		if(value == 0)
 			{
 			/* remove semaphore */
-#ifdef SOLARIS
+#ifdef SPARC
 
 #ifdef TRU64
                         if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
@@ -1357,7 +1656,7 @@ if(params != nilCell)
 #else
                         if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
 #endif
-#endif /* SOLARIS */
+#endif /* SPARC */
 
 #else
 
@@ -1367,8 +1666,8 @@ if(params != nilCell)
                         if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
 #endif
 #endif
-                                return(nilCell);
-			return(trueCell);
+                                return(-1);
+			return(0);
 			}
 
 		/* wait or signal */
@@ -1376,22 +1675,22 @@ if(params != nilCell)
 		sem_b.sem_op = value;
 		sem_b.sem_flg = 0; 
 		if(semop(sem_id, &sem_b, 1) == -1)
-			return(nilCell);
-		return(trueCell);
+			return(-1);
+		return(0);
 		}
 
 	else
 		/* return semaphore value */
 #ifdef MAC_OSX
-                return(stuffInteger(semctl(sem_id, 0, GETVAL, semu)));
+                return(semctl(sem_id, 0, GETVAL, semu));
 #else
-                return(stuffInteger(semctl(sem_id, 0, GETVAL)));
+                return(semctl(sem_id, 0, GETVAL));
 #endif
 	}
 
 /* create semaphore */
 sem_id = semget(IPC_PRIVATE, 1, 0666 );
-#ifdef SOLARIS
+#ifdef SPARC
 
 #ifdef TRU64
 if(semctl(sem_id, 0, SETVAL, 0) == -1)
@@ -1412,21 +1711,16 @@ if(semctl(sem_id, 0, SETVAL, 0) == -1)
 #endif
 
 #endif
-	return(nilCell);
-return(stuffInteger(sem_id));
+	return(-1);
+return(sem_id);
 }
 
-#endif  /* not WIN_32 */
-
-
-union num_ptr {
-	UINT num;
-	UINT * ptr;
-};
+#endif  /* Mac OS X, Linux, UNIX */
 
 #ifdef WIN_32
 UINT winSharedMemory(int size);
 UINT * winMapView(UINT handle, int size);
+UINT handle;
 #endif
 
 #ifndef OS2
@@ -1436,14 +1730,6 @@ union num_ptr address;
 CELL * cell;
 size_t size;
 char * str;
-static int pagesize = 0;
-
-#ifndef WIN_32
-if(!pagesize) pagesize = getpagesize();
-#else
-UINT handle;
-pagesize = 4096;
-#endif
 
 if(params != nilCell)
 	{
@@ -1590,9 +1876,8 @@ if(params != nilCell)
 	if(*address.ptr == CELL_STRING)
 		{
 return_new_string_cell:
-		cell = getCell(CELL_STRING);
-		cell->aux = *(address.ptr + 1) + 1;
-		cell->contents = (UINT)allocMemory(cell->aux);
+		cell = makeStringCell(allocMemory(cell->aux), *(address.ptr + 1));
+
 		memcpy((char *)cell->contents, (char*)(address.num + 2 * sizeof(long)), cell->aux);
 #ifdef WIN_32
 		UnmapViewOfFile(address.ptr);
@@ -1630,13 +1915,14 @@ CELL * p_systemInfo(CELL * params)
 CELL * cell;
 
 cell = stuffIntegerList(
-	8,
+	9,
 	cellCount,
 	MAX_CELL_COUNT,
 	symbolCount,
 	(UINT)recursionCount,
 	(UINT)envStackIdx,
 	(UINT)MAX_CPU_STACK,
+	(UINT)getpid(),
 	(UINT)version,
 	(UINT)opsys);
 
@@ -1767,6 +2053,9 @@ int timediff(struct timeval out, struct timeval in )
 return(out.tv_sec*1000 + (out.tv_usec/1000));
 }
 
+
+/* returns a differerence of 2 timeval structs in microseconds
+*/
 UINT64 timediff64(struct timeval out, struct timeval in )
 {
 	if( (out.tv_usec -= in.tv_usec) < 0 )   {
@@ -1832,6 +2121,7 @@ CELL * p_timeOfDay(CELL * params)
 {
 return(stuffInteger(milliSecTime()));
 }
+
 
 CELL * p_now(CELL * params)
 {
@@ -1912,12 +2202,16 @@ if(params != nilCell)
         {
         params = getInteger(params, (UINT *)&hour);
         params = getInteger(params, (UINT *)&min);
-        getInteger(params, (UINT *)&sec);
+		getInteger(params, (UINT *)&sec);
         }
 
 dateValue = calcDateValue(year, month, day, hour, min, sec);
 
+#ifndef NEWLISP64
+return(stuffInteger64((INT64)dateValue));
+#else
 return(stuffInteger((UINT)dateValue));
+#endif
 }
 
 
@@ -1955,7 +2249,6 @@ nanosleep(&tm, 0);
 #else
 
 #ifdef WIN_32
-/* _sleep() is deprecated in MinGW gcc 3.4.5 */
 Sleep(ms);
 #else
 sleep((ms + 500)/1000);
@@ -2064,10 +2357,7 @@ return(envList);
 /* thanks to Peter van Eerten for contributing this function */
 CELL * p_readKey(CELL * params)
 {
-#ifdef WIN_32
-return(stuffInteger(getch()));
-#else          
-#ifdef OS2
+#if defined  (WIN_32) || (OS2)
 return(stuffInteger(getch()));
 #else
 
@@ -2096,7 +2386,6 @@ while((c = (char)getchar()) == (char)-1);
 tcsetattr(0, TCSANOW, &oterm);
 
 return(stuffInteger(c));
-#endif
 #endif
 } 
 
@@ -2179,8 +2468,9 @@ char last_node[6];
 
 #define OCT151582 0x01B21DD213814000LL
 
-int getUUID(UUID * uuid, char * node) 
+char * getUUID(char * str, char * node) 
 {
+UUID uuid;
 struct timeval tp;
 INT64 timestamp;
 UINT16 nodeID[3];
@@ -2217,45 +2507,50 @@ if(node == NULL)
 	nodeID[1] = random();
 	nodeID[2] = random();
 	uuid_version = 4;
-	memcpy(uuid->node, (void *)nodeID, 6);
+	memcpy(uuid.node, (void *)nodeID, 6);
 	}
 else
 	{
 	uuid_version = 1;
 	/* least sign bit of first byte must be 0 on MACs
        and 1 on artifical generated node IDs */
-	memcpy(uuid->node, node, 6);
+	memcpy(uuid.node, node, 6);
 	}
 
 if(uuid_version == 4) 
 	{
 	clock_seq = random();
-	uuid->time_low = random();
+	uuid.time_low = random();
 #ifdef WIN_32
-	uuid->time_low |= (random() << 16);
+	uuid.time_low |= (random() << 16);
 #endif
-	uuid->time_mid = random();
-	uuid->time_hi_and_version = random();
+	uuid.time_mid = random();
+	uuid.time_hi_and_version = random();
 	}
 else
 	{
-	uuid->time_low = (unsigned long)(timestamp & 0xFFFFFFFF);
-	uuid->time_mid = (unsigned short)((timestamp >> 32) & 0xFFFF);
-	uuid->time_hi_and_version = (unsigned short)(timestamp >> 48) ;
+	uuid.time_low = (unsigned long)(timestamp & 0xFFFFFFFF);
+	uuid.time_mid = (unsigned short)((timestamp >> 32) & 0xFFFF);
+	uuid.time_hi_and_version = (unsigned short)(timestamp >> 48) ;
 	}
 
-uuid->time_hi_and_version &= 0x0FFF;
-uuid->time_hi_and_version |= (uuid_version << 12);
-uuid->clock_seq_low = clock_seq & 0xFF;
-uuid->clock_seq_hi_and_reserved = (clock_seq & 0x3F00) >> 8;
-uuid->clock_seq_hi_and_reserved |= 0x80;
+uuid.time_hi_and_version &= 0x0FFF;
+uuid.time_hi_and_version |= (uuid_version << 12);
+uuid.clock_seq_low = clock_seq & 0xFF;
+uuid.clock_seq_hi_and_reserved = (clock_seq & 0x3F00) >> 8;
+uuid.clock_seq_hi_and_reserved |= 0x80;
 
-return(1);
+snprintf(str, 37, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", 
+	uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
+	uuid.clock_seq_hi_and_reserved, uuid.clock_seq_low,
+	uuid.node[0], uuid.node[1], uuid.node[2], 
+	uuid.node[3], uuid.node[4], uuid.node[5]);
+
+return(str);
 }
 
 CELL * p_uuid(CELL * params)
 {
-UUID uuid;
 char * nodeMAC = NULL;
 size_t size;
 char str[38];
@@ -2266,16 +2561,9 @@ if(params != nilCell)
 	if(size < 6) nodeMAC = NULL;
 	}
 	
-getUUID(&uuid, nodeMAC);
-
-snprintf(str, 37, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", 
-	uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
-	uuid.clock_seq_hi_and_reserved, uuid.clock_seq_low,
-	uuid.node[0], uuid.node[1], uuid.node[2], 
-	uuid.node[3], uuid.node[4], uuid.node[5]);
-
-return(stuffString(str));
+return(stuffString(getUUID(str, nodeMAC)));
 }
+
 
 /* eof */
 
