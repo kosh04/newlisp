@@ -537,7 +537,6 @@ true
 
 (define (test-cons )
   (= (myappend '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
-  (= (cons 'c '(a b) -1) '(a b c))
 )
 
 (define (test-constant )
@@ -3229,6 +3228,7 @@ true
 	(= (Foo (append "b" "ar")) 123)
 	(= (Foo '(("var" 123) ("bar" 456) ("baz" 789))) 'Foo)
 	(= (Foo) '(("bar" 456) ("baz" 789) ("var" 123)))
+	(= (Foo "var" (* 2 (Foo "var"))) 246)
 	)) (QA:failed ">>>>> problem with hash functions for namespaces") true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

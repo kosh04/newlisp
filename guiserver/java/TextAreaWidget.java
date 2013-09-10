@@ -356,7 +356,12 @@ private class CommandAction extends AbstractAction {
 				stdOut.write(10);
 				stdOut.flush();
 				if(command.length() > 0)
-					history.insertElementAt(new String(text), 0);
+					{
+					int pos = text.lastIndexOf("\n");
+					if(pos == -1) pos = 0;
+					else pos += 1;
+					history.insertElementAt(new String(text.substring(pos)), 0);
+					}
 				historyIndex = 0;
 				}
 			catch (IOException ioex) { 

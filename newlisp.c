@@ -90,26 +90,26 @@ int opsys = 7;
 char ostype[]="OS/2"; 
 #endif 
 
-int version = 9401;
+int version = 9403;
 
 char copyright[]=
-"\nnewLISP v.9.4.1 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.9.4.3 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.1 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.3 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.1 on %s IPv%d%s\n\n";
+"newLISP v.9.4.3 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.1 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.3 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.1 64-bit on %s IPv%d%s\n\n";
+"newLISP v.9.4.3 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -738,7 +738,7 @@ void printHelpText(void)
 {
 varPrintf(OUT_CONSOLE, copyright, 
 		"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
-varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
+varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
 	" -h this help",
 	" -s <stacksize>",
 	" -m <max-mem-megabyte>",
@@ -751,7 +751,6 @@ varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s
 	" -C force prompts",
 	" -http HTTP only",
 	" -w <working-directory>",
-	" -x secure mode",
 	"more information at http://newlisp.org");
 }
 
@@ -1296,6 +1295,7 @@ CELL * evaluateNamespaceHash(CELL * args, SYMBOL * newContext)
 {	
 SYMBOL * sPtr;
 CELL * pCell;
+CELL * new;
 
 pCell = evaluateExpression(args);
 
@@ -1304,9 +1304,9 @@ if(pCell->type == CELL_STRING)
 	if(args->next != nilCell)
 		{
 		sPtr = makeSafeSymbol(pCell, newContext, TRUE);
+		new = copyCell(evaluateExpression(args->next));
 		deleteList((CELL *)sPtr->contents);
-		sPtr->contents = (UINT)nilCell;
-		sPtr->contents = (UINT)copyCell(evaluateExpression(args->next));
+		sPtr->contents = (UINT)new;
 		pushResultFlag = FALSE;
 		if(isNil((CELL *)sPtr->contents))
 			{
@@ -4799,20 +4799,8 @@ if(params != nilCell)
     
 	if(isList(tail->type))
 		{
-		if(params->next != nilCell)	
-			{
-			if(((CELL*)params->next)->contents == -1)
-				{
-				cons->contents = (UINT)copyList((CELL *)tail->contents);
-				tail = (CELL*)cons->contents;
-				while(tail->next != nilCell)
-					tail = tail->next;
-				tail->next = head;
-				return(cons);
-				}
-			}	
-			head->next = copyList((CELL *)tail->contents);
-			cons->type = tail->type;	
+		head->next = copyList((CELL *)tail->contents);
+		cons->type = tail->type;	
 		}
 	else
 		head->next = copyCell(tail);

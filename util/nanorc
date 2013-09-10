@@ -3,7 +3,7 @@
 ## this file works on nano versions 2.0.1 and later 
 ## tested on 2.0.1 Mac OS X and 2.0.7 Linux, FreeBSD
 ## L.M. June 2008 
-## version 1.03
+## version 1.04
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -116,6 +116,6 @@ color blue "^(set|unset|color|syntax)| (start|end)"
 color magenta " (bright)?(red|green|blue|cyan|magenta|yellow|black|white)"
 color green " (autoindent|casesensitive|morespace|suspend|noconvert|nohelp|nonewlines)"
 color green " (quickblank|smooth|tabsize|tabstospaces|const|nowrap|include)"
-color yellow " *[0-9]+"
+color yellow "[[:space:]]+[0-9]+"
 color black "^#.*"
 

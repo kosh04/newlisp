@@ -2,7 +2,7 @@
 ;; pinballs-demo.lsp - demos animations and gs:check-event function
 
 ;; GS 1.05+
-;; v0.1
+;; v0.2 (replaced deprecated replace-assoc with set-assoc)
 ;;
 ;; PinBalls, Cormullion wanted collision, Cormullion got collision ;-)
 ;;
@@ -107,7 +107,7 @@
 		(update-circle (L 5) tx ty)		
 
 		;; update the "per" CIRCLE data	
-		(replace-assoc (L 0) CIRCLE (list (L 0) (inc 'tx X) (inc 'ty Y) X Y (L 5)))
+		(set-assoc (CIRCLE (L 0)) (list (L 0) (inc 'tx X) (inc 'ty Y) X Y (L 5)))
 		(gs:update)
 	)
 )

@@ -18,8 +18,8 @@ CC = cc -L/usr/lib
 default: $(OBJS)
 	$(CC) $(OBJS) -arch i386 -arch ppc -g -lm -lreadline -o newlisp-universal
 	strip newlisp-universal
-	lipo newlisp-universal -output newlisp-intel -thin i386
-	lipo newlisp-universal -output newlisp-ppc -thin ppc
+#	lipo newlisp-universal -output newlisp-intel -thin i386
+#	lipo newlisp-universal -output newlisp-ppc -thin ppc
 
 .c.o:
 	$(CC) $(CFLAGS) $<

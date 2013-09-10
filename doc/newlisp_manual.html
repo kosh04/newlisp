@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.9.4.1 Manual and Reference</title>
+   <title>newLISP v.9.4.3 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -130,7 +130,7 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.9.4.1</h2>
+<h2>Users Manual and Reference v.9.4.3</h2>
 </center>
 
 <br><br><br><br>
@@ -3126,16 +3126,18 @@ normally not allowed in newLISP symbol names:</p>
 (define Foo:Foo)
 
 (Foo "John Doe" 123)         <span class=arw>&rarr;</span> 123
-(Foo "@#$%^" "hello world")  <span class=arw>&rarr;</span> "hello world"
+(Foo "#1234" "hello world")  <span class=arw>&rarr;</span> "hello world"
+(Foo "var" '(a b c d))       <span class=arw>&rarr;</span> (a b c d)
 
 (Foo "John Doe")  <span class=arw>&rarr;</span> 123
-(Foo "@#$%^")     <span class=arw>&rarr;</span> "hello world"
+(Foo "#1234")     <span class=arw>&rarr;</span> "hello world"
+(Foo "var")     <span class=arw>&rarr;</span> (a b c d)
 </pre></blockquote>		
 
 <p>An entry which doesn't exist will return <tt>nil</tt>:</p>
 
 <blockquote><pre>
-(Foo "bar" )     <span class=arw>&rarr;</span> nil
+(Foo "bar")    <span class=arw>&rarr;</span> nil
 </pre></blockquote>		
 
 <p>Setting an entry to <tt>nil</tt> will effectively delete it from
@@ -3143,13 +3145,13 @@ the namespace.</p>
 
 <p>The contents of the namespace can be shown as an association list:</p>
 <blockquote><pre>
-(Foo)     <span class=arw>&rarr;</span> (("@#$%^" "hello world") ("John Doe" 123))
+(Foo) <span class=arw>&rarr;</span> (("#1234" "hello world") ("John Doe" 123) ("var" (a b c d)))
 </pre></blockquote>		
 
 <p>Entries in the dictionary can also be created from a list:</p>
 
 <blockquote><pre>
-(Foo  '(("@#$%^" "hello world") ("John Doe" 123))) <span class=arw>&rarr;</span> Foo
+(Foo '(("#1234" "hello world") ("John Doe" 123) ("var" (a b c d))) <span class=arw>&rarr;</span> Foo
 </pre></blockquote>		
 
 <p>The list can also be used to iterate through the sorted key -&gt; value pairs:</p>
@@ -3157,9 +3159,26 @@ the namespace.</p>
 <blockquote><pre>
 (dolist (item (Foo)) (println (item 0) " -&gt " (item 1)))
 
-<b>@#$%^ -&gt; hello world
-John Doe -&gt; 123</b>
-</pre></blockquote>		
+<b>#1234 -&gt; hello world
+John Doe -&gt; 123
+var -&gt; (a b c d)</b>
+</pre></blockquote>
+
+<p>Hash expressions return a reference to their content which can be modified
+directly:</p>
+
+<blockquote><pre>
+(pop (Foo "var")) <span class=arw>&rarr;</span> a
+
+(Foo "var") <span class=arw>&rarr;</span> (b c d)
+
+(push 'z (Foo "var")) <span class=arw>&rarr;</span> z
+
+(Foo "var") <span class=arw>&rarr;</span> (z b c d)
+</pre></blockquote>
+
+<p>Only with hash expressions this is possible. Other functions in newLISP always
+return a copy of their content.</p>
 
 <p>Dictionaries can easily be saved to a file and reloaded later:</p>
 
@@ -3177,9 +3196,6 @@ underscore character.  This protects against overwriting the default symbol and
 symbols like <tt>set</tt> and <tt>sym</tt>, which are needed when loading
 a hash namespace from disk or over <tt>HTTP</tt>.</p>
 
-<p>A hash dictionary entry should never be referenced directly by its symbol
-in program code, but only in the form shown above with namespace name and key string.
-This allows for fast deletion of a dictionary entry without reference checking.</p>
 
 <p>For a more detailed introduction to <em>namespaces</em>, see the chapter on
 <a href="#contexts">Contexts</a>.
@@ -18920,7 +18936,7 @@ and <a HREF="#pv">pv</a> functions.
 
 <a NAME="nth"></a>
 <h2><span class="function">nth</span></h2>
-<b>syntax: (nth int-index <em>list</em>)</b><br><br>
+<b>syntax: (nth int-index <em>list</em>|<em>str</em>)</b><br><br>
 <b>syntax: (nth (<em>list</em> <em>int-index-1</em> [<em>int-index-2</em> ... ]))</b><br><br>
 <b>syntax: (nth (<em>array</em> <em>int-index-1</em> [<em>int-index-2</em> ... ]))</b><br><br>
 <b>syntax: (nth (<em>str</em> <em>int-offset</em>))</b>
@@ -21364,6 +21380,7 @@ in a CGI program or pipe, it will return <tt>nil</tt> when input is exhausted.</
 
 <a NAME="ref"></a>
 <h2><span class="function">ref</span></h2>
+<b>syntax: (ref <em>exp-key</em> <em>list</em> [<em>func-compare</em>])</b><br>
 <b>syntax: (ref (<em>list</em> <em>exp-key</em>) [<em>func-compare</em>])</b>
 
 <p>
@@ -21377,7 +21394,7 @@ or function. In this case the system variable <tt>$0</tt> contains
 the last expression found.</p>
 
 <p>The first flat syntax should only be used if <em>exp-key</em> is not a
-parenthesized unquoted expression.</p>
+parenthesized unquoted expression to avoid ambiguity.</p>
 
 <b>example:</b>
 <blockquote>
@@ -23411,9 +23428,9 @@ x = <tt>0</tt> : sgn(x) = <tt>0</tt><br>
 <blockquote>
 <pre>
 (sgn x -1 0 1)         ; works like (sgn x)
-(sgn x -1 1 1)         ; return -1 for negative x all others 1
-(sgn x nil true true)  ; return nil for negative else true
-(sgn x (abs x) 0)      ; return (abs x) for negative x, 0 for x = 0, else nil
+(sgn x -1 1 1)         ; -1 for negative x all others 1
+(sgn x nil true true)  ; nil for negative else true
+(sgn x (abs x) 0)      ; (abs x) for x &lt; 0, 0 for x = 0, else nil
 </pre>
 </blockquote>
 

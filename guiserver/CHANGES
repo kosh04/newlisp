@@ -853,3 +853,9 @@
   notes in gs:play-note and gs:add-track now can have an optional last parameter
   for a note specific pitch-pend
  
+1.22
+  when history line in cursor-up keystroke in minitor area contains more than
+  one line only the last line will enter history
+  
+  gs:set-canvas did not change current canvas for guiserver.lsp
+  

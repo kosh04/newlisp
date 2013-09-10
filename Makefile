@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 9.4.1
-INT_VERSION = 9401
+VERSION = 9.4.3
+INT_VERSION = 9403
 GUISERVER = /usr/share/newlisp/guiserver
 
 default:
@@ -41,10 +41,11 @@ help:
 	@echo "  make linux           # newlisp for LINUX (tested Debian & Fedora)"
 	@echo "  make linux_utf8      # newlisp for LINUX UTF-8"
 	@echo "  make linux_readline  # newlisp for LINUX with readline support"
-	@echo "  make linux_debian    # newlisp for LINUX with readline support for debian"
 	@echo "  make linux_utf8_readline  # newlisp for LINUX UTF-8 with readline support"
 	@echo "  make linux_lib       # newlisp.so as shared library for LINUX"
 	@echo "  make linux_lib_utf8  # newlisp.so as shared library for LINUX with UTF-8"
+	@echi "  make debian          # newlisp for UBUNTU debian with readline support"
+	@echi "  make debian_utf8     # newlisp for UBUNTU debian UTF-8 with readline support"
 	@echo "  make linux64ILP32    # newlisp for LINUX 64 with 32-bit pointers / AMD64"
 	@echo "  make linux64LP64     # newlisp for LINUX 64 with 64-bit pointers / AMD64"
 	@echo "  make tru64           # newlisp for HP tru64 with 32 bit pointers - read doc/TRU64BUILD"
@@ -95,10 +96,10 @@ linux_debian:
 debian:
 	make -f makefile_debian
 
-linux_utf8_readline:
-	make -f makefile_linux_utf8_readline
-
 debian_utf8:
+	make -f makefile_debian_utf8
+
+linux_utf8_readline:
 	make -f makefile_linux_utf8_readline
 
 linux_lib:
@@ -186,10 +187,53 @@ winall_utf8:
 
 wings:
 	make -f makefile_wings
+	
+
+# scripts for making UBUNTU debian packages
+
+dpkg:
+	make clean
+	make -f makefile_debian
+	cp util/description-pak .
+	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease 1 --default
+	rm description-pak
+	mv *.deb ../Desktop
+
+dpkg_utf8:
+	make clean
+	make -f makefile_debian_utf8
+	cp util/description-pak .
+	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease utf8 --default
+	rm description-pak
+	mv *.deb ../Desktop
+
+# scripts for making Mac OS X disk image installers
+
+dmg_ppc:
+	lipo newlisp-universal -output newlisp -thin ppc
+	sudo rm -rf ../Package_contents
+	make -f makefile_osx_package
+	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
+		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
+		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
+	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
+	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
+		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
+
+dmg_intel:
+	lipo newlisp-universal -output newlisp -thin i386
+	sudo rm -rf ../Package_contents
+	make -f makefile_osx_package
+	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
+		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
+		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
+	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
+	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
+		~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
 
 # this cleans up the distribution directory for a clean build
 clean:
-	-rm *~ *.bak *.o *.obj *.map core *.tgz guiserver/java/._* TEST
+	-rm *~ *.bak *.o *.obj *.map core *.tgz guiserver/java/._* TEST newlisp-universal
 	-rm guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
 	-rm  doc/*.bak util/*.bak examples/*.bak modules/*.bak
 	-chmod 644 *.h *.c *.lsp Makefile makefile*
@@ -401,9 +445,6 @@ dist:
 	tar czvf newlisp-$(VERSION).tgz newlisp-$(VERSION)/*
 	rm -rf newlisp-$(VERSION)
 	mv newlisp-$(VERSION).tgz ..
-
-osx_package:	
-	make -f makefile_osx_package
 
 # this changes to the current version number in several files
 #

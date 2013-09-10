@@ -1,6 +1,6 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.21
+;; @version 1.22
 ;; @author LM, June 2008
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -2732,6 +2732,7 @@ true
 ;; used, the current canvas is assumed to be the last one created.
 
 (define (gs:set-canvas id)
+	(set 'gs:currentCanvas id)
 	(net-send out (string "set-canvas " id "\n"))
 )
 

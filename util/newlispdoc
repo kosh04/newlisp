@@ -22,6 +22,8 @@
 ;; @version 1.3 - handle remote files specified in URLs in a url-file
 ;; @version 1.4 - title on page changed to index or module name and new index module option
 ;; @version 1.5 - removed font restrictions on h1,h2,h3,h4 and added hr as a legal tag
+;; @version 1.6 - don't allow 3 semicolons at the beginning of a comment line
+;; @version 1.7 - 1.6 did not sense lines with &#59;&#59; only as parapgraph separators
 ;; @author Lutz Mueller, 2006-2008
 ;; @location http://newlisp.org
 ;;
@@ -64,7 +66,6 @@
 ;; about tagging of newLISP source code for newlispdoc.
 ;;
 
-(set 'version "1.5")
 
 ; get list of files from command line
 (set 'files (2 (main-args)))
@@ -417,7 +418,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 
 	(set 'page (parse (replace "\r\n" original "\n") "\n"))
 
-	(set 'page (filter (fn (ln) (or (starts-with ln ";;") (= (length (trim ln)) 0))) page))
+	(set 'page (filter (fn (ln) (or (starts-with ln ";;(?!;)" 0) (= (length (trim ln)) 0))) page))
 	(set 'page (join page "\n"))
 
 	; link to another index page

@@ -95,8 +95,6 @@ osx-package:
 	# get OS X applications package
 	sudo cp -R /Applications/newLISP-GS.app/ $(appdir)/newLISP-GS.app
 
-	# make the package and image
-	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
-		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o ~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
+		
 # eof
 

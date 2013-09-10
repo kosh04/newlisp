@@ -1,4 +1,4 @@
-6.0.25
+G6.0.25
 'find', 'replace' and 'search' now have an option for case insensitive
 search, updated source and manual
 
@@ -4531,4 +4531,17 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
   0 bytes lost memory! 
   
   In parse-date the default day offset has been changed to more sensible 1 (was 0).
+  
+9.4.2
+  fixed a bug in the hash functionality when doing self-referential expressions:
+  (define foo:foo) (foo "x" 0) (foo "x" (+ 1 (foo "x"))) ; now works
+
+  don't allow 3rd semicolon in newlispdoc documentation line (for Emacs)
+  
+  fixes in guiserver
+  
+9.4.3
+  cleanup -h help message
+  
+  don't let newlispdoc accept ;;;
   
