@@ -1199,6 +1199,8 @@ if(forkResult == 0)
 	exit(0);
     }
 
+freeMemory(cmd);
+
 return(stuffInteger(forkResult));
 }
 
@@ -1341,7 +1343,7 @@ int forkResult;
 void * address;
 SYMBOL * symPtr;
 CELL * cell;
-STREAM strStream;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 int errNo;
 
 /* make signals processable by waitpid() in p_sync() */
@@ -1684,7 +1686,7 @@ if(type != SEM_CREATE)
 #ifdef MAC_OSX
                 return(semctl(sem_id, 0, GETVAL, semu));
 #else
-                return(semctl(sem_id, 0, GETVAL));
+                return(semctl(sem_id, 0, GETVAL, 0));
 #endif
 	}
 
@@ -2079,6 +2081,7 @@ params = getString(params, &dateStr);
 params = getString(params, &formatStr);
 
 memset (&ttm, 0, sizeof (ttm));
+ttm.tm_mday = 1;
 
 if(strptime(dateStr, formatStr, &ttm) == NULL)
 	return(nilCell);

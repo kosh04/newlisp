@@ -598,7 +598,7 @@ char * format;
 char * fmt;
 char * nextfmt;
 CELL * cell;
-STREAM fmtStream;
+STREAM fmtStream = {0, NULL, NULL, 0, 0};
 int fType;
 double floatNum;
 UINT intNum;
@@ -787,13 +787,12 @@ stream->position = newPosition;
 
 char * readStreamText(STREAM * stream, char * limit, int * size)
 {
-STREAM outStream;
+STREAM outStream = {0, NULL, NULL, 0, 0};
 ssize_t findPos = -1;
 size_t searchLen;
 size_t llen = strlen(limit);
 char * result;
 
-memset(&outStream, 0, sizeof(STREAM));
 openStrStream(&outStream, MAX_STRING, 0);
 while(findPos == -1)
     {
@@ -1158,7 +1157,7 @@ return(stuffSymbol(sPtr));
 
 CELL * p_symbolSource(CELL * params)
 {
-STREAM strStream;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 CELL * cell;
 
 openStrStream(&strStream, MAX_STRING, 0);
@@ -1172,7 +1171,7 @@ return(cell);
 CELL * p_string(CELL * params)
 {
 CELL * cell;
-STREAM strStream;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 
 openStrStream(&strStream, MAX_STRING, 0);
 prettyPrintFlags |= PRETTYPRINT_STRING;
@@ -1378,7 +1377,7 @@ CELL * result;
 char * string;
 char * separator;
 char token[MAX_STRING];
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 int tklen;
 size_t srclen;
 /* PCRE stuff */

@@ -1,23 +1,25 @@
 ## syntax and configuration file for the nano editor from http://www.nano-editor.org
-## syntax for newLISP, C, HTML
+## syntax for newLISP, C, HTML, nanorc
 ## this file works on nano versions 2.0.1 and later 
 ## tested on 2.0.1 Mac OS X and 2.0.7 Linux, FreeBSD
 ## L.M. June 2008 
-## version 1.01
+## version 1.03
 
+# make sure that lines are not broken when copying/pasting this, maximize browser window
 
-## outcomment the following to customize, see manpage for nanorc for details
-#set autoindent
-#set casesensitive
-#set morespace
-#set suspend
-#set noconvert
-#set nohelp
-#set nonewlines
-#set quickblank
-#set smooth
-#set tabsize 4
-#set tabstospaces
+## outcomment the following to customize, there are more then the following
+## options depending on nano version, see manpage for nanorc for details
+set autoindent    #
+set casesensitive # onsearch
+#set const         # always show line/cursor position status line
+set morespace     # no top blank line
+set suspend       # recognize Ctrl-z
+set noconvert     # dont't convert from DOS
+set nohelp        # no bottom help
+set quickblank    # clear bottom status after 1 keystroke
+set smooth        # scoll smooth without jumping cursor to center
+set tabsize 4     #
+#set tabstospaces # use spaces instead of tabs
 
 syntax "lisp" "\.lsp$"
 ## keywords
@@ -107,3 +109,13 @@ color blue start="<" end=">"
 color red "&[^; ]*;"
 ## quotes strings
 color green "\"(\\.|[^\"])*\""
+
+
+syntax "nanorc" "\.?nanorc$"
+color blue "^(set|unset|color|syntax)| (start|end)"
+color magenta " (bright)?(red|green|blue|cyan|magenta|yellow|black|white)"
+color green " (autoindent|casesensitive|morespace|suspend|noconvert|nohelp|nonewlines)"
+color green " (quickblank|smooth|tabsize|tabstospaces|const|nowrap|include)"
+color yellow " *[0-9]+"
+color black "^#.*"
+

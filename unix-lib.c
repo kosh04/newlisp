@@ -55,7 +55,7 @@ reset();
 
 
 extern STREAM errorStream;
-STREAM libStrStream;
+STREAM libStrStream = {0, NULL, NULL, 0, 0};
 
 
 /* ---- imported and called from a client using newlisp.so ---- */

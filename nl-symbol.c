@@ -252,7 +252,7 @@ int externalReferences(SYMBOL * contextPtr, int replaceFlag);
 
 CELL * p_deleteSymbol(CELL * params)
 {
-SYMBOL * sPtr;
+SYMBOL * sPtr = NULL;
 CELL * cell;
 int checkReferences = TRUE;
 

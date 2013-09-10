@@ -198,7 +198,7 @@ return(list);
 CELL * appendString(CELL * cell, CELL * list, char * joint, size_t jointLen, int trailJoint, int evalFlag)
 { 
 CELL * result;
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 char * sPtr;
 size_t len;
 
@@ -299,7 +299,7 @@ next = params->next;
 if( (params->type == CELL_EXPRESSION) &&
 	( (!typeFlag && next == nilCell) || (typeFlag && next->next == nilCell) ))
 	{
-	params = getList(params, &list, typeFlag);
+	params = getListSpec(params, &list, typeFlag);
 
 NTH_EVAL_IMPLICIT:
 	if(isList(list->type))

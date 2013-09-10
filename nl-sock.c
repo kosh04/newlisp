@@ -254,8 +254,8 @@ return(sList);
 CELL * p_netService(CELL * params) 
 {
 struct servent * pSe; 
-char * service; 
-char * protocol; 
+char * service = NULL; 
+char * protocol = NULL; 
 int port; 
  
 params = getString(params, &service); 
@@ -651,14 +651,12 @@ char * waitFor;
 ssize_t bytesReceived;
 size_t length;
 int found;
-STREAM netStream;
+STREAM netStream = {0, NULL, NULL, 0, 0};
 char chr;
 CELL * cell;
 
 if(isProtected(readSymbol->flags))
     return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(readSymbol)));
-
-memset(&netStream, 0, sizeof(netStream));
 
 if(params == nilCell)
     {
@@ -1349,7 +1347,7 @@ CELL * result;
 STREAM * netStream;
 CELL * netEvalIdle = NULL;
 char buffer[MAX_BUFF];
-STREAM evalStream;
+STREAM evalStream = {0, NULL, NULL, 0, 0};
 int rawMode = FALSE;
 int singleSession = FALSE;
 jmp_buf errorJumpSave;

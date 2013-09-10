@@ -90,26 +90,26 @@ int opsys = 7;
 char ostype[]="OS/2"; 
 #endif 
 
-int version = 9400;
+int version = 9401;
 
 char copyright[]=
-"\nnewLISP v.9.4.0 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.9.4.1 Copyright (c) 2008 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.0 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.1 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.0 on %s IPv%d%s\n\n";
+"newLISP v.9.4.1 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.9.4.0 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.9.4.1 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.9.4.0 64-bit on %s IPv%d%s\n\n";
+"newLISP v.9.4.1 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -855,7 +855,7 @@ while(envStackIdx > index)
 
 void executeCommandLine(char * command, int outDevice, STREAM * cmdStream)
 {
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 CELL * result;
 char buff[MAX_LINE];
 char cmd[MAX_LINE];
@@ -1378,7 +1378,6 @@ CELL * evalCheckProtected(CELL * cell, CELL * * flagPtr)
 {
 CELL * result;
 SYMBOL * sPtr;
-SYMBOL * context;
 
 if(isSymbol(cell->type))
 	{
@@ -1388,12 +1387,13 @@ if(isSymbol(cell->type))
 		sPtr = getDynamicSymbol(cell);
 
 	result = (CELL*)sPtr->contents;
+	
 	if(result->type == CELL_CONTEXT)
-		{
-		context = (SYMBOL *)result->contents;
-		sPtr= translateCreateSymbol(context->name, CELL_NIL, context, TRUE);	
-		result = (CELL *)sPtr->contents;
-		}
+        {
+        sPtr = translateCreateSymbol( ((SYMBOL*)result->contents)->name, CELL_NIL,
+            (SYMBOL*)result->contents, TRUE);
+        result = (CELL *)sPtr->contents;
+	    }
 
  	if(isProtected(sPtr->flags))
 		return(errorProcExt(ERR_SYMBOL_PROTECTED, cell));
@@ -1409,8 +1409,17 @@ if(symbolProtectionLevel == 0xFFFFFFFF)
 		return(errorProcExt(ERR_SYMBOL_PROTECTED, cell));
 	else *flagPtr = cell;
 	}
-
 symbolProtectionLevel = 0;
+
+if(result->type == CELL_CONTEXT)
+    {
+    sPtr = translateCreateSymbol( ((SYMBOL*)result->contents)->name, CELL_NIL,
+        (SYMBOL*)result->contents, TRUE);
+    result = (CELL *)sPtr->contents;
+ 	if(isProtected(sPtr->flags))
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
+	}
+
 return(result);
 }
 
@@ -2828,7 +2837,7 @@ if(errorEvent == nilSymbol)
 CELL * loadFile(char * fileName, UINT offset, int encryptFlag, SYMBOL * context)
 {
 CELL * result;
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 int errNo, dataLen;
 jmp_buf errorJumpSave;
 SYMBOL * contextSave;
@@ -3566,24 +3575,14 @@ CELL * getString(CELL * params, char * * stringPtr)
 CELL * cell;
 SYMBOL * sPtr;
 
-if(isSymbol(params->type))
+cell = evaluateExpression(params);
+
+if(cell->type == CELL_CONTEXT)
 	{
-	if(params->type == CELL_SYMBOL)
-		sPtr = (SYMBOL *)params->contents;
-	else 
-		sPtr =	getDynamicSymbol(params);
-
+	sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+		(SYMBOL*)cell->contents, TRUE);
 	cell = (CELL *)sPtr->contents;
-
-	if(cell->type == CELL_CONTEXT)
-		{
-		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
-			(SYMBOL*)cell->contents, TRUE);
-		cell = (CELL *)sPtr->contents;
-		}
 	}
-else
-	cell = evaluateExpression(params);
 
 if(cell->type != CELL_STRING)
 	{
@@ -3601,28 +3600,21 @@ CELL * getStringSize(CELL * params, char * * stringPtr, size_t * size, int evalF
 CELL * cell;
 SYMBOL * sPtr;
 
+/*
 if(params == nilCell)
 	return(errorProc(ERR_MISSING_ARGUMENT));
+*/
 
 if(evalFlag)
 	{
-	if(isSymbol(params->type))
+    cell = evaluateExpression(params);
+
+	if(cell->type == CELL_CONTEXT)
 		{
-		if(params->type == CELL_SYMBOL)
-			sPtr = (SYMBOL *)params->contents;
-		else 
-			sPtr =	getDynamicSymbol(params);
-
-		cell = (CELL *)sPtr->contents;
-
-		if(cell->type == CELL_CONTEXT)
-			{
-			sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
 				(SYMBOL*)cell->contents, TRUE);
-			cell = (CELL *)sPtr->contents;
-			}
+		cell = (CELL *)sPtr->contents;
 		}
-	else cell = evaluateExpression(params);
 	}
 else cell = params;
 
@@ -3717,24 +3709,14 @@ CELL * getDefaultOrEval(CELL * params, CELL * * result)
 CELL * cell;
 SYMBOL * sPtr;
 
-if(isSymbol(params->type))
+cell = evaluateExpression(params);
+
+if(cell->type == CELL_CONTEXT)
 	{
-	if(params->type == CELL_SYMBOL)
-		sPtr = (SYMBOL *)params->contents;
-	else 
-		sPtr =	getDynamicSymbol(params);
-
+	sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+		(SYMBOL*)cell->contents, TRUE);
 	cell = (CELL *)sPtr->contents;
-
-	if(cell->type == CELL_CONTEXT)
-		{
-		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
-			(SYMBOL*)cell->contents, TRUE);
-		cell = (CELL *)sPtr->contents;
-		}
 	}
-else
-	cell = evaluateExpression(params);
 
 *result = cell;
 
@@ -3749,24 +3731,14 @@ CELL * getListHead(CELL * params, CELL * * head)
 CELL * cell;
 SYMBOL * sPtr;
 
-if(isSymbol(params->type))
+cell = evaluateExpression(params);
+
+if(cell->type == CELL_CONTEXT)
 	{
-	if(params->type == CELL_SYMBOL)
-		sPtr = (SYMBOL *)params->contents;
-	else 
-		sPtr =	getDynamicSymbol(params);
-
+	sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+		(SYMBOL*)cell->contents, TRUE);
 	cell = (CELL *)sPtr->contents;
-
-	if(cell->type == CELL_CONTEXT)
-		{
-		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
-			(SYMBOL*)cell->contents, TRUE);
-		cell = (CELL *)sPtr->contents;
-		}
 	}
-else
-	cell = evaluateExpression(params);
 
 if(!isList(cell->type))
 	{
@@ -3782,7 +3754,7 @@ return(params->next);
 /* gets a list from an expression or default functor
    inside the (L foo) parameter form in nth and ref functions 
    returns the params ptr for foo */
-CELL * getList(CELL * params, CELL * * result, int setFlag)
+CELL * getListSpec(CELL * params, CELL * * result, int setFlag)
 {
 SYMBOL * sPtr;
 CELL * list;
@@ -4028,7 +4000,7 @@ return(copyCell(sysEvalString(evalString, params, context, mode)));
 CELL * sysEvalString(char * evalString, CELL * proc, SYMBOL * context, int mode)
 {
 CELL * program;
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 CELL * resultCell = nilCell;
 CELL * cell = NULL;
 jmp_buf errorJumpSave;
@@ -5547,7 +5519,7 @@ if(sPtr != NIL_SYM && sPtr != NULL)
 CELL * p_save(CELL * params)
 {
 char * fileName;
-STREAM strStream;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 UINT printDeviceSave;
 CELL * result;
 SYMBOL * contextSave;
@@ -6078,7 +6050,7 @@ return(nilCell);
 
 int isLegalSymbol(char * source)
 {
-STREAM stream;
+STREAM stream = {0, NULL, NULL, 0, 0};
 char token[MAX_SYMBOL + 1];
 int tklen;
 

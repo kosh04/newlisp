@@ -206,10 +206,17 @@ if(n != m)
 indx = (int *)calloc((n + 1), sizeof(int));
 
 if(ludcmp(M, n, indx, &d) == FALSE)
+    {
+    free(indx);
+	freeMatrix(M, n);
 	return(nilCell);
-
+    }
+    
 for(i = 1; i <= n; i++)
 	d *= M[i][i];
+
+free(indx);
+freeMatrix(M, n);
 
 return(stuffFloat(&d));
 }

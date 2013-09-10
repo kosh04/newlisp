@@ -4525,3 +4525,10 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
   version 2.3 does the translation correctly on  UTF-8 and non-UTF-8 url-encoded 
   strings and on both versions of newLISP.
 
+9.4.1
+  Filled some gaps in namespace reference passing and fixed memory leaks in the
+  matrix API and 'count' function (on Unix). Passes the Valgrind memory check with 
+  0 bytes lost memory! 
+  
+  In parse-date the default day offset has been changed to more sensible 1 (was 0).
+  

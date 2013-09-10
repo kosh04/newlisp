@@ -71,7 +71,7 @@ reset();
 
 extern STREAM errorStream;
 
-STREAM libStrStream;
+STREAM libStrStream = {0, NULL, NULL, 0, 0};
 
 int CALLBACK LibMain(HANDLE hModule, WORD wDataSeg, WORD cbHeapSize, LPSTR lpszCmdLine)
 {

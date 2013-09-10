@@ -508,7 +508,7 @@ CELL * list;
 
 if(params->type == CELL_EXPRESSION && params->next == nilCell)
 	{
-	key = getList(params, &list, FALSE);
+	key = getListSpec(params, &list, FALSE);
 	if(list->type != CELL_EXPRESSION)
 		return(errorProcExt(ERR_LIST_EXPECTED, params));
 	list = (CELL *)list->contents;
@@ -616,7 +616,6 @@ if(lref == NULL)
 return(copyCell((CELL *)lref->contents));
 }
 
-#ifdef WIN_32
 CELL * p_count(CELL * params)
 {
 CELL * items;
@@ -688,7 +687,10 @@ if(flag) deleteList(items);
 return(result);
 }
 
-#else /* Mac OS X and other UNIX */
+
+#ifdef TSEARCH_COUNT
+void freeTnode(void * node) {};
+
 
 typedef struct 
 	{
@@ -736,7 +738,10 @@ for(i = 0; i < lengthItems; i++)
 	counts[i]->next = NULL;
 	key = tsearch(counts[i], &root, (int (*)(const void *, const void *))compareCells);
 	if(key == NULL)
+	    {
+	    freeMemory(counts);
 		errorProc(ERR_NOT_ENOUGH_MEMORY);
+		}
 	cell = cell->next;
 	}
 
@@ -768,6 +773,8 @@ for(i = 0; i < lengthItems; i++)
 
 freeMemory(counts);
 if(flag) deleteList(items);
+
+tdestroy(root, freeTnode);
 
 return(result);
 }
@@ -849,7 +856,7 @@ CELL * previous = NULL;
 if(params->type != CELL_EXPRESSION)
 	return(errorProcExt(ERR_SYNTAX_WRONG, params));
 
-key = getList(params, &list, TRUE);
+key = getListSpec(params, &list, TRUE);
 if(list->type != CELL_EXPRESSION)
 
 	return(errorProcExt(ERR_LIST_EXPECTED, params));
@@ -1433,7 +1440,7 @@ refStack.idx = 0;
 
 if(params->type == CELL_EXPRESSION)
 	{
-	cell = getList(params, &list, FALSE);
+	cell = getListSpec(params, &list, FALSE);
 	params = params->next;
 	keyCell = evaluateExpression(cell);
 	}
@@ -1530,7 +1537,7 @@ new = params->next;
 if(params->type != CELL_EXPRESSION)
 	return(errorProcExt(ERR_SYNTAX_WRONG, params));
 
-params = getList(params, &list, TRUE);
+params = getListSpec(params, &list, TRUE);
 key = evaluateExpression(params);
 
 if(new->next != nilCell)
@@ -1661,6 +1668,7 @@ int p = 0;
 CELL * array = NULL;
 CELL * list = nilCell;
 CELL * next = NULL;
+SYMBOL * sPtr;
 
 while(params != nilCell && p < 17)
 	{
@@ -1672,6 +1680,12 @@ while(params != nilCell && p < 17)
 			return(errorProcExt(ERR_WRONG_DIMENSIONS, list));
 		else p++;
 		}
+    else if(list->type == CELL_CONTEXT)
+	    {
+	    sPtr = translateCreateSymbol( ((SYMBOL*)list->contents)->name, CELL_NIL,
+		    (SYMBOL*)list->contents, TRUE);
+	    list = (CELL *)sPtr->contents;
+	    }
 	else if(isList(list->type)) break;
 	else return(errorProcExt(ERR_NUMBER_EXPECTED, list));
 	params = params->next;
@@ -2101,5 +2115,4 @@ return(isNil(cell));
 }
 
 /* eof */
-
 

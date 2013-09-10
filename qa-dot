@@ -656,7 +656,7 @@ true
 	(MAIN:test-default-functor))
 
 (define (test-delete )
-  (delete 'xxx))
+  (delete (sym "xxx")))
 
 (define (test-delete-file ) 
   (and (copy-file "qa-dot" "junk") (delete-file "junk")))

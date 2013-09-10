@@ -55,7 +55,7 @@ CELL * getInteger64(CELL * params, INT64 * number);
 CELL * getIntegerExt(CELL * params, UINT * number, int evalFlag);
 CELL * getListHead(CELL * params, CELL * * list);
 CELL * getDefaultOrEval(CELL * params, CELL * * result);
-CELL * getList(CELL * params, CELL * * result, int setFlag);
+CELL * getListSpec(CELL * params, CELL * * result, int setFlag);
 CELL * getPutPostDeleteUrl(char * url, CELL * params, int type, int timeout);
 CELL * getServicePort(CELL * params, int * portNo, char * protocol);
 CELL * getString(CELL * params, char * * stringPtr);

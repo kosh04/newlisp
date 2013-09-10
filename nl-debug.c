@@ -310,7 +310,7 @@ int printFunction(CELL * cell)
 char * funcStr;
 char * expStr;
 int start, length;
-STREAM strStream;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 
 if(currentFunc == nilSymbol) return FALSE;
 

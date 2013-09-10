@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W2C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.9.4.0 Manual and Reference</title>
+   <title>newLISP v.9.4.1 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -126,11 +126,11 @@ tt {
 <br>
 
 <center>
-<b>For BSDs, Linux, Mac OS X, Solaris and Win32</b>
+<b>For Mac OS X, GNU Linux, Unix and Win32</b>
 </center>
 
 <center>
-<h2>Users Manual and Reference v.9.4.0 <font size=-1>rev 23</font></h2>
+<h2>Users Manual and Reference v.9.4.1</h2>
 </center>
 
 <br><br><br><br>
@@ -15929,16 +15929,18 @@ by extracting a specific element found in the list.
 <blockquote>
 <pre>
 (set 'params '(
-(name "John Doe") 
-(age 35) 
-(gender "M") 
-(balance 12.34)))
+    (name "John Doe") 
+    (age 35) 
+    (gender "M") 
+    (balance 12.34)
+))
 
 (lookup 'age params)    <span class=arw>&rarr;</span> 35
 
 (set 'persons '(
-("John Doe" 35 "M" 12.34) 
-("Mickey Mouse" 65 "N" 12345678)))
+    ("John Doe" 35 "M" 12.34) 
+    ("Mickey Mouse" 65 "N" 12345678)
+))
 
 (lookup "Mickey Mouse" persons 2)    <span class=arw>&rarr;</span> "N"
 (lookup "Mickey Mouse" persons -3)   <span class=arw>&rarr;</span> 65
@@ -21626,7 +21628,7 @@ and can be used in <em>exp-replacement</em>. The function returns the old replac
 (update data 'apples 'Apples)  <span class=arw>&rarr;</span> apples
 (update data 'oranges 'Oranges)  <span class=arw>&rarr;</span> oranges
 
-data:data <span class=arw>&rarr;</span> (fruits (Apples 123 44) (oranges 1 5 3))
+data:data <span class=arw>&rarr;</span> (fruits (Apples 123 44) (Oranges 1 5 3))
 </pre>
 </blockquote>
 
