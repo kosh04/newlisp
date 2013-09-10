@@ -1,0 +1,11 @@
+*.bak
+*~
+*.exe
+*.dll
+*.o
+qa-junk.txt
+\#*\#
+/modules/SQLITE3-TEST
+/modules/test.gz
+._*
+XTAGS
