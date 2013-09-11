@@ -219,8 +219,6 @@ CELL * floatOp(CELL * params, int op);
 int compareFloats(CELL * left, CELL * right);
 int compareInts(CELL * left, CELL * right);
 
-double DBL_INFINITY = 1.0e200 * 1.0e200;
-
 CELL * p_addFloat(CELL * params) { return(floatOp(params, OP_ADD)); }
 CELL * p_subFloat(CELL * params) { return(floatOp(params, OP_SUBTRACT)); }
 CELL * p_mulFloat(CELL * params) { return(floatOp(params, OP_MULTIPLY)); }
@@ -268,18 +266,11 @@ else while(params != nilCell)
 		case OP_ADD:            result += number; break;
 		case OP_SUBTRACT:       result -= number; break;
 		case OP_MULTIPLY:       result *= number; break;
-		case OP_DIVIDE:         
-			if(number == 0.0) 
-				result = (result == 0.0) ? DBL_INFINITY - DBL_INFINITY: DBL_INFINITY;
-			else
-				result /= number; 
-			break;
+		case OP_DIVIDE:         result /= number; break;
 		case OP_MIN: if(number < result) result = number; break;
 		case OP_MAX: if(number > result) result = number; break;
 		case OP_POW: result = pow(result, number); break;
 		case OP_MODULO: 
-			if(number == 0.0)
-				return(errorProc(ERR_MATH));
 			result = fmod(result, number);
 		default: break;
 		}
@@ -677,6 +668,22 @@ SYMBOL * leftS;
 SYMBOL * rightS;
 int comp;
 
+if(left->contents == (UINT)nilSymbol)
+	{
+	if(right->contents == left->contents)return(0);
+	else return(-1);
+	}
+
+if(left->contents == (UINT)trueSymbol)
+	{
+	if(left->contents == right->contents) return(0);
+	if(right->contents == (UINT)nilSymbol) return(1);
+	return(-1);
+	}
+
+if(right->contents == (UINT)nilSymbol || right->contents == (UINT)trueSymbol)
+	return(1);
+
 if(left->type == CELL_SYMBOL)
 	leftS = (SYMBOL *)left->contents;
 else
@@ -713,17 +720,6 @@ if(left->type != right->type)
 	if((left->type & COMPARE_TYPE_MASK) == CELL_INT && (right->type & COMPARE_TYPE_MASK) == CELL_INT)
 		return(compareInts(left, right));
 
-	if(isSymbol(left->type) && isSymbol(right->type))
-		return(compareSymbols(left, right));
-		
-	if( (left->type == CELL_SYMBOL && right->type == CELL_CONTEXT) ||
-		(left->type == CELL_CONTEXT && right->type == CELL_SYMBOL) )
-		{
-		if((comp = strcmp( ((SYMBOL *)left->contents)->name, 
-		                   ((SYMBOL *)right->contents)->name)) == 0) return(0);
-		return (comp > 0 ? 1 : -1);
-		}
-
 	if(isNil(left))
 		{
 		if(isNil(right)) return(0);
@@ -737,17 +733,18 @@ if(left->type != right->type)
 		return(-1);
 		}
 
-	if(isNil(right))
-		{
-		if(isNil(left)) return(0);
-		else return(1);
-		}
+	if(isNil(right) || isTrue(right))
+		return(1);
 
-	if(isTrue(right))
+	if(isSymbol(left->type) && isSymbol(right->type))
+		return(compareSymbols(left, right));
+		
+	if( (left->type == CELL_SYMBOL && right->type == CELL_CONTEXT) ||
+		(left->type == CELL_CONTEXT && right->type == CELL_SYMBOL) )
 		{
-		if(isTrue(left)) return(0);
-		if(isNil(left)) return(-1);
-		else return(1);
+		if((comp = strcmp( ((SYMBOL *)left->contents)->name, 
+		                   ((SYMBOL *)right->contents)->name)) == 0) return(0);
+		return (comp > 0 ? 1 : -1);
 		}
 
 	comp = (left->type & COMPARE_TYPE_MASK) - (right->type & COMPARE_TYPE_MASK);
@@ -1279,14 +1276,6 @@ double probZ(double z)
 {
 return(0.5 + erf(z/SQRT2) / 2.0);
 }
-
-#define BIGX 20.0        /* max value to represent exp(x) */
-
-double ex(double x) 
-{
-return (x < -BIGX) ? 0.0 : exp(x);
-}   
-
 
 double critChi2(double p, int df)
 {
@@ -2533,7 +2522,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2007 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2009 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

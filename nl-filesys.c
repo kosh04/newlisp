@@ -2119,19 +2119,21 @@ return(cell);
 CELL * p_systemError(CELL * params)
 {
 CELL * cell;
-UINT errnum;
+UINT errnum = errno;
 
 if(params != nilCell)
 	{
 	getInteger(params, &errnum);
 	if(errnum == 0) errno = 0;
 	}
-else errnum = errno;
-
-if(!errnum) return(nilCell);
+else 
+	if(!errnum) return(nilCell);
 
 cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errnum));
 ((CELL *)cell->contents)->next = stuffString(strerror(errnum));
+
+/* on some platforms strerror(0) causes errno set to 22 */
+if(errnum == 0) errno = 0;
 
 return(cell);
 }

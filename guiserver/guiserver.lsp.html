@@ -11,16 +11,23 @@
 			link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
-<p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
+<p><a href="index.html">Module index</a></p><a href="guiserver.lsp.src.html">source</a><br/><br/><h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
 <b>Version: </b>1.30 changes for 10.1<br/>
 <b>Version: </b>1.31 syntax highlighting<br/>
 <b>Version: </b>1.32 <tt>gs:color-tag</tt> was documented but not implemented in Java<br/>
 <b>Version: </b>1.321 added flag in gs:init for remote newlisp<br/>
+<b>Version: </b>1.33 documentation and 'read-event' added in java file<br/>
 <b>Author: </b>LM, August 2008, 2009<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
- those platforms. On Win32 the MIDI sound features require a soundbank file to
+ those platforms. On Linux the installation of the original Sun Java Runtime 
+ Environment is required the preinstalled GNU Java is not compatible. After
+ installation a soft-link has to be made from the original java executable to
+ <tt>/usr/bin/java</tt>.
+<br/><br/>
+<br/><br/>
+ On Win32 the MIDI sound features require a soundbank file to
  be installed. See the desription for <tt>gs:play-note</tt> for details.
  <br><br>
  <h2>What is newLISP-GS</h2>

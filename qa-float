@@ -10,6 +10,7 @@
 
 (set 'aNan (sqrt -1))
 (set 'aInf (div 1.0 0))
+(set 'aNegInf (div -1 0))
 
 ; operation on NaN result in NaN
 
@@ -42,7 +43,7 @@
 	(= (* 1 aInf) 9223372036854775807)
 	(= (- aInf 1) 9223372036854775806)
 	(= (+ aInf 1) -9223372036854775808) ; wrap around
-	"division by inf results in 0"
+	"FP division by inf results in 0"
 	(= (/ 1 aInf) 0)
 	(= (div 1 aInf) 0)
 	"inf specials"
@@ -51,6 +52,13 @@
 	"retain sign of -0.0"
 	(= (set 'tiny (div -1 aInf)) -0.0)
 	(= (sqrt tiny) -0.0)
+	"inf is signed too"
+	(= aNegInf (div -1 0))
+	(!= aNegInf (div 1 0))
+	"mod with 0 divisor is NaN"
+	(NaN? (mod 10 0))
+	"% with 0 divisor throws error"
+	(not (catch (% 10 0) 'error))
 	)
 )
 

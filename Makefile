@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.1.5
-INT_VERSION = 10105
+VERSION = 10.1.6
+INT_VERSION = 10106
 
 default: makefile_configure
 	make -f makefile_configure
@@ -121,7 +121,7 @@ darwin_lib:
 	make -f makefile_darwin_lib
 
 universal_utf8:
-	make -f makefile_darwin_universal_utf8
+	make -f makefile_darwin_universal_utf8_compat
 
 darwin:
 	make -f makefile_darwin
@@ -211,7 +211,7 @@ dpkg_utf8:
 # bombs out in the following script, but is fixed in 10.6.0
 # Snow Leopard.
 dmg_ppc:
-	lipo newlisp-universal -output newlisp -thin ppc
+	make -f makefile_darwin_utf8_tigerPPC
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -222,7 +222,7 @@ dmg_ppc:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
 
 dmg_intel:
-	lipo newlisp-universal -output newlisp -thin i386
+	make -f makefile_darwin_utf8_tigerIntel
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -321,6 +321,7 @@ install:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
+	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp
@@ -421,6 +422,7 @@ install_home:
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(HOME)/share/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
+	-install -m 644 modules/macro.lsp $(HOME)/share/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(HOME)/share/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(HOME)/share/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(HOME)/share/newlisp/modules/pop3.lsp

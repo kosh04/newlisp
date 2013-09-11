@@ -4,11 +4,18 @@
 ;; @version 1.31 syntax highlighting
 ;; @version 1.32 <tt>gs:color-tag</tt> was documented but not implemented in Java
 ;; @version 1.321 added flag in gs:init for remote newlisp
+;; @version 1.33 documentation and 'read-event' added in java file
 ;; @author LM, August 2008, 2009
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
-;; those platforms. On Win32 the MIDI sound features require a soundbank file to
+;; those platforms. On Linux the installation of the original Sun Java Runtime 
+;; Environment is required the preinstalled GNU Java is not compatible. After
+;; installation a soft-link has to be made from the original java executable to
+;; '/usr/bin/java'.
+;; 
+;;
+;; On Win32 the MIDI sound features require a soundbank file to
 ;; be installed. See the desription for 'gs:play-note' for details.
 ;; <br><br>
 ;; <h2>What is newLISP-GS</h2>

@@ -27,6 +27,7 @@
 
 #ifdef READLINE
 #include <readline/readline.h>
+/* take following line out on Slackware Linux */
 #include <readline/history.h>
 #endif
 
@@ -92,26 +93,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10105;
+int version = 10106;
 
 char copyright[]=
-"\nnewLISP v.10.1.5 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.1.6 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.5 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.6 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.5 on %s IPv%d%s\n\n";
+"newLISP v.10.1.6 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.5 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.6 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.5 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.1.6 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -186,6 +187,7 @@ SYMBOL * timerEvent;
 SYMBOL * promptEvent;
 SYMBOL * commandEvent;
 SYMBOL * transferEvent;
+SYMBOL * readerEvent;
 
 SYMBOL * symHandler[32];
 int currentSignal = 0;
@@ -596,6 +598,11 @@ pagesize = getpagesize();
 tzset();
 #endif
 
+#ifdef OS2
+/* Reset the floating point coprocessor */
+_fpreset();
+#endif
+
 initLocale();
 initNewlispDir();
 IOchannel = stdin;
@@ -845,7 +852,7 @@ return(completion_matches(text, (CPFunction *)command_generator));
 void printHelpText(void)
 {
 varPrintf(OUT_CONSOLE, copyright, 
-		"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
+	"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
 varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
 	" -h this help",
 	" -n no init (must be first)",
@@ -1077,12 +1084,19 @@ CELL * program;
 CELL * eval = nilCell;
 UINT * resultIdxSave;
 int result = TRUE;
+CELL * xlate;
 
 resultIdxSave = resultStackIdx;
 while(result)
 	{
-	pushResult(program = getCell(CELL_QUOTE));
+	program = getCell(CELL_QUOTE);
 	result = compileExpression(stream, program);
+	if(readerEvent != nilSymbol && result)
+		{
+		executeSymbol(readerEvent, program, &xlate);
+		program = makeCell(CELL_QUOTE, (UINT)xlate);
+		}
+	pushResult(program);
 	if(result)
 		{
 		if(flag && eval != nilCell) deleteList(eval);
@@ -1172,7 +1186,7 @@ for(i = 0; primitive[i].name != NULL; i++)
 	symbol = translateCreateSymbol(
 		primitive[i].name, CELL_PRIMITIVE, mainContext, TRUE);
 	symbol->contents = (UINT)pCell;
-	symbol->flags = primitive[i].flags | SYMBOL_PROTECTED | SYMBOL_GLOBAL | SYMBOL_BUILTIN;
+	symbol->flags = primitive[i].flags | SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 	pCell->contents = (UINT)primitive[i].function;
 	pCell->aux = (UINT)symbol->name;
 	}
@@ -1198,11 +1212,11 @@ for(i = 0; i < MAX_REGEX_EXP; i++)
 	sysSymbol[i]->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN;
 	}
 
-currentFunc = errorEvent = timerEvent = promptEvent = commandEvent = transferEvent = nilSymbol;
+currentFunc = errorEvent = timerEvent = promptEvent = commandEvent = transferEvent = readerEvent = nilSymbol;
 
-trueSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
-nilSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
-questionSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
+trueSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
+nilSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
+questionSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 atSymbol->flags |=  SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 argsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 mainArgsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
@@ -1321,7 +1335,7 @@ switch(cell->type)
 		
 		if(pCell->type == CELL_MACRO)
 			{ 
-			result = evaluateMacro((CELL *)pCell->contents, args->next, newContext);
+			result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext);
 			break;
 			}
 
@@ -1371,7 +1385,7 @@ switch(cell->type)
 
 			else if(pCell->type  == CELL_MACRO)
 				{
-				result = evaluateMacro((CELL *)pCell->contents, args->next, newContext); 
+				result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext); 
 				break; 
 				}
 
@@ -1578,8 +1592,8 @@ CELL * result = nilCell;
 CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
-int localCount = 0;
 UINT * resultIdxSave;
+int localCount = 0;
 
 if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
@@ -1693,13 +1707,14 @@ return(result);
 }
 
 
-CELL * evaluateMacro(CELL * localLst, CELL * arg, SYMBOL * newContext)
+CELL * evaluateLambdaMacro(CELL * localLst, CELL * arg, SYMBOL * newContext)
 {
 CELL * local;
 CELL * result = nilCell;
 CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
+UINT * resultIdxSave;
 int localCount = 0;
 
 if(envStackIdx > envStackTop)
@@ -1756,9 +1771,14 @@ if(arg != nilCell)
     ((CELL*)argsSymbol->contents)->contents = (UINT)copyList(arg);
 ++localCount;
 
+resultIdxSave = resultStackIdx;
 arg = localLst;
 while((arg = arg->next) != nilCell)
+	{
+	while(resultStackIdx > resultIdxSave)
+		deleteList(popResult());
 	result = evaluateExpression(arg);
+	}
 result = copyCell(result);
 
 while(localCount--)
@@ -1777,7 +1797,6 @@ currentContext = contextSave;
 symbolCheck = NULL;
 return(result);
 }
-
 
 
 /* -------------- list/cell creation/deletion routines ---------------- */
@@ -1817,7 +1836,6 @@ cell->next = nilCell;
 return(cell);
 }
 #endif
-
 
 CELL * stuffIntegerList(int argc, ...)
 {
@@ -3745,10 +3763,15 @@ if(cell->type != CELL_SYMBOL)
 	*symbol = translateCreateSymbol(name, CELL_NIL, mainContext, TRUE);
     (*symbol)->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
 	deleteList((CELL *)(*symbol)->contents);
-	(*symbol)->contents = (UINT)copyCell(cell);
-	if(cell->type != CELL_LAMBDA && cell->type != CELL_PRIMITIVE)
-		return(errorProcExt(ERR_INVALID_PARAMETER, params));	
-		
+	if(isNil(cell)) 
+		*symbol = nilSymbol;
+	else if(cell->type != CELL_LAMBDA && cell->type != CELL_MACRO && cell->type != CELL_PRIMITIVE)
+		{
+		*symbol = nilSymbol;
+		return(errorProcExt(ERR_INVALID_PARAMETER, params));
+		}
+	else
+		(*symbol)->contents = (UINT)copyCell(cell);
     }
 else
 	*symbol = (SYMBOL *)cell->contents;
@@ -4013,8 +4036,12 @@ return(sysEvalString(evalStr, context, params->next, mode));
 }
 
 /* modes:
-EVAL_STRING  the classic eval-string: read, xlate, evaluate
-READ_EXPR  used by p_sync() in nl-filesys.c 
+EVAL_STRING  
+  the classic eval-string: read the string, compile to s-ezpression , evaluate
+READ_EXPR_SYNC
+  used by p_sync() in nl-filesys.c 
+READ_EXPR
+  used by p_readExpr 
 */
 
 
@@ -4029,6 +4056,7 @@ jmp_buf errorJumpSave;
 int recursionCountSave;
 UINT * envStackIdxSave;
 UINT offset;
+CELL * xlate;
 
 makeStreamFromString(&stream, evalString);
 if(proc->next != nilCell)
@@ -4064,17 +4092,27 @@ if(proc != nilCell)
 while(TRUE)
 	{
 	program = getCell(CELL_QUOTE);
-	pushResult(program);
 	if(compileExpression(&stream, program) == 0) 
+		{
+		pushResult(program);
 		break;
+		}
+	if(readerEvent != nilSymbol)
+		{
+		executeSymbol(readerEvent, program, &xlate);
+		program = makeCell(CELL_QUOTE, (UINT)xlate);
+		}
+	pushResult(program);
 	if(mode == EVAL_STRING)
 		{
 		resultCell = evaluateExpression((CELL *)program->contents);
 		/* note that resultCell is already pushed for deletion
-		   as part of cell program */
+		   as part of program cell */
 		}
 	else /* READ_EXPR or READ_EXPR_SYNC */
 		{
+		/* in a future version this will go into a $count sysvar instead
+           same in replace */
 		deleteList((CELL *)sysSymbol[0]->contents);
 		sysSymbol[0]->contents = (UINT)stuffInteger(stream.ptr - stream.buffer); 
 		resultCell = (CELL *)program->contents;
@@ -4304,10 +4342,6 @@ CELL * next = nilCell;
 
 while(block != nilCell)
 	{
-/*
-	if(!isList(block->type) && block->type != CELL_QUOTE)
-		return(errorProcExt(ERR_ILLEGAL_TYPE, block));
-*/
 	if(expanded == nilCell)
 		{
 		next = expand(copyCell(block), symbol);
@@ -4335,10 +4369,6 @@ CELL * cell;
 int evalFlag;
 
 params = getEvalDefault(params, &expr);
-/*
-if(!isList(expr->type) && expr->type != CELL_QUOTE)
-	return(errorProcExt(ERR_ILLEGAL_TYPE, expr));
-*/
 
 if((next = params) == nilCell)
 	return(expand(copyCell(expr), NULL));
@@ -5814,9 +5844,9 @@ if(sPtr != NIL_SYM && sPtr != NULL)
 			}
 		else printSymbol(sPtr, device);	
 		}
+	/* don't save primitives, symbols containing nil and the trueSymbol */
 	else if(type != CELL_PRIMITIVE && type != CELL_NIL
 		&& sPtr != trueSymbol && type != CELL_IMPORT_CDECL
-		&& sPtr != argsSymbol
 #ifdef WIN_32
 		&& type != CELL_IMPORT_DLL
 #endif
@@ -6408,9 +6438,9 @@ CELL * p_reset(CELL * params)
 {
 if(params != nilCell)
 	{
-	
 	if(!getFlag(params)) 
-		/* only experimental not documented, not necessary */
+	/* only for experimental purose not documented
+	   returns all free cell blocks to the OS */
 		freeCellBlocks();
 #ifndef LIBRARY
 #ifndef WIN_32
@@ -6449,6 +6479,11 @@ return(setEvent(params, &commandEvent, "$command-event"));
 CELL * p_transferEvent(CELL * params)
 {
 return(setEvent(params, &transferEvent, "$transfer-event"));
+}
+
+CELL * p_readerEvent(CELL * params)
+{
+return(setEvent(params, &readerEvent, "$reader-event"));
 }
 
 

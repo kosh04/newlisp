@@ -1801,20 +1801,16 @@ CELL * p_netLastError(CELL * params)
 {
 CELL * result;
 char str[40];
-char * errPrefix = "ERR: ";
 UINT numError = errorIdx;
 
 if(params != nilCell)
-	{
 	getInteger(params, &numError);
-	errPrefix = "";
-	}
-if(numError == 0) return(nilCell);
+else
+	if(numError == 0) return(nilCell);
 
 result = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(numError));
 
-snprintf(str, 40, "%s%s", errPrefix, 
-	(errorIdx > MAX_NET_ERROR) ? UNKNOWN_ERROR : netErrorMsg[numError]);
+snprintf(str, 40, "%s", (numError > MAX_NET_ERROR) ? UNKNOWN_ERROR : netErrorMsg[numError]);
 ((CELL *)result->contents)->next = stuffString(str);
 
 return(result);

@@ -6,6 +6,7 @@
 ;; @version 3.1  - module now senses if running 64-bit version of newLISP
 ;; @version 3.2  - a fix when fetch-all has an empty result
 ;; @version 3.3  - typo in fetch-all didn't delete old fetches
+;; @version 3.4  - documentaion error for load path
 ;; @author Lutz Mueller 2003-2009, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
@@ -17,7 +18,7 @@
 ;; <h3>Requirements</h3>
 ;; At the beginning of the program file include a 'load' statement for the module:
 ;; <pre>
-;; (load "/usr/share/newlisp/mysql.lsp")
+;; (load "/usr/share/newlisp/modules/mysql.lsp")
 ;; ; or shorter
 ;; (module "mysql.lsp")
 ;; </pre>

@@ -9,6 +9,7 @@
 ;; @version 2.2 - detection for NEWLISP64, lib path for OpenBSD, tested for 64-bit 
 ;; @version 2.3 - C.H. added parameter binding for safer SQL (guard against SQL-injection)
 ;; @version 2.4 - doc changes
+;; @version 2.5 - changed sqlite3_bind_blob to sqlite3_bind_text in function bind-parameter
 ;; @author Lutz Mueller 2004-2008, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
@@ -258,7 +259,8 @@
 				(if (symbol? param) (name param) (string param)))))
 		(cond
 			((float? value) (sqlite3_bind_double pstm idx (float value)))
-			((string? value) (sqlite3_bind_blob pstm idx value (length value) -1))
+			;((string? value) (sqlite3_bind_blob pstm idx value (length value) -1))
+			((string? value) (sqlite3_bind_text pstm idx value (length value) -1))
 			((nil? value) (sqlite3_bind_null pstm idx))
 			(true (sqlite3_bind_text pstm idx (string value) (length (string value)) -1)) )) )
 

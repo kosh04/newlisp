@@ -10,8 +10,6 @@ CFLAGS = -m32 -Wall -c -O1 -DREADLINE -DMAC_OSX -DSUPPORT_UTF8
 
 CC = /Developer/usr/bin/llvm-gcc
 #CC = /Developer/usr/llvm-gcc-4.2/bin/llvm-gcc-4.2
-#CC = /Developer/usr/llvm-gcc-4.2/bin/powerpc-apple-darwin9-llvm-gcc-4.2
-#CC = /Developer/usr/llvm-gcc-4.2/bin/i686-apple-darwin9-llvm-gcc-4.2
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m32 -lm -lreadline -o newlisp

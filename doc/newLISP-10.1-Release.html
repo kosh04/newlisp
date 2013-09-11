@@ -2,18 +2,22 @@
 <html>
 <title>newLISP  v.10.1 Release Notes </title>
 <body>
-<h1>newLISP<font size=-2>&#174;</font> v.10.1 Release Notes 
-<font size=-1 color="red">June 22nd, 2009</font> <font size=-1>,</font>
-<font size=-1 color="red">July 22nd, 2009</font> <font size=-1>and</font>
-<font size=-1 color="red">September 15th, 2009</font></h1>
+<h1>newLISP<font size=-2>&#174;</font> v.10.1 Release Notes </h1>
 
-<p>Version 10.1.1 is a stable release update with bug fixes and minor
-feature additions tagged in this text with (v.10.1.1)</p>
+<p>Version 10.1.1 <font color="black">June 22nd, 2009</font>
+is a stable release update with bug fixes and minor
+feature additions tagged in this text with (v.10.1.1).<br>
 
-<p>Version 10.1.2 is a maintenance release for Win32 only.</p>
+Version 10.1.2 <font color="black">July 22nd, 2009</font>
+is a maintenance release for Win32 only.<br>
 
-<p>Version 10.1.5 a maintenance release for all flavors.
-Changes, additions and fixes are tagged with (v.10.1.5)</p>
+Version 10.1.5 <font color="black">September 15th, 2009</font>
+is a maintenance release for all flavors.
+Changes, additions and fixes are tagged with (v.10.1.5).<br>
+
+<font color="red">Version 10.1.6 October 20th, 2009</font>
+is a maintenance release for all flavors.
+Changes, additions and fixes are tagged with <font color="red">(v.10.1.6)</font>.</p>
 
 <h3>Improved support for concurrency and multi core CPUs</h3>
 <p>Release 10.1 improves concurrency support for multi core CPUs with
@@ -80,6 +84,14 @@ and gives results with a higher precision.</li><p>
 <li>The <tt>receive</tt> function receives a messge from a parent or child process
 launched with <tt>spawn</tt>.</li><p> 
 
+<li>New <tt>reader-event</tt> specifies an event handler to translate expressions
+as they are read by newLISP when loading source. This can be used to create a 
+reader, rewrite macro facility <font color="red">(v.10.1.6)</font>.</li><p>
+
+<li><tt>ref</tt> should use <tt>$it</tt> instead of <tt>$0</tt> to refer to the 
+found expression. The usage of <tt>$0</tt> in this function is deprecated 
+<font color="red">(10.1.6)</font>.</li><p>
+
 <li><tt>regex</tt> can take an additional offset option (v.10.1.1).</li><p>
 
 <li>The <tt>send</tt> functions sends a message to a parent or child process 
@@ -87,6 +99,10 @@ launched with <tt>spawn</tt>.</li><p>
 
 <li>Any datatype can now be specified as a start expression in <tt>series</tt>
 (v.10.1.1).</li><p>
+
+<li><tt>set-ref</tt> and <tt>set-ref-all</tt> should use <tt>$it</tt> instead of 
+<tt>$0</tt> to refer to the found expression(s). The usage of <tt>$0</tt> in 
+these functions is deprecated <font color="red">(10.1.6)</font>.</li><p>
 
 <li>The <tt>share</tt> function now can share any lisp expression and size. On older versions
 only boolean, number and strings constants were supported.</li><p>
@@ -167,7 +183,7 @@ independent for versions including and after 4.0.</li><p>
 
 <li>The SQLite <tt>sqlite3.lsp</tt> module has been expanded with parameter binding
 fucntionality for safer ussage of the database in web applications, where the 
-danger of SQL injection exists.</li><p>
+danger of SQL injection exists. Bug fixes <font color="red">(v.10.1.6)</font>.</li><p>
 
 <li>All three modules <tt>mysql.lsp</tt>, <tt>postgres.lsp</tt> and <tt>sqlite3.lsp</tt>
 have also been tested on 64-Bit newLISP.</li><p>
@@ -193,7 +209,10 @@ additionally to <tt>make test</tt> and <tt>make all check</tt> will make and tes
 <tt>doc/INSTALL</tt> for details (v.10.1.1).</li><p>
 
 <li>A new version of <tt>nls</tt> (combined newLISP and BASH shell) has been adapted to 
-the new manual formatting introduced (v.10.1.5).</li>
+the new manual formatting introduced (v.10.1.5).</li><p>
+
+<li>The new module <tt>macro.lsp</tt> implements a rewrite macro facility
+<font color="red">(v.10.1.6)</font>.</li><p>
 
 </ul>
 
@@ -212,6 +231,25 @@ longer code than necessary when serializing symbols using <tt>save</tt> or
 error procedure was specified in the parameters (v.10.1.1). This could lead
 to crashes on subsequent error conditions.</li><p>
 
+<li>The <tt>inf</tt> return value in floating point opertions is now signed 
+</tt><font color="red">(v.10.1.6)</font>:<br>
+<blockquote><pre>(div -1 0) &rarr; -inf </pre></blockquote>
+</li><p>
+
+<li><tt>mod</tt> now returns <tt>NaN</tt> when the divisor (second argument) is 0 <font color="red">(v.10.1.6)</font>:<br>
+<blockquote><pre>(mod 10 0) &rarr; NaN </pre></blockquote>
+</li><p>
+
+<li>The floating point division zero by zero and subtracting two infinite numbers
+from each other will now return <tt>NaN</tt>:
+<blockquote><pre>
+(NaN? (div 0 0)) &rarr; true
+
+(set 'infinite (div 1 0))
+(NaN? (sub infinite infinite)) &rarr; true
+</pre></blockquote></li><p>
+
+
 <li>Some HTTP errors where not registered in <tt>net-error</tt>.</li><p>
 
 <li>An unknown host result with <tt>net-lookup</tt> is now registered and can be
@@ -224,20 +262,15 @@ integers to floats. Now <tt>pack</tt> will correctly convert in both directions.
 <li>The <tt>replace</tt> in remove mode did not work correctly when all list
 members where <tt>nil</tt>.</li><p>
 
+<li>Memory was not freed correctly when using <tt>starts-with/ends-with</tt>
+with regular expressions <font color="red">(v.10.1.6)</font>.</li><p>
+
 <li>Under some circumstances <tt>nil</tt> and <tt>true</tt> could confuse
-the <tt>sort</tt> and <tt>unique</tt> functions.</li><p>
+the <tt>sort</tt> and <tt>unique</tt> functions i
+(v.10.1.0) <font color="red">(v.10.1.6)</font>.</li><p>
 
 <li><tt>swap</tt> now throws and error when the second parameter is mising (v.10.1.1).
 </li><p>
-
-<li>The floating point division zero by zero and subtracting two infinite numbers
-from each other will now return <tt>NaN</tt>:
-<blockquote><pre>
-(NaN? (div 0 0)) &rarr; true
-
-(set 'infinite (div 1 0))
-(NaN? (sub infinite infinite)) &rarr; true
-</pre></blockquote></li><p>
 
 <li>In the guiserver.lsp library the function <tt>gs:color-tag</tt> was documented
 but not implemented (v.10.1.1). Tnis is an important function when implementing

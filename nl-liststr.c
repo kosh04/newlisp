@@ -24,7 +24,6 @@
 
 extern CELL * lastCellCopied;
 extern SYMBOL * sysSymbol[];
-extern SYMBOL * itSymbol;
 extern void printResultStack();
 
 /* used only on string indices */
@@ -221,14 +220,6 @@ while(list != nilCell)
 
 if(trailJoint)
 	writeStreamStr(&stream, joint, jointLen);
-
-/*
-result = getCell(CELL_STRING);
-result->contents = (UINT)allocMemory(stream.position + 1);
-*((char *)result->contents + stream.position) = 0;
-result->aux = stream.position + 1;
-memcpy((void *)result->contents, stream.buffer, stream.position);
-*/
 
 result = stuffStringN(stream.buffer, stream.position);
 
@@ -1110,6 +1101,7 @@ while(list != nilCell)
 			goto CONTINUE_NEXT;
 		}
 
+	/* take out sysSymbol in future, should only be used in regex */
 	deleteList((CELL*)sysSymbol[0]->contents);
 	sysSymbol[0]->contents = (UINT)copyCell(list);
 	itSymbol->contents = (UINT)list;
@@ -1343,9 +1335,11 @@ else
 	klen = klen + 3;
     if((pos = searchBufferRegex(string, 0, keydollar, slen, options, &klen)) != -1)	
 		{
-		free(keydollar);
 		if(pos + klen == slen)
+			{
+			free(keydollar);
 			return(trueCell);
+			}
 		}
 	free(keydollar);
 	}
@@ -1378,7 +1372,7 @@ pushResult(keyCell);
 params = getEvalDefault(params->next, &cell);
 newList = cell;
 refSymbol = symbolCheck;
-if(symbolCheck && isProtected(symbolCheck->flags))
+if(symbolCheck && (isProtected(symbolCheck->flags) || isBuiltin(symbolCheck->flags)))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 cnt = 0;
@@ -1403,6 +1397,8 @@ COMPARE_START:
 		{
 		if(repCell != NULL)
 			{
+			/* take out usage of sysSymbol0] in 10.2
+               should only be used for regex replacements */
 			deleteList((CELL*)sysSymbol[0]->contents);
 			itSymbol->contents = (UINT)copyCell(list);
 			sysSymbol[0]->contents = itSymbol->contents;
@@ -1434,6 +1430,8 @@ COMPARE_START:
 			cell = list->next;	/* cell = old elmnt */
 			if(repCell != NULL)
 				{
+				/* take out usage of sysSymbol0] in 10.2
+               	should only be used for regex replacements */
 				deleteList((CELL*)sysSymbol[0]->contents);
 				itSymbol->contents = (UINT)copyCell(cell);
 				sysSymbol[0]->contents = itSymbol->contents;
@@ -1451,6 +1449,7 @@ COMPARE_START:
 		}
 
 	deleteList((CELL*)sysSymbol[0]->contents);	
+	/* sysSymbol[0] should not be used here, introduce $count */
 	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
 	itSymbol->contents = (UINT)nilCell;
 	if((symbolCheck = refSymbol))

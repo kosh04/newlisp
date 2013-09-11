@@ -1,0 +1,47 @@
+# makefile for newLISP v. 10.x.x on Mac OSX with readline support
+# thanks to Greg Slepak for configuring this makefile
+#
+# for OS X 10.4/Tiger, Tiger comes standard with libreadline
+#
+# needs readline library and headerfiles installed (X tools)
+# use the Mac OS X lipo utitlity to extract one or the other ppc/intel
+# example: lipo newlisp-universal -output newlisp-ppc -thin ppc7400
+# note: architecture id for ppc on Tiger: ppc on Leopard: ppc7400
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NOTE: To run this makefile you must be using 10.5
+#       or later with the 10.4 SDK installed!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# it's possible to make it work on all systems by reading in
+# and parsing the value for ProductVersion in this file:
+#
+#     /System/Library/CoreServices/SystemVersion.plist
+
+# this does not seem necessary (but if there are problems try uncommenting it)
+# export MACOSX_DEPLOYMENT_TARGET=10.4
+
+# to run on 10.4 we must use gcc-4.0
+CC = /usr/bin/gcc-4.0
+SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk
+
+# additional CFLAGS not needed if CC path is set correctly
+# -I$(SDKROOT)/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include 
+# -I$(SDKROOT)/usr/lib/gcc/i686-apple-darwin8/4.0.1/include/
+
+CFLAGS = -Wall -arch i386 -arch ppc -Os -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -isysroot $(SDKROOT) 
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+default: $(OBJS)
+	$(CC) $(OBJS) -mmacosx-version-min=10.4 -arch i386 -arch ppc -g -lm -lreadline -o newlisp-universal
+	strip newlisp-universal
+#   lipo newlisp-universal -output newlisp-intel -thin i386
+#   lipo newlisp-universal -output newlisp-ppc -thin ppc
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_darwin_universal_utf8_compat
+

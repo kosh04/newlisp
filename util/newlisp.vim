@@ -6,9 +6,10 @@
 " Started at:   2007 Nov 07 (The Great Revolution 90th Anniversary)
 " Last change:  2009 Jun 12 (also an anniversary, but I don't care)
 " Last change:  2009 Jun 19 added new functions 'send'and 'receive'
+" Last change:  2009 Oct 20 added new function 'reader-event' 
 " newLISP site: http://www.newlisp.org/
 
-" $Id: newlisp.vim,v 1.27 2009/06/12 17:27:33 slobin Exp $
+" $Id: newlisp.vim,v 1.28 2009/10/20 17:27:33 slobin Exp $
 
 " *** Some syntax quirks of newLISP and how this file treats them: ***
 "
@@ -145,13 +146,13 @@ syn keyword newlispFunction nth null? number? open or pack parse parse-date peek
 syn keyword newlispFunction pop-assoc post-url pow pretty-print primitive? print println prob-chi2
 syn keyword newlispFunction prob-z process prompt-event protected? push put-url pv quote quote? rand
 syn keyword newlispFunction random randomize read-buffer read-char read-expr read-file read-key
-syn keyword newlispFunction read-line read-utf8 real-path receive ref ref-all regex regex-comp remove-dir
-syn keyword newlispFunction rename-file replace reset rest reverse rotate round save search seed
-syn keyword newlispFunction seek select semaphore send sequence series set set-locale set-ref set-ref-all
-syn keyword newlispFunction setf setq sgn share signal silent sin sinh sleep slice sort source spawn
-syn keyword newlispFunction sqrt starts-with string string? sub swap sym symbol? symbols sync
-syn keyword newlispFunction sys-error sys-info tan tanh throw throw-error time time-of-day timer
-syn keyword newlispFunction title-case trace trace-highlight transpose trim true? unicode unify
+syn keyword newlispFunction read-line read-utf8 reader-event real-path receive ref ref-all regex 
+syn keyword newlispFunction regex-comp remove-dir rename-file replace reset rest reverse rotate round
+syn keyword newlispFunction save search seed seek select semaphore send sequence series set set-locale 
+syn keyword newlispFunction set-ref set-ref-all setf setq sgn share signal silent sin sinh sleep slice 
+syn keyword newlispFunction sort source spawn sqrt starts-with string string? sub swap sym symbol? 
+syn keyword newlispFunction symbols sync sys-error sys-info tan tanh throw throw-error time time-of-day 
+syn keyword newlispFunction timer title-case trace trace-highlight transpose trim true? unicode unify
 syn keyword newlispFunction unique unless unpack until upper-case utf8 utf8len uuid wait-pid when
 syn keyword newlispFunction while write-buffer write-char write-file write-line xfer-event xml-error
 syn keyword newlispFunction xml-parse xml-type-tags zero? \| ~

@@ -45,6 +45,7 @@ darwin-package:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
+	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp

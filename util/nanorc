@@ -5,6 +5,7 @@
 ## version 1.09 ready for newLISP v 10.0
 ## version 1.10 ready for newLISP v 10.0.6
 ## version 1.11 ready for newLISP v 10.1
+## version 1.12 added a few missing functions
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -48,7 +49,7 @@ color blue "([[:space:]()]|^)(net-sessions|new|nil|nil\?|normal|not|now|nper|npv
 color blue "([[:space:]()]|^)(open|or|ostype|pack|parse|parse-date|peek|pipe|pmt|pop|pop-assoc|post-url)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(pow|pretty-print|primitive\?|print|println|prob-chi2|prob-z|process)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(prompt-event|protected\?|push|put-url|pv|quote|quote\?|rand|random|randomize)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(read-buffer|read-char|read-expr|read-file|read-key|read-line|real-path|receive|ref)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(read-buffer|read-char|read-expr|read-file|read-key|read-line|reader-event|real-path|receive|ref)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(ref-all|regex|regex-comp|remove-dir|rename-file|replace|replace-assoc)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(reset|rest|reverse|rotate|round|save|search|seed|seek|select|semaphore|send|sequence)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(series|set|set-locale|set-ref|set-ref-all|setf|setq|sgn|share)([[:space:]()]|$)"

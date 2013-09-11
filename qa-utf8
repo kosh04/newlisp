@@ -124,6 +124,8 @@
 (dotree (l L)
 	(println (name l) ":" (eval l)))
 
-(println "\011\239\163\191")
+;(println "\011\239\163\191")
+;(println "\239\163\191")
+(println (char 63743))
 (exit)
 ;; eof

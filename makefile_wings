@@ -62,6 +62,7 @@ win-gui:
 	cp modules/ftp.lsp /c/newlisp/modules
 	cp modules/gmp.lsp /c/newlisp/modules
 	cp modules/infix.lsp /c/newlisp/modules
+	cp modules/macro.lsp /c/newlisp/modules
 	cp modules/mysql.lsp /c/newlisp/modules
 	cp modules/odbc.lsp /c/newlisp/modules
 	cp modules/pop3.lsp /c/newlisp/modules

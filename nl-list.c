@@ -25,7 +25,6 @@
 extern SYMBOL * starSymbol;
 extern SYMBOL * plusSymbol;
 extern SYMBOL * sysSymbol[];
-extern SYMBOL * itSymbol;
 
 extern CELL * firstFreeCell;
 extern SYMBOL * dolistIdxSymbol;
@@ -247,7 +246,7 @@ if(listB)
     vectorB = listToSortedVector(listB, &lengthB, NULL, 0);
 
 result = getCell(CELL_EXPRESSION);
-    
+
 while(i < lengthA)
     {
     if(listB) switch(mode)
@@ -272,7 +271,7 @@ while(i < lengthA)
                 continue;
                 }
             if(cmp < 0) break;
-	    if(j < (lengthB - 1)) ++j;
+			if(j < (lengthB - 1)) ++j;
             else break;
 
             continue;
@@ -1337,6 +1336,7 @@ while(list != nilCell)
 		{
 		if(funcCell)
 			{
+			/* deprecated, take out in 10.2 */
 			deleteList((CELL*)sysSymbol[0]->contents);
 			sysSymbol[0]->contents = (UINT)copyCell(list);
 			}
@@ -1511,6 +1511,8 @@ if(cell == nilCell)
 	return;
 	}
 
+/* deprecate 10.1.6/ then eliminate usage of sysSymbol[0
+	and $it does not need a copy anymore */
 deleteList((CELL*)sysSymbol[0]->contents);
 itSymbol->contents = (UINT)copyCell(cell);
 sysSymbol[0]->contents = itSymbol->contents; 

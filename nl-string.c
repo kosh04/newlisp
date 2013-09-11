@@ -25,7 +25,6 @@
 #include "protos.h"
 
 extern SYMBOL * sysSymbol[];
-extern SYMBOL * itSymbol;
 
 #define OVECCOUNT (MAX_REGEX_EXP * 3)    /*  max sub expressions in PCRE */
 
@@ -2181,7 +2180,6 @@ for(idx = 0; idx < rc; idx++)
     cell = stuffStringN(string  + ovector[2*idx], ovector[2*idx+1] - ovector[2*idx]);
     deleteList((CELL*)sysSymbol[idx]->contents);
     sysSymbol[idx]->contents = (UINT)cell;
-    if(idx == 0) itSymbol->contents = (UINT)cell;
     }
 
 if(len != NULL)
@@ -2277,7 +2275,10 @@ while(offset <= buffLen)
     if(options == -1)
         findPos = searchBuffer(buff + offset, buffLen - offset, keyStr, keyLen, TRUE);
     else
+		{
         findPos = searchBufferRegex(buff, (int)offset, keyStr, (int)buffLen, options, &keyLen);
+		itSymbol->contents = sysSymbol[0]->contents;
+		}
 
     if(findPos == -1) break;
     

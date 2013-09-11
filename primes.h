@@ -339,6 +339,7 @@ PRIMITIVE primitive[] =
 	{"prompt-event",p_promptEvent,	0},
 	{"command-event", p_commandEvent, 0},
 	{"xfer-event", 	p_transferEvent, 0},
+	{"reader-event", 	p_readerEvent, 0},
 	{"last-error", 	p_lastError, 0},
 /*
 	{"error-number",p_errorNumber,0},

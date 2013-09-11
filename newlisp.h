@@ -330,6 +330,7 @@ This is for 64bit large file support (LFS),
 #define isSymbol(A) ((A) & SYMBOL_TYPE_MASK)
 #define isSelfEval(A) ((A) & EVAL_SELF_TYPE_MASK)
 #define isProtected(A) ((A) & SYMBOL_PROTECTED)
+#define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
 #define isDigit(A) isdigit((int)(A))
 
@@ -438,7 +439,6 @@ This is for 64bit large file support (LFS),
 #define UNKNOWN_ERROR "Unknown error"
 
 /* I/O routines */
-
 #define OUT_NULL 0
 #define OUT_DEVICE 1
 #define OUT_CONSOLE 2
@@ -534,6 +534,7 @@ extern SYMBOL * mainContext;
 extern SYMBOL * currentContext;
 extern SYMBOL * errorEvent;
 extern SYMBOL * symbolCheck;
+extern SYMBOL * itSymbol;
 extern SYMBOL sentinel;
 extern void * symbolCheckPtr;
 extern int traceFlag;

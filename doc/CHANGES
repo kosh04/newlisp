@@ -5418,4 +5418,34 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
     Copying a zero-length file will not throw an error anymore.
 
- 
+10.1.6
+    Fixes for 'net-error' and 'sys-error' when supplying out-of range numbers
+    o 0s. 
+
+    Documentation fixes in the 'Users Manual and Reference'.
+
+    'inf' is now signed in floating point opertions: (div -1 0) => -inf
+	'mod' will return NaN for a 0 divisor, % will still throw an exception
+    when divisor is 0.
+
+    Fixed a memory bug in 'starts-/ends-with' when using regular expressions.
+
+    'nil' and 'true' symbols where not always taken as boolean value which
+    affected 'sort' and 'difference'.
+
+    New 'reader-event' triggers when an expression was read. The function
+    specified in 'reader-event' can translate the expression before
+    evaluation returning a modified version of the input. This can be used
+    to create a reader macro facility.
+
+    New module file macro.lsp implements reader/rewrite macros by means
+    of the new 'reader-event' function.  
+
+    Change in sqlite3.lsp in bind-parameter, how text and blobs are retrieved.
+
+    deprecate usage of $0 in set-ref and set-ref-all .
+
+	throw error when trying to do a replace on a system symbol
+
+    some cleanup of itSymbol
+

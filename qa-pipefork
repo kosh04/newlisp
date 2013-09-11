@@ -23,6 +23,6 @@
 (wait-pid observer)
 (wait-pid counter)
 
-(println "\n" (div (- (time-of-day) start)  N) "ms per write->read")
+(println "\n" (div (- (time-of-day) start)  N) " ms per write->read")
 
 (exit)

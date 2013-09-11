@@ -22,8 +22,9 @@
 # 27 Nov 2008, L.M. added obsolete functions
 # 4 May 2009, L.M. added xfer-event
 # 12 June 2009, L.M. added send and receive
+# 20 October 2009, L.M. added reader-event
 #
-# version 1.5
+# version 1.6
 
 =Idle
 =Comment 	green
@@ -183,6 +184,7 @@
 "ends-with"	prim
 "env"	prim
 "erf"	prim
+"estack"	prim
 "error-event"	prim
 "eval"	prim
 "eval-string"	prim
@@ -330,6 +332,8 @@
 "read-file"	prim
 "read-key"	prim
 "read-line"	prim
+"read-utf8"	prim
+"reader-event"	prim
 "real-path"	prim
 "receive"	prim
 "ref"	prim

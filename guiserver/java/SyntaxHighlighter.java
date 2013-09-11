@@ -53,14 +53,15 @@ static String reserved[] = {
 "ostype","pack","parse", "parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print",
 "primitive?","print", "println","prob-chi2","prob-z","process","prompt-event","protected?","push","put-url","pv",
 "quote","quote?","rand", "random","randomize","read-buffer","read-char","read-expr","read-file","read-key",
-"read-line","read-utf8", "real-path","receive","ref","ref-all","regex","regex-comp","remove-dir","rename-file","replace",
-"replace-assoc","reset", "rest","reverse", "rotate","round","save","search","seed","seek","select","semaphore","send",
-"sequence","series","set", "set-locale","set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent",
-"sin","sinh","sleep","slice", "sort","source","spawn", "sqrt","starts-with","sync","string","string?","sub",
-"swap","sym","symbol?","symbols", "sys-error","sys-info","tan", "tanh","throw","throw-error","time","time-of-day",
-"timer","title-case","trace", "trace-highlight","transpose","trim", "true","true?","unicode","unify","unique",
-"unless","unpack", "until","upper-case","utf8","utf8len","uuid", "wait-pid","when","while","write-buffer",
-"write-char","write-file", "write-line","xfer-event","xml-error","xml-parse", "xml-type-tags","zero?","|","~" };
+"read-line","reader-event", "read-utf8", "real-path","receive","ref","ref-all","regex","regex-comp","remove-dir",
+"rename-file","replace", "replace-assoc","reset", "rest","reverse", "rotate","round","save","search","seed",
+"seek","select","semaphore","send", "sequence","series","set", "set-locale","set-ref", "set-ref-all","setq",
+"setf","sgn","share","signal","silent", "sin","sinh","sleep","slice", "sort","source","spawn", "sqrt",
+"starts-with","sync","string","string?","sub", "swap","sym","symbol?","symbols", "sys-error","sys-info","tan", 
+"tanh","throw","throw-error","time","time-of-day", "timer","title-case","trace", "trace-highlight","transpose",
+"trim", "true","true?","unicode","unify","unique", "unless","unpack", "until","upper-case","utf8","utf8len",
+"uuid", "wait-pid","when","while","write-buffer", "write-char","write-file", "write-line","xfer-event","xml-error",
+"xml-parse", "xml-type-tags","zero?","|","~" };
 
 static SimpleAttributeSet comment;
 static SimpleAttributeSet keyword;

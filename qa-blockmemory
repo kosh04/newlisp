@@ -29,7 +29,7 @@ b1 b2 b3 b4 initial
 	(reset nil)
 ;	(println "return b3: " (sys-info 0))
 	(unless (= initial (sys-info 0))
-		(println "Error in cell block allocation"))
+		(println "Error in cell block allocation") nil)
 )
 
 (if (and (run) (run) (run) (run) (run))

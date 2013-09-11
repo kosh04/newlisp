@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.10.1.5 Manual and Reference</title>
+   <title>newLISP v.10.1.6 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -128,7 +128,7 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.10.1.5</h2>
+<h2>Users Manual and Reference v.10.1.6</h2>
 </center>
 
 <br><br><br><br>
@@ -493,19 +493,11 @@ are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p
 <a name="deprecated"></a>
 <h2>2. Deprecated functions and future changes</h2>
 
-<p>The function <a href="#swap">swap</a> has a new syntax since 10.0.3. 
-Any two places referenced by a symbol, an indexed expression or an association
-reference using <a href="#assoc">assoc</a> or <a href="#lookup">lookup</a>
-can be swapped. Before this was possible only 
-with symbols. The old syntax using three parameters has been
-removed in version 10.0.5.</p>
-
-<p>The functions <tt>error-number</tt> and <tt>error-text</tt> have been replaced
-by the function <a href="#last-error">last-error</a> which returns the error number
-and text together in a list. This is consisten with the behavior of the other two
-error reporting functions <a href="#net-error">net-error</a> and
-<a href="#sys-error">sys-error</a>.</p>
-
+<p>The functions <a href="#set-ref">set-ref</a> and <a href="#set-ref-all">set-ref-all</a> 
+store found items in the system variables <tt>$it</tt> and <tt>$0</tt>. The usage of 
+<tt>$0</tt> in these functions is deprecated and will be removed in a future version. 
+Use only <tt>$it</tt>. The usage of <tt>$0</tt> to <tt>$15</tt> will 
+be reserved for regular expressions in a future version.</p>
 <br>
 
 <center>
@@ -939,12 +931,12 @@ available on Win32.</p>
 
 <br>
 
-<a name="conn_timeout"><a>
+<a name="conn_timeout"></a>
 <h3>Connection timeout</h3>
 
-<p>Specifies  a  connection timeout when running in <tt>-p</tt> or <t>-d</tt> 
+<p>Specifies  a  connection timeout when running in <tt>-p</tt> or <tt>-d</tt> 
 demon mode. A newLISP Server will disconnect when no further input is read after 
-accepting a client connection. The timeout is specified in micro seconds:<p>
+accepting a client connection. The timeout is specified in micro seconds:</p>
 
 <pre>
 newlisp -c -t 3000000 -d 4711 &amp;
@@ -4681,9 +4673,8 @@ A string or an expression that evaluates to a string.
 
 <p>
 Special characters can be included in quoted strings 
-by placing a <tt>\</tt> (backslash) before the character
-	or digits to escape them:
-</p>
+by placing a <tt>\</tt> (backslash) before the character or 
+digits to escape them:</p>
 
 <table width="98%"  summary="escaping special characters in strings">
 <tr align="left" valign="bottom"><th>character</th><th>description</th></tr>
@@ -4711,6 +4702,11 @@ by placing a <tt>\</tt> (backslash) before the character
 <td><tt>\xnn</tt></td>
 <td>a hexadecimal code where nn is between 00 and FF</td>
 </tr>
+
+<tr>
+<td><tt>\\</tt></td>
+<td>the backslash character itself</td>
+</tr>
 </table><br>
 
 <p>Decimals start with a digit. Hexadecimals start with <tt>x</tt>:.</p>
@@ -4721,17 +4717,13 @@ by placing a <tt>\</tt> (backslash) before the character
 </pre>
 
 
-<p>
-	Instead of a <tt>"</tt> (double quote),
-	a <tt>{</tt> (left curly bracket) 
-	and <tt>}</tt> (right curly bracket) 
-	can be used to delimit strings.
-	This is useful when quotation marks need to occur inside strings. 
-	Quoting with the curly brackets
-	suppresses the backslash escape effect for special characters. 
-	Balanced nested curly brackets may be used within a string.
-	This aids in writing regular expressions or short sections of HTML.
-</p>
+<p>Instead of a <tt>"</tt> (double quote), a <tt>{</tt> (left curly bracket) 
+and <tt>}</tt> (right curly bracket) can be used to delimit strings.
+This is useful when quotation marks need to occur inside strings. 
+Quoting with the curly brackets suppresses the backslash escape effect 
+for special characters. Balanced nested curly brackets may be used within 
+a string.  This aids in writing regular expressions or short sections of 
+HTML.</p>
 
 
 <pre>
@@ -4739,7 +4731,20 @@ by placing a <tt>\</tt> (backslash) before the character
 
 (print {&lt;A HREF="http://mysite.com"&gt;} )   ; the readable way
 
-;; also possible because the inner brackets are balanced
+
+; path names on MS Windows
+
+(set 'path "C:\\MyDir\\example.lsp")
+
+; no escaping when using braces
+
+(set 'path {C:\MyDir\example.lsp})
+
+; on MS Windows the forward slash can be used in path names
+
+(set 'path "C:/MyDir/example.lsp")
+
+; inner braces are balanced
 (regex {abc{1,2}} line) 
 
 (print [text]
@@ -6733,6 +6738,11 @@ arithmetic">
 <tr>
 <td><a href="#read-expr">read-expr</a></td>
 <td>reads and optionally translates s-expressions from source</td>
+</tr>
+
+<tr>
+<td><a href="#reader-event">reader-event</a></td>
+<td>preprocess expressions before evaluation event-driven</td>
 </tr>
 
 <tr>
@@ -10485,12 +10495,10 @@ syntax: (date <em>int-secs</em> <em>int-offset</em> <em>str-format</em>)</h4>
 </pre>
 
 
-<p>
-	The following table summarizes all format specifiers available 
-	on both Win32 and Linux/Unix platforms. 
-	More format options are available on Linux/Unix. 
-	For details, consult the documentation for the C function 
-	<tt>strftime()</tt> in the individual platform's C library.
+<p>The following table summarizes all format specifiers available 
+on both Win32 and Linux/Unix platforms.  More format options are 
+available on Linux/Unix. For details, consult the manual page for 
+the C function <tt>strftime()</tt> of the individual platform's C library.
 </p>
 
 <table width="98%"  summary="date formatting">
@@ -10533,15 +10541,15 @@ different on Unix)</td></tr>
 </table><br>
 
 <p>
-	Leading zeroes in the display of decimal numbers can be suppressed 
-	using <tt>-</tt> (minus) on Linux/Unix and <tt>#</tt> (number sign) on Win32.
+Leading zeroes in the display of decimal day numbers can be suppressed 
+using <tt>"%-d"</tt> on Linux and FreeBSD and using <tt>"%e"</tt> 
+on OpenBSD, SunOS/Solaris and Mac OS X.  On Win32 use <tt>"%#d"</tt>.
 </p>
 
-<p>
-	See also <a HREF="#date-value">date-value</a>,
-    <a href="#parse-date">parse-date</a>, 
-	<a HREF="#time-of-day">time-of-day</a>, 
-	<a HREF="#time">time</a>, and <a HREF="#now">now</a>.
+<p>See also <a HREF="#date-value">date-value</a>,
+<a href="#parse-date">parse-date</a>, 
+<a HREF="#time-of-day">time-of-day</a>, 
+<a HREF="#time">time</a>, and <a HREF="#now">now</a>.
 </p>
 
 <br><br>
@@ -11302,24 +11310,23 @@ This second syntax is not available on Win32.</p>
 
 <a name="device"></a>
 <h2><span class="function">device</span></h2>
-<h4>syntax: (device [<em>int</em>])</h4>
+<h4>syntax: (device [<em>int-handle</em>])</h4>
 
-<p>
-	<em>int</em> is an I/O device number, which is 0 (zero) 
-	for the default STD I/O console window. 
-	<em>int</em> may also be a file handle 
-	previously obtained using <a href="#open">open</a>. 
-	When no argument is supplied, 
-	the current I/O device number is returned. 
-	The I/O channel specified by <tt>device</tt> 
-	is used internally by the functions 
-	<a HREF="#print">print</a> and <a HREF="#read-line">read-line</a>. 
-	When the current I/O device is 0 (zero), <a HREF="#print">print</a> 
-	sends output to the console window and <a HREF="#read-line">read-line</a> 
-	accepts input from the keyboard. 
-	If the current I/O device has been set by opening a file, 
-	then <a HREF="#print">print</a> and <a HREF="#read-line">read-line</a> work on that file.
+<p><em>int</em> is an I/O device number, which is set to 0 (zero)
+for the default STD I/O pair of handles, 0 for <i>stdin</i> and 1
+for <i>stdout</i>. <em>int-handle</em> may also be a file handle 
+previously obtained using <a href="#open">open</a>. In this case
+both, input and output are channeled through this handle.
+When no argument is supplied, the current I/O device number is returned. 
 </p>
+
+<p>The I/O channel specified by <tt>device</tt> is used internally 
+by the functions <a HREF="#print">print</a> and <a HREF="#read-line">read-line</a>. 
+When the current I/O device is 0 or 1, <a HREF="#print">print</a> 
+sends output to the console window and <a HREF="#read-line">read-line</a> 
+accepts input from the keyboard. If the current I/O device has been set 
+by opening a file, then <a HREF="#print">print</a> and <a HREF="#read-line">read-line</a> 
+work on that file.</p>
 
 <!-- example -->
 
@@ -12165,15 +12172,14 @@ where the variable stays with an empty string.</p>
 
 <a name="error-event"></a>
 <h2><span class="function">error-event</span></h2>
-<h4>syntax: (error-event <em>sym</em>)<br>
-syntax: (error-event <em>func</em>)</h4>
+<h4>syntax: (error-event <em>sym-event-handler | func-event-handler</em>)</h4>
 
-<p><em>sym</em> contains a user-defined function for handling errors. 
+<p><em>sym-event-handler</em> contains a user-defined function for handling errors. 
 Whenever an error occurs, the system performs a <a HREF="#reset">reset</a> 
 and executes the user-defined error handler.  The error handler can use the 
 built-in function <a HREF="#last-error">last-error</a> to retrieve the number 
-and text of the error.
-</p>
+and text of the error. The event handler is specified as either a quoted
+symbol or a lambda function.</p>
 
 <!-- example -->
 
@@ -12477,7 +12483,7 @@ and the expanded expression is returned. The original list remains unchanged.
 <pre>
 (set 'x 2 'a '(d e))
 (set 'foo 'a)
-(expand 'foo 'a)               <span class=arw>&rarr;</span> (d e)
+(expand foo 'a)               <span class=arw>&rarr;</span> (d e)
 (expand '(a x b) 'x)           <span class=arw>&rarr;</span> (a 2 b)
 (expand '(a x (b c x)) 'x)     <span class=arw>&rarr;</span> (a 2 (b c 2))
 (expand '(a x (b c x)) 'x 'a)  <span class=arw>&rarr;</span> ((d e) 2 (b c 2))
@@ -13144,9 +13150,6 @@ sublist:</p>
 </pre>
 
 
-<p>Instead of the system variable <tt>$it</tt> the variable <tt>$0</tt> could be used
-as well.</p>
-
 <p><tt>find-all</tt> for list matches always uses <a href="#match">match</a> to compare when
 searching for sublists and always needs a list for the pattern expression.</p>
 
@@ -13159,7 +13162,7 @@ function used for comparing list elements with the key expression in <em>exp-key
 <pre>
 (find-all 5 '(2 7 4 5 9 2 4 9 7 4 8) $it &lt;) <span class=arw>&rarr;</span> (7 9 9 7 8)
 
-; process the found element available in $0 or $it
+; process the found element available in $it
 
 (find-all 5 '(2 7 4 5 9 2 4 9 7 4 8) (* 3 $it) &lt;) <span class=arw>&rarr;</span> (21 27 27 21 24)
 
@@ -15050,7 +15053,8 @@ throw an "division by zero" error and not yield infinity. See also
 (int 'xyz 0)   <span class=arw>&rarr;</span> 0
 (int nil 123)  <span class=arw>&rarr;</span> 123
 
-(int "abc" "not a number")  <span class=arw>&rarr;</span> "not a number"
+(int "abc" (throw-error "not a number"))  
+<span class=arw>&rarr;</span> <span class=err>ERR: user error : not a number</span>
 
 (print "Enter a num:")
 (set 'num (int (read-line)))
@@ -15469,7 +15473,7 @@ variable.
 <h4>syntax: (length <em>exp</em>)</h4>
 
 <p>Returns the number of elements in a list, the number of rows in
-an array, or the number of characters in a string.
+an array, or the number of bytes in a string.
 </p>
 
 <p><tt>length</tt> applied to a symbol returns the length of the symbol name.
@@ -18506,13 +18510,13 @@ has a different value from 1 to 6:</p>
 
 <table  width="35%" summary="date formatting">
 <tr align="left"><th>type</th><th>area</th></tr>
-<tr><td>0</td><td>not on dst</td><tr>
-<tr><td>1</td><td>USA style dst</td><tr>
-<tr><td>2</td><td>Australian style ds</td><tr>
-<tr><td>3</td><td>Western European dst</td><tr>
-<tr><td>4</td><td>Middle European dst</td><tr>
-<tr><td>5</td><td>Eastern European dst</td><tr>
-<tr><td>6</td><td>Canada</td><tr>
+<tr><td>0</td><td>not on dst</td></tr>
+<tr><td>1</td><td>USA style dst</td></tr>
+<tr><td>2</td><td>Australian style ds</td></tr>
+<tr><td>3</td><td>Western European dst</td></tr>
+<tr><td>4</td><td>Middle European dst</td></tr>
+<tr><td>5</td><td>Eastern European dst</td></tr>
+<tr><td>6</td><td>Canada</td></tr>
 </table>
 
 
@@ -20672,6 +20676,9 @@ but without the evaluation step:</p>
 <p>Using <tt>read-expr</tt> a customized code reader can be programmed
 preprocessing expressions before evaluation.</p>
 
+<p>See also <a href="#reader-event">reader-event</a> for preprocessing
+expressions event-driven.</p>
+
 <br><br>
 
 <a name="read-file"></a>
@@ -20866,16 +20873,81 @@ terminal screen.</p>
 
 <br><br>
 
+
+<a name="reader-event"></a>
+<h2><span class="function">reader-event</span></h2>
+<h4>syntax: (reader-event [<em>sym-event-handler | func-event-handler</em>])<br>
+syntax: (reader-event nil)</h4>
+
+<p>An event handler can be specified to hook between newLISP's reader, 
+translation and evaluation process. The function specified in 
+<em>sym-event-handler</em> or <em>func-event-handler</em> gets called after 
+newLISP translates an expression and before evaluating it. The event handler can do 
+transformation on the expression before it gets evaluated.</p>
+
+<p>Specifying <tt>nil</tt> for the event will disable it.</p>
+
+<p>The following example shows the core of a simple macro rewrite pre-processor.
+A full version is installed in the standard location as module file <tt>marco.lsp</tt>.
+
+
+<!-- example -->
+<pre>
+(context 'macro)
+
+; registers a macro
+(define-macro (macro:macro callp body)
+    (push (list (first callp) '*) macro-list -1)
+    (eval (expand '(define-macro callp (expand 'body)) 'callp 'body))
+)
+
+; the event handler translating expressions
+(define (rewrite expr)
+    (if (list? expr)
+        (dolist (pattern macro-list)
+            (if (match pattern expr)
+                (setf expr (eval expr))
+                (set-ref-all pattern expr (eval $it) match)) )
+    )
+    expr
+)
+
+; register event handler
+(reader-event rewrite)
+
+(context MAIN)
+</pre>
+
+<p>The reader event function will be called after each reading of an s-expression
+by the <a href="#load">load</a> or <a href="#eval-string">eval-string</a> function.</p>
+
+<p>Register a function macro for pre-processing:</p>
+
+<!-- example -->
+
+<pre>
+(macro (square X) (pow X 2)) ; must use uppercase vars
+
+; use the macro
+(square 3) <span class=arw>&rarr;</span> 9
+</pre>
+
+<p>After registering the macro <tt>square</tt> newLISP will expand each
+occurrance of a <tt>(square ...)</tt> to a <tt>(pow ... 2)</tt> expression.</p>
+
+<p>For a more detailed description see the documentation for <tt>macro.lsp</tt>.
+</p>
+
+
+<br><br>
+
 <a name="real-path"></a>
 <h2><span class="function">real-path</span></h2>
 <h4>syntax: (real-path [<em>str-path</em>])</h4>
 
 <p>
-	Returns the full path 
-	from the relative file path 
-	given in <em>str-path</em>. 
-	If a path is not given, 
-	<tt>"."</tt> (the current directory) is assumed.
+Returns the full path from the relative file path given in <em>str-path</em>. 
+If a path is not given, <tt>"."</tt> (the current directory) is assumed.
 </p>
 
 <!-- example -->
@@ -20888,11 +20960,9 @@ terminal screen.</p>
 
 
 <p>
-	The output length is limited 
-	by the OS's maximum allowed path length. 
-	If <tt>real-path</tt> fails 
-	(e.g., because of a nonexistent path), 
-	<tt>nil</tt> is returned.
+The output length is limited by the OS's maximum allowed path length. 
+If <tt>real-path</tt> fails (e.g., because of a nonexistent path), 
+<tt>nil</tt> is returned.
 </p>
 
 <br><br>
@@ -20935,13 +21005,6 @@ returns a list of integer indices or an empty list if <em>exp-key</em> cannot be
 found.  <tt>ref</tt> can work together with <a href="#push">push</a> and 
 <a href="pop">pop</a>, both of which can also take lists of indices. </p>
 
-<p> The optional <em>func-compare</em> contains a comparison operator 
-or function. In this case the system variable <tt>$0</tt> contains
-the last expression found.</p>
-
-<p>The first flat syntax should only be used if <em>exp-key</em> is not a
-parenthesized unquoted expression to avoid ambiguity.</p>
-
 <!-- example -->
 
 <pre>
@@ -20978,24 +21041,20 @@ pList  <span class=arw>&rarr;</span> (a b (c d (x) e))
 ; not specifying a comparison functor assumes =
 
 (ref 'e L)    <span class=arw>&rarr;</span> (2 2 0)
-$0 <span class=arw>&rarr;</span> e
 
 ; a is the first symbol where e is greater
 
 (ref 'e L &gt;)  <span class=arw>&rarr;</span> (0)
-$0 <span class=arw>&rarr;</span> a
 
 ; use an anonymous comparison function
 
 (ref 'e L (fn (x y) (or (= x y) (= y 'd)))) <span class=arw>&rarr;</span> (2 1)
-$0 <span class=arw>&rarr;</span> d
 
 ; define the comparison function first
 
 (define (is-it-or-d x y) (or (= x y) (= y 'd)))
 
 (ref 'e L is-it-or-d)  <span class=arw>&rarr;</span> (2 1)
-$0 <span class=arw>&rarr;</span> d
 </pre>
 
 
@@ -21013,17 +21072,17 @@ for strings:
 ; use match as a comparison function
 
 (ref '(a ?) L match) <span class=arw>&rarr;</span> (1)
-$0 <span class=arw>&rarr;</span> (a 12)
+$it <span class=arw>&rarr;</span> (a 12)
 
 ; use unify as a comparison function
 
 (set 'L '( ((a b) (c d)) ((e e) (f g)) ))
 
 (ref '(X X) L unify) <span class=arw>&rarr;</span> (1 0)
-$0 <span class=arw>&rarr;</span> (e e)
+$it <span class=arw>&rarr;</span> (e e)
 
 (ref '(X g) L) unify) <span class=arw>&rarr;</span> (1 1)
-$0 <span class=arw>&rarr;</span> (f g)
+$it <span class=arw>&rarr;</span> (f g)
 </pre>
 
 
@@ -22039,7 +22098,7 @@ the string <tt>#define</tt> and prints the rest of the line after the string "#d
 <pre>
 (seed 12345)
 
-(seed (date-value))
+(seed (time-of-day))
 </pre>
 
 
@@ -22787,12 +22846,12 @@ in the newLISP source distribution for details.</p>
 
 <a name="set-ref"></a>
 <h2><span class="function">set-ref</span>&nbsp;<a href="#destructive">!</a></h2>
-<h4>syntax: (set-ref (<em>list</em> <em>exp-key</em>) <em>exp-replacement</em> [<em>func-compare</em>])</h4>
+<h4>syntax: (set-ref <em>exp-key</em> <em>list</em> <em>exp-replacement</em> [<em>func-compare</em>])</h4>
 
 
 <p>Searches for <em>exp-key</em> in <em>list</em> and replaces the found element with 
 <em>exp-replacement</em>. The <em>list</em> can be nested. The system variables 
-<tt>$it</tt> and <tt>$0</tt> contains the expression found and can be used in 
+<tt>$it</tt> contains the expression found and can be used in 
 <em>exp-replacement</em>. The function returns the old replaced element.</p>
 
 
@@ -22823,11 +22882,11 @@ db:db <span class=arw>&rarr;</span> (fruits (Apples 123 44) (Oranges 1 5 3))
 </pre>
 
 
-<p>For examples on how to use <em>func-compare</em> see <a href="#set-ref-all">set-ref-all</a></p>
+<p>For examples on how to use <em>func-compare</em> see 
+<a href="#set-ref-all">set-ref-all</a></p>
 
-<p>See also <a href="#set-ref">set-ref</a>, which returns the whole changed list
-instead of the old element, but otherwise works identically. For changing all
-occurrences of an element in a list use <a href="#set-ref-all">set-ref-all</a>.</p>
+<p>For changing all occurrences of an element in a list use 
+<a href="#set-ref-all">set-ref-all</a>.</p>
 
 <br><br>
 
@@ -22836,7 +22895,7 @@ occurrences of an element in a list use <a href="#set-ref-all">set-ref-all</a>.<
 <h4>syntax: (set-ref-all <em>exp-key</em> <em>list</em>  <em>exp-replacement</em> [<em>func-compare</em>])</h4>
 
 <p>Searches for <em>exp-key</em> in <em>list</em> and replaces each instance of the found element 
-with <em>exp-replacement</em>. The <em>list</em> can be nested. The system variable <tt>$0</tt> 
+with <em>exp-replacement</em>. The <em>list</em> can be nested. The system variable <tt>$it</tt> 
 contains the expression found and can be used in <em>exp-replacement</em>.</p>
 
 <!-- example -->
@@ -22885,8 +22944,8 @@ complex searches can be expressed using
 </pre>
 
 
-<p>The example sums all numbers found in records starting with the symbol <tt>oranges</tt>.
-Instead of the system variable <tt>$it</tt>. <tt>$0</tt> could be used as well.</p>
+<p>The example sums all numbers found in records starting with 
+the symbol <tt>oranges</tt>. The found items appear in <tt>$it</tt></p>
 
 <p>See also <a href="#set-ref">set-ref</a> which replaces only the first element found.</p>
 
@@ -24221,7 +24280,7 @@ Consult the platform's C library information. The error is
 reported as a list of errror number and error text.</p>
 
 <p>If no error has occurred or the system error number has
-been reset <tt>nil</tt> is returned.</p>
+been reset, <tt>nil</tt> is returned.</p>
 
 <p>When <em>int-error</em> is greater <tt>0</tt> (zero) a
 list of the number and the error text is returned.</p>
@@ -24246,6 +24305,7 @@ resources like file handles or semaphores.</p>
 
 ;; reset errno
 (sys-error 0)     <span class=arw>&rarr;</span> (0 "Unknown error: 0")
+(sys-error)       <span class=arw>&rarr;</span> nil
 </pre>
 
 
@@ -24483,8 +24543,8 @@ and <a HREF="#now">now</a> functions.</p>
 
 <a name="timer"></a>
 <h2><span class="function">timer</span></h2>
-<h4>syntax: (timer <em>sym | func-event-handler</em> <em>num-seconds</em> [<em>int-option</em>])<br>
-syntax: (timer <em>sym | func-event-handler</em>)<br>
+<h4>syntax: (timer <em>sym-event-handler | func-event-handler</em> <em>num-seconds</em> [<em>int-option</em>])<br>
+syntax: (timer <em>sym-event-handler | func-event-handler</em>)<br>
 syntax: (timer)</h4>
 
 <p>Starts a one-shot timer firing off the Unix signal <tt>SIGALRM</tt>, <tt>SIGVTALRM</tt>, 
@@ -24493,18 +24553,12 @@ has elapsed. When the timer fires, it calls the user-defined function
 in <em>sym-</em> or <em>func-event-handler</em>.
 </p>
 
-<p>On Linux/Unix, an optional <tt>0</tt>, <tt>1</tt>, 
-or <tt>2</tt> can be specified 
-to control how the timer counts.
-With default option <tt>0</tt>,
-real time is measured.
-Option <tt>1</tt> measures the time 
-the CPU spends processing in the process 
-owning the timer.
-Option <tt>3</tt> is a combination of both 
-called <em>profiling time</em>.
-See the Unix man page <tt>setitimer()</tt> 
-for details.
+<p>On Linux/Unix, an optional <tt>0</tt>, <tt>1</tt>, or <tt>2</tt> can 
+be specified to control how the timer counts.  With default option 
+<tt>0</tt>, real time is measured.  Option <tt>1</tt> measures the time 
+the CPU spends processing in the process owning the timer.
+Option <tt>3</tt> is a combination of both called <em>profiling time</em>.
+See the Unix man page <tt>setitimer()</tt> for details.
 </p>
 
 <p>The event handler can start the timer again to achieve a 
@@ -24516,14 +24570,13 @@ part (e.g., <tt>0.25</tt> for 250 milliseconds).</p>
 and prevents it from firing.</p>
 
 <p>
-When called with <em>sym-</em> for <em>func-event-handler</em>, 
+When called with <em>sym-</em> or <em>func-event-handler</em>, 
 <tt>timer</tt> returns the elapsed time of the timer in progress.
 This can be used to program timelines or schedules.</p>
 
 <p>
-<tt>timer</tt> called without arguments 
-returns the symbol of the current event handler.
-</p> 
+<tt>timer</tt> called without arguments returns the symbol of the current 
+event handler.</p> 
 
 
 <!-- example -->
@@ -25522,7 +25575,7 @@ This function is only available on UTF-8&ndash;enabled versions of newLISP.</p>
 <!-- example -->
 
 <pre>
-(utf8-len "我能吞下玻璃而不伤身体。")    <span class=arw>&rarr;</span> 12
+(utf8len "我能吞下玻璃而不伤身体。")    <span class=arw>&rarr;</span> 12
 (length "我能吞下玻璃而不伤身体。")      <span class=arw>&rarr;</span> 36
 </pre>
 
@@ -25903,7 +25956,7 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 
 <a name="xfer-event"></a>
 <h2><span class="function">xfer-event</span></h2>
-<h4>syntax: (xfer-event <em>sym | func</em>)</h4>
+<h4>syntax: (xfer-event <em>sym | func-event-handler</em>)</h4>
 
 <p>Registers a function in symbol <em>sym</em> or in lambda function <em>func</em>
 to monitor HTTP byte transfers initiated by <a href="#get-url">get-url</a>,
