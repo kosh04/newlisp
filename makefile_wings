@@ -19,7 +19,7 @@ win-gui:
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-10.0-Release.html /c/newlisp
+	cp doc/newLISP-10.1-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	
@@ -62,10 +62,10 @@ win-gui:
 	cp modules/ftp.lsp /c/newlisp/modules
 	cp modules/gmp.lsp /c/newlisp/modules
 	cp modules/infix.lsp /c/newlisp/modules
-	cp modules/mysql5.lsp /c/newlisp/modules
-	cp modules/mysql51.lsp /c/newlisp/modules
+	cp modules/mysql.lsp /c/newlisp/modules
 	cp modules/odbc.lsp /c/newlisp/modules
 	cp modules/pop3.lsp /c/newlisp/modules
+	cp modules/postgres.lsp /c/newlisp/modules
 	cp modules/postscript.lsp /c/newlisp/modules
 	cp modules/smtp.lsp /c/newlisp/modules
 	cp modules/sqlite3.lsp /c/newlisp/modules

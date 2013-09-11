@@ -22,6 +22,7 @@ h1 {
 	}
 
 h2, h3, h4 {
+	margin-top: 3%;
 	font-family: Georgia, Times New Roman, Times, serif;
    	font-size: 110%;
 	}
@@ -43,7 +44,7 @@ tt {
 
 <center>
 <h1>newLISPdoc - the newLISP documentation program</h1>
-<font size="-1">last edited 2008-12-24</font>
+<font size="-1">last edited 2009-05-29</font>
 </center>
 
 <p>Comments in newLISP source files can be converted
@@ -167,6 +168,10 @@ space:</p>
 <blockquote><pre>
 @link link description
 </pre></blockquote>
+
+<p>Custom tags can be made up by just prepending the custom name with a <tt>@</tt>.
+The text after the custom tag will be translated as usual, e.g. it may contain
+a <tt>@link</tt> tag. Like in most other tags, text is limited to the same line.</p>
 
 <p>All words between <tt>&lt;...&gt;</tt> angle braces are displayed in italic. 
 Internally newLISPdoc uses <tt>&lt;em&gt;,&lt;/em&gt;</tt> tags for formatting. They

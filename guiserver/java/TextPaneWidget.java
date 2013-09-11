@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/11/07.
 //
 //
-//    Copyright (C) 2008 Lutz Mueller
+//    Copyright (C) 2009 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -86,8 +86,7 @@ public TextPaneWidget(StringTokenizer params)
 	
 	if(params.hasMoreTokens())
 		contentType = params.nextToken();
-	//if(!contentType.equals("text/html") && !contentType.equals("text/rtf"))
-	//	contentType = "text/plain";
+
 	textPane.setContentType(contentType);
 			
 	areaScrollPane = new JScrollPane(textPane);
@@ -119,12 +118,11 @@ public TextPaneWidget(StringTokenizer params)
 			Character chr = new Character(e.getKeyChar());
 			int code = e.getKeyCode();
 			lastCharCode = chr.hashCode();
-			int lastPos, caretPos, size, len;
 			
 			lastModifiers = e.getModifiersEx();
-			
+			//System.out.println("->" + lastCharCode);
 			if(syntaxSelected != SYNTAX_NONE) colorSyntax();
-	
+					
 			switch(lastCharCode)
 				{
 				case 40:
@@ -175,6 +173,7 @@ public TextPaneWidget(StringTokenizer params)
 				lastModifiers + " " + dot + " " + mark + " " + documentLength + " " + 
 				undoState + " " + redoState + ")");
 			guiserver.out.flush();
+			
 			lastCharCode = 65535;
 			}
 		};
@@ -184,8 +183,6 @@ public TextPaneWidget(StringTokenizer params)
 	
 	undoableEditListener = new MyUndoableEditListener();
 	
-	styledDoc.addUndoableEditListener(undoableEditListener);
-	styledDoc.addDocumentListener(new MyDocumentListener());
 	
 	// set ctrl-Z and meta-Z undo/redo keys
 	InputMap inputMap = textPane.getInputMap();
@@ -203,9 +200,13 @@ public TextPaneWidget(StringTokenizer params)
 		key = KeyStroke.getKeyStroke(KeyEvent.VK_Z, Event.CTRL_MASK | Event.SHIFT_MASK);
 	inputMap.put(key, redoAction);
 	
+	
+	styledDoc.addUndoableEditListener(undoableEditListener);
+	styledDoc.addDocumentListener(new MyDocumentListener());
+
 	textPane.addHyperlinkListener(new Hyperactive());
-	textPane.addKeyListener(keyListener);
 	textPane.addCaretListener(caretListener);
+	textPane.addKeyListener(keyListener);
 	}
 	
 public void highlightOpeningPar(char opng, char clsng)
@@ -319,7 +320,6 @@ public void findText(StringTokenizer tokens)
 	
 	if(direction.equals("previous"))
 		{
-		//++currentCaret;
 		if(currentCaret > findtext.length() + 1) 
 			currentCaret -= findtext.length() + 1;
 		dot = text.lastIndexOf(findtext, currentCaret);
@@ -370,7 +370,6 @@ public void setSyntax(StringTokenizer tokens)
 		syntaxSelected = SYNTAX_PHP;
 	else syntaxSelected = SYNTAX_NONE;
 
-	//textPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	if(syntaxSelected == SYNTAX_NONE)
 		{
 		SimpleAttributeSet normal = new SimpleAttributeSet();
@@ -388,7 +387,6 @@ public void setSyntax(StringTokenizer tokens)
 			SyntaxHighlighterC.color(widget, 0, documentLength);
 			}
 		}
-	//textPane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			
 	undo.discardAllEdits();
 	}
@@ -438,7 +436,6 @@ public void undoEnable(StringTokenizer tokens)
 public void undoText(StringTokenizer tokens)
 	{
 	undoAction.actionPerformed(new ActionEvent(textPane, Event.ACTION_EVENT, "Undo"));
-	//undo.undo();
 	}
 	
 public void redoText(StringTokenizer tokens)
@@ -452,7 +449,8 @@ public void colorSyntax()
 	int pos = 0;
 	int size = shTopLevels.size();
 	int p, len;
-		
+
+	//System.out.println(".");
 	for(int idx = size - 1; idx >= 0; idx--)
 		{
 		pos = (Integer)shTopLevels.elementAt(idx);
@@ -471,7 +469,7 @@ public void colorSyntax()
 		len = caretPos + 1024;
 	else
 		len = documentLength;
-	
+		
 	if(syntaxSelected == SYNTAX_NEWLISP)
 		SyntaxHighlighter.color(widget, pos, len);
 	else
@@ -486,7 +484,6 @@ protected class MyUndoableEditListener implements UndoableEditListener
 		//Remember the edit and update the menus.
 		if(SyntaxHighlighter.active || undoEnabled != true) return;
 		undo.addEdit(e.getEdit());
-		//System.out.println("=>" + undo.getUndoPresentationName());
 		undoAction.updateUndoState();
 		redoAction.updateRedoState();
         }
@@ -498,7 +495,7 @@ protected class MyDocumentListener implements DocumentListener
 	public void insertUpdate(DocumentEvent e) { updateParams(e);}
 	public void removeUpdate(DocumentEvent e) { updateParams(e);}
 	public void changedUpdate(DocumentEvent e) { updateParams(e);}
-	
+
 	private void updateParams(DocumentEvent e)
 		{
 		Document document = (Document)e.getDocument();

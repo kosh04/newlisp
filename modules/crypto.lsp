@@ -4,7 +4,10 @@
 ;; @version 1.02 - renamed to crypto, new lib detection
 ;; @version 1.04 - added hmac encryption from amazon.com query API
 ;; @version 1.05 - added added gnuwin32/bin/libeay32.dll for crypto on Win32
-;; @author Lutz Mueller 2007, Martin Quiroga 2007
+;; @version 1.06 - added ripemd160
+;; @version 1.07 - added libcrypto for OpenBSD and tested for 64-bit
+;; @version 1.08 - help text corrections
+;; @author Lutz Mueller 2007, Martin Quiroga 2007, Norman Deppenbroek 2009
 ;;
 ;; <h2>Module for SSL lib crypto  bindings</h2>
 ;; This modules imports functions for the MD5 and SHA-1 hashing algorithms described
@@ -15,6 +18,8 @@
 ;; beginning of the program file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/crypto.lsp")
+;; ; or as a shorter alternative
+;; (module "crypto.lsp")
 ;; </pre>
 ;; <h2>Requirements:</h2> 
 ;; On Mac OS X, UBUNTU and many other Linux, BSDs and other UNIX installations
@@ -37,6 +42,7 @@
 	"/usr/lib/libcrypto.so.0.9.7"
 	"/usr/lib/libcrypto.so.0.9.6"
 	"/usr/lib/libcrypto.so.4"
+	"/usr/lib/libcrypto.so.14.0"
 	"/usr/lib/libcrypto.dylib"
 ))
 
@@ -45,6 +51,7 @@
 				(begin (println "cannot find crypto library") (exit)))))
 
 (import library "MD5")
+(import library "RIPEMD160")
 (import library "SHA1")
 
 ;; @syntax (crypto:md5 <string> <bool-raw>)
@@ -113,6 +120,28 @@
   (set 'opad (encrypt opad key_str))
   (set 'ipad (encrypt ipad key_str))
   (hash_fn (append opad (hash_fn (append ipad msg_str) true)) true)
+)
+
+
+;; @syntax (crypto:ripemd160 <string> <bool-raw>) 
+;; @param <string> The string buffer for which to calculate a RIPEMD160 hash 
+;; @param <bool-raw> Return the raw binay buffer when 'true'. 
+;; @return The 20 Byte RIPEMD160 hash as a 40 Byte long hex string or as a 20 byte binary buffer. 
+;; @example 
+;; (crypto:ripemd160 "ABC") => "df62d400e51d3582d53c2d89cfeb6e10d32a3ca6" 
+;; 
+;; (crypto:ripemd160 (read-file "newlisp.exe")) => "9c1185a5c5e9fc54612808977ee8f548b2258d31" 
+
+(define (ripemd160 str raw-flag) 
+	(if raw-flag 
+		(let (buff (dup "\000" 20)) 
+			(cpymem (RIPEMD160 str (length str) 0) buff 20) 
+		buff) 
+		(join 
+			(map (lambda (x) (format "%02x" (& x 0xff))) 
+				(unpack (dup "c" 20) (RIPEMD160 str (length str) 0))) 
+		) 
+	) 
 )
 
 ; eof ;

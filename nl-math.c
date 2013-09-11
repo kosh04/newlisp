@@ -58,6 +58,7 @@
 #define OP_ERRORFUNC 33
 #define OP_SIGNUM 34
 #define OP_ISNAN 35
+#define OP_ISINF 36
 
 #ifdef WIN_32
 int _matherr(struct _exception *e) {return 1;}
@@ -129,6 +130,14 @@ CELL * arithmetikOp(CELL * params, int op)
 {
 INT64 number;
 INT64 result;
+
+if(params == nilCell)
+	{
+	if(op == OP_ADD)
+		return(stuffInteger(0));
+	if(op == OP_MULTIPLY)
+		return(stuffInteger(1));
+	}
 
 params = getInteger64(params, &number);	
 result = number;
@@ -210,6 +219,7 @@ CELL * floatOp(CELL * params, int op);
 int compareFloats(CELL * left, CELL * right);
 int compareInts(CELL * left, CELL * right);
 
+double DBL_INFINITY = 1.0e200 * 1.0e200;
 
 CELL * p_addFloat(CELL * params) { return(floatOp(params, OP_ADD)); }
 CELL * p_subFloat(CELL * params) { return(floatOp(params, OP_SUBTRACT)); }
@@ -224,6 +234,20 @@ CELL * floatOp(CELL * params, int op)
 {
 double number;
 double result;
+
+if(params == nilCell)
+	{
+	if(op == OP_ADD)
+		{
+		result = 0.0;
+		goto END_FLOAT_ARITHMETIK;
+		}
+	if(op == OP_MULTIPLY)
+		{
+		result = 1.0;
+		goto END_FLOAT_ARITHMETIK;
+		}
+	}
 
 params = getFloat(params, &result);
 if(params == nilCell)
@@ -253,8 +277,9 @@ else while(params != nilCell)
 		case OP_MULTIPLY:       result *= number; break;
 		case OP_DIVIDE:         
 			if(number == 0.0) 
-				return(errorProc(ERR_MATH));
-			result /= number; 
+				result = (result == 0.0) ? DBL_INFINITY - DBL_INFINITY: DBL_INFINITY;
+			else
+				result /= number; 
 			break;
 		case OP_MIN: if(number < result) result = number; break;
 		case OP_MAX: if(number > result) result = number; break;
@@ -267,6 +292,7 @@ else while(params != nilCell)
 		}
 	}
 
+END_FLOAT_ARITHMETIK:
 params = getCell(CELL_FLOAT);
 #ifndef NEWLISP64
 memcpy((void *)&params->aux, (void *)&result, sizeof(double));
@@ -284,7 +310,7 @@ double leftFloat, rightFloat;
 leftFloat = getDirectFloat(left);
 rightFloat = getDirectFloat(right);
 
-if(isnan(leftFloat) && isnan(rightFloat)) return(0);
+/* if(isnan(leftFloat) && isnan(rightFloat)) return(0); */
 if(isnan(leftFloat) || isnan(rightFloat)) return(9);
 
 if(leftFloat < rightFloat) return(-1);
@@ -367,6 +393,7 @@ CELL * p_floor(CELL * params) { return(functionFloat(params, OP_FLOOR)); }
 CELL * p_erf(CELL * params) { return(functionFloat(params, OP_ERRORFUNC)); }
 CELL * p_sgn(CELL * params) { return(functionFloat(params, OP_SIGNUM)); }
 CELL * p_isnan(CELL * params) { return(functionFloat(params, OP_ISNAN)); }
+CELL * p_isinf(CELL * params) { return(functionFloat(params, OP_ISINF)); }
 
 CELL * functionFloat(CELL * params, int op)
 {
@@ -438,6 +465,12 @@ switch(op)
         return(copyCell(evaluateExpression(cell)));
     case OP_ISNAN:
 		return (isnan(floatN) ? trueCell : nilCell);
+    case OP_ISINF:
+#ifdef SOLARIS
+		return((isnan(floatN - floatN)) ? trueCell : nilCell);
+#else
+		return(isinf(floatN) ? trueCell : nilCell);
+#endif
 	default: break;
 }
 
@@ -616,7 +649,9 @@ while(TRUE)
 	else
 		right = evaluateExpression(params);
 	++cnt;
-	if((comp = compareCells(left, right)) == 9) return(nilCell);
+	if((comp = compareCells(left, right)) == 9) 
+		return( (op == OP_NOTEQUAL) ? trueCell : nilCell);
+
 	switch(op)
 		{
 		case OP_LESS:
@@ -711,6 +746,19 @@ if(left->type != right->type)
 		if(isTrue(right)) return(0);
 		if(isNil(right)) return(1);
 		return(-1);
+		}
+
+	if(isNil(right))
+		{
+		if(isNil(left)) return(0);
+		else return(1);
+		}
+
+	if(isTrue(right))
+		{
+		if(isTrue(left)) return(0);
+		if(isNil(left)) return(-1);
+		else return(1);
 		}
 
 	comp = (left->type & COMPARE_TYPE_MASK) - (right->type & COMPARE_TYPE_MASK);
@@ -1158,28 +1206,10 @@ free(vector);
 return(list);
 }
 
-/* --------------------------------------------------------------------- 
+/*
    probZ  - probability of normal z value
-
-   Adapted from a polynomial approximation in:
-      Ibbetson D, Algorithm 209
-      Collected Algorithms of the CACM 1963 p. 616
-
-   Note:
-      This routine has six digit accuracy, so it is only useful for absolute
-      z values < 6.  For z values >= to 6.0, poz() returns 0.0.
-
-   propChi2 - popbablitiy of CHI-2 for df degrees of freedom
-
-   Adapted from:
-      Hill, I. D. and Pike, M. C.  Algorithm 299
-      Collected Algorithms for the CACM 1967 p. 243
-      Updated for rounding errors based on remark in
-      ACM TOMS June 1985, page 185
-
    critChi2 - Compute critical chi-square value for p and df
    critZ - Compute critical Z-value from p
-
 */
 
 double probChi2(double chi2, int df);
@@ -1201,6 +1231,7 @@ double p;
 getFloat(params, &z);
 
 p = probZ(z);
+
 return(stuffFloat((double *)&p));
 }
 
@@ -1253,42 +1284,11 @@ return(stuffFloat((double *)&Z));
 
 
 #define Z_MAX 6.0  /* Maximum meaningful z value */
+#define SQRT2 1.414213562373095
 
 double probZ(double z) 
 {
-double y, x, w;
-
-        
-if (z == 0.0) x = 0.0;
-else 
-	{
-	y = 0.5 * (z < 0.0 ? -z : z);
-	if (y >= (Z_MAX * 0.5)) x = 1.0;
-	else 
-		{
-		if (y < 1.0) 
-			{
-			w = y * y;
-			x = ((((((((0.000124818987 * w 
-				- 0.001075204047) * w + 0.005198775019) * w
-				- 0.019198292004) * w + 0.059054035642) * w
-				- 0.151968751364) * w + 0.319152932694) * w
-				- 0.531923007300) * w + 0.797884560593) * y * 2.0;
-			} 
-		else {  
-			y -= 2.0;
-			x = (((((((((((((-0.000045255659 * y
-				+ 0.000152529290) * y - 0.000019538132) * y
-				- 0.000676904986) * y + 0.001390604284) * y
-				- 0.000794620820) * y - 0.002034254874) * y
-				+ 0.006549791214) * y - 0.010557625006) * y
-				+ 0.011630447319) * y - 0.009279453341) * y
-				+ 0.005353579108) * y - 0.002141268741) * y
-				+ 0.000535310849) * y + 0.999936657524;
-			}
-		}
-	}
-return z > 0.0 ? ((x + 1.0) * 0.5) : ((1.0 - x) * 0.5);
+return(0.5 + erf(z/SQRT2) / 2.0);
 }
 
 #define BIGX 20.0        /* max value to represent exp(x) */
@@ -2062,6 +2062,23 @@ return(stuffFloat(&result));
 
 /* ----------------------------------- CRC32 ----------------------- */
 
+unsigned short crc16(unsigned char * buff, int len)
+{
+int i;
+unsigned short acc = 0xFFFF;
+
+for(i = 0; i < len; i++)
+	{
+	acc ^= buff[i];
+	acc  = (acc >> 8) | (acc << 8);
+	acc ^= (acc & 0xff00) << 4;
+	acc ^= (acc >> 8) >> 4;
+	acc ^= (acc & 0xff00) >> 5;
+	}
+
+return(acc);
+}
+	 
 /* Algorithm from: http://www.w3.org/TR/PNG-CRCAppendix.html */
 
 unsigned int update_crc(unsigned int crc, unsigned char *buf, int len);
@@ -2591,9 +2608,8 @@ CELL * envHead;
 left = evaluateExpression(params);
 params = params->next;
 right = evaluateExpression(params);
-params = params->next;
 
-if(params != nilCell)
+if((params = params->next) != nilCell)
 	{
 	params = getListHead(params, &envHead);
 	while(envHead != nilCell)
@@ -2878,7 +2894,7 @@ sPtr = (SYMBOL *)sym->contents;
 sCell = (CELL *)sPtr->contents;
 sPtr->contents = (UINT)expr;
 
-if(isEnvelope(cell->type))
+if(isList(cell->type) || cell->type == CELL_QUOTE)
     {
     expr =  expand(copyCell(cell), sPtr);
 	deleteList(cell);

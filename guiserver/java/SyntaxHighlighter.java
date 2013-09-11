@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2008 Lutz Mueller
+//    Copyright (C) 2009 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -40,27 +40,27 @@ static String reserved[] = {
 "curry","date","date-value","debug","dec","def-new","default","define","define-macro","delete","delete-file",
 "delete-url","destroy","det","device","difference","directory","directory?","div","do-until","do-while","doargs",
 "dolist","dostring","dotimes","dotree","dump","dup","empty?","encrypt","ends-with","env","erf","error-event",
-"error-number","error-text","estack","eval","eval-string","exec","exists","exit","exp","expand","explode","factor",
-"fft","file-info","file?","filter","find","find-all","first","flat","float","float?","floor","flt","for",
-"for-all","fork","format","fv","gammai","gammaln","gcd","get-char","get-float","get-int","get-long",
-"get-string","get-url","global","global?","if","if-not","ifft","import","inc","index","int","integer","integer?",
-"intersect","invert","irr","join","lambda?","last","legal?","length","let","letex","letn","list","list?",
+"estack","eval","eval-string","exec","exists","exit","exp","expand","explode","factor","fft","file-info",
+"file?","filter","find","find-all","first","flat","float","float?","floor","flt","for","for-all","fork",
+"format","fv","gammai","gammaln","gcd","get-char","get-float","get-int","get-long","get-string","get-url",
+"global","global?","if","if-not","ifft","import","inc","index","inf?","int","integer","integer?","intersect",
+"invert","irr","join","lambda?","last","last-error","legal?","length","let","letex","letn","list","list?",
 "load","local","log","lookup","lower-case","macro?","main-args","make-dir","map","mat","match","max","member",
-"min","mod","mul","multiply","name","net-accept","net-close","net-connect","net-error","net-eval","net-interface",
-"net-listen","net-local","net-lookup","net-peek","net-peer","net-ping","net-receive","net-receive-from",
-"net-receive-udp","net-select","net-send","net-send-to","net-send-udp","net-service","net-sessions","new",
-"nil","nil?","normal","not","now","nper","npv","nth","null?","number?","open","or","ostype","pack","parse",
-"parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print","primitive?","print",
-"println","prob-chi2","prob-z","process","prompt-event","protected?","push","put-url","pv","quote","quote?","rand",
-"random","randomize","read-buffer","read-char","read-expr","read-file","read-key","read-line","read-utf8",
-"real-path","ref","ref-all","regex","regex-comp","remove-dir","rename-file","replace","replace-assoc","reset",
-"rest","reverse", "rotate","round","save","search","seed","seek","select","semaphore","sequence","series","set",
-"set-locale","set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent","sin","sinh","sleep","slice",
-"sort","source","spawn", "sqrt","starts-with","sync","string","string?","sub","swap","sym","symbol?","symbols",
-"sys-error","sys-info","tan", "tanh","throw","throw-error","time","time-of-day","timer","title-case","trace",
-"trace-highlight","transpose","trim", "true","true?","unicode","unify","unique","unless","unpack","until",
-"upper-case","utf8","utf8len","uuid", "wait-pid","when","while","write-buffer","write-char","write-file",
-"write-line","xml-error","xml-parse", "xml-type-tags","zero?","|","~" };
+"min","mod","mul","multiply","name","net-accept","net-close","net-connect","net-error","net-eval",
+"net-interface", "net-listen","net-local","net-lookup","net-peek","net-peer","net-ping","net-receive",
+"net-receive-from", "net-receive-udp","net-select","net-send","net-send-to","net-send-udp","net-service",
+"net-sessions","new", "nil","nil?","normal","not","now","nper","npv","nth","null?","number?","open","or",
+"ostype","pack","parse", "parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print",
+"primitive?","print", "println","prob-chi2","prob-z","process","prompt-event","protected?","push","put-url","pv",
+"quote","quote?","rand", "random","randomize","read-buffer","read-char","read-expr","read-file","read-key",
+"read-line","read-utf8", "real-path","receive","ref","ref-all","regex","regex-comp","remove-dir","rename-file","replace",
+"replace-assoc","reset", "rest","reverse", "rotate","round","save","search","seed","seek","select","semaphore","send",
+"sequence","series","set", "set-locale","set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent",
+"sin","sinh","sleep","slice", "sort","source","spawn", "sqrt","starts-with","sync","string","string?","sub",
+"swap","sym","symbol?","symbols", "sys-error","sys-info","tan", "tanh","throw","throw-error","time","time-of-day",
+"timer","title-case","trace", "trace-highlight","transpose","trim", "true","true?","unicode","unify","unique",
+"unless","unpack", "until","upper-case","utf8","utf8len","uuid", "wait-pid","when","while","write-buffer",
+"write-char","write-file", "write-line","xfer-event","xml-error","xml-parse", "xml-type-tags","zero?","|","~" };
 
 static SimpleAttributeSet comment;
 static SimpleAttributeSet keyword;
@@ -96,10 +96,10 @@ static public void color(TextPaneWidget widget, int offset, int length)
 	int curlCount = 0;
 	int startToken;
 	int idx = offset;
+	int tokenLen;
 	char chr;
 
 	active = true;
-
 
 	doc = widget.styledDoc;
 	topLevels = widget.shTopLevels;
@@ -111,11 +111,11 @@ static public void color(TextPaneWidget widget, int offset, int length)
 	catch (Exception e) {text = null;} 	
 	
 	if(keys == null) init();
-	
 	while(idx < length)
 		{
 		chr = text.charAt(idx++);
-		while(chr <= ' ' && idx < length) chr = text.charAt(idx++);
+		while(chr <= ' ' && idx < length) chr = text.charAt(idx++);		
+		//System.out.println("idx: " + idx + " length: " + length + " text->" + text + "<->");
 		switch(chr)
 			{
 			case ';':
@@ -152,9 +152,6 @@ static public void color(TextPaneWidget widget, int offset, int length)
 				continue;
 			case '"':
 				startToken = idx - 1;
-				//while(idx < length && text.charAt(idx++) != '"' );
-				//doc.setCharacterAttributes(startToken, idx - startToken, string, false);
-				//continue;
 				while(idx < length)
 					{
 					chr = text.charAt(idx++);
@@ -194,18 +191,28 @@ static public void color(TextPaneWidget widget, int offset, int length)
 				continue;
 			default:
 				startToken = idx - 1;
+				//System.out.println("startToken: " + startToken);
 				while(chr > ' ' && chr != '(' && chr != ')' && chr != '\'' && idx < length) chr = text.charAt(idx++);
-				token = text.substring(startToken, idx - 1);
+
+				//System.out.println("->" + chr + "<-");	
+					
+				if(chr == '(' || chr == ')' || chr == ' ')
+					token = text.substring(startToken, idx - 1);
+				else
+					token = text.substring(startToken, idx );
+					
+				tokenLen = token.length();
+					
+				//System.out.println("start: " + startToken + "token: " + token + " tokenLen: " + tokenLen);
 
 				if(keys.contains(token))
-					doc.setCharacterAttributes(startToken, idx - startToken, keyword, false);
+					doc.setCharacterAttributes(startToken, tokenLen, keyword, false);
 				else
 					{
-					//if(token.matches(numberPattern))
 					if(compiledPattern.matcher(token).matches())
-						doc.setCharacterAttributes(startToken, idx - startToken, number, false);
+						doc.setCharacterAttributes(startToken, tokenLen, number, false);
 					else
-						doc.setCharacterAttributes(startToken, idx - startToken, normal, false);
+						doc.setCharacterAttributes(startToken, tokenLen, normal, false);
 					}
 
 				if(chr == '(')
@@ -228,11 +235,6 @@ static public void color(TextPaneWidget widget, int offset, int length)
 				else if(chr == '\'')
 					{
 					doc.setCharacterAttributes(idx - 1, 1, paren, false);
-					continue;
-					}
-				else 
-					{
-					doc.setCharacterAttributes(idx - 1, 1, normal, false);
 					continue;
 					}
 			}

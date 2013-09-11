@@ -202,8 +202,6 @@ return(setInterDiff(params, SET_UNIQUE));
 }
 
 
-/* new very fast version in 8.6.2 */
-
 CELL * setInterDiff(CELL * params, int mode)
 {
 CELL * listA;
@@ -211,7 +209,7 @@ CELL * listB = NULL;
 CELL * * vectorA;
 CELL * * vectorB = NULL;
 CELL * * vectorResult;
-ssize_t lengthA, lengthB;
+ssize_t lengthA, lengthB = 0;
 ssize_t i = 0, j = 0, k = 0, top = 0;
 CELL * cell = NULL;
 CELL * result;
@@ -603,33 +601,40 @@ return(copyCell(list));
 
 CELL * p_bind(CELL * params)
 {
-SYMBOL * lref = NULL;
 CELL * list;
-CELL * cell;
-int evalFlag;
 
 params = getListHead(params, &list);
-evalFlag = getFlag(params);
 
-while(list != nilCell)
+return(copyCell(bindList(list, getFlag(params))));
+}
+
+
+CELL * bindList(CELL * params, int evalFlag)
+{
+SYMBOL * lref = NULL;
+CELL * cell;
+CELL * old;
+
+while(params != nilCell)
 	{
-	if(list->type != CELL_EXPRESSION)
-		return(errorProcExt(ERR_LIST_EXPECTED, list));
+	if(params->type != CELL_EXPRESSION)
+		return(errorProcExt(ERR_LIST_EXPECTED, params));
 
-	cell = (CELL *)list->contents;
+	cell = (CELL *)params->contents;
 	lref = getSymbolCheckProtected(cell);
-	deleteList((CELL *)lref->contents);
+	old = (CELL *)lref->contents;
 	if(evalFlag)
 		lref->contents = (UINT)copyCell(evaluateExpression(cell->next));
 	else
 		lref->contents = (UINT)copyCell(cell->next);
-	list = list->next;
+	deleteList(old);
+	params = params->next;
 	}
 
 if(lref == NULL)
 	return(nilCell);
 
-return(copyCell((CELL *)lref->contents));
+return((CELL *)lref->contents);
 }
 
 
@@ -708,7 +713,7 @@ return(result);
 #ifdef TSEARCH_COUNT
 
 /* not used anymore because of memory leaks,
-   becuase tree cannot be properly destoryed 
+   because tree cannot be properly destroyed 
 */
 void freeTnode(void * node) {};
 
@@ -1122,7 +1127,7 @@ return(list);
 CELL * p_sequence(CELL * params)
 {
 double fromFlt, toFlt, interval, step, cntFlt;
-INT64 fromInt64, toInt64, stepCnt, i;
+INT64 fromInt64 = 0, toInt64 = 0, stepCnt, i;
 CELL * sequence;
 CELL * cell;
 int intFlag;

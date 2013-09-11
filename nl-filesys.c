@@ -1,4 +1,4 @@
-/* nl-filesys.c --- I/O process control, date/time - functions for newLISP
+/*
 
 
     Copyright (C) 2009 Lutz Mueller
@@ -22,11 +22,12 @@
 #include <errno.h>
 #include "protos.h"
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
 #include <stropts.h>
-#ifndef TRU64
-#define FIONREAD I_NREAD
 #endif
+
+#ifdef SOLARIS
+#define FIONREAD I_NREAD
 #endif
 
 #ifndef WIN_32
@@ -99,17 +100,16 @@ extern int pagesize;
 extern char * errorMessage[];
 extern STREAM errorStream;
 
-/* used for shared memory in p_share and p_spaw, p_sync */
-union num_ptr {
-	UINT num;
-	UINT * ptr;
-};
-
 /* semaphore() function type */
 #define SEM_CREATE 0
 #define SEM_STATUS 1
 #define SEM_SIGNAL 2
 
+/* used in fork and spawn */
+int parentPid = 0;
+/* share, message */
+CELL * readWriteShared(UINT * address, CELL * params);
+void checkDeleteShareFile(UINT * address);
 
 CELL * p_isFile(CELL * params) /* includes dev,socket,dir,file etc. */
 {
@@ -233,7 +233,6 @@ return(stuffInteger((UINT)chr));
 }
 
 
-
 CELL * p_readBuffer(CELL * params)
 {
 UINT handle;
@@ -249,9 +248,11 @@ SYMBOL * readSptr;
 params = getInteger(params, &handle);
 params = getEvalDefault(params, &strCell);
 if(!symbolCheck)
-	return(errorProc(ERR_SYMBOL_EXPECTED));
+	return(errorProc(ERR_IS_NOT_REFERENCED));
 if(isProtected(symbolCheck->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+if(symbolCheck->contents != (UINT)strCell)
+	return(errorProc(ERR_IS_NOT_REFERENCED));
 
 readSptr = symbolCheck;
 params = getInteger(params, (UINT *)&size);
@@ -399,49 +400,6 @@ return(size);
 }
 
 
-CELL * p_writeBuffer(CELL * params)
-{
-UINT handle;
-ssize_t bytesWritten;
-size_t size;
-char * buffer;
-CELL * strCell;
-CELL * cell;
-
-params = getEvalDefault(params, &cell);
-if(symbolCheck && cell->type == CELL_STRING && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-	
-if(isNumber(cell->type))
-	{
-	getIntegerExt(cell, &handle, FALSE); 
-	cell = NULL;
-	}
-else if(cell->type != CELL_STRING) 
-	return(errorProc(ERR_NUMBER_OR_STRING_EXPECTED));
-
-params = getEvalDefault(params, &strCell);
-if(strCell->type != CELL_STRING)
-	return(errorProcExt(ERR_STRING_EXPECTED, strCell));
-
-if(params == nilCell)
-	size = strCell->aux - 1;
-else       
-	getInteger(params, (UINT *)&size);
-
-buffer = (char *)strCell->contents;
-if(size > (strCell->aux - 1)) size = strCell->aux - 1;
-
-if(cell != NULL)
-	return(stuffInteger(appendCellString(cell, buffer, size)));
-
-if((bytesWritten = write((int)handle, buffer, size)) == (UINT)-1)
-	return(nilCell);
-
-return(stuffInteger(bytesWritten));
-}
-
-
 CELL * p_appendFile(CELL * params)
 {
 return(appendWriteFile(params, "a"));
@@ -495,46 +453,78 @@ if(writeFile(fileName, buffer, size, type) == (int)-1)
 return(stuffInteger(size));
 }
 
+CELL * writeBuffer(CELL * params, int lineFeed);
+
+CELL * p_writeBuffer(CELL * params)
+{
+return(writeBuffer(params, FALSE));
+}
 
 CELL * p_writeLine(CELL * params)
 {
-char * buffer;
+return(writeBuffer(params, TRUE));
+}
+
+
+CELL * writeBuffer(CELL * params, int lineFeed)
+{
+CELL * device;
 UINT handle;
-size_t size;
-CELL * cell;
 SYMBOL * symbolRef;
+char * buffer;
+size_t size, userSize;
 
 if(params == nilCell)
 	{
 	varPrintf(OUT_DEVICE, "%s", readLineStream.buffer);
-	varPrintf(OUT_DEVICE, LINE_FEED);
-	return(stuffString(readLineStream.buffer));
+	if(lineFeed) varPrintf(OUT_DEVICE, LINE_FEED);
+	size = readLineStream.ptr - readLineStream.buffer;
+	goto RETURN_WRITE_BUFFER;
 	}
 
-params = getEvalDefault(params, &cell);
+params = getEvalDefault(params, &device);
 symbolRef = symbolCheck;
 
 if(params == nilCell)
+	{
 	buffer = readLineStream.buffer;
+	size = readLineStream.ptr - readLineStream.buffer;
+	}
 else
 	params = getStringSize(params, &buffer, &size, TRUE);
 
-if(isNumber(cell->type))
+if(!lineFeed)
 	{
-	getIntegerExt(cell, &handle, FALSE);
-	if(write((int)handle, buffer, strlen(buffer)) == -1) return(nilCell);
-	if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
+	if(params != nilCell)
+		{
+		getInteger(params, (UINT *)&userSize);
+		size = (userSize > size) ? size : userSize;
+		}
 	}
-if(cell->type == CELL_STRING)
+
+if(isNumber(device->type))
+	{
+	getIntegerExt(device, &handle, FALSE);
+	if(write((int)handle, buffer, size) == -1) return(nilCell);
+	if(lineFeed)
+		if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
+	}
+
+else if(device->type == CELL_STRING)
 	{
 	if(symbolRef && isProtected(symbolRef->flags))
    		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
 
-	appendCellString(cell, buffer, size);
-	appendCellString(cell, LINE_FEED, strlen(LINE_FEED));
+	appendCellString(device, buffer, size);
+	if(lineFeed)
+		appendCellString(device, LINE_FEED, strlen(LINE_FEED));
 	}
+else
+	return(errorProcExt(ERR_INVALID_PARAMETER, device));
 
-return(stuffInteger(size + strlen(LINE_FEED)));
+
+RETURN_WRITE_BUFFER:
+return(stuffInteger(size + (lineFeed ? strlen(LINE_FEED) : 0)));
 }
 
 
@@ -1205,11 +1195,13 @@ return(stuffInteger(forkResult));
 CELL * p_fork(CELL * params)
 {
 int forkResult;
+int ppid = getpid();
 
 if((forkResult = fork()) == -1)
     return(nilCell);
 if(forkResult == 0)
     {
+	parentPid = ppid;
     evaluateExpression(params);
     exit(0);
     }
@@ -1217,11 +1209,29 @@ if(forkResult == 0)
 return(stuffInteger(forkResult));
 }
 
-/* Cilk like interface for spawning and syncronizing child processes */
+
+/* ------------------------------------------------------------------------- */
+
+
+/* Cilk like interface for spawning and syncronizing child processes
+   spawn - start child
+   sync  - syncronize results
+   abort - abort child
+
+   message - share data with chold and parent
+*/
+
+
+
+void * parentPad = NULL; /* written by parent for this process */
+void * thisPad = NULL;   /* written by this process for the parent */
+
 #ifdef HAVE_FORK
 typedef struct 
 	{
 	void * address;
+	void * parent;
+	void * child;
 	int pid;
 	SYMBOL * symbolPtr;
 	void * next;	
@@ -1229,13 +1239,15 @@ typedef struct
 
 SPAWN_LIST * mySpawnList = NULL;
 
-void addSpawnedChild(void * addr, int pid, SYMBOL * sPtr)
+void addSpawnedChild(void * addr, void * parent, void * child, int pid, SYMBOL * sPtr)
 {
 SPAWN_LIST * spawnList;
 
 spawnList = (SPAWN_LIST  *)allocMemory(sizeof(SPAWN_LIST));
 
 spawnList->address = addr;
+spawnList->parent = parent;
+spawnList->child = child;
 spawnList->pid = pid;
 spawnList->symbolPtr = sPtr;
 spawnList->next = NULL;
@@ -1247,6 +1259,20 @@ else/* insert in front */
     spawnList->next = mySpawnList;
     mySpawnList = spawnList;
     }
+}
+
+
+SPAWN_LIST * getSpawnedChild(int pid)
+{
+SPAWN_LIST * spawnList = mySpawnList;
+
+while(spawnList != NULL)
+	{
+	if(spawnList->pid == pid) break;
+	spawnList = spawnList->next;
+	}
+
+return(spawnList);
 }
 
 void purgeSpawnList(void)
@@ -1273,8 +1299,6 @@ SPAWN_LIST * pidSpawn;
 SPAWN_LIST * previousSpawn;
 CELL * cell;
 SYMBOL * sPtr;
-char * buffer = NULL;
-ssize_t size;
 
 pidSpawn = previousSpawn = mySpawnList;
 
@@ -1289,20 +1313,8 @@ while(pidSpawn)
 
 		if(mode == PROCESS_SPAWN_RESULT)
 			{
-			if(*(char *)pidSpawn->address)
-				{
-				/* xlate but don't evaluate shared memory and no callback */
-				cell = sysEvalString((char *)pidSpawn->address + 4, 
-							currentContext, nilCell, READ_EXPR_SYNC);
-				}
-			else /* shared address contains filename with result */
-				{
-				if((size = readFile((char *)pidSpawn->address + 4, &buffer)) != -1)
-					cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
-				else cell = nilCell;
-				unlink((char *)pidSpawn->address + 4);
-				}
-
+			cell = readWriteShared(pidSpawn->address, nilCell);
+			checkDeleteShareFile(pidSpawn->address);
 			sPtr = pidSpawn->symbolPtr;
 			deleteList((CELL *)sPtr->contents);
 			sPtr->contents = (UINT)cell;
@@ -1314,6 +1326,8 @@ while(pidSpawn)
 			}
 
 		munmap(pidSpawn->address, pagesize);
+		munmap(pidSpawn->parent, pagesize);
+		munmap(pidSpawn->child, pagesize);
         free((char *)pidSpawn);
         break;
         }
@@ -1338,10 +1352,10 @@ CELL * p_spawn(CELL * params)
 {
 int forkResult;
 void * address;
+int pid;
+void * parent;
+void * child;
 SYMBOL * symPtr;
-CELL * cell;
-STREAM strStream = {0, NULL, NULL, 0, 0};
-int errNo;
 
 /* make signals processable by waitpid() in p_sync() */
 signal(SIGCHLD, SIG_DFL);
@@ -1349,6 +1363,17 @@ signal(SIGCHLD, SIG_DFL);
 if((address = mmap( 0, pagesize, 
 	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
 		return(nilCell);
+if((parent = mmap( 0, pagesize, 
+	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
+		return(nilCell);
+if((child = mmap( 0, pagesize, 
+	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
+		return(nilCell);
+
+memset(address, 0, sizeof(long));
+memset(parent, 0, sizeof(long));
+memset(child, 0, sizeof(long));
+pid = getpid();
 
 params = getSymbol(params, &symPtr);
 if(isProtected(symPtr->flags))
@@ -1357,34 +1382,27 @@ if(isProtected(symPtr->flags))
 if((forkResult = fork()) == -1)
 	{
 	munmap(address, pagesize);
+	munmap(parent, pagesize);
+	munmap(child, pagesize);
     return(nilCell);
 	}
 
 if(forkResult == 0)
     {
-	purgeSpawnList(); /* purge inherited spawnlist */
-	cell = evaluateExpressionSafe(params, &errNo);
-	if(cell == NULL)
-		cell = stuffString(errorStream.buffer);
-	openStrStream(&strStream, MAX_STRING, 0);
-	prettyPrintFlags |= PRETTYPRINT_STRING;
- 	printCell(cell , TRUE, (UINT)&strStream);
-	if(strStream.position < pagesize + 4)
-		{
-		memset(address, 0xf, 4);
-		memcpy((char *)address + 4, strStream.buffer, strStream.position);
-		}
-	else
-		{
-		memset(address, 0, 64);
-		strncpy((char *)address + 4, "/tmp/nls-", 10);
-		getUUID((char *)address + 9, 0);
-		writeFile((char *)address + 4, strStream.buffer, strStream.position, "w");
-		}
+	/* seed random generator for message fail delay */
+	srandom(getpid()); 
+	/* get parentPid, parentPad and thisPad */
+	parentPid = pid;
+	parentPad = parent; /* to be read by this child */
+	thisPad = child;    /* to be written for parent by this child */
+	/* purge inherited spawnlist */
+	purgeSpawnList();
+	/* evaluate and write result to shared memory */
+	readWriteShared(address, params);
     exit(0);
     }
 
-addSpawnedChild(address, forkResult, symPtr);
+addSpawnedChild(address, parent, child, forkResult, symPtr);
 
 return(stuffInteger(forkResult));
 }
@@ -1454,7 +1472,7 @@ while(mySpawnList != NULL)
 	}
 
 /* put initial behaviour back */
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
 setupSignalHandler(SIGCHLD, sigchld_handler);
 #else
 setupSignalHandler(SIGCHLD, signal_handler);
@@ -1468,6 +1486,7 @@ return(trueCell);
    or abort all:
      (abort)
 */
+
 CELL * p_abort(CELL * params)
 {
 UINT pid;
@@ -1482,7 +1501,7 @@ else /* abort all */
 	while(mySpawnList != NULL) 
 		processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT);
 	/* put initial behaviour back */
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
 	setupSignalHandler(SIGCHLD, sigchld_handler);
 #else
 	setupSignalHandler(SIGCHLD, signal_handler);
@@ -1492,7 +1511,93 @@ else /* abort all */
 return(trueCell);
 }
 
+
+CELL * p_send(CELL * params)
+{
+UINT pid;
+UINT * address;
+SPAWN_LIST * child = NULL;
+
+params = getInteger(params, &pid);
+
+/* write from either the parent or a child */
+if(pid == parentPid)
+	address = thisPad;
+else 
+	{
+	if((child = getSpawnedChild(pid)) == NULL)
+		errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
+	address = child->parent;
+	}
+
+/* don't write if not read yet */
+if(*address ) 
+	{
+	/* 50 to 250  micro seconds delay */
+	myNanoSleep(50000 + (random() / 10000)); 
+	return(nilCell); 
+	}
+
+deleteList(readWriteShared(address, params));
+
+return(trueCell);
+}
+
+
+
+CELL * p_receive(CELL * params)
+{
+UINT pid;
+UINT * address;
+SPAWN_LIST * child = NULL;
+CELL * cell;
+SYMBOL * sPtr;
+
+params = getInteger(params, &pid);
+params = getEvalDefault(params, &cell);
+if(!symbolCheck)
+	return(errorProc(ERR_IS_NOT_REFERENCED));
+if(isProtected(symbolCheck->flags))
+	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+if(symbolCheck->contents != (UINT)cell)
+	return(errorProc(ERR_IS_NOT_REFERENCED));
+
+sPtr = symbolCheck;
+
+/* read from either the parent or a child */
+if(params == nilCell) 
+	{
+	if(pid == parentPid)
+		address = parentPad;
+	else 
+		{
+		if((child = getSpawnedChild(pid)) == NULL)
+			errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
+		address = child->child;
+		}
+	if(*address == 0) 
+		{
+		/* 50 to 250  micro seconds delay */
+		myNanoSleep(50000 + (random() / 10000)); 
+		return(nilCell);
+		}
+	cell = readWriteShared(address, params);
+	/* delete potential nls-file! */
+	if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
+		checkDeleteShareFile(address);
+	/* don't let read twice the same */ 
+	*address = 0; 
+	deleteList((CELL *)sPtr->contents);
+	sPtr->contents = (UINT)cell;
+	pushResultFlag = FALSE;
+	}
+
+return(trueCell);
+}
+
 #endif /* HAVE_FORK */
+
+/* --------------------------- end Cilk ------------------------------------- */
 
 
 CELL * p_destroyProcess(CELL * params)
@@ -1719,193 +1824,277 @@ return(sem_id);
 #ifdef WIN_32
 UINT winSharedMemory(int size);
 UINT * winMapView(UINT handle, int size);
-UINT handle;
 #endif
 
 #ifndef OS2
+
+/* since 10.1.0 also can share object > pagesize
+   in this case transfer is done using /tmp/nls-*
+   ot /temp/nls-* files (Win32)
+*/
+
 CELL * p_share(CELL * params)
 {
-union num_ptr address;
+void * address;
 CELL * cell;
-size_t size;
-char * str;
+#ifdef WIN_32
+UINT handle;
+#endif
 
-if(params != nilCell)
+/* read write  or release (UNIX) shared memory */
+if(params != nilCell) 
 	{
 	cell = evaluateExpression(params);
 #ifndef WIN_32
 	if(isNil(cell))
 		{
-		getInteger(params->next, &address.num);
-		if(munmap((void *)address.ptr, pagesize) == -1)
+		getInteger(params->next, (UINT *)&address);
+		if(munmap(address, pagesize) == -1)
 			return(nilCell);
 		else return(trueCell);
 		}
 #endif
-	getIntegerExt(cell, &address.num, FALSE);
+	getIntegerExt(cell, (UINT *)&address, FALSE);
 	params = params->next;
 #ifdef WIN_32
-	if((address.ptr = winMapView(address.num, pagesize)) == NULL)
+	if((address = winMapView((UINT)address, pagesize)) == NULL)
 		return(nilCell);
 #endif
-	if(params != nilCell) /* write to shared memory */
-		{
-		cell = evaluateExpression(params);
-       	if(cell->type == CELL_NIL)
-	        {
-	        *address.ptr = CELL_NIL;
-#ifdef WIN_32
-			UnmapViewOfFile(address.ptr);
-#endif
-	        return(nilCell);
-	        }
-        if(cell->type == CELL_TRUE)
-            {
-            *address.ptr = CELL_TRUE;
-#ifdef WIN_32
-			UnmapViewOfFile(address.ptr);
-#endif
-            return(trueCell);
-            }
-		if(cell->type == CELL_STRING)
-			{
-			getStringSize(cell, &str, &size, FALSE);
-			if(size > (pagesize - 2 * sizeof(long) - 1)) 
-				size = pagesize - 2 * sizeof(long) - 1;
-			*address.ptr = cell->type;
-			*(address.ptr + 1) = size;
-			memcpy((char *)(address.num + 2 * sizeof(long)), str, size);
-			*(char *)(address.num + 2 * sizeof(long) + size) = 0;
-			/* fall thru to address.ptr == CELL_STRING, to return sized string */
-
-			goto return_new_string_cell;
-			}
-		if(cell->type == CELL_LONG)
-			{
-			*address.ptr = cell->type;
-			*(address.ptr + 1) = sizeof(long);
-			*(address.ptr + 2) = cell->contents;
-#ifdef WIN_32
-			UnmapViewOfFile(address.ptr);
-#endif
-			return(copyCell(cell));
-			}
-#ifndef NEWLISP64
-		if(cell->type == CELL_INT64)
-			{
-			*address.ptr = cell->type;
-			*(address.ptr + 1) = sizeof(INT64);
-			memcpy(address.ptr + 2, (void *)&cell->aux, sizeof(INT64));
-#ifdef WIN_32
-			UnmapViewOfFile(address.ptr);
-#endif
-			return(copyCell(cell));
-			}
-		if(cell->type == CELL_FLOAT)
-			{
-			*address.ptr = cell->type;
-			*(address.ptr + 1) = sizeof(double);
-			*(address.ptr + 2) = cell->aux;
-			*(address.ptr + 3) = cell->contents;
-#ifdef WIN_32
-			UnmapViewOfFile(address.ptr);
-#endif
-			return(copyCell(cell));
-			}
-
-#else /* NEWLISP64 */
-		if(cell->type == CELL_FLOAT)
-			{
-			*address.ptr = cell->type;
-			*(address.ptr + 1) = sizeof(double);
-			*(address.ptr + 2) = cell->contents;
-			return(copyCell(cell));
-			}
-#endif /* NEWLISP64 */
-		return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
-		}
-	if(*address.ptr == CELL_NIL) /* rrad from share memory */
-		{
-#ifdef WIN_32 
-		UnmapViewOfFile(address.ptr);
-#endif
-        return(nilCell);
-        }
-    if(*address.ptr == CELL_TRUE)
-      	{
-#ifdef WIN_32 
-		UnmapViewOfFile(address.ptr);
-#endif
-        return(trueCell);	
-        }
-	if(*address.ptr == CELL_LONG)
-		{
-		cell = stuffInteger(*(address.ptr + 2));
-#ifdef WIN_32 
-		UnmapViewOfFile(address.ptr);
-#endif
-		return(cell);
-		}
-#ifndef NEWLISP64
-	if(*address.ptr == CELL_INT64)
-		{
-		cell = stuffInteger64(*(INT64 *)(address.ptr + 2));
-#ifdef WIN_32 
-		UnmapViewOfFile(address.ptr);
-#endif
-		return(cell);
-		}
-#endif
-		
-	if(*address.ptr == CELL_FLOAT)
-		{
-#ifndef NEWLISP64
-		cell = getCell(CELL_FLOAT);
-		cell->aux = *(address.ptr + 2);
-		cell->contents = *(address.ptr + 3);
-#else
-		cell = getCell(CELL_FLOAT);
-		cell->contents = *(address.ptr + 2);
-#endif
-#ifdef WIN_32
-		UnmapViewOfFile(address.ptr);
-#endif
-		return(cell);
-		}
-	if(*address.ptr == CELL_STRING)
-		{
-return_new_string_cell:
-		cell = makeStringCell(allocMemory(cell->aux), *(address.ptr + 1));
-
-		memcpy((char *)cell->contents, (char*)(address.num + 2 * sizeof(long)), cell->aux);
-#ifdef WIN_32
-		UnmapViewOfFile(address.ptr);
-#endif
-		return(cell);
-		}
-	return(nilCell);
+	return(readWriteShared(address, params));
 	}
 
+/* get shared memory UNIX */
 #ifndef WIN_32
-if((address.ptr = (UINT*)mmap(
+if((address = (UINT*)mmap(
 	0, pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
 		return(nilCell);
 
-memset((char *)address.num, 0, pagesize);
-return(stuffInteger(address.num));
+memset((char *)address, 0, pagesize);
+return(stuffInteger((UINT)address));
 
-#else
+/* get shared memory WIN_32 */
+#else 
+
 if((handle = winSharedMemory(pagesize)) == 0)
 	return(nilCell);
 
-if((address.ptr = winMapView(handle, pagesize)) == NULL)
+if((address = winMapView(handle, pagesize)) == NULL)
 	return(nilCell);
 
-memset((char *)address.num, 0, pagesize);
+memset((char *)address, 0, pagesize);
 return(stuffInteger(handle));
 #endif
 }
 #endif /* no OS2 */
+
+CELL * readWriteSharedExpression(UINT * adress, CELL * params);
+
+CELL * readWriteShared(UINT * address, CELL * params)
+{
+CELL * cell;
+size_t size;
+char * str;
+
+/* write to shared memory */
+if(params != nilCell) 
+	{
+	cell = evaluateExpression(params);
+
+	/* if a previous share mem file is still present, delete it
+       when *address == 0 when called from Cilk then file is
+       deleted p_message(). Here only used from p_share() */
+	if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
+		checkDeleteShareFile(address);
+
+	/* write list types */
+	if((cell->type & COMPARE_TYPE_MASK) > (CELL_STRING & COMPARE_TYPE_MASK))
+		return(copyCell(readWriteSharedExpression(address, cell)));
+
+	switch(cell->type)
+		{
+		case CELL_NIL:
+			*address = cell->type;
+#ifdef WIN_32
+			UnmapViewOfFile(address);
+#endif
+	        return(nilCell);
+		case CELL_TRUE:
+			*address = cell->type;
+#ifdef WIN_32
+			UnmapViewOfFile(address);
+#endif
+			return(trueCell);
+		case CELL_LONG:
+			*(address + 1) = sizeof(long);
+			*(address + 2) = cell->contents;
+			break;
+#ifndef NEWLISP64
+		case CELL_INT64:
+			*(address + 1) = sizeof(INT64);
+			memcpy(address + 2, (void *)&cell->aux, sizeof(INT64));
+			break;
+		case CELL_FLOAT:
+			*(address + 1) = sizeof(double);
+			*(address + 2) = cell->aux;
+			*(address + 3) = cell->contents;
+			break;
+#else /* NEWLISP64 */
+		case CELL_FLOAT:
+			*(address + 1) = sizeof(double);
+			*(address + 2) = cell->contents;
+			break;
+#endif /* NEWLISP64 */
+		case CELL_STRING:
+			getStringSize(cell, &str, &size, FALSE);
+			if(size > (pagesize - 3 * sizeof(long)))
+				return(copyCell(readWriteSharedExpression(address, cell)));
+
+			*(address + 1) = size;
+			memcpy((char *)(address + 2), str, size);
+			*((char *)address + 2 * sizeof(long) + size) = 0;
+			break;
+		default:
+			return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
+		}
+
+	*address = cell->type;
+#ifdef WIN_32
+	UnmapViewOfFile(address);
+#endif
+	return(copyCell(cell));
+	}
+
+/* read shared memory */
+switch(*address & RAW_TYPE_MASK)
+	{
+	case CELL_NIL:
+#ifdef WIN_32 
+		UnmapViewOfFile(address);
+#endif
+		return(nilCell);
+	case CELL_TRUE:
+#ifdef WIN_32 
+		UnmapViewOfFile(address);
+#endif
+		return(trueCell);	
+	case CELL_LONG:
+		cell = stuffInteger(*(address + 2));
+		break;
+#ifndef NEWLISP64
+	case CELL_INT64:
+		cell = stuffInteger64(*(INT64 *)(address + 2));
+		break;
+#endif
+	case CELL_FLOAT:
+#ifndef NEWLISP64
+		cell = getCell(CELL_FLOAT);
+		cell->aux = *(address + 2);
+		cell->contents = *(address + 3);
+#else
+		cell = getCell(CELL_FLOAT);
+		cell->contents = *(address + 2);
+#endif
+		break;
+	case CELL_STRING:
+		if(*address & SHARED_MEMORY_EVAL)
+			return(readWriteSharedExpression(address, nilCell));
+		size = *(address + 1);
+		cell = makeStringCell(allocMemory(size + 1), size);
+		memcpy((char *)cell->contents, (char*)(address + 2), cell->aux);
+		break;
+	default:
+		return(nilCell);
+	}
+
+#ifdef WIN_32
+		UnmapViewOfFile(address);
+#endif
+return(cell);
+}
+
+/* Takes anyhting and passes as string or file which has to
+   be compiled back into expression when reading
+
+   Should be improved for only evaluating strings from
+   expression. Add evalFlag in call pattern and control
+   evaluation in reading and TRUE/FALSE flag in printCell
+   when writing. Performance gain may not be worth it
+   because redundant evaluation only happens on strings
+   > pagesize and is fast on just a string.
+*/
+
+CELL * readWriteSharedExpression(UINT * address, CELL * params)
+{
+ssize_t size;
+STREAM strStream = {0, NULL, NULL, 0, 0};
+CELL * cell;
+char * buffer = NULL;
+/* int errNo; */
+
+/* read */
+if(params == nilCell)
+	{
+	size = *(address + 1);
+	if(size < (pagesize - 3 * sizeof(long) ))
+		{	
+		cell = sysEvalString((char *)(address + 2), 
+				currentContext, nilCell, READ_EXPR_SYNC);
+		}
+	else 
+		{
+		if((size = readFile((char *)(address + 2), &buffer)) != -1)
+			cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
+		else cell = nilCell;
+		}
+
+	if(buffer != NULL) free(buffer); 
+	return(cell);
+	}
+
+/* write */
+cell = params;
+openStrStream(&strStream, MAX_STRING, 0);
+prettyPrintFlags |= PRETTYPRINT_STRING;
+printCell(cell , TRUE, (UINT)&strStream);
+
+*(address + 1) = strStream.position;
+
+if(strStream.position < pagesize - 3 * sizeof(long))
+	{
+	memcpy((char *)(address + 2), strStream.buffer, strStream.position);
+	*((char *)address + 2 * sizeof(long) + strStream.position) = 0;
+	}
+else
+	{
+	checkDeleteShareFile(address);
+	memset((char *)(address + 2), 0, pagesize - 2 * sizeof(long));
+#ifndef WIN_32
+	strncpy((char *)(address + 2), "/tmp/nls-", 10);
+	getUUID((char *)(address + 2) + 9, 0);
+#else
+	strncpy((char *)(address + 2), "/temp/nls-", 11);
+	getUUID((char *)(address + 2) + 10, 0);
+#endif
+	writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
+	}
+closeStrStream(&strStream);
+
+*address = (CELL_STRING | SHARED_MEMORY_EVAL);
+return(cell);
+}
+
+void checkDeleteShareFile(UINT * address)
+{
+if( 	(*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
+#ifndef WIN_32
+	 	(strncmp((char *)(address + 2), "/tmp/nls-", 9) == 0) &&
+		(strlen((char *)(address + 2)) == 45) )
+#else
+	 	(strncmp((char *)(address + 2), "/temp/nls-", 10) == 0) &&
+		(strlen((char *)(address + 2)) == 46) )
+#endif
+	unlink((char *)(address + 2)); 
+}
 
 /* ------------------------------ time and date functions -------------------- */
 
@@ -1914,13 +2103,14 @@ CELL * p_systemInfo(CELL * params)
 CELL * cell;
 
 cell = stuffIntegerList(
-	9,
+	10,
 	cellCount,
 	MAX_CELL_COUNT,
 	symbolCount,
 	(UINT)recursionCount,
 	(UINT)(envStackIdx - envStack)/sizeof(UINT),
 	(UINT)MAX_CPU_STACK,
+	(UINT)parentPid,
 	(UINT)getpid(),
 	(UINT)version,
 	(UINT)opsys);
@@ -1946,6 +2136,8 @@ if(params != nilCell)
 	if(errnum == 0) errno = 0;
 	}
 else errnum = errno;
+
+if(!errnum) return(nilCell);
 
 cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errnum));
 ((CELL *)cell->contents)->next = stuffString(strerror(errnum));
@@ -2262,16 +2454,34 @@ sleep((ms + 500)/1000);
 #endif
 }
 
+#ifdef NANOSLEEP
+void myNanoSleep(int nanosec)
+{
+struct timespec tm;
+
+tm.tv_sec =  nanosec / 1000000000;
+tm.tv_nsec = (nanosec - tm.tv_sec * 1000000000);
+nanosleep(&tm, 0);
+}
+#endif
+
 
 CELL * p_sleep(CELL * params)
 {
-size_t milliSecs;
+double milliSecsFloat;
+#ifdef NANOSLEEP
+int nanoSecsInt;
+#endif
 
-getInteger(params, (UINT *)&milliSecs);
+getFloat(params, &milliSecsFloat);
 
-mySleep(milliSecs);
+mySleep((UINT)milliSecsFloat);
+#ifdef NANOSLEEP
+nanoSecsInt = (milliSecsFloat - (int)milliSecsFloat) * 1000000;
+if(nanoSecsInt) myNanoSleep(nanoSecsInt);
+#endif
 
-return(stuffInteger((UINT)milliSecs));
+return(stuffFloat(&milliSecsFloat));
 }
 
 /* -------------------------------- environment functions ------------------- */
@@ -2376,7 +2586,7 @@ return(envList);
 /* thanks to Peter van Eerten for contributing this function */
 CELL * p_readKey(CELL * params)
 {
-#if defined  (WIN_32) || (OS2)
+#if defined(WIN_32) || defined(OS2)
 return(stuffInteger(getch()));
 #else
 
@@ -2395,7 +2605,7 @@ term.c_cc[VMIN] = 0;
 term.c_cc[VTIME] = 1;
 tcsetattr(0, TCSANOW, &term);
 
-#if defined  (_BSD) || (MAC_OSX)
+#if defined(_BSD) || defined(MAC_OSX)
 while(read(0, &c, 1) == 0);
 #else
 while((c = (char)getchar()) == (char)-1);
@@ -2582,6 +2792,33 @@ if(params != nilCell)
 	
 return(stuffString(getUUID(str, nodeMAC)));
 }
+
+
+SYMBOL * getSymbolCheckProtected(CELL * params)
+{
+SYMBOL * sPtr = NULL;
+CELL * cell;
+
+if(params->type == CELL_SYMBOL)
+	{
+	sPtr = (SYMBOL *)params->contents;
+	cell = (CELL *)sPtr->contents;
+	if(cell->type == CELL_CONTEXT)
+		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+			(SYMBOL*)cell->contents, TRUE);
+	}
+else if(params->type == CELL_DYN_SYMBOL)
+	sPtr = getDynamicSymbol(params);
+else errorProcExt(ERR_SYMBOL_EXPECTED, params);
+
+if(isProtected(sPtr->flags))
+	errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr));
+
+symbolCheck = sPtr;
+
+return sPtr;
+}
+
 
 /* eof */
 

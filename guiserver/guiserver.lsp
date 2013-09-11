@@ -1,7 +1,8 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.28 changes for 10.0
-;; @author LM, August 2008
+;; @version 1.30 changes for 10.1
+;; @version 1.31 message is now a reserved word
+;; @author LM, August 2008, 2009
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -25,7 +26,6 @@
 ;; <pre>
 ;; (load "c:/Program Files/newlisp/guiserver.lsp")
 ;; </pre>
-;;
 ;; <tt>guiserver.lsp</tt> expects the server <tt>guiserver.jar</tt> to be
 ;; in the directoey specified in the environment variable NEWLISPDIR.
 ;; When newLISP starts up and this variable is not set yet, it sets it
@@ -61,7 +61,8 @@
 ;; <h2>Example</h2>
 ;; The following example application shows all the essential elements of a newLISP GUI
 ;; application:
-;; <blockquote><pre>
+;;
+;; @example
 ;; #!/usr/bin/newlisp
 ;; ; button-demo.lsp - demonstrate the button control
 ;;  
@@ -88,12 +89,11 @@
 ;; (gs:listen)
 ;;  
 ;; ;; eof 
-;; </pre></blockquote>
+
 ;; <br>
 ;; <h2>Application start</h2>
 ;; <pre>
 ;;     ./button-demo       ; on MacOS X and Unix
-;;
 ;;     newlisp button-demo ; on Win32
 ;; </pre>
 ;; By default guiserver.jar uses the ports 47011 and 47012, but this setting can be overwritten 
@@ -102,7 +102,6 @@
 ;; following it:
 ;; <pre>
 ;;     ./button-demo 10001       ; on MacOS X and Unix
-;;
 ;;     newlisp button-demo 10001 ; on Win32
 ;; </pre>
 ;; newLISP-GS 'guiserver.jar' will now use the ports '10001' and '10002'.
@@ -131,8 +130,7 @@
 ;; </pre>
 ;; Quotes are necessary when spaces are present in the argument string. The example also assumes that
 ;; 'newlisp.exe' is in the path for executables.
-;; 
-;; <br><br>
+;;
 ;; <h2>Debugging</h2>
 ;; <b>Tracing commands to newLISP-GS</b><br><br>
 ;; For debugging purpose put the following directive at the beginning of your application
@@ -177,60 +175,47 @@
 ;; have an effect, depending on how a widget is configured or depending on the layout
 ;; which hosts the widget. Sometimes the platform look-and-feel overwrites colors.
 ;; <br><br>
-;;
 ;; <h2>Event handlers</h2>
 ;; For most widgets, event handlers must be defined. Sometimes an event handler is
 ;; not required. In this case specify <tt>'gs:no-action</tt> as the event handler
 ;; symbol. When developing programs it is useful to watch the event handler first
 ;; before coding for it. This can be done easily by printing out event parameters:
-;;
 ;; <blockquote><pre>
 ;; (gs:button 'aButton 'abutton-handler "press")
-;;
 ;; (define (abutton-handler id)
 ;;     (println id))
 ;; </pre></blockquote>
-;;
 ;; Sometimes the same event handler function is attached to several widgets' keyboard
 ;; or mouse events. Some of these events receive a greater number of parameters. There
 ;; are two easy ways to discover the nature of an event:
-;;
 ;; <blockquote><pre>
 ;; (define (the-handler)
 ;;     (doargs (p)
 ;;         (println "->" p)))
 ;; </pre></blockquote>
-;;
 ;; The other method looks at the source of the event as it was transmitted by the newLISP-GS.
 ;; This is useful to recognize the data types used in the event:
-;;
 ;; <blockquote><pre>
 ;; (define (the-handler)
 ;;     (println gs:event))
 ;; </pre></blockquote>
-;;
 ;; All text from text fields are received as base64-encoded strings. E.g. the text: 
 ;; '"Hello World"' would be received as: '"SGVsbG8gV29ybGQ="':
-;;
 ;; <blockquote><pre>
 ;; (gs:text-field 'TextField 'textfield-handler)
 ;;
 ;; (define (textfield-handler id text)
 ;;     (printnl id ": " (base64-dec text)))
 ;; </pre></blockquote>
-;;
 ;; When the text "Hello World" is entered in the text field, the following output
 ;; would be generated:
-;;
 ;; <blockquote><pre>
 ;; TextField: "Hello World"
 ;; </pre></blockquote>
-;;
 ;; In case the ESC key is pressed in the text field, the event handler would
 ;; report 'nil' for the text field. A handler should therefore always check text
 ;; for string contents before trying to apply the 'base64-dec' function on it.
 ;; <br><br>
-;;
 ;; <h2>Coding considerations</h2>
 ;; <b>mapping or applying 'gs:xxx' functions</b><br><br>
 ;; Like any newLISP functions, 'gs:xxx' functions can be mapped or applied to lists of 
@@ -238,16 +223,12 @@
 ;; map or apply the quoted <tt>'gs:xxx symbol</tt>, so the <tt>gs:xx</tt> functions 
 ;; get executed under the <tt>gs</tt> context, prefixing symbols in parameter lists
 ;; correctly with the context prefix of their origin.
-;;
-;; <blockquote><pre>
+;; <pre>
 ;;    (map 'gs:panel '(first second third fourth)) ; note quoted gs: function
-;; </blockquote></pre>
-;;
-;; <br><br>
+;; </pre>
 ;; <h2>Some shortcuts when writing 'gs:xxx' functions</h2>
 ;; Due to the nature of transfer between newLISP and the guiserver as text, the following
 ;; convenient shortcuts can be taken when writing functions:
-;;
 ;; <blockquote>
 ;; <ul>
 ;; <li>Symbol ids of components can be expressed as strings.</li>
@@ -256,7 +237,6 @@
 ;; <li>String constants for type and orientation constants can be given as symbols.</li>
 ;; </ul>
 ;; </blockquote>
-;;
 ;; Here are some examples:
 ;; <pre>
 ;;     (gs:panel 'ColorPanel 360 200)
@@ -296,7 +276,6 @@
 ;;
 ;; The function 'gs:get-text' can work both ways: event driven or with a return
 ;; value depending on the call pattern used.
-;;
 ;; <br><br>
 ;; <h2>Function overview</h2>
 ;; <ul>
@@ -319,19 +298,14 @@
 ;;    (gs:listen true)
 ;; </pre>
 ;; </li>
-;;
 ;; Sometimes it is necessary to run other tasks while listening for events. In this case use
 ;; 'gs:check-event', which will wait for certain amount of microseconds for an event
 ;; to be executed. After the wait-time, it returns. The function is typically used in a loop:
-;;
 ;; <pre>
 ;;    (while (gs:check-event 10000) ; check for 10 milli seconds
-;;			(do-myprocess)
-;;	  )
-;;  
+;;			(do-myprocess))
 ;;    (exit)
 ;; </pre>
-;;
 ;; The loop will exit when 'gs:check-event' returns 'nil' on communications errors, e.g.
 ;; when the window's close button was clicked.
 ;;
@@ -341,7 +315,6 @@
 ;; with one of the three layout-manager function commands. By default containers have a flow layout. By
 ;; nesting different containers and using different layout-manager settings, complex layouts
 ;; can be configured. The function/command <tt>add-to</tt> is used to add components to containers.
-;;
 ;; <pre>
 ;;    (gs:dialog <sym-id> <sym-parent-frame> <str-message> <int-width> <int-height> [<boolean-visible> [<boolean-modal>]])
 ;;    (gs:frame <sym-id> <int-x> <int-y> <int-width> <int-height> [<str-title> <boolean-visible>])
@@ -402,8 +375,7 @@
 ;; </pre>
 ;; For all button widgets, and the check box and menu-item widgets, icons can be set using 
 ;; the 'gs:set-icon' and 'gs:set-pressed-icon' functions.
-;;
-;; </li>
+;; </li><br>
 ;; <li><b>Placing components in containers</b><br>
 ;; For the flow and grid layouts the components are added in the sequence they are listed.
 ;; The grid-layout fills the grid row by row starting with the left most column. 
@@ -426,7 +398,6 @@
 ;; <tt>set-size</tt> will work not on components in a grid layout but on components
 ;; in a flow layout. Some widgets have a preset background color which cannot be changed
 ;; or is overwritten by the current 'gs:look-and-feel' settings.
-;;
 ;;	<pre>
 ;;    (gs:add-list-item <sym-list-combo> <str-text> [<str-text> ...])
 ;;    (gs:add-separator <sym-menu-tool-bar>)
@@ -538,7 +509,6 @@
 ;; Every graphics object (line, shape, text, or image) carries a group tag. Objects are deleted
 ;; using 'gs:delete-tag' and will disappear immediately from the canvas. Using 'gs:move-tag'
 ;; lines, shapes, text and images can be moved to a different position.
-;;
 ;; <pre>
 ;;    (gs:color-tag <sym-tag> <list-rgb> [<boolean-repaint>])
 ;;    (gs:delete-tag <sym-tag>[<boolean-repaint>])
@@ -579,12 +549,10 @@
 ;;    (gs:update)
 ;; </pre>
 ;; </li>
-;;
 ;; <li><b>Events</b><br>
 ;; Additionally to the event actions registered when creating a widget,
 ;; the canvas, windows and dialogs can fire events as a result of key or mouse
 ;; actions or when the position or size of a windows or dialog has changed.
-;;
 ;; <pre>
 ;;    (gs:key-event <sym-id> <sym-action>)
 ;;    (gs:mouse-clicked <sym-canvas> <sym-action> [<boolean-tags>])
@@ -599,14 +567,12 @@
 ;;    (gs:window-resized <sym-id> <sym-action>)
 ;; </pre>
 ;; </li>
-;;
 ;; <li><b>Built-in icons and images</b><br>
 ;; The 'guiserver.jar' file has the following icons and images built in. Each of
 ;; them is prefixed with the path '/local/'. For example '/local/newLISP128.png'
 ;; addresses the newLISP logo of size 128x128. To address images outside of
 ;; 'guiserver.jar', use a normal file path suitable to your platform. On Win32
 ;; use forward slashes instead of backslashes.
-;;
 ;; <pre>
 ;; Image path
 ;; ----------
@@ -678,7 +644,6 @@
 ;; gs:white      (1.0 1.0 1.0)
 ;; gs:yellow     (1.0 1.0 0.0)
 ;; </pre>
-;;
 ;; Colors in newLISP-GS can be specified as three (four with alpha component) single
 ;; numbers or as a list of the three RGB values followed by the alpha channel number.
 ;; <pre>
@@ -709,11 +674,9 @@
 ;; Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
 ;; and <tt>midi2-demo.lsp</tt> in the <tt>/usr/share/newlisp/guiserver/</tt> or 
 ;; <tt>c:\Program files\newlisp\guiserver\</tt> directory.
-;;
 ;; <pre>
 ;;    (gs:add-track <int channel><list-notes>)
 ;;    (gs:channel-bend <int-channel> <bend>)
-;    (gs:channel-reverb <int-channel> <reverb>)
 ;;    (gs:get-instruments)
 ;;    (gs:instruments)
 ;;    (gs:midi-bpm <int-bpm> [<int-resolution>])
@@ -1057,9 +1020,9 @@ true
 ;; On return of the message box <sym-action> carries one of the responses <tt>0</tt> for the yes-,
 ;; <tt>1</tt> for the no- or <tt>3</tt> for the cancel-button.
 
-(define (confirm-dialog parent action title message (type plain))
+(define (confirm-dialog parent action title msg (type plain))
 	(net-send out (string "confirm-dialog " parent " " action " " 
-						(base64-enc title) " " (base64-enc message) " " type "\n"))
+						(base64-enc title) " " (base64-enc msg) " " type "\n"))
 )
 
 ;; @syntax (gs:delete-tag <sym-tag> [<boolean-repaint>])
@@ -2009,12 +1972,12 @@ true
 ;; The type of the message box can be one of: '"error"', '"information"', '"warning"', '"question"', '"plain"'.
 ;; The function initiating the message-dialog will return when the dialog is closed.
 
-(define (message-dialog parent title message (type "plain") icon)
+(define (message-dialog parent title msg (type "plain") icon)
 	(if icon
 		(net-send out (string "message-dialog " parent " " 
-				(base64-enc title) " " (base64-enc message) " " type  " " (base64-enc icon) "\n"))
+				(base64-enc title) " " (base64-enc msg) " " type  " " (base64-enc icon) "\n"))
 		(net-send out (string "message-dialog " parent " " 
-				(base64-enc title) " " (base64-enc message) " " type "\n"))
+				(base64-enc title) " " (base64-enc msg) " " type "\n"))
 	)
 )
 

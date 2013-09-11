@@ -3,7 +3,7 @@
 #
 # make <option>
 #
-# to see a list of all options, enter 'make' without any options
+# to see a list of all options, enter 'make help'
 #
 # Note! on some systems do 'gmake' instead of 'make' (most BSD)
 #
@@ -28,11 +28,13 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.0.2
-INT_VERSION = 10002
-GUISERVER = /usr/share/newlisp/guiserver
+VERSION = 10.1.0
+INT_VERSION = 10100
 
 default:
+	./build
+
+all:
 	./build
 
 help:
@@ -42,21 +44,23 @@ help:
 	@echo "  make linux_utf8      # newlisp for LINUX UTF-8 and readline support"
 	@echo "  make linux_lib       # newlisp.so as shared library for LINUX"
 	@echo "  make linux_lib_utf8  # newlisp.so as shared library for LINUX with UTF-8"
-	@echo "  make debian          # same as newlisp for LINUX"
-	@echo "  make debian_utf8     # same as newlisp for LINUX UTF-8"
 	@echo "  make tru64           # newlisp for HP tru64 with 32 bit pointers - read doc/TRU64BUILD"
 	@echo "  make bsd             # newlisp for FreeBSD and OpenBSD"
-	@echo "  make netbsd          # newlisp for NetBSD (same as previous w/o readline)"
+	@echo "  make bsd_utf8        # newlisp for FreeBSD and OpenBSD with UTF-8"
 	@echo "  make bsd_lib         # newlisp.so as shared library for FreeBSD, OpenBSD, NetBSD"
+	@echo "  make netbsd          # newlisp for NetBSD, readline support"
+	@echo "  make netbsd_utf8     # newlisp for NetBSD, readline and UTF-8 support)"
 	@echo "  make darwin          # newlisp for Mac OSX v.10.4 or later, readline support"
 	@echo "  make darwin_utf8     # newlisp for Mac OSX v.10.4 or later, readline and UTF-8 support"
 	@echo "  make darwin_lib      # newlisp for Mac OSX v.10.3 or later as shared library"
-	@echo "  make osx_universal       # newlisp for Mac OSX v.10.3 universal version ppc+intel"
-	@echo "  make osx_universal_utf8  # newlisp for Mac OSX v.10.3 universal version ppc+intel UTF-8"
-	@echo "  make solaris         # newLISP for Sun SOLARIS (tested on Sparc)"
-	@echo "  make solaris_utf8    # newLISP for Sun SOLARIS UTF-8 (tested on Sparc)"
-	@echo "  make opensolaris     # newLISP for SunOS OpenSolaris on i386 INtel/AMD CPU"
-	@echo "  make true64          # newLISP for tru64 UNIX LP64 tested on Alpha CPU"
+	@echo "  make universal       # like makefile_darwin, but both architecturees: ppc and intel"
+	@echo "  make universal_utf8  # like makefile_darwin_utf8, but both architectures"
+	@echo "  make opensolaris     # newlisp for Sun SOLARIS on Intel processor (little tested)"
+	@echo "  make sunos           # newlisp for SunOS (tested on Sparc)"
+	@echo "  make sunos_utf8      # newlisp for SunOS UTF-8 (tested on Sparc)"
+	@echo "  make true64          # newlisp for tru64 UNIX LP64 tested on Alpha CPU"
+	@echo "  gmake aix            # newlisp for IBM AIX 32-bit using the xlc_r compiler and for UTF-8"
+	@echo "  gmake aix_gcc        # newlisp for IBM AIX 32-bit using the gcc compiler and for UTF-8"
 	@echo "  make mingw           # newlisp.exe for Win32 (MinGW compiler)"
 	@echo "  make mingw_utf8      # newlisp.exe for Win32 UTF-8 (MinGW icompiler)"
 	@echo "  make mingwdll        # newlisp.dll for Win32 (MinGW compiler)"
@@ -69,33 +73,23 @@ help:
 	@echo "  make uninstall_home  # uninstall on LINUX/UNIX from users home directory "
 	@echo
 	@echo "  make clean           # remove all *.o and .tar files etc. USE BETWEEN FLAVORS!"
-	@echo "  make test            # run qa-dot, qa-net and qa-xml test scripts"
+	@echo "  make check           # run qa-dot, qa-net and qa-xml test scripts"
+	@echo "  make test            # same as 'make check'"
+	@echo "  make version         # replace version number in several files after changing in Makefile"
 	@echo
-	@echo "Note! on some systems use gmake instead of make"
-	@echo "readline is for commandline editing support and requires libreadline"
-	@echo "only installed by default on BSDs (FreeBSD, NetBSD, OpenBSD, MacOS X/Darwin)"
-	@echo "If there is no UTF-8 option for your OS, consult makefile_xxx"
+	@echo "Note! on some systems use gmake instead of make."
+	@echo "Note! not all makefiles are listed in this help, specifically 64-bit versions."
+	@echo " "
+	@echo "For not listed makefiles do a: make -f makefile_xxxxx."
+	@echo "Readline is for commandline editing support and requires libreadline and headerfiles."
+	@echo "Not all makefiles contain libreadline support, but is easy to add (see other makefieles)."
+	@echo "If there is no UTF-8 option for your OS, consult makefile_xxx."
 
 linux:
 	make -f makefile_linux
 
 linux_utf8:
 	make -f makefile_linux_utf8
-
-linux_readline:
-	make -f makefile_linux_readline
-
-linux_debian:
-	make -f makefile_debian
-
-debian:
-	make -f makefile_debian
-
-debian_utf8:
-	make -f makefile_debian_utf8
-
-linux_utf8_readline:
-	make -f makefile_linux_utf8_readline
 
 linux_lib:
 	make -f makefile_linux_lib
@@ -109,19 +103,25 @@ tru64:
 bsd:
 	make -f makefile_bsd
 
-netbsd:
-	make -f makefile_netbsd
+bsd_utf8:
+	make -f makefile_bsd_utf8
 
 bsd_lib:
 	make -f makefile_bsd_lib
 
+netbsd:
+	make -f makefile_netbsd
+
+netbsdi_utf8:
+	make -f makefile_netbsd_utf8
+
 darwin_lib:
 	make -f makefile_darwin_lib
 
-osx_universal:
+universal:
 	make -f makefile_universal
 
-osx_universal_utf8:
+universal_utf8:
 	make -f makefile_universal_utf8
 
 darwin:
@@ -130,17 +130,21 @@ darwin:
 darwin_utf8:
 	make -f makefile_darwin_utf8
 
-solaris:
-	make -f makefile_solaris
+sunos:
+	make -f makefile_sunos
 
-solarisLP64:
-	make -f makefile_solarisLP64
-
-solaris_utf8:
-	make -f makefile_solaris_utf8
+sunos_utf8:	
+	make -f makefile_sunos_utf8
 
 opensolaris:
 	make -f makefile_opensolaris
+
+aix:
+	gmake -f makefile_aix_utf8_xlc
+
+aix_gcc:
+	gmake -f makefile_aix_utf8_gcc
+
 
 mingw:
 	make -f makefile_mingw
@@ -160,29 +164,30 @@ os2:
 winall:
 	make clean
 	make -f makefile_mingw
-	make clean
+	rm *.o
 	make -f makefile_mingwdll
-	make clean
+	rm *.o
 	./newlisp qa-dot
 
 winall_utf8:
 	make clean
 	make -f makefile_mingw_utf8
-	make clean
+	rm *.o
 	make -f makefile_mingwdll_utf8
-	make clean
+	rm *.o
 	./newlisp qa-dot
+	tar czvf newlisp-win-utf8.tgz newlisp.exe newlisp.dll
 
 
 wings:
 	make -f makefile_wings
 	
 
-# scripts for making UBUNTU debian packages
+# scripts for making UBUNTU linux packages
 
 dpkg:
 	make clean
-	make -f makefile_debian
+	make -f makefile_linux
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease 1 --default
 	rm description-pak
@@ -190,18 +195,21 @@ dpkg:
 
 dpkg_utf8:
 	make clean
-	make -f makefile_debian_utf8
+	make -f makefile_linux_utf8
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease utf8 --default
 	rm description-pak
 	mv *.deb ../Desktop
 
 # scripts for making Mac OS X disk image installers
-
+# Note that since Mac OX X update 10.5.6 'PackageMaker -d -o'
+# bombs out in the following script. Do the package manually
+# instead using the PackageMaker GUI app. After that hdiutil 
+# can be used from a script as shown below. 
 dmg_ppc:
 	lipo newlisp-universal -output newlisp -thin ppc
 	sudo rm -rf ../Package_contents
-	make -f makefile_osx_package
+	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
 		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
 		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
@@ -212,7 +220,7 @@ dmg_ppc:
 dmg_intel:
 	lipo newlisp-universal -output newlisp -thin i386
 	sudo rm -rf ../Package_contents
-	make -f makefile_osx_package
+	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
 		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
 		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
@@ -221,10 +229,10 @@ dmg_intel:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
 
 # this cleans up the distribution directory for a clean build
-clean:
-	-rm *~ *.bak *.o *.obj *.map core *.tgz guiserver/java/._* TEST newlisp-universal
-	-rm guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
-	-rm  doc/*.bak util/*.bak examples/*.bak modules/*.bak
+distclean:
+	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz guiserver/java/._* TEST newlisp-universal
+	-rm -f guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
+	-rm -f doc/*.bak util/*.bak examples/*.bak modules/*.bak
 	-chmod 644 *.h *.c *.lsp Makefile makefile*
 	-chmod 755 build configure examples/*
 	-chmod 644 doc/* modules/*.lsp examples/*.lsp examples/*.html
@@ -233,9 +241,13 @@ clean:
 	-chmod 644 guiserver/images/*
 	-chmod 755 guiserver/java
 	-chmod 644 guiserver/java/*
+	-rm -f config.h makefile_configure newlisp test-memorymodel
+
+# alternate naming for clean
+clean: distclean
 
 # run test scripts
-test:
+check:
 	./newlisp qa-dot
 	./newlisp qa-dictionary
 	./newlisp qa-xml
@@ -243,13 +255,23 @@ test:
 	./newlisp qa-net
 	./newlisp qa-cilk
 	./newlisp qa-ref
+	./newlisp qa-message
 
-# directory definitions
-datadir=$(DESTDIR)/usr/share
-bindir=$(DESTDIR)/usr/bin
-mandir=$(DESTDIR)/usr/share/man
+# old naming for check 
+test: check
 
-GUISERVER = /usr/share/newlisp/guiserver
+# NOTE when changing PREFIX, then newlisp should only run
+# run in an environment, where NEWLISPDIR is predefined,
+# else NEWLISPDIR will be defined during newlisp startup
+# as /usr/share/newlisp which is hardcoded in newlisp.c
+prefix=/usr
+datadir=$(prefix)/share
+bindir=$(prefix)/bin
+mandir=$(prefix)/share/man
+
+# if prefix is not /usr then several places in the file 
+# guiserver/newlisp-exit.lsp must change too
+GUISERVER = $(prefix)/share/newlisp/guiserver
 
 # this is the standard install in /usr/bin and usr/share
 # which as to be done as 'root' with supersuser permissions
@@ -267,7 +289,9 @@ install:
 	-install -d $(datadir)/newlisp/modules
 	-install -d $(datadir)/newlisp/util
 	-install -d $(datadir)/doc/newlisp
-	-install -m 755 newlisp $(bindir)/newlisp
+	-rm $(bindir)/newlisp
+	-install -m 755  newlisp $(bindir)/newlisp-$(VERSION)
+	-ln -s $(bindir)/newlisp-$(VERSION) $(bindir)/newlisp
 	-install -m 644 examples/init.lsp.example $(datadir)/newlisp/init.lsp.example
 	-install -m 755 util/newlispdoc $(bindir)/newlispdoc
 	-install -m 644 util/syntax.cgi $(datadir)/newlisp/util/syntax.cgi
@@ -282,7 +306,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.0-Release.html $(datadir)/doc/newlisp/newLISP-10.0-Release.html
+	-install -m 644 doc/newLISP-10.1-Release.html $(datadir)/doc/newlisp/newLISP-10.1-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -291,10 +315,10 @@ install:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
-	-install -m 644 modules/mysql5.lsp $(datadir)/newlisp/modules/mysql5.lsp
-	-install -m 644 modules/mysql51.lsp $(datadir)/newlisp/modules/mysql51.lsp
+	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp
+	-install -m 644 modules/postgres.lsp $(datadir)/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(datadir)/newlisp/modules/smtp.lsp
 	-install -m 644 modules/sqlite3.lsp $(datadir)/newlisp/modules/sqlite3.lsp
@@ -381,7 +405,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.0-Release.html $(HOME)/share/doc/newlisp/newLISP-10.0-Release.html
+	-install -m 644 doc/newLISP-10.1-Release.html $(HOME)/share/doc/newlisp/newLISP-10.1-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp
@@ -390,10 +414,10 @@ install_home:
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(HOME)/share/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
-	-install -m 644 modules/mysql5.lsp $(HOME)/share/newlisp/modules/mysql5.lsp
-	-install -m 644 modules/mysql51.lsp $(HOME)/share/newlisp/modules/mysql51.lsp
+	-install -m 644 modules/mysql.lsp $(HOME)/share/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(HOME)/share/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(HOME)/share/newlisp/modules/pop3.lsp
+	-install -m 644 modules/postgres.lsp $(HOME)/share/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(HOME)/share/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(HOME)/share/newlisp/modules/smtp.lsp
 	-install -m 644 modules/sqlite3.lsp $(HOME)/share/newlisp/modules/sqlite3.lsp
@@ -414,7 +438,7 @@ uninstall_home:
 # you shouldn't use this, but send me the changed files with your contribution/fixes 
 # to lutz@nuevatec.com put the word: newlisp in the subject line
 #
-dist:
+dist: distclean
 	-mkdir newlisp-$(VERSION)
 	-mkdir newlisp-$(VERSION)/guiserver
 	-mkdir newlisp-$(VERSION)/guiserver/images
@@ -448,7 +472,7 @@ version:
 	sed -i.bak -E 's/newLISP\/[[:digit:]]+.[[:digit:]]+.[[:digit:]]+/newLISP\/$(VERSION)/' nl-web.c
 	sed -i.bak -E 's/newLISP v.+ Manual/newLISP v.$(VERSION) Manual/' doc/newlisp_manual.html
 	sed -i.bak -E 's/Reference v.+<\/h2>/Reference v.$(VERSION)<\/h2>/' doc/newlisp_manual.html
-	sed -i.bak -E 's/newlisp-....-win/newlisp-$(INT_VERSION)-win/' guiserver/newlisp-gs.nsi
+	sed -i.bak -E 's/newlisp-.....-win/newlisp-$(INT_VERSION)-win/' guiserver/newlisp-gs.nsi
 	sed -i.bak -E 's/and newLISP .+ on /and newLISP $(VERSION) on /' guiserver/newlisp-gs.nsi
 
 # Prepare the manual file for PDF conversion, byt replaceing all <span class="function"></span>

@@ -5,16 +5,19 @@
 ;; @version v 2.4 - check for empty string when aquiring HTTP_COOKIE environment
 ;; @version v 2.5 - cleanup put-page for 10.0
 ;; @version v 2.6 - help text corrections
-;; @author Lutz Mueller, lutz@nuevatec.com
+;; @version v 2.7 - help text corrections
+;; @author Lutz Mueller, 2002-2009
 ;;
 ;; This module defines basic CGI processing tools for processing
 ;; CGI GET and POST requests and cookies.
 ;;
-;; Include this file at the beginning of each file performing CGI processing:
+;; Include this file at the beginning of each file performing CGI processing using
+;; either one of the following lines:
 ;; <pre>
 ;; (load "/usr/share/newlisp/cgi.lsp")
+;; ; or as a shorter alternative
+;; (module "cgi.lsp")
 ;; </pre>
-;;
 ;; <center><h2>Overview</h2></center>
 ;; On loading 'cgi.lsp' will retrieve 'GET', 'POST' and cookie
 ;; parameters via standard input and the environment variables: 
@@ -149,10 +152,10 @@
 ;; This function should be called immedeately before
 ;; closing the header with '(print "Content-type: text/html\r\n\r\n")',
 ;; which is typically the first statement in a CGI script written in
-;; newLISP after the '(load "cgi.lsp")' statement.
+;; newLISP after the '(module "cgi.lsp")' statement.
 ;;
 ;; @example
-;; (load "cgi.lsp")
+;; (module "cgi.lsp")
 ;;
 ;; (CGI:set-cookie "password" "secret" "asite.com" "/somedir")
 ;; (print "Content-type: text/html\r\n\r\n")

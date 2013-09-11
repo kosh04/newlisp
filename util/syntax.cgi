@@ -3,8 +3,8 @@
 # - syntax.cgi - this utility formats a newLISP source file as an HTML 
 # file with syntax highlighting
 #
-# comment following line out when using as CGI utilty
-# in this case files to convert which are local must end with .txt
+# comment following line out when not using as CGI utilty
+# for CGI files to convert which are local must end with .txt
 (define cgi-use true)
 
 # v.1.7 - switch for using as commandline or cgi utility
@@ -17,6 +17,7 @@
 # v.2.6 - handle number scientific format with e
 # v.2.7 - improved keyword regex
 # v.2.8 - scientific format with E
+# v.2.9 - support for newLISPdoc tag color
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
@@ -55,6 +56,7 @@
 	(print "Content-type: text/html\r\n\r\n"))
 
 (define keyword-color "#0000AA")      ; newLISP keywords
+(define tag-color "#308080")          ; newLISPdoc tags
 (define string-color "#008800")       ; single line quoted and braced strings
 (define long-string-color "#008800")  ; multiline for [text], [/text] tags
 (define paren-color "#AA0000")        ; parenthesis
@@ -152,10 +154,6 @@
 ;(replace keyword-regex file (println "->" $0 "<-<br>") 0)
 ;(exit)
 
-; old color numbers
-;    (replace {(\s+|\(|\))(0x[0-9a-fA-F]+|[+-]?\d+\.\d+|[+-]?\d+|\.\d+)} file
-;         (format {%s<font color='%s'>%s</font>} $1 number-color $2) 0)
-
 ; color numbers
 (replace  
 ;   <-- lead --><---- hex ---->|<- oct ->|<------- decimal ----- and ----- scientific -->
@@ -175,6 +173,7 @@
 ; color ;  comments
 (replace ";.*" file (clean-comment $0) 0)
 (replace ";.*" file (format {<font color='%s'>%s</font>} comment-color $0) 0)
+(replace "(;;.*)(@.*)(\\s.*\n)" file (append $1 (format {<font color='%s'>%s</font>} tag-color $2) $3) 512)
 
 ; color # comments
 (set 'buff "")

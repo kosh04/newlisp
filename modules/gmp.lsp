@@ -2,23 +2,21 @@
 ;; @description GNU MP Bignum Library interface
 ;; @version 1.52 updated for new install locations and GMP website
 ;; @version 1.53 took out redefinition of normal int operations to floats
-;; @author Lutz Mueller, 2007
-;;
+;; @version 1.6 added library path for OpenBSD and tested for 64-bit newLISP
+;; @version 1.7 doc changes
+;; @author Lutz Mueller, 2007-2009
 ;; <h3>The GNU MP Bignum Library</h3>
-;; This modules interfaces to libgmp which can be obtained from 
-;; @link http://gmplib.org/ http://gmplib.org/ .
+;; This modules interfaces to libgmp which can be obtained from @link http://gmplib.org/ http://gmplib.org/ .
 ;;
 ;; Source code for libgmp.so (UNIX) or lbgmp.dll (Win32) or libgmp.dylib (Mac OS X) 
 ;; is available at this site.
 ;;
 ;; When compiling for Mac OS X on Intel CPUs use:
-;;
 ;; <pre>
 ;;     ./configure CFLAGS="-m32" ABI=32
 ;;     make
 ;;     sudo make install
 ;; </pre>
-;;
 ;; This interface module presets the maximum precision to 1024.
 ;; The precision can be changed to any other value by changing the 
 ;; definition of 'MAX_PRECISION' in the source of this module.
@@ -38,8 +36,9 @@
 ;; At the beginning of the programfile include a 'load' statement for the module:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/gmp.lsp")
+;; ; or shorter
+;; (module "gmp.lsp")
 ;; </pre>
-;;
 ;; @example
 ;; (GMP:+ "123456789012345678901234567890" "123456789012345678901234567890") 
 ;; => "246913578024691357802469135780"
@@ -124,17 +123,11 @@
 (define gmp-divzero-error "Division by zero in GMP module")
 
 (set 'files '(
-    "/usr/lib/libgmp.3.4.2.dylib" ;Mac OSX
-    "/usr/lib/libgmp.3.dylib" ;Mac OSX
     "/usr/lib/libgmp.dylib" ;Mac OSX
-    "/usr/local/lib/libgmp.3.4.2.dylib" ;Mac OSX
-    "/usr/local/lib/libgmp.3.dylib" ;Mac OSX
-    "/usr/local/lib/libgmp.dylib" ;Mac OSX
-    "/opt/local/lib/libgmp.3.4.2.dylib" ;Mac OSX
-    "/opt/local/lib/libgmp.3.3.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.dylib" ;Mac OSX
     "/usr/local/lib/libgmp.so" ; Linux, BSDs
+    "/usr/local/lib/libgmp.so.7.1" ; OpenBSD
     "libgmp-3.dll" ; Win32 in path
 ))
 

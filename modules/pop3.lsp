@@ -2,7 +2,7 @@
 ;; @description POP3 mail retrieval routines
 ;; @version 2.0 - eliminated old net-send syntax
 ;; @version 2.1 - changes for 10.0
-;; @author Lutz Mueller et al., 2001, 2002, 2008
+;; @author Lutz Mueller et al., 2001, 2002, 2008, 2009
 ;;
 ;; <h2>POP3 mail retrieval routines</h2>
 ;; Only the module 'pop3.lsp' is required, not other libraries need to be
@@ -11,6 +11,8 @@
 ;; To use the module put a 'load' statement at the top of your file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/pop3.lsp")
+;; ; or shorter
+;; (module "pop3")
 ;; </pre>
 ;;
 ;; <h2>Function overview</h2>

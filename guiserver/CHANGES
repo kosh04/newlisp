@@ -877,5 +877,12 @@
 
 1.27
   added $it, bits, estack and read-utf8 to syntax highlighting
+
 1.28
-  spelling in help doc
+  [cmd][/cmd] tags can now be used in the monitor area
+1.29
+  added transfer-event to syntax highlighter
+
+1.30 a fix in the syntax highlighter for newLISP mode 
+  in newlisp-edit.sp font can now shanged in both, the editor and the monitor
+

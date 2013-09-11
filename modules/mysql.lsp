@@ -1,24 +1,24 @@
-;; @module mysql51.lsp 
-;; @description MySQL v.5.1 interface
+;; @module mysql.lsp 
+;; @description MySQL v.5.x interface (tested on MySQL 5.0 and 5.1)
 ;; @version 2.61 - addition for mysql_escape_string (Jeff Ober)
 ;; @version 2.62 - fix for mysql_escape_string (Tim Johnson)
 ;; @version 3.0  - module now independent of C-structure offsets
+;; @version 3.1  - module now senses if running 64-bit version of newLISP
+;; @version 3.2  - a fix when fetch-all has an empty result
 ;; @author Lutz Mueller 2003-2009, Gordon Fischer 2005, Jeff Ober 2007
 ;;
-;; This MySQL 5.1 interface module has been tested on version 5.1.3
+;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
 ;; of mysql from @link http://www.mysql.com www.mysql.com
 ;;
-;; This implementation supports a maximum of 2,147,483,647
-;; rows in a database table. Now automatically adjusts row indexes to
-;; endian type of host CPU, but higher 32 bits are treated as 0 for now.
-;;
-;; An alternate implementation of a MySQL module is available at 
-;; @link http://static.artfulcode.net/newlisp/index.html ArtfulCode.
+;; An alternate implementation of a MySQL module with more features 
+;; is available at @link http://static.artfulcode.net/newlisp/index.html ArtfulCode.
 ;;
 ;; <h3>Requirements</h3>
 ;; At the beginning of the program file include a 'load' statement for the module:
 ;; <pre>
-;; (load "/usr/share/newlisp/mysql51.lsp")
+;; (load "/usr/share/newlisp/mysql.lsp")
+;; ; or shorter
+;; (module "mysql.lsp")
 ;; </pre>
 ;;
 ;; A version of 'libmysqlclient' for a specific platform is required:
@@ -67,11 +67,10 @@
 ;;     MySQL:error ............... get error message
 ;;     MySQL:close-db ............ close database connection
 ;; </pre>
-;;
 ;; <h3>A typical MySQL session</h3>
 ;; The following code piece outlines a typical MySQL session:
 ;; @example
-;; (load "mysql51.lsp) ; load the module file
+;; (module "mysql.lsp) ; load the module file
 ;;
 ;; (MySQL:init)       ; initialize
 ;; (MySQL:connect "192.168.1.10" "auser" "secret" "mydb") ; logon
@@ -87,7 +86,11 @@
 
 (context 'MySQL)
 
+; fetch-row and keep-type functions depend on this
+(set 'NEWLISP64 (not (zero? (& (sys-info -1) 256))))
+
 (set 'files '(
+	"/usr/local/lib/libmysqlclient.so.19.0" ; OpenBSD 4.4
 	"/usr/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.dylib" ; MacOS X
@@ -172,7 +175,9 @@
   ; The field type is the 20th field of the MySQL_FIELD structure
   ; since fields 1-19 are all 4 byte fields we get the enum value
   ; like so
-  (set 'data (get-int (int (+ type_ptr (* 19 4)))))
+  (if NEWLISP64
+  	(set 'data (get-long (int (+ type_ptr (* 19 8)))))
+  	(set 'data (get-int (int (+ type_ptr (* 19 4))))) )
   ; Consult 'enum_field_types' in mysql_com.h for values
   (if (= data 1) ;; boolean
         (get-string field_addr)
@@ -201,7 +206,9 @@
     (begin
       (set 'row '())
       (dotimes (field (num-fields))
-            (set 'field_addr (get-int (int (+ rdata (* field 4)))))
+            (if NEWLISP64
+              (set 'field_addr (get-long (int (+ rdata (* field 8)))))
+              (set 'field_addr (get-int (int (+ rdata (* field 4))))) )
             (if (= field_addr 0)
               (push nil row -1) ;; what to do when the field contains NULL
               (push (keep-type MYSQL_RES field_addr field) row -1)))
@@ -211,10 +218,8 @@
 ;; @return All rows/fields from the last query.
 ;; The whole result set from the query is returned at once as a list of row lists.
 
-(define (fetch-all , all)
-  (dotimes (x (num-rows)) (push (fetch-row) all))
-  (reverse all)) ; can be written shorter starting version 9.9.5
-                 ; because push returns the list modified
+(define (fetch-all , (all '()))
+  (dotimes (x (num-rows)) (push (fetch-row) alli -1)))
 
 ;; @syntax (MySQL:databases)
 ;; @return A list of databases.
@@ -224,7 +229,7 @@
   (query "show databases;")
   (fetch-all))
 
-;; @syntax (MySQL:table)
+;; @syntax (MySQL:tables)
 ;; @return A list of tables in the database.
 ;; Performs a 'show tables;' query.
 

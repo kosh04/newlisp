@@ -929,10 +929,12 @@ CELL * keyCell;
 CELL * funcCell;
 size_t size;
 long options;
+UINT * resultIdxSave;
+
 
 keyCell = evaluateExpression(params);
-params = params->next;
-params = getEvalDefault(params, &next);
+params = getEvalDefault(params->next, &next);
+
 
 if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
 	{
@@ -984,6 +986,7 @@ else
 		else return(stuffInteger(found));
        	}
 
+	resultIdxSave = resultStackIdx;
     while(next != nilCell)
 		{
 		if(compareFunc(keyCell, next, funcCell) == 0)
@@ -997,6 +1000,7 @@ else
 			}
 		found++;
 		next = next->next;
+		cleanupResults(resultIdxSave);
 		}
 	if(next == nilCell) return(nilCell);
 	}
@@ -1020,8 +1024,7 @@ int errNo;
 UINT * resultIdxSave;
 
 exprCell = params;
-params = params->next;
-if(params != nilCell)
+if((params = params->next) != nilCell)
 	getInteger(params, (UINT *)&options);
 
 resultIdxSave = resultStackIdx;
@@ -1172,110 +1175,35 @@ tmp = *left;
 *right = tmp;
 }
 
-SYMBOL * getSymbolCheckProtected(CELL * params)
+
+CELL * getRefCheckProtected(CELL * params)
 {
-SYMBOL * sPtr = NULL;
+CELL * ref;
 
-if(params->type == CELL_DYN_SYMBOL)
-	sPtr = getDynamicSymbol(params);
-else if(params->type == CELL_SYMBOL)
-	sPtr = (SYMBOL *)params->contents;
-else errorProcExt(ERR_SYMBOL_EXPECTED, params);
+ref = evaluateExpression(params);
 
-if(isProtected(sPtr->flags))
-	errorProcExt(ERR_SYMBOL_PROTECTED, params);
+if(symbolCheckPtr != NULL)
+	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, params));
 
-return sPtr;
+if(symbolCheck != NULL)
+	if(isProtected(symbolCheck->flags))
+		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+return(ref);
 }
+
 
 CELL * p_swap(CELL * params)
 {
-ssize_t first, second, num;
-char * str;
-CELL * envelope;
-CELL * list;
 CELL * firstCell;
 CELL * secondCell;
-SYMBOL * lsym;
-SYMBOL * rsym;
 
-
-/* syntax: swap the contents of two symbols */
-if(((CELL *)params->next)->next == nilCell)
-	{
-	lsym = getSymbolCheckProtected(params);
-	rsym = getSymbolCheckProtected(params->next);
-	swap(&lsym->contents, &rsym->contents);
-	return(copyCell((CELL*)rsym->contents));
-	}
-
-
-/* syntax: swap two elements of a list */
-params = getInteger(params, (UINT*)&first);
-params = getInteger(params, (UINT*)&second);
-
-getEvalDefault(params, &envelope);
-if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-
-if(envelope->type == CELL_STRING)
-	{
-	first = adjustNegativeIndex(first, envelope->aux - 1);
-	second = adjustNegativeIndex(second, envelope->aux - 1);
-	str = (char *)envelope->contents;
-	num = str[first];
-	str[first] = str[second];
-	str[second] = num;
-	if(symbolCheck)
-		{
-		pushResultFlag = FALSE;
-		return(envelope);
-		}
-	else
-		return(copyCell(envelope));
-	}
-
-if(!isList(envelope->type))
-	return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, params));
-
-envelope->aux = (UINT)nilCell; /* undo last element optimization */
-
-list = (CELL *)envelope->contents;
-
-if(first < 0) first = convertNegativeOffset(first, list);
-if(second < 0) second = convertNegativeOffset(second, list);
-
-if(first > second) swap((UINT*)&first, (UINT*)&second);
-second = second - first;
-	
-firstCell = list;
-while(first--)
-	{
-	if(firstCell->next == nilCell) break;
-	firstCell = firstCell->next;
-	}	
-if(first >= 0) return(errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS));
-
-secondCell = firstCell;
-
-while(second--)
-	{
-	if(secondCell->next == nilCell) break;
-	secondCell = secondCell->next;
-	}
-if(second >= 0) return(errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS));
-
+firstCell = getRefCheckProtected(params);
+secondCell = getRefCheckProtected(params->next);
 swap(&firstCell->type, &secondCell->type);
 swap(&firstCell->contents, &secondCell->contents);
 swap(&firstCell->aux, &secondCell->aux);
-
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(envelope);
-	}
-
-return(copyCell(envelope));
+pushResultFlag = FALSE;
+return(secondCell);
 }
 
 
@@ -1287,8 +1215,7 @@ char * str;
 ssize_t n, len;
 
 expr = evaluateExpression(params);
-params = params->next;
-if(params != nilCell)
+if((params = params->next) != nilCell)
 	getInteger(params, (UINT *)&n);
 else n = 2;
 
@@ -1488,7 +1415,8 @@ COMPARE_START:
 		else /* remove mode */
 			{
 			list = (CELL*)cell->contents;
-			goto COMPARE_START;
+			if(list != nilCell)
+				goto COMPARE_START;
 			}		
 		}
 	

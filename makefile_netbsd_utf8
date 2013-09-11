@@ -1,0 +1,24 @@
+# makefile for newLISP v. 10.x.x on BSDs: NetBsd
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+# for readline support use following line
+CFLAGS = -m32 -Wall -Wno-uninitialized -Wno-strict-aliasing -O2 -c -g -DREADLINE -DSUPPORT_UTF8 -D_BSD
+# without readline support
+#CFLAGS = -m32 -Wall -Wno-uninitialized -Wno-strict-aliasing -O2 -c -g -DSUPPORT_UTF8 -D_BSD
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -g -lm -lreadline -lncurses -o newlisp
+# without readline support
+#	$(CC) $(OBJS) -g -lm -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_netbsd_utf8
+

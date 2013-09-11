@@ -16,14 +16,14 @@
 	(set 'i 0)
 	(while (< i n)
 		(semaphore cons-sem wait)
-		(println (set 'i (share data)) " <-")
+		(print (set 'i (share data)) "\r")
 		(semaphore prod-sem sig))  
 	(exit))
 		
 (define (producer n)
 	(for (i 1 n)
 		(semaphore prod-sem wait)
-		(println "-> " (share data i))
+		(print "-> " (share data i) " ->  ")
 		(semaphore cons-sem sig))   
 	(exit))
 
@@ -44,8 +44,10 @@
 	(semaphore cons-sem release) ; release semaphores
 	(semaphore prod-sem release))
 
+(set 'N 10000)
+(set 'duration (time (run N)))
 
-(run 10)
+(println (div duration N) " ms per exchange")
 
 (exit)
 

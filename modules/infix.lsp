@@ -2,8 +2,8 @@
 ;; @description Infix expression parser
 ;; @version 2.1 - comments redone for automatic documentation
 ;; @version 2.2 - fixed bug for trailing lower priority ops
-;; @author Lutz Mueller
-;;
+;; @version 2.3 - doc changes
+;; @author Lutz Mueller 2006-2009
 ;; <h2>Infix expression parser</h2>
 ;; Parses infix, prefix or postfix expressions given in strings and returns a
 ;; newLISP expressions, which can be evaluated; captures syntax errors.
@@ -12,6 +12,8 @@
 ;; statement:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/infix.lsp")
+;; ; or shorter
+;; (module "infix.lsp")
 ;; </pre>
 
 ;; @syntax (INFIX:xlate <str-expression> [<context-target>])
@@ -71,8 +73,8 @@
 (define (xlate str ctx)
   (if ctx (set 'targetContext ctx))
   (if (catch (infix-xlate str) 'result)
-    result                     ;; if starts with ERR: is error else result
-    (append "ERR: " result)))  ;; newLISP error has ocurred
+    result                     ; if starts with ERR: is error else result
+    (append "ERR: " result)))  ; newLISP error has ocurred
 
 
 (define (infix-xlate str)

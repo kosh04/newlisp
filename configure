@@ -5,8 +5,9 @@
 # making shared libraries etc., type: 
 #
 #      make help
-# to see all options
+# to see all options specified in Makefile
 #
+# to change $(prefix) edit prefix in Makefile
 
 echo
 case `uname` in 
@@ -19,25 +20,25 @@ case `uname` in
 	Linux)
 		echo Discovered Linux, enter:
 		echo "     make"
-		echo to make for linux
+		echo to make for linux with readline and utf8 support
 		exit
 		;;
 	FreeBSD)
 		echo Discovered FreeBSD, enter
 		echo "     make"
-		echo to make for FeeBSD
+		echo to make for FeeBSD with readline and utf8 support
 		exit
 		;;
 	NetBSD)
 		echo Discoverd NetBSD, enter:
 		echo "     make"
-		echo to make for NetBSD
+		echo to make for NetBSD with readline and utf8 support
 		exit
 		;;
 	OpenBSD)
 		echo Discoverd OpenBSD, enter:
 		echo "     make"
-		echo to make for OpenBSD
+		echo to make for OpenBSD with readline and utf8 support
 		exit
 		;;
 	SunOS)
@@ -46,6 +47,12 @@ case `uname` in
 		echo to make for SunOS on Sparc CPU
 		exit
 		;;
+	AIX) 
+		echo  Discovered AIX: 
+		echo "     gmake" 
+		echo to make for AIX UTF-8 using the xlc_r compiler
+		exit 
+		;; 
 	OSF1)
 		echo Discovered True64 Unix, please read doc/TRU64BUILD and enter:
 		echo "     make"

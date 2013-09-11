@@ -1,19 +1,19 @@
-# makefile for newLISP v. 10.x.x on BSDs: FreeBSD, OpenBSD with UTF8 support
+# makefile for newLISP v. 10.x.x on BSDs: FreeBSD, OpenBSD and NetBSD with UTF8 support
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
-CFLAGS = -Wall -Wno-uninitialized -O2 -c -g -DREADLINE -D_BSD -DSUPPORT_UTF8
-# for netBSD use following line
-#CFLAGS = -Wall -Wno-uninitialized -O2 -c -g -D_BSD
+CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE -D_BSD -DSUPPORT_UTF8
+# or without readline lib
+#CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -D_BSD -DSUPPORT_UTF8
 
 CC = gcc
 
 default: $(OBJS)
-	$(CC) $(OBJS) -g -lm -lreadline -lncurses -o newlisp
-# for netBSD use following line
-#	$(CC) $(OBJS) -g -lm -o newlisp
+	$(CC) $(OBJS) -m32 -g -lm -lreadline -lncurses -o newlisp
+# or without readline lib
+#	$(CC) $(OBJS) -m32 -g -lm -o newlisp
 	strip newlisp
 
 .c.o:

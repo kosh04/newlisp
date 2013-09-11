@@ -1,0 +1,38 @@
+Alternate configure utility - configure-alt
+-------------------------------------------
+
+Copy the file "configure-alt" as "configure", the file "build-alt" 
+as "build" and the file test-memorymodel.c to the main distribution 
+directory. The original "configure' coming in the distribution, 
+it is used to discover the platform, but this alternate configure script
+utility also discovers the default memory model and produces and appropiate 
+makefile_configure, which then can be used to compile for the platform. 
+The makefile will be done for the default memory model on the platform. 
+Note that platforms may offer more than one memory model for compliling linking. 
+
+Do a ./configure --help to see all the extra options and default overwrites.
+
+The presets are lib readline and UTF-8 support and the default memory model
+discovered.
+
+The full command sequence to make newLISP with this tool is:
+
+    ./confgure
+    make -f makefile_configure
+
+After this the build can be tested doing:
+
+    make check
+
+To trmove all files created buy configure and the compilation
+
+    make distclean
+
+This utility has not been tested much some flavors amd models and is still
+in development.
+
+Known pending issues: DEFAULT_OBJS are not the same for Win32 and OS2 as for UNIX
+
+Thanks to Ted Walther from http://reactor-core.org/~djw/ for this contribution
+
+                                    +++

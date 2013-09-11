@@ -284,6 +284,7 @@ true
 (define (test-NaN? )
   (and (NaN? (sqrt -1))
        (set 'NaN (sqrt -1)) 
+       (not (= NaN NaN))
        (= 1 (+ 1 NaN)) 
        (= 0 (* 2 NaN)) 
        (NaN? (add 1 (sqrt -1))) 
@@ -717,10 +718,10 @@ true
   (and (copy-file "qa-comma" "junk") (delete-file "junk")))
 
 (define (test-delete-url )
-  (= "ERR: bad formed URL" (delete-url "")))
+  (= "ERR: HTTP bad formed URL" (delete-url "")))
 
 (define (test-destroy)
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
 		(set 'pid (fork (dotimes (t 100) (sleep 100))))
 		(set 'pid (process "newlisp"))	)
 	(destroy pid))
@@ -864,7 +865,7 @@ true
     (env "key" "value") 
     (= (env "key") "value")
 	(env "key" "") ; remove key
-	(if (= ostype "Solaris")
+	(if (or (= ostype "SunOS") (= ostype "Solaris"))
 		(= (env "key" ""))
 		(not (env "key")))
 ))
@@ -890,12 +891,6 @@ true
 
 (define (test-error-event )
   (= 'nil (error-event)))
-
-(define (test-error-number )
-  (integer? (error-number)))
-
-(define (test-error-text )
-  (= (error-text 24) "invalid function"))
 
 (define (test-estack) (list? (estack)))
 
@@ -954,6 +949,7 @@ true
 (define (test-expand)
   (and
     (set 'x 2)
+	(= (expand 'x 'x) 2)
     (= (expand '(a x b) 'x) '(a 2 b))
     (= (expand '(x b) 'x) '(2 b))
     (= (expand '(a x) 'x) '(a 2))
@@ -1239,7 +1235,7 @@ true
   (= "hello" (get-string (address "hello"))))
 
 (define (test-get-url )
-  (= "ERR: bad formed URL" (get-url "")))
+  (= "ERR: HTTP bad formed URL" (get-url "")))
 
 
 (define (test-global)
@@ -1290,6 +1286,9 @@ true
 (define (test-index )
   (= '(1 3) (index (lambda (x) (> x 3)) '(1 5 2 6 2 0))))
 
+(define (test-inf?)
+	(inf? (div 1 0)))
+
 (define (test-int)
   (and 
     (integer? (int "12345"))
@@ -1302,6 +1301,9 @@ true
     (= (int 0x8000000000000000) (int "0x8000000000000000"))
 	(set 'D:D 12345)
 	(= (int D) 12345)
+	(= (int "gg" 99) 99)
+	(= (int "ff" 99 16) 255)
+	(= (int "-ff" 99 16) -255)
 ))
 
 (define (test-integer) (test-int))
@@ -1351,6 +1353,10 @@ true
   (not (catch (last '()) 'result))
 )
 
+(define (test-last-error)
+	(= (last-error 1) '(1 "not enough memory"))
+)
+
 (define (test-legal?)
   (and
     (legal? "abc")
@@ -1387,6 +1393,11 @@ true
 	(= (letex (x 1 y 2 z 3) '(x y z)) '(1 2 3))
 	(= (letex (x 1 y 2 z 3) '('x (quote y) z)) '('1 (quote 2) 3))
 	(= (letex (x 1) 'x) 1)
+    (set 'x 123 'y 456)
+    (= (letex (x 'y) 'x) 'y)
+    (= (letex (x 'y) x) 456)
+    (= (letex (x '(+ 3 4)) 'x) '(+ 3 4))
+    (= (letex (x '(+ 3 4)) x) 7)
 	))
 
 (define (test-letn)
@@ -1541,6 +1552,8 @@ true
  )  
 )
 
+(define (test-message) true)
+
 (define (test-min )
   (and (= 3 (min 3 6 10 8)) (= 0,6 (min 0,7 0,6 1,2))))
 
@@ -1657,7 +1670,7 @@ true
     (if msg (set 'net-send-udp-test (= "HELLO" (first msg)) ) )))
 
 
-(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "True64Unix"))  
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "True64Unix"))  
   (define (test-net-receive-udp)
     (fork (begin (sleep 500) (net-send-udp "localhost" 10001 "hello")))
     (set 'net-send-udp-test (= "hello" (first (net-receive-udp 10001 10)))))
@@ -1853,7 +1866,7 @@ true
 	(= (read-line in) "HELLO THERE")
 	(delete-file "pipe-child.lsp"))
 
-(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "Aix" "True64Unix"))
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix"))
   (define (test-pipe)
 	(set 'channel (pipe))
 	(set 'in (first channel))
@@ -1954,7 +1967,7 @@ true
 )
 
 (define (test-post-url )
-  (= "ERR: bad formed URL" (post-url "" "abc" "def")))
+  (= "ERR: HTTP bad formed URL" (post-url "" "abc" "def")))
 
 (define (test-pow )
   (and
@@ -2093,7 +2106,7 @@ true
 
 
 (define (test-put-url ) 
-  (= "ERR: bad formed URL" (put-url "" "abc")))
+  (= "ERR: HTTP bad formed URL" (put-url "" "abc")))
 
 (define (test-pv )
   (< (sub (pv 0,1 10 1000 100000 0 0) -44696,89605) 1e-05))
@@ -2165,6 +2178,8 @@ true
     (string? (real-path "."))
  ))
 
+
+(define (test-receive) true) ; tested with qa-message
 
 (define (test-ref)
   (and
@@ -2398,12 +2413,14 @@ true
 (define (test-semaphore)
   (and
     (set 'sid (semaphore))
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
 		(= (semaphore sid) 0) true) ;; no semaphore status on Win32
     (semaphore sid 1)
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
         (= (semaphore sid) 1) true) ;; no semaphore status on Win32
     (semaphore sid 0)))
+
+(define (test-send) true) ; tested with qa-message
 
 (define (test-sequence )
   (= (sequence 1 10 3) '(1 4 7 10)))
@@ -2470,6 +2487,10 @@ true
           (win32-test-share)
           (unix-test-share))
       (set 'mvar (share))
+      (not (share mvar nil))
+      (= (share mvar) nil)
+      (share mvar true)
+      (= (share mvar) true)
       (share mvar 123)
       (= (share mvar) 123)
       (share mvar 123,456)
@@ -2601,6 +2622,7 @@ true
     (= '(1 2 3 4 5 6 7 8 9) (sort '(9 1 8 2 7 3 6 4 5) (fn (x y) (< x y))))
     (= '(9 8 7 6 5 4 3 2 1) (sort '(9 1 8 2 7 3 6 4 5) (fn (x y) (> x y))))
     (= '() (sort '()))
+	(= (sort '(1 nil)) '(nil 1))
   )
 )
 
@@ -2637,13 +2659,20 @@ true
 
 (define (test-swap )
   (and 
-  	(set 'lst '(1 2 3 4))
-	(= (swap 1 2 lst) '(1 3 2 4)) 
-	(= lst '(1 3 2 4))
-    (let (a 1 b 2) (and (= (swap a b) 1) (= a 2) (= b 1)))
-	; default functor
-  	(set 'D:D '(1 2 3 4))
-	(= (swap 1 2 D) '(1 3 2 4)) 
+	; new (swap <place1> <place2>) in 10.0.3
+	(set 'lst '(1 2 3 4))
+	(= (swap (first lst) (last lst)) 1)
+	(= lst '(4 2 3 1))
+	(= (swap (lst 0) (lst -1)) 4)
+	(= lst '(1 2 3 4))
+	(set 'A (array 2 3 (sequence 1 6)))
+	(= (swap (A 0 0) (A -1 -1)) 1)
+	(= A (array 2 3 (flat '((6 2 3) (4 5 1)))))
+	(set 'lst '(a b c d))
+	(set 'x 'z)
+	(= (swap (lst 0) x) 'a)
+	(= lst '(z b c d))
+	(= x 'a)
   )
 )
 
@@ -2665,7 +2694,7 @@ true
 ;	(integer? (sys-error 0) ))
 
 (define (test-sys-info )
-   (and (list? (sys-info)) (= (length (sys-info)) 9)))
+   (and (list? (sys-info)) (= (length (sys-info)) 10)))
 
 (define (test-tan )
   (> 1 (tan (atan (tan (atan 1))))))
@@ -2844,6 +2873,9 @@ true
 		(= Bf:Bf "hello world\r\n")
 		(= Bf:Bf "hello world\n"))
 ))
+
+(define (test-xfer-event)
+  (not (xfer-event)))
 
 (define (test-xml-error )
   (= (xml-error) nil))

@@ -12,8 +12,9 @@ CC = gcc
 
 
 default: $(OBJS)
+	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -o newlisp
 #	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -ltermcap -o newlisp
-	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
+#	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
 #	$(CC) $(OBJS) -m32 -g -lm -ldl -o newlisp
 	strip newlisp
 

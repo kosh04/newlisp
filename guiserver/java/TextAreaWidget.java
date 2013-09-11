@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/16/07.
 //
 //
-//    Copyright (C) 2008 Lutz Mueller
+//    Copyright (C) 2009 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -46,6 +46,8 @@ String command = "";
 int historyIndex = 0;
 Vector history;
 String lastShellCommand;
+String commandBatch = "";
+boolean isInBatch = false;
 
 public TextAreaWidget(StringTokenizer params)
 	{
@@ -80,7 +82,7 @@ public TextAreaWidget(StringTokenizer params)
 			
 			if(process != null)
 				{
-				if(lastCharCode == 12) 
+				if(lastCharCode == 12) // formfeed Ctrl-L
 					{
 					textArea.setText("");
 					lastDot = 0;
@@ -145,6 +147,8 @@ public void runShell(StringTokenizer tokens)
 	
 	history = new Vector();
 	historyIndex = 0;
+	commandBatch = "";
+	isInBatch = false;
 
 	if(process != null)
 		process.destroy();
@@ -209,9 +213,8 @@ public void destroyShell(StringTokenizer params)
 public void evalShell(StringTokenizer params)
 	{
 	String command = Base64Coder.decodeString(params.nextToken());
-	int retryCount = 0;
 	
-	while(retryCount < 1)
+	while(true)
 		{
 		if(process == null)
 			{
@@ -222,6 +225,7 @@ public void evalShell(StringTokenizer params)
 		else
 			{
 			try {
+				textArea.append("\n");
 				stdOut.write(command, 0, command.length());
 				stdOut.flush();
 				break;
@@ -244,13 +248,13 @@ class stdinListener implements Runnable
 	
 	stdinListener()
 		{
-		buff = new char[256];
+		buff = new char[512];
 		}
 		
 	public void run()
 		{
 		try {
-			while((len = stdInput.read(buff, 0, 256)) != -1)
+			while((len = stdInput.read(buff, 0, 512)) != -1)
 				{
 				str = new String(buff, 0, len);
 				text = textArea.getText();
@@ -275,13 +279,13 @@ class stderrorListener implements Runnable
 	
 	stderrorListener()
 		{
-		buff = new char[256];
+		buff = new char[512];
 		}
 		
 	public void run()
 		{
 		try {
-			while((len = stdError.read(buff, 0, 256)) != -1)
+			while((len = stdError.read(buff, 0, 512)) != -1)
 				{
 				str = new String(buff, 0, len);
 				text = textArea.getText();
@@ -340,33 +344,51 @@ private class HistoryDownAction extends AbstractAction {
 
 private class CommandAction extends AbstractAction {
 	public void actionPerformed(ActionEvent ev) {
-			String text = textArea.getText();
-			if(text.length() < lastDot) lastDot = text.length();
-			text = text.substring(lastDot);
+		String text = textArea.getText();
+		if(text.length() < lastDot) lastDot = text.length();
+		text = text.substring(lastDot);
 			
-			if(guiserver.UTF8)
-				try {
-				text = new String(text.getBytes("UTF-8"));
-				} 
-			catch (UnsupportedEncodingException e) {}
+		if(guiserver.UTF8)
+			try {
+			text = new String(text.getBytes("UTF-8"));
+			} 
+		catch (UnsupportedEncodingException e) {}
 			
-			command = text;
-			
-			textArea.append("\n");
-			
-			try { 
+		command = text;
+		if(command.equals("[cmd]"))
+			isInBatch = true;
+
+		textArea.append("\n");
+						
+		try { 
+			if(isInBatch == false)
+				{
 				stdOut.write(command, 0, command.length());
 				stdOut.write(10);
 				stdOut.flush();
-				if(command.length() > 0)
-					{
-					history.insertElementAt(new String(command), 0);
-					}
-				historyIndex = 0;
 				}
-			catch (IOException ioex) { 
-				textArea.append("--- cannot execute: restart shell ---"); 
+			if(command.length() > 0)
+				{
+				history.insertElementAt(new String(command), 0);
+				}
+			historyIndex = 0;
+			}
+		catch (IOException ioex) { 
+			textArea.append("--- cannot execute: restart shell ---"); 
+			};
+
+		if(command.endsWith("\n[/cmd]"))
+			{
+			isInBatch = false;
+			try {
+				stdOut.write(command, 0, command.length());
+				stdOut.write(10);
+				stdOut.flush();
+				}
+			catch (IOException ioex) {
+				textArea.append("--- cannot execute command batch ---");
 				};
+			}
 		}
 	}
 

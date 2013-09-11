@@ -51,7 +51,7 @@
 (println "N of processes -> " (set 'result3 (length (sync))))
 (println "waiting  to sync -> " (set 'result4 (sync 5000)))
 
-; calculate (fobo 7) needs to create 21 processes
+; calculate (fibo 7) -> 21 needs to create 41 processes
 (println "fibo(7) with 41 processes -> "(set 'result5 (fibo 7)))
 
 ; check inlet function

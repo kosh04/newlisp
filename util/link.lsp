@@ -57,6 +57,10 @@
 
 
 (define (link orgExe newExeName lispSourceName)
+	(println "original newlisp executable:" orgExe)
+	(println "new executable:" newExeName)
+	(println "source:" lispSourceName)
+
     (set 'size (first (file-info orgExe)))
 
     ;; copy newLISP.exe to the newExeName

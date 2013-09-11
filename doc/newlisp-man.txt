@@ -142,5 +142,5 @@ AUTHOR
 
 
 
-version 10.0                     December 2008                      newlisp(1)
+version 10.1                       June 2009                        newlisp(1)
 

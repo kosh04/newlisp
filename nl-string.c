@@ -75,6 +75,7 @@ else
 return(stuffStringN(string + offset, len));
 }
 
+
 #define SEARCH_SIZE 0x1000
 
 CELL * p_search(CELL * params)
@@ -1070,23 +1071,38 @@ else
 	return(copyCell(evaluateExpression(deflt)));
 
 while(isspace((int)*intString)) intString++;
-if(!isDigit((unsigned char)*intString))
-	{
-	if(*intString != '-' && *intString != '+')
-		return(copyCell(evaluateExpression(deflt)));
-	if(!isDigit((unsigned char)*(intString+1)))
-		return(copyCell(evaluateExpression(deflt)));
-	}
-
 if(deflt->next != nilCell)
 	getInteger(deflt->next, (UINT *)&base);
 else base = 0;
+
+if(base == 16)
+	{
+	if(!isxdigit((unsigned char)*intString))
+    	{
+    	if(*intString != '-' && *intString != '+')
+			goto INT_DEFAULT;
+    	if(!isxdigit((unsigned char)*(intString+1)))
+			goto INT_DEFAULT;
+    	}
+	}
+else if(!isDigit((unsigned char)*intString))
+    {
+    if(*intString != '-' && *intString != '+')
+		goto INT_DEFAULT;
+    if(!isDigit((unsigned char)*(intString+1)))
+		goto INT_DEFAULT;
+    }
+
+
 #ifdef TRU64 
 result = strtoul(intString, NULL, base); 
 #else 
 result = strtoull(intString,(char **)0, base); 
 #endif 
+	
 return(stuffInteger64(result)); 
+INT_DEFAULT:
+return(copyCell(evaluateExpression(deflt)));
 }
 
 CELL * p_float(CELL * params)
@@ -1153,7 +1169,7 @@ switch(cell->type)
         snprintf(number, 30, "%lld", *(INT64 *)&cell->aux);
 #endif /* WIN_32 */
 
-#endif /* TRUE64 */
+#endif /* TRU64 */
 		token = number;
 		break;
 #endif /* NEWLISP64 */
@@ -1176,9 +1192,7 @@ switch(cell->type)
 		return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, params));
 	}
 
-params = params->next;
-	
-if(params == nilCell)
+if((params = params->next) == nilCell)
 	context = currentContext;
 else if((context = getCreateContext(params, TRUE)) == NULL)
 	return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
@@ -1572,6 +1586,9 @@ while((source = parsePackFormat(source, &len, &type)) != NULL)
 #else
 	uint64V = cell->contents;
 #endif
+
+	if(type < PACK_FLOAT && cell->type == CELL_FLOAT)
+		uint64V = *(double *)&cell->aux;
 	
 	switch(type)
 		{

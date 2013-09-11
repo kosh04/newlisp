@@ -8,8 +8,9 @@
 ;; the program file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/unix.lsp")
+;; ; or shorter
+;; (module "unix.lsp")
 ;; </pre>
-;;
 ;; All functions are named like the UNIX functions they implelement but with
 ;; the unix: namespace prefix. All functions work similar to the UNIX libc functions
 ;; they implement but return 'nil' instead of '-1' for failure and 'true' instead

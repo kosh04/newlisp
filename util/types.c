@@ -79,9 +79,9 @@ printf("%%u     0x7fffffffffffffffLL %u\n", 0x7fffffffffffffffLL);
 printf("%%x     0xffffffffffffffffLL %x\n", 0xffffffffffffffffLL);
 printf("%%X     0x7fffffffffffffffLL %x\n", 0x7fffffffffffffffLL);
 printf("%%X     0x8000000000000000LL %x\n", 0x8000000000000000LL);
-printf("%%llX   0xFFFFFFFFFFFFFFFFLL %x\n", 0xFFFFFFFFFFFFFFFFLL);
-printf("%%llX   0x7FFFFFFFFFFFFFFFLL %x\n", 0x7FFFFFFFFFFFFFFFLL);
-printf("%%llX   0x8000000000000000LL %x\n", 0x8000000000000000LL);
+printf("%%llX   0xFFFFFFFFFFFFFFFFLL %llx\n", 0xFFFFFFFFFFFFFFFFLL);
+printf("%%llX   0x7FFFFFFFFFFFFFFFLL %llx\n", 0x7FFFFFFFFFFFFFFFLL);
+printf("%%llX   0x8000000000000000LL %llx\n", 0x8000000000000000LL);
 #ifndef TRU64
 printf("%%lld   0xffffffffffffffffLL %lld\n", 0xFFFFFFFFFFFFFFFFLL);
 printf("%%llu   0xffffffffffffffffLL %llu\n", 0xFFFFFFFFFFFFFFFFLL);

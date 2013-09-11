@@ -68,5 +68,5 @@ SEE ALSO
 
 
 
-version 1.5                        June 2008                     newlispdoc(1)
+version 2.8                        June 2009                     newlispdoc(1)
 

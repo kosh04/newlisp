@@ -1,4 +1,4 @@
-# makefile for newLISP v. 10.x.x on SOLARIS woth UTF-8 support on Sparc CPU
+# makefile for newLISP v. 10.x.x on SUNOS with UTF-8 support on Sparc CPU
 #
 #
 
@@ -7,7 +7,7 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 
 # use following for UTF-8 support and add nl-utf8.o to the OBJS line
-CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DSOLARIS -DSPARC
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DSUNOS
 
 CC = gcc
 
@@ -18,4 +18,4 @@ default: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_solaris_utf8
+$(OBJS): primes.h protos.h makefile_sunos_utf8

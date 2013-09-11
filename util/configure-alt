@@ -1,0 +1,290 @@
+#!/bin/sh
+# this script tries to discover the OS platform and configuration
+# and then makes newLISP using the appropiate makefile
+# if this script fails and for other special flavors, like
+# making shared libraries etc., type: 
+#
+#      make help
+# to see all options specified in Makefile
+#
+# to change $(prefix) edit prefix in Makefile
+
+# Generate a config.h file with all our different option settings that are set
+# by #define
+
+# Now we set the default values for our new Makefile
+DEFAULT_CC="gcc"
+DARWIN_CC="${DEFAULT_CC}"
+LINUX_CC="${DEFAULT_CC}"
+BSD_CC="${DEFAULT_CC}"
+SUNOS_CC="${DEFAULT_CC}"
+AIX_CC="xlc_r"
+TRU64_CC="cc"
+WIN32_CC="/MinGW/bin/gcc"
+OS2_CC="${DEFAULT_CC}"
+
+DEFAULT_CFLAGS="-Wall           -Wno-uninitialized                -fno-strict-aliasing -O2 -c"
+DARWIN_CFLAGS=" -Wall                                                                  -O2 -c"
+LINUX_CFLAGS="  -Wall -pedantic                    -Wno-long-long -Wno-strict-aliasing -O2 -c"
+BSD_CFLAGS="    -Wall           -Wno-uninitialized                -fno-strict-aliasing -O2 -c"
+SUNOS_CFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+AIX_XLCFLAGS="                                                                         -O2 -c"
+AIX_GCCFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+TRU64_CFLAGS="  -ieee -pedantic                                                        -O3 -c -D_POSIX_PII_SOCKET"
+WIN32_CFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long                      -O1 -c"
+OS2_CFLAGS="    -Wall -pedantic -Wno-uninitialized -Wno-long-long -Wno-strict-aliasing -O2 -c -s"
+
+DEFAULT_LDFLAGS="       -lm"
+DARWIN_LDFLAGS="${DEFAULT_LDFLAGS}"
+LINUX_LDFLAGS="         -lm -ldl"
+BSD_LDFLAGS="${DEFAULT_LDFLAGS}"
+SUNOS_LDFLAGS="         -lm -ldl -lrt -lsocket -lnsl"
+AIX_LDFLAGS="           -lm -ldl -lrt          -lnsl"
+TRU64_LDFLAGS="         -lm      -lrt                -ldb -lbsd"
+WIN32_LDFLAGS="-lws2_32"
+OS2_LDFLAGS="-Zomf -Zmt -lm -ldl"
+
+DEFAULT_LIBREADLINE="-lreadline -lncurses"
+DARWIN_LIBREADLINE=" -lreadline"
+LINUX_LIBREADLINE="  -lreadline"
+BSD_LIBREADLINE="${DEFAULT_LIBREADLINE}"
+TRU64_LIBREADLINE="  -lreadline -ltermcap"
+
+DEFAULT_OBJS="newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o"
+
+DEFAULT_STRIP="strip"
+WIN32_STRIP="/MinGW/bin/strip"
+
+DEFAULT_TARG="newlisp"
+WIN32_TARG="newlisp.exe"
+OS2_TARG="newlisp.exe"
+
+# Only LP64 and ILP32 memory models are officially supported, but we'll try to
+# support the others too.
+make distclean
+make test-memorymodel >/dev/null
+echo
+case `uname` in 
+	Darwin) true ${os_type:=MAC_OSX} ;;
+	Linux)  true ${os_type:=LINUX} ;;
+	FreeBSD) true ${os_type:=_BSD} ;;
+	NetBSD) true ${os_type:=_BSD} ;;
+	OpenBSD) true ${os_type:=_BSD} ;;
+	SunOS) true ${os_type:=SUNOS} ;;
+	AIX) true ${os_type:=AIX} ;; 
+	OSF1) true ${os_type:=TRU64} ;;
+MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
+	OS/2) true ${os_type:=OS2} ;;
+	*)
+		echo Could not discover your OS platform use one of the following commands:
+		make help
+		;;
+esac
+
+echo "Detected memory model `./test-memorymodel`, using memory model ${memory_model}"
+echo "Detected Operating System ${os_type}"
+
+if   [ ${os_type} = MAC_OSX ] ; then
+	DEFAULT_CFLAGS="${DARWIN_CFLAGS}"
+	DEFAULT_LIBREADLINE="${DARWIN_LIBREADLINE}"
+elif [ ${os_type} = LINUX ] ; then
+	DEFAULT_CFLAGS="${LINUX_CFLAGS}"
+	DEFAULT_LDFLAGS="${LINUX_LDFLAGS}"
+	DEFAULT_LIBREADLINE="${LINUX_LIBREADLINE}"
+elif [ ${os_type} = _BSD ] ; then
+	DEFAULT_CFLAGS="${BSD_CFLAGS}"
+elif [ ${os_type} = SUNOS ] ; then
+	DEFAULT_CFLAGS="${SUNOS_CFLAGS}"
+	DEFAULT_LDFLAGS="${SUNOS_LDFLAGS}"
+elif [ ${os_type} = AIX ] ; then
+	DEFAULT_CC="${AIX_CC}"
+	DEFAULT_CFLAGS="${AIX_XLCFLAGS}"
+	true ${enable_readline:=no};
+elif [ ${os_type} = TRU64 ] ; then
+	DEFAULT_CC="${TRU64_CC}"
+	DEFAULT_CFLAGS="${TRU64_CFLAGS}"
+	DEFAULT_LDFLAGS="${TRU64_LDFLAGS}"
+	DEFAULT_LIBREADLINE="${TRU64_LIBREADLINE}"
+elif [ ${os_type} = WIN_32 ] ; then
+	DEFAULT_CC="${WIN32_CC}"
+	DEFAULT_CFLAGS="${WIN32_CFLAGS}"
+	DEFAULT_LDFLAGS="${WIN32_LDFLAGS}"
+	DEFAULT_STRIP="${WIN32_STRIP}"
+	DEFAULT_TARG="${WIN32_TARG}"
+	true ${enable_readline:=no};
+elif [ ${os_type} = OS2 ] ; then
+	DEFAULT_CFLAGS="${OS2_CFLAGS}"
+	DEFAULT_LDFLAGS="${OS2_LDFLAGS}"
+	DEFAULT_TARG="${OS2_TARG}"
+	true ${enable_readline:=no};
+fi
+
+# Set default values if they weren't already set above
+# Default values for various config.h options
+true ${memory_model:=`./test-memorymodel`}
+true ${enable_readline:=yes};
+true ${enable_utf8:=yes};
+true ${enable_ipv6:=no};
+
+# Default values to control how the Makefile is generated
+true ${enable_static:=no};
+true ${enable_debug:=no};
+
+for arg in "$@"; do
+case "${arg}" in
+	--enable-utf8) enable_utf8=yes; ;;
+	--disable-utf8) enable_utf8=no; ;;
+	--enable-readline) enable_readline=yes; ;;
+	--disable-readline) enable_readline=no; ;;
+	--enable-ipv6) enable_ipv6=yes; ;;
+	--disable-ipv6) enable_ipv6=no; ;;
+	--enable-static) enable_static=yes; ;;
+	--disable-static) enable_static=no; ;;
+	--enable-debug) enable_debug=yes; ;;
+	--disable-debug) enable_debug=no; ;;
+	--LP64)  memory_model=LP64; ;;
+	--ILP64) memory_model=ILP64; ;;
+	--LLP64) memory_model=LLP64; ;;
+	--LP32)  memory_model=LP32; ;;
+	--ILP32) memory_model=ILP32; ;;
+	--help) cat <<EOF
+Usage: ./configure [options]
+     --enable-utf8       # (default) Enable UTF8 support
+     --disable-utf8      # Disable UTF8 support
+     --enable-readline   # (default) Enable readline support
+     --disable-readline  # Disable readline support
+     --enable-ipv6       # (default) Enable IPv6 support
+     --disable-ipv6      # Disable IPv6 support
+     --enable-static     # Link newlisp statically, suitable for use in chroot jails
+     --disable-static    # (default) Link newlisp dynamically
+     --enable-debug      # Include debugging information in the newlisp binary
+     --disable-debug     # (default) Compile without debugging information
+     --LP64              # Use LP64 memory model, overriding auto-detection
+     --ILP64             # Use ILP64 memory model, overriding auto-detection    
+     --LLP64             # Use LLP64 memory model, overriding auto-detection
+     --LP32              # Use LP32 memory model, overriding auto-detection
+     --ILP32             # Use ILP32 memory model, overriding auto-detection
+     --help              # Show this help message.
+EOF
+	exit; ;;	
+	*) echo "Unrecognized option, ignoring: ${arg}" ;;
+esac
+done
+
+cat >> config.h <<EOF
+/* Operating System Type */
+#define ${os_type}
+
+/* Memory model for the platform */
+#define MEMORY_MODEL_${memory_model}
+
+EOF
+
+
+if [ $memory_model = LP64 ] ; then
+	cat >> config.h <<EOF
+/* This platform is using the LP64 memory model.  Adding legacy #define */
+#define NEWLISP64
+
+EOF
+fi
+
+if [ $enable_utf8 = yes ] ; then
+	DEFAULT_OBJS="${DEFAULT_OBJS} nl-utf8.o"
+	cat >> config.h <<EOF
+/* UTF8 support was chosen */
+#define SUPPORT_UTF8
+
+EOF
+echo "UTF-8 is enabled"
+fi
+
+if [ $enable_readline = yes ] ; then
+	cat >> config.h <<EOF
+/* READLINE support was chosen */
+#define READLINE
+
+EOF
+	echo "readline support is enabled"
+else
+	DEFAULT_LIBREADLINE=""
+	echo "readline support is disabled"
+fi
+
+if [ $enable_ipv6 = yes ] ; then
+	cat >> config.h <<EOF
+/* IPv6 support was chosen */
+#define IPV6
+
+EOF
+	echo "IPV-6 support is enabled"
+fi
+
+echo "/* EOF */" >> config.h
+
+if [ $enable_static = yes ] ; then
+	DEFAULT_LDFLAGS="${DEFAULT_LDFLAGS} -static"
+	echo "Static linking enabled"
+fi
+
+if [ $enable_debug = yes ] ; then
+	DEFAULT_CFLAGS="${DEFAULT_CFLAGS} -g"
+	DEFAULT_LDFLAGS="${DEFAULT_LDFLAGS} -g"
+	echo "Debugging enabled"
+fi
+
+if [ $os_type = OS2 ] ; then
+	STRIPBINARY=""
+	LINKSTAGE="\$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
+	COMPILEOBJS="\$(CC) \$(CFLAGS) -DNEWCONFIG $<"
+else
+	STRIPBINARY="	\$(STRIP) \$(TARG)"
+	LINKSTAGE="	\$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
+	COMPILEOBJS="	\$(CC) \$(CFLAGS) -DNEWCONFIG $<"
+fi
+
+if   [ $memory_model = LP64 ] ; then
+	if   [ $os_type = AIX -a ${CC:-${DEFAULT_CC}} = xlc_r ] ; then
+		DEFAULT_CFLAGS="-q64 ${DEFAULT_CFLAGS}"
+		LINKSTAGE="	OBJECT_MODE=64 \$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
+	elif [ $os_type = AIX -a ${CC:-${DEFAULT_CC}} = gcc ] ; then
+		DEFAULT_CFLAGS="-maix64 ${DEFAULT_CFLAGS}"
+		DEFAULT_LDFLAGS="-maix64 ${DEFAULT_LDFLAGS}"
+	elif [ $os_type = TRU64 ] ; then : # do nothing
+	elif [ ${CC:-${DEFAULT_CC}} = gcc ] ; then
+		DEFAULT_CFLAGS="-m64 ${DEFAULT_CFLAGS}"
+		DEFAULT_LDFLAGS="-m64 ${DEFAULT_LDFLAGS}"
+	fi
+elif [ $memory_model = ILP32 ] ; then
+	if   [ $os_type = AIX ] ; then : # do nothing
+	elif [ ${CC:-${DEFAULT_CC}} ] ; then
+		DEFAULT_CFLAGS="-m32 ${DEFAULT_CFLAGS}"
+		DEFAULT_LDFLAGS="-m32 ${DEFAULT_LDFLAGS}"
+	fi
+fi
+
+# Now let us make the Makefile (makefile_configure)
+cat > makefile_configure <<EOF
+# makefile for newLISP v. 10.1.x generated by the configure script
+CC = ${CC:-${DEFAULT_CC}}
+CFLAGS = ${CFLAGS:-${DEFAULT_CFLAGS}}
+LDFLAGS = ${LDFLAGS:-${DEFAULT_LDFLAGS}}
+OBJS = ${OBJS:-${DEFAULT_OBJS}}
+STRIP = ${STRIP:-${DEFAULT_STRIP}}
+TARG = ${TARG:-${DEFAULT_TARG}}
+LIBREADLINE = ${LIBREADLINE:-${DEFAULT_LIBREADLINE}}
+
+default: \$(OBJS)
+${LINKSTAGE}
+${STRIPBINARY}
+
+.c.o:
+${COMPILEOBJS}
+
+\$(OBJS): primes.h protos.h config.h makefile_configure
+EOF
+
+echo
+echo "Type \"make\" to build your newlisp binary."
+echo
+echo "If that doesn't work, type \"make help\""

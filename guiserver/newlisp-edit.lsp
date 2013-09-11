@@ -6,6 +6,7 @@
 ; version 1.26 fixed old tab-switching bug when closing a tab
 ; version 1.27 took out writing debug edit.txt to Application folder
 ; version 1.28 decrementing font size exited editor (missing dec conversion for 10.0)
+; version 1.30 change fonts in both: editor and monitor depending on active window
 
 (set-locale "C")
 
@@ -236,7 +237,7 @@
 
 (gs:set-border-layout 'TheEditor 0 0)
 (gs:tool-bar 'ToolBar (= currentToolbarFloatable "yes"))
-(gs:set-flow-layout 'ToolBar "left" 18 5)
+(gs:set-flow-layout 'ToolBar "left" 16 4)
 (gs:image-button 'NewButton 'newbutton-handler "/local/new32.png" "/local/new-down32.png")
 (gs:image-button 'ClearButton 'clearbutton-handler "/local/clear32.png" "/local/clear-down32.png")
 (gs:image-button 'LoadButton 'loadbutton-handler "/local/folder-opened32.png" "/local/folder-opened-down32.png")
@@ -328,6 +329,7 @@
 
 ; configure output area
 (gs:text-area 'OutputArea 'gs:no-action)
+(gs:mouse-event 'OutputArea 'outputarea-mouse-handler)
 (gs:set-background 'OutputArea currentMonitorBackground)
 (gs:set-foreground 'OutputArea currentMonitorForeground)
 ;(gs:set-font 'OutputArea "Monospaced" currentMonitorFontSize "plain")
@@ -645,7 +647,7 @@
 
 (define (loadbutton-handler id)
 	(gs:open-file-dialog 'TheEditor 'openfile-action  currentDir 
-		".lsp .c .h .txt .java .htm .html .css .php .pl .py .rb .lisp .el .cl .cpp .tcl .config" 
+		".lsp .c .h .txt .java .htm .html .css .php .pl .py .rb .lisp .el .cl .cpp .tcl .config .cgi .js .py .pl .sh:" 
 		"Various text formats")
 )
 
@@ -889,12 +891,16 @@
 )
 
 (define (switchwindow-handler id)
-	(if (= id "MAIN:EditGotoEditor")
-		(gs:request-focus currentEdit)
-		(begin
-			(gs:request-focus 'OutputArea)
-			(gs:set-caret 'OutputArea 100000))
-	)
+	(when (= id "MAIN:EditGotoEditor")
+		(set 'cursor-in-outputarea nil)
+		(gs:set-text 'FontSizeLabel (string currentFontSize))
+		(gs:request-focus currentEdit))
+	(unless (= id "MAIN:EditGotoEditor")
+		(set 'cursor-in-outputarea true)
+		(gs:set-text 'FontSizeLabel (string currentMonitorFontSize))
+		(gs:request-focus 'OutputArea)
+		(gs:set-caret 'OutputArea 100000))
+	
 )
 
 ;;;;;;;;;;;;; find text ;;;;;;;;;;;;;;;
@@ -1078,14 +1084,32 @@
 ;; view menu fonts bigger/smaller handlers
 
 (define (viewfontsmaller-handler)
-	(dec currentFontSize)
-	(gs:set-text 'FontSizeLabel (string currentFontSize))
-	(gs:set-font currentEdit currentFontName currentFontSize "plain"))
+	(if cursor-in-outputarea
+		(begin 
+			(dec currentMonitorFontSize)
+			(gs:set-text 'FontSizeLabel (string currentMonitorFontSize))
+			(gs:set-font 'OutputArea currentMonitorFontName currentMonitorFontSize "plain"))
+		(begin 
+			(dec currentFontSize)
+			(gs:set-text 'FontSizeLabel (string currentFontSize))
+			(gs:set-font currentEdit currentFontName currentFontSize "plain"))
+	)
+)
+	
 
 (define (viewfontbigger-handler)
-	(inc currentFontSize)
-	(gs:set-text 'FontSizeLabel (string currentFontSize))
-	(gs:set-font currentEdit currentFontName currentFontSize "plain"))
+	(if cursor-in-outputarea
+		(begin 
+			(inc currentMonitorFontSize)
+			(gs:set-text 'FontSizeLabel (string currentMonitorFontSize))
+			(gs:set-font 'OutputArea currentMonitorFontName currentMonitorFontSize "plain"))
+		(begin 
+			(inc currentFontSize)
+			(gs:set-text 'FontSizeLabel (string currentFontSize))
+			(gs:set-font currentEdit currentFontName currentFontSize "plain"))
+	)
+)
+	
 
 ;; 
 
@@ -1098,8 +1122,12 @@
 	(dolist (font gs:fonts)
 		(set 'font-label (string "label-" $idx))
 		(gs:label font-label font)
-		(if (= font currentFontName)
-			(gs:set-foreground font-label 0.8 0.5 0.0))
+		(if cursor-in-outputarea
+			(if (= font currentMonitorFontName)
+				(gs:set-foreground font-label 0.8 0.5 0.0))
+			(if (= font currentFontName)
+				(gs:set-foreground font-label 0.8 0.5 0.0))
+		)
 		(gs:set-size font-label 100 30)
 		(gs:set-font font-label font 24 "plain")
 		(gs:mouse-event font-label 'mouse-action)
@@ -1114,10 +1142,16 @@
 (define (mouse-action id type x y button cnt mods)
 	(if (= type "pressed")
 		(gs:set-foreground id 0.8 0.5 0.0)
-		(begin
-			(set 'currentFontName (gs:fonts (int (last (parse id "-")) 0)))
-			(gs:set-font currentEdit currentFontName currentFontSize "plain")
-			(gs:set-foreground id 0 0 0))
+		(if cursor-in-outputarea
+			(begin
+				(set 'currentMonitorFontName (gs:fonts (int (last (parse id "-")) 0)))
+				(gs:set-font 'OutputArea currentMonitorFontName currentMonitorFontSize "plain")
+				(gs:set-foreground id 0 0 0))
+			(begin
+				(set 'currentFontName (gs:fonts (int (last (parse id "-")) 0)))
+				(gs:set-font currentEdit currentFontName currentFontSize "plain")
+				(gs:set-foreground id 0 0 0))
+		)
 	)
 )
 
@@ -1282,9 +1316,17 @@
 
 ;; handle mouse clicks from editeara for popup menu
 (define (editarea-mouse-handler id type x y button cnt modifiers)
+	(gs:set-text 'FontSizeLabel (string currentFontSize))
+	(set 'cursor-in-outputarea nil)
 	(if (or (= button 3) (= modifiers 18)); right button or ctrl click
 		(gs:show-popup 'EditMenuPopup currentEdit x y)
 	)
+)
+
+
+(define (outputarea-mouse-handler)
+	(gs:set-text 'FontSizeLabel (string currentMonitorFontSize))
+	(set 'cursor-in-outputarea true)
 )
 
 ;; tabs have switched or a new tab has been inserted
@@ -1333,6 +1375,7 @@
 	)
 	(gs:set-text 'TheEditor (string "newLISP edit - " currentPath))
 	(theme-handler (string "ViewTheme" currentThemeIdx))
+	(gs:set-font currentEdit currentFontName currentFontSize "plain")
 )
 
 (define (update-current-tab)
@@ -1354,8 +1397,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2008 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2008 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2009 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2009 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)

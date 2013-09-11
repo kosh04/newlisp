@@ -44,8 +44,13 @@
 #define close closesocket
 #endif
 
-#define ERROR_BAD_URL "ERR: bad formed URL"
-#define ERROR_FILE_OP "ERR: file operation failed"
+/* from nl-sock.c */
+extern UINT errorIdx;
+extern char * netErrorMsg[];
+#define ERROR_BAD_URL 18
+#define ERROR_FILE_OP 19
+#define ERROR_TRANSFER 20
+
 #define OK_FILE_DELETED "file deleted"
 
 
@@ -64,9 +69,10 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp );
 */
 
 #ifdef WIN_32
-extern int IOchannelIsSocket;
+extern int IOchannelIsSocketStream;
 #endif
 
+extern SYMBOL * transferEvent;
 
 ssize_t readFile(char * fileName, char * * buffer);
 int writeFile(char * fileName, char * buffer, size_t size, char * type);
@@ -74,6 +80,7 @@ int parseUrl(char *url, char * protocol, char * host, int * port, char * path, s
 void parsePath(char * url, char * path, size_t maxlen);
 size_t parseValue(char * str);
 void trimTrailing(char * ptr);
+CELL * webError(int no);
 CELL * base64(CELL * params, int type);
 
 size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr);
@@ -130,24 +137,31 @@ while(bytesReceived < size)
 return(buffer);
 }
 
-size_t recvsize_tm(char * buffer, size_t size, int sock)
+void wait_until_read_ready(int sock)
+{
+struct timeval tm;
+
+while(wait_ready(sock, 1000, 0) <= 0)
+	{
+  	if(socketTimeout)
+		{
+		gettimeofday(&tm, NULL);
+		if(timediff(tm, socketStart) > socketTimeout)
+		longjmp(socketTimeoutJump, 1);
+		}
+	}
+}
+
+size_t recvsize_tm(char * buffer, size_t size, int sock, int flag)
 {
 ssize_t sizeRead = 0;
 size_t resultSize = 0;
-struct timeval tm;
 
-wait_ready(sock, 1000, 0);
+wait_until_read_ready(sock);
 memset(buffer, 0, size);
-while( (sizeRead = recv(sock, buffer + resultSize, size, NO_FLAGS_SET)) < size)
-  {
-  if(socketTimeout)
-    {
-    gettimeofday(&tm, NULL);
-    if(timediff(tm, socketStart) > socketTimeout)
-        longjmp(socketTimeoutJump, 1);
-    }
-
-  if(size == 0) break;
+while(size)
+  { 
+  sizeRead = recv(sock, buffer + resultSize, size, NO_FLAGS_SET);
   if(sizeRead <= 0)
       {
       sizeRead = 0;
@@ -155,10 +169,12 @@ while( (sizeRead = recv(sock, buffer + resultSize, size, NO_FLAGS_SET)) < size)
       }
   resultSize += sizeRead;
   size -= sizeRead;
-  wait_ready(sock, 1000, 0);
+  if(flag && transferEvent != nilSymbol)
+		executeSymbol(transferEvent, stuffInteger(resultSize), NULL);
+  wait_until_read_ready(sock);
   }
 
-return(resultSize + sizeRead);
+return(resultSize);
 }
 
 ssize_t sendf(int sock, int debug, char * format, ...)
@@ -241,6 +257,23 @@ return(strCell);
 return(makeStringCell(outPtr, sizeout));
 }
 
+int transfer(int sock, char * buff, int len)
+{
+int bytesSend = 0, n;
+
+while(bytesSend < len)
+	{
+ 	if((n = sendall(sock, buff + bytesSend, 
+				(len - bytesSend) > BUFFSIZE ? BUFFSIZE : len - bytesSend) )
+		== SOCKET_ERROR)
+		return(SOCKET_ERROR);
+	bytesSend += n;
+	if(transferEvent != nilSymbol)
+		executeSymbol(transferEvent, stuffInteger(bytesSend), NULL);
+	}
+
+return(bytesSend);
+}
 
 CELL * getPutPostDeleteUrl(char * url, CELL * params, int type, int timeout)
 {
@@ -267,6 +300,9 @@ int ch;
 int responseLoop;
 int statusCode;
 
+/* reset net-error */
+errorIdx = 0;
+
 /* get parameters */
 
 if(url == NULL)
@@ -282,19 +318,19 @@ if(my_strnicmp(url, "file://", 7) == 0)
 	if(type == HTTP_GET_URL)
 		{
 		if((size = readFile(url, &buffPtr)) == -1)
-			return(stuffString(ERROR_FILE_OP));
+			return(webError(ERROR_FILE_OP));
 		return(makeStringCell(buffPtr, size));
 		}
 	if(type == HTTP_PUT_URL)
 		{
 		if(writeFile(url, putPostStr, size, "w") == -1)
-			return(stuffString(ERROR_FILE_OP));
+			return(webError(ERROR_FILE_OP));
 		snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
 		return(stuffString(errorTxt));
 		}
 	if(type == HTTP_DELETE_URL)
-		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : stuffString(ERROR_FILE_OP));
-	return(stuffString(ERROR_BAD_URL));
+		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
+	return(webError(ERROR_BAD_URL));
 	}
 
 
@@ -346,7 +382,7 @@ path = alloca(maxlen + 1);
 
 /* parse URL for parameters */
 if(parseUrl(url, protocol, host, &port, path, maxlen) == FALSE)
-	return(stuffString(ERROR_BAD_URL));
+	return(webError(ERROR_BAD_URL));
 
 proxyUrl = getenv("HTTP_PROXY");
 if(proxyUrl == NULL)
@@ -357,7 +393,7 @@ if(proxyUrl == NULL)
 else
 	{
 	if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, maxlen) == FALSE)
-		return(stuffString(ERROR_BAD_URL));
+		return(webError(ERROR_BAD_URL));
 	}
 
 /* start timer */
@@ -393,7 +429,7 @@ if (customHeader != NULL)
     sendf(sock, debugFlag, customHeader);
 else
 	{
-    sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
+	sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
 	}
 
 sendf(sock, debugFlag, "Connection: close\r\n");
@@ -411,13 +447,15 @@ else if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL)
 	else
 		sendf(sock, debugFlag, "Content-length: %d\r\n\r\n", size);
 
-	send(sock, putPostStr, size, NO_FLAGS_SET);
+	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
+		return(webError(ERROR_TRANSFER));
 	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
 	}
 else if(type == HTTP_POST_URL)
 	{
 	sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
-	send(sock, putPostStr, size, NO_FLAGS_SET);
+	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
+		return(webError(ERROR_TRANSFER));
 	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
 	}
 
@@ -541,13 +579,12 @@ else if(chunked == TRUE)
 			resultPtr = allocMemory(size + 1);
 		else 
 			resultPtr = reallocMemory(resultPtr, resultSize + size + 1);
-
-        if(recvsize_tm(resultPtr + resultSize, size, sock) != size)
-            {
-            free(resultPtr);
-            return(stuffString("ERR: problem in chunked format"));
-            }
-        resultSize += size;
+		if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
+			{
+			free(resultPtr);
+			return(stuffString("ERR: problem in chunked format"));
+			}
+ 		resultSize += size;
 		recvs_tm(buff, BUFFSIZE, sock); /* empty line */
 		recvs_tm(buff, BUFFSIZE, sock); /*  chunck size  */
 		}
@@ -556,11 +593,11 @@ else if(chunked == TRUE)
 else if(haveContentLength == TRUE)
 	{
 	resultPtr = allocMemory(fSize + 1);
-	if((resultSize = recvsize_tm(resultPtr, fSize, sock)) == 0)
-            {
-            free(resultPtr);
-            return(stuffString("ERR: document empty"));
-            }
+	if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
+		{
+		free(resultPtr);
+		return(stuffString("ERR: document empty"));
+		}
 	}
 	
 else /* no content length given, relies on host closing the connection */
@@ -568,8 +605,7 @@ else /* no content length given, relies on host closing the connection */
 	resultPtr = allocMemory(BUFFSIZE + 1);
 	resultSize = 0;
 	size = BUFFSIZE;
-	/* memset(buff, 0, BUFFSIZE); */
-	while ((sizeRead = recvsize_tm(buff, BUFFSIZE - 1, sock)) > 0)
+	while ((sizeRead = recvsize_tm(buff, BUFFSIZE, sock, FALSE)) > 0)
 		{
 		if((resultSize + sizeRead) > size)
 			{
@@ -578,6 +614,8 @@ else /* no content length given, relies on host closing the connection */
 			}
 		memcpy(resultPtr + resultSize, buff, sizeRead);
 		resultSize += sizeRead;
+		if(transferEvent != nilSymbol)
+			executeSymbol(transferEvent, stuffInteger(resultSize), NULL);
 		}
 	}
 
@@ -610,11 +648,11 @@ else
 close(sock);
 
 if(listFlag)
-    {
+	{
 	cell = makeCell(CELL_EXPRESSION, (UINT)headerCell);
-    headerCell->next = result;
-    return(cell);
-    }
+	headerCell->next = result;
+	return(cell);
+	}
 
 return(result);
 }
@@ -698,6 +736,15 @@ while(isDigit((unsigned char)*str)) ++str;
 return atol(number);
 }
 
+CELL * webError(int errorNo)
+{
+char msg[64];
+
+errorIdx = errorNo;
+snprintf(msg, 64, "ERR: %s", netErrorMsg[errorNo]);
+
+return(stuffString(msg));
+}
 
 /***************************************************************************
  *                                  _   _ ____  _
@@ -886,9 +933,9 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.0.2"
+#define SERVER_SOFTWARE "newLISP/10.1.0"
 
-int sendHTTPmessage(char * fmt, char * str);
+int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query);
 size_t readHeader(char * buff, int * pragmaFlag);
 ssize_t readPayLoad(ssize_t size, char * content, int outFile, char * request);
@@ -929,6 +976,7 @@ if(media != NULL)
 #endif
 	}
 #ifndef WIN_32
+/* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
 fflush(IOchannel); 
 if(closeFlag) 
@@ -936,9 +984,8 @@ if(closeFlag)
 	fclose(IOchannel); 
 	IOchannel = NULL;
 	}
-#else
-/*if(IOchannel != NULL && isSocketStream(IOchannel))*/
-if(IOchannel != NULL && IOchannelIsSocket)
+#else /* it is WIN_32 */
+if(IOchannel != NULL && IOchannelIsSocketStream)
 	{
 	sendall(getSocket(IOchannel), content, size);
 	close(getSocket(IOchannel));
@@ -954,8 +1001,9 @@ fflush(stdout);
 }
 
 #define MAX_BUFF 1024
-#define ERROR_404 "ERR:404 File or Dirctory not found: %s\r\n"
-#define ERROR_411 "ERR:411 length required for: %s\r\n"
+#define ERROR_404 "File or Directory not found"
+#define ERROR_411 "Length required for"
+#define ERROR_500 "Server error"
 #define DEFAULT_PAGE_1 "index.html"
 #define DEFAULT_PAGE_2 "index.cgi"
 #define CGI_EXTENSION ".cgi"
@@ -1008,7 +1056,7 @@ if(*sptr == '/')
 /* 	if(chdir(request) < 0) fatalError(ERR_IO_ERROR, 0, 0); */
 	if(chdir(request))
 		{
-		sendHTTPmessage("Status: 404 not found %s\r\n", request);
+		sendHTTPmessage(404, ERROR_404, request);
 		return(TRUE);
 		}
 	request = sptr;
@@ -1050,7 +1098,7 @@ switch(type)
 			else
 				{
 				if((size = readFile(request, &content)) == -1)
-					sendHTTPmessage(ERROR_404, request);
+					sendHTTPmessage(404, ERROR_404, request);
 				else
 					sendHTTPpage(content, size, mediaType, TRUE);
 
@@ -1061,15 +1109,15 @@ switch(type)
 
 	case HTTP_DELETE_URL:
 		if(unlink(request) != 0)	
-			sendHTTPmessage("ERR:500 Could not delete: %s\r\n", request);
+			sendHTTPmessage(500, "Could not delete", request);
 		else
-			sendHTTPmessage("File deleted: %s\r\n", request);
+			sendHTTPpage("File deleted", 12, MEDIA_TEXT, TRUE);
 		break;
 
 	case HTTP_POST_URL:
 		if(!size)
 			{
-			sendHTTPmessage(ERROR_411, request);
+			sendHTTPmessage(411, ERROR_411, request);
 			break;
 			}
 
@@ -1078,7 +1126,6 @@ switch(type)
 		if(readPayLoad(size, query, 0, request) == -1)
 			{
 			free(query);
-			/* sendHTTPmessage("ERR:500 cannot read header: %s\r\n", request); */
 			break;
 			}
 
@@ -1091,13 +1138,13 @@ switch(type)
 
 		if(!size)
 			{
-			sendHTTPmessage(ERROR_411, request);
+			sendHTTPmessage(411, ERROR_411, request);
 			break;
 			}
 
 		if( (outFile = openFile(request, fileMode, NULL)) == (int)-1)
 			{
-			sendHTTPmessage("ERR:500 cannot create file: %s\r\n", request);
+			sendHTTPmessage(500, "Cannot create file", request);
 			break;
 			}
 
@@ -1121,11 +1168,11 @@ return(TRUE);
 }
 
 
-int sendHTTPmessage(char * fmt, char * str)
+int sendHTTPmessage(int status, char * desc, char * req)
 {
 char msg[256];
 
-snprintf(msg, 255, fmt, str);
+snprintf(msg, 256, "Status:%d %s\r\nERR:%d %s: %s\r\n", status, desc, status, desc, req);
 sendHTTPpage(msg, strlen(msg), MEDIA_TEXT, TRUE);
 return(0);
 }
@@ -1195,9 +1242,8 @@ while(size > 0)
 	readsize = (size > MAX_BUFF) ? MAX_BUFF : size;
 #ifndef WIN_32
 	bytes = read(fileno(IOchannel), buff + offset, readsize); 
-#else
-/*	if(IOchannel != NULL && isSocketStream(IOchannel))*/
-	if(IOchannel != NULL && IOchannelIsSocket)
+#else /* it is WIN_32 */
+	if(IOchannel != NULL && IOchannelIsSocketStream)
 		bytes = recv(getSocket(IOchannel), buff + offset, readsize, NO_FLAGS_SET);
 	else
 		bytes = read(fileno(IOchannel), buff + offset, readsize);
@@ -1209,7 +1255,7 @@ while(size > 0)
 
 	if(bytes <= 0)
 		{
-		sendHTTPmessage("ERR:500 error reading data: %s\r\n", request);
+		sendHTTPmessage(500, "Problem reading data", request);
 		return(-1);
 		}
 
@@ -1217,7 +1263,7 @@ while(size > 0)
 		{
 		if(write(outFile, buff + offset, bytes) != bytes)
 			{
-			sendHTTPmessage("ERR:500 cannot create file: %s\r\n", request);
+			sendHTTPmessage(500, "Cannot create file", request);
 			return(-1);
 			}
 		}
@@ -1256,16 +1302,16 @@ printf("# CGI request:%s:%s:\r\n", request, query);
 
 if(isFile(request) != 0)
 	{
-	sendHTTPmessage(ERROR_404, request);
+	sendHTTPmessage(404, ERROR_404, request);
 	return;
 	}
 
 if(isFile("/tmp") != 0)
     {
 #ifdef WIN_32
-    sendHTTPmessage("ERR:500 need \\tmp directory on current drive: %s\n", request);
+    sendHTTPmessage(500, "Need \\tmp directory on current drive", request);
 #else
-    sendHTTPmessage("ERR:500 need /tmp directory: %s\n", request);
+    sendHTTPmessage(500, "Need /tmp directory", request);
 #endif
     return;
     }
@@ -1282,7 +1328,7 @@ snprintf(command, size - 1, "./%s > %s", request, tempfile);
 
 if((handle = popen(command, "w")) == NULL)
 	{
-	sendHTTPmessage("ERR:500 failed creating pipe: %s\n", request);
+	sendHTTPmessage(500, "failed creating pipe", request);
 	return;
 	}
 
@@ -1294,7 +1340,7 @@ pclose(handle);
 
 size = readFile(tempfile, &content);
 if(size == -1)	
-	sendHTTPmessage("ERR:500 cannot read output of: %s", request);
+	sendHTTPmessage(500, "cannot read output of", request);
 else
 	sendHTTPpage(content, size, NULL, TRUE);
 	

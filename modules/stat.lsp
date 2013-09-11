@@ -1,13 +1,15 @@
 ;; @module stat.lsp
 ;; @description Basic statistics and plotting library
 ;; @version 2.0 - fixed plot an plotXY routines for gnuplot
-;; @author Lutz Mueller, 2001
-;;
+;; @version 2.1 - doc changes
+;; @author Lutz Mueller, 2001-2009
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
 ;; <pre>
 ;; (load (append (env "NEWLISPDIR") "/modules/stat.lsp"))
+;; ; or shorter
+;; (module "stat.lsp")
 ;; </pre>
 ;; All functions work on integers and floats or a mix of both. <lists> are normal
 ;; LISP lists. <matrices> are lists of lists, one list for each row in the
@@ -23,8 +25,14 @@
 ;;
 ;; If no Gnuplot program is found by the module all non-plot routines are still
 ;; usable.
-;; 
-;; <center><h2>Plot functions (requires 'gnuplot')</h2></center>
+;;
+;;
+;; <h2>Summary of functions</h2><br>
+;; <h3>Plot functions (requires 'gnuplot')</h3>
+;; <pre>
+;; stat:plot     - plots one ore more vectors (lists)
+;; stat:plotXY   - plots an XY graph from to vectors
+;; </pre>
 ;; The plot functions rely on a $HOME/tmp directory on Mac OS X and other Unix
 ;; or <tt>c:\tmp</tt> or <tt>c:\tmp</tt> on Windows. When loading the module,
 ;; a message will be printed to stdout if either the gnuplot executable or a 
@@ -39,7 +47,43 @@
 ;; To produce more refined graphics the file <tt>tmp/plot</tt> can be edited
 ;; to produce a different output. The Gnuplot command-file <tt>plot</tt> will
 ;; look for data files in the same directory. One file for each data range.
-
+;; <h3>General uni- and bi- variate statistics</h3>
+;; <pre>
+;; stat:sum      - returns the sum of a vector of numbers
+;; stat:mean     - returns the arithmetik mean of a vector of numbers
+;; stat:var      - returns the estimated variance of numbers in a vector sample
+;; stat:sdev     - returns the estimated standard deviation of numbers in a vector
+;; stat:sum-sq   - returns the sum of squares of a data vector
+;; stat:sum-xy   - returns the sum of products of a two data vectors
+;; stat:corr     - returns the correlation coefficient between two vectors
+;; stat:cov      - returns the covariance of two number vectors
+;; stat:sum-d2   - returns the sum of squared differences of a vector from its mean
+;; stat:sum-d2xy - returns sum of squared diffferences of two vectors
+;; stat:reqression - calculates the intecept and slope of a regression estimate
+;; stat:fit      - return the fitted line using regression coefficients
+;; stat:f-prob   - return the probability of an F-ratio of two variances
+;; stat:moments  - calulates 1st to 3rd moments from a vector of numbers
+;; </pre>
+;; <h3>Multi variate statistics</h3>
+;; <pre>
+;; stat:multiple-reg  - calculates a multiple regression
+;; stat:cov-matrix    - calculates a covariance matrix
+;; stat:corr-matrix   - calculates a correlation matrix
+;; </pre>
+;; <h3>Time series</h3>
+;; <pre>
+;; stat:smooth   - smoothes a vector of numbers
+;; stat:lag      - calcultes a difference list with specified lag
+;; stat:cumulate - cumulate a data vector
+;; stat:power    - calculate the power spectrum of a time series
+;; </pre>
+;; <h3>Matrix and list utilities</h3>
+;; <pre>
+;; stat:matrix       - make a matrix from column vectors
+;; stat:diagonal     - make a diagonal matrix
+;; stat:get-diagonal - return the diagonal of a matrix in a vector
+;; stat:mat-map      - map a binary function on to matrices
+;; </pre>
 (constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
 (constant '$TEMP (if (= ostype "Win32") (or (env "TEMP") "C:\\temp") (string $HOME "/tmp")))
 
@@ -54,7 +98,79 @@
 (set 'stat:gnuplot-program (files (or
                 (find true (map file? files))
                 (begin (println "Cannot find the gnuplot executable") (exit)))))
-;;
+
+
+xxxxx
+;; @syntax (stat:corr <X> <Y>)
+;; @param <X> A list of numbers.
+;; @param <Y> A list of numbers.
+;; @return Correlation coefficient of lists <X> and <Y>.
+
+;; @syntax (stat:cov <X> <Y>)
+;; @param <X> A list of numbers.
+;; @param <Y> A list of numbers.
+;; @return Covariance of data in lists <X> and <Y>
+
+;; @syntax (stat:cov-matrix <X>)
+;; @param <X> A list of numbers.
+;; @return Covariance matrix of <X> with <N> rows and <k> columns.
+
+;; @syntax (stat:corr-matrix <X>)
+;; @param <X> A list of numbers.
+;; @return Correlation matrix of <X> with <N> rows and <k> columns.
+
+;; @syntax (stat:cumulate <X>)
+;; @param <X> A list of numbers.
+;; @return The cumulated list of <X>.
+
+;; @syntax (stat:diagonal <item> <N>)
+;; @param <item> The diagonal element.
+;; @return A diagonal matrix of length <N> with <item> in the diagonal.
+
+;; @syntax (stat:fit <X> <Y>)
+;; @param <X> A list of numbers.
+;; @param <Y> A list of numbers.
+;; @return fitted line based on '(stat:regression X Y)'.
+
+;; @syntax (stat:f-prob <F> <df1> <df2>)
+;; @param <F> The variance ratio.
+;; @param <df1> Degrees of freedom.
+;; @param <df2> Degrees of freedom.
+;; @return Probablity of F variance ratio for <df1>, <df2> degress of freedom.
+
+;; @syntax (stat:get-diagonal <X>)
+;; @param <X> An matrix filled with numbers.
+;; @return A list from the diagonal elements of <X>.
+
+;; @syntax (stat:lag <X> <n>)
+;; @param <X> A list of numbers.
+;; @param <n> Lag n.
+;; @return A differenced list of <X> with a lag of <n>.
+;; If the length of list <X> is <l> then the length of the resulting
+;; differenced list is <l - n>.
+
+;; @syntax (stat:mat-map <op> <A> <B>)
+;; @return Matrix map, e.g. '(stat:mat-map + A B)'.
+;; Used for adding and subtracting matrices.
+
+;; @syntax (stat:matrix <C1> .... <CN>)
+;; @param <C1> The first column list of values.
+;; @param <CN> The Nth column list of values.
+;; @return A matrix off  <1> to <N> columns <C>.
+
+;; @syntax (stat:mean <X>) 
+;; @param <X> A list of numbers.
+;; @return The mean of data in list <X>.
+
+;; @syntax (stat:moments <X>)
+;; @param <X> A list of numbers.
+;; @return Calculates all moments of list <X>.
+
+;; @syntax (stat:multiple-reg <X> <offY>)
+;; @param <X> A list of numbers.
+;; @param <offY> Zero based offset into <Y>.
+;; @return Multiple regression of vars in <X> onto <Y> at <offsetY>.
+
 ;; @syntax (stat:plot <p1> <p2> ... <pN>)        
 ;; @param <p1> First list of data.
 ;; @param <p2> Second list of data.
@@ -72,7 +188,6 @@
 ;; distinct color the variable names <tt>data-X</tt> and <tt>data-Y</tt> will
 ;; be used as labeld in the legend.
 
-
 ;; @syntax (stat:plotXY <list-X> <list-Y> [<srt-style>])
 ;; @param <list-X> List of x-coordinates to plot.
 ;; @param <list-Y> List of y-coordinates to plot.
@@ -87,24 +202,34 @@
 ;; appear as little crosses. The style <tt>"line"</tt> would connect all data
 ;; points.
 
-;; <br/>
-;; <center><h2>General uni- and bi- variate statistics</h2></center>
-;;
-;; @syntax (stat:sum <X>)
-;; @param <X> A list of numbers,
-;; @return Sum of data in list <X>.
+;; @syntax (stat:power <TS>)
+;; @param <TS> A time series of numbers.
+;; @return The power spectrum of a time series
 
-;; @syntax (stat:mean <X>) 
+;; @syntax (stat:regression <X> <Y>)
 ;; @param <X> A list of numbers.
-;; @return The mean of data in list <X>.
-
-;; @syntax (stat:var <X>)
-;; @param <X> A list of numbers.
-;; @return The variance of the data in list <X>.
+;; @param <Y> A list of numbers.
+;; returns <(b0 b1)> coefficients of regression <Y = b0 + b1*X>.
 
 ;; @syntax (stat:sdev <X>)
 ;; @param <X> A list of numbers.
 ;; @return Standard deviation of data in list <X>.
+
+;; @syntax (stat:smooth <X> <alpha>)
+;; @param <X> A list of numbers.
+;; @param <alpha> Smoothing coefficient <0 &lt; alpha &lt; 1>.
+;; @return Exponentially smoothed sequence in <X>.
+
+;; @syntax (stat:sum <X>)
+;; @param <X> A list of numbers,
+;; @return Sum of data in list <X>.
+
+;; @syntax (stat:sum-d2 <X>)
+;; @param <X> A list of numbers.
+;; @return Sum of squared diffs <(x - mean(X))^2> in list <X>.
+
+;; @syntax (stat:sum-d2xy <X> <Y>)
+;; @return Sum of squared differences <(x - y)^2> of elements in lists <X> and <Y>.
 
 ;; @syntax (stat:sum-sq <X>)              
 ;; @param <X> A list of numbers.
@@ -115,101 +240,11 @@
 ;; @param <Y> A list of numbers.
 ;; @return Sum of products <x*y> data elements in lists <X> and <Y>.
 
-;; @syntax (stat:cov <X> <Y>)
+;; @syntax (stat:var <X>)
 ;; @param <X> A list of numbers.
-;; @param <Y> A list of numbers.
-;; @return Covariance of data in lists <X> and <Y>
+;; @return The variance of the data in list <X>.
 
-;; @syntax (stat:sum-d2 <X>)
-;; @param <X> A list of numbers.
-;; @return Sum of squared diffs <(x - mean(X))^2> in list <X>.
 
-;; @syntax (stat:corr <X> <Y>)
-;; @param <X> A list of numbers.
-;; @param <Y> A list of numbers.
-;; @return Correlation coefficient of lists <X> and <Y>.
-
-;; @syntax (stat:regression <X> <Y>)
-;; @param <X> A list of numbers.
-;; @param <Y> A list of numbers.
-;; returns <(b0 b1)> coefficients of regression <Y = b0 + b1*X>.
-
-;; @syntax (stat:fit <X> <Y>)
-;; @param <X> A list of numbers.
-;; @param <Y> A list of numbers.
-;; @return fitted line based on '(stat:regression X Y)'.
-
-;; @syntax (stat:sum-d2xy <X> <Y>)
-;; @return Sum of squared differences <(x - y)^2> of elements in lists <X> and <Y>.
-
-;; @syntax (stat:moments <X>)
-;; @param <X> A list of numbers.
-;; @return Calculates all moments of list <X>.
-;;
-;; @syntax (stat:f-prob <F> <df1> <df2>)
-;; @param <F> The variance ratio.
-;; @param <df1> Degrees of freedom.
-;; @param <df2> Degrees of freedom.
-;; @return Probablity of F variance ratio for <df1>, <df2> degress of freedom.
-
-;; <br/>
-;; <center><h2>Multi variate statistics</h2></center>
-;;
-;; @syntax (stat:multiple-reg <X> <offY>)
-;; @param <X> A list of numbers.
-;; @param <offY> Zero based offset into <Y>.
-;; @return Multiple regression of vars in <X> onto <Y> at <offsetY>.
-
-;; @syntax (stat:cov-matrix <X>)
-;; @param <X> A list of numbers.
-;; @return Covariance matrix of <X> with <N> rows and <k> columns.
-
-;; @syntax (stat:corr-matrix <X>)
-;; @param <X> A list of numbers.
-;; @return Correlation matrix of <X> with <N> rows and <k> columns.
-
-;; <br/>
-;; <center><h2>Time series</h2></center>
-;;
-;; @syntax (stat:smooth <X> <alpha>)
-;; @param <X> A list of numbers.
-;; @param <alpha> Smoothing coefficient <0 &lt; alpha &lt; 1>.
-;; @return Exponentially smoothed sequence in <X>.
-
-;; @syntax (stat:lag <X> <n>)
-;; @param <X> A list of numbers.
-;; @param <n> Lag n.
-;; @return A differenced list of <X> with a lag of <n>.
-;; If the length of list <X> is <l> then the length of the resulting
-;; differenced list is <l - n>.
-
-;; @syntax (stat:cumulate <X>)
-;; @param <X> A list of numbers.
-;; @return The cumulated list of <X>.
-
-;; @syntax (stat:power <TS>)
-;; @param <TS> A time series of numbers.
-;; @return The power spectrum of a time series
-
-;; <br/>
-;; <center><h2>Matrix and list utilities</h2></center>
-;;
-;; @syntax (stat:matrix <C1> .... <CN>)
-;; @param <C1> The first column list of values.
-;; @param <CN> The Nth column list of values.
-;; @return A matrix off  <1> to <N> columns <C>.
-
-;; @syntax (stat:diagonal <item> <N>)
-;; @param <item> The diagonal element.
-;; @return A diagonal matrix of length <N> with <item> in the diagonal.
-
-;; @syntax (stat:get-diagonal <X>)
-;; @param <X> An matrix filled with numbers.
-;; @return A list from the diagonal elements of <X>.
-
-;; @syntax (stat:mat-map <op> <A> <B>)
-;; @return Matrix map, e.g. '(stat:mat-map + A B)'.
-;; Used for adding and subtracting matrices.
 
 (context 'stat)
 

@@ -1,7 +1,8 @@
-#!/usr/bin/newlisp
-
+#!/usr/bin/newlisp 
 # OpenGL and GLUT demo - opengl-demo.lsp
 # tested on Win32 and OS X (Intel)
+
+# version 1.1, May 2009 - added glutJoystickFunc
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  
@@ -77,6 +78,7 @@
 (import GLUT_LIB "glutDisplayFunc")
 (import GLUT_LIB "glutKeyboardFunc")
 (import GLUT_LIB "glutMouseFunc")
+(import GLUT_LIB "glutJoystickFunc")
 (import GLUT_LIB "glutMotionFunc")
 (import GLUT_LIB "glutIdleFunc")
 (import GLUT_LIB "glutCreateWindow")
@@ -137,8 +139,11 @@
 (define (mouse button state x y)
 	(if (= state 0)
 		(glutIdleFunc 0) ; auto-motion off on button press
-		(glutIdleFunc (callback 4 'rotation))) ; auto-motinn on
-	(println "button: " button " state:" state " x:" x " y:" y))
+		(glutIdleFunc (callback 4 'rotation))) ; auto-motion on
+	(println "mouse button: " button " state:" state " x:" x " y:" y))
+
+(define (joystick button x y z)
+	(println "joystick button: " button " x: " x " y: " y " z: " z))
 
 (define (motion x y)
 	(set 'rotx (mul (div 200 x) PI))
@@ -161,6 +166,7 @@
 (glutMouseFunc (callback 2 'mouse))
 (glutMotionFunc (callback 3 'motion))
 (glutIdleFunc (callback 4 'rotation))
+(glutJoystickFunc (callback 5 'joystick) 50)
 (glutMainLoop)
 
 ;; eof

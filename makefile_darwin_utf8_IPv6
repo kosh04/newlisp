@@ -6,9 +6,9 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
-CFLAGS = -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DIPV6
+CFLAGS = -Wall -O2 -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DIPV6
 
-CC = cc -L/usr/lib
+CC = gcc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -g -lm -lreadline -o newlisp

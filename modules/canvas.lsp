@@ -1,8 +1,9 @@
 ;; @module canvas.lsp
 ;; @description Routines for creating HTML canvas tag graphics
 ;; @version 1.0 initial release
+;; @version 1.1 doc changes only
+;; @version 1.2 doc changes only
 ;; @author Lutz Mueller, March 2009
-;;
 ;    Copyright (C) 2009 Lutz Mueller
 ;
 ;    This program is free software: you can redistribute it and/or modify
@@ -17,7 +18,6 @@
 ;
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-;
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
 ;; the HTML-5 canvas tag. As of March 2009 only the Safari 4.0 Beta
@@ -27,10 +27,10 @@
 
 ;; <h3>Example program</h3>
 ;; The following is a simple example how to create an HTML page
-;; with one or more embedded graphics.
+;; with one or more embedded graphics. 
 ;;
 ;; @example
-;; (load "canvas.lsp") ; required at start of program
+;; (module "canvas.lsp") ; does a load from standard location
 ;;
 ;; (cv:html "&lt;h2&gt;First canvas&lt;/h2&gt;") ; optional mixed in HTML
 ;; (cv:canvas "FirstCanvas" 300 100) ; required canvas creation
@@ -67,7 +67,7 @@
 ;; to run a <tt>postscript.lsp</tt> based program with <tt>canvas</tt>:
 ;;
 ;; @example
-;; (load "canvas.lsp")
+;; (module "canvas.lsp")
 ;; 
 ;; (html "<center>")
 ;; (cv:canvas "TheCanvas" 200 200)
@@ -105,7 +105,7 @@
 ;; newLISP script, then as an explicitly written JavaScript script:
 ;;
 ;; @example
-;; (load "canvas.lsp")
+;; (module "canvas.lsp")
 ;; 
 ;; (html "<h3>Indirect draw</h3>")
 ;; 
@@ -132,8 +132,9 @@
 ;;     }
 ;; [/text])
 ;;
-;; (cv:render)
-;; (cv:render "direct.html")
+;; (cv:render) ; render page automatically in browser on OS X (Safari 4.0)
+;; ; as an alternative specify the HTML filename
+;; (cv:render "direct.html") ; renders to file specified
 ;; (exit)
 
 ;; <h2>Differences to the postscript module</h2>

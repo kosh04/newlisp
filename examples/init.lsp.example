@@ -44,7 +44,7 @@
    (if (primitive? (eval func))
        (let (func-name (name func))
             (if (ends-with func-name "?") (replace "?" func-name "p")) 
-       (!  (format "lynx /usr/share/newlisp/doc/newlisp_manual.html#%s" func-name)))
+       (!  (format "lynx /usr/share/doc/newlisp/newlisp_manual.html#%s" func-name)))
    (format "%s is not a built-in function" (name func))))
 
 (constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT")))

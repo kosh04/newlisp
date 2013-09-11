@@ -50,6 +50,12 @@
 #define fclose win32_fclose
 #endif
 
+/* used only in loadStartup() */
+#ifndef _BSD
+#define strlcpy strncpy
+#define strlcat strncat
+#endif
+
 #ifdef LIBRARY
 extern STREAM libStrStream;
 #endif
@@ -67,15 +73,7 @@ int opsys = 3;
 #endif
 
 #ifdef SOLARIS
-int opsys 4
-#endif
-
-#ifdef TRU64
-int opsys += 5;
-#endif
-
-#ifdef AIX
-int opsys += 6;
+int opsys = 4;
 #endif
 
 #ifdef WIN_32
@@ -84,28 +82,36 @@ int opsys = 6;
 
 #ifdef OS2 
 int opsys = 7; 
-#endif 
+#endif
 
-int version = 10002;
+#ifdef TRU64
+int opsys = 9; 
+#endif
+
+#ifdef AIX
+int opsys = 10;
+#endif
+
+int version = 10100;
 
 char copyright[]=
-"\nnewLISP v.10.0.2 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.1.0 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.2 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.0 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.2 on %s IPv%d%s\n\n";
+"newLISP v.10.1.0 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.2 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.0 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.2 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.1.0 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -116,10 +122,11 @@ char linkOffset[] = "@@@@@@@@";
 char preLoad[] = 
 	"(define Tree:Tree)"
 	"(define (Class:Class) (cons (context) (args)))"
-	"(set (global 'module) (fn (mdl) (load (append (env {NEWLISPDIR}) {/modules/} mdl))))";
+	"(set (global 'module) (fn (m) (load (append (env {NEWLISPDIR}) {/modules/} m))))";
 void printHelpText(void);
+#ifdef READLINE
 char ** newlisp_completion (char * text, int start, int end);
-
+#endif
 /* --------------------- globals -------------------------------------- */
 
 /* interactive command line */
@@ -132,7 +139,7 @@ int forcePromptMode = 0;
 int httpMode = 0;
 
 #ifdef WIN_32
-int IOchannelIsSocket = 0;
+int IOchannelIsSocketStream = 0;
 #endif
 FILE * IOchannel;
 int IOport = 0;
@@ -170,12 +177,13 @@ SYMBOL * itSymbol;
 
 SYMBOL * sysSymbol[MAX_REGEX_EXP];
 
-SYMBOL * errorEvent;
 SYMBOL * currentContext = NULL;
 SYMBOL * mainContext = NULL;
+SYMBOL * errorEvent;
 SYMBOL * timerEvent;
 SYMBOL * promptEvent;
 SYMBOL * commandEvent;
+SYMBOL * transferEvent;
 
 SYMBOL * symHandler[32];
 int currentSignal = 0;
@@ -194,8 +202,9 @@ int errorReg = 0;
 CELL * throwResult;
 int errnoSave;
 
-/* buffer for read-line */
+/* buffers for read-line and error reporting */
 STREAM readLineStream;
+STREAM errorStream;
 
 /* compiler */
 
@@ -246,9 +255,6 @@ char logFile[PATH_MAX]; /* logFile, is define with -l, -L */
 
 int pagesize;
 
-/* -x experimental */
-int implicitIf = FALSE;
-
 /* ============================== MAIN ================================ */
 
 /*
@@ -269,7 +275,7 @@ if(signal(sig, handler) == SIG_ERR)
 	printf("Error setting signal:%d handler\n", sig);
 }
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 void sigpipe_handler(int sig)
 {
 setupSignalHandler(SIGPIPE, sigpipe_handler);
@@ -312,7 +318,7 @@ else /* if idle */
 
 void setupAllSignals(void)
 {
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 setupSignalHandler(SIGINT,ctrlC_handler);
 #else
 setupSignalHandler(SIGINT, signal_handler);
@@ -320,7 +326,7 @@ setupSignalHandler(SIGINT, signal_handler);
 
 #ifndef WIN_32
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 setupSignalHandler(SIGALRM, sigalrm_handler);
 setupSignalHandler(SIGVTALRM, sigalrm_handler);
 setupSignalHandler(SIGPROF, sigalrm_handler);
@@ -345,7 +351,7 @@ char chr;
 
 if(sig > 32 || sig < 1) return;
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 switch(sig)
   {
   case SIGALRM:
@@ -442,21 +448,22 @@ if(strncmp(linkOffset, "@@@@", 4) == 0)
 	else if(getenv("DOCUMENT_ROOT"))
 		strncpy(initFile, getenv("DOCUMENT_ROOT"), MAX_LINE - 16);
 
-	strcat(initFile, "/.");
-	strcat(initFile, INIT_FILE);
+    /* for non BSDs strlcat and strlcpy are redefined as strncat and strncpy */
+	strlcat(initFile, "/.", 3);
+	strlcat(initFile, INIT_FILE, 9);
 	if(loadFile(initFile, 0, 0, mainContext) == NULL)
 		{
 		envPtr = getenv("NEWLISPDIR");
 	  	if(envPtr)
 	  		{
-			strncpy(initFile, envPtr, MAX_LINE - 16);
-	   		strcat(initFile, "/");
-			strcat(initFile, INIT_FILE);
+			strlcpy(initFile, envPtr, MAX_LINE - 16);
+	   		strlcat(initFile, "/", 2);
+			strlcat(initFile, INIT_FILE, 9);
 			loadFile(initFile, 0, 0, mainContext);		
 			}
 		}
 	}
-/* load encrypted part at offset */ 
+/* load encrypted part at offset no init.lsp or .init.lsp is loaded */
 else
 	loadFile(name, *(UINT*)linkOffset, 1, mainContext);
 }
@@ -592,13 +599,13 @@ IOchannel = stdin;
 
 initialize();
 initStacks();
-initDefaultInAddr();
+initDefaultInAddr(); /* nl-sock.c */
 
 mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
 if((errorReg = setjmp(errorJump)) != 0) 
     {
-    if(errorReg && (errorEvent != nilSymbol) && !isNil((CELL*)errorEvent->contents)) 
+    if(errorReg && (errorEvent != nilSymbol) ) 
         executeSymbol(errorEvent, NULL, NULL);
     else exit(-1);
     goto AFTER_ERROR_ENTRY;
@@ -608,7 +615,8 @@ setupAllSignals();
 
 sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
-/* loading of init.lsp can be suppressed with -n as first option */
+/* loading of init.lsp can be suppressed with -n as first option
+   but is never when program is link.lsp'd */
 if(argc < 2 || strncmp(argv[1], "-n", 2))
 	loadStartup(argv[0]);
 
@@ -662,7 +670,7 @@ for(idx = 1; idx < argc; idx++)
 	if(strncmp(argv[idx], "-l", 2) == 0 || strncmp(argv[idx], "-L", 2) == 0)
 		{
 		logTraffic = (strncmp(argv[idx], "-L", 2) == 0) ? LOG_MORE : LOG_LESS;
-		if(realpath(getArg(argv, argc, &idx), logFile) == NULL)
+		if(realpath(getArg(argv, argc, &idx), logFile) == NULL) /* log file must exist */
 			fatalError(ERR_IO_ERROR, 0, 0);
 		continue;
 		}
@@ -685,9 +693,6 @@ for(idx = 1; idx < argc; idx++)
 		continue;
 		}	
 
-	if(strncmp(argv[idx], "-x", 2) == 0)
-		implicitIf = TRUE;
-
 	if(strcmp(argv[idx], "-h") == 0)
 		{
 		printHelpText();
@@ -709,9 +714,7 @@ if(isatty(fileno(IOchannel)))
 else
 	{
 #ifdef WIN_32
-	/* its a faked FILE struct, see win32_fdopen() in nl-sock.c */
-	/* if(!isSocketStream(IOchannel)) */
-	if(!IOchannelIsSocket) 
+	if(!IOchannelIsSocketStream) 
 #endif
 		setbuf(IOchannel,0);
 	if(forcePromptMode)
@@ -775,9 +778,8 @@ return 0;
 #ifdef READLINE
 char * command_generator(char * text, int state)
 {
-static int list_index, len;
+static int list_index, len, clen;
 char * name;
-char * cptr;
      
 if (!state)
 	{
@@ -791,16 +793,17 @@ while((name = primitive[list_index].name))
      
 	if (strncmp (name, text, len) == 0)
 		{
-		cptr = malloc(strlen(name) + 1);
-		strcpy(cptr, name);
-		return (cptr);
+		clen = strlen(name) + 1;
+		return(strncpy(malloc(clen), name, clen));
 		}
 	}
      
 return ((char *)NULL);
 }
 
-#ifndef _BSD
+#ifdef _BSD
+extern char **completion_matches PARAMS((char *, rl_compentry_func_t *));
+#else
 char ** completion_matches(const char * text, CPFunction commands);
 #endif
 
@@ -818,17 +821,17 @@ varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s
 	" -h this help",
 	" -n no init (must be first)",
 	" -s <stacksize>",
-	" -m <max-mem-megabyte>",
+	" -m <max-mem-MB>",
 	" -e <quoted lisp expression>",
 	" -l <path-file> log connections",
 	" -L <path-file> log all",
 	" -w <working-directory>",
 	" -c no prompts, HTTP",
 	" -C force prompts",
-	" -p <port-number>",
-	" -d <port-number>",
-	" -http HTTP only",
-	"more information at http://newlisp.org");
+	" -p <port-no>",
+	" -d <port-no>",
+	" -http only",
+	"more info at http://newlisp.org");
 }
 
 
@@ -840,12 +843,9 @@ if((IOchannel  = serverFD(IOport,  IOdomain, reconnect)) == NULL)
 	exit(1);
 	}
 #ifdef WIN_32
-else	IOchannelIsSocket = TRUE; 
-#endif
+else	IOchannelIsSocketStream = TRUE; 
 
-#ifdef WIN_32
-/* if(!isSocketStream(IOchannel))  */
-if(!IOchannelIsSocket)
+if(!IOchannelIsSocketStream)
 #endif
 	setbuf(IOchannel,0);
 
@@ -866,7 +866,7 @@ if(evalSilent || noPromptMode)
 	return("");
 	}
 
-if(promptEvent != nilSymbol && !isNil((CELL *)promptEvent->contents))
+if(promptEvent != nilSymbol)
 	{
 	if(executeSymbol(promptEvent, stuffSymbol(currentContext), &result) == CELL_STRING)
 		{
@@ -911,7 +911,6 @@ printDevice = recursionCount  = traceFlag = prettyPrintFlags = 0;
 evalFunc = NULL;
 pushResultFlag = TRUE;
 xmlTags = NULL; /* force recreation */
-/* xmlCallback = NULL; */
 currentContext = mainContext;
 itSymbol->contents = (UINT)nilCell;
 }
@@ -944,12 +943,12 @@ CELL * result;
 char buff[MAX_LINE];
 char cmd[MAX_LINE];
 
-if(commandEvent != nilSymbol && !isNil((CELL *)commandEvent->contents))
+if(commandEvent != nilSymbol)
 	{
 	if(executeSymbol(commandEvent, stuffString(command), &result) == CELL_STRING)
 		{
 		strncpy(cmd, (char *)result->contents, 254);
-		cmd[254] = 0;
+		cmd[MAX_LINE - 1] = 0;
 		command = cmd;
 		}
 	deleteList(result);
@@ -1130,7 +1129,6 @@ CELL * pCell;
 char  symName[8];
 
 /* build true and false cells */
-
 nilCell = getCell(CELL_NIL);
 nilCell->aux = nilCell->contents = (UINT)nilCell;
 nilCell->next =  nilCell;
@@ -1155,7 +1153,6 @@ for(i = 0; primitive[i].name != NULL; i++)
 	}
 
 /* build true, nil, * and ? symbols and others  */
-
 trueSymbol = translateCreateSymbol("true", CELL_TRUE, mainContext, TRUE);
 trueSymbol->contents = (UINT)trueCell;
 nilSymbol = translateCreateSymbol("nil", CELL_NIL, mainContext, TRUE);
@@ -1176,7 +1173,7 @@ for(i = 0; i < MAX_REGEX_EXP; i++)
 	sysSymbol[i]->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN;
 	}
 
-currentFunc = errorEvent = timerEvent = promptEvent = commandEvent = nilSymbol;
+currentFunc = errorEvent = timerEvent = promptEvent = commandEvent = transferEvent = nilSymbol;
 
 trueSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
 nilSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
@@ -1196,6 +1193,7 @@ for(i = 0; i < 32; i++)
 
 /* init readLineStream */
 openStrStream(&readLineStream, 16, 0);
+openStrStream(&errorStream, MAX_LINE, 0);
 }
 
 void initStacks()
@@ -1255,7 +1253,6 @@ switch(cell->type)
 	case CELL_EXPRESSION:
 		args = (CELL *)cell->contents;
 		resultIdxSave = resultStackIdx;                
-
 		if(++recursionCount > (int)MAX_CPU_STACK)
 			fatalError(ERR_OUT_OF_CALL_STACK, args, 0);
 		
@@ -1283,7 +1280,8 @@ switch(cell->type)
 		if(pCell->type == CELL_PRIMITIVE)
 			{
 			evalFunc = (CELL *(*)(CELL*))pCell->contents;
-			result = (*evalFunc)(args->next);
+			/* result = (*evalFunc)(args->next); */
+			result = evalFunc(args->next);
 			evalFunc = NULL;
 			break;
 			}
@@ -1323,7 +1321,22 @@ switch(cell->type)
 			pCell = (CELL *)sPtr->contents;
 
 
-			if(pCell->type == CELL_LAMBDA)
+			if(isNil(pCell))
+				{
+				result = evaluateNamespaceHash(args->next, newContext);
+				break;
+				}
+
+			else if(pCell->type == CELL_PRIMITIVE)
+				{
+				evalFunc = (CELL *(*)(CELL*))pCell->contents;
+				/* result = (*evalFunc)(args->next); */
+				result = evalFunc(args->next);
+				evalFunc = NULL;
+				break;
+				}
+
+			else if(pCell->type == CELL_LAMBDA)
 				{
 				pushLambda(args);
 				result = evaluateLambda((CELL *)pCell->contents, args->next, newContext); 
@@ -1335,20 +1348,6 @@ switch(cell->type)
 				{
 				result = evaluateMacro((CELL *)pCell->contents, args->next, newContext); 
 				break; 
-				}
-
-			else if(isNil(pCell))
-				{
-				result = evaluateNamespaceHash(args->next, newContext);
-				break;
-				}
-
-			else if(pCell->type == CELL_PRIMITIVE)
-				{
-				evalFunc = (CELL *(*)(CELL*))pCell->contents;
-				result = (*evalFunc)(args->next);
-				evalFunc = NULL;
-				break;
 				}
 
 			}
@@ -1402,12 +1401,6 @@ switch(cell->type)
 			else if(isNumber(pCell->type))
 				result = implicitNrestSlice(pCell, args->next);
 	
-			else if(implicitIf && isTrue(pCell))
-				result = copyCell(evaluateExpression(args->next));
-				
-			else if(implicitIf && isNil(pCell))
-				result = copyCell(evaluateExpression(((CELL*)args->next)->next));
-	
 			else result = errorProcExt(ERR_INVALID_FUNCTION, cell);                              
 			}
 		else 
@@ -1421,12 +1414,6 @@ switch(cell->type)
 	default:
 		result = nilCell;
 	}
-
-/* moved below for p_nth on strings
-while(resultStackIdx > resultIdxSave)
-	deleteList(popResult());
-*/
-
 
 if(pushResultFlag) 
 	{
@@ -1567,6 +1554,7 @@ CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
 int localCount = 0;
+UINT * resultIdxSave;
 
 if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
@@ -1649,12 +1637,14 @@ argsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)result);
 ++localCount;
 
 /* evaluate body expressions */
-cell = localLst->next;
+resultIdxSave = resultStackIdx;
+cell = localLst;
 result = nilCell;
-while(cell != nilCell)
+while( (cell = cell->next) != nilCell)
 	{
+	while(resultStackIdx > resultIdxSave)
+		deleteList(popResult());
 	result = evaluateExpression(cell);
-	cell = cell->next;
 	}
 result = copyCell(result);
 
@@ -1681,11 +1671,11 @@ return(result);
 CELL * evaluateMacro(CELL * localLst, CELL * arg, SYMBOL * newContext)
 {
 CELL * local;
-CELL * result;
+CELL * result = nilCell;
 CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
-int localCount;
+int localCount = 0;
 
 if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
@@ -1698,7 +1688,6 @@ contextSave = currentContext;
 currentContext = newContext;
 
 /* save environment and get parameters */
-localCount = 0;
 GET_ARGS:
   {
   if(local->type == CELL_SYMBOL)
@@ -1742,14 +1731,9 @@ if(arg != nilCell)
     ((CELL*)argsSymbol->contents)->contents = (UINT)copyList(arg);
 ++localCount;
 
-arg = localLst->next;
-result = nilCell;
-
-while(arg != nilCell)
-	{
+arg = localLst;
+while((arg = arg->next) != nilCell)
 	result = evaluateExpression(arg);
-	arg = arg->next;
-	}
 result = copyCell(result);
 
 while(localCount--)
@@ -1962,6 +1946,7 @@ cell->contents = (UINT)contents;
 return(cell);
 }
 
+
 CELL * copyCell(CELL * cell)
 {
 CELL * newCell;
@@ -2134,6 +2119,8 @@ return(ptr);
    cleanup unused cells they created, then marking references where not
    necessary and the routines would only be used to recover free blocks
    on reset.
+   No places without cleanup are known at this moment, but for safety GC is
+   still called under error conditions.
 */
 
 void markReferences(SYMBOL * sPtr);
@@ -2259,7 +2246,6 @@ lastFreeCell->next = NULL;
 /* -------------------------- I/O routines ------------------------------ */
 
 UINT printDevice;
-STREAM errorStream;
 void prettyPrint(UINT device);
 
 void varPrintf(UINT device, char * format, ...)
@@ -2269,7 +2255,7 @@ va_list argptr;
  
 va_start(argptr,format);
 
-/* new in 7201 , defined in nl-filesys.c if not in libc */
+/* defined in nl-filesys.c if not in libc */
 vasprintf(&buffer, format, argptr); 
 
 prettyPrintLength += strlen(buffer);
@@ -2297,11 +2283,7 @@ switch(device)
 		else
 			{
 			if(IOchannel != NULL) 
-#ifndef WIN_32
-			fprintf(IOchannel, "%s", buffer);
-#else
-			fprintf(IOchannel, buffer);
-#endif
+				fprintf(IOchannel, "%s", buffer);
 			}
 		break;
 #endif
@@ -2345,7 +2327,7 @@ switch(cell->type)
 #else
 		varPrintf(device,"%lld", *(INT64 *)&cell->aux); break;
 #endif /* WIN32 */
-#endif /* TRUE64 */
+#endif /* TRU64 */
 #endif /* NEWLISP64 */
 	case CELL_FLOAT:
 #ifndef NEWLISP64
@@ -2778,9 +2760,9 @@ char * errorMessage[] =
 	"",                             /* 0 */
 	"not enough memory",            /* 1 */
 	"environment stack overflow",   /* 2 */
-	"call stack overflow",          /* 3 */
+	"call or result stack overflow",/* 3 */
 	"problem accessing file",       /* 4 */
-	"not an expression",            /* 5 */
+	"illegal token or expression",  /* 5 */
 	"missing parenthesis",          /* 6 */
 	"string token too long",        /* 7 */
 	"missing argument",             /* 8 */
@@ -2839,7 +2821,8 @@ char * errorMessage[] =
 	"no symbol reference found",	/* 61 */
 	"list is empty",				/* 62 */
 	"I/O error",					/* 63 */
-	"working directory not found",	/* 64 */
+	"no working directory found",	/* 64 */
+	"invalid PID",					/* 65 */
 	NULL
 	};
 
@@ -2958,7 +2941,10 @@ if(errorEvent == nilSymbol)
 	if(errorNumber == ERR_SIGINT)
 		printf("%s", errorStream.buffer);
 	else
+		{
 		varPrintf(OUT_CONSOLE, "\n%.1024s\n", errorStream.buffer);
+		if(logTraffic == LOG_MORE) writeLog(errorStream.buffer, TRUE);
+		}
 	}
 }
 
@@ -3461,16 +3447,19 @@ else
 	 case ',':
 	 case ':':
 		*tkn = 0;
+		*ptr_len = tknLen;
 		return(TKN_SYMBOL);
 
-         case '[':
-                while( tknLen < MAX_SYMBOL && *stream->ptr != 0 && *stream->ptr != ']')
-                   *(tkn++) = *(stream->ptr++), tknLen++;
-                *tkn++ = ']';
-                *tkn = 0;
-                stream->ptr++;
+	case '[':
+		while( tknLen < MAX_SYMBOL && *stream->ptr != 0 && *stream->ptr != ']')
+			*(tkn++) = *(stream->ptr++), tknLen++;
+		if(*stream->ptr == 0) return(TKN_ERROR);
+		*tkn++ = ']';
+		*tkn = 0;
+		*ptr_len = ++tknLen;
+		stream->ptr++;
 
-                return(TKN_SYMBOL);
+		return(TKN_SYMBOL);
 
 	 default:
 		while(  tknLen < MAX_SYMBOL
@@ -3481,7 +3470,7 @@ else
                         && *stream->ptr != 0)
 				*(tkn++) = *(stream->ptr++), tknLen++;
 		*tkn = 0;
-                *ptr_len = tknLen;
+		*ptr_len = tknLen;
 		if(*stream->ptr == ':') 
 			{
 			stream->ptr++;
@@ -3780,7 +3769,7 @@ return(params->next);
 }
 
 /* only used for internal syms: $timer, $error-event, $prompt-event, $command-event
-   $cilk-event and $signal-1-> $signal-32 
+   $transfer-event, and $signal-1-> $signal-32 
    If a quoted symbols hasn't been passed take the evaluated params as contents
    of the system event symbols starting with $ */
 CELL * getCreateSymbol(CELL * params, SYMBOL * * symbol, char * name)
@@ -4062,6 +4051,7 @@ if(params != nilCell)
 if(mode == EVAL_STRING)
 	return(copyCell(sysEvalString(evalString, context, params->next, mode)));
 
+/* returns a new object not yet marked for deletion */
 return(sysEvalString(evalString, context, params->next, mode));
 }
 
@@ -4121,13 +4111,19 @@ while(TRUE)
 	if(compileExpression(&stream, program) == 0) 
 		break;
 	if(mode == EVAL_STRING)
+		{
 		resultCell = evaluateExpression((CELL *)program->contents);
+		/* not that resultCell is already pushed for deletion
+		   as part of cell program */
+		}
 	else /* READ_EXPR or READ_EXPR_SYNC */
 		{
 		deleteList((CELL *)sysSymbol[0]->contents);
 		sysSymbol[0]->contents = (UINT)stuffInteger(stream.ptr - stream.buffer); 
 		resultCell = (CELL *)program->contents;
 		program->contents = (UINT)nilCell;
+		/* note that resultCell is not marked for deletion
+		   becuase decoupled from cell program */
 		break;
 		}
 
@@ -4286,14 +4282,13 @@ CELL * expand(CELL * expr, SYMBOL * symbol)
 CELL * cell = nilCell;
 SYMBOL * sPtr;
 int enable = 1;
-CELL * cont, * rep;
+CELL * cont;
 int wchar;
 
-if(expr->type == CELL_SYMBOL)
-	return(expr);
-
-if(isEnvelope(expr->type))
+if(isList(expr->type) || expr->type == CELL_QUOTE)
 	cell = (CELL*)expr->contents;
+else if(expr->type == CELL_SYMBOL && expr->contents == (UINT)symbol)
+	expandSymbol(expr, symbol);
 
 while(cell != nilCell)
 	{	
@@ -4314,16 +4309,7 @@ while(cell != nilCell)
 			}
 
 		if(symbol || enable)
-			{
-			rep = copyCell((CELL*)sPtr->contents);
-			cell->type = rep->type;
-			cell->aux = rep->aux;
-			cell->contents = rep->contents;
-			rep->type = CELL_LONG;
-			rep->aux = 0;
-			rep->contents = 0;
-			deleteList(rep);
-			}
+			expandSymbol(cell, sPtr);
 		}
 
 	else if(isEnvelope(cell->type)) expand(cell, symbol);
@@ -4333,6 +4319,21 @@ while(cell != nilCell)
 return(expr);
 }
 
+
+void expandSymbol(CELL * cell, SYMBOL * sPtr)
+{
+CELL * rep;
+
+rep = copyCell((CELL*)sPtr->contents);
+cell->type = rep->type;
+cell->aux = rep->aux;
+cell->contents = rep->contents;
+rep->type = CELL_LONG;
+rep->aux = 0;
+rep->contents = 0;
+deleteList(rep);
+}
+
 CELL * blockExpand(CELL * block, SYMBOL * symbol)
 {
 CELL * expanded = nilCell;
@@ -4340,6 +4341,10 @@ CELL * next = nilCell;
 
 while(block != nilCell)
 	{
+/*
+	if(!isList(block->type) && block->type != CELL_QUOTE)
+		return(errorProcExt(ERR_ILLEGAL_TYPE, block));
+*/
 	if(expanded == nilCell)
 		{
 		next = expand(copyCell(block), symbol);
@@ -4364,10 +4369,13 @@ CELL * expr;
 CELL * next;
 CELL * list;
 CELL * cell;
+int evalFlag;
 
 params = getEvalDefault(params, &expr);
+/*
 if(!isList(expr->type) && expr->type != CELL_QUOTE)
-	return(errorProcExt(ERR_LIST_EXPECTED, expr));
+	return(errorProcExt(ERR_ILLEGAL_TYPE, expr));
+*/
 
 if((next = params) == nilCell)
 	return(expand(copyCell(expr), NULL));
@@ -4382,6 +4390,7 @@ while((params = next) != nilCell)
 		symbol = getDynamicSymbol(params);
 	else if(params->type == CELL_EXPRESSION)
 		{
+		evalFlag = getFlag(next);
 		list = (CELL*)params->contents;
 		while(list != nilCell)
 			{
@@ -4393,7 +4402,10 @@ while((params = next) != nilCell)
 			symbol = (SYMBOL*)cell->contents;
 			pushEnvironment(symbol->contents);
 			pushEnvironment(symbol);
-			symbol->contents = (UINT)cell->next;
+			if(evalFlag)
+				symbol->contents = (UINT)evaluateExpression(cell->next);
+			else
+				symbol->contents = (UINT)cell->next;
 			expr = expand(copyCell(expr), symbol);
 			symbol = (SYMBOL*)popEnvironment();
 			symbol->contents = popEnvironment();
@@ -4503,8 +4515,8 @@ itSymbol->contents = (UINT)nilCell;
 if(isProtected(symbolRef->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
 
-params = params->next;
-params = params->next;
+params = params->next; 
+params = params->next; 
 
 if(symbolRefPtr && ((CELL *)symbolRef->contents)->type == CELL_STRING)
 	{
@@ -4994,9 +5006,9 @@ while(params != nilCell)
 	if(lastCopy == NULL)
 		list->contents = (UINT)copy;
 	else lastCopy->next = copy;
-	params = params->next;
 	lastCopy = copy;
 	cleanupResults(resultIdxSave);
+	params = params->next;
 	}
 
 return(list);
@@ -5153,11 +5165,8 @@ CELL * cell;
 cell = evaluateExpression(params);
 if(isNil(cell) || isEmpty(cell)) goto WHEN_END;
 
-while(params->next != nilCell)
-	{
-	cell = evaluateExpression(params->next);
-	params = params->next;
-	}
+while((params = params->next) != nilCell)
+	cell = evaluateExpression(params);
 
 WHEN_END:
 if(symbolCheck)
@@ -5176,11 +5185,8 @@ CELL * cell;
 cell = evaluateExpression(params);
 if(!isNil(cell) && !isEmpty(cell)) goto UNLESS_END;
 
-while(params->next != nilCell)
-	{
-	cell = evaluateExpression(params->next);
-	params = params->next;
-	}
+while((params = params->next) != nilCell)
+	cell = evaluateExpression(params);
 
 UNLESS_END:
 if(symbolCheck)
@@ -5305,7 +5311,12 @@ while(TRUE)
             break;
         case REPEAT_UNTIL:
             cell = evaluateExpression(params);
-            if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
+            if(!isNil(cell) && !isEmpty(cell)) 
+				{
+				if(params->next == nilCell)
+					result = cell;
+				goto END_REPEAT;
+				}
             cleanupResults(resultIdxSave);
             result = evaluateBlock(params->next);
             symbolRef = symbolCheck;
@@ -5314,7 +5325,12 @@ while(TRUE)
             result = evaluateBlock(params->next);
             symbolRef = symbolCheck;
             cell = evaluateExpression(params);
-            if(!isNil(cell) && !isEmpty(cell)) goto END_REPEAT;
+            if(!isNil(cell) && !isEmpty(cell))
+				{
+				if(params->next == nilCell)
+					result = cell;
+				goto END_REPEAT;
+				}
             cleanupResults(resultIdxSave);
             break;
         default:
@@ -5384,10 +5400,10 @@ CELL * loop(CELL * params, int forFlag)
 CELL * cell;
 CELL * cond = nilCell;
 CELL * block;
-SYMBOL * symbol;
+SYMBOL * symbol = NULL;
 double fromFlt, toFlt, interval, step, cntFlt;
 INT64 stepCnt, i;
-INT64 fromInt64, toInt64;
+INT64 fromInt64 = 0, toInt64 = 0;
 int intFlag;
 UINT * resultIdxSave;
 
@@ -5507,8 +5523,8 @@ char * str;
 int chr;
 #endif
 CELL * cond = nilCell;
-SYMBOL * symbol;
-SYMBOL * context;
+SYMBOL * symbol = NULL;
+SYMBOL * sPtr;
 CELL * cellIdx;
 UINT * resultIdxSave;
 
@@ -5526,10 +5542,10 @@ switch(doType)
 		cond = cell->next;
 		break;
 	case DOTREE:
-		getContext(cell, &context);
+		getContext(cell, &sPtr);
 		list = getCell(CELL_EXPRESSION);
-		collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, list);
-		cond = cell->next;
+		collectSymbols((SYMBOL *)((CELL *)sPtr->contents)->aux, list);
+		cond = (getFlag(cell->next) == 1) ? trueCell : nilCell;
 		break;	
 	case DOARGS:
 		list = copyCell((CELL *)argsSymbol->contents);
@@ -5574,11 +5590,20 @@ while(list!= nilCell)
 	symbol->contents = (UINT)copyCell(list);
 	if(cond != nilCell)
 		{
-		cell = evaluateExpression(cond);
-		if(!isNil(cell)) break;
+		if(doType == DOTREE)
+			{
+			sPtr = (SYMBOL *)list->contents;
+			if(*sPtr->name != '_') goto DO_CONTINUE;
+			}
+		else
+			{
+			cell = evaluateExpression(cond);
+			if(!isNil(cell)) break;
+			}
 		}
 	cell = evaluateBlock(params->next);
 	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
+	DO_CONTINUE:	
 	list = list->next;
 	}
 
@@ -5635,7 +5660,7 @@ return(copyCell(cell));
 
 CELL * p_and(CELL * params)
 {
-CELL * result = nilCell;
+CELL * result = trueCell;
 
 while(params != nilCell)
 	{
@@ -6385,13 +6410,15 @@ STREAM stream;
 char token[MAX_SYMBOL + 1];
 int tklen;
 
+/*
 if(*source == (char)'"' || *source == (char)'{' || *source == (char)'[' 
    || (unsigned char)*source <= (unsigned char)' ' || *source == (char)';' || *source == (char)'#')
         return(0);
+*/
 
 makeStreamFromString(&stream, source);
 
-return( (getToken(&stream, token, &tklen) == TKN_SYMBOL) && tklen == strlen(source));
+return(getToken(&stream, token, &tklen) == TKN_SYMBOL && tklen == stream.size - 4 * MAX_STRING);
 }
 
 
@@ -6447,6 +6474,11 @@ return(setEvent(params, &promptEvent, "$prompt-event"));
 CELL * p_commandEvent(CELL * params)
 {
 return(setEvent(params, &commandEvent, "$command-event"));
+}
+
+CELL * p_transferEvent(CELL * params)
+{
+return(setEvent(params, &transferEvent, "$transfer-event"));
 }
 
 
@@ -6523,29 +6555,26 @@ return(makeCell(CELL_SYMBOL, (UINT)symHandler[sig - 1]));
 }
 
 
-CELL * p_errorNumber(CELL * params)
+CELL * p_lastError(CELL * params)
 {
-return(stuffInteger((UINT)errorReg));
-}
+CELL * result;
+char * sPtr;
+UINT errNum = errorReg;
 
+if(params != nilCell)
+	getInteger(params, &errNum);
 
-CELL * p_errorText(CELL * params)
-{
-UINT errorNumber = errorReg;
+if(!errNum) return(nilCell);
 
-if(params == nilCell)
-	{
-	if(errorStream.buffer != NULL)
-		return(stuffString(errorStream.buffer));
-	}
+result = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errNum));
+if(params != nilCell)
+	sPtr = (errNum > MAX_ERROR_NUMBER) ? UNKNOWN_ERROR : errorMessage[errNum];
 else
-	getInteger(params, &errorNumber);
+	sPtr = errorStream.buffer;
 
+((CELL *)result->contents)->next = stuffString(sPtr);
 
-if(errorNumber > MAX_ERROR_NUMBER)
-	errorNumber = ERR_NUMBER_OUT_OF_RANGE;
-
-return(stuffString(errorMessage[errorNumber]));
+return(result);
 }
 
 
@@ -6732,6 +6761,7 @@ if(params->type != CELL_SYMBOL)
 
 methodSymbol = (SYMBOL *)params->contents;
 params = params->next;
+itSymbol->contents = (UINT)params;
 obj = evaluateExpression(params);
 
 if(obj->type == CELL_EXPRESSION)
@@ -6755,8 +6785,9 @@ if(cell->type == CELL_SYMBOL || cell->type == CELL_CONTEXT)
 if(contextSymbol == NULL || symbolType(contextSymbol) != CELL_CONTEXT)
 	return(errorProcExt(ERR_CONTEXT_EXPECTED, cell));
 
-if((methodSymbol = lookupSymbol(methodSymbol->name, contextSymbol)) == NULL)
-	return(errorProc(ERR_INVALID_FUNCTION));
+sPtr = methodSymbol;
+if((methodSymbol = lookupSymbol(sPtr->name, contextSymbol)) == NULL)
+	return(errorProcExt2(ERR_INVALID_FUNCTION, stuffSymbol(sPtr)));
 
 proc = makeCell(CELL_EXPRESSION, (UINT)stuffSymbol(methodSymbol));
 quote = makeCell(CELL_QUOTE, (UINT)copyCell(obj));
@@ -6773,7 +6804,11 @@ while(params != nilCell)
 	}
 
 pushResult(proc);
-return(copyCell(evaluateExpression(proc)));
+cell = copyCell(evaluateExpression(proc));
+
+itSymbol->contents = (UINT)nilCell;
+
+return(cell);
 }
 
 

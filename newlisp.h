@@ -20,6 +20,11 @@
 #ifndef NEWLISP_H
 #define NEWLISP_H
 
+/* only neede when doing auto configuration with ./configure */
+#ifdef NEWCONFIG
+#include "config.h"
+#endif
+
 #ifdef LINUX
 #define OSTYPE "Linux"
 #endif
@@ -36,14 +41,18 @@
 #define OSTYPE "Solaris"
 #endif
 
+#ifdef SUNOS
+#define SOLARIS
+#define SPARC
+#define OSTYPE "SunOS"
+#endif
+
 #ifdef TRU64
 #define OSTYPE "Tru64Unix"
-#define SOLARIS 
 #endif
 
 #ifdef AIX 
 #define OSTYPE "AIX" 
-#define SOLARIS 
 #endif 
 
 #ifdef WIN_32
@@ -59,7 +68,7 @@
 #define strtoull strtoul
 #endif
 
-#if defined(SOLARIS) || defined(TRU64)
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #define MY_RAND_MAX 2147483647
 #else
 #define MY_RAND_MAX RAND_MAX
@@ -70,7 +79,7 @@ This is for 64bit large file support (LFS),
 */
 #define LFS
 #ifdef LFS
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #define _LARGEFILE64_SOURCE 1
 #endif
 #define _FILE_OFFSET_BITS 64
@@ -121,34 +130,28 @@ This is for 64bit large file support (LFS),
 #include <sys/timeb.h>
 #include <sys/types.h>
 
-#ifndef SOLARIS
-#ifndef _BSD
-#ifndef MAC_OSX
+#if defined(LINUX) || defined(WIN_32) || defined(OS2)
 #include <malloc.h>
 #endif
-#endif
-#else
+
+#if defined(MAC_OSX) || defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #include <alloca.h>
 #endif
+
 
 #ifdef OS2
 #define vasprintf my_vasprintf 
 #define MY_VASPRINTF 
 #endif
 
-#ifdef MAC_OSX
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #define vasprintf my_vasprintf
 #define MY_VASPRINTF
 #endif
 
-#ifdef SOLARIS
-#define vasprintf my_vasprintf
-#define MY_VASPRINTF
-#ifdef SPARC
+#if defined(SOLARIS) && defined(SPARC)
 #define setenv my_setenv 
 #define MY_SETENV 
-#endif
-#define MY_RAND_MAX 2147483647
 #endif
 
 #ifdef WIN_32
@@ -255,7 +258,7 @@ This is for 64bit large file support (LFS),
 #define MAX_PRINT_LEN 0x4000
 #define MAX_LOAD_BUFFER 0x4000
 #define MAX_FILE_BUFFER 0x4000
-#define MAX_BLOCK 1023
+#define MAX_BLOCK 4095
 #define MAX_URL_LEN 256
 
 #define MAX_REGEX_EXP 16
@@ -284,6 +287,7 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_UNSAFE 0x100
 
 /* cell masks */
+
 #define RAW_TYPE_MASK 0x0FFF
 #define COMPARE_TYPE_MASK 0x000F
 #define ENVELOPE_TYPE_MASK 0x0010
@@ -293,7 +297,11 @@ This is for 64bit large file support (LFS),
 #define EVAL_SELF_TYPE_MASK 0x0100
 #define INT64_MASK 0x0200
 
-/* cell types */
+/* only used for type ids used in shared memory
+   to indicate translation from string */
+#define SHARED_MEMORY_EVAL 0x8000
+
+/* cell types, do not change these without changing newlisp.c/cellCopy() */
 #define CELL_NIL (0 | EVAL_SELF_TYPE_MASK)
 #define CELL_TRUE (1 | EVAL_SELF_TYPE_MASK)
 #define CELL_INT 2 /* any INT */
@@ -425,7 +433,9 @@ This is for 64bit large file support (LFS),
 #define ERR_LIST_EMPTY 62
 #define ERR_IO_ERROR 63
 #define ERR_WORKING_DIR 64
-#define MAX_ERROR_NUMBER 64
+#define ERR_INVALID_PID 65
+#define MAX_ERROR_NUMBER 65
+#define UNKNOWN_ERROR "Unknown error"
 
 /* I/O routines */
 

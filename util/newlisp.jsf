@@ -1,4 +1,4 @@
-# JOE syntax highlight file for newLISP v.9.4.0 
+# JOE syntax highlight file for newLISP v.10.0
 
 # These colors are for the text console.
 # You will definitely need different colors for a terminal under X.
@@ -20,8 +20,10 @@
 # 21 Oct 2008, L.M. exclude MAIN from highlighting
 # 18 Nov 2008, L.M. eliminated old functions for 10.0
 # 27 Nov 2008, L.M. added obsolete functions
+# 4 May 2009, L.M. added xfer-event
+# 12 June 2009, L.M. added send and receive
 #
-# version 1.4
+# version 1.5
 
 =Idle
 =Comment 	green
@@ -182,8 +184,6 @@
 "env"	prim
 "erf"	prim
 "error-event"	prim
-"error-number"	prim
-"error-text"	prim
 "eval"	prim
 "eval-string"	prim
 "exec"	prim
@@ -226,6 +226,7 @@
 "import"	prim
 "inc"	prim
 "index"	prim
+"inf?"	prim
 "int"	prim
 "integer"	prim
 "integer?"	prim
@@ -235,6 +236,7 @@
 "join"	prim
 "lambda?"	prim
 "last"	prim
+"last-error"	prim
 "legal?"	prim
 "length"	prim
 "let"	prim
@@ -329,6 +331,7 @@
 "read-key"	prim
 "read-line"	prim
 "real-path"	prim
+"receive"	prim
 "ref"	prim
 "ref-all"	prim
 "regex"	prim
@@ -348,6 +351,7 @@
 "seek"	prim
 "select"	prim
 "semaphore"	prim
+"send"	prim
 "sequence"	prim
 "series"	prim
 "set"	prim
@@ -390,6 +394,7 @@
 "title-case"	prim
 "trace"	prim
 "trace-highlight"	prim
+"xfer-event"	prim
 "transpose"	prim
 "trim"	prim
 "true"	prim

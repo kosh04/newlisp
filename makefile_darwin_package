@@ -7,7 +7,7 @@ appdir=../Package_contents/Applications
 
 GUISERVER = ../Package_contents/usr/share/newlisp/guiserver
 
-osx-package:
+darwin-package:
 	-mkdir ../Package_contents
 	-mkdir ../Package_contents/usr
 	-mkdir ../Package_contents/usr/bin
@@ -15,7 +15,8 @@ osx-package:
 	-mkdir ../Package_contents/usr/share/man
 	-mkdir ../Package_contents/usr/share/man/man1
 	-mkdir ../Package_contents/Applications
-	# identical from install section in main Makefile
+	# identical from install section in main Makefile except for $(bindir)/newlisp
+	# which installed versioned and linked when installing with 'make install'
 	-install -d $(datadir)/newlisp
 	-install -d $(datadir)/newlisp/modules
 	-install -d $(datadir)/newlisp/util
@@ -35,7 +36,7 @@ osx-package:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.0-Release.html $(datadir)/doc/newlisp/newLISP-10.0-Release.html
+	-install -m 644 doc/newLISP-10.1-Release.html $(datadir)/doc/newlisp/newLISP-10.1-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -44,10 +45,10 @@ osx-package:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
-	-install -m 644 modules/mysql5.lsp $(datadir)/newlisp/modules/mysql5.lsp
-	-install -m 644 modules/mysql51.lsp $(datadir)/newlisp/modules/mysql51.lsp
+	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp
+	-install -m 644 modules/postgres.lsp $(datadir)/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(datadir)/newlisp/modules/smtp.lsp
 	-install -m 644 modules/sqlite3.lsp $(datadir)/newlisp/modules/sqlite3.lsp

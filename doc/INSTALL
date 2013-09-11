@@ -23,11 +23,11 @@ application. After downloading a file:
 
     newlisp-xxxx-win-gs-xxx.exe
 
-double click on it and follow instructtions. xxxx and xxx are the version 
-numbers for newLISP and the newLISP-tk the GUI frontend. On Win32 a ASCII 
-version of newlisp.exe capable of ISO/IEC 8859 code pages is installed. A 
-UTF-8 capable version is available from the newlisp download directory at: 
-http://www.newlisp.org/downloads/UTF-8_win32/
+double click on the downloaded file and follow instructtions. xxxx and xxx 
+are the version numbers for newLISP and the newLISP-GS the GUI frontend. 
+On Win32 a ASCII version of newlisp.exe capable of ISO/IEC 8859 code pages 
+is installed. A UTF-8 capable version is available from the newlisp download 
+directory at: http://www.newlisp.org/downloads/UTF-8_win32/
 
 
 (2) Mac OS X BINARY DISTRIBUTION INSTALLATION
@@ -35,7 +35,7 @@ http://www.newlisp.org/downloads/UTF-8_win32/
 
 After downloading double-click on the Mac OS X disk image file:
 
-    newlisp-xxxx-ppc.dmg  
+    newlisp-xxxx-ppc.dmg     # for older PPC type Macs
 or
     newlisp-xxxx-intel.dmg
     
@@ -60,7 +60,8 @@ This will bring up the debian installer application.
 
 For a minumum install only the executable file: newlisp (or newlisp.exe on Win32)
 needs to be moved to a directory in the executable path, i.e. /usr/bin/newlisp
-or ~/bin in the home directory. No other files are required.
+or ~/bin in the home directory. No other files are required. All functionality
+
 
 To reduce an exisiting UNIX install to a minimum installation, remove all files
 in /usr/share/newlisp and /usr/share/doc/newlisp and the executable files
@@ -91,6 +92,10 @@ If you agree with the platform detected by configure type:
     make
     
 After building has finished type:
+
+    make check
+
+when all tests are passed OK do a
 
     sudo make install
     
@@ -169,11 +174,11 @@ the installer package.
 
 On UBUNTU Linux execute:
 
-    dpkg -r newlisp
+    sudo dpkg -r newlisp
 
-On all other UNIX to uninstall on other if installed with make install do:
+On all other UNIX to uninstall if installed with make install do:
 
-    make uninstall
+    sudo make uninstall
 
 or if installed with: make install_home
 
@@ -194,9 +199,9 @@ On all platforms simply execute:
  
     newlisp
 
-on the command line. On Win32 the execution path of newlisp.exe was added
-to the environment during installation. On all other platforms the newlisp
-binary is in /usr/bin/newlisp or when using the home install in $HOME/bin
+On Win32 the execution path of newlisp.exe was added to the environment 
+during installation. On all other platforms the newlisp binary is in 
+/usr/bin/newlisp or when using the home install in $HOME/bin
 where $HOME is the the home directory of the user taken from the environment
 variable HOME.
 

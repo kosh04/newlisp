@@ -144,6 +144,7 @@ while(params->type != CELL_NIL && count < 14)
 			args[count++] = arg->contents;
 			break;
 #ifndef NEWLISP64
+		/* change 64-bit to 32-bit */
 		case CELL_INT64: 
 			args[count++] = *(INT64 *)&arg->aux;
 			break;
@@ -188,9 +189,12 @@ switch(count)
             return  (*function)(args[0], args[1]);
 
 	case 3:
-            return  (*function)(args[0], args[1], args[2]);
+			/* printf("args[0] %llx, args[1] %llx, args[2] %llx, args[1]-args[2] %llx\n ",
+					args[0], args[1], args[2], args[1] - args[2]); */
 
+            return  (*function)(args[0], args[1], args[2]);
 	case 4:
+
             return  (*function)(args[0], args[1], args[2], args[3]);
 
 	case 5:

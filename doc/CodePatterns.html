@@ -36,10 +36,16 @@ span.arw {
     font-size: 100%;
     }
     
-body, h1, h2, h3, h4, p {
+body, h4, p {
     font-family: Georgia, Times New Roman, Times, serif;
     line-height: 120%;
-     }
+    }
+
+h1, h2, h3 {
+	margin-top: 3%;
+    font-family: Georgia, Times New Roman, Times, serif;
+    line-height: 120%;
+    }
 
 table.list {
     border-width: 0px;
@@ -54,7 +60,7 @@ th.list {
     
 td.left {
     font-family: Andale Mono, Bitstream Vera Sans Mono, Monaco, Courier New;
-       font-size: 100%;
+    font-size: 100%;
     }
     
 td.right {
@@ -83,8 +89,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font></h1>
-Version 2009 March 9<sup>th</sup><br>
-<a href="http://newlisp.org">newLISP</a> v.10.0.2
+Version 2009 June 21<sup>st</sup><br>
+<a href="http://newlisp.org">newLISP</a> v.10.1.0
 </center>
 
 <br><br><br>
@@ -235,13 +241,28 @@ newLISP is a registered trademark of Lutz Mueller.
 </ul>
 </li>
 <li><a href="#processes">Processes, semaphores and shared memory</a></li>
-<li><a href="#multiprocessing">Multiprocessing with the Cilk API</a></li>
+<li><a href="#multiprocessing">Multiprocessing and the Cilk API</a>
+<ul>
+	<li>Starting concurrent processes</li>
+	<li>Watching progress</li>
+    <li>Invoking spawn recursively</li>
+	<li>Event driven notification</li>
+</ul>
+</li>
+<li><a href="#messaging">Message exchange between processes</a>
+<ul>
+    <li>Collecting synchronous messages</li>
+    <li>Collecting asynchronous messages</li>
+	<li>Implementing message timeouts</li>
+    <li>Evaluating messages</li>
+</ul>
+</li>
 <li><a href="#databases">Databases, lookup tables</a>
 <ul>
     <li>Association lists</li>
     <li>Nested associations</li>
     <li>Updating nested associations</li>
-    <li>Symbol creation and lookup</li>
+    <li>In-memory database with keyed access</li>
 </ul>
 </li>
 <li><a href="#distributed">Distributed computing and server mode</a>
@@ -268,6 +289,7 @@ newLISP is a registered trademark of Lutz Mueller.
     <li>Unevenly aligned data structures</li>
     <li>Passing parameters in library calls</li>
     <li>Extracting return values from library calls</li>
+	<li>Writing library wrappers</li>
 </ul>
 </li>
 <li><a href="#appendix">Appendix</a>
@@ -278,7 +300,6 @@ newLISP is a registered trademark of Lutz Mueller.
 </ol>
 </blockquote>
 
-<br>
 <center>&sect;</center>
 <a name="intro"></a>
 <h2>1. Introduction</h2>
@@ -289,8 +310,8 @@ newLISP is a registered trademark of Lutz Mueller.
 <p>Only a subset of newLISP's total function repertoire is used here. Some functions demonstrated have additional calling patterns or applications not mentioned on these pages.</p>
 
 <p>This collection of patterns and solutions is a work in progress. Over time material will be added or existing material improved.</p>
+
 <center>&sect;</center>
-<br>
 
 <a name="scripts"></a>
 <h2>2. newLISP script files</h2>
@@ -383,7 +404,7 @@ newLISP is a registered trademark of Lutz Mueller.
         (println "file ---> " file-name)
         (while (read-line file)
             (if (find (main-args 2) (current-line) 0)
-            (write-line)))
+            	(write-line)))
         (close file))
                 
     (exit)
@@ -403,12 +424,11 @@ newLISP is a registered trademark of Lutz Mueller.
 <p>It returns a list of all the filenames. This form of specifying indexes for rest is called 
 implicit indexing. See the Users Manual for implicit indexing with other functions.
 The expression <tt>(main-args 2)</tt> extracts the 3rd argument from the command line containing the regular expression pattern.</p>
+
 <center>&sect;</center>
 
-<br>
 <a name="modules"></a>
 <h2>3. Writing software in modules</h2>
-
 
 <h3>Structuring an application</h3>
 
@@ -471,28 +491,47 @@ The expression <tt>(main-args 2)</tt> extracts the 3rd argument from the command
     ;
     (context 'A)
     
-    (define (foo ...)
-    ...
-    )
+    (define (foo ...) ...)
     
     (context MAIN)
     
     (context 'B)
     
-    (define (bar ...)
-    ...
-    )
+    (define (bar ...) ...)
     
     (context MAIN)
     
     (define (main-func)
         (A:foo ...)
         (B:bar ...)
-    ...
     )
 </pre>
 
 <p>Note that in the namespace statements for contexts <tt>A</tt> and <tt>B</tt> the context names are quoted because they are newly created, while <tt>MAIN</tt> already exists when newLISP starts up and can stay unquoted, although quoting it would not represent a problem.</p>
+
+<p>To save the line closing the context with <tt>MAIN</tt>, the following technique can be used:</p>
+
+<pre>
+    ; myapp.lsp
+    ;
+    (context 'A)
+    
+    (define (foo ...) ...)
+    
+    (context 'MAIN:B)
+    
+    (define (bar ...) ...)
+   
+    (context 'MAIN)
+ 
+    (define (main-func)
+        (A:foo ...)
+        (B:bar ...)
+    )
+</pre>
+
+<p>The line <tt>(context 'MAIN:B)</tt> switches back to MAIN then opens 
+the new context <tt>B</TT>.</p>
 
 <h3>Simple objects and the default function</h3>
 
@@ -749,18 +788,20 @@ to write functions with named parameters:</p>
         (println "len:" len " width:" width " height:" height)
 ))
 
-(foo (width (+ 15 5)) (height 30) (len 10))
 
+<b>&gt;</b> (foo (width (+ 15 5)) (height 30) (len 10))
 <b>len:10 width:20 height:30</b>
+
+<b>&gt;</b> (foo (width (+ 15 5)) (height (* width 2)) (len 10))
+<b>len:10 width:20 height:40</b>
+
+<b>&gt;</b>
 </pre></blockquote>
 
-<p>Arguments are evaluated and assigned to the local variables.</p>
-
-<br><br>
-
+<p>Arguments are evaluated incrementally in the local environment and assigned to 
+the local variables.</p>
 
 <center>&sect;</center>
-<br>
 
 <a name="walking"></a>
 <h2>5. Walking through lists</h2>
@@ -932,7 +973,7 @@ the built-in <tt>flat</tt> function is much faster than using recursion:</p>
 <p>In this example recursion is the only solution, because the entire nested list off files is not available when the function is called but gets created recursively during function execution.</p>
 
 <center>&sect;</center>
-<br>
+
 <a name="creating"></a>
 <h2>6. Creating, accessing, modifying and searching lists</h2>
 
@@ -1262,9 +1303,8 @@ a copy. This can be used to nest built-in functions when modifying a list:</p>
     L &rarr; (j r r s w)
 </pre>
 
-
 <center>&sect;</center>
-<br>
+
 <a name="flow"></a>
 <h2>7. Program flow</h2>
 
@@ -1420,7 +1460,7 @@ can also be used to form blocks and do not require <tt>begin</tt> for blocking s
 <p>Depending on condition the <tt>exp-true</tt> or <tt>exp-false</tt> part is evaluated and 
 returned.</p>
 
-<p>More then one condition <tt>exp-true</tt> pair can occur in an if expression, making it 
+<p>More than one condition <tt>exp-true</tt> pair can occur in an if expression, making it 
 look like a 
 cond:</p>
 
@@ -1535,7 +1575,6 @@ exhausted. The last expression evaluated is the return value of the whole or
 expression.</p>
 
 <center>&sect;</center>
-<br>
 
 <a name="error"></a>
 <h2>8. Error handling</h2>
@@ -1619,9 +1658,6 @@ expression is found in the symbol result specified as a second parameter.</p>
 
 <p>If an error exception occurs, it is caught and the catch clause returns nil. In this case 
 the symbol result contains the error message.</p>
-
-<center>&sect;</center>
-<br>
 
 <h3>Operating system errors</h3>
 
@@ -1744,7 +1780,6 @@ one argument from a function taking two arguments.</p>
 of the original function.</p>
 
 <center>&sect;</center>
-<br>
 
 <a name="text"></a>
 <h2>10. Text processing</h2>
@@ -1924,11 +1959,9 @@ when specifying an empty string <tt>""</tt> as replacement.</p>
 at character rather than byte boundaries to work correctly on UTF-8 enabled versions of newLISP.</p>
 
 <center>&sect;</center>
-<br>
 
 <a name="dicts"></a>
 <h2>11. Dictionaries</h2>
-
 
 <h3>Dictionaries for hash-like key &rarr; value access</h3>
 
@@ -2022,7 +2055,6 @@ retrieve words and their statistics. See the <tt>bayes-train</tt> function in th
 more detail.</p>
 
 <center>&sect;</center>
-<br>
 
 <a name="tcpip"></a>
 <h2>12. TCP/IP client server communications</h2>
@@ -2091,9 +2123,8 @@ of messages.</p>
 in the newLISP manual.</p>
 
 <center>&sect;</center>
-<br>
-<a name="udp"></a>
 
+<a name="udp"></a>
 <h2>13. UDP communications</h2>
 
 <p>They are fast and need less setup than TCP/IP and offer <em>multi casting</em>. UDP 
@@ -2176,7 +2207,6 @@ net-listen function.</p>
 using <tt>net-select</tt> or <tt>net-peek</tt></p>
 
 <center>&sect;</center>
-<br>
 
 <a name="nonblock"></a>
 <h2>14. Non-blocking communications</h2>
@@ -2206,7 +2236,6 @@ to wait on various sockets.</p>
 </pre>
 
 <center>&sect;</center>
-<br>
 
 <a name="controlling"></a>
 <h2>15. Controlling other applications</h2>
@@ -2345,7 +2374,6 @@ address/hardware but not actually listens as in TCP/IP.</p>
 </pre>
 
 <center>&sect;</center>
-<br>
 
 <a name="launching"></a>
 <h2>16. Launching applications blocking</h2>
@@ -2388,16 +2416,13 @@ coming from a web server. Note that output in this case is written directly to t
 and cannot be returned to newLISP. Use process and pipe for two way std i/o communications 
 with other applications.</p>
 
-
 <center>&sect;</center>
-<br>
 
 <a name="processes"></a>
-
 <h2>17. Processes, semaphores and shared memory</h2>
 
-<p>Shared memory, semaphores and threads work frequently together. Semaphores can synchronize tasks 
-in different threads and shared memory can be used to communicate between threads.</p>
+<p>Shared memory, semaphores and processes work frequently together. Semaphores can synchronize tasks 
+in different process threads and shared memory can be used to communicate between them.</p>
 
 <p>The following is a more complex example showing the working of all three mechanisms at 
 the same time.</p>
@@ -2438,10 +2463,10 @@ value is ready for reading.</p>
         (share data 0)
         (set 'prod-sem (semaphore)) ; get semaphores
         (set 'cons-sem (semaphore))
-        (set 'prod-pid (fork (producer n))) ; start threads
+        (set 'prod-pid (fork (producer n))) ; start processes 
         (set 'cons-pid (fork (consumer n)))
         (semaphore prod-sem sig) ; get producer started
-        (wait-pid prod-pid) ; wait for threads to finish
+        (wait-pid prod-pid) ; wait for processes to finish
         (wait-pid cons-pid) ; 
         (semaphore cons-sem release) ; release semaphores
         (semaphore prod-sem release))
@@ -2452,57 +2477,270 @@ value is ready for reading.</p>
 </pre>
 
 <center>&sect;</center>
-<br>
 
 <a name="multiprocessing"></a>
-<h2>18. Multiprocessing with the Cilk API</h2>
+<h2>18. Multiprocessing and the Cilk API</h2>
 
 <p>On multiprocessor CPUs the operating system will distribute processes and child processes 
-created with <tt>fork</tt> on to different processor cores in an optimized fashion. Since 
-version 9.3.10 newLISP offers a simple API which does all the work of launching processes and 
-synchronizing collection of evaluation results in a transparent manner. 
+created on to different processor cores in an optimized fashion. 
+newLISP offers a simple API which does all the work of launching processes and 
+does the synchronized collection of evaluation results.
 The <a href="http://supertech.csail.mit.edu/cilk/">Cilk</a> API consists of only 3 function 
 calls implemented in newLISP as <tt>spawn</tt>, <tt>sync</tt> and <tt>abort</tt></p>
+
+<p>Since v.10.1 newLISP's <tt>message</tt> function enables communications between parent and
+child processes. For more details about this see the next chapter
+<a href="#messaging">Message exchange between processes</a>.</p> 
+
+<h3>Starting concurrent processes</h3>
 
 <pre>
     ; calculate primes in a range
     (define (primes from to)
-        (local (plist)
-               (for (i from to)                
-                    (if (= 1 (length (factor i)))                    
-                        (push i plist -1))) 
-               plist) )
+      (local (plist)
+          (for (i from to)
+              (if (= 1 (length (factor i)))
+                  (push i plist -1)))
+          plist))
 
-    ; start child processes    
+    ; start child processes
+    (set 'start (time-of-day))
+
     (spawn 'p1 (primes 1 1000000))
-    (spawn 'p2 (primes 1000000 2000000))
-    (spawn 'p3 (primes 2000000 3000000))   
-    
+    (spawn 'p2 (primes 1000001 2000000))
+    (spawn 'p3 (primes 2000001 3000000))
+    (spawn 'p4 (primes 3000001 4000000))
+
     ; wait for a maximum of 60 seconds for all tasks to finish
     (sync 60000) ; returns true if all finished in time
-    
-    ; p1, p2 and p3 now contain lists of primes   
-</pre>  
+    ; p1, p2, p3 and p4 now each contain a lists of primes
+</pre>
 
 <p>The example shows, how a range of prime number generation is split up for parallel processing 
 in three sub-ranges. All <tt>spawn</tt> calls will return immediately, but <tt>sync</tt> will block
-until all three child processes have finished and the result lists are available in the three 
-variables <tt>p1</tt>, <tt>p2</tt> and <tt>p3</tt>. Instead of milliseconds to wait, <tt>sync</tt> 
-can also specify a call-back function, which would be called with the process id of the child-process 
-finishing. See the Reference Manual for details.</p>
+until all three child processes have finished and the result lists are available in the four
+variables <tt>p1</tt> to <tt>p4</tt>.</p>
+
+<h3>Watching progress</h3>
+
+<p>When the timeout value specified is too short for all prcesses to
+finish, <tt>sync</tt> will return <tt>nil</tt>. This can be use to watch progess:</p>
+
+<pre>
+    ; print a dot after each 2 seconds of waiting
+    (until (sync 2000) (println "."))
+</pre>
+
+<p>When <tt>sync</tt> is called without parameters, it returns a list of still
+active process ids:</p>
+
+<pre>
+    ; show a list of pending process ids after 
+    ;each three-tenths of a second
+    (until (sync 300) (println (sync)))
+</pre>
+
+<h3>Invoking spawn recursively</h3>
+
+<pre>
+    (define (fibo n)  
+      (local (f1 f2)
+        (if(&lt; n 2) 1
+           (begin
+              (spawn 'f1 (fibo (- n 1)))
+              (spawn 'f2 (fibo (- n 2)))
+              (sync 10000)
+              (+ f1 f2)))))
+
+    (fibo 7)  &rarr; 21
+</pre>
+
+<h3>Event driven notification</h3>
+
+<p>When processes launched with <tt>spawn</tt> finish, an <em>inlet</em> function
+specified in the <tt>sync</tt> statement can be called.</p>
+
+<pre>
+    (define (report pid)
+        (println "process: " pid " has returned"))
+
+    ; call the report function, when a child returns
+    (sync 10000 report)
+</pre>
+
 
 <center>&sect;</center>
-<br />
+
+<a name="messaging"></a>
+<h2>19. Message exchange between processes</h2>
+
+<p>Parent and child processes started with <tt>spawn</tt> can exchange messages.
+Messages flow either from  the parent to child processes or from child processes
+to the parent. By means of evaluating messsages in the parent process, the parent
+process can be used as a proxy routing message between peer child processes.</p>
+
+<p>The message calls itself are non-blocking returning <tt>nil</tt> on
+failure. They can be made blocking using loops:</p>
+
+<pre>
+    ; blocking sender
+    (until (send pid msg)) ; returns true after delivery
+
+    ; blocking receiver
+    (until (receive pid msg))     ; returns true after pickup
+</pre>
+
+<h3>Collecting synchronous messages</h3>
+
+<p>The parent process loops through a list of child process ids and looks
+for message notifications. In the following example message calls are
+blocking and synchronous.</p> 
+
+<pre>
+    ; child process transmits random numbers
+
+    (define (child-process)
+        (set 'ppid (sys-info -4)) ; get parent pid
+        (while true
+            (until (send ppid (rand 100))))
+    )
+
+    ; parent starts 5  child processes, listens and displays
+
+    (dotimes (i 5) (spawn 'result (child-process)))
+
+    (for (i 1 3)
+        (dolist (cpid (sync)) ; iterate thru child pids
+            (until (receive cpid msg))
+           (print "pid:" cpid "-&gt;" (format "%-2d  " msg)))
+        (println)
+    )
+
+    (abort) ; cancel child-processes
+
+    (exit)
+</pre>
+
+<p>generates this output:</p>
+
+<pre>  pid:53181-&gt;47  pid:53180-&gt;61  pid:53179-&gt;75  pid:53178-&gt;39  pid:53177-&gt;3   
+  pid:53181-&gt;59  pid:53180-&gt;12  pid:53179-&gt;20  pid:53178-&gt;77  pid:53177-&gt;47  
+  pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:53177-&gt;18
+</pre>
+
+<h3>Collecting asynchronous messages</h3>
+
+<p>Neither the sending child process nor the receiving parent process
+block. Each sends and receives messages as fast as possible.</p>
+
+<pre>
+   ; child process transmits random numbers non-blocking
+   ; not all calls succeed
+    (set 'start (time-of-day))
+
+    (define (child-process)
+        (set 'ppid (sys-info -4)) ; get parent pid
+        (while true
+            (until (send ppid (rand 100))))
+    )
+
+    ; parent starts 5  child processes, listens and displays
+    (dotimes (i 5) (spawn 'result (child-process)))
+
+    (set 'N 1000)
+
+    (until finished
+        (if (= (inc counter) N) (set 'finished true))
+        (dolist (cpid (sync)) ; iterate thru child pids
+            (receive cpid msg)
+            (if msg (print "pid:" cpid "-&gt;" (format "%-2d  \r" msg))))
+    )
+
+    (abort) ; cancel child-processes
+    (sleep 300)
+
+    (exit)
+</pre>
+
+<h3>Implementing message timeouts</h3>
+
+<p>A messaging statement can be made to block for a certain time:</p>
+
+<blockquote><pre>
+(define (receive-timeout pid msec)
+	(let ( (start (time-of-day)) (msg nil))
+		(until (receive pid msg)
+			(if (&gt; (- (time-of-day) start) 1000) (throw-error "timeout")))
+		msg)
+)
+; use it
+
+(receive-timeout pid 1000)  ; returns the message or throws error
+</pre></blockquote>
+
+<p>In this example blocking will occcur for 1000 ms. Many methods exist
+to implement timeout behavior.</p>
+
+<h3>Evaluating messages</h3>
+
+<p>Messages sent can contain expressions which can be evaluated in the recipients
+environment. This way variables can be set, messages routed to other processes.
+The following example implements a message router:</p>
+
+<blockquote><pre>
+; sender process of the message
+(set 'pidA (spawn 'result
+    (begin 
+        (dotimes (i 3)
+            (set 'ppid (sys-info -4))
+            (set 'pid (sys-info -3))
+            (set 'msg '(until (send pidB (string "greetings from " pidA))))
+            (until (send ppid msg))) ; send expression in msg
+        ; make parent exit until loop
+        (until (send ppid '(set 'finished true)))
+)))
+
+; final message recipient
+(set 'pidB (spawn 'result
+    (begin
+        (set 'ppid (sys-info -4))
+        (set 'pid (sys-info -3))
+        (while true
+            (until (receive ppid msg))
+            (println pid " received " msg))
+)))
+
+; receive and evaluate messages from pidA
+(until finished (if (receive pidA msg) (eval msg)))
+
+(abort) (sleep 300)
+(exit)
+</pre></blockquote>
+
+<h3>Acting as a proxy</h3>
+
+<p>The expression:</p>
+
+<pre>    (until (send pidB (string "greetings from " pidA)))
+</pre>
+
+<p>does get send from pidA to the parent, where it is evaluated,
+causing a message to be sent to pidB. The parent process acts
+as a proxy agent for process with pidA.</p>   
+
+<pre>    (until (send ppid '(set 'finished true)))</pre>
+
+<p>The expression <tt>(set 'finished true)</tt> is sent to the parent 
+where it gets evaluated and causes the parent's <tt>until</tt> loop
+to finish.</p>
+
+<center>&sect;</center>
 
 <a name="databases"></a>
-<h2>19. Databases and lookup tables</h2>
+<h2>20. Databases and lookup tables</h2>
 
-<p>While association lists are the traditional means for associative data access in LISP and newLISP, 
-other modern scripting languages use hashing to build memory based associative data tables. A hash 
-is a table position calculated from a association key.</p>
-
-<p>newLISP uses symbols instead of hashes. Symbols in name spaces can also be serialized to a file, 
-as will be shown in the chapter about symbol creation and lookup.</p>
+<p>newLISP uses symbol trees to implement hashes. Symbols in name spaces can also be 
+serialized to a file, as will be shown in the chapter about symbol creation and lookup.</p>
 
 <h3>Association lists</h3>
 
@@ -2599,11 +2837,36 @@ or nested associations:</p>
 
 <p><tt>setf</tt> always returns the newly set element.</p>
 
+<h3>In-memory database with keyed access</h3>
+
+<p>Hashes and FOOP objects can be combined to form an in-memory database
+with keyed access.</p>
+
+In the following example data records are stored in a hash namespace
+and access with the name of the person as a key.
+
+<p><tt>setf</tt>  and <tt>lookup</tt> are used to update nested FOOP objects:</p>
+
+<blockquote><pre>
+(new Tree 'Person)
+(new Class 'Address)
+(new Class 'City)
+(new Class 'Telefone)
+
+
+(Person "John Doe" (Address (City "Small Town") (Telefone 5551234)))
+
+(lookup 'Telefone (Person "John Doe"))
+(setf (lookup 'Telefone (Person "John Doe")) 1234567)
+(setf (lookup 'City (Person "John Doe")) (lower-case $it))
+
+(Person "John Doe") &rarr; (Address (City "small town") (Telefone 1234567))
+</pre></blockquote>
+
 <center>&sect;</center>
-<br>
 
 <a name="distributed"></a>
-<h2>20. Distributed computing and server mode</h2>
+<h2>21. Distributed computing and server mode</h2>
 
 <p>Many of todays applications are distributed on to several computers on the 
 network or distibuted on to several processes on one CPU. Often both methods
@@ -3055,12 +3318,10 @@ to realize a similar result as when using the <tt>load</tt> and <tt>save</tt> in
 
 <p>Using local domain sockets fast communications between processes on the same file system and with newLISP servers is possible. See the Users Manual for more details.</p>
 
-<br /><br />
-
 <center>&sect;</center>
 
 <a name="http_mode"></a>
-<h2>21. HTTPD-only mode, newLISP as a webserver</h2>
+<h2>22. HTTPD-only mode, newLISP as a webserver</h2>
 
 <p>In all previous chapters the <tt>-c</tt> server mode was used. This mode can act as
 a <tt>net-eval</tt> server and at the same time answer <tt>HTTP</tt> requests for serving
@@ -3085,7 +3346,17 @@ can be loaded from a file <tt>httpd-conf.lsp</tt> when starting the sever:</p>
 program <tt>httpd-conf.lsp</tt> has been added which will be loaded upon invocation
 of newLISP. The <tt>-c</tt> options has been replaced with the <tt>-http</tt> option.
 Now neither <tt>net-eval</tt> nor command-line requests will be answered but only
-HTTP requests. All requests will be pre-processed with a function specified using
+HTTP requests.</p>
+
+<p>The startup file could also have been added the following way when starting the
+server in the background from a command shell, and <tt>httpd-conf.lsp</tt> is in
+the current directory:</p>
+
+<pre>
+    newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;
+</pre>
+
+<p>All requests will be pre-processed with a function specified using
 <tt>command-event</tt> in <tt>httpd-conf.lsp</tt>:</p> 
 
 
@@ -3183,12 +3454,11 @@ recognized and a correctly formatted <tt>Content-Type:</tt> header is sent back:
 
 <p>When receiving HTTP requests newLISP server mode will extract information from the HTTP request header and configure <tt>HTTP_HOST</tt>, <tt>HTTP_USER_AGENT</tt> and <tt>HTTP_COOKIE</tt> in the environment of the host operating system. If a <tt>httpd-conf</tt> functions was loaded on newLISP server startup header processing will happen after processing <tt>httpd-conf</tt>. The environment variables can be accessed by a CGI process.</p>
 
-<br /><br />
 
-<center>&part;</center>
+<center>&sect;</center>
+
 <a name="extending"></a>
-<h2>22. Extending newLISP</h2>
-
+<h2>23. Extending newLISP</h2>
 
 <p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/UNIX (ending in .so).</p>
 
@@ -3438,8 +3708,6 @@ none of the variables needs to cross a 32-bit boundary: </p>
        (123 456 8)
 </pre>
 
-<br>
-
 <h3>Passing parameters in library calls</h3>
 
 <center>
@@ -3499,7 +3767,83 @@ from 16 to 32 bits.</p>
 
 <p>Flags are available for changing endian byte order during <tt>pack</tt> and <tt>unpack</tt>.</p>
 
-<center>&part;</center>
+<h3>Writing library wrappers</h3>
+
+<p>Sometimes newLISP's built-in import facility cannot be used with a library. This
+happens whenever a library does not strictly adhere to <em>cdecl</em> calling
+conventions expecting all parameters passed on the stack. E.g. when running Mac OS X
+on  older PPC CPUs instead of Intel CPUs, the OpenGL libararies installed by default on
+Mac OS X cannot be used.</p>
+
+<p>A special wrapper library can be built to translate <em>cdecl</em> conventions
+expected by newLISP into the calling conventions expected by the target library.</p>
+
+<pre>
+   /* wrapper.c - demo for wrapping library function */
+
+   compile:
+       gcc -m32 -shared wrapper.c -o wrapper.so
+   or:
+       gcc -m32 -bundle wrapper.c -o wrapper.dylib
+
+   usage from newLISP:
+
+       (import "./wrapper.dylib" "wrapperFoo")
+
+       (define (glFoo x y z)
+           (get-float (wrapperFoo 5 (float x) (int y) (float z))) )
+
+    (glFoo 1.2 3 1.4) =&gt; 7.8
+
+   */
+
+   #include &lt;stdio.h&gt;
+   #include &lt;stdarg.h&gt;
+
+
+   /* the glFoo() function would normally live in the library to be
+      wrapped, e.g. libopengl.so or libopengl.dylib, and this
+      program would link to it.
+
+      For demo and test purpose the function has been included in this 
+      file
+   */
+
+   double glFoo(double x, int y, double z)
+   {
+   double result;
+
+   result = (x + z) * y;
+   
+   return(result);
+   }
+
+   /* this is the wrapper for glFoo which gets imported by newLISP
+      declaring it as a va-arg function guarantees 'cdecl' 
+      calling conventions on most architectures
+   */
+
+   double * wrapperFoo(int argc, ...)
+   {
+   va_list ap;
+   double x, z;
+   static double result;
+   int y;
+
+   va_start(ap, argc);
+
+   x = va_arg(ap, double);
+   y = va_arg(ap, int);
+   z = va_arg(ap, double);
+
+   va_end(ap);
+
+   result = glFoo(x, y, z);
+   return(&amp;result);
+   }
+
+   /* eof */
+</pre>
 
 <br><br><br><br>
 
@@ -3906,8 +4250,6 @@ Free Software Foundation. If the Document does not specify a version
 number of this License, you may choose any version ever published (not
 as a draft) by the Free Software Foundation.
 </p>
-<br><br>
-
 
 <center>&part;</center>
 

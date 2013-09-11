@@ -2,17 +2,19 @@
 ;; @description Send mail using SMTP protocol
 ;; @version 2.0 - March 2008, Cormullion added AUTH PLAIN authentication 
 ;; @version 2.1 - changes for 10.0
-;; @author Lutz Mueller 2001, Cormullion 2008
-;; 
+;; @version 2.2 - doc changes
+;; @author Lutz Mueller 2001-2009, Cormullion 2008
 ;; <h2>Routines for sending mail</h2> 
 ;; This module implements routines to communicate with a SMTP mail server 
 ;; for sending email. To use this module include the following 'load' statement 
 ;; at the beginning of the program file: 
 ;; <pre> 
 ;; (load "/usr/share/newlisp/modules/smtp.lsp") 
+;; ; or shorter
+;; (module "smtp.lsp")
 ;; </pre> 
-;; To see debugging information: 
-;; <pre>(set 'debug-flag true)</pre> 
+;; To see debugging information: <br><br>
+;; <tt>(set 'debug-flag true)</tt>
 
 (context 'SMTP) 
 

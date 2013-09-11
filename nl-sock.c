@@ -57,14 +57,15 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #include <arpa/inet.h>
 #endif
 
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #include <stropts.h>
 #include <sys/conf.h>
 #include <netinet/in_systm.h>
 #define gethostbyname2(A, B) gethostbyname(A)
-#ifndef TRU64
-#define FIONREAD I_NREAD
 #endif
+
+#ifdef SOLARIS
+#define FIONREAD I_NREAD
 #endif
 
 #ifdef OS2 
@@ -116,7 +117,10 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #define ERR_INET_PEEK_FAILED 15
 #define ERR_INET_NOT_VALID_SOCKET 16
 #define ERR_INET_TIMEOUT 17
-#define MAX_NET_ERROR 17
+#define ERROR_BAD_URL 18
+#define ERROR_FILE_OP 19
+#define ERROR_TRANSFER 20
+#define MAX_NET_ERROR 20
 
 #define isnum(A) ((A)>= '0' && (A) <= '9')
 
@@ -135,7 +139,7 @@ int getSocketFamily(int sock);
 #define READY_READ 0
 #define READY_WRITE 1
 
-int errorIdx = 0;
+UINT errorIdx = 0;
 
 extern int logTraffic;
 extern int noPromptMode;
@@ -147,7 +151,7 @@ struct in_addr defaultInAddr;
 #endif
 
 #ifdef WIN_32
-extern int IOchannelIsSocket;
+extern int IOchannelIsSocketStream;
 #endif
 
 /********************** session functions *******************/
@@ -490,21 +494,20 @@ char IPaddress[40];
 char IPaddress[16];
 #endif
 
+errorIdx = 0;
+
 if(params != nilCell)
 	{
 	getString(params, &ifAddr);
-
 	if(getHost(ifAddr, &defaultInAddr) == SOCKET_ERROR)
 		return(netError(ERR_INET_HOST_UNKNOWN));
-
-	errorIdx = 0;
 	}
 
 #ifdef IPV6
-	inet_ntop(AF_INET6, &defaultInAddr, IPaddress, 40); 
+inet_ntop(AF_INET6, &defaultInAddr, IPaddress, 40); 
 #else
-	/* snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); */
-	strncpy(IPaddress, inet_ntoa(defaultInAddr), 16);
+/* snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); */
+strncpy(IPaddress, inet_ntoa(defaultInAddr), 16);
 	
 #endif
 return(stuffString(IPaddress));
@@ -522,6 +525,7 @@ getInteger(params, &listenSock);
 if((sock = netAccept((int)listenSock)) == INVALID_SOCKET)
     return(netError(ERR_INET_ACCEPT));
 
+errorIdx = 0;
 return(stuffInteger(sock)); 
 }
 
@@ -583,29 +587,29 @@ struct sockaddr_in6 address_sin;
 struct sockaddr_in address_sin; 
 #endif
 
+*IPaddress = 0;
+
 if(getSocketFamily(sock) == AF_UNIX)
 	{
 	/* snprintf(IPaddress, 6, "local"); */
-	strncpy(IPaddress, "local", 5);
+	strncpy(IPaddress, "local", 6);
 	return(0);
 	}
 
-*IPaddress = 0;
 address_sin_len = sizeof(address_sin); 
+
 if(peerLocalFlag == LOCAL_INFO) 
-    { 
-    if(getsockname(sock,  
-        (struct sockaddr *)&address_sin, (void *)&address_sin_len) 
-            == SOCKET_ERROR) 
-        return(0); 
-    } 
+	{
+    if(getsockname(sock, 
+		(struct sockaddr *)&address_sin, (void *)&address_sin_len) == SOCKET_ERROR)
+		return(SOCKET_ERROR);
+	}
 else 
-    { 
-    if(getpeername(sock,  
-        (struct sockaddr *)&address_sin, (void *)&address_sin_len) 
-            == SOCKET_ERROR) 
-        return(0); 
-    } 
+	{
+    if(getpeername(sock, 
+		(struct sockaddr *)&address_sin, (void *)&address_sin_len) == SOCKET_ERROR)
+		return(SOCKET_ERROR);
+	}
  
 /* return address IP number  */
 #ifdef IPV6
@@ -643,7 +647,7 @@ UINT addressPort, sock;
 
 getInteger(params, &sock); 
 if((addressPort = getPeerName((int)sock, peerLocalFlag, name)) == SOCKET_ERROR)
-    return(nilCell);
+    return(netError(ERR_INET_NOT_VALID_SOCKET));
 
 result = makeCell(CELL_EXPRESSION, (UINT)stuffString(name));
 
@@ -674,6 +678,7 @@ struct hostent * pHe;
 char * hostString;
 int forceByName = 0;
 
+errorIdx = 0;
 params = getString(params, &hostString);
 forceByName = getFlag(params);
 
@@ -685,7 +690,7 @@ if((isDigit((unsigned char)*hostString) || (hostString[0] == ':')) && !forceByNa
         return(netError(ERR_INET_BAD_FORMED_IP));
 
 	if((pHe = gethostbyaddr(&address.sin6_addr, AF_INET6, PF_INET6)) == NULL)
-		return(nilCell);
+		return(netError(ERR_INET_HOST_UNKNOWN));
 
     return(stuffString((char *)pHe->h_name));
 	}
@@ -696,7 +701,7 @@ if(isDigit((unsigned char)*hostString) && !forceByName)
         return(netError(ERR_INET_BAD_FORMED_IP));
 
     if((pHe = gethostbyaddr((char *) &ip.no,4,PF_INET)) == NULL)
-        return(nilCell);
+		return(netError(ERR_INET_HOST_UNKNOWN));
 
     return(stuffString((char *)pHe->h_name));
     }
@@ -704,7 +709,7 @@ if(isDigit((unsigned char)*hostString) && !forceByName)
 
 /* get ip-number from hostname */
 if((pHe = gethostbyname2(hostString, ADDR_TYPE)) == NULL)
-    return(nilCell);
+		return(netError(ERR_INET_HOST_UNKNOWN));
 
 #ifdef IPV6
 memcpy((char *)&(address.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
@@ -715,7 +720,6 @@ memcpy((char *)&(address.sin_addr), pHe->h_addr_list[0], pHe->h_length);
 strncpy(IPaddress, inet_ntoa(address.sin_addr), 16);
 #endif
 
-errorIdx = 0;
 return(stuffString(IPaddress));
 }
 
@@ -734,6 +738,8 @@ params = getEvalDefault(params, &cell);
 
 if(!symbolCheck)
 	return(errorProcExt2(ERR_SYMBOL_EXPECTED, params));
+if(symbolCheck->contents != (UINT)cell)
+	return(errorProc(ERR_IS_NOT_REFERENCED));
 
 readSymbol = symbolCheck;
 params = getInteger(params, (UINT *)&readSize);
@@ -1162,30 +1168,6 @@ if(getHost(ifAddr, &local_sin.sin_addr) == SOCKET_ERROR)
 #endif
 	return(SOCKET_ERROR);
 
-/*
-if(ifAddr != NULL && *ifAddr != 0)
-	{
-	if((pHe = gethostbyname2(ifAddr, ADDR_TYPE)) == NULL)
-		{
-		errorIdx = ERR_INET_HOST_UNKNOWN;
-		return(SOCKET_ERROR);
-		}
-#ifdef IPV6
-	memcpy((char *)&(local_sin.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
-	}
-
-else 
-	local_sin.sin6_addr = in6addr_any;
-
-#else
-	memcpy((char *)&(local_sin.sin_addr), pHe->h_addr_list[0], pHe->h_length);
-	}
-else 
-	local_sin.sin_addr.s_addr = INADDR_ANY; 
-#endif
-*/
-
-/* printf("sin_addr.s_addr %x\n", local_sin.sin_addr.s_addr);  */
 
 #ifdef IPV6
 local_sin.sin6_port = htons((u_short)portNo); 
@@ -1401,6 +1383,8 @@ char name[16];
 char text[80];
 time_t t;
 
+text[79] = 0;
+
 if(!reconnect)
 	{
 #ifndef WIN_32
@@ -1412,11 +1396,10 @@ if(!reconnect)
 	sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL);
 #endif
 
-	if(sock == SOCKET_ERROR)
-		{
-		snprintf(text, 78, "newLISP v.%d listening on %s", version, domain);
+	if(sock == SOCKET_ERROR) return(NULL);
+	else {
+		snprintf(text, 79, "newLISP v.%d listening on %s", version, domain);
 		writeLog(text, TRUE);
-		return(NULL);
 		}
 	}
 else
@@ -1433,7 +1416,7 @@ createInetSession(connection, (port != 0) ? AF_INET : AF_UNIX);
 /* print log */
 getPeerName(connection, PEER_INFO, name);
 t = time(NULL);
-snprintf(text, 78, "Connected to %s on %s", name, ctime(&t));
+snprintf(text, 79, "Connected to %s on %s", name, ctime(&t));
 /* printf(text); */
 writeLog(text, 0);
 
@@ -1770,13 +1753,17 @@ char * netErrorMsg[] =
     "Socket recv failed",
     "Socket send failed",
     "Cannot bind socket",
-    "Too many sockets in net-select",
+    "Too many sockets",
     "Listen failed",
     "Badly formed IP",
     "Select failed",
     "Peek failed",
     "Not a valid socket",
-	"Operation timed out"
+	"Operation timed out",
+/* for nl-web.c */
+	"HTTP bad formed URL",
+	"HTTP file operation failed",
+	"HTTP transfer failed"
     };
 
 
@@ -1789,24 +1776,31 @@ return(nilCell);
 CELL * netEvalError(int errorNo)
 { 
 errorIdx = errorNo; 
-return(p_netLastError(NULL));
+return(p_netLastError(nilCell));
 }
 
 CELL * p_netLastError(CELL * params)
 {
-CELL * cell;
-char str[64];
+CELL * result;
+char str[40];
+char * errPrefix = "ERR: ";
+UINT numError = errorIdx;
 
-if(errorIdx == 0 || errorIdx > MAX_NET_ERROR) return(nilCell);
+if(params != nilCell)
+	{
+	getInteger(params, &numError);
+	errPrefix = "";
+	}
+if(numError == 0) return(nilCell);
 
-cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errorIdx));
+result = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(numError));
 
-snprintf(str, 63, "ERR: %s", netErrorMsg[errorIdx]);
-((CELL*)cell->contents)->next = stuffString(str);
+snprintf(str, 40, "%s%s", errPrefix, 
+	(errorIdx > MAX_NET_ERROR) ? UNKNOWN_ERROR : netErrorMsg[numError]);
+((CELL *)result->contents)->next = stuffString(str);
 
-return(cell);
+return(result);
 }
-
 
 #ifdef NET_PING
 /* net-ping */
@@ -1934,6 +1928,7 @@ while(address != nilCell)
 				}
 			else endIp = startIp = 0;
 			if(endIp < startIp) endIp = startIp;	
+			if(endIp > 254) endIp = 254;
 			}
 		}
 #endif
@@ -1987,13 +1982,6 @@ while(address != nilCell)
 		icp->icmp6_seq = ping_sequence;
 		icp->icmp6_id = getpid() & 0xFFFF; 
 		gettimeofday((struct timeval *)&icp->icmp6_data8[4], NULL);
-/*
-		sockopt = offsetof(struct icmp6_hdr, icmp6_cksum);
-		setsockopt(s, SOL_RAW, IPV6_CHECKSUM, (char *)&sockopt, sizeof(sockopt)); 
-		sockopt = 1;
- 		setsockopt(pingsock, SOL_IPV6, IPV6_HOPLIMIT, (char *)&sockopt, sizeof(sockopt));
-*/
-
 #else
 		icp->icmp_type = ICMP_ECHO;
 		icp->icmp_code = 0;
@@ -2055,7 +2043,9 @@ while(sendCount)
         continue;
         }    
 
-    if ( (len = recvfrom(s, packet, PLEN, 0, (struct sockaddr *)&from, &fromlen)) < 0)
+    if ( (len = recvfrom(s, packet, PLEN, 0, 
+						(struct sockaddr *)&from, 
+						(socklen_t *)&fromlen)) < 0)
         continue;
     
     ip = (struct ip *) packet;
@@ -2094,9 +2084,7 @@ return(result == NULL ? getCell(CELL_EXPRESSION) : result);
 CELL * addResult(CELL * * result, CELL * cell, CELL * new)
 {
 if(*result == NULL)
-	{
 	*result = makeCell(CELL_EXPRESSION, (UINT)new);
-	}
 else
 	cell->next = new;	
 
@@ -2165,6 +2153,9 @@ else
 /*
 These functions use the FILE structure to store the raw file handle in '->_file' and
 set ->_flag to 0xFFFF, to identify this as a faked FILE structure.
+Sinc 10.0.1 the IOchannelIsSocketStream flag is used to identify IOchannel as
+a fake file struct and extract the socket. Following win32_fxxx routines
+are used to define fopen(), fclose(), fprintf(), fgetc() and fgets() in newlisp.h
 */
 
 FILE * win32_fdopen(int handle, const char * mode)
@@ -2175,7 +2166,6 @@ if((fPtr = (FILE *)malloc(sizeof(FILE))) == NULL)
     return(NULL);
 
 memset(fPtr, 0, sizeof(FILE));
-
 
 #ifdef WIN_32
 fPtr->_file = handle;
@@ -2188,22 +2178,18 @@ return(fPtr);
 int win32_fclose(FILE * fPtr)
 {
 /*if(isSocketStream(fPtr)) */
-if(IOchannelIsSocket)
+if(IOchannelIsSocketStream)
    return(close(getSocket(fPtr)));
 
 return(fclose(fPtr));
 }
 
 
-/* for a full fprintf with format string and parameters
-   see version previous to 9.0.2
-*/
-int win32_fprintf(FILE * fPtr, char * buffer)
+int win32_fprintf(FILE * fPtr, char * notused, char * buffer)
 {
 int pSize;
 
-/* if(!isSocketStream(fPtr)) */
-if(!IOchannelIsSocket)
+if(!IOchannelIsSocketStream)
     return(fprintf(fPtr, buffer));
 
 pSize = strlen(buffer);
@@ -2221,8 +2207,7 @@ int win32_fgetc(FILE * fPtr)
 {
 char chr;
 
-/* if(!isSocketStream(fPtr))*/
-if(!IOchannelIsSocket)
+if(!IOchannelIsSocketStream)
     return(fgetc(fPtr));
 
 if(recv(getSocket(fPtr), &chr, 1, NO_FLAGS_SET) <= 0)
@@ -2240,8 +2225,7 @@ char * win32_fgets(char * buffer, int  size, FILE * fPtr)
 int bytesReceived = 0;
 char chr;
 
-/* if(!isSocketStream(fPtr))*/
-if(!IOchannelIsSocket)
+if(!IOchannelIsSocketStream)
     return(fgets(buffer, size - 1, fPtr));
 
 while(bytesReceived < size)

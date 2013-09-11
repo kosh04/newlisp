@@ -1,18 +1,23 @@
 ;; @module sqlite3.lsp 
 ;; @description SQLite3 database interface routines
 ;; @version 1.6 - comments redone for automatic documentation
-;; @version 1.7 - a fix getting types when null values are present (thanks Dmitry)
-;; @version 1.8 - a fix to make 64-Bit integers work (thanks Dmitry)
+;; @version 1.7 - D.C. fixed getting types when null values are present
+;; @version 1.8 - D.C. made 64-Bit integers work
 ;; @version 1.9 - new library detection routine
 ;; @version 2.0 - added documentation for close
 ;; @version 2.1 - use default functor for query
-;; @author Lutz Mueller, 2004-2008
+;; @version 2.2 - detection for NEWLISP64, lib path for OpenBSD, tested for 64-bit 
+;; @version 2.3 - C.H. added parameter binding for safer SQL (guard against SQL-injection)
+;; @version 2.4 - doc changes
+;; @author Lutz Mueller 2004-2008, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
-;; To use this module include the following 'load' statement at the
+;; To use this module include the following 'load'  or 'module' statement at the
 ;; beginning of the program file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/sqlite3.lsp")
+;; ; or shorter
+;; (module "sqlite3.lsp")
 ;; </pre>
 ;; SQLite version 3.0 introduced a new database format and is incompatible
 ;; whith the previous 2.1 to 2.8 format. Old SQLite 2.x based databases can
@@ -33,7 +38,7 @@
 ;; SQLite is an <in-process> database. The library contains the whole database
 ;; system. An extra database server is not required. SQLite also has limited
 ;; mutiuser capabilities for accessing a common database from several programs
-;; at the same time. See the documentaion at @link http://sqlite.org sqlite.org 
+;; at the same time. See the documentation at @link http://sqlite.org sqlite.org 
 ;; for details.
 ;;
 ;; The following is a short example how to use SQLite3:
@@ -43,6 +48,7 @@
 ;;                         ; or 'nil' on failure
 ;;
 ;; (sql3:sql "select * from mytable;")	; make a SQL query, return result
+;; (sql3 "select * from mytable;") ; use default functor as alias
 ;;
 ;; (sql3:error)            ; return error text
 ;;
@@ -57,12 +63,18 @@
 
 (context 'sql3)
 
+; fetch-row and keep-type functions depend on this
+(set 'NEWLISP64 (not (zero? (& (sys-info -1) 256))))
+
 ; set library to path-name of the library on your platform OS
 ;
 (set 'files (list
-	"/usr/local/lib/libsqlite3.so" ; Linyx and BSDs
+	"/usr/lib/libsqlite3.so" ; SuSE Linux
+	"/usr/local/lib/libsqlite3.so" ; Linux and BSDs
+	"/usr/pkg/lib/libsqlite3.so" ; NetBSD
 	"/usr/lib/libsqlite3.0.dylib" ; Mac OSX Darwin
 	"/usr/local/lib/libsqlite3.so" ; Solaris
+	"/usr/local/lib/libsqlite3.so.11.0" ; OpenBSD
 	(string (env "PROGRAMFILES") "/sqlite3/sqlite3.dll") ; Win32/MinGW
 ))
 
@@ -74,11 +86,19 @@
 (import library "sqlite3_open" "cdecl")
 (import library "sqlite3_close" "cdecl")
 (import library "sqlite3_prepare" "cdecl")
+(import library "sqlite3_bind_blob" "cdecl")
+(import library "sqlite3_bind_double" "cdecl")
+(import library "sqlite3_bind_null" "cdecl")
+(import library "sqlite3_bind_parameter_count" "cdecl")
+(import library "sqlite3_bind_parameter_index" "cdecl")
+(import library "sqlite3_bind_parameter_name" "cdecl")
+(import library "sqlite3_bind_text" "cdecl")
+(import library "sqlite3_bind_text16" "cdecl")
 (import library "sqlite3_step" "cdecl")
 (import library "sqlite3_column_count" "cdecl")
 (import library "sqlite3_column_name" "cdecl")
 (import library "sqlite3_column_type" "cdecl")
-(import library "sqlite3_column_int" "cdecl")
+(import library "sqlite3_column_int64" "cdecl")
 (import library "sqlite3_column_double" "cdecl")
 (import library "sqlite3_column_text" "cdecl")
 (import library "sqlite3_column_blob" "cdecl")
@@ -94,11 +114,11 @@
 ; gloablly used vars and constants
 
 (define db nil)                  ; database handle
-(define dbp "\000\000\000\000")  ; ptr to database handle
+(define dbp "\000\000\000\000\000\000\000\000")  ; ptr to database handle
 (define error-message nil)        ; error message
 (define col-names '())           ; list of column headers
 (define col-types '())           ; list of column types
-(define pstm "\000\000\000\000") ; ptr to compiled sql
+(define pstm "\000\000\000\000\000\000\000\000") ; ptr to compiled sql
 
 (constant 'SQLITE_OK 0)
 (constant 'SQLITE_ROW 100)
@@ -127,7 +147,10 @@
       (set 'result (sqlite3_open db-name dbp))
       (if (!= result SQLITE_OK)
         (set 'db nil)
-        (set 'db (get-int dbp))))
+        (if NEWLISP64
+            (set 'db (get-long dbp))
+            (set 'db (get-int dbp)))
+      ))
     (begin
       (set 'error-message "A database is already open")
       nil))
@@ -143,29 +166,67 @@
 		(set 'db nil)
 		true)))
 
-;; @syntax (sql3:sql <str-sql>)
+
+;; @syntax (sql3:sql <str-sql> [<sql-args>])
 ;; @param <str-sql> The SQL statement.
+;; @param <sql-args> Parameters for the SQL statement's host variables
 ;;
 ;; Executes the SQL statement in <str-sql>. For 'select' statements an array 
 ;; of the result set is returned or '()' for the empty set. For other statements
 ;; 'true' is returned for a  successful outcome. On failure 'nil' is returened 
 ;; and 'sql3:error' can be used to retrieve the error text.
+;;
+;; If the parameter <sql-args> is given, it has either to be a list of values (if
+;; the SQL statement use the '?' type of host variables) or an association list
+;; whose every association is formed like (<varname> <value>). The <varname> is
+;; the name of the host variable used in the SQL statement e.g. ':name' or '?123'.
+;;
+;; Strings are bound to host variables as BLOBs. That mean the data will be passed
+;; as is, without any further modification.
+;;
+;; Using host variables is much safer than passing those values via string
+;; composition as no SQL quoting problem can occur (SQL injection attack).
+;; For example:
+;;
+;; @example
+;; ; traditional usage 
+;; (sql3:sql "select * from persons where age > 18;") 
+;;
+;; ; safer usage using SQLite parameter binding
+;; (sql3:sql "select * from persons where age > ?;" '(18))
+;;
+;; ; bind parameters from association lists
+;; (sql3:sql "select * from persons where name like :name;" '((":name" "Do%")))
+;; (sql3:sql "select * from persons where age > :a and name like :n;" '((":n" "Do%") (":a" 18)))
 
-(define (sql sql-str)
+
+(define (sql sql-str sql-args)
 	(set 'result nil 'done nil 'error-message nil)
 	(set 'sqarray '());
 	(set 'col-names '());
 	(set 'col-types '());
 
 	; set up parameters for sqlite3_prepare() call
-	(set 'ppstm "\000\000\000\000") ; pointer to statement ptr
-	(set 'pptail "\000\000\000\000") ; pointer to statement tail
+	(set 'ppstm "\000\000\000\000\000\000\000\000") ; pointer to statement ptr
+	(set 'pptail "\000\000\000\000\000\000\000\000") ; pointer to statement tail
 
 	; compile the sql statment
 	(if db (set 'result (sqlite3_prepare db sql-str -1 ppstm pptail)))
 
 	; set up parameters for sqlite3_step() call
-	(set 'pstm (get-int ppstm))
+	(if NEWLISP64
+		(set 'pstm (get-long ppstm))
+		(set 'pstm (get-int ppstm)))
+
+	; bind parameters to sql stament if necessary
+	(if (and (= result SQLITE_OK) sql-args)
+  		(let (argi 0)
+    			(dolist (entry sql-args (!= result SQLITE_OK))
+      				(if (list? entry) 
+        				(set 'result (bind-parameter pstm (first entry) (last entry)))
+        				(set 'result (bind-parameter pstm (inc argi) entry))
+				)))
+	)
 
 	; execute the compiled statement
 	(if (= result SQLITE_OK) 
@@ -179,8 +240,8 @@
 				(push (get-values pstm num-cols) sqarray -1)
 				(set 'done true) ;; received done/101 or error
 			))
-		
-                )
+  	)
+  
 	; if done/101 finalize
 	(if (= result SQLITE_DONE) 
 		(begin
@@ -188,6 +249,18 @@
 			; for 'select' statements return the array else 'true'
 			(if (> num-cols 0) sqarray true))
 		(if (= result 0) true (set-error))))
+
+
+(define (bind-parameter pstm param value)
+	(let (idx param)
+		(unless (integer? param)
+			(set 'idx (sqlite3_bind_parameter_index pstm
+				(if (symbol? param) (name param) (string param)))))
+		(cond
+			((float? value) (sqlite3_bind_double pstm idx (float value)))
+			((string? value) (sqlite3_bind_blob pstm idx value (length value) -1))
+			((nil? value) (sqlite3_bind_null pstm idx))
+			(true (sqlite3_bind_text pstm idx (string value) (length (string value)) -1)) )) )
 
 
 (define (get-values pstm cols) 
@@ -297,7 +370,7 @@
 		(set 'error-message nil)
 		(set 'error-message (get-string result))
 		nil
-		)
+	)
 )
 
 
@@ -307,10 +380,10 @@
 ;
 ; test the database routines
 ;
-; if there is an old "TEST" db from an earlier sqlite 2.8 delete it first
+; if there is an old "SQLITE3-TEST" db from an earlier sqlite 2.8 delete it first
 ;
 (define (test-sqlite3)
-	(if (sql3:open "TEST") 
+	(if (sql3:open "SQLITE3-TEST") 
 		(println "database opened/created,  ... Ok")
 		(println "problem opening/creating database"))
 
@@ -330,10 +403,23 @@
 		(println "inserted, last row id: " (sql3:rowid) ",  ... Ok")
 		(println "problem inserting row"))
 
-	(if (sql3:sql 
-		"insert into fruits values ('grapes', 123456789012345678, 7.89, X'47484900040404');")
+	; Definition of a small helper function for the tests to emulate the X'...' argument
+	; quoting of SQL
+
+	(define (hexstring hexstr)
+		(join (map (fn (s) (pack "c" (int s 0 16))) (find-all ".." hexstr))))
+
+	; Following statement was modified below to show, how to use host variables with
+	; the SQL INSERT statement.
+	;	(if (sql3:sql "insert into fruits values (:name, :qty, :price, X'47484900040404');" 
+	;        '((":name" "grapes") (":qty" 123456789012345678) (":price" 7,89)))
+	;		(println "inserted, last row id: " (sql3:rowid) ",  ... Ok")
+	;		(println "problem inserting row"))
+
+	(if (sql3:sql "insert into fruits values (?, ?, ?, ?);" 
+        		(list "grapes" 123456789012345678 (div 789 100) (hexstring "47484900040404")))
 		(println "inserted, last row id: " (sql3:rowid) ",  ... Ok")
-		(println "problem inserting row"))
+		(println "problem inserting row: " (sql3:error)))
 
 	(set 'sqarray (sql3:sql "select * from fruits;"))
 
@@ -346,6 +432,39 @@
 			(println "... Ok"))
 		(println "problem with select"))
 
+  	(if (= (sql3:sql "select name from fruits where qty < ? order by name;" '(33))
+   		 	'(("apples") ("oranges")))
+    		(println "select via host parameter (type '?'), ... Ok")
+		(println "problem with selecting via host parameters (type '?')"))
+
+  	(if (= (sql3:sql "select name from fruits where qty < :qty order by name;" '((":qty" 33)))
+   		 	'(("apples") ("oranges")))
+    		(println "select via host parameter (type ':VVV'), ... Ok")
+		(println "problem with selecting via host parameters (type ':VVV')"))
+
+  	(if (= (sql3:sql "select name from fruits where qty < ?2 order by name;" '(("?2" 33)))
+   		 	'(("apples") ("oranges")))
+    		(println "select via host parameter (type '?NNN'), ... Ok")
+		(println "problem with selecting via host parameters (type '?NNN')"))
+
+  	(if (= (sql3:sql "select name from fruits where qty < @par order by name;" '(("@par" 33)))
+   		 	'(("apples") ("oranges")))
+    		(println "select via host parameter (type '@VVV'), ... Ok")
+		(println "problem with selecting via host parameters (type '@VVV')"))
+
+  	(if (= (sql3:sql "select name from fruits where qty < $par order by name;" '(("$par" 33)))
+   	 		'(("apples") ("oranges")))
+    		(println "select via host parameter (type '$VVV'), ... Ok")
+		(println "problem with selecting via host parameters (type '$VVV')"))
+
+  	; SQL injection has no chance:
+	
+  	(print "try to drop table fruits via SQL injection attack ... ") 
+
+  	(if (sql3:sql "select * from fruits where name = ?;" '("''; drop table fruits;"))
+		(println "OUCH! Table was dropped via SQL injection!!!")
+		(println "no luck, table was safe against SQL injection."))
+	
 	(if (sql3:sql "delete from fruits where 1;")
 		(println "deleted, rows affected: " (sql3:changes) ",  ... Ok")
 		(println "problem deleting rows"))
@@ -363,9 +482,7 @@
 		(println "table fruits dropped,  ... Ok")
 		(println "problem dropping table fruits"))
 
-
 	(sql3:close)
 )
-
 
 ; eof ;

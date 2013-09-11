@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "4.01 Transitional">
+<html>
+<title>newLISP  v.10.1 Release Notes </title>
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.1 Release Notes 
+<font size=-1 color="red">June 22nd, 2009</font></h1>
+
+<p>Versions 10.0.2 to 10.0.8 are development releases leading up to this
+stable release version 10.1.</p>
+
+<h3>Improved support for concurrency and multi core CPUs</h3>
+<p>Release 10.1 improves concurrency support for multi core CPUs with
+new messaging functions for parent and child processes launched 
+with <tt>spawn</tt>. The new non-blocking API works without locks and semaphores
+and is safe against collisions.  Besides constants, any expression with any size
+can be transferred with the new <tt>send</tt> and <tt>receive</tt> functions.
+Objects bigger then the OS's shared memory pagesize are transferred using
+files internally. The new message API is only available on Mac OS X, Linux and 
+other UNIX.</p>
+
+<h3>New and changed functionality</h3>
+<ul>
+<li><tt>dotree</tt> can filter hash symbols starting with an underscore character 
+as used in hashes and <tt>bayes-train</tt> when using an optional <tt>true</tt> 
+flag.</li><p>
+
+<li><tt>expand</tt> when used with an association list as second parameter can now 
+take an optional third boolean parameter to indicate evaluation of the value part 
+in associations:</li>
+
+<blockquote><pre>
+(expand '(a b) '((a (+ 1 2)) (b (+ 3 4))) true) &rarr; (3 7)
+</pre></blockquote>
+
+<li><tt>expand</tt> and <tt>letex</tt> now also expand symbols on the top level
+of an expression or letex body:</li>
+
+<blockquote><pre>
+(set 'x 123 'y 456)
+(expand 'x 'x)          &rarr; 123 ; threw error before
+(letex (x 'y) x)        &rarr; 456 ; returned y before
+(letex (x '(+ 3 4)) x)  &rarr; 7   ; returned (+ 3 4) before
+</pre></blockquote>
+
+<li>Eliminated  stack-size dependence in functions <tt>find</tt> and <tt>map</tt>.</li><p>
+
+<li>A new <tt>inf?</tt> predicate tests if a number is infinite:
+<blockquote><pre>
+(inf? (div 1 0)) &rarr; true
+</pre></blockquote>
+Before, a floating point division by zero would throw a "divsion by zero" error.</li>
+<p>
+
+<li><tt>lambda</tt> - functions now can be of unlimited length in their body without
+affecting the runtime result-stack. Before the number of statements in a lambda
+was limited to 2 to 4 thousand.</li><p>
+
+<li>New <tt>last-error</tt> replaces eliminated <tt>error-number</tt> and 
+<tt>error-text</tt> and returns number and text in a list consistent with the 
+behavior of <tt>net-error</tt> and <tt>sys-error</tt>. All three functions now 
+behave the same way and can enumerate all errors when given the error number 
+as parameter.</li><p>
+
+<li>The <tt>prob-z</tt> function is now implemented using the error function <tt>errf</tt>
+and gives results with a higher precision.</li><p>
+
+<li>The <tt>receive</tt> function receives a messge from a parent or child process
+launched with <tt>spawn</tt>.</li><p> 
+
+<li>The <tt>send</tt> functions sends a message to a parent or child process 
+launched with <tt>spawn</tt>.</li><p>
+
+<li>The <tt>share</tt> function now can share any lisp expression and size. On older versions
+only boolean, number and strings constants were supported.</li><p>
+
+<li>The function <tt>swap</tt> now can swap the contents of two places in lists,
+arrays or variables specifying locations in the same form as done by the functions
+<tt>setf</tt> or <tt>setq</tt> and <tt>inc</tt> or <tt>dec</tt>. The old syntax
+of <tt>swap</tt> using three parameters has been eliminated. The new syntax also
+allows swapping places from two different data objects. In the old form this was
+only possible when swapping the contents of two variables. Now two elements from
+two different lists or arrays can be swapped too:</li>
+
+<blockquote><pre>
+; swap places in one list
+(set 'lst '(a b c d e f))
+(swap (first lst) (last lst)) &rarr; a
+lst                           &rarr; (f b c d e a)
+
+; swap places in two lists
+(set 'lst-b '(x y z))
+(swap (lst 0) (lst-b -1)) &rarr; f
+lst                       &rarr; (z b c d e a)
+lst-b                     &rarr; (x y f)
+
+(set 'lst '((a 1 2 3) (b 10 20 30)))
+(swap (lookup 'a lst -1) (lookup 'b lst 1))
+lst &rarr; ((a 1 2 10) (b 3 20 30))
+</pre></blockquote>
+
+<li>The function <tt>sys-info</tt> now also returns the process id (pid) of the 
+parent process which launched the current process using <tt>fork</tt> or <tt>spawn</tt>.
+The pid is 0 (zero) if newLISP was launched not from <tt>fork</tt> or <tt>spawn</tt>.
+The pid can be found at position -4. It is recommended to access the last
+four members with negative offsets, to be compatible with older versions of 
+newLISP.</li><p>
+
+<li>The function <tt>write-buffer</tt> now behaves like <tt>write-line</tt>. When
+no parameters are given the contents of <tt>(current-line)</tt> line is written
+to <em>stdout</em>. Whithout the second parameter the contents of <tt>(current-line)</tt>
+is written to either the string buffer or file handle sepcified in the first 
+parameter.</li><p>
+
+<li>The new <tt>xfer-event</tt> function monitors byte-transfer in <tt>get-url</tt>, 
+<tt>post-url</tt> and <tt>put-url</tt> and in all file operations which take URLs:</li>
+
+<blockquote><pre>
+(xfer-event (fn (n) (println "-&gt;" n)))
+
+(length (get-url "http://newlisp.org"))
+<b>-&gt;10240
+-&gt;11221
+11221</b>
+</pre></blockquote>
+
+</ul>
+
+<center>&sect;</center>
+
+<h3>Changes and additions in external files</h3>
+
+<ul>
+<li>The MySQL interface using the <tt>mysql.lsp</tt> module file has been
+ovehauled and the <tt>mysql5.lsp</tt> and <tt>mysql51.lwp</tt> module
+files have been eliminated. The new <tt>mysql.lsp</tt> should be version
+independent for versions including and after 4.0.</li><p>
+
+<li>A new <tt>postgres.lsp</tt> interfaces to the PostSQL database.</li><p>
+
+<li>The SQLite <tt>sqlite3.lsp</tt> module has been expanded with parameter binding
+fucntionality for safer ussage of the database in web applications, where the 
+danger of SQL injection exists.</li><p>
+
+<li>All three modules <tt>mysql.lsp</tt>, <tt>postgres.lsp</tt> and <tt>sqlite3.lsp</tt>
+have also been tested on 64-Bit newLISP.</li><p>
+
+<li>The documentation utility <tt>newlispdoc</tt> now accepts custom tags. Any line starting
+with <tt>;; @mytag my description</tt> will be formatted like any other tag line,
+but has no effect other wise.</li><p>
+
+<li>In the newLISP-GS editor newlisp-edit(.lsp) in both the editor and the monitor pane,
+font face and size now can be changed interactively.</li><p>
+
+<li>Added makefiles for 64-bit BSD, tested on OpenBSD.</li><p>
+
+<li>When installing using <tt>make install</tt> or when installing from the UBUNTU Linux binary 
+installer, a newlisp-x.x.x and a symbolic link is created for newlisp &rarr; newlisp.x.x.x, 
+where x.x.x is the version number. This older versions of the newLISP binary are not deleted
+and are still accessible. The binary installers for Win32 and Mac OS X have not changed.</li><p>
+
+<li>When building newLISP on Mac OS X or other Unix, <tt>make check</tt> is now recognized 
+additionally to <tt>make test</tt> and <tt>make all check</tt> will make and test.</p>
+</ul>
+
+<center>&sect;</center>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li><tt>bind</tt> did not allow for recursive-incremental definitions.</li><p>
+
+<li>The definition of <tt>legal?</tt> for symbols was too restrictive and caused
+longer code than necessary when serializing symbols using <tt>save</tt> or 
+<tt>source</tt></li><p>
+
+<li>Some HTTP errors where not registered in <tt>net-error</tt>.</li><p>
+
+<li>An unknown host result with <tt>net-lookup</tt> is now register with 
+<tt>net-error</tt>. </li><p>
+
+<li><tt>pack</tt> did no convert from floats (doubles) to integers only from
+integers to floats. Now <tt>pack</tt> will correctly convert in both directions.
+</li><p>
+
+<li>The <tt>replace</tt> in remove mode did not work correctly when all list
+members where <tt>nil</tt>.</li><p>
+
+<li>Under some circumstances <tt>nil</tt> and <tt>true</tt> could confuse
+the <tt>sort</tt> and <tt>unique</tt> functions.</li><p>
+
+<li>The floating point division zero by zero and subtracting two infinite numbers
+from each other will now return <tt>NaN</tt>:
+<blockquote><pre>
+(NaN? (div 0 0)) &rarr; true
+
+(set 'infinite (div 1 0))
+(NaN? (sub infinite infinite)) &rarr; true
+</pre></blockquote></li><p>
+
+<li>Fixed a memory mapping problem surfacing on IBM AIX compiled newLISP.</li><p>
+
+<li>Better handling of status in HTTP headers sent back from newLISP server mode.</li>
+</ul>
+
+<center>&part;</center>
+
+</body>
+</html>

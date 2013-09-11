@@ -7,6 +7,8 @@
 #      make help
 # to see all options
 #
+# this is similar too configure, which only discovers the platform,
+# but also builds.
 
 echo
 case `uname` in 
@@ -15,35 +17,40 @@ case `uname` in
 		if [ -e /usr/lib/libreadline.dylib ]; then
 			make darwin_utf8 # make with readline support
 		else 
-			make osx # make without readline support
+			make darwin # make without readline support
 		fi
 		exit
 		;;
 	Linux)
 		echo Discovered Linux:
-		make linux
+		make linux_utf8
 		exit
 		;;
 	FreeBSD)
 		echo Discovered FreeBSD:
-		make bsd
+		make bsd_utf8
 		exit
 		;;
 	NetBSD)
 		echo Discovered NetBSD:
-		make netbsd
+		make netbsd_utf8
 		exit
 		;;
 	OpenBSD)
 		echo Discoverd OpenBSD:
-		make bsd
+		make bsd_utf8
 		exit
 		;;
 	SunOS)
 		echo  Discovered SunOS, making for Sparc CPU:
-		make solaris
+		make sunos
 		exit
 		;;
+	AIX) 
+		echo  Discovered AIX: 
+		gmake aix64
+		exit 
+		;; 
 	OSF1)
 		echo Discovered Tru64 Unix, please read doc/TRU64BUILD
 		make -f makefile_tru64

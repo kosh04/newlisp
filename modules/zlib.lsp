@@ -2,7 +2,9 @@
 ;; @description Functions for compression/decompression with zlib
 ;; @version 1.1 - comments redone for automatic documentation
 ;; @version 1.2 - new library detection routine
-;; @author April 13th 2006, L.M.
+;; @version 1.3 - added lib for opnBSD and tested for 64-bit newLISP
+;; @version 1.4 - doc changes
+;; @author L.M 2006-2009
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
 ;; from @link http://www.zlib.net/ www.zib.net is needed.
@@ -14,13 +16,16 @@
 ;; Before using the module it must be loaded:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/zlib.lsp")
+;; ; or shorter
+;; (module "zlib.lsp")
 ;; </pre>
 
 
 (context 'zlib)
 
 (set 'files '(
-	"/usr/lib/libz.so" ; Linuyx and BSDs
+	"/usr/lib/libz.so" ; Linux and BSDs
+	"/usr/lib/libz.so.4.1" ; OpenBSD
 	"/usr/lib/libz.dylib" ; Mac OSX / Darwin
 	"/usr/lib/libz.so" ; Solaris
 	"libz1.dll" ; Win32

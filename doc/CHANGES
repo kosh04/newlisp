@@ -9738,7 +9738,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      redone documentation and examples for UDP communications in Code Patterns
      and reference documentation
 
-10.0.2
+10.0.2 Release March 9th, 2009
     Addition of READ_ME-OS2 in doc directory and of readline mode in makefile_os2
 
     Treatment of trailing slashes in file-names for the 'file?' function is
@@ -9783,3 +9783,140 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Labels "Linux", "Win32" etc. in qa-xxxx files and added "AIX" for future 
     makefile_aix and makefile_aix_utf8 .
 
+10.0.3
+    Expanded 3rd syntax in 'swap' (swap <place-1> <place-2>) The first two old
+    call patterns are deprecated and will be removed in a future version.
+
+    Eliminated a stacksize dependence when using 'find' with 'match'
+	
+    IBM AIX for PPC has been added as a platform and using the IBM xlc_r or gcc
+    compiler. Some issues with newLISP server mode are not resolved yet.
+
+    Fixed a memory mapping problem surfacing on IBM AIX 32-bit compiles
+
+    Better handling of status in HTTP headers sent back from server
+
+    'nil' and 'true' confused 'sort' and 'unique', fixed.
+
+10.0.4
+    Improved precision and shorter source for 'prob-z' function
+
+	'expand' and 'letex' now also expand a top-level symbol not in expr list or 
+    quoted:
+        (set 'x 123 'y 456)
+        (expand 'x 'x) => 123 ; threw error before
+        (letex (x 'y) x) => 456 ; returned y before
+		(letex (x '(+ 3 4)) x) => 7 ; returned (+ 3 4) before
+    previously some of these caused an error in 'expand' and did no expansion
+    in 'letex'
+
+    Definition of 'legal?' for symbols was to strict 
+   
+10.0.5
+    makefiles for 64Bit Linux missed the NEWLISP64 flag since 10.0.2
+    added makefiles for BSD LP64 mode
+
+    code cleanup for OpenBSD warnings
+ 
+    new 'xfer-event' can monitor byte-transfer in get-url, post-url
+    and put-url and all file operations which take URLs.
+        (xfer-event (fn (n) (println "->" n)))
+		(length (get-url "http://newlisp.org"))
+         ->10240
+         ->11221
+         11221
+
+    'write-buffer' now behaves like 'write-line' when supressing second or
+    first parameter
+
+    new 'last-error' replaces 'error-number' and 'error-text' and returns
+    number and text in a list consistent with the behavior of 'net-error' and
+    'sys-error'. All three now behave the same way and can enumerate all
+    errors when given the error number as parameter.
+
+    'bind' did not allow recursive definitions
+
+10.0.6
+    some HTTP net errors where not registered with 'net-error'
+
+    readline tab expanson formatting was broken in 10.0.5
+
+    fixed a bug in 'replace' remove mode when all list members are nil
+
+    lambda functions (not lambda-macro) now allow for large or infinite
+    running bodies without stack impact
+
+10.0.7
+    'net-lookup' now sets 'net-error' when lookup fails
+
+    Miscellanous cleanup in nl-sock.c
+
+    Two NaNs should compare nil, division by zero will throw a div-zero-error
+    now only in integer division (/) with floats (div) it will return inf(inity).
+
+    New 'inf?' tests for inifinity: (inf? (div 1 0)) => true
+    now (NaN? (div 0 0)) => true
+
+    Thanks to Nelson H.F.Beebe from math.utah.edu to point out the correct IEE-754
+    behavior for division by 0.0, and NaN? and inf? tests.
+
+    The build process now also accepts  'make check' additionally to 'make test'
+    for GNU compatibility: 'make all check' and then 'sudo make install' makes
+    tests and installs.
+
+    When installing using 'make install' or when installing from the UBUNTU Linux
+    binary installer a newlisp-x.x.x (where x.x.x is the version number) and a i
+    symbolic link is created for newlisp -> newlisp.x.x.x. This way older versions 
+    stay and are still accessible. The binary installers for Win32 and Mac OS X 
+    have not changed.
+
+    The newlispdoc utility now accepts custom tags, which can be made up by just 
+    prepending the custom name with a: @.  The text after the custom tag will be 
+    translated as usual, e.g. it may contain @link tag etc.. Like in most other 
+    tags, text is limited to the same line.
+
+10.0.8
+    'pack' now converts floats to integer when the format is integer but the
+    argument is a floating point (double). It already converted integers to float
+    when the format was float, but didn't handle the other direction.
+
+    (int "ff" 0 16), (int "+ff" 0 16) and (int "-ff" 0 16) now all work. In former
+    versions a leading 0 or 0x was required.
+
+    An optional boolean flag in 'dotree' allows filtering hash symbols or symbols
+    from 'bayes-train' starting with an underscore character in their name.
+
+    Small fixes for syntax highlighting in newlisp-edit.lsp.
+
+    newlisp-edit.lsp now can change fonts in both, the editor and monitor areas,
+    depending on cursor position.
+
+    The syntax highlighter in syntax.cgi and newlispdoc now colors newLISPdoc 
+    tags too.
+
+10.1.0
+    fixed a memory leak in 'sync' when transferring data bigger memory page-size
+
+    (add) and (+) now return 0 and (mul) and (*) return 1. Before a missing
+    parameter error occured.
+
+    (and) now returns true. Before it returned nil. (or) still returns (nil).
+
+    new 'send' and 'receive' message functions for communications between 
+    parent and 'spawn'ed child processes. Transfers any expression any size.
+
+    new 'qa-message' file for testing new 'send/receive' message functionality
+
+    Makefiles with 'solaris' have been renamed to 'sunos'  and the built-in
+    variable 'ostype' now reports "SunOS" for Sparc SunOS and "Solaris" only for
+    OpenSolaris. Before "Solaris" was reported for all.
+
+    All UNIX except AIX and TRU64 are now compiled for readline and UTF-8 support
+    by default: make. Do make -f makefile_xxx. to choose a different configuration.
+
+    The util/ directory contains an alternate configure script called configure-alt
+    this can be copied up to the main distribution directory as an alternate
+    comnfigure utility. See util/configure.txt for more info on this.
+
+    if an 'until' or 'do-until' body is empty the last condition evaluation
+    should be returned

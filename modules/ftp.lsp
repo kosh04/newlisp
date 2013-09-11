@@ -3,23 +3,23 @@
 ;; @version 1.4 - comments redone for automatic documentation
 ;; @version 1.5 - change in read-buffer for v.10.0
 ;; @version 1.6 - change in net-receive for v.10.0
-;; @author Eddie Rucker, Lutz Mueller, 2003
-;;
+;; @version 1.7 - doc changes
+;; @author Eddie Rucker, Lutz Mueller, 2003-2009
 ;; <h2>FTP file transfer routines</h2>
 ;; To use the module put a 'load' statement at beginning of your
 ;; program file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/ftp.lsp")
+;; ; or shorter
+;; (module "ftp.lsp")
 ;; </pre>
-;;
 ;; In case of failure the functions return 'nil' and further detail
 ;; may be found in the variable 'FTP:result'.
 ;;
 ;; To set debug mode, which shows all dialog with the server, set
 ;; 'FTP:debug-flag':
-;; <pre>
-;; (set 'FTP:debug-flag true)
-;; </pre>
+;; 
+;; <tt>(set 'FTP:debug-flag true)</tt>
 
 (context 'FTP)
 

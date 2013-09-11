@@ -1,14 +1,17 @@
 ;; @module odbc.lsp 
 ;; @description ODBC database interface
 ;; @version 1.7 - comments redone for automatic documentation
-;; @author Lutz Mueller, 2003 
+;; @version 1.8 - doc changes
+;; @author Lutz Mueller, 2003-2009
 ;;
 ;; <h2>OCBC Interface functions</h2>
 ;; This module has only been tested on Win32 but should work on UNIX too
 ;; with few modifications. At the beginning of the program file include
 ;; a 'load' statement for the module:
 ;; <pre>
-;; (load "odbc.lsp")
+;; (load "c:/Program Files/newlisp/modules/odbc.lsp")
+;; ; or shorter
+;; (module "odbc.lsp")
 ;; </pre>
 ;; Some of the code assumes Intel (low -> high) little-endian byte order.
 ;;

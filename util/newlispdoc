@@ -17,6 +17,9 @@
 ;; @version 2.3 - handle scientific notation with e
 ;; @version 2.4 - improved keyword regex for syntax highlighting
 ;; @version 2.5 - scientific notation with E
+;; @version 2.6 - allow custom tags e.g: @MyTag the descriptive text (may contain @link)
+;; @version 2.7 - link rag did not work at beginnning of line
+;; @version 2.8 - support for newLISPdoc tag color
 ;;
 ;; @author Lutz Mueller, 2006-2009
 ;; @location http://newlisp.org
@@ -56,7 +59,7 @@
 ;; an index for all other files generated. If the '-s' switch is specified,
 ;; a file with the extension '.src.html' is generated for each file.
 ;;
-;; Please read @link http://newlisp.org/newLISPdoc.html newLISPdoc.htm to learn
+;; Please read @link http://newlisp.org/newLISPdoc.html newLISPdoc.html to learn
 ;; about tagging of newLISP source code for newlispdoc.
 ;;
 
@@ -109,6 +112,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 ; ---------- routines for generating syntax-highlighted file <file-name>.src.html ------------------
 
 (define keyword-color "#0000AA")      ; newLISP keywords
+(define tag-color "#308080")          ; newLISPdoc tags
 (define string-color "#008800")       ; single line quoted and braced strings
 (define long-string-color "#008800")  ; multiline for [text], [/text] tags
 (define paren-color "#AA0000")        ; parenthesis
@@ -200,6 +204,8 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 	; color ;  comments
 	(replace ";.*" src-file (clean-comment $0) 0)
 	(replace ";.*" src-file (format {<font color='%s'>%s</font>} comment-color $0) 0)
+	(replace "(;;.*)(@.*)(\\s.*\n)" src-file 
+			(append $1 (format {<font color='%s'>%s</font>} tag-color $2) $3) 512)
 
 	; color # comments
 	(set 'buff "")
@@ -432,6 +438,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 
 	(if (find ";; *@module " page 0)
 		(begin
+			(replace {;;(.*) @link ([^ ]*?) ([^ ]*?)\s} page (string $1 { <a href="} $2 {">} $3 {</a> }) 0)
 			(replace ";; @example *\n(.*?)\n\\s*\n" page (format-example $1) 4)
 			(set 'page (protect-html page))
 			(set 'desc "")
@@ -445,9 +452,9 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 			(replace ";; *@syntax (.*?)\n" page (format-syntax $1 outfile) 0)
 			(replace ";; *@param (.*?) (.*?)\n" page (format-parameter $1 $2) 0)
 			(replace ";; *@return (.*?)\n" page (format-return $1)  0)
+			(replace ";; *@([a-zA-Z_-]*?) (.*?)\n" page (string "<b>" $1 ": </b>" $2 "<br/>\n") 0)
 			(replace ";;\\s*\n" page "<br/><br/>\n" 0)
 			(replace ";;(.*\n)" page (format-text $1) 0)
-			(replace {@link ([^ ]*?) ([^ ]*?)\s} page (string {<a href="} $1 {">} $2 {</a> }) 0)
 			(set 'page (unprotect-html page))
 			(write-buffer html (format prolog1 outfile))
 			(write-buffer html stylesheet)

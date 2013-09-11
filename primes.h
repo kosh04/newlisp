@@ -286,6 +286,10 @@ PRIMITIVE primitive[] =
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
 	{"abort",		p_abort,	0},
+#ifndef WIN_32
+	{"send",		p_send,		0},
+	{"receive",		p_receive,	0},
+#endif
 #ifndef OS2
 	{"share",		p_share,	0},
 #endif
@@ -302,6 +306,7 @@ PRIMITIVE primitive[] =
 	{"nil?",		p_isNil,	0},
 	{"true?",		p_isTrue,	0},
 	{"NaN?",		p_isnan,	0},
+	{"inf?",		p_isinf,	0},
 	{"integer?",	p_isInteger,	0},
 	{"float?",		p_isFloat,	0},
 	{"number?",		p_isNumber,	0},
@@ -333,8 +338,12 @@ PRIMITIVE primitive[] =
 	{"error-event",	p_errorEvent,	0},
 	{"prompt-event",p_promptEvent,	0},
 	{"command-event", p_commandEvent, 0},
+	{"xfer-event", 	p_transferEvent, 0},
+	{"last-error", 	p_lastError, 0},
+/*
 	{"error-number",p_errorNumber,0},
 	{"error-text",	p_errorText,	0},
+*/
 	{"signal",		p_signal,	0},
 	{"sys-info",	p_systemInfo,	0},
 	{"sys-error",	p_systemError,	0},

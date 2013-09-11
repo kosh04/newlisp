@@ -27,18 +27,6 @@
 		(= (replace 'D (rotate r) 'Z) '(G A B Z E F))
 		(= r '(G A B Z E F))
 
-		; replace -> swap string
-		(set 's "ABCDEFG")
-		(= (swap 2 3 s) "ABDCEFG")	
-		(= (replace "D" (swap (+ 1 1) (+ 2 1) s) "Z") "ABCZEFG")
-		(= s "ABCZEFG")
-		
-		; replace -> swap list
-		(set 's '(A B C D E F G))
-		(= (swap 2 3 s) '(A B D C E F G))	
-		(= (replace 'D (swap 2 3 s) 'Z) '(A B C Z E F G))
-		(= s '(A B C Z E F G))
-		
 		; pop -> sort list
 		(set 's '(K U Q A J P T))
 		(= (pop (sort s)) 'A)

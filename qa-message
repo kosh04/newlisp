@@ -1,0 +1,88 @@
+#!/usr/bin/newlisp
+
+; qa-message, check send and receive functions
+; child processes
+
+(when (= ostype "Win32")
+	(println "qa-message runs only run on Unix - exit")
+	(exit)
+)
+
+; --------------------------------- roundtrip test
+(println "\n10 round trips to 10 child processes")
+(println "\nsend out \"hi\" and receive it back uppercased with child pid appended:\n")
+
+(define (child-process , pid pppid msg)
+		(setq ppid (sys-info -4))
+		(setq pid (sys-info -3))
+		(while true
+			(until (receive ppid msg) )
+			(until (send ppid (upper-case (string msg "-" pid)))) )
+)
+
+(dotimes (i 10)
+	(spawn 'r (child-process)))
+
+(println (sync)) (println)
+
+(set 'start (time-of-day))
+(dotimes (i 10)
+	(dolist (ch (sync))
+		(until (send ch "hi") ) ; send out message
+		(until (receive ch msg))  ; get response
+		(unless (= msg (string "HI-" ch)) ; check
+			(setq error-msg (append "EEROR in round trip test: " msg )))
+		(print  msg " ") )
+	(println)
+)
+
+(println "time per round trip: " (div (- (time-of-day) start) 100) " ms")
+
+(abort) (sleep 100) (println)
+
+; --------------------------------- proxy test
+
+; proxy messageing A -> parent -> B
+
+; sender child process of the message
+(set 'A (spawn 'result 
+	(begin
+		(dotimes (i 5)
+			(set 'ppid (sys-info -4))
+			(set 'pid (sys-info -3))
+			(set 'msg '(until (send B (string "greetings from " A))))
+			(until (send ppid msg)))
+		(sleep 300) ; give B a chance
+		(until (send ppid '(begin
+				(println "\nparent exiting ...\n")
+				(set 'finished true))))
+)))
+
+; receiver child process of the message
+(set 'B (spawn 'result 
+	(begin
+		(set 'ppid (sys-info -4))
+		(set 'pid (sys-info -3))
+		(while true
+			(until (receive ppid msg))
+			(println pid " received " msg))
+)))
+
+; parent functioning as a proxy evaluating messages	or any other code
+(println "A:" A "-> parent-proxy:" (sys-info -3) " -> B:" B "\n")
+
+; listen to messages from A
+(until finished (if (receive A msg) (eval msg)))
+
+(sleep 300)
+(abort)
+(sleep 300)
+
+(if error-msg 
+	(println error-msg)
+	(println "message API TESTED SUCESSFULL"))
+
+(exit)
+
+;; eof
+

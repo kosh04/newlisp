@@ -4,8 +4,8 @@
 ;; @version 1.1 - changed write-line syntax for 10.0
 ;; @version 1.2 - documentation fixes, Feb-2009
 ;; @version 2.0 - bugfixes and documentation overhaul.
+;; @version 2.1 - doc changes
 ;; @author Lutz Mueller, July 2006, February 2009
-;;
 ;; <h2>Changes and fixes in version 2 </h2>
 ;; <ul>
 ;; <li>Bugfixes for bezier, which sometimes crashed.
@@ -14,12 +14,13 @@
 ;; <li>'ps:textarc' and 'ps:textoutline' have changed.
 ;; <li>'ps:line-cap' and 'ps:line-join' now take descriptive or numbers.
 ;; </ul>
-;;
 ;; <h2>Routines for creating postscript files</h2>
 ;; To use this module include the following 'load' statement at
 ;; the beginning of the program file:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/postscript.lsp")
+;; ; or shorter
+;; (module "postscript.lsp")
 ;; </pre>
 ;;
 ;; See @link http://newlisp.org/index.cgi?Postscript http://newlisp.org/index.cgi?Postscript

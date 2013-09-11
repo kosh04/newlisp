@@ -2,12 +2,15 @@
 ;; @description XMLRPC protocol client routines
 ;; @version 0.3 - comments redone for automatic documentation
 ;; @version 0.4 - multiple indices with <tt>nth</tt> redone to be compatible with future versions
-;; @author Lutz Mueller, 2005
+;; @version 0.5 -  doc changes
+;; @author Lutz Mueller, 2005-2009
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/xmlrpc-client.lsp")
+;; ; or shorter
+;; (module "xmlrpc-client.lsp")
 ;; </pre>
 ;; The script 'xmlrpc.cgi' together with a webserver or the script
 ;; 'xmlrpc-server' for a freestanding XML-RPC server can be used for

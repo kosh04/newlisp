@@ -32,7 +32,7 @@ New versions in development are available at:
 Please contact me via email at: lutz@nuevatec.com.
 
 
-BUILD and INSTALL
+BUILD, CHECK and INSTALL
 ----------------
 
 See the files doc/INSTALL, doc/LOCALIZATION and doc/FILES for detailed 
@@ -42,6 +42,10 @@ info or type:
 
 to discover the current platform and make for Linux, MacOSX, FreeBSD, OpenBSD,
 NetBSD and Solaris/SunOS automatically.
+
+to test the compiled newlisp executable do
+
+  make check
 
 then to install with superuser permissions in /usr/bin
 
@@ -55,7 +59,7 @@ or to install in ~/bin (bin in home directory) without root permissions
 
   make install_home
 
-see all flavors and platform available for install:
+see all flavors and platforms available for install:
 
   make help
 
