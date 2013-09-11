@@ -5,7 +5,7 @@
 ;; @version v 2.4 - check for empty string when aquiring HTTP_COOKIE environment
 ;; @version v 2.5 - cleanup put-page for 10.0
 ;; @version v 2.6 - help text corrections
-;; @version v 2.71 - help text corrections
+;; @version v 2.72 - help text corrections
 ;; @author Lutz Mueller, 2002-2009
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -61,15 +61,13 @@
 ;; </body>
 ;; </html>
 ;; 
-;; ; will output:
+;; - will output -
 ;; 
-;; <pre>
-;;     <html>
-;;     <body>
-;;     <a href="http://example.com">example.com</a>
-;;     </body>
-;;     </html>
-;; </pre>
+;; <html>
+;; <body>
+;; <a href="http://example.com">example.com</a>
+;; </body>
+;; </html>
 
 (define (put-page file-name , page start end)
     (set 'page (read-file file-name))

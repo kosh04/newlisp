@@ -15,9 +15,13 @@ Version 10.1.5 <font color="black">September 15th, 2009</font>
 is a maintenance release for all flavors.
 Changes, additions and fixes are tagged with (v.10.1.5).<br>
 
-<font color="red">Version 10.1.6 October 20th, 2009</font>
+<font color="black">Version 10.1.6 October 20th, 2009</font>
 is a maintenance release for all flavors.
-Changes, additions and fixes are tagged with <font color="red">(v.10.1.6)</font>.</p>
+Changes, additions and fixes are tagged with (v.10.1.6).<br>
+
+<font color="red">Version 10.1.7 November 24th, 2009</font>
+is a maintenance release for all flavors.
+Changes, additions and fixes are tagged with <font color="red">(v.10.1.7)</font>.</p>
 
 <h3>Improved support for concurrency and multi core CPUs</h3>
 <p>Release 10.1 improves concurrency support for multi core CPUs with
@@ -31,9 +35,14 @@ other UNIX.</p>
 
 <h3>New and changed functionality</h3>
 <ul>
+
+
 <li><tt>dotree</tt> can filter hash symbols starting with an underscore character 
 as used in hashes and <tt>bayes-train</tt> when using an optional <tt>true</tt> 
 flag.</li><p>
+
+<li>The experimental and not documented <tt>estack</tt> function has been removed from
+the code <font color="red">(v.10.1.7)</font>.</li><p>
 
 <li><tt>expand</tt> when used with an association list as second parameter can now 
 take an optional third boolean parameter to indicate evaluation of the value part 
@@ -57,6 +66,10 @@ of an expression or letex body:</li>
 
 <li><tt>find</tt> for strings can take an additional offset option (v.10.1.1).</li><p>
 
+<li>HTTPD server mode now does URL-translation of path/file names.
+This allows processig of filenames with embedded spaces <font color="red">(v.10.1.7).</font>
+</li><p>
+
 <li>A new <tt>inf?</tt> predicate tests if a number is infinite:
 <blockquote><pre>
 (inf? (div 1 0)) &rarr; true
@@ -78,6 +91,9 @@ as parameter.</li><p>
 evaluation (v.10.1.1). In previous versions only a string was accepted. Note
 that in any case symbol bindings are in the remote environment.</li><p>
 
+<li><tt>net-ping</tt> does not require root/superuser privileges anymore when 
+on Mac OS X <font color="red">(v.10.1.7)</font>.</li><p>
+
 <li>The <tt>prob-z</tt> function is now implemented using the error function <tt>errf</tt>
 and gives results with a higher precision.</li><p>
 
@@ -86,11 +102,16 @@ launched with <tt>spawn</tt>.</li><p>
 
 <li>New <tt>reader-event</tt> specifies an event handler to translate expressions
 as they are read by newLISP when loading source. This can be used to create a 
-reader, rewrite macro facility <font color="red">(v.10.1.6)</font>.</li><p>
+reader, rewrite macro facility (v.10.1.6).</li><p>
 
 <li><tt>ref</tt> should use <tt>$it</tt> instead of <tt>$0</tt> to refer to the 
 found expression. The usage of <tt>$0</tt> in this function is deprecated 
-<font color="red">(10.1.6)</font>.</li><p>
+(10.1.6).</li><p>
+
+<li><tt>ref</tt> and <tt>ref-all</tt> now take an optional <tt>true</tt>
+parameter to return the elements found instead of index vectors. This is a
+convenient new feature when searching for elements in translated XML and JSON
+data <font color="red">(10.1.7)</font>.</li><p>
 
 <li><tt>regex</tt> can take an additional offset option (v.10.1.1).</li><p>
 
@@ -102,7 +123,7 @@ launched with <tt>spawn</tt>.</li><p>
 
 <li><tt>set-ref</tt> and <tt>set-ref-all</tt> should use <tt>$it</tt> instead of 
 <tt>$0</tt> to refer to the found expression(s). The usage of <tt>$0</tt> in 
-these functions is deprecated <font color="red">(10.1.6)</font>.</li><p>
+these functions is deprecated (10.1.6).</li><p>
 
 <li>The <tt>share</tt> function now can share any lisp expression and size. On older versions
 only boolean, number and strings constants were supported.</li><p>
@@ -132,6 +153,11 @@ lst-b                     &rarr; (x y f)
 lst &rarr; ((a 1 2 10) (b 3 20 30))
 </pre></blockquote>
 
+<li><tt>swap</tt> now can work in-place like <tt>inc, dec, pop, push, replace, 
+rotate, sort, write-buffer</tt> and <tt>write-line</tt> always could 
+<font color="red">(10.1.7)</font>.</li><p>
+
+
 <li>The function <tt>sys-info</tt> now also returns the process id (pid) of the 
 parent process which launched the current process using <tt>fork</tt> or <tt>spawn</tt>.
 The pid is 0 (zero) if newLISP was launched not from <tt>fork</tt> or <tt>spawn</tt>.
@@ -148,6 +174,11 @@ precision depends on the platform (v.10.1.5).</li><p>
 
 <li>The function <tt>time-of-day</tt> not returns floating point milliseconds. The decimal
 precision depends on the platform (v.10.1.5).</li><p>
+
+<li>All functions using URL's now correctly recognize IPv6 format when running
+the IPv6 compiled version of newLISP. The IPv6 compiled version now
+runs <tt>qa-net</tt> correctly and <tt>net-ping</tt> is IPv6 capable too
+<font color="red">(v.10.1.7)</font>.</li><p>
 
 <li>The function <tt>write-buffer</tt> now behaves like <tt>write-line</tt>. When
 no parameters are given the contents of <tt>(current-line)</tt> line is written
@@ -183,7 +214,9 @@ independent for versions including and after 4.0.</li><p>
 
 <li>The SQLite <tt>sqlite3.lsp</tt> module has been expanded with parameter binding
 fucntionality for safer ussage of the database in web applications, where the 
-danger of SQL injection exists. Bug fixes <font color="red">(v.10.1.6)</font>.</li><p>
+danger of SQL injection exists. Bug fixes (v.10.1.6). 
+A new <tt>sql3:colnames</tt> function has been added to the sqlite3.lsp module
+<font color="red">(10.1.7)</font>.</li><p>
 
 <li>All three modules <tt>mysql.lsp</tt>, <tt>postgres.lsp</tt> and <tt>sqlite3.lsp</tt>
 have also been tested on 64-Bit newLISP.</li><p>
@@ -212,7 +245,7 @@ additionally to <tt>make test</tt> and <tt>make all check</tt> will make and tes
 the new manual formatting introduced (v.10.1.5).</li><p>
 
 <li>The new module <tt>macro.lsp</tt> implements a rewrite macro facility
-<font color="red">(v.10.1.6)</font>.</li><p>
+(v.10.1.6).</li><p>
 
 </ul>
 
@@ -227,16 +260,23 @@ the new manual formatting introduced (v.10.1.5).</li><p>
 longer code than necessary when serializing symbols using <tt>save</tt> or 
 <tt>source</tt></li><p>
 
+<li>All event handling functions, <tt>command-event</tt>, <tt>error-event</tt>, 
+<tt>prompt-event</tt>, <tt>reader-event</tt>, <tt>timer</tt> and <tt>xfer-event</tt>
+now can take either <tt>nil</tt> or <tt>'nil</tt> (quoted) to disable an
+event handler. Before only quoted <tt>'nil</tt> was working, and unquoted <tt>nil</tt>
+crashed under some circumstances <font color="red">(v.10.1.7)</font>.</li><p>
+
 <li><tt>eval-string</tt> did not restore correct eror handling when an
 error procedure was specified in the parameters (v.10.1.1). This could lead
 to crashes on subsequent error conditions.</li><p>
 
 <li>The <tt>inf</tt> return value in floating point opertions is now signed 
-</tt><font color="red">(v.10.1.6)</font>:<br>
+</tt>(v.10.1.6):<br>
 <blockquote><pre>(div -1 0) &rarr; -inf </pre></blockquote>
 </li><p>
 
-<li><tt>mod</tt> now returns <tt>NaN</tt> when the divisor (second argument) is 0 <font color="red">(v.10.1.6)</font>:<br>
+<li><tt>mod</tt> now returns <tt>NaN</tt> when the divisor (second argument) 
+is 0 (v.10.1.6):<br>
 <blockquote><pre>(mod 10 0) &rarr; NaN </pre></blockquote>
 </li><p>
 
@@ -252,8 +292,14 @@ from each other will now return <tt>NaN</tt>:
 
 <li>Some HTTP errors where not registered in <tt>net-error</tt>.</li><p>
 
+<li>Now accepts characters &gt; 127 in HTTP headers received from remote servers 
+in web functions <font color="red">(10.1.7)</font>.</li><p>
+
 <li>An unknown host result with <tt>net-lookup</tt> is now registered and can be
 retrieved with <tt>net-error</tt>.</li><p>
+
+<li>Passing a wrong argument type for the buffer in <tt>net-receive</tt> could
+cause a crash <font color="red">(10.1.7)</font>.</li><p>
 
 <li><tt>pack</tt> did no convert from floats (doubles) to integers only from
 integers to floats. Now <tt>pack</tt> will correctly convert in both directions.
@@ -263,11 +309,16 @@ integers to floats. Now <tt>pack</tt> will correctly convert in both directions.
 members where <tt>nil</tt>.</li><p>
 
 <li>Memory was not freed correctly when using <tt>starts-with/ends-with</tt>
-with regular expressions <font color="red">(v.10.1.6)</font>.</li><p>
+with regular expressions (v.10.1.6).</li><p>
+
+<li>In some instances <tt>setf</tt> would not recognize a missing symbol reference
+and do nothing, instead of throwing an error <font color="red">(10.1.7)</font>.
+</li><p>
+
 
 <li>Under some circumstances <tt>nil</tt> and <tt>true</tt> could confuse
 the <tt>sort</tt> and <tt>unique</tt> functions i
-(v.10.1.0) <font color="red">(v.10.1.6)</font>.</li><p>
+(v.10.1.0) (v.10.1.6).</li><p>
 
 <li><tt>swap</tt> now throws and error when the second parameter is mising (v.10.1.1).
 </li><p>

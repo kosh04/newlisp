@@ -11,20 +11,23 @@
 (dotimes (i 5000000)
 	(set 'rec (append (format "%08d" i) (dup "#" 992)))
 	(write-buffer file rec 1000)
-	(if (= 0 (% i 10000)) (println i " kbytes written"))
+	(if (= 0 (% i 10000)) (print (format "%10d KB of 5000000 KB written \r" i)))
 )
 (close file)
+
+(println)
 
 (set 'file (open "largefile" "read"))
 
 (for (i 0 4999999 10000)
 	(set 'test (append (format "%08d" i) (dup "#" 992)))
     (seek file (mul i 1000))
-	(read-buffer file 'rec 1000)
+	(read-buffer file rec 1000)
 	(if (= test rec) 
-		(println i " record -> Ok " (0 8 rec))
+		(print (format "%8d record -> Ok\r" i) (0 8 rec))
 		(println i " record -> Error reading " (0 8 rec)))
 )	
 
+(println)
 (exit)
 

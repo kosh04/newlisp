@@ -91,7 +91,7 @@ struct timeval socketStart;
 int recvc_tm(int sock)
 {
 struct timeval tm;
-char chr;
+unsigned char chr;
 ssize_t bytes;
 
 while(wait_ready(sock, 1000, 0) <= 0)
@@ -104,7 +104,7 @@ while(wait_ready(sock, 1000, 0) <= 0)
     }
   } 
    
-bytes = recv(sock, &chr, 1, NO_FLAGS_SET);
+bytes = recv(sock, (void *)&chr, 1, NO_FLAGS_SET);
 if(bytes <= 0) return(-1);
 
 return(chr);
@@ -656,7 +656,11 @@ return(result);
 
 int parseUrl(char * url, char * protocol, char * host, int * port, char * path, size_t maxlen)
 {
+#ifdef IPV6
+char * bracketPtr;
+#else
 char * colonPtr;
+#endif
 char * slashPtr;
 int len;
 
@@ -673,24 +677,48 @@ while(*(url + len) <= ' ' && len > 0)
 if(my_strnicmp(url, "http://", 7) == 0)
     {
     strncpy(protocol,"http", MAX_PROTOCOL );
+#ifdef IPV6
+	if(*(url + 7) == '[')
+		strncpy(host, url+8, maxlen);
+	else
+#endif
     strncpy(host, url+7, maxlen);
     }
 else if( my_strnicmp(url, "https://", 8) == 0)
     {
     strncpy(protocol, "https", MAX_PROTOCOL);
+#ifdef IPV6
+	if(*(url + 8) == '[')
+		strncpy(host, url+9, maxlen);
+	else
+#endif
     strncpy(host, url+8, maxlen);
     }
 else 
     return(FALSE);
 
+#ifdef IPV6
+bracketPtr = strchr(host, ']');
+#else
 colonPtr = strchr(host, ':');
+#endif
+
 slashPtr = strchr(host, '/');
 
+#ifdef IPV6
+if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
+	{
+	*bracketPtr = '\0';
+	if(*(bracketPtr + 1))
+		*port = atoi(bracketPtr + 2);
+	}
+#else
 if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
 	{
 	*colonPtr++ = '\0';
 	*port = atoi(colonPtr);
 	}
+#endif
 
 if(path == NULL) return(TRUE);
 
@@ -702,6 +730,7 @@ if (slashPtr != NULL)
 else
 	strncpy(path, "", maxlen);
 
+/* printf("protocol:%s host:%s port:%d path:%s\n", protocol, host, *port, path); */
 
 return(TRUE);
 }
@@ -930,7 +959,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.1.6"
+#define SERVER_SOFTWARE "newLISP/10.1.7"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query);
@@ -938,6 +967,7 @@ size_t readHeader(char * buff, int * pragmaFlag);
 ssize_t readPayLoad(ssize_t size, char * content, int outFile, char * request);
 int endsWith(char * str, char * ext);
 char * getMediaType(char * request);
+void url_decode(char *dest, char *src);
 
 void sendHTTPpage(char * content, size_t size, char * media, int closeFlag)
 {
@@ -1010,15 +1040,16 @@ int executeHTTPrequest(char * request, int type)
 {
 char * sptr;
 char * query;
-int len;
 char * content = NULL;
-ssize_t transferred, size;
+char * decoded;
 char buff[MAX_BUFF];
-int outFile;
-int pragmaFlag;
-char * fileMode = "w";
+ssize_t transferred, size;
 char * mediaType;
 CELL * result = NULL;
+int outFile;
+int pragmaFlag;
+int len;
+char * fileMode = "w";
 
 if(chdir(startupDir) < 0)
 	fatalError(ERR_IO_ERROR, 0, 0);
@@ -1043,6 +1074,11 @@ if(*query == '?')
 
 setenv("QUERY_STRING", query, 1);
 
+/* do url_decode */
+decoded = alloca(strlen(request) + 1);
+url_decode(decoded, request);
+request = decoded;
+
 /* change to base dir of request file */
 sptr = request + strlen(request);
 while(*sptr != '/' && sptr != request) --sptr;
@@ -1050,7 +1086,6 @@ if(*sptr == '/')
 	{
 	*sptr = 0;
 	sptr++;
-/* 	if(chdir(request) < 0) fatalError(ERR_IO_ERROR, 0, 0); */
 	if(chdir(request))
 		{
 		sendHTTPmessage(404, ERROR_404, request);
@@ -1098,7 +1133,6 @@ switch(type)
 					sendHTTPmessage(404, ERROR_404, request);
 				else
 					sendHTTPpage(content, size, mediaType, TRUE);
-
 				if(content) free(content);
 				}
 			}
@@ -1318,9 +1352,9 @@ command = alloca(size);
 snprintf(tempfile, 30, "/tmp/nl%02x%08x%08x", (unsigned int)size, (unsigned int)random(), (unsigned int)random());
 
 #if defined (WIN_32) || (OS2)
-snprintf(command, size - 1, "newlisp %s > %s", request, tempfile);
+snprintf(command, size - 1, "newlisp \"%s\" > %s", request, tempfile);
 #else
-snprintf(command, size - 1, "./%s > %s", request, tempfile);
+snprintf(command, size - 1, "./\"%s\" > %s", request, tempfile);
 #endif
 
 if((handle = popen(command, "w")) == NULL)
@@ -1399,6 +1433,28 @@ for(i = 0; mediaType[i].extension != NULL; i++)
 	
 return(MEDIA_TEXT);
 }
+
  
+void url_decode(char *dest, char *src)
+{
+char code[3] = {0};
+unsigned long ascii = 0;
+char *end = NULL;
+
+while(*src)
+	{
+	if(*src == '%')
+		{
+		memcpy(code, ++src, 2);
+		ascii = strtoul(code, &end, 16);
+		*dest++ = (char)ascii;
+		src += 2;
+		}
+	else
+		*dest++ = *src++;
+	}
+*dest = 0;
+}
+
 /* eof */
 

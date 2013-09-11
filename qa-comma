@@ -604,6 +604,11 @@ true
 (define (test-context? )
   (and (context? MAIN) (context? QA)))
 
+(define (test-continue)
+	(let (cnt 0)
+		(= 1000 (catch (begin (if (< (inc cnt) 1000) (continue) cnt)))))
+)
+
 (define (test-copy)
   (and
 	(set 'aList '(a b c))
@@ -1578,7 +1583,10 @@ true
 (define (test-net-accept )
   (and
 	(set 'net-listen-test (set 'listen (net-listen 12345)))
-	(set 'net-connect-test (set 'connect (net-connect "localhost" 12345)))
+	(if (> (sys-info -1) 512) ; IPv6
+		(set 'net-connect-test (set 'connect (net-connect "::1" 12345)))
+		(set 'net-connect-test (set 'connect (net-connect "localhost" 12345)))
+	)
 	(set 'server (net-accept listen))
 	(set 'net-send-test (= (net-send server "hello") 5))
 	(set 'net-select-test (net-select connect "r" 100000))
@@ -1618,9 +1626,10 @@ true
 (define (test-net-local ) net-local-test)
 
 (define (test-net-lookup )
+	(if (> (sys-info -1) 512) ; IPv6
+		(and (= "localhost" (net-lookup "::1")) (= "::1" (net-lookup "localhost")))
 	(and
-		(or (= "127.0.0.1" (net-lookup "localhost")) (= "::1" (net-lookup "localhost")))
-		(or (= "localhost" (net-lookup "127.0.0.1")) (= "localhost" (net-lookup "::1")))
+		(= "127.0.0.1" (net-lookup "localhost")) (= "localhost" (net-lookup "127.0.0.1")) )
 	)
 )
 
@@ -2461,6 +2470,8 @@ true
 	(set 's "a-b-c-d-e-f-g")
 	(setf (first (replace "-" s "")) (upper-case $it))
     (= s "Abcdefg")    
+	(setf (s 2) "CCC")
+	(= s "AbCCCdefg")
 ))
 
 

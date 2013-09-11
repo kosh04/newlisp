@@ -696,7 +696,7 @@ forceByName = getFlag(params);
 
 /* get hostname from ip-number */
 #ifdef IPV6
-if((isDigit((unsigned char)*hostString) || (hostString[0] == ':')) && !forceByName)
+if((isHexDigit((unsigned char)*hostString) || hostString[0] == ':') && !forceByName)
 	{
 	if(inet_pton(AF_INET6, hostString, &address.sin6_addr) == 0)
         return(netError(ERR_INET_BAD_FORMED_IP));
@@ -749,7 +749,7 @@ params = getInteger(params, &sock);
 params = getEvalDefault(params, &cell);
 
 if(!symbolCheck)
-	return(errorProcExt2(ERR_SYMBOL_EXPECTED, params));
+	return(errorProcExt(ERR_SYMBOL_EXPECTED, cell));
 if(symbolCheck->contents != (UINT)cell)
 	return(errorProc(ERR_IS_NOT_REFERENCED));
 
@@ -1840,19 +1840,14 @@ if(params != nilCell)
 	{
 	params = getInteger(params, &maxwait);
 	if(params != nilCell)
-	params = getInteger(params, &count);
+		params = getInteger(params, &count);
 	flag = getFlag(params);
 	}
 
 return(ping(address, (int)maxwait, (int)listmode, (int)count, (int)flag));
 }
 
-#if defined(IPV6)
-/* datalen 56 + iplen 60 + icmplen 76 */
-#define PLEN 192 /* 192 or 64 ? */
-#else
 #define PLEN 64
-#endif
 
 CELL * ping(CELL * address, int maxwait, int listmode, int maxCount, int flag)
 {
@@ -1873,7 +1868,8 @@ struct sockaddr_in whereto;
 struct sockaddr_in from;
 struct icmp *icp = (struct icmp *) packet;
 #endif
-int s, sockopt;
+int s;
+int sockopt = 1;
 #ifdef TRU64
 unsigned long fromlen;
 #else
@@ -1886,21 +1882,23 @@ unsigned int fromlen;
 int broadcast = 0;
 int size, ipNo, startIp = 0, endIp = 0;
 int timeout = 0, tdiff;
-int sendCount = 0, receiveCount = 0, ping_sequence = 0;
+int sendCount = 0, receiveCount = 0;
 size_t len;
 struct timeval tv, tp;
 CELL * result = NULL;
 CELL * link = NULL;
 char buff[64];
 
-if ((s = socket(ADDR_TYPE, SOCK_RAW, ICMP_TYPE)) < 0) 
+#ifdef MAC_OSX
+if ((s = socket(ADDR_TYPE, SOCK_DGRAM, ICMP_TYPE)) < 0) 
+#else
+if ((s = socket(ADDR_TYPE, SOCK_RAW, ICMP_TYPE)) < 0)
+#endif 
     return(netError(ERR_INET_OPEN_SOCKET));
    
 #ifdef IPV6
-ICMP6_FILTER_SETPASS (ICMP6_ECHO_REPLY, &filter);
+ICMP6_FILTER_SETPASSALL (&filter);
 setsockopt (s, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof (filter));
-sockopt = 1;
-/* setsockopt (s, IPPROTO_IPV6, IPV6_RECVHOPLIMIT, &sockopt, sizeof (sockopt)); */
 #endif
 
 gettimeofday(&tv, NULL );
@@ -1958,12 +1956,13 @@ while(address != nilCell)
 			}
     	else
        		hostaddr = host;
-        
+
 		/* target host address info */
 		/* printf("->%s\n", hostaddr); */
+		memset((char *)&whereto, 0, sizeof(whereto));
 #ifdef IPV6
-		memset((char *)&whereto, 0, sizeof(struct sockaddr_in6));
 		whereto.sin6_family = AF_INET6;
+		whereto.sin6_port = htons(IPPROTO_ICMPV6);
 		if(!(hp = gethostbyname2(hostaddr, AF_INET6)))
 			{
 			shutdown(s, SHUT_RDWR);
@@ -1971,7 +1970,6 @@ while(address != nilCell)
 			}
 		memcpy((char *)&(whereto.sin6_addr), hp->h_addr_list[0], hp->h_length);
 #else
-		memset((char *)&whereto, 0, sizeof(struct sockaddr_in));
 		whereto.sin_family = AF_INET;
 		if(!(hp = gethostbyname2(hostaddr, AF_INET)))
 			{
@@ -1982,25 +1980,16 @@ while(address != nilCell)
 		broadcast = ((whereto.sin_addr.s_addr & 0x000000ff) == 255);
 #endif
 		if(broadcast)
-			{
-			sockopt = 1;
 			setsockopt(s, SOL_SOCKET, SO_BROADCAST, (void *) &sockopt, sizeof(sockopt));
-			}
 
 		/* ping */
 		memset(icp, 0, PLEN);
 #ifdef IPV6
 		icp->icmp6_type = ICMP6_ECHO_REQUEST;
-		icp->icmp6_code = 0;
-		icp->icmp6_cksum = 0;
-		icp->icmp6_seq = ping_sequence;
 		icp->icmp6_id = getpid() & 0xFFFF; 
 		gettimeofday((struct timeval *)&icp->icmp6_data8[4], NULL);
 #else
 		icp->icmp_type = ICMP_ECHO;
-		icp->icmp_code = 0;
-		icp->icmp_cksum = 0;
-		icp->icmp_seq = ping_sequence;
 		icp->icmp_id = getpid() & 0xFFFF; 
 		gettimeofday((struct timeval *)&icp[1], NULL);
 		icp->icmp_cksum = in_cksum((unsigned short *) icp, PLEN );
@@ -2011,30 +2000,26 @@ while(address != nilCell)
         	if((timeout = (timediff(tp, tv) > maxwait))) break;
         	continue;
 			}
-			
-		size = sendto(s, packet, PLEN, 0,(struct sockaddr *)&whereto, sizeof(struct sockaddr));
+		
+		/* ping */	
+		size = sendto(s, packet, PLEN, 0,(struct sockaddr *)&whereto, sizeof(whereto));
 		if(size != PLEN)
 			{
-			if(errno == EHOSTUNREACH || errno == EHOSTDOWN) 
+			if(flag)
 				{
-				if(flag)
-					{
-					snprintf(buff, 16, "errno: %d", errno);
+				snprintf(buff, 64, "%s", strerror(errno));
 #ifdef IPV6
-					memset(IPaddress, 0, 40);
-    	  			inet_ntop(AF_INET6, &whereto.sin6_addr, IPaddress, 40); 
-					link = addResult(&result, link, 
-						makePair(stuffString(IPaddress), stuffString(buff)));
+				memset(IPaddress, 0, 40);
+    	  		inet_ntop(AF_INET6, &whereto.sin6_addr, IPaddress, 40); 
+				link = addResult(&result, link, 
+					makePair(stuffString(IPaddress), stuffString(buff)));
 #else
-					link = addResult(&result, link, 
-						makePair(stuffString(inet_ntoa(whereto.sin_addr)), stuffString(buff)));
+				link = addResult(&result, link, 
+					makePair(stuffString(inet_ntoa(whereto.sin_addr)), stuffString(buff)));
 #endif
-					}
-    			if( !(listmode || startIp) ) break;
-				continue;
 				}
-			shutdown(s, SHUT_RDWR);    
-			return(netError(ERR_INET_WRITE));
+   			if( !(listmode || startIp) ) break;
+			continue;
 			}
 
 		sendCount++;
@@ -2047,7 +2032,6 @@ while(address != nilCell)
 if(maxCount == 0) maxCount = sendCount;
 while(sendCount) 
 	{
-    memset(packet, 0, PLEN);
     fromlen = sizeof(from);
 
     if(wait_ready(s, 1000, READY_READ) <= 0)
@@ -2057,8 +2041,9 @@ while(sendCount)
         continue;
         }    
 
-    if ( (len = recvfrom(s, packet, PLEN, 0, 
-						(struct sockaddr *)&from, 
+    memset(packet, 0, PLEN);
+	memset(&from, 0, sizeof(from));
+    if ( (len = recvfrom(s, packet, PLEN, 0, (struct sockaddr *)&from, 
 						(socklen_t *)&fromlen)) < 0)
         continue;
     
@@ -2089,11 +2074,12 @@ while(sendCount)
 	} 
 
 shutdown(s, SHUT_RDWR); 
-ping_sequence++;
+
 if(timeout) errorIdx = ERR_INET_TIMEOUT;
 else errorIdx = 0;
 return(result == NULL ? getCell(CELL_EXPRESSION) : result);
 }
+
 
 CELL * addResult(CELL * * result, CELL * cell, CELL * new)
 {
@@ -2191,7 +2177,6 @@ return(fPtr);
 
 int win32_fclose(FILE * fPtr)
 {
-/*if(isSocketStream(fPtr)) */
 if(IOchannelIsSocketStream)
    return(close(getSocket(fPtr)));
 

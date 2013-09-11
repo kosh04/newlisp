@@ -7,6 +7,7 @@
 " Last change:  2009 Jun 12 (also an anniversary, but I don't care)
 " Last change:  2009 Jun 19 added new functions 'send'and 'receive'
 " Last change:  2009 Oct 20 added new function 'reader-event' 
+" Last change:  2009 Nov 15 removed experimental 'estack' L.M.
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.28 2009/10/20 17:27:33 slobin Exp $
@@ -23,9 +24,7 @@
 "   just highlighted and not checked otherwise.
 "
 " * Quoting character ' (apostrophe) is allowed anywhere, even before
-"   closing parenthesis. Interpreter uses it this way, this file just
-"   does the same.
-"
+"   closing parenthesis. Interpreter uses it this way, tremoved experimental estack"
 " * newLISP interpreter doesn't insist that numbers must be separated
 "   from the following numbers or symbols. E.g. the sequence 1.2.3e4e5
 "   is valid and equal to three tokens 1.2 .3e4 e5. Such a monster is

@@ -38,6 +38,7 @@ CELL * p_map(CELL * params)
 {
 CELL * argsPtr;
 CELL * arg;
+CELL * argCell;
 CELL * sPtr;
 CELL * cell;
 CELL * expr;
@@ -80,13 +81,16 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 	arg = argsPtr;
 	while(arg != nilCell)              /* for all args */
 		{
-		qCell = getCell(CELL_QUOTE);
-		cell->next = qCell;
-		cell = (CELL *)arg->contents; /* pop out first */
-		arg->contents = (UINT)cell->next;
-		qCell->contents = (UINT)cell;
-		cell->next = nilCell;
-		cell = qCell;
+		argCell = (CELL *)arg->contents; /* pop out first */
+		arg->contents = (UINT)argCell->next;
+		argCell->next = nilCell; /* unlink */
+		if(isSelfEval(argCell->type))
+			cell = cell->next = argCell;
+		else
+			{
+			qCell = makeCell(CELL_QUOTE, (UINT)argCell);
+			cell = cell->next = qCell;
+			}	
 		arg = arg->next;
 		}
 	cell = copyCell(evaluateExpression(expr));
@@ -1324,11 +1328,15 @@ return(vector);
 #define REF_SINGLE 0
 #define REF_ALL 1
 
+#define REF_INDEX 0
+#define REF_CONTENTS 1
+
 void ref(CELL * keyCell, CELL * list, CELL * funcCell, CELL * result, 
 						CELL * * next, REFSTACK * refStack, int mode)
 {
 size_t idx = 0;
 UINT * resultIdxSave = resultStackIdx;
+CELL * item;
 
 while(list != nilCell)
 	{
@@ -1340,27 +1348,40 @@ while(list != nilCell)
 			deleteList((CELL*)sysSymbol[0]->contents);
 			sysSymbol[0]->contents = (UINT)copyCell(list);
 			}
-		if(refStack->idx < MAX_REF_STACK) pushRef(idx);
-		else errorProc(ERR_NESTING_TOO_DEEP);
+
+		if(refStack->base)
+			{
+			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
+			else errorProc(ERR_NESTING_TOO_DEEP);
+			item = makeIndexVector(refStack);
+			popRef();
+			}		
+		else
+			item = copyCell(list);
+
 		if(*next == NULL)
 			{
-			*next = makeIndexVector(refStack);
+			*next = item;
 			result->contents = (UINT)*next;
 			}
 		else
 			{
-			(*next)->next = makeIndexVector(refStack);
+			(*next)->next = item;
 			*next = (*next)->next;
 			}	
-		popRef();
+
 		if(mode == REF_SINGLE) return;
 		}
+
 	if(isList(list->type))
 		{
-		if(refStack->idx < MAX_REF_STACK) pushRef(idx);
-		else errorProc(ERR_NESTING_TOO_DEEP);
+		if(refStack->base)
+			{
+			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
+			else errorProc(ERR_NESTING_TOO_DEEP);
+			}
 		ref(keyCell, (CELL*)list->contents, funcCell, result, next, refStack, mode);
-		popRef();
+		if(refStack->base) popRef();
 		}
 
 	idx++;
@@ -1372,39 +1393,43 @@ while(list != nilCell)
 
 CELL * reference(CELL * params, int mode)
 {
-CELL * cell;
+CELL * result;
 CELL * keyCell;
 CELL * list;
 CELL * funcCell = NULL;
 CELL * next = NULL;
-REFSTACK refStack;
-
-refStack.base = alloca((MAX_REF_STACK + 2) * sizeof(size_t));
-refStack.idx = 0;
+REFSTACK refStack = {NULL, 0};
+int flag = 0;
 
 keyCell = evaluateExpression(params);
 params = getEvalDefault(params->next, &list);
 
 if(params != nilCell)
+	{
 	funcCell = evaluateExpression(params);
+	flag = getFlag(params->next);
+	}
+
+if(!flag)
+	refStack.base = alloca((MAX_REF_STACK + 2) * sizeof(size_t));
 
 if(!isList(list->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, list));
 
-cell = getCell(CELL_EXPRESSION);
+result = getCell(CELL_EXPRESSION);
 
-ref(keyCell, (CELL *)list->contents, funcCell, cell, &next, &refStack, mode);
+ref(keyCell, (CELL *)list->contents, funcCell, result, &next, &refStack, mode);
 
 if(mode == REF_SINGLE)
 	{
-	next = (CELL *)cell->contents;
-	if(next == nilCell) return(cell);
-	cell->contents = (UINT)nilCell;
-	deleteList(cell);
+	next = (CELL *)result->contents;
+	if(next == nilCell) return(result);
+	result->contents = (UINT)nilCell;
+	deleteList(result);
 	return(next);
 	}
 
-return(cell);
+return(result);
 }
 
 CELL * p_ref(CELL * params)

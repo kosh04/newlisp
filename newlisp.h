@@ -20,7 +20,7 @@
 #ifndef NEWLISP_H
 #define NEWLISP_H
 
-/* only neede when doing auto configuration with ./configure */
+/* only neede when doing auto configuration with ./configure-alt */
 #ifdef NEWCONFIG
 #include "config.h"
 #endif
@@ -160,8 +160,6 @@ This is for 64bit large file support (LFS),
 #define MY_SETENV
 #define LINE_FEED "\r\n"
 
-/* replaced with IOchannelIsSocket since 10.0.2 */
-#define isSocketStream(A) ((A)->_flag == 0xFFFF) 
 #define getSocket(A) ((A)->_file)
 
 #define vasprintf my_vasprintf
@@ -285,6 +283,7 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_BUILTIN 0x40
 #define SYMBOL_PRIMITIVE 0x80
 #define SYMBOL_UNSAFE 0x100
+#define SYMBOL_ANONYMOUS 0x200
 
 /* cell masks */
 
@@ -333,6 +332,7 @@ This is for 64bit large file support (LFS),
 #define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
 #define isDigit(A) isdigit((int)(A))
+#define isHexDigit(A) isxdigit((int)(A))
 
 #define isNil(A) ((A)->type == CELL_NIL || ((A)->type == CELL_SYMBOL && (A)->contents == (UINT)nilSymbol))
 #define isTrue(A) ((A)->type == CELL_TRUE || ((A)->type == CELL_SYMBOL && (A)->contents == (UINT)trueSymbol))
@@ -345,14 +345,12 @@ This is for 64bit large file support (LFS),
 #define stuffInteger64 stuffInteger
 #endif
 
-
 /* RED BLACK binary balanced tree: nl-symbol.c */
 #define BLACK 0
 #define RED 1
 #define NIL_SYM &sentinel
 #define LOOKUP_ONLY 0		/* symbol lookup only, if not found return NULL */
 #define FORCE_CREATION 1	/* if symbol does not exist, create it */
-
 
 /* traceFlag */
 #define TRACE_TRUE 0x0001
@@ -429,13 +427,14 @@ This is for 64bit large file support (LFS),
 #define ERR_USER_RESET 57
 #define ERR_SIGINT 58
 #define ERR_NOT_REENTRANT 59
-#define ERR_CANNOT_BE_PROTECTED 60
+#define ERR_CANNOT_PROTECT_LOCAL 60
 #define ERR_IS_NOT_REFERENCED 61
 #define ERR_LIST_EMPTY 62
 #define ERR_IO_ERROR 63
 #define ERR_WORKING_DIR 64
 #define ERR_INVALID_PID 65
-#define MAX_ERROR_NUMBER 65
+#define ERR_CONTINUE_WO_CATCH 66
+#define MAX_ERROR_NUMBER 66
 #define UNKNOWN_ERROR "Unknown error"
 
 /* I/O routines */

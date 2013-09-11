@@ -28,18 +28,38 @@
 
 (set 'start (time-of-day))
 
-(set 'targetURL (or 
+(when (> (sys-info -1) 512)  ; IPv6
+	(println "Testing IPv6 networking functions")
+	(set 'targetURL (or 
+			(main-args 2)
+			(append "http://[::1]:10001/" (real-path) "/qa-junk.txt")))
+
+	(replace "\\" targetURL "/") ; for Win32
+
+	(if (not (ends-with targetURL "/qa-junk.txt"))
+		(set 'targetURL (append targetURL "/qa-junk.txt")))
+
+	(set 'host (1 ((regex {http://(.*?)\]:} targetURL) 3)))
+	(set 'port (int ((regex {http://.*?\]:(\d+)/} targetURL) 3)))
+	(set 'path ((regex {http://.*\]:\d+/(.*)} targetURL) 3))
+)
+
+(when (<= (sys-info -1) 512) ; IPv4
+	(println "Testing IPv4 networking functions")
+	(set 'targetURL (or 
 		(main-args 2)
 		(append "http://localhost:10001/" (real-path) "/qa-junk.txt")))
 
-(replace "\\" targetURL "/") ; for Win32
+	(replace "\\" targetURL "/") ; for Win32
 
-(if (not (ends-with targetURL "/qa-junk.txt"))
-	(set 'targetURL (append targetURL "/qa-junk.txt")))
+	(if (not (ends-with targetURL "/qa-junk.txt"))
+		(set 'targetURL (append targetURL "/qa-junk.txt")))
 
-(set 'host ((regex "http://(.*?):" targetURL) 3))
-(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
-(set 'path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
+	(set 'host ((regex "http://(.*?):" targetURL) 3))
+	(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
+	(set 'path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
+)
+
 
 (println)
 (println "target URL: " targetURL)

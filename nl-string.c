@@ -217,8 +217,6 @@ len = utf8_1st_len(insertPtr);
 #else
 len = 1;
 #endif
-deleteList((CELL*)sysSymbol[0]->contents);
-sysSymbol[0]->contents = (UINT)stuffStringN(insertPtr, len);
 
 str = callocMemory(oldLen + newLen - len + 1);
 

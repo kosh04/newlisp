@@ -1,6 +1,6 @@
 ;; @module macro.lsp
 ;; @description Rewrite macros for newLISP
-;; @version 1.01
+;; @version 1.02
 ;; @author Lutz Mueller 2009
 ;; <h2>Introduction</h2>
 ;; This module implements rewrite macros. Rewrite macros take an expression
@@ -31,7 +31,7 @@
 ;; <pre>
 ;; (module "macro.lsp")<br>
 ;; (context 'FOO)
-;; (macro (sumsq X Y) (add (mul X X) (mul Y Y)) )
+;; (macro (sumsq X Y) (add (pow X 2) (pow Y 2)) )
 ;; (context MAIN)<br>
 ;; (FOO:sumsq 3 4) => 25
 ;; </pre>
@@ -39,6 +39,10 @@
 ;; because they lack the function call overhead. They also improve readability, 
 ;; making source code appear shorter. Many functions too small to waste lambda
 ;; function call overhead can be written as efficiently executing macros.
+;;
+;; Rewrite macros are cannot be used with <tt>map</tt> or <tt>apply</tt>, they are 
+;; not functions.
+;;
 ;; <h2>Internals</h2>
 ;; This module uses the 'reader-event' function to intercept newLISP's expression 
 ;; reading and translating process and pre-translates expressions before returning 

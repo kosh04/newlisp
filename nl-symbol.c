@@ -157,14 +157,8 @@ SYMBOL * sPtr;
 CELL * cell = NULL;
 size_t len;
 
-/* for the first symbol (also a context) context is NULL */
-if(context == NULL)
-	root = NULL;
-else
-	{
-	cell = (CELL *)context->contents;
-	root = (SYMBOL *)cell->aux;
-	}
+cell = (CELL *)context->contents;
+root = (SYMBOL *)cell->aux;
 
 if(forceFlag)
 	sPtr = findInsertSymbol(token, FORCE_CREATION);
@@ -191,12 +185,13 @@ else /* try to inherit from MAIN, if not here create in current context */
 		}
 	}
 
-/* root might have changed, if new symbol was inserted */
-if(context != NULL)
-	cell->aux = (UINT)root;
 
 /* the symbol existed already, return */
-if(sPtr->contents != 0) return(sPtr);
+if(sPtr->contents != 0) 
+	return(sPtr);
+
+/* root might have changed, after symbol insertion */
+cell->aux = (UINT)root;
 	
 /* a new symbol has been allocated by findInsertSymbol() */
 if(type != CELL_PRIMITIVE)
@@ -361,6 +356,15 @@ freeMemory(sPtr);
 void makeContextFromSymbol(SYMBOL * symbol, SYMBOL * treePtr)
 {
 CELL * contextCell;
+UINT * idx = envStackIdx;
+
+/* make sure symbol is not used as local in call hierachy */
+while(idx > envStack)
+	{
+	if(symbol == (SYMBOL *)*(--idx))
+		errorProcExt(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
+	--idx;
+	}
 
 contextCell = makeCell(CELL_CONTEXT, (UINT)symbol);
 
@@ -484,6 +488,19 @@ void rotateLeft(SYMBOL* x);
 void rotateRight(SYMBOL * x);
 static void insertFixup(SYMBOL * x);
 void deleteFixup(SYMBOL *x);
+
+
+SYMBOL * createRootContext(char * token)
+{
+SYMBOL * sPtr;
+
+root = NULL;
+mainContext = sPtr = findInsertSymbol(token, TRUE);
+sPtr->name = token;
+makeContextFromSymbol(sPtr, sPtr);
+
+return(sPtr);
+}
 
 /* --------------------------------------------------------------------
 

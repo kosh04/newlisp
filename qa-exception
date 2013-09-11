@@ -1,0 +1,42 @@
+#!/usr/bin/newlisp
+
+; check exception handling with 'catch' and 'throw'
+
+(set 'start (time-of-day))
+
+(set 'HI 0 'LO 0)
+
+(define (some_function num)
+	(catch (hi_function num) 'result)
+	(if (not (integer? result))
+		(println "we never get here")))
+
+(define (hi_function num)
+	(catch (lo_function num) 'result)
+	(if (= result 'HI_exception)
+		(inc HI)
+		(throw result)))
+		
+(define (lo_function num)
+	(catch (blowup num) 'result)
+	(if (= result 'LO_exception) 
+		(inc LO)
+		(throw result)))
+
+(define (blowup num)
+	(if (= (& num 1) 1)
+		(throw 'HI_exception)
+		(throw 'LO_exception)))
+
+(define (main n)
+	(dotimes (i n)
+		(some_function i))
+	(println "Exceptions: HI=" HI ", LO=" LO))
+	
+
+(main 10000)
+(println (format " %6.3f ms per exception" (div (sub (time-of-day) start) 10000) ))
+
+(exit)
+
+

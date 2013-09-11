@@ -54,6 +54,9 @@ PRIMITIVE primitive[] =
 	{"amb",			p_amb,		0},
 	{"catch",		p_catch,	0},
 	{"throw",       p_throw,    0},
+#ifdef CONTINUE
+	{"continue",    p_continue, 0},
+#endif
 	{"apply",		p_apply,	0},
 	{"curry",		p_curry,	0},
 	{"args",		p_args,		0},
@@ -376,7 +379,6 @@ PRIMITIVE primitive[] =
 	{"address",		p_address,	0},
 	{"dump",		p_dump,	        0},
 	{"cpymem",		p_copyMemory,	0},
-	{"estack",		p_estack,		0},
 	{"sleep",		p_sleep,	0},
 	{"time",		p_time,	        0},
 	{"time-of-day",	p_timeOfDay,    0},

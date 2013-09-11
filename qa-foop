@@ -3,7 +3,7 @@
 (define (complex:complex (r 0) (i 0)) 
 	(list complex r i)) 
 
-; from Michael 10-25-2007 in News
+; from Michael 10-25-2007 in Forum/News
 
 (define (complex:rad c) 
    (set 're (c 1) 'im (c 2)) 
@@ -31,7 +31,7 @@
 	(:mul c c))
 
 
-;;;;;;;;; from Cormullion 10-25-2007 in News
+;;;;;;;;; from Cormullion 10-25-2007 in Forum/News
 
 (define (draw) 
   (for (y -1 1.1 0.07) 

@@ -5418,7 +5418,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
     Copying a zero-length file will not throw an error anymore.
 
-10.1.6
+10.1.6 Maintenance Release October 20th, 2009
     Fixes for 'net-error' and 'sys-error' when supplying out-of range numbers
     o 0s. 
 
@@ -5449,3 +5449,40 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
     some cleanup of itSymbol
 
+10.1.7
+
+    URLs now decoded correctly when compiled in IPv6 mode.
+	IPv6 compiled version now runs qa-net.
+
+    'net-ping' does not require root/superuser privileges anymore when on Mac OS X.
+
+    Small speed improvement in map and fixing treatment of missing arguments:
+    (map list '(a b) (A)) => ((a A) b) ; not ((a A (b nil))
+	(map string '(a b) '(1)) => ("a1" "b") ; not ("a1" "bnil")
+
+    'swap' can work in-place like: inc, dec, pop, push, replace, rotate, sort,
+    write-buffer and write-line always could.
+
+    Optional true-flag parameter in ref/ref-all returns item(s) found instead of 
+    index vectors when a compare function is specified. Instead of:
+        (map mylist (ref-all pattern mylist match)
+    do:
+        (ref-all pattern mylist match true)
+
+    Bad application of errorProcExt2() in netReceive() could crash on error.
+
+    Protect local symbols in caller hierarchy from 'constant' and 'context'.
+
+    All event fuctions now can take either nil or 'nil (quoted) to disable an
+    event handler, before only quoted 'nil was working, unquoted nil could crash.
+
+    Removed experimental 'estack' from code and newlisp.vim
+
+    Throw reference error in 'setf' on string when base ptr is not from sub-expression 
+    string. Wouldn't do anything before.
+
+    Accept chars > 127 in HTTP headers received from remote servers in web functions.
+
+    Do URL translation of path-file names in HTTPD server mode.
+
+    A 'sql3:colnames' function has been added to the sqlite3.lsp module.

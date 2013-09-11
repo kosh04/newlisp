@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.10.1.6 Manual and Reference</title>
+   <title>newLISP v.10.1.7 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -128,7 +128,7 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.10.1.6</h2>
+<h2>Users Manual and Reference v.10.1.7</h2>
 </center>
 
 <br><br><br><br>
@@ -270,6 +270,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li><a href="#decimal_point">Decimal point and decimal comma</a></li>
   <li><a href="#unicode_utf8">Unicode and UTF-8 encoding</a></li>
   <li><a href="#utf8_capable">Functions working on UTF-8 characters</a></li>
+  <li><a href="#utf8_version">Functions only available on UTF-8 enabled versions</a></li>
   </ul>
 </li>
 
@@ -493,12 +494,40 @@ are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p
 <a name="deprecated"></a>
 <h2>2. Deprecated functions and future changes</h2>
 
-<p>The functions <a href="#set-ref">set-ref</a> and <a href="#set-ref-all">set-ref-all</a> 
-store found items in the system variables <tt>$it</tt> and <tt>$0</tt>. The usage of 
+<p>Currently the function <a href="#select">select</a> will not throw an
+error when overrunning the list end. In version 10.2 this will throw an
+<tt>"index out of bounds"</tt> error.</p>
+
+<p>The functions <a href="#ref">ref</a>, <a href="#ref-all">ref-all</a>,
+<a href="#set-ref">set-ref</a> and <a href="#set-ref-all">set-ref-all</a> 
+store the last item found in the systems variable<tt>$0</tt> and for
+<a href="#set-ref">set-ref</a> and <a href="#set-ref-all">set-ref-all</a>
+also in the systems variable <tt>$it</tt>. The usage of 
 <tt>$0</tt> in these functions is deprecated and will be removed in a future version. 
-Use only <tt>$it</tt>. The usage of <tt>$0</tt> to <tt>$15</tt> will 
-be reserved for regular expressions in a future version.</p>
-<br>
+For <a href="#set-ref">set-ref</a> and <a href="#set-ref-all">set-ref-all</a>
+use only <tt>$it</tt>.
+The usage of <tt>$0</tt> to <tt>$15</tt> will be reserved for regular expressions 
+in a future version.</p>
+
+<p>The second syntax of <a href="#new">new</a>, without the target context
+parameter, is deprecated and will be removed in a future version. Currently, when
+no target context parameter is given, the current context is assumed to be the
+target namespace. The deprecated behaviour still works, but has been removed from
+the documentation.</p> 
+
+<p>To achieve the same functionality replace:</p>
+
+<pre>
+(new <em>symbol</em>)
+</pre>
+
+<p>with</p>
+
+<pre>
+(new <em>symbol</em> (context))
+</pre>
+
+<p><br>
 
 <center>
 <span class="divider">(&nbsp;<font color="#7ba9d4">&sect;</font>&nbsp;)</span>
@@ -2730,7 +2759,7 @@ FOO:x             <span class=arw>&rarr;</span> 999
 </pre>		
 
 <p>
-Context variables ate useful when writing functions, which need to switch
+Context variables are useful when writing functions, which need to switch
 contexts or use contexts which do not exist yet:
 
 <pre>
@@ -3532,7 +3561,7 @@ but this is of no concern.</p>
     (mul (p 3) (p 4)))
 
 (define (Rectangle:move p dx dy)
-(list Rectangle (add (p 1) dx) (add (p 2) dy) (p 3) (p 4))) 
+    (list Rectangle (add (p 1) dx) (add (p 2) dy) (p 3) (p 4))) 
 
 ;; class methods for circles
 
@@ -4181,12 +4210,32 @@ UTF-8&ndash;enabled newLISP is not required.
 The <a href="#set-locale">set-locale</a> function alone
 is sufficient for localized behavior.</p>
 
-<p>Two functions are available for converting between four-byte Unicode (UCS-4)
-and multi-byte UTF-8 code.  The <a href="#utf8">UTF-8</a> function converts UCS-4
-to UTF-8, and the <a href="#unicode">unicode</a> function converts UTF-8
-or ASCII strings into USC-4 Unicode.</p>
+<br>
 
-<p>These functions are rarely used in practice,
+<a name="utf8_version"></a>
+<h3>Functions only available on UTF-8 enabled versions</h3>
+
+<table  width="98%" summary="functions only available on UTF-8 version">
+<tr align="left"><th>function</th><th>description</th></tr>
+
+<tr>
+<td><a href="#unicode">unicode</a></td>
+<td>converts UTF-8 or ASCII strings into USC-4 Unicode</td>
+</tr>
+
+<tr>
+<td><a href="#utf8">utf8</a></td>
+<td>converts UCS-4 Unicode strings to UTF-8</td>
+</tr>
+
+<tr>
+<td><a href="#utf8len">utf8len</a></td>
+<td>returns the number of UTF-8 charcaters in a a string</td>
+</tr>
+
+</table><br>
+
+<p>The first two functions are rarely used in practice,
 as most Unicode text files are already UTF-8&ndash;encoded
 (rather than UCS-4, which uses four-byte integer characters).
 Unicode can be displayed directly when using the 
@@ -8771,7 +8820,7 @@ symbols by <tt>bayes-train</tt> can be used like hashes:</p>
 
 
 <pre>
-; use a bayes-trained context namespace like hash dictionary
+; use a bayes-trained context namespace like a hash dictionary
 
 (S "two")   <span class=arw>&rarr;</span> (2 0 1)
 (S "three") <span class=arw>&rarr;</span> (1 2 1)
@@ -9242,7 +9291,7 @@ syntax: (catch <em>exp</em> <em>symbol</em>)</h4>
 result  
 <span class=arw>&rarr;</span> "ERR: invalid function in function catch : (func 3 4)"
 
-(constant 'func +)          <span class=arw>&rarr;</span> add &lt;4068A6&gt;
+(constant 'func +)          <span class=arw>&rarr;</span> + &lt;4068A6&gt;
 (catch (func 3 4) 'result)  <span class=arw>&rarr;</span> true
 result                      <span class=arw>&rarr;</span> 7
 </pre>
@@ -9567,7 +9616,7 @@ request for an error page:</p>
 <pre>
 ;; httpd-conf.lsp
 ;;
-; filter and translate HTTP request for newLISP
+;; filter and translate HTTP requests for newLISP
 ;; -c or -http server modes
 ;; reject query commands using CGI with .exe files
 
@@ -12843,22 +12892,13 @@ not the link, except for the <em>mode</em> field.</p>
 <a name="filep"></a>
 <h2><span class="function">file?</span></h2>
 
-<h4>syntax: (file? <em>str-name</em>)</h4>
+<h4>syntax: (file? <em>str-path-name</em>)</h4>
 
-<p>
-	Checks for the existence of 
-	a file in <em>str-name</em>. 
-	Returns <tt>true</tt> 
-	if the file exists; 
-	otherwise, it returns <tt>nil</tt>. 
-	This function will also return 
-	<tt>true</tt> for directories. 
-	The existence of a file 
-	does not imply anything about 
-	its read or write permissions. 
-	A file may exist while not having the permissions 
-	to read from or write to it by the current user.
-</p>
+<p>Checks for the existence of a file in <em>str-name</em>. Returns <tt>true</tt> 
+if the file exists; otherwise, it returns <tt>nil</tt>.  This function will also return 
+<tt>true</tt> for directories. The existence of a file does not imply anything about 
+its read or write permissions. A file may exist while not having the permissions 
+to read from or write to it by the current user.</p>
 
 <!-- example -->
 
@@ -16089,7 +16129,7 @@ create a function for <tt>map</tt>:
 <pre>
 (foo 'add 2)  <span class=arw>&rarr;</span> (lambda (x) (add 2 x))
 
-(map (foo add 2) '(1 2 3 4 5))  <span class=arw>&rarr;</span> (3 4 5 6 7 8)
+(map (foo add 2) '(1 2 3 4 5))  <span class=arw>&rarr;</span> (3 4 5 6 7)
 
 (map (foo mul 3) '(1 2 3 4 5))  <span class=arw>&rarr;</span> (3 6 9 12 15)
 </pre>
@@ -17560,6 +17600,8 @@ start newLISP on Mac OS X or other BSD's, or as the root user on Linux.
  Broadcast mode and specifying ranges with the <tt>-</tt> (hyphen) or
 <em>*</em> (star) are not available on IPv6 address mode.</p>
 
+<p>Since version 10.1.7, superuser mode is not required on Mac OS X.</p>
+
 <p> In the first syntax, <tt>net-ping</tt> sends a ping 
 ICMP 64-byte echo request to the address specified in <em>str-address</em>. 
 If it is a broadcast address, the ICMP packet will be received 
@@ -18234,40 +18276,21 @@ Returns a list of active listening and connection sockets.
 
 <a name="new"></a>
 <h2><span class="function">new</span></h2>
-<h4>syntax: (new <em>context-source</em> <em>sym-context-target</em> [<em>bool</em>])<br>
-syntax: (new <em>context-source</em>)</h4>
+<h4>syntax: (new <em>context-source</em> <em>sym-context-target</em> [<em>bool</em>])</h4>
 
-<p>
-In the first syntax, 
-<em>context-source</em> is the name of an existing context, 
-and <em>sym-context-target</em> is the name of a new context 
-to be created just like the original, 
-with the same variable names and user-defined functions. 
-If the context in <em>sym-context-target</em> already exists, 
-then new symbols and definitions are added. 
-Existing symbols are overwritten 
-when the expression in <em>bool</em> 
-evaluates to anything besides <tt>nil</tt>; 
-otherwise, the content of existing symbols 
-will remain. 
-This makes <em>mixins</em> of context objects possible. 
-<tt>new</tt> returns the target context, 
-which cannot be MAIN.
-</p>
+<p>The context <em>context-source</em> is copied to <em>sym-context-target</em>.
+If the target context does not exist, a new context with the same variable names 
+and user-defined functions as in <em>context-source</em> is created.
+If the target context already exists, then new symbols and definitions are added.
+Existing symbols are only overwritten when the expression in <em>bool</em>
+evaluates to anything othet than <tt>nil</tt>; otherwise, the content of existing symbols
+will remain. This makes <em>mixins</em> of context objects possible. 
+<tt>new</tt> returns the target context, which cannot be MAIN.</p>
 
-<p>
-In the second syntax, 
-the existing context in <em>context-source</em> 
-gets copied into the current context 
-as the target context.
-</p>
-
-<p>
-All references to symbols in the originating context 
-will be translated to references in the target context. 
+<p>All references to symbols in the originating context 
+will be translated to references in the target context.
 This way, all functions and data structures referring to symbols
-in the original context will now refer to symbols in the target context.
-</p>
+in the original context will now refer to symbols in the target context.</p>
 
 <!-- example -->
 
@@ -18276,12 +18299,6 @@ in the original context will now refer to symbols in the target context.
 
 ;; force overwrite of existing symbols
 (new CTX MyCTX true)  <span class=arw>&rarr;</span> MyCTX   
-
-(set 'CTX:x 123)
-(new CTX)  <span class=arw>&rarr;</span> MAIN  ; copies x into MAIN
-x          <span class=arw>&rarr;</span> 123
-
-(map new '(Ct-a Ct-b Ct-c))  ; merge into current context
 </pre>
 
 
@@ -18300,13 +18317,6 @@ Any existing symbols of the same name in <tt>MyCTX</tt>
 will be overwritten. 
 Because <tt>MyCTX</tt> already exists, 
 the quote before the context symbol can be omitted.
-</p>
-
-<p>
-The last lines show how a foreign context 
-gets merged into the current one 
-and how <a href="#map">map</a> can be used 
-to merge a list of contexts.
 </p>
 
 <p>
@@ -18732,7 +18742,8 @@ In the String version, <tt>nth</tt> returns the character found at the position
 
 
 <p>Note that <a href="#nth">nth</a> works on character boundaries rather than byte 
-boundaries when using the UTF-8&ndash;enabled version of newLISP.</p>
+boundaries when using the UTF-8&ndash;enabled version of newLISP. To access ASCII and
+binary string buffers on single byte boundaries use <a href="#slice">slice</a>.</p>
 
 <p>See also <a href="#setf">setf</a> for modifying multidimensional lists and arrays and
 <a href="#push">push</a> and <a href="#pop">pop</a> for modifying lists.</p>
@@ -18827,12 +18838,11 @@ The following strings are legal access modes:
 
 
 <tt>"read"</tt> or <tt>"r"</tt> for read only access<br>
-
 <tt>"write"</tt> or <tt>"w"</tt> for write only access<br>
 <tt>"update"</tt> or <tt>"u"</tt> for read/write access<br>
 <tt>"append"</tt> or <tt>"a"</tt> for append read/write access<br>
 
-
+<p>
 
 <!-- example -->
 
@@ -19844,7 +19854,7 @@ Several special characters may be included in strings encoded with the escape ch
 <h2><span class="function">process</span></h2>
 <h4>syntax: (process <em>str-command</em>)<br>
 syntax: (process <em>str-command</em> <em>int-pipe-in</em> <em>int-pipe-out</em> [<em>int-win32-option</em>])<br>
-syntax: (process <em>str-command</em> <em>int-pipe-in</em> <em>int-pipe-out</em> [<em>int-pipe-error</em>])</h4>
+syntax: (process <em>str-command</em> <em>int-pipe-in</em> <em>int-pipe-out</em> [<em>int-unix-pipe-error</em>])</h4>
 
 <p>
 In the first syntax,
@@ -19928,14 +19938,12 @@ This option defaults to <tt>1</tt> for showing the application's window,
 <tt>0</tt> for hiding it, and <tt>2</tt> for showing it minimized on the Windows 
 launch bar.</p>
 
-<p>
-	On both Win32 and Linux/Unix systems,
-	standard error will be redirected to standard out by default.
-	On Linux/Unix,
-	an optional pipe handle for standard error output can be defined.
-	In this case,
-	<a href="#peek">peek</a> can be used to check for information on the pipe handles:
-</p>
+<p>On both Win32 and Linux/Unix systems, standard error will be redirected to 
+standard out by default. On Linux/Unix, an optional pipe handle for standard 
+error output can be defined in <em>int-unix-pipe-error</em>.</p>
+
+<p>The function <a href="#peek">peek</a> can be used to check for information 
+on the pipe handles:</p>
 
 
 <pre>
@@ -20877,7 +20885,7 @@ terminal screen.</p>
 <a name="reader-event"></a>
 <h2><span class="function">reader-event</span></h2>
 <h4>syntax: (reader-event [<em>sym-event-handler | func-event-handler</em>])<br>
-syntax: (reader-event nil)</h4>
+syntax: (reader-event 'nil)</h4>
 
 <p>An event handler can be specified to hook between newLISP's reader, 
 translation and evaluation process. The function specified in 
@@ -20886,6 +20894,22 @@ newLISP translates an expression and before evaluating it. The event handler can
 transformation on the expression before it gets evaluated.</p>
 
 <p>Specifying <tt>nil</tt> for the event will disable it.</p>
+
+<p>The following one-liner <tt>reader-event</tt> could be used to enhance
+the interacive shell:</p>
+
+<!-- example -->
+<pre>
+<b>&gt;</b>(reader-event (lambda (ex) (print " =&gt; " ) ex))
+$reader-event
+<b>&gt; (+ 1 2 3)
+ =&gt; 6
+&gt;</b>
+</pre>
+
+<p>The expression intercepted passes through unchanged, but output
+is enhanced.</p>
+
 
 <p>The following example shows the core of a simple macro rewrite pre-processor.
 A full version is installed in the standard location as module file <tt>marco.lsp</tt>.
@@ -20937,7 +20961,6 @@ occurrance of a <tt>(square ...)</tt> to a <tt>(pow ... 2)</tt> expression.</p>
 
 <p>For a more detailed description see the documentation for <tt>macro.lsp</tt>.
 </p>
-
 
 <br><br>
 
@@ -20997,22 +21020,24 @@ msg                  <span class=arw>&rarr;</span> "hello"
 
 <a name="ref"></a>
 <h2><span class="function">ref</span></h2>
-<h4>syntax: (ref <em>exp-key</em> <em>list</em> [<em>func-compare</em>])</h4>
+<h4>syntax: (ref <em>exp-key</em> <em>list</em> [<em>func-compare</em> [true]])</h4>
 
 <p>
 <tt>ref</tt> searches for the key expression <em>exp-key</em> in <em>list</em> and 
 returns a list of integer indices or an empty list if <em>exp-key</em> cannot be 
 found.  <tt>ref</tt> can work together with <a href="#push">push</a> and 
-<a href="pop">pop</a>, both of which can also take lists of indices. </p>
+<a href="pop">pop</a>, both of which can also take lists of indices.</p>
+
+<p>When the optional <tt>true</tt> parameter is present, the element found
+is returned instead of the index vector. This feature is not available in
+versions before 10.1.7.</p>
 
 <!-- example -->
 
 <pre>
-(set 'pList '(a b (c d () e)))
+; get index vectors for list elements
 
-(push 'x pList '(2 2 0))  <span class=arw>&rarr;</span>  (a b (c d (x) e))
-
-pList  <span class=arw>&rarr;</span> (a b (c d (x) e))
+(set 'pList '(a b (c d (x) e)))
 
 (ref 'x pList)    <span class=arw>&rarr;</span> (2 2 0)
 
@@ -21034,27 +21059,26 @@ pList  <span class=arw>&rarr;</span> (a b (c d (x) e))
 
 (ref 'foo plist)  <span class=arw>&rarr;</span> ()
 
-; with optional comparison function
+; not specifying a comparison functor assumes =
 
 (set 'L '(a b (c d (e) f)))
 
-; not specifying a comparison functor assumes =
-
-(ref 'e L)    <span class=arw>&rarr;</span> (2 2 0)
+(ref 'e L)      <span class=arw>&rarr;</span> (2 2 0)
+(ref 'e L =)    <span class=arw>&rarr;</span> (2 2 0)
 
 ; a is the first symbol where e is greater
 
 (ref 'e L &gt;)  <span class=arw>&rarr;</span> (0)
 
+; return the element instead of the index
+
+(ref 'e L &gt; true)  <span class=arw>&rarr;</span> a
+
 ; use an anonymous comparison function
 
-(ref 'e L (fn (x y) (or (= x y) (= y 'd)))) <span class=arw>&rarr;</span> (2 1)
+(ref 'e L (fn (x y) (or (= x y) (= y 'd))))      <span class=arw>&rarr;</span> (2 1)
 
-; define the comparison function first
-
-(define (is-it-or-d x y) (or (= x y) (= y 'd)))
-
-(ref 'e L is-it-or-d)  <span class=arw>&rarr;</span> (2 1)
+(ref 'e L (fn (x y) (or (= x y) (= y 'd))) true) <span class=arw>&rarr;</span> d
 </pre>
 
 
@@ -21072,17 +21096,16 @@ for strings:
 ; use match as a comparison function
 
 (ref '(a ?) L match) <span class=arw>&rarr;</span> (1)
-$it <span class=arw>&rarr;</span> (a 12)
 
 ; use unify as a comparison function
 
 (set 'L '( ((a b) (c d)) ((e e) (f g)) ))
 
-(ref '(X X) L unify) <span class=arw>&rarr;</span> (1 0)
-$it <span class=arw>&rarr;</span> (e e)
+(ref '(X X) L unify)      <span class=arw>&rarr;</span> (1 0)
 
-(ref '(X g) L) unify) <span class=arw>&rarr;</span> (1 1)
-$it <span class=arw>&rarr;</span> (f g)
+(ref '(X g) L unify)      <span class=arw>&rarr;</span> (1 1)
+
+(ref '(X g) L unify true) <span class=arw>&rarr;</span> (f g)
 </pre>
 
 
@@ -21091,16 +21114,13 @@ where the two elements are equal.  The <tt>unify</tt> pattern <tt>'(X g)</tt>
 searches for a list pair with the symbol <tt>g</tt> as the second member.
 The patterns are quoted to protect them from evaluation.</p>
 
-<p>Using the new parenthesized syntax, the list can be passed by a context
-identifying a default functor:</p>
-
+<p>Pass the list as a default functor:</p>
 
 <pre>
 (set 'C:C '(a b (c d) e f))
 
 (ref 'd C)  <span class=arw>&rarr;</span> (2 1)
 </pre>
-
 
 <p>This is suitable when passing lists by reference using a context. See also
 the chapter <a href="#pass_big">Passing data by reference</a>.</p>
@@ -21112,18 +21132,17 @@ of a key expression in a nested list. </p>
 
 <a name="ref-all"></a>
 <h2><span class="function">ref-all</span></h2>
-<h4>syntax: (ref-all <em>exp-key</em> <em>list</em> [<em>func-compare</em>])</h4>
+<h4>syntax: (ref-all <em>exp-key</em> <em>list</em> [<em>func-compare</em> [true]])</h4>
 
 <p> Works similarly to <a href="#ref">ref</a>, but returns a list of all index vectors found 
-for <em>exp-key</em> in <em>list</em>.
-</p>
+for <em>exp-key</em> in <em>list</em>. </p>
 
-<p>
-By default, <tt>ref-all</tt> checks if expressions are equal.  With <em>func-compare</em>, more 
-complex comparison functions can be defined.</p>
+<p>When the optional <tt>true</tt> parameter is present, the element found
+is returned instead of the index vector. This feature is not available in
+versions before 10.1.7.</p>
 
-<p>The first flat syntax should only be used if <em>exp-key</em> is not a
-parenthesized unquoted expression.</p>
+<p>By default, <tt>ref-all</tt> checks if expressions are equal. 
+With <em>func-compare</em>, more complex comparison functions can be defined.</p>
 
 <!-- example -->
 
@@ -21151,7 +21170,9 @@ parenthesized unquoted expression.</p>
 
 ; look for all elements where c is greater
 
-(ref-all 'c L &gt;)  <span class=arw>&rarr;</span> ((0) (1) (3 2 2) (4 1))
+(ref-all 'c L &gt;)       <span class=arw>&rarr;</span> ((0) (1) (3 2 2) (4 1))
+(ref-all 'c L &gt; true)  <span class=arw>&rarr;</span> (a b a a)
+
 
 ; use an anonymous function to compare
 
@@ -21196,24 +21217,23 @@ for strings.
 
 ; look for all pairs staring with the symbol a
 
-(ref-all '(a ?) L match)          
-<span class=arw>&rarr;</span> ((1) (3))
+(ref-all '(a ?) L match)      <span class=arw>&rarr;</span> ((1) (3))
+(ref-all '(a ?) L match true) <span class=arw>&rarr;</span> ((a 12) (a 10))
 
 ; look for all pairs where elements are equal
 
 (set 'L '( ((a b) (c d)) ((e e) (f g)) ((z) (z))))
 
-(ref-all '(X X) L unify)    
-<span class=arw>&rarr;</span> ((1 0) (2))
+(ref-all '(X X) L unify)      <span class=arw>&rarr;</span> ((1 0) (2))
+(ref-all '(X X) L unify true) <span class=arw>&rarr;</span> ((e e) ((z) (z)))
 
 ; look for all pairs where the second element is the symbol g
 
 (set 'L '( ((x y z) g) ((a b) (c d)) ((e e) (f g)) ))
 
-(ref-all '(X g) L unify)  
-<span class=arw>&rarr;</span> ((0) (2 1))
+(ref-all '(X g) L unify)      <span class=arw>&rarr;</span> ((0) (2 1))
+(ref-all '(X g) L unify true) <span class=arw>&rarr;</span> (((x y z) g) (f g))
 </pre>
-
 
 <p> See also the <a href="#ref">ref</a> function. </p>
 
@@ -23749,7 +23769,7 @@ of threaded tasks to multiple CPU cores. The newLISP implementation of the Cilk 
 lets the operating system of the underlying platform handle process management.
 Internally, the API is implemented using the Unix libc functions <tt>fork()</tt>,
 <tt>waitpid()</tt> and <tt>kill()</tt>. Intercommunications between processes
-and child processes is done using the <a href="#send">sendM</a> and 
+and child processes is done using the <a href="#send">send</a> and 
 <a href="#receive">receive</a> functions.</p>
 
 <p><tt>spawn</tt> can be called recursively from spawned subtasks:</p>
@@ -26546,8 +26566,7 @@ the first iteration.</td>
 <td>&nbsp;yes</td><td>&nbsp;yes</td></tr>
 
 <tr><td><tt>&nbsp;$it</tt></td><td>The <em>anaphoric</em> <tt>$it</tt> refers to the
-result inside an executing expression, i.e. in self referential assignments. In
-some functions <tt>$0</tt> servers the same purpose and both carry the same value.
+result inside an executing expression, i.e. in self referential assignments. 
 <tt>$it</tt> is only available inside the function expression setting it, and
 is set to <tt>nil</tt> on exit of that expression. The following functions use it:
 <a href="#hash">hashes</a>, <a href="#find-all">find-all</a>,
@@ -26596,6 +26615,28 @@ variable, the <tt>module</tt> function loads automatically from
 <td>&nbsp;no</td><td>&nbsp;n/a</td></tr>
 
 </table><br>
+
+<p>The symbols <tt>Class</tt>, <tt>Tree</tt> and <tt>module</tt> are predefined as follows:</p>
+
+<pre>
+; built-in template for FOOP constructors
+; usage: (new Class 'MyClass)
+(define (Class:Class) 
+    (cons (context) (args)))
+
+; built-in template for hashes
+; usage: (new Tree 'MyHash)
+(define Tree:Tree) 
+
+; load modules from standard path
+; usage (module "mymodule.lsp")
+(define (module m)
+  (load (append (env "NEWLISPDIR") "/modules/" m)))
+
+(global 'module)
+</pre>
+
+<p>These symbols are not protected and can be redefined by the user.</p>
 
 <br><br>
 

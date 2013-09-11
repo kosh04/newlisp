@@ -10,7 +10,8 @@
 ;; @version 2.3 - C.H. added parameter binding for safer SQL (guard against SQL-injection)
 ;; @version 2.4 - doc changes
 ;; @version 2.5 - changed sqlite3_bind_blob to sqlite3_bind_text in function bind-parameter
-;; @author Lutz Mueller 2004-2008, Dmitri Cherniak 2007, Clemens Hintze 2009
+;; @version 2.61 - added function  <tt>sql3:colnames</tt>.
+;; @author Lutz Mueller 2004-2009, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
 ;; To use this module include the following 'load'  or 'module' statement at the
@@ -320,6 +321,14 @@
 
 (define sql3:sql3 sql)
 
+;; @syntax (sql3:colnames)
+;; @return A list of column header names.
+;; Returns a list of column header names for the last query. This is
+;; a function wrapper around the internal variable <tt>sql3:col-names</tt>.
+
+(define (colnames) col-names)
+
+
 ;; @syntax (sql3:rowid)
 ;; @return The last row id from last 'insert'.
 ;; Gets the id of the last row inserted.
@@ -429,9 +438,10 @@
 		(begin
 			(println "selected rows: ") 
 			(map println sqarray)
-			(println "column names: ")
-			(map println sql3:col-names)
-			(println "... Ok"))
+			(println "column names with sql3:col-names: ")
+			(map println (sql3:colnames))
+			(println "... Ok")
+		)
 		(println "problem with select"))
 
   	(if (= (sql3:sql "select name from fruits where qty < ? order by name;" '(33))
@@ -459,6 +469,7 @@
     		(println "select via host parameter (type '$VVV'), ... Ok")
 		(println "problem with selecting via host parameters (type '$VVV')"))
 
+
   	; SQL injection has no chance:
 	
   	(print "try to drop table fruits via SQL injection attack ... ") 
@@ -478,7 +489,6 @@
 	(if (list? (sql3:columns "fruits") )
 		(println "columns: " (sql3:columns "fruits") ", ... Ok")
 		(println "problem in sql3:columns"))
-	
 
 	(if (sql3 "drop table fruits;")
 		(println "table fruits dropped,  ... Ok")

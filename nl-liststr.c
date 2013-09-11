@@ -290,11 +290,6 @@ else if(list->type == CELL_ARRAY)
 	implicitIndexFunc = implicitIndexArray;
 else if(list->type == CELL_STRING)
 	{
-/*
-	list = implicitIndexString(list, params);
-	return(list);
-*/
-
 	list = implicitIndexString(list, params);
 	if((symbolCheck = symbolRef))
 		{
@@ -724,6 +719,7 @@ if(head->type == CELL_STRING)
 	newStr = allocMemory(UTF8_MAX_BYTES * n + 1);
 	n = wstr_utf8(newStr, wnewStr, UTF8_MAX_BYTES * n);
 	newStr = reallocMemory(newStr, n + 1);
+	free(wstr); free(wnewStr);
 #endif
 	result = getCell(CELL_STRING);
 	result->aux = n + 1;
@@ -747,7 +743,11 @@ while(params->type != CELL_NIL)
 		params = getIntegerExt(params, (UINT *)&index, evalFlag);
 	if(index < 0) index = convertNegativeOffset(index, head);
 	if(index < idx) list = head, idx = 0;
-	while(idx < index  && list->next != nilCell) list = list->next, idx++; 
+	while(idx < index  && list != nilCell) list = list->next, idx++; 
+#ifdef VERSION_10200
+	if(list == nilCell) 
+		errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+#endif
 	if(result == NULL)
 		{
 		result = getCell(CELL_EXPRESSION);
@@ -1184,10 +1184,9 @@ if(symbolCheck != NULL)
 	{
 	if(isProtected(symbolCheck->flags))
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-	return(ref);
 	}
 
-return(errorProcExt(ERR_IS_NOT_REFERENCED, params));
+return(ref);
 }
 
 

@@ -345,7 +345,7 @@
     (dolist (sm primes) 
         (if (and 
               (set 'func (eval (sym (append "test-" (string (first sm))))) )
-              (catch (time (apply func) (* (last sm) multiplier) ) 'result)  
+              (catch (time (apply func) (mul (last sm) multiplier) ) 'result)  
               result)
             (if report-flag
 				(begin
@@ -2705,7 +2705,7 @@
 ; compensate for rounding error
 (inc total-time (mul 0.5 (length primes)))
 (println (format "performance ratio:%5.2f (1.0 on Mac OS X, 1.83 GHz Intel Core 2 Duo)"
-    (round (div total-time (* 10 (length primes)) multiplier) -1)))
+    (round (div total-time (mul 10 (length primes)) multiplier) -2)))
 (dolist (msg failed-messages)
 	(println msg))
 

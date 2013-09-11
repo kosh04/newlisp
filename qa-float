@@ -66,7 +66,9 @@
 (dolist (t tests)
 	(if (string? t) 
 		(println (format "\n%-47s\n%s" t (dup "-" 47)))
-		(println (format "%40s => %s" (string t) (string (eval t))))
+		(let (result (eval t))
+			(println (format "%40s => %s" (string t) (string result)))
+			(push result result-list))
 	)
 )
 
@@ -82,5 +84,11 @@
 (set 'u 1.0)
 (while (!= 1.0 (add 1.0 u)) (set 'u (mul u 0.5)) (push u result))
 (println "machine epsilon: " (result 0) " => 1.110223025e-16")
+
+(println)
+(if-not (apply and result-list)
+	(println ">>>>> ERROR IN FLOATING POINT TESTS")
+	(println ">>>>> FLOATING POINT TESTS SUCCESSFUL")
+)
 
 (exit)

@@ -4,12 +4,14 @@
 ;; @version 1.53 took out redefinition of normal int operations to floats
 ;; @version 1.6 added library path for OpenBSD and tested for 64-bit newLISP
 ;; @version 1.7 doc changes
+;; @version 1.8 doc changes
 ;; @author Lutz Mueller, 2007-2009
 ;; <h3>The GNU MP Bignum Library</h3>
 ;; This modules interfaces to libgmp which can be obtained from @link http://gmplib.org/ http://gmplib.org/ .
 ;;
 ;; Source code for libgmp.so (UNIX) or lbgmp.dll (Win32) or libgmp.dylib (Mac OS X) 
-;; is available at this site.
+;; is available at this site. After installing the library the correct path-name should
+;; be added in the <tt>(set 'files ... )</tt> statement around line 130 in this module.
 ;;
 ;; When compiling for Mac OS X on Intel CPUs use:
 ;; <pre>
@@ -128,7 +130,8 @@
     "/opt/local/lib/libgmp.dylib" ;Mac OSX
     "/usr/local/lib/libgmp.so" ; Linux, BSDs
     "/usr/local/lib/libgmp.so.7.1" ; OpenBSD
-    "libgmp-3.dll" ; Win32 in path
+    "/WINDOWS/system32/libgmp-3.dll" ; Win32 DLL path on current drive
+    "libgmp-3.dll" ; Win32 in path for current directory
 ))
 
 (set 'library (files (or 

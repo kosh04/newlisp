@@ -132,9 +132,7 @@ len = strlen(fileName);
 slash = *(fileName + len - 1);
 if(slash == '\\' || slash == '/')
 	*(fileName + len - 1) = 0;
-#endif
 
-#ifdef WIN32
 #ifdef USE_WIN_UTF16PATH
 result = stat_utf16(fileName, &fileInfo);
 #else

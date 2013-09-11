@@ -93,26 +93,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10106;
+int version = 10107;
 
 char copyright[]=
-"\nnewLISP v.10.1.6 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.1.7 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.6 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.7 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.6 on %s IPv%d%s\n\n";
+"newLISP v.10.1.7 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.6 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.7 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.6 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.1.7 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -202,6 +202,7 @@ char lc_decimal_point;
 /* error and exception handling */
 
 #define EXCEPTION_THROW -1
+#define EXCEPTION_CONTINUATION -2
 int errorReg = 0;
 CELL * throwResult;
 int errnoSave;
@@ -1159,6 +1160,7 @@ symbol->flags = flags;
 return(symbol);
 }
 
+/* -------------------------- initialization -------------------- */
 
 void initialize()
 {
@@ -1175,9 +1177,8 @@ nilCell->next =  nilCell;
 trueCell = getCell(CELL_TRUE);
 trueCell->contents = (UINT)trueCell;
 
-/* build first symbol and context MAIN */
-mainContext = currentContext = translateCreateSymbol("MAIN", CELL_CONTEXT, NULL, TRUE);
-makeContextFromSymbol(mainContext, mainContext);
+/* make first symbol, which is context MAIN */
+currentContext = createRootContext("MAIN");
 
 /* build symbols for primitives */
 for(i = 0; primitive[i].name != NULL; i++)
@@ -1191,11 +1192,11 @@ for(i = 0; primitive[i].name != NULL; i++)
 	pCell->aux = (UINT)symbol->name;
 	}
 
-/* build true, nil, * and ? symbols and others  */
-trueSymbol = translateCreateSymbol("true", CELL_TRUE, mainContext, TRUE);
-trueSymbol->contents = (UINT)trueCell;
+/* build nil, true, * and ? symbols and others  */
 nilSymbol = translateCreateSymbol("nil", CELL_NIL, mainContext, TRUE);
 nilSymbol->contents = (UINT)nilCell;
+trueSymbol = translateCreateSymbol("true", CELL_TRUE, mainContext, TRUE);
+trueSymbol->contents = (UINT)trueCell;
 starSymbol = translateCreateSymbol("*", CELL_PRIMITIVE, mainContext, TRUE);
 plusSymbol = translateCreateSymbol("+", CELL_PRIMITIVE, mainContext, TRUE);
 questionSymbol = translateCreateSymbol("?", CELL_NIL, mainContext, TRUE);
@@ -1256,7 +1257,7 @@ lambdaStackIdx = lambdaStack = (UINT *)allocMemory((MAX_RESULT_STACK + 16) * siz
 CELL * evaluateExpression(CELL * cell)
 {
 CELL * result;
-UINT * resultIdxSave = resultStack;
+UINT * resultIdxSave = resultStackIdx;
 CELL * args = NULL;
 CELL * pCell = NULL;
 SYMBOL * newContext = NULL;
@@ -1268,7 +1269,7 @@ switch(cell->type)
 	{
 	case CELL_NIL:
 	case CELL_TRUE:
-	case CELL_INT:
+	/* case CELL_INT: only used with COMPARE_TYPE_MASK */
 	case CELL_LONG:
 	case CELL_INT64:
 	case CELL_FLOAT:
@@ -1291,7 +1292,6 @@ switch(cell->type)
 
 	case CELL_EXPRESSION:
 		args = (CELL *)cell->contents;
-		resultIdxSave = resultStackIdx;                
 		if(++recursionCount > (int)MAX_CPU_STACK)
 			fatalError(ERR_OUT_OF_CALL_STACK, args, 0);
 		
@@ -1557,11 +1557,12 @@ return(errorProcExt(ERR_INVALID_PARAMETER, pCell));
 }
 
 
-/* a symbol belonging to a dynamic context */
-/* the parent context symbol points to the real context */
-/* cell->contents -> name str of this symbol */
-/* cell->aux -> symbol var which holds context (dynamic) */
-/* ((SYMBOL*)cell->aux)->contents -> context cell */
+/* a symbol belonging to a dynamic context
+   the parent context symbol points to the real context  
+   cell->contents -> name str of this symbol
+   cell->aux -> symbol var which holds context (dynamic) 
+   ((SYMBOL*)cell->aux)->contents -> context cell
+ */
 SYMBOL * getDynamicSymbol(CELL * cell)
 {
 CELL * contextCell;
@@ -1571,11 +1572,12 @@ if(contextCell->type != CELL_CONTEXT)
 	fatalError(ERR_CONTEXT_EXPECTED, stuffSymbol((SYMBOL*)cell->aux), TRUE);
 
 return(translateCreateSymbol( 
-		(char*)cell->contents,		/* name of dyn symbol */
+		(char*)cell->contents, /* name of dyn symbol */
 		CELL_NIL,
 		(SYMBOL*)contextCell->contents,	/* contextPtr */
 		TRUE));
 }
+
 
 void cleanupResults(UINT * from)
 {
@@ -1593,7 +1595,7 @@ CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
 UINT * resultIdxSave;
-int localCount = 0;
+int localCount = 1; /* 1 for $args */
 
 if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
@@ -1613,11 +1615,9 @@ if(arg != nilCell)
 	while((arg = arg->next) != nilCell)
 		{
 		if(arg->type == CELL_SYMBOL)
-			cell->next = copyCell((CELL*)((SYMBOL *)arg->contents)->contents);
+			cell = cell->next = copyCell((CELL*)((SYMBOL *)arg->contents)->contents);
 		else
-			cell->next = copyCell(evaluateExpression(arg));
-
-		cell = cell->next;
+			cell = cell->next = copyCell(evaluateExpression(arg));
 		}
 	}
 
@@ -1669,34 +1669,26 @@ for(;;)
 	localCount++;
 	}
 
-/* put unassigned args in $args */
+/* put unassigned args in  protected $args */
 pushEnvironment(argsSymbol->contents);
 pushEnvironment((UINT)argsSymbol);
 argsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)result);
-++localCount;
 
 /* evaluate body expressions */
 resultIdxSave = resultStackIdx;
-cell = localLst;
 result = nilCell;
-while( (cell = cell->next) != nilCell)
+while( (localLst = localLst->next) != nilCell)
 	{
 	while(resultStackIdx > resultIdxSave)
 		deleteList(popResult());
-	result = evaluateExpression(cell);
+	result = evaluateExpression(localLst);
 	}
 result = copyCell(result);
 
-
-/* recover environment of local symbols */
+/* restore symbols used as locals */
 while(localCount--)
 	{
 	symbol = (SYMBOL *)popEnvironment();
-	if(isProtected(symbol->flags) && (symbol != argsSymbol))
-		{
-		symbol->flags &= ~SYMBOL_PROTECTED;
-		return(errorProcExt2(ERR_CANNOT_BE_PROTECTED, stuffSymbol(symbol)));	
-		}
 	deleteList((CELL *)symbol->contents);
 	symbol->contents = popEnvironment();
 	}
@@ -1715,13 +1707,14 @@ CELL * cell;
 SYMBOL * symbol;
 SYMBOL * contextSave;
 UINT * resultIdxSave;
-int localCount = 0;
+int localCount = 1; /* for $args */
 
 if(envStackIdx > envStackTop)
 	return(errorProc(ERR_OUT_OF_ENV_STACK));
 
 if(localLst->type != CELL_EXPRESSION)
 	return(errorProcExt(ERR_INVALID_MACRO, localLst));
+
 local = (CELL *)localLst->contents;
 
 contextSave = currentContext;
@@ -1764,34 +1757,28 @@ goto GET_ARGS;
 
 GOT_ARGS:
 
+/* put unassigned args in $args */
 pushEnvironment(argsSymbol->contents);
 pushEnvironment((UINT)argsSymbol);
-argsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
-if(arg != nilCell)
-    ((CELL*)argsSymbol->contents)->contents = (UINT)copyList(arg);
-++localCount;
+argsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)copyList(arg));
 
+/* evaluate body expressions */
 resultIdxSave = resultStackIdx;
-arg = localLst;
-while((arg = arg->next) != nilCell)
+while((localLst = localLst->next) != nilCell)
 	{
 	while(resultStackIdx > resultIdxSave)
 		deleteList(popResult());
-	result = evaluateExpression(arg);
+	result = evaluateExpression(localLst);
 	}
 result = copyCell(result);
 
+/* restore symbols used as locals */
 while(localCount--)
-	{
+    {
 	symbol = (SYMBOL *)popEnvironment();
-	if(isProtected(symbol->flags) && (symbol != argsSymbol))
-		{
-		symbol->flags &= ~SYMBOL_PROTECTED;
-		return(errorProcExt2(ERR_CANNOT_BE_PROTECTED,stuffSymbol(symbol)));	
-		}
 	deleteList((CELL *)symbol->contents);
 	symbol->contents = popEnvironment();
-	}
+    }
 
 currentContext = contextSave;	
 symbolCheck = NULL;
@@ -1954,6 +1941,7 @@ cell->contents = (UINT)nilCell;
 return(cell);
 }
 
+
 CELL * makeCell(int type, UINT contents)
 {
 CELL * cell;
@@ -1993,6 +1981,7 @@ return(cell);
 CELL * copyCell(CELL * cell)
 {
 CELL * newCell;
+CELL * list;
 UINT len;
 
 if(firstFreeCell == NULL) allocBlock();
@@ -2009,10 +1998,17 @@ if(isEnvelope(cell->type))
 	{
 	if(cell->type == CELL_ARRAY)
 		newCell->contents = (UINT)copyArray(cell);
-	else
+	else /* normal list expression */
 		{
-		newCell->contents = (UINT)copyList((CELL *)cell->contents);
-		newCell->aux = (UINT)lastCellCopied;  /* last element optimization */
+		if(cell->contents != (UINT)nilCell) 
+			{
+			newCell->contents = (UINT)copyCell((CELL *)cell->contents);
+			list = (CELL *)newCell->contents;
+			cell = (CELL *)cell->contents;
+			while((cell = cell->next) != nilCell)
+				list = list->next = copyCell(cell);
+			newCell->aux = (UINT)list;  /* last element optimization */
+			}
 		}
 	}
 else if(cell->type == CELL_STRING)
@@ -2038,7 +2034,7 @@ CELL * copyList(CELL * cell)
 CELL * firstCell;
 CELL * newCell;
 
-if(cell == nilCell || cell == trueCell) 
+if(cell == nilCell) 
 	{
 	lastCellCopied = nilCell;
 	return(cell);
@@ -2047,10 +2043,7 @@ if(cell == nilCell || cell == trueCell)
 firstCell = newCell = copyCell(cell);
 
 while((cell = cell->next) != nilCell)
-	{
-	newCell->next = copyCell(cell);
-	newCell = newCell->next;
-	}
+	newCell = newCell->next = copyCell(cell);
 	
 lastCellCopied = newCell;
 return(firstCell);
@@ -2078,16 +2071,13 @@ while(cell != nilCell)
 	next = cell->next;
 	
 	/* free cell */
-	if(cell == trueCell) 
+	if(cell != trueCell) 
 		{
-		cell = next;
-		continue;
+		cell->type = CELL_FREE;
+		cell->next = firstFreeCell;
+		firstFreeCell = cell;
+		--cellCount;
 		}
-
-	cell->type = CELL_FREE;
-	cell->next = firstFreeCell;
-	firstFreeCell = cell;
-	--cellCount;
 	
 	cell = next;
 	}
@@ -2353,7 +2343,7 @@ switch(cell->type)
 #ifdef WIN_32
 	case CELL_IMPORT_DLL:
 #endif
-		varPrintf(device,"%s <%lX>", (char *)cell->aux, cell->contents);
+		varPrintf(device,"%s<%lX>", (char *)cell->aux, cell->contents);
 		break;
 	
 	case CELL_QUOTE:
@@ -2793,12 +2783,13 @@ char * errorMessage[] =
 	"user reset -",		 	 		/* 57 */
 	"received SIGINT -",		 	/* 58 */
 	"function is not reentrant",	/* 59 */
-	"local symbol is protected",    /* 60 */
+	"not allowed on local symbol",  /* 60 */
 	"no symbol reference found",	/* 61 */
 	"list is empty",				/* 62 */
 	"I/O error",					/* 63 */
 	"no working directory found",	/* 64 */
 	"invalid PID",					/* 65 */
+	"continue without catch",		/* 66 */
 	NULL
 	};
 
@@ -3763,6 +3754,7 @@ if(cell->type != CELL_SYMBOL)
 	*symbol = translateCreateSymbol(name, CELL_NIL, mainContext, TRUE);
     (*symbol)->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
 	deleteList((CELL *)(*symbol)->contents);
+	(*symbol)->contents = (UINT)nilCell;
 	if(isNil(cell)) 
 		*symbol = nilSymbol;
 	else if(cell->type != CELL_LAMBDA && cell->type != CELL_MACRO && cell->type != CELL_PRIMITIVE)
@@ -3893,20 +3885,6 @@ CELL * p_eval(CELL * params)
 {
 CELL * result;
 
-/*
-if(params->type == CELL_SYMBOL)
-	params = (CELL*)((SYMBOL *)params->contents)->contents;
-else
-	params = evaluateExpression(params);
-
-if(params->type == CELL_SYMBOL)
-	{
-	symbolCheck = (SYMBOL *)params->contents;
-	pushResultFlag = 0;
-	return((CELL*)((SYMBOL *)params->contents)->contents);
-	}
-*/
-
 params = evaluateExpression(params);
 result = evaluateExpression(params);
 if(symbolCheck)
@@ -3924,6 +3902,9 @@ CELL * p_catch(CELL * params)
 jmp_buf errorJumpSave;
 UINT * envStackIdxSave;
 UINT * lambdaStackIdxSave;
+#ifdef CONTINUE
+UINT * resultStackIdxSave;
+#endif
 int recursionCountSave;
 int value;
 CELL * expr;
@@ -3944,6 +3925,10 @@ envStackIdxSave = envStackIdx;
 recursionCountSave = recursionCount;
 lambdaStackIdxSave = lambdaStackIdx;
 contextSave = currentContext;
+#ifdef CONTINUE
+resultStackIdxSave = resultStackIdx;
+CATCH_CONTINUE:
+#endif
 itSymbol->contents = (UINT)nilCell;
 
 if((value = setjmp(errorJump)) != 0)
@@ -3953,8 +3938,15 @@ if((value = setjmp(errorJump)) != 0)
     recursionCount = recursionCountSave;
     lambdaStackIdx = lambdaStackIdxSave;
     currentContext = contextSave;
-    evalCatchFlag--;
 
+    evalCatchFlag--;
+#ifdef CONTINUE
+	if(value == EXCEPTION_CONTINUATION)
+		{
+		cleanupResults(resultStackIdxSave);
+		goto CATCH_CONTINUE;
+		}
+#endif
     if(value == EXCEPTION_THROW)
         {
 		if(symbol == NULL) return(throwResult);
@@ -4009,6 +4001,17 @@ evalFunc = NULL;
 errorProcExt(ERR_USER_ERROR, evaluateExpression(params));
 return(nilCell);
 }
+
+#ifdef CONTINUE
+CELL * p_continue(CELL * params)
+{
+if(evalCatchFlag == 0) 
+    return(errorProc(ERR_CONTINUE_WO_CATCH));
+
+longjmp(errorJump, EXCEPTION_CONTINUATION);
+return(trueCell);
+}
+#endif
 
 CELL * evalString(CELL * params, int mode);
 
@@ -4511,11 +4514,15 @@ if(isProtected(symbolRef->flags))
 params = params->next; 
 params = params->next; 
 
-if(symbolRefPtr && ((CELL *)symbolRef->contents)->type == CELL_STRING)
+if(symbolRefPtr)
 	{
-	cell = setNthStr((CELL *)symbolRef->contents, new, symbolRefPtr);
-	if(params != nilCell) goto SETF_BEGIN;
-	return(cell);
+	if(((CELL *)symbolRef->contents)->type == CELL_STRING)
+		{
+		cell = setNthStr((CELL *)symbolRef->contents, new, symbolRefPtr);
+		if(params != nilCell) goto SETF_BEGIN;
+		return(cell);
+		}
+	return(errorProc(ERR_IS_NOT_REFERENCED));
 	}
 
 /* delete contents of original cell */
@@ -4574,10 +4581,19 @@ CELL * p_constant(CELL *params)
 {
 SYMBOL * symbol;
 CELL * next;
+UINT * idx = envStackIdx;
 
 for(;;)
 	{
 	params = getSymbol(params, &symbol);
+	/* make sure symbol is not used as local in call hierachy */
+	while(idx > envStack)
+		{
+		if(symbol == (SYMBOL *)*(--idx))
+			errorProcExt2(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
+		--idx;
+		}
+
 	/* protect contexts from being set, but not vars holding contexts */
 	if(symbolType(symbol) == CELL_CONTEXT && (SYMBOL *)((CELL *)symbol->contents)->contents == symbol)
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
@@ -4669,8 +4685,8 @@ if(params->type != CELL_EXPRESSION)
 	return(errorProcExt(ERR_INVALID_LET, params));
 
 /* evaluate symbol assignments in parameter list 
-   handle double syntax classic: (let ((v1 e1) (v2 e2) ...) ...) 
-                            and: (let (v1 e1 v2 e2 ...) ...)
+   handle double syntax classic: (let ((s1 e1) (s2 e2) ...) ...) 
+                            and: (let (s1 e1 s2 e2 ...) ...)
 */
 inits = (CELL*)params->contents;
 body = params->next;
@@ -4787,11 +4803,6 @@ while(body != nilCell)
 while(localCount--)
 	{
 	symbol = (SYMBOL *)popEnvironment();
-	if(isProtected(symbol->flags) && (symbol != argsSymbol))
-		{
-		symbol->flags &= ~SYMBOL_PROTECTED;
-		return(errorProcExt2(ERR_CANNOT_BE_PROTECTED,stuffSymbol(symbol)));	
-		}
 	deleteList((CELL *)symbol->contents);
 	symbol->contents = popEnvironment();
 	}
@@ -6614,23 +6625,6 @@ while(blockPtr != NULL)
 return(trueCell);
 }
 
-/* returns the currently stacked variable environment, experimental */
-CELL * p_estack(CELL * params)
-{
-CELL * entry;
-UINT * idx = envStackIdx;
-CELL * result = getCell(CELL_EXPRESSION);
-
-while(idx > envStack)
-	{
-	entry = getCell(CELL_EXPRESSION);
-	addList(entry, stuffSymbol((SYMBOL *)*(--idx)));
-	addList(entry, copyCell((CELL *)*(--idx)));
-	addList(result, entry);
-	}
-
-return(result);
-}
 
 CELL * p_mainArgs(CELL * params)
 {

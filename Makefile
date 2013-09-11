@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.1.6
-INT_VERSION = 10106
+VERSION = 10.1.7
+INT_VERSION = 10107
 
 default: makefile_configure
 	make -f makefile_configure
