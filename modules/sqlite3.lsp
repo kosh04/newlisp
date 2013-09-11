@@ -5,6 +5,7 @@
 ;; @version 1.8 - a fix to make 64-Bit integers work (thanks Dmitry)
 ;; @version 1.9 - new library detection routine
 ;; @version 2.0 - added documentation for close
+;; @version 2.1 - use default functor for query
 ;; @author Lutz Mueller, 2004-2008
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
@@ -212,8 +213,6 @@
 				(if (= pstr 0)
 					(push "" row -1)
 					(push (get-string pstr) row -1)))
-
-			; not tested yet
 			(SQLITE_BLOB 
 				(set 'pstr (sqlite3_column_blob pstm i))
 				(set 'len (sqlite3_column_bytes pstm i))
@@ -244,16 +243,18 @@
 		(push (nth (sqlite3_column_type pstm i) SQLITE_TYPES) row -1))
 	row)
 
+(define sql3:sql3 sql)
 
 ;; @syntax (sql3:rowid)
 ;; @return The last row id from last 'insert'.
+;; Gets the id of the last row inserted.
 
 (define (rowid)
 	(if db (sqlite3_last_insert_rowid db)))
 
 ;; @syntax (sql3:tables)
 ;; @return A list of tables in the database.
-;
+
 (define (tables)
 	(if db (begin
 		(set 'lst (sql "select tbl_name from sqlite_master")) ))
@@ -342,8 +343,7 @@
 			(map println sqarray)
 			(println "column names: ")
 			(map println sql3:col-names)
-			(println "... Ok")
-			)
+			(println "... Ok"))
 		(println "problem with select"))
 
 	(if (sql3:sql "delete from fruits where 1;")
@@ -359,7 +359,7 @@
 		(println "problem in sql3:columns"))
 	
 
-	(if (sql3:sql "drop table fruits;")
+	(if (sql3 "drop table fruits;")
 		(println "table fruits dropped,  ... Ok")
 		(println "problem dropping table fruits"))
 

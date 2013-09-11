@@ -1,6 +1,7 @@
 ;; @module pop3.lsp
 ;; @description POP3 mail retrieval routines
 ;; @version 2.0 - eliminated old net-send syntax
+;; @version 2.1 - changes for 10.0
 ;; @author Lutz Mueller et al., 2001, 2002, 2008
 ;;
 ;; <h2>POP3 mail retrieval routines</h2>
@@ -131,7 +132,7 @@
 ; receive request answer and verify
 ;
 (define (net-confirm-request)
-    (if (net-receive socket 'rcvbuff 512 "+OK")
+    (if (net-receive socket rcvbuff 512 "+OK")
         (begin
 	    (if debug-flag (println rcvbuff))
             (if (find "-ERR" rcvbuff) 
@@ -142,7 +143,7 @@
 (define (net-flush)
 	(if socket
 		(while (> (net-peek socket) 0) 
-			(net-receive socket 'junk 256)
+			(net-receive socket junk 256)
 			(if debug-flag (println junk) )))
 	true)
 
@@ -179,7 +180,7 @@
         (net-send socket sndbuff)
 	(if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
-        (net-receive socket 'status 256)
+        (net-receive socket status 256)
 	(if debug-flag (println "status: " status) true)
         (net-flush)
 	(if last-flag 
@@ -188,7 +189,7 @@
                 (net-send socket sndbuff)
 	        (if debug-flag (println "sent: " sndbuff) true)
                 (net-confirm-request)
-                (net-receive socket 'last-read 256)
+                (net-receive socket last-read 256)
 	        (if debug-flag (println "last read: " last-read) true)
                 (net-flush))
             (set 'last-read "0"))
@@ -205,7 +206,7 @@
 	(set 'finished nil)
 	(set 'message "")
 	(while (not finished)
-		(net-receive socket 'rcvbuff 16384)
+		(net-receive socket rcvbuff 16384)
 		(set 'message (append message rcvbuff))
 		(if (find "\r\n.\r\n" message) (set 'finished true)))
 	(if debug-flag (println "received message") true)
@@ -268,7 +269,7 @@
     (set 'sndbuff "QUIT\r\n")
     (net-send socket sndbuff)
     (if debug-flag (println "sent: " sndbuff) true)
-    (net-receive socket 'rcvbuff 256)
+    (net-receive socket rcvbuff 256)
     (if debug-flag (println rcvbuff) true)
     true)
 

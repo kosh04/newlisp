@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef PROTOS_H
+#define PROTOS_H
+
 CELL * addResult(CELL * * result, CELL * cell, CELL * newCell);
 CELL * appendArray(CELL * cell, CELL * params);
 CELL * appendNode(CELL * node, CELL * newNode);
@@ -343,6 +346,7 @@ CELL * p_random(CELL * params);
 CELL * p_randomize(CELL * params);
 CELL * p_readBuffer(CELL * params);
 CELL * p_readChar(CELL * params);
+CELL * p_readUTF8(CELL * params);
 CELL * p_readExpr(CELL * params);
 CELL * p_readFile(CELL * params);
 CELL * p_readKey(CELL * params);
@@ -624,3 +628,5 @@ _WDIR * opendir_utf16(const char* dirname8);
 #endif
 
 /* eof */
+
+#endif /* PROTOS_H */

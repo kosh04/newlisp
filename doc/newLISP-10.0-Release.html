@@ -2,11 +2,11 @@
 <html>
 <title>newLISP  v.10.0 Release Notes </title>
 <body>
-<blockquote><h1>newLISP<font size=-2>&#174;</font> v.10.0.1 Release Notes 
-<font size=-1>January 8th, 2009</font></h1>
+<blockquote><h1>newLISP<font size=-2>&#174;</font> v.10.0.2 Release Notes 
+<font size=-1>March 9th, 2009</font></h1>
 
-<p>Version 10.0.1 is a maintenance update to release 10.0.1. Some minor
-feature enhancements are noted in the next (search for 10.0.1).</p>
+<p>Versions 10.0.1 and 10.0.2 are maintenance updates to release 10.0.0. Some minor
+feature enhancements and changes are noted in the next (search for 10.0.1 and 10.0.2).</p>
 
 <p>newLISP version 10.0 marks a new generation of newLISP with new abilities, such as
 reference returns instead of copies for many built-in functions and a
@@ -63,8 +63,8 @@ or element of a list or array, which can be modified by other functions.
 Previously these functions returned a copy (with the exception of <tt>set</tt>):</p>
   
 <blockquote>  
-<tt>assoc, first, last, lookup, ntn, replace, reverse, rotate, set, setf
-setq, set-ref, set-ref-all, sort, swap</tt>
+<tt>assoc, eval (index references v.10.0.2), first, last, lookup, ntn, replace, 
+reverse, rotate, set, setf, setq, set-ref, set-ref-all, sort, swap</tt>
 </blockquote>
 
 <p>All control structures without local variables maintain a reference for the
@@ -263,14 +263,17 @@ offset parameter for the source.<br></li>
 accepts a default functor specified by a context name as a buffer, for reference
 passing in and out of user-defined functions.</li>
 
+<li><tt>read-utf8</tt> reads UTF-8 multibyte characters from a file handle or stdin.
+New in UTF-8 enabled version 10.0.2.</li>
+
 <li><tt>set</tt> and <tt>setq</tt> will not allow a missing value argument as 
 was tolerated in previous versions.<br></li>
 
 <li><tt>set-locale</tt> now returns a list of locale string and decimal point character,
 previously only the locale string was returned.</li>
 
-<li><tt>sys-error</tt> can return the error text when supplying the number 
-in version 10.0.1.</li>
+<li><tt>sys-error</tt> now returns a list of error number and error text similar to
+<tt>net-error</tt> (v.10.0.2).</p>
 
 <li><tt>unless</tt> is reintroduced, and works like <tt>(when (not ...) ...)</tt>
  with no <em>alternate</em> clause.<br></li>
@@ -284,6 +287,9 @@ the contents of <tt>(current-line)</tt> will be written to the device specified.
 
 <li>Several new file extensions and media MIME types have been added to
 the HTTPD mode of newLISP in server mode. See the manual for details.<br></li>
+
+<li>The <tt>Status:</tt> response line in HTTPD mode now behaves closer 
+to RFC spec (v.10.0.2).</tt>
 
 <li>The initialization file in either <tt>$HOME/.init.lsp</tt> or 
 <tt>$USERPROFILE/.init.lsp</tt> or <tt>$DOCUMENT_ROOT/.init</tt> is loaded if it 
@@ -330,6 +336,17 @@ changes. The following files needed minor changes.</p>
 <tr><td><tt>util/syntax.lsp</tt></td><td>&nbsp;syntax highlighter</td></tr>
 <tr><td><tt>guiserver/newlisp-edit.lsp</tt></td><td>&nbsp;The editor in newLISP-GS</td></tr>
 <tr><td><tt>guiserver/pinballs-demo.lsp</tt></td><td>&nbsp;A demo file in newLISP-GS</td></tr>
+</table>
+</blockquote>
+
+<p>The following files needed more changes to conform to v.10.0 based versions. Changes
+were made in v.10.0.2.</p>
+
+<blockquote>
+<table border="1" summary="changed source file">
+<tr><td><tt>modules/ftp.lsp</tt></td><td>&nbsp;ftp module</td></tr>
+<tr><td><tt>modules/pop3.lsp</tt></td><td>&nbsp;pop3 module</td></tr>
+<tr><td><tt>modules/smtp.lsp</tt></td><td>&nbsp;smtp module</td></tr>
 </table>
 </blockquote>
 
@@ -466,6 +483,9 @@ can wrap the return value as in <tt>(first (set-locale ... ))</tt>.</p>
 
 <p><b><tt>read-expr</tt></b> has changed the order of parameters and also changed functionality.
 Please consult the reference manual for details.</p>
+
+<p><b><tt>sys-error</tt></b> used to return an error number only. Now the function returns
+a list of error number and error text (v.10.0.2).</p>
 
 <p><b><tt>unless</tt></b> has lost the <em>alternate</em> clause. If there was no alternate clause, conversion is not necessary, but all instances of <tt>unless</tt>
 containing an alternate clause should be converted to <tt>if-not</tt>, which was introduced 

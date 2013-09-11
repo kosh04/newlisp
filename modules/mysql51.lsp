@@ -2,25 +2,32 @@
 ;; @description MySQL v.5.1 interface
 ;; @version 2.61 - addition for mysql_escape_string (Jeff Ober)
 ;; @version 2.62 - fix for mysql_escape_string (Tim Johnson)
-;; @author Lutz Mueller 2003-2006, Gordon Fischer 2005, Jeff Ober 2007
+;; @version 3.0  - module now independent of C-structure offsets
+;; @author Lutz Mueller 2003-2009, Gordon Fischer 2005, Jeff Ober 2007
 ;;
-;; This MySQL 5.1 interface module has been tested on version 5.1.21
+;; This MySQL 5.1 interface module has been tested on version 5.1.3
 ;; of mysql from @link http://www.mysql.com www.mysql.com
 ;;
 ;; This implementation supports a maximum of 2,147,483,647
 ;; rows in a database table. Now automatically adjusts row indexes to
 ;; endian type of host CPU, but higher 32 bits are treated as 0 for now.
 ;;
+;; An alternate implementation of a MySQL module is available at 
+;; @link http://static.artfulcode.net/newlisp/index.html ArtfulCode.
+;;
 ;; <h3>Requirements</h3>
-;; At the beginning of the program file include a 'load' statment for the module:
+;; At the beginning of the program file include a 'load' statement for the module:
 ;; <pre>
-;; (load "/usr/share/newlisp/mysql5.lsp")
+;; (load "/usr/share/newlisp/mysql51.lsp")
 ;; </pre>
 ;;
 ;; A version of 'libmysqlclient' for a specific platform is required:
 ;;  
-;; on LINUX/UNIX: '/usr/local/mysql/libmysqlclient.so' <br>
-;; on Mac OS X:   '/usr/local/mysql/libmysqlclient.dylib'
+;; on LINUX/UNIX: '/usr/local/mysql/lib/libmysqlclient.so' <br>
+;; on Mac OS X:   '/usr/local/mysql/lib/libmysqlclient.dylib'
+;;
+;; This library is installed when using the Mac OS X x86 installer .dmg package
+;; from @link http://www.mysql.com http://www.mysql.com
 ;;
 ;; To compile MySQL with client libraries use:
 ;;
@@ -35,25 +42,11 @@
 ;; with that server. The correct connection is created using
 ;; the 'MySQL:connect' call.
 ;;
-;; At the bottom of the module file 'mysql51r.lsp' a test routine 'test-mysql'
+;; At the bottom of the module file 'mysql51.lsp' a test routine 'test-mysql'
 ;; is included to test for correct installation of MySQL.
 ;;
 ;; In the 'MySQL:connect' call of that test routine the correct parameters 
 ;; for the MySQL server location and user and password have to be inserted.
-;;
-;; <h3>Adapting mysql.lsp to other versions of MySQL</h3>
-;; Some of the functions like 'mysql_num_rows()' cannot be imported
-;; because they are really macros extracting data from structures
-;; like 'MYSQL' or 'MYSQL_RES'. See the file 'mysql.h' in your MySQL distribution.
-;;
-;; The file 'sql.c' in the newLISP distribution contains a program
-;; calculating the offsets of the most important fields in these
-;; structures. These offsets are used here to retrieve values for
-;; the number of rows in a result set, etc. Using these offsets
-;; and the information found in 'mysql.h' and 'mysql_com.h', other
-;; functions can be imported and wrappers built around them.
-;; In this case one needs to install the developer's version of
-;; MySQL to get the header files mentioned.
 ;;
 ;; <h3>Functions available</h3>
 ;; <pre>
@@ -96,6 +89,7 @@
 
 (set 'files '(
 	"/usr/lib/libmysqlclient.so" ; Linux, UNIX
+	"/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.dylib" ; MacOS X
 ))
 
@@ -116,18 +110,13 @@
 (import libmysqlclient "mysql_close")
 (import libmysqlclient "mysql_fetch_field_direct")
 (import libmysqlclient "mysql_insert_id")
-
-; following constant offsets into 'C' data structures are different on each mayor MySQL
-; version compile and run util/sql.c from the distribution to obtain these numbers
+(import libmysqlclient "mysql_num_rows")
+(import libmysqlclient "mysql_num_fields")
+(import libmysqlclient "mysql_affected_rows")
+(import libmysqlclient "mysql_error")
 
 ; check endianess of the host CPU 
 (set 'big-endian (= (pack ">ld" 1) (pack "ld" 1)))
-
-(constant 'NUM_ROWS_OFFSET (if big-endian 4 0))
-(constant 'NUM_FIELDS_OFFSET 72)
-(constant 'ERROR_OFFSET 95)
-(constant 'INSERT_ID_OFFSET (if big-endian 708 704))
-(constant 'AFFECTED_ROWS_OFFSET (if big-endian 700 696))
 
 ;; @syntax (MySQL:init)
 ;; @return 'true' on success, 'nil' on failure.
@@ -166,13 +155,13 @@
 ;; @return Number of rows from last query.
 
 (define (num-rows)
-  (if MYSQL_RES (get-int (int (+ MYSQL_RES NUM_ROWS_OFFSET)))))
+  (if MYSQL_RES (mysql_num_rows MYSQL_RES)))
 
 ;; @syntax (MySQL:num-fields)
 ;; @return Number of columns from last query.
 
 (define (num-fields)
-  (if MYSQL_RES (get-int (int (+ MYSQL_RES NUM_FIELDS_OFFSET)))))
+  (if MYSQL_RES (mysql_num_fields MYSQL_RES)))
 
 
 ; format the result based on the field type.
@@ -275,22 +264,19 @@
 ;; @return Text info about the last error which occured.
 
 (define (error)
-  (if MYSQL (get-string (+ MYSQL ERROR_OFFSET))))
-
+  (if MYSQL (get-string (mysql_error MYSQL)))) 
 
 ;; @syntax (MySQL:affected-rows)
 ;; @return Number of affected rows by the last 'MySQL:query' operation.
 
 (define (affected-rows)
-  (if MYSQL
-    (get-int (int (+ MYSQL AFFECTED_ROWS_OFFSET)))))
+  (if MYSQL (mysql_affected_rows MYSQL)))
 
 ;; @syntax (MySQL:inserted-id)
 ;; @return Last insert ID from an auto increment field.
 
 (define (inserted-id)
-;  (if MYSQL (mysql_insert_id MYSQL))
-  (if MYSQL (get-int (int (+ MYSQL INSERT_ID_OFFSET)))))
+  (if MYSQL (mysql_insert_id MYSQL)))
 
 ;; @syntax (MySQL:escape <str-sql>)
 ;; @return escaped string

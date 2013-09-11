@@ -67,11 +67,15 @@ int opsys = 3;
 #endif
 
 #ifdef SOLARIS
-#ifdef TRU64
-int opsys = 9;
-#else
-int opsys = 4;
+int opsys 4
 #endif
+
+#ifdef TRU64
+int opsys += 5;
+#endif
+
+#ifdef AIX
+int opsys += 6;
 #endif
 
 #ifdef WIN_32
@@ -82,26 +86,26 @@ int opsys = 6;
 int opsys = 7; 
 #endif 
 
-int version = 10001;
+int version = 10002;
 
 char copyright[]=
-"\nnewLISP v.10.0.1 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.0.2 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.1 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.2 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.1 on %s IPv%d%s\n\n";
+"newLISP v.10.0.2 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.0.1 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.0.2 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.0.1 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.0.2 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -110,8 +114,9 @@ char banner2[]=
 
 char linkOffset[] = "@@@@@@@@";
 char preLoad[] = 
-	"(define Tree:Tree) (define (Class:Class) (cons (context) (args)))";
-
+	"(define Tree:Tree)"
+	"(define (Class:Class) (cons (context) (args)))"
+	"(set (global 'module) (fn (mdl) (load (append (env {NEWLISPDIR}) {/modules/} mdl))))";
 void printHelpText(void);
 char ** newlisp_completion (char * text, int start, int end);
 
@@ -126,6 +131,9 @@ int noPromptMode = 0;
 int forcePromptMode = 0;
 int httpMode = 0;
 
+#ifdef WIN_32
+int IOchannelIsSocket = 0;
+#endif
 FILE * IOchannel;
 int IOport = 0;
 char * IOdomain = NULL;
@@ -673,7 +681,7 @@ for(idx = 1; idx < argc; idx++)
 		{
 		if(realpath(getArg(argv, argc, &idx), startupDir) == NULL 
 										|| chdir(startupDir) < 0)
-			fatalError(ERR_IO_ERROR, 0, 0);
+			fatalError(ERR_WORKING_DIR, 0, 0);
 		continue;
 		}	
 
@@ -702,7 +710,8 @@ else
 	{
 #ifdef WIN_32
 	/* its a faked FILE struct, see win32_fdopen() in nl-sock.c */
-  if(!isSocketStream(IOchannel))
+	/* if(!isSocketStream(IOchannel)) */
+	if(!IOchannelIsSocket) 
 #endif
 		setbuf(IOchannel,0);
 	if(forcePromptMode)
@@ -830,9 +839,13 @@ if((IOchannel  = serverFD(IOport,  IOdomain, reconnect)) == NULL)
 	printf("newLISP server setup on %s failed.\n", IOdomain);
 	exit(1);
 	}
+#ifdef WIN_32
+else	IOchannelIsSocket = TRUE; 
+#endif
 
 #ifdef WIN_32
-if(!isSocketStream(IOchannel))
+/* if(!isSocketStream(IOchannel))  */
+if(!IOchannelIsSocket)
 #endif
 	setbuf(IOchannel,0);
 
@@ -955,7 +968,7 @@ if(noPromptMode)
 		}
 	else if(strncmp(command, "HEAD /", 6) == 0)
 		{
-		executeHTTPrequest(command + 5, HTTP_GET_HEAD);
+		executeHTTPrequest(command + 6, HTTP_GET_HEAD);
 		return;
 		}
 	else if(strncmp(command, "PUT /", 5) == 0)
@@ -2331,9 +2344,9 @@ switch(cell->type)
 		varPrintf(device,"%I64d", *(INT64 *)&cell->aux); break;
 #else
 		varPrintf(device,"%lld", *(INT64 *)&cell->aux); break;
-#endif
-#endif
-#endif
+#endif /* WIN32 */
+#endif /* TRUE64 */
+#endif /* NEWLISP64 */
 	case CELL_FLOAT:
 #ifndef NEWLISP64
 		varPrintf(device,"%1.10g",*(double *)&cell->aux);
@@ -2825,6 +2838,9 @@ char * errorMessage[] =
 	"local symbol is protected",    /* 60 */
 	"no symbol reference found",	/* 61 */
 	"list is empty",				/* 62 */
+	"I/O error",					/* 63 */
+	"working directory not found",	/* 64 */
+	NULL
 	};
 
 
@@ -3584,7 +3600,7 @@ else
 return(params->next);
 }
 
-#else
+#else /* NEWLISP64 */
 CELL * getInteger64(CELL * params, INT64 * number)
 {
 CELL * cell;
@@ -3906,6 +3922,9 @@ return(copyCell(params));
 
 CELL * p_eval(CELL * params)
 {
+CELL * result;
+
+/*
 if(params->type == CELL_SYMBOL)
 	params = (CELL*)((SYMBOL *)params->contents)->contents;
 else
@@ -3917,8 +3936,17 @@ if(params->type == CELL_SYMBOL)
 	pushResultFlag = 0;
 	return((CELL*)((SYMBOL *)params->contents)->contents);
 	}
+*/
 
-return(copyCell(evaluateExpression(params)));
+params = evaluateExpression(params);
+result = evaluateExpression(params);
+if(symbolCheck)
+	{
+	pushResultFlag = 0;
+	return(result);
+	}
+
+return(copyCell(result));
 }
 
 
@@ -6552,8 +6580,7 @@ while(blockPtr != NULL)
 return(trueCell);
 }
 
-#ifdef ESTACK
-/* returns the variable environment, pure experimental, has no application */
+/* returns the currently stacked variable environment, experimental */
 CELL * p_estack(CELL * params)
 {
 CELL * entry;
@@ -6570,7 +6597,6 @@ while(idx > envStack)
 
 return(result);
 }
-#endif
 
 CELL * p_mainArgs(CELL * params)
 {

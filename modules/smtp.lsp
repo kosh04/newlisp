@@ -1,6 +1,7 @@
 ;; @module smtp.lsp 
 ;; @description Send mail using SMTP protocol
 ;; @version 2.0 - March 2008, Cormullion added AUTH PLAIN authentication 
+;; @version 2.1 - changes for 10.0
 ;; @author Lutz Mueller 2001, Cormullion 2008
 ;; 
 ;; <h2>Routines for sending mail</h2> 
@@ -65,12 +66,12 @@
         (or (net-close socket) true))) 
 
 (define (confirm-request conf)
-    (net-receive socket 'recvbuff 256 "\r\n")
+    (net-receive socket recvbuff 256 "\r\n")
     (if debug-flag (println recvbuff) true)
     ; Empty out pipe. According to SMTP spec, last line has valid code.
     ; added for 1.8 for newLISP 9.2.0
     (while (< 0 (net-peek socket))
-        (net-receive socket 'recvbuff 256 "\r\n")
+        (net-receive socket recvbuff 256 "\r\n")
         (if debug-flag (println recvbuff)))
     (starts-with recvbuff conf))
  

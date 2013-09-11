@@ -263,4 +263,36 @@ getString(params, &str);
 return(stuffInteger(utf8_wlen(str)));
 }
 
+/* reads a UTF-8 character */
+CELL * p_readUTF8(CELL * params)
+{
+UINT handle;
+int utf8C, gcaa, gcss;
+char chr;
+
+getInteger(params, &handle);
+if(read((int)handle, &chr, 1) <= 0)
+	return(nilCell);
+
+utf8C = chr;
+	
+if((chr & 0xc0) == 0xc0)
+	{
+	gcaa = utf8_table4[chr & 0x3f];  /* Number of additional bytes */
+	gcss = 6*gcaa;
+	utf8C = (chr & utf8_table3[gcaa]) << gcss;
+	while (gcaa-- > 0) \
+		{
+		gcss -= 6;
+		
+		if(read((int)handle, &chr, 1) <= 0)
+			return(nilCell);
+
+		utf8C |= (chr & 0x3f) << gcss;
+		}
+	}
+
+return(stuffInteger(utf8C));
+}
+
 /* eof */

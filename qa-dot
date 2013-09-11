@@ -15,15 +15,16 @@
 (set (sym "test-:" 'QA) (lambda () true))
 (context 'Lex)  ; predeclare/create context for bayes-train
 (context MAIN)
-(define (utf8qa)
- (set-locale "en_US")
 
+(when utf8
+ (set-locale "en_US")
  (set 'unicodelist '(913 914 915 916 937 945 946 947 948 969 32 
                  1040 1041 1042 1043 1044 1072 1073 1074 1075 1076 13 10))
-
  (set 'utf8str (join (map char unicodelist)))
+)
 
 
+(define (utf8qa)
  (if (not (= (length (char 937)) 2)) (QA:failed "UTF-8 char: failed"))
 
  (if (not (and
@@ -100,8 +101,6 @@ true
 
 (context 'QA)
 
-;; get operating system
-(set 'opsys (& (last (sys-info)) 0xf))
 
 (define (cleanup)
   (delete-file "junk")
@@ -712,7 +711,7 @@ true
   (= "ERR: bad formed URL" (delete-url "")))
 
 (define (test-destroy)
- 	(if (or (< opsys 5)(= opsys 9))
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
 		(set 'pid (fork (dotimes (t 100) (sleep 100))))
 		(set 'pid (process "newlisp"))	)
 	(destroy pid))
@@ -742,7 +741,11 @@ true
   (or (find "qa-dot" (directory)) (find "QA" (directory))))
 
 (define (test-directory? )
-  (directory? "."))
+  (and
+      (directory? ".")
+      (directory? "modules/")
+      (directory? "modules")
+))
 
 (define (test-div )
   (and (= 0.1 (div 100000000 1000000000)) 
@@ -874,6 +877,8 @@ true
 (define (test-erf)
    (<  (abs (sub 0.5204998778 (erf 0.5))) 0.000001))
 
+(define (test-estack) (list? (estack)))
+
 (define (alarm) (println "ring..."))
 
 (define (test-timer)
@@ -922,7 +927,7 @@ true
 (define (sub-read-exec ) 
    (write-file "exectest" {(println "hello") (exit)})
    (and
-	(set 'result (if (and (> opsys 5) (< opsys 9))
+	(set 'result (if (find ostype '("Win32" "OS/2"))
      	(exec "newlisp exectest") 
 		(exec "./newlisp exectest")))
 	(= "hello" (last  result)) 
@@ -931,7 +936,7 @@ true
 (define (sub-write-exec )
   (and 
     (write-file "testexec" {(write-file "exectest" (read-line))})
-    (if (and (> opsys 5) (< opsys 9))
+	(if (find ostype '("Win32" "OS/2"))
 	 (exec "newlisp testexec" "HELLO") (exec "./newlisp testexec" "HELLO"))
     (= "HELLO" (read-file "exectest"))
     (delete-file "testexec")
@@ -1008,7 +1013,11 @@ true
   (list? (file-info "qa-dot")))
 
 (define (test-file? )
-  (file? "qa-dot"))
+  (and 
+    (file? "qa-dot")
+    (file? "modules/")
+    (file? "modules")
+))
 
 (define (test-filter )
   (and
@@ -1122,7 +1131,7 @@ true
    (= (test-format-r '(("foo" "bar") ("foo" "baz"))) 
       "[ [ 'foo', 'bar' ], [ 'foo', 'baz' ] ]")
    ; test 64-bit formatting
-   (if (and (> opsys 5) (< opsys 9) (!= opsys 7)) ;; Win32 
+   (if (= ostype "Win32") ;; Win32 
       (begin
         (and
          (= (format "%I64d" 0x7fffffffffffffff) "9223372036854775807")
@@ -1136,7 +1145,7 @@ true
          (= (format "%I64u" 0xFFFFFFFFFFFFFFFF) "18446744073709551615"))
       )
       (begin ;; UNIX like OS 
-        (if (= opsys 9) ;TRU64
+        (if (= ostype "Tru64Unix") ;TRU64
           (begin
             (and
               (= (format "%d" 0x7fffffff) "2147483647")
@@ -1453,9 +1462,7 @@ true
 ))
 
 (define (test-lower-case )
-  (if (> opsys 4) 
-   (= "abcdefgq" (lower-case "ABCDEFGQ")) 
-   (= "abcdefgh" (lower-case "ABCDEFGH"))))
+   (= "abcdefghijklmnopqrstuvwxyz" (lower-case "ABCDEFGHIJKLMNOPQRSTUVWXYZ")))
 
 (define (test-macro? )
   (macro? 
@@ -1658,7 +1665,7 @@ true
     )
   (and
     (set 'sid (semaphore))
-    (if (and (> opsys 5)(< opsys 9))
+    (if (find ostype '("Win32" "OS/2"))
       (process (string "newlisp udptest.lsp " 10001 " " 10002 " " sid))
       (process (string "./newlisp udptest.lsp " 10001 " " 10002 " " sid)))
     (println "---------- testing UDP Win32 and OS/2 -------------")
@@ -1676,7 +1683,7 @@ true
     (if msg (set 'net-send-udp-test (= "HELLO" (first msg)) ) )))
 
 
-(if (or (< opsys 6)(= opsys 9))
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
   (define (test-net-receive-udp)
     (fork (begin (sleep 500) (net-send-udp "localhost" 10001 "hello")))
     (set 'net-send-udp-test (= "hello" (first (net-receive-udp 10001 10)))))
@@ -1862,7 +1869,7 @@ true
 	(set 'channel (pipe))
 	(set 'in (first channel))
 	(set 'out (last channel))
-	(if (and (> opsys 5) (< opsys 9))
+	(if (find ostype '("Win32" "OS/2"))
 		(process (string "newlisp pipe-child.lsp " in " " out))
 		(process (string "./newlisp pipe-child.lsp " in " " out)))
 	(sleep 500)
@@ -1871,7 +1878,7 @@ true
 	(= (read-line in) "HELLO THERE")
 	(delete-file "pipe-child.lsp"))
 
-(if (< opsys 6)
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "Aix" "True64Unix"))
   (define (test-pipe)
 	(set 'channel (pipe))
 	(set 'in (first channel))
@@ -2009,7 +2016,7 @@ true
 
 (define (test-process ) 
    (write-file "process test" {(write-file "test process" "hello") (exit)})
-   (if (and (> opsys 5) (< opsys 9))
+   (if (find ostype '("Win32" "OS/2"))
 	(process {newlisp '"process test"'}) ; Win32
     (process "./newlisp 'process test'")) ; Unix
    (until (file? "test process") (sleep 500))
@@ -2166,6 +2173,16 @@ true
 
 (define (test-read-line )
   (line-count "qa-dot"))
+
+
+(define (test-read-utf8)
+  (and
+	(write-file "utf8text.txt" MAIN:utf8str)
+	(setq fle (open "utf8text.txt" "read"))
+	(= (read-utf8 fle) (char (MAIN:utf8str 0)))
+	(close fle)
+	(delete-file "utf8text.txt")
+))	
 
 
 (define (test-real-path) 
@@ -2412,9 +2429,11 @@ true
 (define (test-semaphore)
   (and
     (set 'sid (semaphore))
-    (if (or (< opsys 5)(= opsys 9)) (= (semaphore sid) 0) true) ;; no semaphore status on Win32
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
+		(= (semaphore sid) 0) true) ;; no semaphore status on Win32
     (semaphore sid 1)
-    (if (or (< opsys 5)(= opsys 9)) (= (semaphore sid) 1) true) ;; no semaphore status on Win32
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "AIX" "Tru64Unix"))  
+		(= (semaphore sid) 1) true) ;; no semaphore status on Win32
     (semaphore sid 0)))
 
 (define (test-sequence )
@@ -2478,9 +2497,9 @@ true
 
 (define (test-share)
     (and 
-      (if (or (< opsys 5)(= opsys 9))
-          (unix-test-share)
-          (win32-test-share))
+      (if (find ostype '("Win32" "OS/2"))
+          (win32-test-share)
+          (unix-test-share))
       (set 'mvar (share))
       (share mvar 123)
       (= (share mvar) 123)
@@ -2503,7 +2522,7 @@ true
     (set 'sid (semaphore))
     (set 'mm (share))
     (share mm "hello")
-    (if (and (> opsys 5)(< opsys 9))
+    (if (find ostype '("Win32" "OS/2"))
       (process (string "newlisp sharetest.lsp " sid " " mm))
       (process (string "./newlisp sharetest.lsp " sid " " mm)))
     (semaphore sid -1) ; wait for child process
@@ -2675,8 +2694,8 @@ true
 (define (test-symbols )
   (and (list? (symbols)) (> (length (symbols)) 0)))
 
-(define (test-sys-error)
-	(integer? (sys-error 0) ))
+(define (test-sys-error) true)
+;	(integer? (sys-error 0) ))
 
 (define (test-sys-info )
    (and (list? (sys-info)) (= (length (sys-info)) 9)))
@@ -2780,9 +2799,7 @@ true
 ))
 
 (define (test-upper-case )
-  (if (> opsys 4) 
-   (= "ABCDEFGQ" (upper-case "abcdefgq")) 
-   (= "ABCDEFGH" (upper-case "abcdefgh"))))
+	(= (upper-case "abcdefghijklmnopqrstuvwxyz") "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
 (define (test-utf8)
   (and
@@ -2888,10 +2905,10 @@ true
   (and
     (= (~ 0) -1)
     (if 
-        (and (> opsys 5) (< opsys 9)) ;; Win32 
+        (find ostype '("Win32" "OS/2"))
         (= (format "%I64x" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
 
-        (= opsys 9)
+        (= ostype "True64Unix")
         (= (format "%lx" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
 
         (= (format "%llx" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f"))

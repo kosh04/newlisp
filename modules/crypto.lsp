@@ -3,6 +3,7 @@
 ;; @version 1.01 - initial release
 ;; @version 1.02 - renamed to crypto, new lib detection
 ;; @version 1.04 - added hmac encryption from amazon.com query API
+;; @version 1.05 - added added gnuwin32/bin/libeay32.dll for crypto on Win32
 ;; @author Lutz Mueller 2007, Martin Quiroga 2007
 ;;
 ;; <h2>Module for SSL lib crypto  bindings</h2>
@@ -15,13 +16,14 @@
 ;; <pre>
 ;; (load "/usr/share/newlisp/modules/crypto.lsp")
 ;; </pre>
-;;
 ;; <h2>Requirements:</h2> 
 ;; On Mac OS X, UBUNTU and many other Linux, BSDs and other UNIX installations
 ;; <tt>libcrypto.so</tt> is installed by default as part of the OpenSSL
 ;; libraries in <tt>usr/lib/libcrypto.so</tt>. If loading this module 
 ;; finishes with an error message the path of the library should be corrected.
-;;
+;; For Win32 a library is available at 
+;; @link http://gnuwin32.sourceforge.net/ http://gnuwin32.sourceforge.net/ .
+;; 
 ;; This module has been tested on Mac OS X, UBUNTU Linux and FreeBSD.
 
 (context 'crypto)
@@ -29,6 +31,7 @@
 ; set library to path-name of the library on your platform OS
 ;
 (set 'files '(
+	"C:/Program Files/gnuwin32/bin/libeay32.dll"
 	"/usr/lib/libcrypto.so"
 	"/usr/lib/libcrypto.so.0.9.8"
 	"/usr/lib/libcrypto.so.0.9.7"

@@ -50,7 +50,9 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#ifndef OS2
 #include <netinet/icmp6.h>
+#endif
 #include <netdb.h>
 #include <arpa/inet.h>
 #endif
@@ -144,6 +146,9 @@ struct in6_addr defaultInAddr;
 struct in_addr defaultInAddr;
 #endif
 
+#ifdef WIN_32
+extern int IOchannelIsSocket;
+#endif
 
 /********************** session functions *******************/
 
@@ -2182,7 +2187,8 @@ return(fPtr);
 
 int win32_fclose(FILE * fPtr)
 {
-if(isSocketStream(fPtr))
+/*if(isSocketStream(fPtr)) */
+if(IOchannelIsSocket)
    return(close(getSocket(fPtr)));
 
 return(fclose(fPtr));
@@ -2196,7 +2202,8 @@ int win32_fprintf(FILE * fPtr, char * buffer)
 {
 int pSize;
 
-if(!isSocketStream(fPtr))
+/* if(!isSocketStream(fPtr)) */
+if(!IOchannelIsSocket)
     return(fprintf(fPtr, buffer));
 
 pSize = strlen(buffer);
@@ -2214,7 +2221,8 @@ int win32_fgetc(FILE * fPtr)
 {
 char chr;
 
-if(!isSocketStream(fPtr))
+/* if(!isSocketStream(fPtr))*/
+if(!IOchannelIsSocket)
     return(fgetc(fPtr));
 
 if(recv(getSocket(fPtr), &chr, 1, NO_FLAGS_SET) <= 0)
@@ -2232,7 +2240,8 @@ char * win32_fgets(char * buffer, int  size, FILE * fPtr)
 int bytesReceived = 0;
 char chr;
 
-if(!isSocketStream(fPtr))
+/* if(!isSocketStream(fPtr))*/
+if(!IOchannelIsSocket)
     return(fgets(buffer, size - 1, fPtr));
 
 while(bytesReceived < size)

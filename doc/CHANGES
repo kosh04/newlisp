@@ -9696,7 +9696,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
 10.0 Release December 8th, 2008
 
-10.0.1
+10.0.1 Release January 8th, 2009
      Eliminated warning messages for new gcc version 4.3.2 compile.
 
      Fixed stat:plot and stat:plotXY routines in stat.lsp for gnupot. Tested 
@@ -9737,4 +9737,49 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      redone documentation and examples for UDP communications in Code Patterns
      and reference documentation
+
+10.0.2
+    Addition of READ_ME-OS2 in doc directory and of readline mode in makefile_os2
+
+    Treatment of trailing slashes in file-names for the 'file?' function is
+    now consistent with Mac OS X and other UNIX. (file? <directory-name>)
+    should always return true, regardless of trailing slash
+
+    'sys-error' now returns last OS errno and text in a list similar to net-error
+    (sys-error 0) resets (as before), any other number reports the error text
+
+    overhaul of makefiles for linux/debian and naming of some osx makefiles
+        make linux
+    or
+        make debian
+    will allways compile a 32-bit newLISP even when on 64-bit Linux. This is the
+    preferred mode to compile for linux, as most libraries and other apps run
+    an 32-bit API even if the OS is 64-bit. Same is true for OS X. This gives
+    newLISP 4G of workspace, with integer operations and file positioning 64-bit.
+    Only if newLISP has access to more than 4G of memory it makes sense to compile
+    fully 64-bit using one of the makefiles with '64' in the name.
+
+    added two amalgamation makefiles in the util directory for Darwin and Linux,
+    no advantage over normal compile, but perhaps different results on other
+    platforms,
+
+    new 'read-utf8' like 'read-char' but reads multibyte utf8 chars
+
+    'eval' did only pass symbol references, now also references from indexed
+    expressions:
+        (define-macro (foo) (list (args 0) 0)) 
+
+        (setf bar '(1 2 3)) 
+        (foo bar) => (bar 0) 
+        (setf (eval (foo bar)) 3) => 3 ; was not possible before
+        bar => (3 2 3) 
+
+    The "Status:" response line for CGI processing has been redone. When newLISP
+    server mode sees CGI output starting with Status: it will compose the HTTP 
+    status header with the rest of the line appearing after "Status:" in the line. 
+    See the Code Patterns document for an example.
+
+    Eliminated all references to opsys (OS number from sys-info) in favor of 
+    Labels "Linux", "Win32" etc. in qa-xxxx files and added "AIX" for future 
+    makefile_aix and makefile_aix_utf8 .
 

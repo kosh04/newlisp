@@ -6,7 +6,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC">
    <meta name="description" content="newLISP Users Manual and Reference">
-   <title>newLISP v.10.0.1 Manual and Reference</title>
+   <title>newLISP v.10.0.2 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -129,7 +129,7 @@ tt {
 </center>
 
 <center>
-<h2>Users Manual and Reference v.10.0.1 <font size=-1>rev 2</font></h2>
+<h2>Users Manual and Reference v.10.0.2</h2>
 </center>
 
 <br><br><br><br>
@@ -535,6 +535,12 @@ newlisp -h
 -http HTTP only
 </pre></blockquote>
 
+<p>Before or after the command-line switches, files to load and execute can 
+be specified. If a newLISP executable program is followed by parameters 
+the program must finish with and <tt>(exit)</tt> statement, else newLISP 
+will take command-line parameters as additional newLISP scripts to be 
+loaded and executed.</p>
+
 <p>On Linux and other Unix systems, a <tt>newlisp</tt> <em>man page</em> can be found:</p>
 
 <blockquote><pre>
@@ -662,9 +668,7 @@ or <tt>-L</tt> option.</p>
 <br>
 
 <a name="working_dir"></a>
-<h3>
-Specifying the working directory
-</h3>
+<h3>Specifying the working directory</h3>
 
 <p>The <tt>-w</tt> option specifies the initial working directory for newLISP after startup:
 </p>
@@ -1050,7 +1054,7 @@ and <a href="#save">save</a> from and to remote server nodes.</p>
 <h2>4. Startup, directories, environment</h2>
 
 <a name="environment"></a>
-<h3>Environment variable NEWLISPDIR</h3>
+<h3>Environment variable <tt>NEWLISPDIR</tt></h3>
 <p>During startup, newLISP sets the environment variable <tt>NEWLISPDIR</tt>, if it is 
 not set already. On Linux, BSDs, Mac OS X and other Unixes the variable is set to 
 <tt>/usr/share/newlisp</tt>. On Win32 the variable is set to 
@@ -1478,7 +1482,7 @@ delimiters. They evaluate to themselves.</p>
 		</p>
 <blockquote><pre>
 (lambda (x) (* x x))                   <span class=arw>&rarr;</span> (lambda (x) (* x x))
-(lambda-macro (a b) (set (eval a) b))  <span class=arw>&rarr;</span> (lambda (x) (* x x))
+(lambda-macro (a b) (set (eval a) b))  <span class=arw>&rarr;</span> (lambda-macro (a b) (set (eval a) b))
 (fn (x) (* x x))                       <span class=arw>&rarr;</span> (lambda (x) (* x x))  ; an alternative syntax
 </pre></blockquote>		<p>
 			<strong>Symbols</strong> evaluate to their contents:
@@ -6343,6 +6347,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#read-utf8">read-utf8</a></td>
+<td>reads UTF-8 character from a file</td>
+</tr>
+
+<tr>
 <td><a href="#save">save</a></td>
 <td>saves a workspace, context, or symbol to a file</td>
 </tr>
@@ -9549,7 +9558,7 @@ for further customizing interactive mode by modifying the newLISP prompt.</p>
 (command-event (fn (s) 
     (if 
         (starts-with s "cd") 
-        (begin (string " " (true? (change-dir (last (parse s " "))))))
+        (string " " (true? (change-dir (last (parse s " ")))))
 
         (starts-with s "[a-zA-Z]" 0)
         (append "!" s)
@@ -10565,9 +10574,9 @@ without the date</td></tr>
 
 <tr><td>%Y</td><td>year as a decimal number including the century</td></tr>
 <tr><td>%z</td><td>time zone or name or abbreviation (same as %Z on Win32,
-different on Linux/Unix)</td></tr>
+different on Unix)</td></tr>
 <tr><td>%Z</td><td>time zone or name or abbreviation (same as %z on Win32,
-different on Linux/Unix)</td></tr>
+different on Unix)</td></tr>
 <tr><td>%%</td><td>a literal '%' character</td></tr>
 </table></center>
 <br>
@@ -13027,7 +13036,6 @@ not the link, except for the <em>mode</em> field.</p>
 (filter big? '(1 10 3 6 4 5 11))  <span class=arw>&rarr;</span> (10 6 11)
 
 ; filter with comparison functor
-
 (set 'L '((a 10 2 7) (b 5) (a 8 3) (c 8) (a 9)))
 
 (filter (curry match '(a *)) L)   <span class=arw>&rarr;</span> ((a 10 2 7) (a 8 3) (a 9))
@@ -13062,7 +13070,8 @@ which returns all elements of a list for which a predicate is false.
 <b>syntax: (find <em>exp-key list</em> [<em>func-compare</em> | <em>int-option</em>])</b><br>
 <b>syntax: (find <em>str-key str-data</em> [<em>int-option</em>])</b>
 
-<h4>Find an expression in a list</h4>
+
+<h3>Find an expression in a list</h3>
 <p>
 If the second argument evaluates to a <em>list</em>, then <tt>find</tt> returns 
 the index position (offset) of the element derived from evaluating <em>exp-key</em>.
@@ -13119,9 +13128,7 @@ list searches can be formulated which are as powerful
 as regular expression searches are for strings.
 </p>
 
-<br>
-
-<h4>Find a string in a string</h4>
+<h3>Find a string in a string</h3>
 <p>
 	If the second argument, 
 	<em>str-data</em>, 
@@ -13941,9 +13948,8 @@ g       general floating point
 format the lower 32 bits of the number.
 </p>
 
-<p>For 64-bit numbers (since version 8.9.7) use the following format 
-strings on Unix-like operating systems:
-</p>
+<p>For 64-bit numbers use the following format strings on Unix-like 
+operating systems:</p>
 
 <blockquote>
 <pre>
@@ -14581,7 +14587,7 @@ to access <tt>/home/db/data.txt</tt> on the local file system.</p>
 	by an optional custom header in <em>str-header</em>:
 </p>
 
-<b>Custom header</b>
+<h3>Custom header</h3>
  
 	<p>The custom header may contain options 
 	for browser cookies or other directives to the server. 
@@ -14858,36 +14864,28 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 <h2><span class="function">import</span></h2>
 <b>syntax: (import <em>str-lib-name</em> <em>str-function-name</em> ["cdecl"])</b>
 
-<p>
-	Imports the function specified in <em>str-function-name</em> 
-	from a shared library named in <em>str-lib-name</em>. 
-	The functions <a HREF="#address">address</a>, 
-	<a HREF="#get-char">get-char</a>, 
-	<a HREF="#get-int">get-int</a>, 
-	<a HREF="#get-float">get-float</a>, 
-	<a HREF="#get-string">get-string</a>, 
-	<a HREF="#pack">pack</a>, and 
-	<a HREF="#unpack">unpack</a> 
-	can be used to retrieve return values 
-	or to unpack data from returned structure addresses. 
-	If the library is not located 
-	in the normal library search path, 
-	<em>str-lib-name</em> must contain 
-	the full path name.
+<p>Imports the function specified in <em>str-function-name</em> 
+from a shared library named in <em>str-lib-name</em>. 
+The functions <a HREF="#address">address</a>, 
+<a HREF="#get-char">get-char</a>, 
+<a HREF="#get-int">get-int</a>, 
+<a HREF="#get-float">get-float</a>, 
+<a HREF="#get-string">get-string</a>, 
+<a HREF="#pack">pack</a>, and 
+<a HREF="#unpack">unpack</a> 
+can be used to retrieve return values or to unpack data from returned 
+structure addresses. If the library is not located in the normal library 
+search path, <em>str-lib-name</em> must contain the full path name.
 </p>
 
-<p>
-	To transform newLISP data types into the data types 
-	needed by the imported function, use the functions 
-	<a href="#float">float</a> for 64-bit double floats, 
-	<a href="#flt">flt</a> for 32-bit floats, 
-	and <a href="#int">int</a> for 32-bit integers. 
-	By default, newLISP passes 
-	floating point numbers 
-	as 64-bit double floats, 
-	integers as 32-bit integers, 
-	and strings as 32-bit integers 
-	for string addresses.
+<p>To transform newLISP data types into the data types needed by the 
+imported function, use the functions 
+<a href="#float">float</a> for 64-bit double floats, 
+<a href="#flt">flt</a> for 32-bit floats, 
+and <a href="#int">int</a> for 32-bit integers. 
+By default, newLISP passes floating point numbers as 64-bit double floats, 
+integers as 32-bit integers, and strings as 32-bit integers for string 
+addresses.
 </p>
 
 <b>example:</b>
@@ -14901,15 +14899,14 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 
 (import "libc.dylib" "printf")  <span class=arw>&rarr;</span> printf &lt;90022080&gt;
 
-;; import in CYGWIN
-
-(import "cygwin1.dll" "printf")  <span class=arw>&rarr;</span> printf &lt;6106B108&gt;
+;; import on Win32
+(import "msvcrt.dll" "printf")  <span class=arw>&rarr;</span> printf &lt;77C4186A&gt;
 
 (printf "%g %s %d %c\n" 1.23 "hello" 999 65)
 <b>1.23 hello 999 A</b>
 <span class=arw>&rarr;</span> 17 ; return value
 
-;; import Win32 DLLs in Win32 or CYGWIN version
+;; import Win32 DLLs in Win32 versions 
 
 (import "kernel32.dll" "GetTickCount")  <span class=arw>&rarr;</span> GetTickCount
 (import "user32.dll" "MessageBoxA")     <span class=arw>&rarr;</span> MessageBoxA
@@ -14918,23 +14915,15 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 </blockquote>
 
 
-<p>
-	In the first example, 
-	the string "1.23 hello 999 A" 
-	is printed as a side effect, 
-	and the value 17 (number of 
-	characters printed) is returned. 
-	Any C function can be imported 
-	from any shared library in this way.
+<p>In the first example, the string "1.23 hello 999 A" 
+is printed as a side effect, and the value 17 (number of 
+characters printed) is returned. Any C function can be imported 
+from any shared library in this way.
 </p>
 
-<p>
-	The message box example pops up 
-	a Windows dialog box, which may be hidden 
-	behind the console window. 
-	The console prompt does not return until the 
-	'OK' button is pressed in the message box.
-</p>
+<p>The message box example pops up a Windows dialog box, which may be hidden 
+behind the console window.  The console prompt does not return until the 
+'OK' button is pressed in the message box.</p>
 
 <blockquote>
 <pre>
@@ -14945,13 +14934,10 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 </blockquote>
 
 
-<p>
-	The other examples show several imports 
-	of Win32 DLL functions and the details of passing values 
-	<em>by value</em> or <em>by reference</em>. 
-	Whenever strings or numbers are passed by reference, 
-	space must be reserved beforehand.
-</p>
+<p>The other examples show several imports of Win32 DLL functions and 
+the details of passing values <em>by value</em> or <em>by reference</em>. 
+Whenever strings or numbers are passed by reference, space must be 
+reserved beforehand.</p>
 
 <blockquote>
 <pre>
@@ -14983,18 +14969,12 @@ str  <span class=arw>&rarr;</span> "C:\\WINDOWS\000                     "
 
 str  <span class=arw>&rarr;</span> "LUTZ-PC\000                        "
 
-(slice str 0 (find "\000" str))  <span class=arw>&rarr;</span> "LUTZ-PC"
-
-;; or use trim
 (trim str)  <span class=arw>&rarr;</span> "LUTZ-PC"
 </pre>
 </blockquote>
 
-<p>
-	<tt>import</tt> returns the address of the function, 
-	which can be used to assign a different name 
-	to the imported function.
-</p>
+<p><tt>import</tt> returns the address of the function, which can be 
+used to assign a different name to the imported function.</p>
 
 <blockquote>
 <pre>
@@ -15007,18 +14987,13 @@ str  <span class=arw>&rarr;</span> "LUTZ-PC\000                        "
 </blockquote>
 
 <p>
-	Note that the Win32 version of newLISP 
-	uses standard call <em>stdcall</em> conventions 
-	to call DLL library routines. 
-	This is necessary for calling DLLs that belong 
-	to the Win32 operating system (e.g., odbc32.dll). 
-	Most third-party DLLs are compiled for 
-	C declaration <em>cdecl</em> calling conventions 
-	and may need to specify the string <tt>"cdecl"</tt> 
-	as an additional last argument when importing functions. 
-	newLISP compiled for Linux and other Unix systems 
-	uses the <em>cdecl</em> calling conventions by default 
-	and ignores any additional string.
+Note that the Win32 version of newLISP uses standard call <em>stdcall</em> conventions 
+to call DLL library routines.  This is necessary for calling DLLs that belong 
+to the Win32 operating system (e.g., odbc32.dll).  Most third-party DLLs are compiled for 
+C declaration <em>cdecl</em> calling conventions and may need to specify the string 
+<tt>"cdecl"</tt> as an additional last argument when importing functions. 
+newLISP compiled for Mac OS X, Linux and other Unix systems uses the <em>cdecl</em> calling 
+conventions by default and ignores any additional string.
 </p>
 
 <blockquote>
@@ -15029,12 +15004,9 @@ str  <span class=arw>&rarr;</span> "LUTZ-PC\000                        "
 </blockquote>
 
 
-<p>
-	Imported functions may take up to fourteen arguments. 
-	Note that floating point arguments 
-	take up two spaces each
-	(e.g., passing five floats takes up 
-	ten of the fourteen parameters).
+<p>Imported functions may take up to fourteen arguments. Note that 
+floating point arguments take up two spaces each
+(e.g., passing five floats takes up ten of the fourteen parameters).
 </p>
 
 
@@ -16286,10 +16258,8 @@ If an argument list contains too many elements, the extra ones will be ignored.
 </p>
 
 <p>
-Note that only functions with <em>applicative order of evaluation</em> can be 
-mapped. Functions with conditional or delayed evaluation of their arguments 
-(e.g., <a href="#if">if</a> or <a href="#case">case</a>) cannot be mapped.
-</p>
+Special forms which use parentheses as syntax cannot be mapped 
+(i.e. <a href="#case">case</a>).</p>
 
 <br><br>
 
@@ -21178,6 +21148,33 @@ in a CGI program or pipe, it will return <tt>nil</tt> when input is exhausted.</
 </p>
 
 <br><br>
+
+<a name="read-utf8"></a>
+<h2><span class="function">read-utf8</span></h2>
+
+<b>syntax: (read-utf8 <em>int-file</em>)</b>
+
+<p>Reads an UTF-8 character from a file specified by the file handle in <em>int-file</em>. 
+The file handle is obtained from a previous <a HREF="#open">open</a> operation. 
+Each <tt>read-utf8</tt> advances the file pointer by the number of bytes contained
+in the UTF-8 character.  Once the end of the file is reached, <tt>nil</tt> is returned. </p>
+
+<p>The fucntion returns and integer value which can be converted to a displayable UTF-8
+character string using the <a href="#char">char</a> function.</p>
+
+<b>example:</b>
+<blockquote><pre>
+(set 'fle (open "utf8text.txt" "read"))
+(while (setq chr (read-utf8 fle))
+	(print (char chr)))
+</pre>
+</blockquote>
+
+<p>The example reads a file containing UTF-8 encoded text and displays it to the
+terminal screen.</p>
+
+<br><br>
+
 <a name="real-path"></a>
 <h2><span class="function">real-path</span></h2>
 <b>syntax: (real-path [<em>str-path</em>])</b>
@@ -21710,7 +21707,7 @@ depending on the operation's success.
 <b>syntax: (replace <em>str-key</em> <em>str-data</em> <em>exp-replacement</em>)</b><br>
 <b>syntax: (replace <em>str-pattern</em> <em>str-data</em> <em>exp-replacement</em> <em>int-option</em>)</b><br>
 
-<h4>List replacement</h4>
+<h3>List replacement</h3>
 <p>
 If the second argument is a list, <tt>replace</tt> replaces all elements in the 
 list <em>list</em> that are equal to the expression in <em>exp-key</em>. The 
@@ -21785,9 +21782,7 @@ searches:</p>
  </pre>
 </blockquote>
 
-<br>
-
-<h4>List removal</h4>
+<h3>List removal</h3>
 <p>
 The last form of <tt>replace</tt> has only two arguments: the expression <em>expr</em> 
 and <em>list</em>. This form removes all <em>expr</em>s found in <em>list</em>.
@@ -21806,9 +21801,7 @@ $0  <span class=arw>&rarr;</span> 4
 </pre>
 </blockquote>
 
-<br>
-
-<h4>String replacement without regular expression</h4>
+<h3>String replacement without regular expression</h3>
 
 <p>If all arguments are strings, <tt>replace</tt> replaces all occurrences 
 of <em>str-key</em> in <em>str-data</em> with the evaluated <em>exp-replacement</em>, 
@@ -21827,9 +21820,7 @@ can also process binary <tt>0</tt>s (zeros).
 </pre>
 </blockquote>
 
-<br>
-
-<h4>Regular expression replacement</h4>
+<h3>Regular expression replacement</h3>
 <p>
 The presence of a fourth parameter indicates that a regular expression search 
 should be performed with a regular expression pattern specified in <em>str-pattern</em> 
@@ -24432,13 +24423,21 @@ create, set and evaluate symbols.
 <h2><span class="function">sys-error</span></h2>
 <b>syntax: (sys-error)</b><br>
 <b>syntax: (sys-error <em>int-error</em>)</b><br>
-<b>syntax: (sys-error 0)</b>
+<b>syntax: (sys-error <em>0</em>)</b>
 
-<p>Reports error numbers generated by the underlying OS 
-newLISP is running on.  The error numbers reported 
+<p>Reports the last error generated by the underlying OS 
+which newLISP is running on.  The error reported 
 may differ on the platforms newLISP has been compiled for.
-Consult the platform's C library information. The second
-syntax form can be used to retrieve the error text.</p>
+Consult the platform's C library information. The error is
+reported as a list of errror number and error text.</p>
+
+<p>If no error has occurred or the system error number has
+been reset <tt>0</tt> is returned.</p>
+
+<p>When <em>int-error</em> is greater <tt>0</tt> (zero) a
+list of the number and the error text is returned.</p>
+
+<p>To reset the error specify 0 as the error number.</p>
 
 <p>Whenever a function in newLISP within the system resources area
 returns <tt>nil</tt>, <tt>sys-error</tt> can be checked 
@@ -24455,18 +24454,14 @@ resources like file handles or semaphores.</p>
 ;; trying to open a nonexistent file
 (open "xyz" "r")  <span class=arw>&rarr;</span> nil
 
-(sys-error)    <span class=arw>&rarr;</span> 2
+(sys-error)       <span class=arw>&rarr;</span> (2 "No such file or directory")
 
-;; retrieve the error text
-(sys-error 2)  <span class=arw>&rarr;</span> "No such file or directory"
-
-;; reset errno with 0
-(sys-error 0)  <span class=arw>&rarr;</span> 0 
+;; reset errno
+(sys-error 0)     <span class=arw>&rarr;</span> (0 "Unknown error: 0")
 </pre>
 </blockquote>
 
-<p>The error number can be cleared by giving a <tt>0</tt> (zero) 
-for the optional argument.</p>
+<p>The error can be cleared by giving a <tt>nil</tt> for the optional argument.</p>
 
 <br><br>
 
@@ -25297,7 +25292,7 @@ and rejects the empty list <tt>()</tt></p>
 </p> 
 
 
-<h3>Use <tt>unify</tt> with expand</h3>
+<h3>Use <tt>unify</tt> with <tt>expand</tt></h3>
 
 <p>
 	Note that variables are not actually bound 
@@ -25852,7 +25847,6 @@ Above Chinese text from <a href="http://www.columbia.edu/kermit/utf8.html">UTF-8
 
 
 <br><br>
-<!-- 8.9.4 -->
 <a name="uuid"></a>
 <h2><span class="function">uuid</span></h2>
 <b>syntax: (uuid [<em>str-node</em>])</b>
@@ -25994,7 +25988,7 @@ list <tt>()</tt> if <em>body</em> was not executed.</p>
 )	
 </pre></blockquote>
 
-<p>See also the function <a href="#unless">when</a> working like 
+<p>See also the function <a href="#unless">unless</a> working like 
 <tt>(when (not ...) ...)</tt>.</p>
 
 <br><br>
@@ -26256,24 +26250,16 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 <b>syntax: (xml-parse <em>string-xml</em> [<em>int-options</em> [<em>sym-context</em> [<em>func-callback</em>]]])</b>
 
 <p>
-	Parses a string containing XML 1.0 compliant, 
-	<em>well-formed</em> XML.
-	<tt>xml-parse</tt> does not perform DTD validation. 
-	It skips DTDs (Document Type Declarations) 
-	and processing instructions.
-	Nodes of type ELEMENT, TEXT, CDATA, 
-	and COMMENT are parsed, and 
-	a newLISP list structure is returned.
-	When an element node does not have 
-	attributes or child nodes,
-	it instead contains an empty list.
-	Attributes are returned as association lists, 
-	which can be accessed using <a HREF="#assoc">assoc</a>.
-	When <tt>xml-parse</tt> fails 
-	due to malformed XML,
-	<tt>nil</tt> is returned 
-	and <a HREF="#xml-error">xml-error</a> can be used 
-	to access error information.
+Parses a string containing XML 1.0 compliant, <em>well-formed</em> XML.
+<tt>xml-parse</tt> does not perform DTD validation. 
+It skips DTDs (Document Type Declarations) and processing instructions.
+Nodes of type ELEMENT, TEXT, CDATA, and COMMENT are parsed, and 
+a newLISP list structure is returned.  When an element node does not have 
+attributes or child nodes, it instead contains an empty list.
+Attributes are returned as association lists, 
+which can be accessed using <a HREF="#assoc">assoc</a>.
+When <tt>xml-parse</tt> fails due to malformed XML, <tt>nil</tt> is returned 
+and <a HREF="#xml-error">xml-error</a> can be used to access error information.
 </p>
 
 <b>example:</b>
@@ -26290,20 +26276,14 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 </pre>
 </blockquote>
 
-<br>
-<b>Modifying the translation process.</b>
+<h3>Modifying the translation process.</h3>
 <p>
-	Optionally, the <em>int-options</em> parameter
-	can be specified 
-	to suppress whitespace,
-	empty attribute lists, 
-	and comments.
-	It can also be used 
-	to transform tags 
-	from strings into symbols.
-	Another function, <a HREF="#xml-type-tags">xml-type-tags</a>, 
-	serves for translating the XML tags.
-	The following option numbers can be used:
+Optionally, the <em>int-options</em> parameter can be specified 
+to suppress whitespace, empty attribute lists, and comments.
+It can also be used to transform tags from strings into symbols.
+Another function, <a HREF="#xml-type-tags">xml-type-tags</a>, 
+serves for translating the XML tags.
+The following option numbers can be used:
 </p>
 
 <br>
@@ -26319,18 +26299,16 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 <tr><td>16</td><td>add SXML (S-expression XML) attribute tags</td></tr>
 </table>
 </blockquote>
-<br>
+
 <p>
-	Options can be combined 
-	by adding the numbers
-	(e.g., <tt>3</tt> would combine the options 
-	for suppressing whitespace text tags/info 
-	and empty attribute lists).
+Options can be combined by adding the numbers
+(e.g., <tt>3</tt> would combine the options 
+for suppressing whitespace text tags/info 
+and empty attribute lists).
 </p>
  
 <p>
-	The following examples 
-	show how the different options can be used:
+The following examples show how the different options can be used:
 </p>
 <br>
 <b>XML source:</b>
@@ -26361,8 +26339,7 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 </pre>
 </blockquote>
 
-<br>
-<b>Parsing without any options:</b>
+<h3>Parsing without any options:</h3>
 
 <blockquote>
 <pre>
@@ -26398,16 +26375,12 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 </blockquote>
 
 <p>
-	The <tt>TEXT</tt> elements containing only whitespace 
-	make the output very confusing.
-	As the database in <tt>example.xml</tt> only contains data,
-	we can suppress whitespace and comments 
-	with option <tt>(+ 1 3)</tt>:
+The <tt>TEXT</tt> elements containing only whitespace make the output very confusing.
+As the database in <tt>example.xml</tt> only contains data,
+we can suppress whitespace and comments with option <tt>(+ 1 3)</tt>:
 </p>
 
-<br>
-
-<b>Filtering whitespace TEXT, COMMENT tags, and empty attribute lists:</b>
+<h3>Filtering whitespace TEXT, COMMENT tags, and empty attribute lists:</h3>
 
 <blockquote>
 <pre>
@@ -26429,19 +26402,14 @@ gets appended with <em>str</em> and the line termination character(s).</p>
 </blockquote>
 
 <p>
-	The resulting output looks much more readable,
-	but it can still be improved 
-	by using symbols instead of strings 
-	for the tags "FRUIT", "NAME", "COLOR", and "PRICE",
-	as well as by suppressing the XML type tags 
-	"ELEMENT" and "TEXT" completely 
-	using the <a HREF="#xml-type-tags">xml-type-tags</a> directive.
+The resulting output looks much more readable, but it can still be improved 
+by using symbols instead of strings for the tags "FRUIT", "NAME", "COLOR", and "PRICE",
+as well as by suppressing the XML type tags "ELEMENT" and "TEXT" completely 
+using the <a HREF="#xml-type-tags">xml-type-tags</a> directive.
 </p>
 
-<br>
-
-<b>Suppressing XML type tags with <a HREF="#xml-type-tags">xml-type-tags</a> 
-and translating string tags into symbol tags:</b>
+<h3>Suppressing XML type tags with <a HREF="#xml-type-tags">xml-type-tags</a> 
+and translating string tags into symbol tags:</h3>
 
 <blockquote>
 <pre>
@@ -26463,10 +26431,9 @@ and translating string tags into symbol tags:</b>
 </blockquote>
 
 <p>
-	When tags are translated into symbols by using option <tt>8</tt>, 
-	a context can be specified in <em>sym-context</em>. 
-	If no context is specified, 
-	all symbols will be created inside the current context.
+When tags are translated into symbols by using option <tt>8</tt>, 
+a context can be specified in <em>sym-context</em>. 
+If no context is specified, all symbols will be created inside the current context.
 </p>
 
 <blockquote>
@@ -26478,24 +26445,20 @@ and translating string tags into symbol tags:</b>
 </blockquote>
 
 <p>
-	Specifying <tt>nil</tt> for the XML type tags TEXT and ELEMENT 
-	makes them disappear.
-	At the same time, 
-	parentheses of the child node list 
-	are removed so that 
-	child nodes now appear as members of the list, 
-	starting with the tag symbol 
-	translated from the string tags 
-	"FRUIT", "NAME", etcetera.
+Specifying <tt>nil</tt> for the XML type tags TEXT and ELEMENT 
+makes them disappear.  At the same time, 
+parentheses of the child node list are removed so that 
+child nodes now appear as members of the list, 
+starting with the tag symbol translated from the string tags 
+"FRUIT", "NAME", etcetera.
 </p>
 
-<br>
-<b>Parsing into SXML (S-expressions XML) format:</b>
+<h3>Parsing into SXML (S-expressions XML) format:</h3>
 <p>
-	Using <a href="#xml-type-tags">xml-type-tags</a> to suppress 
-	all XML-type tags&mdash;along with the option numbers 
-	<tt>1</tt>, <tt>4</tt>, <tt>8</tt>, and <tt>16</tt>&mdash;SXML 
-	formatted output can be generated:
+Using <a href="#xml-type-tags">xml-type-tags</a> to suppress 
+all XML-type tags&mdash;along with the option numbers 
+<tt>1</tt>, <tt>4</tt>, <tt>8</tt>, and <tt>16</tt>&mdash;SXML 
+formatted output can be generated:
 </p>
 
 <blockquote>
@@ -26510,16 +26473,17 @@ and translating string tags into symbol tags:</b>
 </blockquote>
 
 <p>
-	Note that using option number <tt>16</tt> 
-	causes an <tt>@</tt> (at symbol) to be added to attribute lists.
+Note that using option number <tt>16</tt> 
+causes an <tt>@</tt> (at symbol) to be added to attribute lists.
 </p>
 
 <p>
-	See also the <a HREF="#xml-type-tags">xml-type-tags</a> function 
-	for further information on XML parsing.
+See also the <a HREF="#xml-type-tags">xml-type-tags</a> function 
+for further information on XML parsing.
 </p>
-<br>
-<b>Parsing into a specified context</b>
+
+<h3>Parsing into a specified context</h3>
+
 <p>When parsing XML expressions, XML tags are translated into newLISP symbols.
 The <i>sym-context</i> option specifies the target context for the symbol
 creation:
@@ -26536,8 +26500,8 @@ creation:
 
 <p>If the context does not exist, it will be created. If it exists, the quote can 
 be omitted or the context can be referred to by a variable.</p>
-<br>
-<b>Using a call back function</b>
+
+<h3>Using a call back function</h3>
 <p>Normally, <tt>xml-parse</tt> will not return until all parsing has finished.
 Using the <em>func-callback</em> option, <tt>xml-parse</tt> will call back after
 each tag closing with the generated S-expression and a start position and
@@ -26587,24 +26551,20 @@ them as they occur.</p>
    <em>expr-comment-tag</em> <em>expr-element-tags</em>])</b>
 
 <p>
-	Can suppress completely
-	or replace the XML type tags 
-	"TEXT", "CDATA", "COMMENT", and "ELEMENT"
-	with something else specified 
-	in the parameters.
+Can suppress completely or replace the XML type tags 
+"TEXT", "CDATA", "COMMENT", and "ELEMENT" with something else specified 
+in the parameters.
 </p>
 
 <p>
-	Note that <tt>xml-type-tags</tt> 
-	only suppresses or translates the tags themselves 
-	but does not suppress or modify the tagged information.
-	The latter would be done 
-	using option numbers in <a HREF="#xml-parse">xml-parse</a>.
+Note that <tt>xml-type-tags</tt> only suppresses or translates the tags themselves 
+but does not suppress or modify the tagged information.  The latter would be done 
+using option numbers in <a HREF="#xml-parse">xml-parse</a>.
 </p>
 
 <p>
-	Using <tt>xml-type-tags</tt> without arguments 
-	returns the current type tags:
+Using <tt>xml-type-tags</tt> without arguments 
+returns the current type tags:
 </p>
 
 <b>example:</b>
@@ -26617,10 +26577,10 @@ them as they occur.</p>
 </blockquote>
 
 <p>
-	The first example just shows the currently used type tags.
-	The second example specifies suppression of the "TEXT" and "ELEMENT" tags 
-	and shows <tt>cdata</tt> and <tt>!--</tt> instead of 
-	"CDATA" and "COMMENT".
+The first example just shows the currently used type tags.
+The second example specifies suppression of the "TEXT" and "ELEMENT" tags 
+and shows <tt>cdata</tt> and <tt>!--</tt> instead of 
+"CDATA" and "COMMENT".
 </p>
 
 <br><br>
@@ -26630,8 +26590,7 @@ them as they occur.</p>
 <b>syntax: (zero? <em>expr</em>)</b>
 
 <p>
-	Checks the evaluation of <em>expr</em> 
-	to see if it equals <tt>0</tt> (zero).
+Checks the evaluation of <em>expr</em> to see if it equals <tt>0</tt> (zero).
 </p>
 
 <b>example:</b>
@@ -26731,7 +26690,7 @@ them as they occur.</p>
     no symbol reference found         61
     list is empty                     62
     I/O error                         63			
-    
+    working directory not found       64     
 </pre>
 </blockquote>
 
@@ -26808,7 +26767,7 @@ passed by the OS to newLISP when it was started. Normally the function
 
 </table>
 
-<h3>Preset variables with constant values</h3>
+<h3>Predefined variables and functions.</h3>
 
 <p>These are preset symbol constants. Two of them are used as namespace templates,
 one two write platform independent code.</p> 
@@ -26834,6 +26793,13 @@ dictionary. Instead of writing <tt>(define Foo:Foo)</tt> to create a <tt>Foo</tt
 dictionary, the expression <tt>(new Tree 'Foo)</tt> can be used as well. See the chapter
 <a href="#hash">Hash functions and dictionaries</a> foe details.</td>
 <td>&nbsp;no</td><td>&nbsp;n/a</td></tr>
+
+<tr><td><tt>&nbsp;module</tt></td><td>Is a predefined function to load modules. 
+Instead of using <tt>load</tt> together with the <tt>NEWLISPDIR</tt> environment 
+variable, the <tt>module</tt> function loads automatically from 
+<tt>$NEWLISPDIR/modules/</tt>.</td>
+<td>&nbsp;no</td><td>&nbsp;n/a</td></tr>
+
 
 </table>
 

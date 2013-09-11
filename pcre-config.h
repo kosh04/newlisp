@@ -16,6 +16,9 @@ function will be used. */
 character codes, define this macro as 1. On systems that can use "configure",
 this can be done via --enable-ebcdic. */
 
+#ifndef PCRE_CONFIG_H
+#define PCRE_CONFIG_H
+
 #ifndef EBCDIC
 #define EBCDIC 0
 #endif
@@ -106,3 +109,5 @@ Makefile (use --disable-stack-for-recursion). */
 /* #define NO_RECURSE */
 
 /* End */
+
+#endif /* PCRE_CONFIG_H */

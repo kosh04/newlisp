@@ -4,6 +4,7 @@
 ;; @version v 2.3 - a fix in CGI:url-translate when translating utf-8 strings
 ;; @version v 2.4 - check for empty string when aquiring HTTP_COOKIE environment
 ;; @version v 2.5 - cleanup put-page for 10.0
+;; @version v 2.6 - help text corrections
 ;; @author Lutz Mueller, lutz@nuevatec.com
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -42,6 +43,7 @@
 (context 'CGI)
 
 ;; @syntax (CGI:put-page <str-file-name>)
+;; @param <str-file-name> The HTML file containing '&lt;%' and '%&gt;' tags.
 ;; @return The page output to standard out.
 ;; Processes an HTML page by evaluating newLISP source
 ;; embedded into the HTML text between '&lt;%' and '%&gt;' tags.
@@ -79,6 +81,7 @@
     (print page))
 
 ;; @syntax (CGI:url-translate <str-url-format>)
+;; @param <str-url-format> The URL formatted string to translate.
 ;; @return An ASCII formatted string.
 ;; Translates all URL formatted characters to ASCII. Translates '+' into spaces 
 ;; and '%nn' hexdigits into characters. 'nn' is a 2-nibble hex number. 

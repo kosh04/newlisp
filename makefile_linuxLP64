@@ -19,4 +19,4 @@ default: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_linux64
+$(OBJS): primes.h protos.h makefile_linuxLP64

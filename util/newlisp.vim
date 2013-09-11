@@ -5,6 +5,8 @@
 " Another URL:  http://slobin.pp.ru/vim/syntax/newlisp.vim
 " Started at:   2007 Nov 07 (The Great Revolution 90th Anniversary)
 " Last change:  2008 Nov 26
+" Last change:  2009 Feb 5 moved 'estack' into main section and added 
+"               'read-utf8' L.M.
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.24 2008/11/26 21:45:00 slobin Exp $
@@ -130,7 +132,7 @@ syn keyword newlispFunction crit-chi2 crit-z current-line curry date date-value 
 syn keyword newlispFunction default define define-macro delete delete-file delete-url destroy det
 syn keyword newlispFunction device difference directory directory? div do-until do-while doargs
 syn keyword newlispFunction dolist dostring dotimes dotree dump dump-symbol dup empty? encrypt
-syn keyword newlispFunction ends-with env erf error-event error-number error-text estack eval
+syn keyword newlispFunction ends-with env estack erf error-event error-number error-text estack eval
 syn keyword newlispFunction eval-string exec exists exit exp expand explode factor fft file-info
 syn keyword newlispFunction file? filter find find-all first flat float float? floor flt for for-all
 syn keyword newlispFunction fork format fv gammai gammaln gcd get-char get-float get-int get-long
@@ -146,10 +148,10 @@ syn keyword newlispFunction nth null? number? open or pack parse parse-date peek
 syn keyword newlispFunction pop-assoc post-url pow pretty-print primitive? print println prob-chi2
 syn keyword newlispFunction prob-z process prompt-event protected? push put-url pv quote quote? rand
 syn keyword newlispFunction random randomize read-buffer read-char read-expr read-file read-key
-syn keyword newlispFunction read-line real-path ref ref-all regex regex-comp remove-dir rename-file
-syn keyword newlispFunction replace reset rest reverse rotate round save search seed seek select
-syn keyword newlispFunction semaphore sequence series set set-locale set-ref set-ref-all setf setq
-syn keyword newlispFunction sgn share signal silent sin sinh sleep slice sort source spawn sqrt
+syn keyword newlispFunction read-line read-utf8 real-path ref ref-all regex regex-comp remove-dir
+syn keyword newlispFunction rename-file replace reset rest reverse rotate round save search seed seek
+syn keyword newlispFunction select semaphore sequence series set set-locale set-ref set-ref-all setf
+syn keyword newlispFunction setq sgn share signal silent sin sinh sleep slice sort source spawn sqrt
 syn keyword newlispFunction starts-with string string? sub swap sym symbol? symbols sync sys-error
 syn keyword newlispFunction sys-info tan tanh throw throw-error time time-of-day timer title-case
 syn keyword newlispFunction trace trace-highlight transpose trim true? unicode unify unique unless
@@ -161,7 +163,7 @@ syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13
 syn keyword newlispKeyword fn lambda
 
 syn keyword newlispObsolete assoc-set integer nth-set ref-set replace-assoc set-assoc set-nth
-syn keyword newlispDebugging estack dump-symbol
+syn keyword newlispDebugging dump-symbol
 
 syn match newlispColon ":"
 syn match newlispComma ","

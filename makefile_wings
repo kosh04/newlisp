@@ -56,6 +56,7 @@ win-gui:
 	cp guiserver/word-count.lsp /c/newlisp/guiserver
 	cp guiserver/uppercase.lsp /c/newlisp/guiserver
 	# modules sub directory
+	cp modules/canvas.lsp /c/newlisp/modules
 	cp modules/cgi.lsp /c/newlisp/modules
 	cp modules/crypto.lsp /c/newlisp/modules
 	cp modules/ftp.lsp /c/newlisp/modules

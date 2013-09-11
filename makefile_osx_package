@@ -38,6 +38,7 @@ osx-package:
 	-install -m 644 doc/newLISP-10.0-Release.html $(datadir)/doc/newlisp/newLISP-10.0-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
+	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
 	-install -m 644 modules/cgi.lsp $(datadir)/newlisp/modules/cgi.lsp
 	-install -m 644 modules/crypto.lsp $(datadir)/newlisp/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp

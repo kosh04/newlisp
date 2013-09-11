@@ -17,6 +17,9 @@
 
 */
 
+#ifndef NEWLISP_H
+#define NEWLISP_H
+
 #ifdef LINUX
 #define OSTYPE "Linux"
 #endif
@@ -30,12 +33,18 @@
 #endif
 
 #ifdef SOLARIS
-#ifdef TRU64
-#define OSTYPE "Tru64Unix"
-#else
 #define OSTYPE "Solaris"
 #endif
+
+#ifdef TRU64
+#define OSTYPE "Tru64Unix"
+#define SOLARIS 
 #endif
+
+#ifdef AIX 
+#define OSTYPE "AIX" 
+#define SOLARIS 
+#endif 
 
 #ifdef WIN_32
 #define OSTYPE "Win32"
@@ -147,8 +156,11 @@ This is for 64bit large file support (LFS),
 #define MY_VASPRINTF
 #define MY_SETENV
 #define LINE_FEED "\r\n"
-#define isSocketStream(A) ((A)->_flag == 0xFFFF)
+
+/* replaced with IOchannelIsSocket since 10.0.2 */
+#define isSocketStream(A) ((A)->_flag == 0xFFFF) 
 #define getSocket(A) ((A)->_file)
+
 #define vasprintf my_vasprintf
 #define setenv my_setenv
 #define random rand
@@ -213,11 +225,11 @@ This is for 64bit large file support (LFS),
 #ifdef TRU64
 #define INT64 long
 #define UINT64 unsigned long
-#else
+#else /* not NEWLISP64 */
 #define INT64 long long int
 #define UINT64 unsigned long long int
 #endif
-#else
+#else /* NEWLISP64 */
 #define INT64 long
 #define UINT64 unsigned long
 #endif
@@ -412,7 +424,8 @@ This is for 64bit large file support (LFS),
 #define ERR_IS_NOT_REFERENCED 61
 #define ERR_LIST_EMPTY 62
 #define ERR_IO_ERROR 63
-#define MAX_ERROR_NUMBER 63
+#define ERR_WORKING_DIR 64
+#define MAX_ERROR_NUMBER 64
 
 /* I/O routines */
 
@@ -483,6 +496,9 @@ typedef struct
 
 extern char startupDir[];
 extern FILE * IOchannel;
+#ifdef WIN_32
+extern int IOchannelIsSocket;
+#endif
 extern int MAX_CPU_STACK;
 extern long MAX_CELL_COUNT;
 extern int version;
@@ -522,4 +538,6 @@ extern char lc_decimal_point;
 extern CELL * xmlTags;
 extern CELL * xmlCallback;
 /* end of file */
+
+#endif /* NEWLISP_H */
 

@@ -30,17 +30,17 @@ import javax.swing.text.*;
 public class SyntaxHighlighter {
 
 static String reserved[] = {
-"!","!=","$","$0","$1","$10","$11","$12","$13","$14","$15","$2","$3","$4","$5","$6","$7","$8","$9",
-"$args","$idx","$main-args","%","&","*","+","-","/","<","<<","<=","=",">",">=",">>","?","@","MAIN","NaN?",
+"!","!=","$","$0","$1","$10","$11","$12","$13","$14","$15","$2","$3","$4","$5","$6","$7","$8","$9","$args",
+"$idx","$it","$main-args","%","&","*","+","-","/","<","<<","<=","=",">",">=",">>","?","@","MAIN","NaN?",
 "^","abort","abs","acos","acosh","add","address","amb","and","append","append-file","apply","args","array",
 "array-list","array?","asin","asinh","assoc","atan","atan2","atanh","atom?","base64-dec","base64-enc",
-"bayes-query","bayes-train","begin","beta","betai","bind","binomial","callback","case","catch","ceil",
+"bayes-query","bayes-train","begin","beta","betai","bind","binomial","bits","callback","case","catch","ceil",
 "change-dir","char","chop","clean","close","command-event","command-line","cond","cons","constant","context",
 "context?","copy","copy-file","cos","cosh","count","cpymem","crc32","crit-chi2","crit-z","current-line",
 "curry","date","date-value","debug","dec","def-new","default","define","define-macro","delete","delete-file",
 "delete-url","destroy","det","device","difference","directory","directory?","div","do-until","do-while","doargs",
 "dolist","dostring","dotimes","dotree","dump","dup","empty?","encrypt","ends-with","env","erf","error-event",
-"error-number","error-text","eval","eval-string","exec","exists","exit","exp","expand","explode","factor",
+"error-number","error-text","estack","eval","eval-string","exec","exists","exit","exp","expand","explode","factor",
 "fft","file-info","file?","filter","find","find-all","first","flat","float","float?","floor","flt","for",
 "for-all","fork","format","fv","gammai","gammaln","gcd","get-char","get-float","get-int","get-long",
 "get-string","get-url","global","global?","if","if-not","ifft","import","inc","index","int","integer","integer?",
@@ -52,15 +52,15 @@ static String reserved[] = {
 "nil","nil?","normal","not","now","nper","npv","nth","null?","number?","open","or","ostype","pack","parse",
 "parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print","primitive?","print",
 "println","prob-chi2","prob-z","process","prompt-event","protected?","push","put-url","pv","quote","quote?","rand",
-"random","randomize","read-buffer","read-char","read-expr","read-file","read-key","read-line","real-path","ref",
-"ref-all","regex","regex-comp","remove-dir","rename-file","replace","replace-assoc","reset","rest","reverse",
-"rotate","round","save","search","seed","seek","select","semaphore","sequence","series","set","set-locale","set-ref",
-"set-ref-all","setq","setf","sgn","share","signal","silent","sin","sinh","sleep","slice","sort","source","spawn",
-"sqrt","starts-with","sync","string","string?","sub","swap","sym","symbol?","symbols","sys-error","sys-info","tan",
-"tanh","throw","throw-error","time","time-of-day","timer","title-case","trace","trace-highlight","transpose","trim",
-"true","true?","unicode","unify","unique","unless","unpack","until","upper-case","utf8","utf8len","uuid",
-"wait-pid","when","while","write-buffer","write-char","write-file","write-line","xml-error","xml-parse",
-"xml-type-tags","zero?","|","~" };
+"random","randomize","read-buffer","read-char","read-expr","read-file","read-key","read-line","read-utf8",
+"real-path","ref","ref-all","regex","regex-comp","remove-dir","rename-file","replace","replace-assoc","reset",
+"rest","reverse", "rotate","round","save","search","seed","seek","select","semaphore","sequence","series","set",
+"set-locale","set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent","sin","sinh","sleep","slice",
+"sort","source","spawn", "sqrt","starts-with","sync","string","string?","sub","swap","sym","symbol?","symbols",
+"sys-error","sys-info","tan", "tanh","throw","throw-error","time","time-of-day","timer","title-case","trace",
+"trace-highlight","transpose","trim", "true","true?","unicode","unify","unique","unless","unpack","until",
+"upper-case","utf8","utf8len","uuid", "wait-pid","when","while","write-buffer","write-char","write-file",
+"write-line","xml-error","xml-parse", "xml-type-tags","zero?","|","~" };
 
 static SimpleAttributeSet comment;
 static SimpleAttributeSet keyword;
@@ -228,6 +228,11 @@ static public void color(TextPaneWidget widget, int offset, int length)
 				else if(chr == '\'')
 					{
 					doc.setCharacterAttributes(idx - 1, 1, paren, false);
+					continue;
+					}
+				else 
+					{
+					doc.setCharacterAttributes(idx - 1, 1, normal, false);
 					continue;
 					}
 			}

@@ -1,4 +1,4 @@
-newLISP version 9.x.x for LINUX, FreeBSD, Mac OSX Solaris and Win32
+newLISP version 10.x.x for LINUX, FreeBSD, Mac OSX Solaris and Win32
 ===================================================================
 
 
@@ -93,7 +93,7 @@ MORE INFO
 ---------
 See in the doc/ directory of the source distribution
 
-Lutz Mueller, June 2008
+Lutz Mueller, June 2009
 
                                   +++
 

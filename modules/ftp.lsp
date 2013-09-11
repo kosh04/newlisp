@@ -2,6 +2,7 @@
 ;; @description FTP file transfer routines
 ;; @version 1.4 - comments redone for automatic documentation
 ;; @version 1.5 - change in read-buffer for v.10.0
+;; @version 1.6 - change in net-receive for v.10.0
 ;; @author Eddie Rucker, Lutz Mueller, 2003
 ;;
 ;; <h2>FTP file transfer routines</h2>
@@ -89,7 +90,7 @@
             (net-send socket (append "RETR " file-name "\r\n"))
             (send-get-result "STAT\r\n" "1")
             (set 'fle (open file-name "w"))
-            (while (net-receive socket2 'buffer 512)
+            (while (net-receive socket2 buffer 512)
                 (if debug-mode (print "."))
                 (write-buffer fle buffer))
             (close fle)) true)
@@ -101,7 +102,7 @@
 (define (send-get-result str code)
     (net-send socket str)
     (if debug-mode (println "sent:" str))
-    (net-receive socket 'result 256 "\r\n")
+    (net-receive socket result 256 "\r\n")
     (if debug-mode (println result))
     (if (starts-with result code) result))
 
@@ -109,7 +110,7 @@
     (set 'FTP:result nil)
     (set 'socket (net-connect host port))
     (if socket
-        (net-receive socket 'result 256 "\r\n")
+        (net-receive socket result 256 "\r\n")
         (begin
             (set 'result "could not connect")
             nil)))    

@@ -1585,11 +1585,7 @@ getFloat(params, &p);
 
 bico = exp(gammaln(n + 1.0) - gammaln(k + 1.0) - gammaln(n - k + 1.0));
 
-#ifdef TRU64
 binomial = bico * pow(p, (double)k) * pow(1.0 - p, (double)(n - k));
-#else
-binomial = bico * pow(p, k) * pow(1.0 - p, (n - k));
-#endif
 
 return(stuffFloat(&binomial));
 }
@@ -1897,12 +1893,6 @@ cashFlow = 0.0;
 count = 0;
 while(list !=  nilCell)
     {
-/*
-    if(list->type == CELL_FLOAT)
-        memcpy((void *)&fNum, (void *)&list->aux, sizeof(double));
-    else if(list->type == CELL_LONG)
-	fNum = (int)list->contents;
-*/
 	if(isNumber(list->type))
 		fNum = getFloatFromCell(list);
     else 

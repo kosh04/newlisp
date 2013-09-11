@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\lutz\newLISP\newlisp-10001-win-gs-125.exe"
+OutFile "c:\lutz\newLISP\newlisp-10002-win-gs-127.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.25 and newLISP 10.0.1 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
+DirText "This will install the newLISP-GS 1.27 and newLISP 10.0.2 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3
@@ -316,6 +316,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\guiserver\uppercase.lsp"
 
   SetOutPath $INSTDIR\modules
+  File "c:\newlisp\modules\canvas.lsp"
   File "c:\newlisp\modules\cgi.lsp"
   File "c:\newlisp\modules\crypto.lsp"
   File "c:\newlisp\modules\ftp.lsp"
@@ -440,6 +441,7 @@ Section "Uninstall"
   Delete $INSTDIR\guiserver\word-count.lsp
   Delete $INSTDIR\guiserver\uppercase.lsp
 
+  Delete $INSTDIR\modules\canvas.lsp
   Delete $INSTDIR\modules\cgi.lsp
   Delete $INSTDIR\modules\crypto.lsp
   Delete $INSTDIR\modules\ftp.lsp

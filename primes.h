@@ -17,6 +17,9 @@
 
 */
 
+#ifndef PRIMES_H
+#define PRIMES_H
+
 
 PRIMITIVE primitive[] =
 	{
@@ -258,6 +261,9 @@ PRIMITIVE primitive[] =
 	{"open",		p_open,		0},
 	{"close",		p_close,	0},
 	{"read-char",	p_readChar,	0},
+#ifdef SUPPORT_UTF8
+	{"read-utf8",	p_readUTF8,	0},
+#endif
 	{"write-char",	p_writeChar,0},
 	{"read-buffer",	p_readBuffer,0},
 	{"write-buffer",p_writeBuffer,0},
@@ -360,9 +366,7 @@ PRIMITIVE primitive[] =
 	{"address",		p_address,	0},
 	{"dump",		p_dump,	        0},
 	{"cpymem",		p_copyMemory,	0},
-#ifdef ESTACK
 	{"estack",		p_estack,		0},
-#endif
 	{"sleep",		p_sleep,	0},
 	{"time",		p_time,	        0},
 	{"time-of-day",	p_timeOfDay,    0},
@@ -397,3 +401,4 @@ PRIMITIVE primitive[] =
 	{NULL,NULL,0},
 };
 
+#endif /* PRIMES_H */

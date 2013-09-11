@@ -1,6 +1,6 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.27 changes for 10.0
+;; @version 1.28 changes for 10.0
 ;; @author LM, August 2008
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -689,7 +689,7 @@
 ;; All of the above statements will produce the same background color on the <tt>aPanel</tt>.
 ;;
 ;; <li><b>Sound  and MIDI API</b><br>
-;; The newLISP-GS sound API uses the default saundbank and sound harware installed 
+;; The newLISP-GS sound API uses the default saundbank and sound hardware installed 
 ;; on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be
 ;; installed. On Win32 and some Unix platforms a soundbank file needs to be installed.
 ;; Soundbanks for the Java JRE can be obtained at:

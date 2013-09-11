@@ -1,4 +1,4 @@
-# makefile for newLISP v. 10.x.x on LINUX
+# makefile for newLISP v.10.x.x on LINUX with readline support
 #
 # Note, that readline support may require different libraries on different OSs
 # 
@@ -6,16 +6,15 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
-#CFLAGS = -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DLINUX
-CFLAGS = -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DLINUX
+#CFLAGS = -m32 -Wall -pedantic -Wno-uninitialized -c -O2 -g -DLINUX
+CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DLINUX
 
 CC = gcc
 
 
 default: $(OBJS)
-#	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -ltermcap -o newlisp
-#	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
-	$(CC) $(OBJS) -m32 -g -lm -ldl -o newlisp
+	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -o newlisp
+#	$(CC) $(OBJS) -m32 -g -lm -ldl -o newlisp
 	strip newlisp
 
 .c.o:

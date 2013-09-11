@@ -123,9 +123,27 @@ int isFile(char * fileName)
 {
 struct stat fileInfo;
 
+#ifdef WIN32
+char slash;
+size_t len;
+int result;
+
+len = strlen(fileName);
+slash = *(fileName + len - 1);
+if(slash == '\\' || slash == '/')
+	*(fileName + len - 1) = 0;
+#endif
+
+#ifdef WIN32
 #ifdef USE_WIN_UTF16PATH
-return(stat_utf16(fileName, &fileInfo));
+result = stat_utf16(fileName, &fileInfo);
 #else
+result = stat(fileName, &fileInfo);
+#endif
+if(slash == '\\' || slash == '/')
+	*(fileName + len - 1) = slash;
+return(result);
+#else /* not WIN32 */
 return(stat(fileName, &fileInfo));
 #endif
 }
@@ -213,6 +231,7 @@ if(read((int)handle, &chr, 1) <= 0) return(nilCell);
 
 return(stuffInteger((UINT)chr));
 }
+
 
 
 CELL * p_readBuffer(CELL * params)
@@ -1918,16 +1937,20 @@ return(cell);
 
 CELL * p_systemError(CELL * params)
 {
-UINT init;
+CELL * cell;
+UINT errnum;
 
 if(params != nilCell)
 	{
-	getInteger(params, (UINT*)&init);
-	if(init == 0) errno = 0;
-	else return(stuffString(strerror(init)));
+	getInteger(params, &errnum);
+	if(errnum == 0) errno = 0;
 	}
+else errnum = errno;
 
-return(stuffInteger((UINT)errno));
+cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errnum));
+((CELL *)cell->contents)->next = stuffString(strerror(errnum));
+
+return(cell);
 }
 
 
@@ -2559,7 +2582,6 @@ if(params != nilCell)
 	
 return(stuffString(getUUID(str, nodeMAC)));
 }
-
 
 /* eof */
 

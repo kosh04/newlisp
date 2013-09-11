@@ -872,9 +872,10 @@
 
 1.25 changes for 9.9.2
 
-1.26 
-  closing taabs which where not last tabs sometimes caused crashes or a wrong
-  tabs status
- 
+1.26 guiserver
+  don't repeat last color change on keystroke but display normal color
+
 1.27
-  running the editor wrote debug file of editor contents 
+  added $it, bits, estack and read-utf8 to syntax highlighting
+1.28
+  spelling in help doc

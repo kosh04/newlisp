@@ -1,0 +1,30 @@
+# amalgamation makefile for newLISP v. 10.x.x on Linux with readline support
+# Concats all newLISP source files into one big file. At least on gcc v.4.3.2
+# on Linux there is no speed advantage through better optimization of the
+# compiler. But other platforms compilers may show different results.
+#
+# needs readline library and headerfiles installed (X tools)
+#
+
+
+OBJS = newlisp-amal.o pcre.o
+
+CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX
+
+CC = cc -L/usr/lib
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+newlisp-amal.c:
+	cat newlisp.c nl-symbol.c nl-math.c nl-list.c nl-liststr.c nl-string.c nl-filesys.c \
+    nl-sock.c nl-import.c nl-xml.c nl-web.c nl-matrix.c nl-debug.c nl-utf8.c > newlisp-amal.c
+
+
+$(OBJS): newlisp.h primes.h protos.h makefile_amal_linux_utf8
+
+

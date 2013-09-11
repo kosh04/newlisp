@@ -18,7 +18,7 @@ float     4
 double    8
 wchar_t   4
 
-output on AMD64
+output on AMD64 and Intel dual Core 2
 
 type      bytes
 ---------------

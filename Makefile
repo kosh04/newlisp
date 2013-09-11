@@ -28,8 +28,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.0.1
-INT_VERSION = 10001
+VERSION = 10.0.2
+INT_VERSION = 10002
 GUISERVER = /usr/share/newlisp/guiserver
 
 default:
@@ -38,16 +38,12 @@ default:
 help:
 	@echo "Do one of the following:"
 	@echo
-	@echo "  make linux           # newlisp for LINUX
-	@echo "  make linux_utf8      # newlisp for LINUX UTF-8"
-	@echo "  make linux_readline  # newlisp for LINUX with readline support"
-	@echo "  make linux_utf8_readline  # newlisp for LINUX UTF-8 with readline support"
+	@echo "  make linux           # newlisp for LINUX with readline support"
+	@echo "  make linux_utf8      # newlisp for LINUX UTF-8 and readline support"
 	@echo "  make linux_lib       # newlisp.so as shared library for LINUX"
 	@echo "  make linux_lib_utf8  # newlisp.so as shared library for LINUX with UTF-8"
-	@echi "  make debian          # newlisp for UBUNTU debian with readline support"
-	@echi "  make debian_utf8     # newlisp for UBUNTU debian UTF-8 with readline support"
-	@echo "  make linux64ILP32    # newlisp for LINUX 64 with 32-bit pointers / AMD64"
-	@echo "  make linux64LP64     # newlisp for LINUX 64 with 64-bit pointers / AMD64"
+	@echo "  make debian          # same as newlisp for LINUX"
+	@echo "  make debian_utf8     # same as newlisp for LINUX UTF-8"
 	@echo "  make tru64           # newlisp for HP tru64 with 32 bit pointers - read doc/TRU64BUILD"
 	@echo "  make bsd             # newlisp for FreeBSD and OpenBSD"
 	@echo "  make netbsd          # newlisp for NetBSD (same as previous w/o readline)"
@@ -55,10 +51,9 @@ help:
 	@echo "  make darwin          # newlisp for Mac OSX v.10.4 or later, readline support"
 	@echo "  make darwin_utf8     # newlisp for Mac OSX v.10.4 or later, readline and UTF-8 support"
 	@echo "  make darwin_lib      # newlisp for Mac OSX v.10.3 or later as shared library"
-	@echo "  make universal       # newlisp for Mac OSX v.10.3 universal version ppc+intel"
-	@echo "  make universal_utf8  # newlisp for Mac OSX v.10.3 universal version ppc+intel UTF-8"
+	@echo "  make osx_universal       # newlisp for Mac OSX v.10.3 universal version ppc+intel"
+	@echo "  make osx_universal_utf8  # newlisp for Mac OSX v.10.3 universal version ppc+intel UTF-8"
 	@echo "  make solaris         # newLISP for Sun SOLARIS (tested on Sparc)"
-	@echo "  make solarisLP64     # newLISP for Sun SOLARIS 64-bit LP64 (tested on Sparc)"
 	@echo "  make solaris_utf8    # newLISP for Sun SOLARIS UTF-8 (tested on Sparc)"
 	@echo "  make opensolaris     # newLISP for SunOS OpenSolaris on i386 INtel/AMD CPU"
 	@echo "  make true64          # newLISP for tru64 UNIX LP64 tested on Alpha CPU"
@@ -108,12 +103,6 @@ linux_lib:
 linux_lib_utf8:
 	make -f makefile_linux_lib_utf8
 
-linux64ILP32:
-	make -f makefile_linux64ILP32
-	
-linux64LP64:
-	make -f makefile_linux64LP64
-
 tru64:
 	make -f makefile_tru64
 
@@ -129,10 +118,10 @@ bsd_lib:
 darwin_lib:
 	make -f makefile_darwin_lib
 
-universal:
+osx_universal:
 	make -f makefile_universal
 
-universal_utf8:
+osx_universal_utf8:
 	make -f makefile_universal_utf8
 
 darwin:
@@ -296,6 +285,7 @@ install:
 	-install -m 644 doc/newLISP-10.0-Release.html $(datadir)/doc/newlisp/newLISP-10.0-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
+	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
 	-install -m 644 modules/cgi.lsp $(datadir)/newlisp/modules/cgi.lsp
 	-install -m 644 modules/crypto.lsp $(datadir)/newlisp/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
@@ -394,6 +384,7 @@ install_home:
 	-install -m 644 doc/newLISP-10.0-Release.html $(HOME)/share/doc/newlisp/newLISP-10.0-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
+	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp
 	-install -m 644 modules/cgi.lsp $(HOME)/share/newlisp/modules/cgi.lsp
 	-install -m 644 modules/crypto.lsp $(HOME)/share/newlisp/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp

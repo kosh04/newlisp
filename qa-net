@@ -28,9 +28,6 @@
 
 (set 'start (time-of-day))
 
-; get operating system
-(set 'opsys (& (last (sys-info)) 0xf))
-
 (set 'targetURL (or 
 		(main-args 2)
 		(append "http://localhost:10001/" (real-path) "/qa-junk.txt")))
@@ -58,7 +55,7 @@
 (if (not connection)
 	(begin
 		(println "Starting server on localhost")
-		(if (and (not (main-args -2)) (> opsys 5) (< opsys 9))
+		(if (find ostype '("Win32" "OS/2"))
 			(set 'pid (process (string "newlisp -c -d " port)))
 			(set 'pid (process (string "./newlisp -c -d " port)))))
 	(begin

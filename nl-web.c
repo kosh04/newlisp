@@ -63,6 +63,10 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp );
 #endif
 */
 
+#ifdef WIN_32
+extern int IOchannelIsSocket;
+#endif
+
 
 ssize_t readFile(char * fileName, char * * buffer);
 int writeFile(char * fileName, char * buffer, size_t size, char * type);
@@ -564,7 +568,7 @@ else /* no content length given, relies on host closing the connection */
 	resultPtr = allocMemory(BUFFSIZE + 1);
 	resultSize = 0;
 	size = BUFFSIZE;
-	memset(buff, 0, BUFFSIZE);
+	/* memset(buff, 0, BUFFSIZE); */
 	while ((sizeRead = recvsize_tm(buff, BUFFSIZE - 1, sock)) > 0)
 		{
 		if((resultSize + sizeRead) > size)
@@ -574,7 +578,6 @@ else /* no content length given, relies on host closing the connection */
 			}
 		memcpy(resultPtr + resultSize, buff, sizeRead);
 		resultSize += sizeRead;
-		memset(buff, 0, BUFFSIZE);
 		}
 	}
 
@@ -882,8 +885,8 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
  subset HTTP/1.0 compliant
 */
 
-#define STATUS_HEADER "HTTP/1.0 200 OK\r\n"
-#define SERVER_SOFTWARE "newLISP/10.0.1"
+/* #define DEBUGHTTP */
+#define SERVER_SOFTWARE "newLISP/10.0.2"
 
 int sendHTTPmessage(char * fmt, char * str);
 void handleHTTPcgi(char * command, char * query);
@@ -894,26 +897,38 @@ char * getMediaType(char * request);
 
 void sendHTTPpage(char * content, size_t size, char * media, int closeFlag)
 {
-if(strncmp(content, "HTTP/", 5))
+int pos = 0;
+char status[128];
+
+memset(status, 0, 128);
+if(strncmp(content, "Status:", 7) == 0)
 	{
-	varPrintf(OUT_CONSOLE, STATUS_HEADER);
-	varPrintf(OUT_CONSOLE, "Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
-#ifdef DEBUGHTTP
-	puts("# Header sent:");
-	puts(STATUS_HEADER);
-	printf("Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
-#endif
+	/* get content after */
+	while(*(content + pos) >= 32) pos++;
+	memcpy(status, content + 7, pos - 7); 
+	content = content + pos;
+	if(size) size -= pos;
+	while(*content == '\r' || *content == '\n') { content++; size--; }
 	}
+else
+	strncpy(status, "200 OK", 6);
+
+varPrintf(OUT_CONSOLE, "HTTP/1.0 %s\r\n", status);
+varPrintf(OUT_CONSOLE, "Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
+#ifdef DEBUGHTTP
+puts("# Header sent:");
+printf("HTTP/1.0 %s\r\n", status);
+printf("Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
+#endif
 
 if(media != NULL)
 	{
 	varPrintf(OUT_CONSOLE, "Content-length: %d\r\nContent-type: %s\r\n\r\n", size, media);
 #ifdef DEBUGHTTP
-	printf("Content-length: %ld\r\nContent-type: %s\r\n\r\n", size, media);
+	printf("Content-length: %d\r\nContent-type: %s\r\n\r\n", (int)size, media);
 #endif
 	}
 #ifndef WIN_32
-/* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
 fflush(IOchannel); 
 if(closeFlag) 
@@ -922,7 +937,8 @@ if(closeFlag)
 	IOchannel = NULL;
 	}
 #else
-if(IOchannel != NULL && isSocketStream(IOchannel))
+/*if(IOchannel != NULL && isSocketStream(IOchannel))*/
+if(IOchannel != NULL && IOchannelIsSocket)
 	{
 	sendall(getSocket(IOchannel), content, size);
 	close(getSocket(IOchannel));
@@ -933,11 +949,12 @@ return;
 #endif
 #ifdef DEBUGHTTP
 printf("# content:%s:\r\n", content);
+fflush(stdout);
 #endif
 }
 
 #define MAX_BUFF 1024
-#define ERROR_404 "ERR:404 File not found: %s\r\n"
+#define ERROR_404 "ERR:404 File or Dirctory not found: %s\r\n"
 #define ERROR_411 "ERR:411 length required for: %s\r\n"
 #define DEFAULT_PAGE_1 "index.html"
 #define DEFAULT_PAGE_2 "index.cgi"
@@ -988,7 +1005,12 @@ if(*sptr == '/')
 	{
 	*sptr = 0;
 	sptr++;
-	if(chdir(request) < 0) fatalError(ERR_IO_ERROR, 0, 0);
+/* 	if(chdir(request) < 0) fatalError(ERR_IO_ERROR, 0, 0); */
+	if(chdir(request))
+		{
+		sendHTTPmessage("Status: 404 not found %s\r\n", request);
+		return(TRUE);
+		}
 	request = sptr;
 	}
 
@@ -1056,7 +1078,7 @@ switch(type)
 		if(readPayLoad(size, query, 0, request) == -1)
 			{
 			free(query);
-			sendHTTPmessage("ERR:500 cannot read header: %s\r\n", request);
+			/* sendHTTPmessage("ERR:500 cannot read header: %s\r\n", request); */
 			break;
 			}
 
@@ -1161,7 +1183,7 @@ return(size);
 
 ssize_t readPayLoad(ssize_t size, char * buff, int outFile, char * request)
 {
-ssize_t bytes;
+ssize_t bytes, readsize;
 size_t offset = 0, transferred = 0;
 
 #ifdef DEBUGHTTP
@@ -1170,13 +1192,15 @@ printf("# Payload size:%ld\r\n", size);
 
 while(size > 0)
 	{
+	readsize = (size > MAX_BUFF) ? MAX_BUFF : size;
 #ifndef WIN_32
-	bytes = read(fileno(IOchannel), buff + offset, MAX_BUFF); 
+	bytes = read(fileno(IOchannel), buff + offset, readsize); 
 #else
-	if(IOchannel != NULL && isSocketStream(IOchannel))
-		bytes = recv(getSocket(IOchannel), buff + offset, MAX_BUFF, NO_FLAGS_SET);
+/*	if(IOchannel != NULL && isSocketStream(IOchannel))*/
+	if(IOchannel != NULL && IOchannelIsSocket)
+		bytes = recv(getSocket(IOchannel), buff + offset, readsize, NO_FLAGS_SET);
 	else
-		bytes = read(fileno(IOchannel), buff + offset, MAX_BUFF);
+		bytes = read(fileno(IOchannel), buff + offset, readsize);
 #endif
 
 #ifdef DEBUGHTTP
@@ -1272,25 +1296,7 @@ size = readFile(tempfile, &content);
 if(size == -1)	
 	sendHTTPmessage("ERR:500 cannot read output of: %s", request);
 else
-	{
-#ifdef WIN_32_BEFORE_SETTING_BINARYMODE
-	/* replace all \r\r\n with \r\n (artefact of Win32 out-piping) */
-	ptr = content;
-	bytes = 0;
-	while((pos = strstr(ptr, "\r\r\n")))
-		{
-		memcpy(content + bytes, ptr, pos - ptr);
-		bytes += pos - ptr;
-		memcpy(content + bytes, "\r\n", 2);
-		bytes += 2;
-		ptr = pos + 3 ;
-		--size;
-		}
-	memcpy(content + bytes, ptr, size - bytes);
-	*(content + size) = 0;
-#endif	
 	sendHTTPpage(content, size, NULL, TRUE);
-	}
 	
 #ifdef DEBUGHTTP
 printf("# Temporary file: %s\n", tempfile);

@@ -83,8 +83,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font></h1>
-Version 2009 January 7<sup>th</sup><br>
-<a href="http://newlisp.org">newLISP</a> v.10.0 
+Version 2009 March 9<sup>th</sup><br>
+<a href="http://newlisp.org">newLISP</a> v.10.0.2
 </center>
 
 <br><br><br>
@@ -1252,7 +1252,7 @@ context can be passed, which then will be interpreted as the default functor.</p
 
 <p>Many built-in functions when returning a list or array or an element belonging to
 a list or array referenced by a symbol, return a reference to the list &ndash; not 
-a copy. This can be used to nest buil-in functions when modifying a list:</p>
+a copy. This can be used to nest built-in functions when modifying a list:</p>
 
 <pre>
     (set 'L '(r w j s r b))
@@ -1625,20 +1625,18 @@ the symbol result contains the error message.</p>
 
 <h3>Operating system errors</h3>
 
-<p>Some errors originating at operating system level are not caugth by newLISP, but can be 
+<p>Some errors originating at operating system level are not caught by newLISP, but can be 
 inspected using the function <tt>sys-error</tt>. For example the failure to open a file could 
 have different causes:</p>
 
 <pre>
     ;; trying to open a nonexistent file
-    (open "blahbla" "r")  → nil
-    (sys-error)    → 2
+    (open "blahbla" "r")  →  nil
+    (sys-error)           →  (2 "No such file or directory")
 
-    ;; get error text from OS
-    (sys-error 2)  → "No such file or directory"
 
-    ;; clear errno, set to 0
-    (sys-error 0)  → 0
+    ;; to clear errno specify 0
+    (sys-error 0)         →  (0 "Unknown error: 0")
 </pre>
 
 <p>Numbers returned may be different on different UNIX platforms. Consult the file <tt>/usr/include/sys/errno.h</tt> on your platform.</p>
@@ -1656,7 +1654,7 @@ have different causes:</p>
     (last double)  &rarr; (+ x x)
     
     ;; make a ''fuzzy'' double
-    (setf (double 1) '(mul (normal x (div x 10)) 2))
+    (setf (nth 1 double) '(mul (normal x (div x 10)) 2))
     
     (double 10) &rarr; 20.31445313
     (double 10) &rarr; 19.60351563
@@ -3136,13 +3134,13 @@ and <tt>newlisp-wiki</tt> is a content management system which also runs the
 
 <p>newLISP normally puts out a standard <tt>HTTP/1.0 200 OK\r\n</tt> response
 header plus a <tt>Server: newLISP v. ...\r\n</tt> header line. If the first line of
-CGI program output starts with "HTTP/" then newLISP's standard header
+CGI program output starts with "Status:" then newLISP's standard header
 output is suppressed, and the CGI program must supply the full header by
 itself. The following example redirects a request to a new location:</p>
 
 <pre>
     #!/usr/bin/newlisp
-    (print "HTTP/1.0 301 Moved Permanently\r\n")
+    (print "Status: 301 Moved Permanently\r\n")
     (print "Location: http://www.newlisp.org/index.cgi\r\n\r\n")
     (exit)
 </pre>
