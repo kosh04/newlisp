@@ -6,6 +6,9 @@
 # see also: http://www.unicode.org/charts/
 #
 
+(println)
+(println "Testing UTF-8 font display capabilities")
+
 (context 'L)
 (set 'Albanian "Un\195\171 mund t\195\171 ha qelq dhe nuk m\195\171 gjen gj\195\171.")
 
@@ -122,10 +125,21 @@
 (context MAIN)
 
 (dotree (l L)
-	(println (name l) ":" (eval l)))
+	(println (term l) ":" (eval l)))
 
-;(println "\011\239\163\191")
 ;(println "\239\163\191")
 (println (char 63743))
+
+(println ">>>>> Tested UTF-8 font and display performance")
 (exit)
 ;; eof
+
+; utf8 test data
+
+; should show Chinese characters if editor or terminal is UTF-8 capable
+; (set 'utf8str "我能吞下玻璃而不伤身体。")
+
+;(set 'utf8chars '(25105 33021 21534 19979 29627 29827 32780 19981 20260 36523 20307 12290))
+;(set 'utf8str (join (map char utf8chars)))
+;(= (map char (explode utf8str)) utf8chars)
+

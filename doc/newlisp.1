@@ -1,9 +1,9 @@
-.TH newlisp 1 "September 2009" "version 10.1.5" "Commandline Parameters"
+.TH newlisp 1 "March 2010" "version 10.2.0" "Commandline Parameters"
 .SH NAME
 newlisp \- lisp like programming language
 .SH SYNOPSIS
 .B newlisp
-[\-n] [\-h] [\-c | \-C | \-http] [\-s stack] [\-m max\-mem\-megabyte] [[\-l path\-file | \-L path\-file] [\-p port\-number | \-d port\-number]] [\-w directory] [lisp\-files ...] [\-e programtext]
+[\-n] [\-h] [\-c | \-C | \-http] [\-t microseconds] [\-s stack] [\-m max\-mem\-megabyte] [[\-l path\-file | \-L path\-file] [\-p port\-number | \-d port\-number]] [\-w directory] [lisp\-files ...] [\-e programtext]
 .SH DESCRIPTION
 Invokes newLISP which first loads init.lsp if present. Then one or more options and one or more newLISP source files can be specified. The options and source files are executed in the sequence they appear. For some options is makes sense to have source files loaded first like for the \-p and \-d options. For other options like \-s and \-m it is logical to specify these before the source files to be loaded. If a \-e switch is used the programtext is evaluated and then newlisp exits otherwise evaluation continues interactively (unless an exit occurs during lisp\-file interpretation).
 .SH OPTIONS

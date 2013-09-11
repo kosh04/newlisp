@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,15 +47,23 @@
 /* from nl-sock.c */
 extern UINT errorIdx;
 extern char * netErrorMsg[];
+#define ERR_INET_CONNECT_FAILED 4
+#define ERR_INET_TIMEOUT 17
 #define ERROR_BAD_URL 18
 #define ERROR_FILE_OP 19
 #define ERROR_TRANSFER 20
+#define ERROR_INVALID_RESPONSE 21
+#define ERROR_NO_RESPONSE 22
+#define ERROR_DOCUMENT_EMPTY 23
+#define ERROR_HEADER 24
+#define ERROR_CHUNKED_FORMAT 25
 
 #define OK_FILE_DELETED "file deleted"
 
-
 #define MAX_PROTOCOL 8
 #define NO_FLAGS_SET 0
+
+char * requestMethod[] = {"GET", "HEAD", "PUT", "PUT", "POST", "DELETE"};
 
 /* with MinGW gcc 3.4.5 not needed
 #ifdef WIN_32
@@ -195,24 +203,24 @@ return(result);
 
 CELL * p_getUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_GET_URL, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_GET, 0));
 }
 
 
 CELL * p_putUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_PUT_URL, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_PUT, 0));
 }
 
 
 CELL * p_postUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_POST_URL, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_POST, 0));
 }
 
 CELL * p_deleteUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE_URL, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, 0));
 }
 
 #define BASE64_ENC 0
@@ -304,33 +312,33 @@ errorIdx = 0;
 if(url == NULL)
 	params = getString(params, &url);
 
-if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL || type == HTTP_POST_URL)
+if(type == HTTP_PUT || type == HTTP_PUT_APPEND || type == HTTP_POST)
 	params = getStringSize(params, &putPostStr, &size, TRUE);
 
 
 if(my_strnicmp(url, "file://", 7) == 0)
 	{
 	url = url + 7;
-	if(type == HTTP_GET_URL)
+	if(type == HTTP_GET)
 		{
 		if((size = readFile(url, &buffPtr)) == -1)
 			return(webError(ERROR_FILE_OP));
 		return(makeStringCell(buffPtr, size));
 		}
-	if(type == HTTP_PUT_URL)
+	if(type == HTTP_PUT)
 		{
 		if(writeFile(url, putPostStr, size, "w") == -1)
 			return(webError(ERROR_FILE_OP));
 		snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
 		return(stuffString(errorTxt));
 		}
-	if(type == HTTP_DELETE_URL)
+	if(type == HTTP_DELETE)
 		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
 	return(webError(ERROR_BAD_URL));
 	}
 
 
-if(type == HTTP_POST_URL)
+if(type == HTTP_POST)
     {
     if(params->type != CELL_NIL)
 		params = getString(params, &contentType);
@@ -400,16 +408,11 @@ if(sock)
     close(sock);
 
 if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, 3)) == SOCKET_ERROR)
-	return(stuffString("ERR: could not connect"));
+	return(webError(ERR_INET_CONNECT_FAILED));
 
-if(type == HTTP_GET_URL)
-	method = (headRequest == TRUE) ? "HEAD" : "GET";
-else if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL)
-	method = "PUT";
-else if(type == HTTP_POST_URL)
-	method = "POST";
-else if(type == HTTP_DELETE_URL)
-	method = "DELETE";
+if(type == HTTP_GET)
+	if(headRequest == TRUE) type = HTTP_HEAD;
+method = requestMethod[type];
 
 /* send header */
 if(proxyUrl != NULL)
@@ -431,13 +434,9 @@ else
 sendf(sock, debugFlag, "Connection: close\r\n");
 
 /* expanded header for PUT, POST and body */
-if(type == HTTP_GET_URL || type == HTTP_DELETE_URL)
+if(type == HTTP_PUT || type == HTTP_PUT_APPEND)
 	{
-	sendf(sock, debugFlag, "\r\n");
-	}
-else if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL)
-	{
-	if(type == HTTP_PUT_APPEND_URL) sendf(sock, debugFlag, "Pragma: append\r\n");
+	if(type == HTTP_PUT_APPEND) sendf(sock, debugFlag, "Pragma: append\r\n");
 	if(customHeader == NULL)
 		sendf(sock, debugFlag, "Content-type: text/html\r\nContent-length: %d\r\n\r\n", size);
 	else
@@ -447,29 +446,31 @@ else if(type == HTTP_PUT_URL || type == HTTP_PUT_APPEND_URL)
 		return(webError(ERROR_TRANSFER));
 	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
 	}
-else if(type == HTTP_POST_URL)
+else if(type == HTTP_POST)
 	{
 	sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
 	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
 		return(webError(ERROR_TRANSFER));
 	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
 	}
+else /* HTTP_GET, HTTP_DELETE */
+	sendf(sock, debugFlag, "\r\n");
 
 if(setjmp(socketTimeoutJump) != 0)
     {
     if(sock) close(sock);
     if(resultPtr != NULL) free(resultPtr);
-    return(stuffString("ERR: timeout"));
+    return(webError(ERR_INET_TIMEOUT));
     }
   
 /* Retrieve HTTP response and check for status code. */
 responseLoop = 0;
 READ_RESPONSE:
 if(++responseLoop == 4)
-        return(stuffString("ERR: invalid response from server"));
+        return(webError(ERROR_INVALID_RESPONSE));
 
 if (recvs_tm(buff, BUFFSIZE, sock) == NULL) 
-   return(stuffString("ERR: no response from server"));
+   return(webError(ERROR_NO_RESPONSE));
 
 /* go past first token */
 for (buffPtr = buff; *buffPtr != '\0' && !isspace((int)*buffPtr); ++buffPtr) {;}
@@ -517,7 +518,7 @@ if(listFlag || headRequest)
 while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
 	{
 	if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-		return(stuffString("ERR: problem in header"));
+		return(webError(ERROR_HEADER));
 
 /* printf("==>%s<==\n", buff); */
 
@@ -528,7 +529,9 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
 		fSize = parseValue(buff + 15);
 		haveContentLength = TRUE;
 		}
-	if(my_strnicmp(buff, "location:", 9) == 0 && (statusCode == 301 || statusCode == 303))
+	/* 302 contradicts standard for redirection but is common practice */
+	if(my_strnicmp(buff, "location:", 9) == 0 && 
+				(statusCode == 301 || statusCode == 302 || statusCode == 303))
 		{
 		buffPtr = buff + 9;
 		while(isspace((int)*buffPtr)) ++buffPtr;
@@ -552,7 +555,7 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
 		}
 
 	if(my_strnicmp(buff, "Transfer-Encoding:", 18) == 0 
-					&& searchBuffer(buff, strlen(buff), "chunked", 7, 0) != 0xFFFFFFFF)
+		&& searchBuffer(buff, strlen(buff), "chunked", 7, 0) != 0xFFFFFFFF)
 		chunked = TRUE;
 	}
 	
@@ -561,6 +564,7 @@ if(headRequest)
 
 if((haveContentLength == TRUE && fSize == 0) || statusCode == 204)
 	{
+	return(webError(ERROR_DOCUMENT_EMPTY));
 	resultPtr = NULL;
 	}
 /* Retrieve HTTP body. */
@@ -568,7 +572,7 @@ else if(chunked == TRUE)
 	{
 	resultPtr = NULL;
 	if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-		return(stuffString("ERR: document empty"));
+		return(webError(ERROR_DOCUMENT_EMPTY));
 	while((size = strtoul(buff, NULL, 16)) > 0)
 		{
 		if(resultSize == 0)
@@ -578,7 +582,7 @@ else if(chunked == TRUE)
 		if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
 			{
 			free(resultPtr);
-			return(stuffString("ERR: problem in chunked format"));
+			return(webError(ERROR_CHUNKED_FORMAT));
 			}
  		resultSize += size;
 		recvs_tm(buff, BUFFSIZE, sock); /* empty line */
@@ -592,7 +596,7 @@ else if(haveContentLength == TRUE)
 	if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
 		{
 		free(resultPtr);
-		return(stuffString("ERR: document empty"));
+		return(webError(ERROR_DOCUMENT_EMPTY));
 		}
 	}
 	
@@ -951,15 +955,16 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 
 
 /* --------------------------- HTTP server mode -----------------------------
- handles GET, POST, PUT and DELETE requests
- handles queries in GET requests and sets environment variable QUERY_STRING
- sets HTTP_HOST and HTTP_USER_AGENT when present in client request header
- no special encodings are supported
- subset HTTP/1.0 compliant
+   Handles GET, POST, PUT and DELETE requests
+   handles queries in GET requests and sets environment variables 
+   DOCUMENT_ROOT, REQUEST_METHOD, SERVER_SOFTWARE and QUERY_STRING,
+   and when present in client request header HTTP_HOST, HTTP_USER_AGENT
+   and HTTP_COOKIE. No special encodings are supported.
+   Subset HTTP/1.0 compliant.
 */
 
 /* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.1.7"
+#define SERVER_SOFTWARE "newLISP/10.2.0"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query);
@@ -1036,6 +1041,7 @@ fflush(stdout);
 #define CGI_EXTENSION ".cgi"
 #define MEDIA_TEXT "text/plain"
 
+
 int executeHTTPrequest(char * request, int type)
 {
 char * sptr;
@@ -1057,6 +1063,7 @@ query = sptr = request;
 
 setenv("DOCUMENT_ROOT", startupDir, 1);
 setenv("SERVER_SOFTWARE", SERVER_SOFTWARE, 1);
+setenv("REQUEST_METHOD", requestMethod[type], 1);
 
 #ifdef DEBUGHTTP
 printf("# HTTP request:%s:%d:\r\n", request, type);
@@ -1106,25 +1113,25 @@ if((len = strlen(request)) == 0)
 size = readHeader(buff, &pragmaFlag);
 switch(type)
 	{
-	case HTTP_GET_HEAD:
-	case HTTP_GET_URL:
+	case HTTP_GET:
+	case HTTP_HEAD:
 		if(endsWith(request, CGI_EXTENSION))
 			handleHTTPcgi(request, query);
 		else
 			{
 			mediaType = getMediaType(request);
 
-			if(type == HTTP_GET_HEAD)
+			if(type == HTTP_HEAD)
 				{
-				snprintf(buff, MAX_BUFF - 1, 
 #ifndef WIN_32
+				snprintf(buff, MAX_BUFF - 1, 
 					"Content-length: %lld\r\nContent-type: %s\r\n\r\n", 
-					(long long int)fileSize(request), 
+					(long long int)fileSize(request), mediaType);
 #else
+				snprintf(buff, MAX_BUFF - 1, 
 					"Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
-					(long)fileSize(request), 
+					(long)fileSize(request), mediaType);
 #endif
-					mediaType);
 				sendHTTPpage(buff, strlen(buff), NULL, TRUE);
 				}
 			else
@@ -1138,14 +1145,14 @@ switch(type)
 			}
 		break;
 
-	case HTTP_DELETE_URL:
+	case HTTP_DELETE:
 		if(unlink(request) != 0)	
 			sendHTTPmessage(500, "Could not delete", request);
 		else
 			sendHTTPpage("File deleted", 12, MEDIA_TEXT, TRUE);
 		break;
 
-	case HTTP_POST_URL:
+	case HTTP_POST:
 		if(!size)
 			{
 			sendHTTPmessage(411, ERROR_411, request);
@@ -1164,7 +1171,7 @@ switch(type)
 		free(query); 
 		break;
 
-	case HTTP_PUT_URL:
+	case HTTP_PUT:
 		if(pragmaFlag) fileMode = "a";
 
 		if(!size)

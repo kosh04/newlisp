@@ -4,6 +4,8 @@
 ; check dictionary creation
 
 (println)
+(println "Testing and benchmarking namespaces")
+
 (set 'N 10000)
 
 (if (main-args 2)
@@ -54,8 +56,8 @@
 	(println "time to save Lex2: " (time (save "Lex2.lsp" 'Lex)) " ms")
 	(println)
 	(if (and (not read-error) (not (exec "cmp Lex.lsp Lex2.lsp")))
-		(println ">>>>> DICTIONARY API TESTED SUCCESSFUL")
-		(println ">>>>> ERROR: PROBLEM IN DICTIONARY API"))
+		(println ">>>>> Dictionary API tested SUCCESSFUL")
+		(println ">>>>> PROBLEM in dictionary API"))
 )
 
 (qa-dictionary)

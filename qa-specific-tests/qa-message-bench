@@ -1,7 +1,12 @@
 #!/usr/bin/newlisp
+
+(println)
+(println "Benchmarking message API")
+
 (set 'N
 	(case ostype
 		("Linux" 100)
+		("Cygwin" 100)
 		("BSD" 100)
 		("OSX" 1000)
 		("Tru64Unix" 100)
@@ -158,6 +163,7 @@
 ;(println A-retry "% A send retries")
 
 (println)
+(println ">>>>> Benchmarked message API")
 (exit)
 
 ; eof

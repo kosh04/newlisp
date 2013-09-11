@@ -2,7 +2,7 @@
 ;; @description ODBC database interface
 ;; @version 1.7 - comments redone for automatic documentation
 ;; @version 1.8 - doc changes
-;; @author Lutz Mueller, 2003-2009
+;; @author Lutz Mueller, 2003-2010
 ;;
 ;; <h2>OCBC Interface functions</h2>
 ;; This module has only been tested on Win32 but should work on UNIX too

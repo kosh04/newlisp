@@ -3,6 +3,7 @@
 # qa-xml - test newLISP xml-parse, xml-type-tags functions
 
 (println)
+(println "Testing XML functions")
 
 (set 'example-xml
 [text]
@@ -102,8 +103,8 @@
 ))
 
 (if (test-xml-parse)
-	(println ">>>>> XML API TESTED SUCCESSFUL")
-    (println "ERROR IN XML API"))
+	(println ">>>>> XML API tested SUCCESSFUL")
+    (println ">>>>> PROBLEM in XML API"))
 (println)
 
 ;; test callback feature
@@ -134,8 +135,8 @@
 ;(println "===>"  xml-callback-result-test)
 (println)
 (if (=  xml-callback-result xml-callback-result-test)
-	(println ">>>>> XML CALLBACK TESTED SUCCESSFUL")
-	(println ">>>>> ERROR: PROBLEM IN XML CALLBACK")
+	(println ">>>>> XML callback tested SUCCESSFUL")
+	(println ">>>>> PROBLEM in XML callback")
 )
 
 

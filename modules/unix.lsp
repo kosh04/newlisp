@@ -1,7 +1,9 @@
 ;; @module unix.lsp
 ;; @description Itreface to various UNIX libc functions
 ;; @version 0.1 alpha - mostly untested
-;; @author L.M. 2006-Sep-12, lutz@nuevatec.com
+;; @version 0.2 alpha - eliminated getpid and getppid, included in 'sys-info'
+;; @author L.M. 2006-Sep-12, Feb-2010 lutz@nuevatec.com
+;; 
 ;;
 ;; <h2>UNIX libc function support</h2>
 ;; To use this module include the following line at the beginning of
@@ -26,32 +28,23 @@
 ;; Some of the wordings from functions descriptions are taken from BSD man pages.
 ;;
 ;; This module contains wrappers for the following libc functions:
-;; 'getpid', 'getppid', 'getuid', 'geteuid', 'getgid', 'getegid', 
+;; 'getuid', 'geteuid', 'getgid', 'getegid', 
 ;; 'setuid', 'seteuid', 'setgid', 'setegid',
 ;; 'kill', 'chmod', 'ioctl', 'mkfifo', 'mltemp', 'syslog'
 ;; 
 
 (context 'unix)
 
-(if
-    ;; LINUX and BSDs
-    (< (& 0xF (last (sys-info))) 3) (set 'library "/usr/lib/libc.so")
-    ;; Mac OSX / Darwin
-    (= (& 0xF (last (sys-info))) 3) (set 'library "/usr/lib/libc.dylib")
-    ;; Solaris
-    (= (& 0xF (last (sys-info))) 4) (set 'library "/usr/lib/libc.so")
-    true (throw-error "Cannot load library")
-)
+(set 'files (list
+	      "/usr/lib/libc.dylib" ; MacOS/Darwin
+	      "/usr/lib/libc.so.51.0" ; OpenBSD 4.6
+	      "/usr/lib/libc.so" ; Linux, BSD, Solaris
+))
 
-;; @syntax (unix:getpid)
-;; @return Returns the current process ID
+(set 'library (files (or
+		       (find true (map file? files))
+		       (throw-error "cannot find standard C library (libc)"))))
 
-(import library "getpid")
-
-;; @syntax (unix:getppid)
-;; @return Returns the parents process ID.
-
-(import library "getppid")
 
 ;; @syntax (unix:getuid)
 ;; @return Returns the real and effective user ID
@@ -167,8 +160,8 @@
 
 (set '_chmod (import library "chmod"))
 
-(define (chmod path option)
-	(zero? (_chmod (string path) (int option 0644)))
+(define (chmod file-path option)
+	(zero? (_chmod (string file-path) (int option 0644)))
 )
 
 ;; @example
@@ -202,8 +195,8 @@
 
 (set '_mkfifo (import library "mkfifo"))
 
-(define (mkfifo path mode)
-	(zero? (_mkfifo (string path) (int mode)))
+(define (mkfifo file-path mode)
+	(zero? (_mkfifo (string file-path) (int mode)))
 )
 
 ;; @example

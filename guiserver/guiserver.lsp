@@ -1,11 +1,7 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.30 changes for 10.1
-;; @version 1.31 syntax highlighting
-;; @version 1.32 <tt>gs:color-tag</tt> was documented but not implemented in Java
-;; @version 1.321 added flag in gs:init for remote newlisp
-;; @version 1.33 documentation and 'read-event' added in java file
-;; @author LM, August 2008, 2009
+;; @version 1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar
+;; @author LM, August 2008, 2009, 2010
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -137,8 +133,15 @@
 ;; <pre>
 ;;    "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
 ;; </pre>
-;; Quotes are necessary when spaces are present in the argument string. The example also assumes that
-;; 'newlisp.exe' is in the path for executables.
+;; Quotes are necessary when spaces are present in the argument string. The example assumes that
+;; 'newlisp.exe' is in the path for executables, and it also assumes that the Windows registry has
+;; an association of the <tt>.jar</tt> file extension with the <tt>javaw.exe</tt> executable. This
+;; association is normally present when a java run-time environment (JRE) is installed in Windows.
+;; If this association is not registered, the following method can be used:
+;; <pre>
+;;    javaw -jar "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
+;; </pre>
+;; The quotes are necessary for path-names containing spaces.
 ;;
 ;; <h2>Debugging</h2>
 ;; <b>Tracing commands to newLISP-GS</b><br><br>
@@ -264,12 +267,12 @@
 ;; may be more efficient using the other forms.
 ;;
 ;; Except for the symbols used for action handlers, all symbols are used only by their
-;; face (name) value. This means that reserved symbols of the newLISP programming
+;; face (term) value. This means that reserved symbols of the newLISP programming
 ;; language can be used freely in symbol ids for all components, e.g:
 ;; <pre>
-;;     (gs:label 'name "Input here")
+;;     (gs:label 'term "Input here") ; term is a reserved name since v10.2.0
 ;; </pre>
-;; The usage of the reserved symbol 'name' will not pose a problem.
+;; The usage of the reserved symbol 'term' will not pose a problem.
 ;; <br><br>
 ;; <h2>Return values</h2>
 ;; newLISP-GS is an event driven asyncronous system. Most functions return
@@ -1244,12 +1247,12 @@ true
 ;; equal to the original size of the image (measured in pixels) the image will
 ;; be displayed in either compressed or zoomed form.
 
-(define (draw-image tag path x y width height)
+(define (draw-image tag image-path x y width height)
 	(if (and width height)
 		(send-out (string "draw-image " gs:currentCanvas " " tag " " 
-				(base64-enc path) " " x " " y " " width " " height "\n"))
+				(base64-enc image-path) " " x " " y " " width " " height "\n"))
 		(send-out (string "draw-image " gs:currentCanvas " " tag " " 
-				(base64-enc path) " " x " " y "\n"))
+				(base64-enc image-path) " " x " " y "\n"))
 	)
 ) 
 
@@ -1445,10 +1448,10 @@ true
 ;; When specifying width and height, a smaller or bigger portion of the canvas
 ;; than seen on the screen is printed to the image.
 
-(define (export path width height)
+(define (export image-path width height)
 	(if (and width height)
-		(net-send out (string "export " gs:currentCanvas " " (base64-enc path) " " width " " height "\n"))
-		(net-send out (string "export " gs:currentCanvas " " (base64-enc path) "\n"))
+		(net-send out (string "export " gs:currentCanvas " " (base64-enc image-path) " " width " " height "\n"))
+		(net-send out (string "export " gs:currentCanvas " " (base64-enc image-path) "\n"))
 	)
 )
 			
@@ -1847,9 +1850,13 @@ true
 	(set 'retry 0)
 	(set 'out nil)
 	(while (not out)
-		(if (> retry 300) ; try for 30 seconds
+		(if (> retry 200) ; try for 20 seconds
 			(begin
-				(println "Could not connect to guiserver")
+				(println "Could not connect to guiserver.jar")
+				(when (= ostype "Win32")
+					(import "user32.dll" "MessageBoxA")
+					(MessageBoxA 0 "Could not connect to guiserver.jar" "Problem connecting" 1)
+				)
 				(exit))
 			(inc retry))
 		(set 'out (net-connect host portIn))
@@ -1976,8 +1983,8 @@ true
 ;; translated to LF-only line terminators by stripping all CRs from the file. All internal
 ;; operations of guiserver on text assume LF as a line terminator.
 
-(define (load-text id path)
-	(net-send out (string "load-text " id " " (base64-enc path) "\n"))
+(define (load-text id image-path)
+	(net-send out (string "load-text " id " " (base64-enc image-path) "\n"))
 )
 
 ;; @syntax (gs:listen [<boolean-flag>])
@@ -2572,8 +2579,8 @@ true
 ;; newLISP 'replace', i.e. '(replace "\n" text "\r\n")' before
 ;; saving the text to a file.
 
-(define (save-text id path)
-	(net-send out (string "save-text " id " " (base64-enc path) "\n"))
+(define (save-text id image-path)
+	(net-send out (string "save-text " id " " (base64-enc image-path) "\n"))
 )
 
 

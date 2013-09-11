@@ -1,6 +1,6 @@
 /* nl-xml.c - newLISP XML interface 
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ TAG_STACK * tagStack = NULL;
 
 CELL * xmlCallback = NULL;
 
-/* setup type tage default cells, if done already just relink */
+/* setup type tag default cells, if done already just relink */
 CELL * setupTypeTagCells(void)
 {
 int i;
@@ -441,11 +441,11 @@ TAG_STACK * tag;
 
 ++source; /* skip '/' */
 
-while(*source <= ' ' && source < endSrc) ++source; /* skip whitespace */
+while((unsigned char)*source <= ' ' && source < endSrc) ++source; /* skip whitespace */
 
 tagStart = source;
 tagLen = 0;
-while(*source > ' ' && source < endSrc) ++source, ++tagLen; /* find tag end */
+while((unsigned char)*source > ' ' && source < endSrc) ++source, ++tagLen; /* find tag end */
 
 attributes = parseAttributes(endSrc);
 if(optionsFlag & OPTION_SXML_ATTRIBUTES)
@@ -519,12 +519,12 @@ lastAtt = NULL;
 
 while(!xmlError && source < endSrc)
 	{
-	while(*source <= ' ' && source < endSrc) source++; /* strip leading space */
+	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
 	namePos = source;
 	nameLen = 0;
-	while(*source > ' ' && *source != '=' && source < endSrc) source++, nameLen++; /* get end */
+	while((unsigned char)*source > ' ' && *source != '=' && source < endSrc) source++, nameLen++; /* get end */
 	if(nameLen == 0) break;
-	while(*source <= ' ' && source < endSrc) source++; /* strip leading space */
+	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
 	if(*source != '=')
 		{
 		xmlError = "expected '=' in attributes";
@@ -532,7 +532,7 @@ while(!xmlError && source < endSrc)
 		return nilCell;
 		}
 	else source++;
-	while(*source <= ' ' && source < endSrc) source++; /* strip spaces */
+	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip spaces */
 	if(*source != '\"' && *source != '\'')
 		{
 		xmlError = "attribute values must be delimited by \" or \' ";

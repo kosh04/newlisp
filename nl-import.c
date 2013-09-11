@@ -1,6 +1,6 @@
 /* nl-import.c --- shared library interface for newLISP
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,11 +33,12 @@ UINT cdeclFunction(UINT fAddress, UINT * args, int count);
 
 extern int evalCatchFlag;
 
-#ifdef WIN_32
 
-
+#if defined(WIN_32) || defined(CYGWIN)
 UINT stdcallFunction(UINT fAddress, UINT * args, int count);
+#endif
 
+#ifdef WIN_32
 
 CELL * p_importLib(CELL * params)
 {
@@ -93,9 +94,25 @@ void * hLibrary;
 CELL * pCell;
 SYMBOL * symbol;
 char * error;
+#ifdef CYGWIN
+int type = CELL_IMPORT_DLL;
+char * options = NULL;
+#else
+int type = CELL_IMPORT_CDECL;
+#endif
+
 
 params = getString(params, &libName);
-getString(params, &funcName);
+params = getString(params, &funcName);
+#ifdef CYGWIN
+if(params != nilCell)
+	{
+	getString(params, &options);
+	if(strcmp(options, "stdcall") ==  0)
+		type = CELL_IMPORT_CDECL;
+	}
+#endif
+
 hLibrary = 0;                
 
 #ifdef TRU64
@@ -105,8 +122,8 @@ if((hLibrary = dlopen(libName, RTLD_GLOBAL|RTLD_LAZY)) == 0)
 #endif
 	return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString((char *)dlerror())));
 
-pCell = getCell(CELL_IMPORT_CDECL);
-symbol = translateCreateSymbol(funcName, CELL_IMPORT_CDECL, currentContext, TRUE);
+pCell = getCell(type);
+symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
 if(isProtected(symbol->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
 	
@@ -122,7 +139,6 @@ pCell->aux = (UINT)symbol->name;
 
 return(copyCell(pCell));
 }
-
 #endif
 
 
@@ -162,7 +178,7 @@ while(params->type != CELL_NIL && count < 14)
 	params = (CELL *)params->next;
 	}
 
-#ifdef WIN_32
+#if defined(WIN_32) || defined(CYGWIN)
 if(pCell->type == CELL_IMPORT_DLL)
 	return(stuffInteger(stdcallFunction(pCell->contents, args, count)));
 else
@@ -244,7 +260,7 @@ return(0);
 }
 
 
-#ifdef WIN_32
+#if defined(WIN_32) || defined(CYGWIN)
 UINT stdcallFunction(UINT fAddress, UINT * args, int count)
 {
 UINT _stdcall (*function)();

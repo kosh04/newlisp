@@ -1,6 +1,6 @@
 /* nl-matrix.c --- matrix functions for newLISP
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,12 +24,9 @@
 #include "newlisp.h"
 #include "protos.h"
 
-#define TINY 1.0e-20
-
-
 double * * multiply(double ** A, double ** B, int m, int n, int k, int l);
-double * * invert(double * * A, int n, int * err);
-int ludcmp(double * * a, int n, int * indx, double * d);
+double * * invert(double * * A, int n, int * err, double tiny);
+int ludcmp(double * * a, int n, int * indx, double * d, double tiny);
 void lubksb(double * * a, int n, int * indx, double * b);
 double * * getMatrix(CELL * params, int * type, int * n, int * m, int * err);
 double * * makeMatrix(CELL * number, int n, int m);
@@ -161,9 +158,17 @@ int n, m, err = 0;
 int typeA;
 double * * A;
 double * * Y;
+#ifdef FP_NAN
+double tiny = FP_NAN;
+#else
+double tiny = sqrt(-1);
+#endif
 
 if((A = getMatrix(params, &typeA, &n, &m, &err)) == NULL)
 	return(errorProcExt(err, params));
+
+if(params->next != nilCell)
+	getFloat(params->next, &tiny);
 
 if(n != m) 
 	{
@@ -171,7 +176,7 @@ if(n != m)
 	return(errorProcExt(ERR_WRONG_DIMENSIONS, params));
 	}
 
-if( (Y = invert(A, n, &err)) == NULL)
+if( (Y = invert(A, n, &err, tiny)) == NULL)
 	{
 	freeMatrix(A, n);
 	if(err) return(errorProc(err));
@@ -193,9 +198,17 @@ double * * M;
 double d;
 int typeM, n, m, i, err;
 int * indx;
+#ifdef FP_NAN
+double tiny = FP_NAN;
+#else
+double tiny = sqrt(-1);
+#endif
 
 if( (M = getMatrix(params, &typeM, &m, &n, &err)) == NULL)
 	return(errorProcExt(err, params));
+
+if(params->next != nilCell)
+	getFloat(params->next, &tiny);
 
 if(n != m) 
 	{
@@ -205,7 +218,7 @@ if(n != m)
 
 indx = (int *)calloc((n + 1), sizeof(int));
 
-if(ludcmp(M, n, indx, &d) == FALSE)
+if(ludcmp(M, n, indx, &d, tiny) == FALSE)
     {
     free(indx);
 	freeMatrix(M, n);
@@ -290,7 +303,8 @@ else
 			case '+': M[k][l] = A[k][l] + B[k][l]; break;
 			case '-': M[k][l] = A[k][l] - B[k][l]; break;
 			case '*': M[k][l] = A[k][l] * B[k][l]; break;
-			case '/': 
+			case '/': M[k][l] = A[k][l] / B[k][l]; break;
+/* before 10.2.0
 				{ 
 				if(B[k][l] == 0)
 					return(errorProc(ERR_MATH));
@@ -298,6 +312,7 @@ else
 					M[k][l] = A[k][l] / B[k][l];
 				}
 				break;
+*/
 			default:
             return(errorProcExt(ERR_ILLEGAL_TYPE, params));
 			}
@@ -351,7 +366,7 @@ return(C);
 
 /* ----- return inverse of A in Y, A will contain LU decomposition --- */
 
-double * * invert(double * * A, int n, int * err)
+double * * invert(double * * A, int n, int * err, double tiny)
 {
 double * * Y = NULL;
 double * col;
@@ -363,7 +378,7 @@ int * indx;
 col = (double *)calloc(n + 4, sizeof(double));
 indx = (int *)calloc((n + 1), sizeof(int));
 
-if(ludcmp(A, n, indx, &d) == FALSE)
+if(ludcmp(A, n, indx, &d, tiny) == FALSE)
 	goto INVERT_FIN;
 
 if((Y = allocateMatrix(n, n)) == NULL)
@@ -395,7 +410,7 @@ return(Y);
 // W.T. Vettering, B.P. Flannery
 */
 
-int ludcmp(double * * a, int n, int * indx, double * d)
+int ludcmp(double * * a, int n, int * indx, double * d, double tiny)
 {
 int i, imax = 0, j, k;
 double big, dum, sum, temp;
@@ -459,7 +474,21 @@ for (j = 1; j <= n; j++)
 
 
 	indx[j] = imax;
-	if (a[j][j] == 0.0) a[j][j] = TINY;
+
+	if (a[j][j] == 0.0) 
+		{
+#ifdef FP_NAN
+		if(tiny != FP_NAN)
+#else
+		if(!isnan(tiny)) 
+#endif
+			a[j][j] = tiny;
+		else
+			{
+			free(vv);
+			return(FALSE);
+			}
+		}
 
 	if (j != n)
 		{

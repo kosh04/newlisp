@@ -1,4 +1,4 @@
-#!/usr/bin/env newlisp
+#!/usr/bin/newlisp
 
 ;; qa-bench - benchmarking all non I/O primitives
 ;;
@@ -7,6 +7,9 @@
 ;;    newlisp qa-bench 2    # run twice as long
 ;;    newlisp qa-bench report # report on individual functions
 ;;    newlisp qa-bench report 10 # report and run 10 times long
+
+(println)
+(println "Benchmarking all non I/O primitives")
 
 (context 'Lex)  ; predeclare/create context for bayes-train
 (context MAIN)
@@ -65,14 +68,14 @@
  ifft import inc index int integer? intersect invert irr join lambda? last 
  last-error legal? length let letex letn list list? local log lookup lower-case 
  macro? main-args map mat match max member min mod mul multiply 
- name new nil? normal not now nper npv nth null? number? or pack parse 
+ new nil? normal not now nper npv nth null? number? or pack parse 
  pmt pop pop-assoc pow pretty-print primitive? prob-chi2 
  prob-z protected? push pv quote quote? rand random 
  randomize read-expr ref ref-all regex regex-comp replace rest 
  reverse rotate round seed select sequence series set 
  set-locale set-ref set-ref-all setf setq sgn sin sinh 
  slice sort source sqrt starts-with string string? sub swap sym symbol? symbols 
- sys-error sys-info tan tanh throw throw-error time time-of-day title-case 
+ sys-error sys-info tan tanh term throw throw-error time time-of-day title-case 
  transpose trim true? unify unique unless unpack 
  until upper-case uuid when while write-buffer 
  write-line xml-parse xml-type-tags zero? | ~))
@@ -245,7 +248,6 @@
   (mod 4539) 
   (mul 10565) 
   (multiply 480) 
-  (name 7286) 
   (new 107) 
   (nil? 961) 
   (normal 381) 
@@ -314,6 +316,7 @@
   (sys-info 5046) 
   (tan 5162) 
   (tanh 3869) 
+  (term 7286) 
   (throw 1074) 
   (throw-error 793) 
   (time 9940) 
@@ -1027,13 +1030,13 @@
 (define (test-ends-with )
   (and 
 	(ends-with "newlisp" "lisp") 
-	(ends-with "newlisp" "LISP" nil) 
+	(ends-with "newlisp" "LISP" 1) 
 	(ends-with "abc.def.ghi" "def|ghi" 1)
 	(ends-with "12345" "4|5" 1)
    	(ends-with (explode "newlisp") "p")
 	(set 'D:D "newlisp")
 	(ends-with D "lisp") 
-	(ends-with D "LISP" nil) 
+	(ends-with D "LISP" 1) 
 ))
 
 (define (test-env)
@@ -1726,8 +1729,8 @@
     )
 ))
 
-(define (test-name )
-  (= "name" (name 'name)))
+(define (test-term )
+  (= "term" (term 'term)))
 
 (define (test-new) 
   (new QA 'MAIN:QA2))
@@ -2224,7 +2227,7 @@
 
   ; regression for key cell part of list
   (setq a '(b c d))
-  (= (replace (a 0) a (name (a 0))) '("b" c d))
+  (= (replace (a 0) a (term (a 0))) '("b" c d))
 
 ))
  
@@ -2453,10 +2456,10 @@
 (define (test-starts-with )
   (and 
 	(starts-with "newlisp" "new") 
-	(starts-with "newlisp" "NEW" nil)
+	(starts-with "newlisp" "NEW" 1)
 	(set 'D:D "newlisp")
 	(starts-with D "new") 
-	(starts-with D "NEW" nil)
+	(starts-with D "NEW" 1)
 ))
 
 (define (test-string )
@@ -2704,7 +2707,7 @@
 (println (format "%10.1f ms" total-time))
 ; compensate for rounding error
 (inc total-time (mul 0.5 (length primes)))
-(println (format "performance ratio:%5.2f (1.0 on Mac OS X, 1.83 GHz Intel Core 2 Duo)"
+(println (format ">>>>> Performance ratio:%5.2f (1.0 on Mac OS X, 1.83 GHz Intel Core 2 Duo)"
     (round (div total-time (mul 10 (length primes)) multiplier) -2)))
 (dolist (msg failed-messages)
 	(println msg))

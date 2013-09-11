@@ -1,11 +1,11 @@
 To generate HTML documentation for the modules in this directory, simply
 execute the following statement inside the newlisp-x.x.x/modules directory:
 
-   newlispdoc -s *.lsp
+   newlispdoc -s -d *.lsp
 
 or on Win32
 
-   newlisp -s newlispdoc *.lsp
+   newlisp -s -d newlispdoc *.lsp
 
 This will genereate an index page index.html and one html file each
 for each module of the form name.lsp.html, where name is the name of the module.

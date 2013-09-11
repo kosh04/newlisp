@@ -1,7 +1,10 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 #
-# this utility is called from Makefile:
+# this utility may be call from Makefile in the main source distribution directory:
 #     make preparepdf
+#
+# This is necessary when using OpenOffice HTML->PDF conversion
+#
 # to prepare the file for PDF conversion, byt replaceing all <span class="function"></span>
 # with <font color="#DD0000"></font> in the syntax statements and replacing &rarr; (one line
 # arrow with &rArr; (double line arrow)

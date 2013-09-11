@@ -26,7 +26,7 @@ tt {
 <br>
 <blockquote>
 <center><h2>Automatic Memory Management in newLISP</h2></center>
-<center><font size="-1">Lutz Mueller, 2004-2008. Last edit 2008-11-28 rev 23<br>
+<center><font size="-1">Lutz Mueller, 2004-2010. Last edit 2010-02-24 rev 24<br>
 </font></center>
 
 <center><blockquote><blockquote><i>
@@ -109,8 +109,13 @@ are needed to unlink a free cell or to re-insert a deleted cell.</p>
 <p>The overall effect of ORO memory management is a faster evaluation time and a smaller memory 
 and disk footprint than traditional interpreted LISP's can offer. Time spent creating and 
 deleting memory objects is more than compensated for by the lack of processing time used in
-traditional garbage collection. Note that under error conditions, newLISP will employ a classic 
-mark and sweep algorithm to free un-referenced cells.</p>
+traditional garbage collection. ORO memory management also avoids occasional processing
+pauses seen in languages using traditional garbage collection and the tuning of garbage
+collection parameters required when running memory intensive programs.</p>
+
+<p>In versions before 10.1.3, newLISP employed a classic mark and sweep algorithm to 
+free un-referenced cells under error conditions. Starting version 10.1.3, this has been 
+eliminated and replaced by a proper cleanup of the result stack under error conditions.</p>
 
 <h3>Optimizations to ORO memory management <font size="-1">&sup2;</font></h3>
 
@@ -119,25 +124,24 @@ ORO management to many built-in functions. Previously only <tt>set</tt>, <tt>def
 <tt>eval</tt> where optimized, and they allowed for a reference return instead of returning ORO
 managed, copied objects. Today all destructive built-in functions can work directly on memory
 objects returned by reference from other built-in functions. This has substantially reduced
-the need for copying and deleting memory object and increased the speed of some built-in
+the need for copying and deleting memory objects and increased the speed of some built-in
 functions.</p>
 
-<p>Although optimizations have increased speed and memory performance, the greater benefit
-of these optimizations is for the increased flexibility when writing programs.</p>
+<p>These optimizations also have increased flexibility when writing programs.</p>
  
 <h3>Performance considerations with value-passing</h3>
 
-<p>Passing parameters by value (memory copying) instead of by reference poses a potential 
-disadvantage when dealing with large lists, arrays or string. For practical purposes, 
-however, the overhead needed to copy a large list is often negligible compared to the 
-processing done on the list. Nevertheless, to achieve maximum performance, newLISP has
-optimized the behavior of many built-in functions by allowing for reference return and
-allowing other destructive built-in functions to work directly on referenced memory.</p>
+<p>Passing parameters to user-defined functions by value (memory copying) instead of by 
+reference poses a potential disadvantage when dealing with large lists, arrays or strings. 
+For practical purposes, however, the overhead needed to copy a large list is often 
+negligible compared to the processing done on the list. For built-in functions  newLISP 
+has optimized the behavior by allowing for reference return and allowing destructive 
+built-in functions to work directly on referenced memory.</p>
 
-<p>Since newLISP version 9.4.5 all built-in and user-defined function can also take 
-list, array and string type parameters as references passed by <i>default functor</i>
-namespace ids. Namespaces (called contexts in newLISP) play a special role. They have very 
-little overhead in and are used frequently to wrap functions and data.</p>
+<p>Since newLISP version 9.4.5 functions can also take list, array and string type parameters 
+as references passed by <i>default functor</i> namespace ids. Namespaces (called contexts 
+in newLISP) play a special role. They have very little overhead and can be used to wrap 
+functions and data.</p>
   
 <p>But even in instances where reference passing and other optimizations are nor present, 
 the speed of ORO memory management more than compensates for the overhead required to
@@ -278,7 +282,7 @@ parameters followed by one or more body expressions evaluated in sequence.
 
 <p>Both, <tt>evaluateFunc(func, args)</tt> and <tt>evaluateLambda(func, args)</tt> will return 
 a newly created or copied LISP cell object, which may be any type of the above mentioned 
-expressions. Since version 10.0, some built-in functions processed with 
+expressions. Since version 10.0, many built-in functions processed with 
 <tt>evaluateFunc(func, args)</tt> are optimized and return references instead of a newly
 created or copied objects. Except for these optimizations, <tt>result</tt> values will always 
 be newly created LISP cell objects destined to be destroyed on the next higher evaluation level, 
@@ -292,8 +296,8 @@ deleting the <tt>result</tt> values from deeper level of evaluation and returned
 the two functions, either <tt>evaluateFunc</tt> or <tt>evaluateLambda</tt>.</p>
 
 <p>Any newsly created <tt>result</tt> expression is destined to be destroyed later but its 
-deletion is delayed until a lower level of evaluation is reached. This permits results to be 
-used and/or copied by calling functions.</p>
+deletion is delayed until a higher, less deep, level of evaluation is reached. This permits 
+results to be used and/or copied by calling functions.</p>
 
 <p>The following example shows the evaluation of a small user-defined LISP function 
 <tt>sum-of-squares</tt> and the creation and deletion of associated memory objects:</p>
@@ -375,7 +379,7 @@ for other languages like Smalltalk and later also used in LISP.</font>
 <br><br>
 &sup3; <font size="-1">This is a shortened rendition of expression evaluation not including handling of default functors and implicit indexing.</font>
 <br><br>
-<center><font size="-1">Copyright &copy; 2004-2008, Lutz Mueller 
+<center><font size="-1">Copyright &copy; 2004-2010, Lutz Mueller 
 <a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>
 </blockquote>
 </body>

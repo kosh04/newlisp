@@ -1,12 +1,8 @@
 <!DOCTYPE HTML PUBLIC "4.01 Transitional"><html><title>guiserver.lsp</title><body><pre>
 <font color='#555555'>;; <font color='#308080'>@module</font> guiserver.lsp</font>
 <font color='#555555'>;; <font color='#308080'>@description</font> Functions for programming GUIs and 2D graphics.</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.30 changes for 10.1</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.31 syntax highlighting</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.32 &lt;tt&gt;gs:color-tag&lt;/tt&gt; was documented but not implemented in Java</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.321 added flag in gs:init for remote newlisp</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.33 documentation and 'read-event' added in java file</font>
-<font color='#555555'>;; <font color='#308080'>@author</font> LM, August 2008, 2009</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar</font>
+<font color='#555555'>;; <font color='#308080'>@author</font> LM, August 2008, 2009, 2010</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the</font>
 <font color='#555555'>;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on</font>
@@ -138,8 +134,10 @@
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;;    "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 47011 c:\myprogs\MyApplication.lsp</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;; Quotes are necessary when spaces are present in the argument string. The example also assumes that</font>
-<font color='#555555'>;; 'newlisp.exe' is in the path for executables.</font>
+<font color='#555555'>;; Quotes are necessary when spaces are present in the argument string. The example assumes that</font>
+<font color='#555555'>;; 'newlisp.exe' is in the path for executables, and it also assumes that the Windows registry has</font>
+<font color='#555555'>;; an association of the &lt;tt&gt;.jar&lt;/tt&gt; file extension with the &lt;tt&gt;javaw.exe&lt;/tt&gt; executable. This</font>
+<font color='#555555'>;; association is normally present when a java run-time environment (JRE) is installed in Windows.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; &lt;h2&gt;Debugging&lt;/h2&gt;</font>
 <font color='#555555'>;; &lt;b&gt;Tracing commands to newLISP-GS&lt;/b&gt;&lt;br&gt;&lt;br&gt;</font>
@@ -1245,12 +1243,12 @@
 <font color='#555555'>;; equal to the original size of the image (measured in pixels) the image will</font>
 <font color='#555555'>;; be displayed in either compressed or zoomed form.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>draw-image tag path x y width height<font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>draw-image tag image-path x y width height<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> width height<font color='#AA0000'>)</font>
 		<font color='#AA0000'>(</font>send-out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"draw-image "</font> gs:currentCanvas <font color='#008800'>" "</font> tag <font color='#008800'>" "</font> 
-				<font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> x <font color='#008800'>" "</font> y <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> x <font color='#008800'>" "</font> y <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 		<font color='#AA0000'>(</font>send-out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"draw-image "</font> gs:currentCanvas <font color='#008800'>" "</font> tag <font color='#008800'>" "</font> 
-				<font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> x <font color='#008800'>" "</font> y <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> x <font color='#008800'>" "</font> y <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font> 
 
@@ -1446,10 +1444,10 @@
 <font color='#555555'>;; When specifying width and height, a smaller or bigger portion of the canvas</font>
 <font color='#555555'>;; than seen on the screen is printed to the image.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>export path width height<font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>export image-path width height<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> width height<font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"export "</font> gs:currentCanvas <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"export "</font> gs:currentCanvas <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"export "</font> gs:currentCanvas <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"export "</font> gs:currentCanvas <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 			
@@ -1848,9 +1846,13 @@
 	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'retry <font color='#665500'>0</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'out <font color='#0000AA'>nil</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>while</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> out<font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>></font> retry <font color='#665500'>300</font><font color='#AA0000'>)</font> <font color='#555555'>; try for 30 seconds</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>></font> retry <font color='#665500'>200</font><font color='#AA0000'>)</font> <font color='#555555'>; try for 20 seconds</font>
 			<font color='#AA0000'>(</font><font color='#0000AA'>begin</font>
-				<font color='#AA0000'>(</font><font color='#0000AA'>println</font> <font color='#008800'>"Could not connect to guiserver"</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>(</font><font color='#0000AA'>println</font> <font color='#008800'>"Could not connect to guiserver.jar"</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>(</font><font color='#0000AA'>when</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Win32"</font><font color='#AA0000'>)</font>
+					<font color='#AA0000'>(</font><font color='#0000AA'>import</font> <font color='#008800'>"user32.dll"</font> <font color='#008800'>"MessageBoxA"</font><font color='#AA0000'>)</font>
+					<font color='#AA0000'>(</font>MessageBoxA <font color='#665500'>0</font> <font color='#008800'>"Could not connect to guiserver.jar"</font> <font color='#008800'>"Problem connecting"</font> <font color='#665500'>1</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>)</font>
 				<font color='#AA0000'>(</font><font color='#0000AA'>exit</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 			<font color='#AA0000'>(</font><font color='#0000AA'>inc</font> retry<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 		<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'out <font color='#AA0000'>(</font><font color='#0000AA'>net-connect</font> host portIn<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
@@ -1977,8 +1979,8 @@
 <font color='#555555'>;; translated to LF-only line terminators by stripping all CRs from the file. All internal</font>
 <font color='#555555'>;; operations of guiserver on text assume LF as a line terminator.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>load-text id path<font color='#AA0000'>)</font>
-	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"load-text "</font> id <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>load-text id image-path<font color='#AA0000'>)</font>
+	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"load-text "</font> id <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:listen [&lt;boolean-flag&gt;])</font>
@@ -2573,8 +2575,8 @@
 <font color='#555555'>;; newLISP 'replace', i.e. '(replace "&#092;n" text "&#092;r&#092;n")' before</font>
 <font color='#555555'>;; saving the text to a file.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>save-text id path<font color='#AA0000'>)</font>
-	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"save-text "</font> id <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>save-text id image-path<font color='#AA0000'>)</font>
+	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"save-text "</font> id <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> image-path<font color='#AA0000'>)</font> <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
 

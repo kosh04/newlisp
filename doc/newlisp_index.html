@@ -55,7 +55,7 @@ pre, tt {
 <a href="newlisp_manual.html#new" target="body">New</a>&nbsp;
 <a href="newlisp_manual.html#nth" target="body">Nt</a>&nbsp;
 <a href="newlisp_manual.html#pack" target="body">Pa</a>&nbsp;
-<a href="newlisp_manual.html#pretty-print" target="body">Pr</a>&nbsp;
+<a href="newlisp_manual.html#prefix" target="body">Pr</a>&nbsp;
 <a href="newlisp_manual.html#randomize" target="body">Ra</a>&nbsp;
 <a href="newlisp_manual.html#read-buffer" target="body">Rea</a>&nbsp;
 <a href="newlisp_manual.html#regex" target="body">Reg</a>&nbsp;
@@ -74,6 +74,8 @@ pre, tt {
 <h4>List processing, flow control and integer arithmetic</h4>
 
 <a href="newlisp_manual.html#arithmetic" target="body">+, -, *, /,%</a><br />
+<a href="newlisp_manual.html#inci" target="body">++</a><br />
+<a href="newlisp_manual.html#deci" target="body">--</a><br />
 <a href="newlisp_manual.html#logical" target="body">&lt;, >, =,</a><br />
 <a href="newlisp_manual.html#logical" target="body">&lt;=, >=, !=</a><br />
 <a href="newlisp_manual.html#colon" target="body">:</a><br />
@@ -109,6 +111,7 @@ pre, tt {
 <a href="newlisp_manual.html#exists" target="body">exists</a><br />
 <a href="newlisp_manual.html#eval" target="body">eval</a><br />
 <a href="newlisp_manual.html#expand" target="body">expand</a><br />
+<a href="newlisp_manual.html#extend" target="body">extend</a><br />
 <a href="newlisp_manual.html#first" target="body">first</a><br />
 <a href="newlisp_manual.html#filter" target="body">filter</a><br />
 <a href="newlisp_manual.html#find" target="body">find</a><br />
@@ -148,6 +151,7 @@ pre, tt {
 <a href="newlisp_manual.html#reverse" target="body">reverse</a><br />
 <a href="newlisp_manual.html#rotate" target="body">rotate</a><br />
 <a href="newlisp_manual.html#select" target="body">select</a><br />
+<a href="newlisp_manual.html#self" target="body">self</a><br />
 <a href="newlisp_manual.html#set" target="body">set</a><br />
 <a href="newlisp_manual.html#set-ref" target="body">set-ref</a><br />
 <a href="newlisp_manual.html#set-ref-all" target="body">set-ref-all</a><br />
@@ -176,6 +180,7 @@ pre, tt {
 <a href="newlisp_manual.html#encrypt" target="body">encrypt</a><br />
 <a href="newlisp_manual.html#eval-string" target="body">eval-string</a><br />
 <a href="newlisp_manual.html#explode" target="body">explode</a><br />
+<a href="newlisp_manual.html#extend" target="body">extend</a><br />
 <a href="newlisp_manual.html#find" target="body">find</a><br />
 <a href="newlisp_manual.html#first" target="body">first</a><br />
 <a href="newlisp_manual.html#float" target="body">float</a><br />
@@ -358,6 +363,8 @@ pre, tt {
 <a href="newlisp_manual.html#find-all" target="body">find-all</a><br />
 <a href="newlisp_manual.html#match" target="body">match</a><br />
 <a href="newlisp_manual.html#parse" target="body">parse</a><br />
+<a href="newlisp_manual.html#ref" target="body">ref</a><br />
+<a href="newlisp_manual.html#ref-all" target="body">ref-all</a><br />
 <a href="newlisp_manual.html#regex" target="body">regex</a><br />
 <a href="newlisp_manual.html#replace" target="body">replace</a><br />
 <a href="newlisp_manual.html#search" target="body">search</a><br />
@@ -384,7 +391,7 @@ pre, tt {
 <a href="newlisp_manual.html#peek" target="body">peek</a><br />
 <a href="newlisp_manual.html#print" target="body">print</a><br />
 <a href="newlisp_manual.html#println" target="body">println</a><br />
-<a href="newlisp_manual.html#read-buffer" target="body">read-buffer</a><br />
+<a href="newlisp_manual.html#read-buffer" target="body">read</a><br />
 <a href="newlisp_manual.html#read-char" target="body">read-char</a><br />
 <a href="newlisp_manual.html#read-file" target="body">read-file</a><br />
 <a href="newlisp_manual.html#read-key" target="body">read-key</a><br />
@@ -393,7 +400,7 @@ pre, tt {
 <a href="newlisp_manual.html#save" target="body">save</a><br />
 <a href="newlisp_manual.html#search" target="body">search</a><br />
 <a href="newlisp_manual.html#seek" target="body">seek</a><br />
-<a href="newlisp_manual.html#write-buffer" target="body">write-buffer</a><br />
+<a href="newlisp_manual.html#write" target="body">write</a><br />
 <a href="newlisp_manual.html#write-char" target="body">write-char</a><br />
 <a href="newlisp_manual.html#write-file" target="body">write-file</a><br />
 <a href="newlisp_manual.html#write-line" target="body">write-line</a><br />
@@ -467,49 +474,46 @@ pre, tt {
 <h4>Reflection and customization</h4>
 
 <a href="newlisp_manual.html#command-event" target="body">command-event</a><br />
-<a href="newlisp_manual.html#pretty-print" target="body">pretty-print</a><br />
+<a href="newlisp_manual.html#error-event" target="body">error-event</a><br />
+<a href="newlisp_manual.html#error-number" target="body">error-number</a><br />
+<a href="newlisp_manual.html#ostype" target="body">ostype</a><br />
+<a href="newlisp_manual.html#prefix" target="body">prefix</a><br />
 <a href="newlisp_manual.html#prompt-event" target="body">prompt-event</a><br />
 <a href="newlisp_manual.html#read-expr" target="body">read-expr</a><br />
 <a href="newlisp_manual.html#reader-event" target="body">reader-event</a><br />
+<a href="newlisp_manual.html#set-locale" target="body">set-locale</a><br />
 <a href="newlisp_manual.html#source" target="body">source</a><br/>
+<a href="newlisp_manual.html#sys-error" target="body">sys-error</a><br />
+<a href="newlisp_manual.html#sys-info" target="body">sys-info</a><br />
+<a href="newlisp_manual.html#term" target="body">term</a><br />
 
 <h4>System functions</h4>
 
 <a href="newlisp_manual.html#systemsymbol" target="body">$</a><br />
 <a href="newlisp_manual.html#callback" target="body">callback</a><br />
-<a href="newlisp_manual.html#catch" target="body">catch</a><br />
-<a href="newlisp_manual.html#command-event" target="body">command-event</a><br />
 <a href="newlisp_manual.html#context" target="body">context</a><br />
 <a href="newlisp_manual.html#copy" target="body">copy</a><br />
 <a href="newlisp_manual.html#debug" target="body">debug</a><br />
 <a href="newlisp_manual.html#default" target="body">default</a><br />
 <a href="newlisp_manual.html#delete" target="body">delete</a><br />
 <a href="newlisp_manual.html#env" target="body">env</a><br />
-<a href="newlisp_manual.html#error-event" target="body">error-event</a><br />
-<a href="newlisp_manual.html#error-number" target="body">error-number</a><br />
 <a href="newlisp_manual.html#exit" target="body">exit</a><br />
 <a href="newlisp_manual.html#global" target="body">global</a><br />
 <a href="newlisp_manual.html#import" target="body">import</a><br />
 <a href="newlisp_manual.html#main-args" target="body">main-args</a><br />
 <a href="newlisp_manual.html#new" target="body">new</a><br />
-<a href="newlisp_manual.html#ostype" target="body">ostype</a><br />
 <a href="newlisp_manual.html#pretty-print" target="body">pretty-print</a><br />
-<a href="newlisp_manual.html#prompt-event" target="body">prompt-event</a><br />
 <a href="newlisp_manual.html#read-expr" target="body">read-expr</a><br />
 <a href="newlisp_manual.html#reset" target="body">reset</a><br />
-<a href="newlisp_manual.html#set-locale" target="body">set-locale</a><br />
 <a href="newlisp_manual.html#signal" target="body">signal</a><br />
 <a href="newlisp_manual.html#sleep" target="body">sleep</a><br />
 <a href="newlisp_manual.html#sym" target="body">sym</a><br />
 <a href="newlisp_manual.html#symbols" target="body">symbols</a><br />
-<a href="newlisp_manual.html#sys-error" target="body">sys-error</a><br />
-<a href="newlisp_manual.html#sys-info" target="body">sys-info</a><br />
 <a href="newlisp_manual.html#timer" target="body">timer</a><br />
 <a href="newlisp_manual.html#throw" target="body">throw</a><br />
 <a href="newlisp_manual.html#throw-error" target="body">throw-error</a><br />
 <a href="newlisp_manual.html#trace" target="body">trace</a><br />
 <a href="newlisp_manual.html#trace-highlight" target="body">trace-highlight</a><br />
-
 
 <h4>Importing libraries</h4>
 

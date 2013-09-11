@@ -3,8 +3,9 @@
 ;; @version 1.0 initial release
 ;; @version 1.1 doc changes only
 ;; @version 1.21 doc changes only
+;; @version 1.3 compatibility pre and post 10.2.0 for new extend
 ;; @author Lutz Mueller, March 2009
-;    Copyright (C) 2009 Lutz Mueller
+;    Copyright (C) 2010 Lutz Mueller
 ;
 ;    This program is free software: you can redistribute it and/or modify
 ;    it under the terms of the GNU General Public License as published by
@@ -218,6 +219,7 @@
 
 ;; @syntax (cv:angle <num-dg>) 
 ;; @param <num-dg> Angle degrees from 0 to 360.
+;; <br>
 ;; Set the turtle angle to <num-dg> degrees.
 ;; Upwards is 0, right 45, downwards 180 and left 270 degrees.
 ;; The turtle position is aved on the graphics state stack when using 
@@ -227,6 +229,7 @@
 ;; @param  <num-x1,num-y1> Bezier coordinates of <p1> relative to <p0> = 0,0
 ;; @param  <num-x2,num-y2> Bezier coordinates of <p2> relative to <p0> = 0,0
 ;; @param  <num-x3,num-y3> Bezier coordinates of <p3> relative to <p0> = 0,0
+;; <br>
 ;; Draw a Bezier curve.
 ;; The Bezier curve starts at point <p0> which is the current
 ;; turtle position and stops at point <p3> which is at offset
@@ -237,6 +240,7 @@
 ;; @syntax (cv:circle <num-rad> [<bool-fill>])
 ;; @param <num-rad> Radius of the circle.
 ;; @param <num-fill> Optional fill flag.
+;; <br>
 ;; Draw a circle with radius <num-rad>. The optional <num-fill> flag 
 ;; with either 'true' or 'nil' (default) indicates if the circle
 ;; is filled with the fill color specified by 'cv:fill-color'.
@@ -245,6 +249,8 @@
 
 ;; @syntax (cv:clip <list-of-num-lists>) 
 ;; @param <list-of-num-lists> A list of turtle movements and/or Bezier curves.
+;; <br>
+;; Draw a circle with radius <num-rad>. The optional <num-fill> flag 
 ;; Define a clipping path using turtle movements (<degree> <distance>) and
 ;; Bezier curves (<x1> <y1> <x2> <y2> <x3> <y3>) starting from the 
 ;; last turtle coordinates <x0>, <y0> and finishing at <x3>, <y3>. 
@@ -259,6 +265,7 @@
 
 ;; @syntax (cv:draw <num-s>) 
 ;; @param <num-s> Distance to draw.
+;; <br>
 ;; Draw going forward distance <num-s>. Moves the turtle forward by 
 ;; the amount of pixels specified in <num-s> and draws with the current 
 ;; line color set by 'cv:line-color'.
@@ -267,6 +274,7 @@
 ;; @syntax (cv:drawto <x> <y>) 
 ;; @param <x> The x coordinate to draw to.
 ;; @param <y> The y coordinate to draw to.
+;; <br>
 ;; Draw a line to point <x>, <y>. Moves the turtle to point 
 ;; <x>, <y> like '(cv:goto x y)', but also draws a line from 
 ;; the old to the new position. The turtle position is changed to the
@@ -278,6 +286,7 @@
 ;; @param <num-y-rad> The y axis radius.
 ;; @param <num-start> The start angle in 0 to 360 degrees.
 ;; @param <end-num> The end angle in 0 to 360 degrees.
+;; <br>
 ;; Draw an ellipse with optional <bool-fill> either 'true' or 'nil' (default).
 ;; The ellipse is drawn around the current turtle position
 ;; with the Y axis oriented like the turtle.
@@ -292,8 +301,10 @@
 ;; @param <float-R> The red color value.
 ;; @param <float-G> The green color value.
 ;; @param <float-B> The blue color value.
+;;
 ;; Set color for shape filling.
 ;; Color values assume the following value:
+;;
 ;; <pre>
 ;;    R - value for red 0.0 to 1.0
 ;;    B - value for green 0.0 to 1.0
@@ -302,6 +313,7 @@
 ;;
 ;; @syntax (cv:fill-color <str-hex>)
 ;; @param <str-hex> A hex string specifying the line color.
+;; <br>
 ;; In an alternative syntax color values can be specified in a
 ;; hex string:
 ;;
@@ -311,6 +323,7 @@
 
 ;; @syntax (cv:font <str-name>) 
 ;; @param <str-name> The font name.
+;; <br>
 ;; The current font is set for all subsequent text operations.
 ;; Depending on the version of the postscript viewer or device
 ;; installed different fonts are available.
@@ -323,6 +336,7 @@
 ;; @syntax (cv:goto <num-x> <num-y>)
 ;; @param <num-x> The new x coordinate.
 ;; @param <num-y> The new y coordinate.
+;; <br>
 ;; Moves to position <num-x>, <num-y>. 
 ;; The turtle position can be
 ;; saved on the graphics state stack when using '(cv:gsave)'.
@@ -340,6 +354,7 @@
 
 ;; @syntax (cv:line <list-of-lists>) 
 ;; @param <list-of-lists> A list of turtle movements or Bezier curves.
+;; <br>
 ;; Draw a multipart line.  <lists> are turtle movements (<num-dg> <num-s>),
 ;; or Bezier curves (<x1> <y1> <x2> <y2> <x3> <y3>) starting
 ;; from the last turtle coordinates <x0>, <y0> and
@@ -352,6 +367,7 @@
 
 ;; @syntax (cv:line-cap <num-mode | str-mode>) 
 ;; @param <mode> The line termination shape mode as a string or number
+;; <br>
 ;; Sets the line termination shape as either a number or string:
 ;; <pre>
 ;;    0 or "butt"
@@ -363,6 +379,7 @@
 ;; @param <float-R> The red color value.
 ;; @param <float-G> The green color value.
 ;; @param <float-B> The blue color value.
+;; <br>
 ;; Set color for line drawing.
 ;; Color values assume the following value:
 ;; <pre>
@@ -373,6 +390,7 @@
 ;;
 ;; @syntax (cv:line-color <str-hex>)
 ;; @param <str-hex> A hex string specifying the line color.
+;; <br>
 ;; In an alternative syntax color values can be specified in a
 ;; hex string:
 ;;
@@ -382,6 +400,7 @@
 
 ;; @syntax (cv:line-join <num-mode> | <str-mode>)
 ;; @param <mode> The line join mode.
+;; <br>
 ;; Sets the line join mode as either a number or string:
 ;; <pre>
 ;;    0 or "miter"
@@ -391,17 +410,20 @@
 
 ;; @syntax (cv:line-width <int-pixels)
 ;; @param <int-pixels> The line width in pixels.
+;; <br>
 ;; Sets the line width in pixels for line drawing and the
 ;; outlines drawn by shapes and text outlines.
 
 ;; @syntax (cv:move <num-s>) 
 ;; @param <num-s> The distance to move the pen.
+;; <br>
 ;; Move turtle the forward distance <s> without drawing.
 
 ;; @syntax (cv:petal <num-width> <num-height> [<bool-fill>]) 
 ;; @param <num-width> The 'x1' coordinate of the  underlying Bezier curve <p0> to <p1> <p2> <p3>.
 ;; @param <num-height> The 'y1' coordinate of the  underlying Bezier curve <p0> to <p1> <p2> <p3>.
 ;; @param <bool-fill> An optional fill flag for color fill.
+;; <br>
 ;; Draws a petal using a Bezier curve with optional <num-fill> either 'true' or 'nil' (default).
 ;; The <num-height> and <num-width> parameters are relative to to the current position.
 ;; The petal is drawn with the tip at the current turtle
@@ -412,6 +434,7 @@
 ;; @param <num-rad> The radius of the pie.
 ;; @param <num-width> The width of the pie slice as an angle.
 ;; @param <bool-fill> An optional fill flag for color fill, 'true' or 'nil' (default).
+;; <br>
 ;; Draw a pie slice with optional <bool-fill> either 'true' or 'nil' (default).
 ;; The left edge of the pie is in turtle orientation.
 ;; The width angle spreads clockwise. The pie is drawn around the current
@@ -421,6 +444,7 @@
 ;; @param <num-rad> Radius.
 ;; @param <num-n> Number of sides.
 ;; @param <fill> Optional fill flag.
+;; <br>
 ;; Draw a polygon with radius <num-rad> and <num-n> sides.
 ;; <num-fill> is 'true' or 'nil' (default) for optional color fill
 ;; The polygon is drawn around the current turtle position.
@@ -430,6 +454,7 @@
 ;; @param <num-width> The width of the rectangle.
 ;; @param <num-height> The height of the rectangle.
 ;; @param <bool-fill> An optional flag to draw a filled rectangle.
+;; <br>
 ;; A rectangle is drawn at the current turtle position.
 ;; The width of the rectangle will be perpendicular to
 ;; the turtle orientation. If the turtle never turned or
@@ -440,7 +465,7 @@
 
 ;; @syntax (cv:render [<HTML-file-name>])
 ;; @param  <HTML-file-name> Optionam HTML file-name to save to.
-;;
+;; <br>
 ;; On Mac OX X system when using the function without a file-name,
 ;; the default HTML browser is opened automatically and a temporary
 ;; file <tt>/tmp/noname.html</tt> is shown. This is the best mode for
@@ -460,6 +485,7 @@
 
 ;; @syntax (cv:rotate <num-deg>) 
 ;; @param <num-deg> The degrees of rotation: -360 to 0 to 360.
+;; <br>
 ;; Rotate the coordinate space. 
 ;; The coordinate space is rotated to the right for
 ;; positive angles and to the left for negative angles.
@@ -470,6 +496,7 @@
 ;; @syntax (cv:scale <num-x> <num-y>) 
 ;; @param <num-x> The new x scale factor.
 ;; @param <num-y> The new y scale factor.
+;; <br>
 ;; Scale the coordinate space.
 ;; Scaling factors are 1.0 by default and compress for
 ;; factors less 1.0 or expand for factors bigger than 1.0.
@@ -481,6 +508,7 @@
 ;; @syntax (cv:shape <list-of-num-lists> [<num-fill>])
 ;; @param <list-of-num-lists> A list of turtle movements and/or Bezier curves.
 ;; @param <bool-fill> An optional fill flag for color fill.
+;; <br>
 ;; Draws a shape with optional <bool-fill> or eiher 'true' or 'nil' (default).
 ;; <num-lists> is either a turtle movement  (<degree> <distance>) or a Bezier curve 
 ;; (<x1> <y1> <x2> <y2> <x3> <y3>) starting from the last turtle coordinates 
@@ -490,6 +518,7 @@
 
 ;; @syntax (cv:text <str-text>)
 ;; @param <str-text> The text to draw.
+;; <br>
 ;; Draws text. Before drawing, a font can be specified, the default font after loading 
 ;; the 'canvas.lsp' modules is the default font of the canvas tag. The text color
 ;; is the current 'cv:fill-color'.
@@ -500,6 +529,7 @@
 ;; @syntax (cv:textarc <str-text> <num-rad>)
 ;; @param <str-text> The text to draw. 
 ;; @param <num-rad> The radius of an imaginary circle path for <str-text>.
+;; <br>
 ;; Draw text around a circle.
 ;; The text is drawn out side of an imaginary circle starting at 
 ;; turtle position and orientation and drawing at the current tangent.
@@ -511,6 +541,7 @@
 ;; @syntax (cv:textarcoutline <str-text> <num-rad>) 
 ;; @param <str-text> The text to draw.
 ;; @param <num-rad> The radius of imaginary circle path for text.
+;; <br>
 ;; Draw text around a circle.
 ;; Same as 'cv:textarc' but the text is drawn as ane outline.
 ;; The color of the text outline is the current 'cv:line-color'.
@@ -518,6 +549,7 @@
 
 ;; @syntax (cv:textoutline <str-text>)
 ;; @param <str-text> The text to draw. 
+;; <br>
 ;; Draw a text outline
 ;; Before drawing a font can be specified
 ;; the default font after loading 'canvas.lsp' is the font
@@ -530,6 +562,7 @@
 ;; @syntax (cv:translate) 
 ;; @param <num-dx> Move the current x-origin  by 'dx'.
 ;; @param <num-y> Move the current y-origin by 'dy'.
+;; <br>
 ;; Move the coordinate origin.
 ;; By default the origin 0,0 is in the bottom left corner
 ;; of the page. The <num-dx> and <num-dy> values extend to the right and top. 
@@ -540,14 +573,16 @@
 
 ;; @syntax (cv:turn <num-dg>)
 ;; @param <num-dg>  The degrees to turn: -360 to 0 to 360.
+;; <br>
 ;; Turn the turtle pen by <num-dg> degrees. The degrees are specified in angles
 ;; from -380 to 0 to 360. For turning clockwise specifiy positive values.
 ;; Negative degrees turn the turtle pen counter clockwise. The turtle
 ;; position is aved on the graphics state stack when using '(cv:gsave)'.
 
+(when (< (sys-info -2) 10110)
+	(constant (global 'extend) write-buffer))
 
-
-(define (html:html str) (write-buffer cv:body-html str))
+(define (html:html str) (extend cv:body-html str))
 
 (context 'cv)
 
@@ -881,9 +916,9 @@ function drawAllCanvas() { try
 	(let ( (buff "") (rec nil))
 		(while (set 'rec (pop lst))
 			(if (= (length rec) 6)
-				(write-buffer buff (string ",'B'," (join (map string rec) ","))))
+				(extend buff (string ",'B'," (join (map string rec) ","))))
 			(if (= (length rec) 2)
-				(write-buffer buff (string ",'L'," (rec 0) "," (rec 1)))))
+				(extend buff (string ",'L'," (rec 0) "," (rec 1)))))
 		(1 buff)
 ) )
 	

@@ -44,7 +44,7 @@ tt {
 
 <center>
 <h1>newLISPdoc - the newLISP documentation program</h1>
-<font size="-1">last edited 2009-05-29</font>
+<font size="-1">last edited 2010-01-14</font>
 </center>
 
 <p>Comments in newLISP source files can be converted
@@ -93,6 +93,16 @@ to the highlighted version of the source file on the documentation page:</p>
 newlispdoc -s mysql.lsp odbc.lsp sqlite.lsp
 newlispdoc -s *.lsp
 </pre></blockquote>
+
+<p>The <tt>-d</tt> flag supplies a download link to the raw source:</p>
+
+<blockquote><pre>
+newlispdoc -d *.lsp
+newlispdoc -s -d *.lsp
+</pre></blockquote>
+
+<p>One or both options can be supplied.</p>
+
 
 <p>Or on Win32:</p>
     

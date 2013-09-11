@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1017,13 +1017,9 @@ else if(isArray(cell->type))
 else
 	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, list));
 
-if((symbolCheck = refSymbol))
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-	
-return(copyCell(cell));
+symbolCheck = refSymbol;
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -1342,12 +1338,13 @@ while(list != nilCell)
 	{
 	if(compareFunc(keyCell, list, funcCell) == 0)
 		{
+		/* deprecated, take out in 10.2
 		if(funcCell)
 			{
-			/* deprecated, take out in 10.2 */
 			deleteList((CELL*)sysSymbol[0]->contents);
 			sysSymbol[0]->contents = (UINT)copyCell(list);
 			}
+		*/
 
 		if(refStack->base)
 			{
@@ -1497,8 +1494,6 @@ if(new->next != nilCell)
 
 result = modRef(key, (CELL *)list->contents, funcCell, new, mode, &count);
 
-itSymbol->contents = (UINT)nilCell;
-
 if(count == 0)
 	return(nilCell);
 
@@ -1523,8 +1518,8 @@ return(setRef(params, SETREF_ALL));
 
 
 /* update a cell in-place and put a copy of previous content
-   in $0 to be used in replacement expressions.
-   this function is used in set-nth/nth-set and set-ref, ref-set
+   in $it to be used in replacement expressions. 
+   Now only used in modeRef(), could be inlined.
 */
 void updateCell(CELL * cell, CELL * val)
 {
@@ -1537,15 +1532,18 @@ if(cell == nilCell)
 	}
 
 /* deprecate 10.1.6/ then eliminate usage of sysSymbol[0
-	and $it does not need a copy anymore */
+	and $it does not need a copy anymore 
+    TAKE OUT AFTER 10.2.00 
 deleteList((CELL*)sysSymbol[0]->contents);
 itSymbol->contents = (UINT)copyCell(cell);
 sysSymbol[0]->contents = itSymbol->contents; 
+*/
+
+itSymbol->contents = (UINT)cell;
 
 if(val != nilCell)
 	{
 	new = copyCell(evaluateExpression(val)); 
-
 
 	/* delete contents of original cell */
 	if(isEnvelope(cell->type))
@@ -1558,11 +1556,9 @@ if(val != nilCell)
 	else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
 		freeMemory( (void *)cell->contents);
 
-
 	cell->type = new->type;
 	cell->aux = new->aux;
 	cell->contents = new->contents;
-
 
 	/* free the cell  */
 	new->type = CELL_FREE;
@@ -1572,6 +1568,8 @@ if(val != nilCell)
 	firstFreeCell = new;
 	--cellCount;
 	}
+
+itSymbol->contents = (UINT)nilCell;
 }
 
 void flat(CELL * list, CELL * result, CELL * * next)

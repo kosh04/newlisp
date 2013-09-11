@@ -2,7 +2,7 @@
 
     directory and file functions working on UTF-16 file and path names
 
-    Copyright (C) 2007,2008,2009 Michael Sabin
+    Copyright (C) 2007,2008,2010 Michael Sabin
 
     This software is provided 'as-is', without any express or implied
     warranty.  In no event will the authors be held liable for any damages

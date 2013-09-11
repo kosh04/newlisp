@@ -10,6 +10,8 @@
 #
 # v.1.1 - 2005-03-20
 #	method name for newLISP.evalString was listed wrong
+# v.1.2 - 2010-02-09
+#	method name for newLISP.evalString was listed wrong
 #
 # supports the following methods:
 #
@@ -22,7 +24,11 @@
 #
 #
 
-(set 'version "1.0")
+; make compatible with older versions of newLISP
+(when (< (sys-info -2) 10111)
+    (constant (global 'write) write-buffer))
+
+(set 'version "1.2")
 
 # formatting templates for responses
 
@@ -212,7 +218,7 @@
         "<h2>newLISP XML-RPC v." version 
         ": not a valid XML-RPC request</h2>")
     (begin
-        (while (read-line) (write-buffer input (current-line)))
+        (while (read-line) (write input (current-line)))
         (process-post input))
 )
 

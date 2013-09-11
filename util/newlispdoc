@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ;; @module newlispdoc
 ;; @description Generates documentation and hightligted source from newLISP source files.
@@ -21,21 +21,27 @@
 ;; @version 2.7 - link rag did not work at beginnning of line
 ;; @version 2.8 - support for newLISPdoc tag color
 ;; @version 2.9 - correctly highlight & and ^ keywords
+;; @version 3.0 - when -d is specified, add download link
+;; @version 3.1 - changed <tt>write-buffer</tt> to shorter <tt>write</tt>, <tt>name</tt> to <tt>term</tt>
+;; @version 3.2 - formatting when view source, new stylesheet newlispdoc.css
 ;;
-;; @author Lutz Mueller, 2006-2009
+;; @author Lutz Mueller, 2006-2010
 ;; @location http://newlisp.org
 ;;
 ;; <h3>Usage:</h3>
-;; The <tt>-s</tt> switch can be used to generate highlighted source files.
+;; The <tt>-s</tt> and <tt>-s</tt> switches can be used to generate highlighted source files,
+;; links and and download links
 ;; <pre>
 ;;    newlispdoc afile.lsp bfile.lsp
 ;;    newlispdoc -s afile.lsp bfile.lsp
 ;;    newlispdoc -s *.lsp
+;;    newlispdoc -s -d *.lsp
 ;; <br>
 ;;    ; or on Win32
 ;;    newlisp newlispdoc afile.lsp bfile.lsp
 ;;    newlisp newlispdoc -s afile.lsp bfile.lsp
 ;;    newlisp newlispdoc -s *.lsp
+;;    newlisp newlispdoc -s -d *.lsp
 ;; </pre>
 ;; newlispdoc can take a file of URLs and generate documentation and syntax
 ;; highlighted source from remote files:
@@ -64,14 +70,18 @@
 ;; about tagging of newLISP source code for newlispdoc.
 ;;
 
+; make compatible with older versions of newLISP
+(when (< (sys-info -2) 10111)
+	(constant (global 'write) write-buffer)
+	(constant (global 'term) name))
 
 ; get list of files from command line
 (set 'files (2 (main-args)))
 
 (if (empty? files)
 	(begin
-		(println "USAGE: newlispdoc [-s] <file-names>")
-		(println "USAGE: newlispdoc [-s] -url <file-with-urls>")
+		(println "USAGE: newlispdoc [-s] [-d] <file-names>")
+		(println "USAGE: newlispdoc [-s] [-d] -url <file-with-urls>")
 		(exit -1)))
 
 
@@ -79,7 +89,7 @@
 [text]<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
 <html>
 <head>
-<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>%s</title>
 [/text])
 
@@ -122,7 +132,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 
 (define function-name-color "#000088")    ; not implemented yet for func in (define (func x y z) ...)
 
-(set 'keywords (map name (filter (fn (x) (primitive? (eval x))) (sort (symbols) > ))))
+(set 'keywords (map term (filter (fn (x) (primitive? (eval x))) (sort (symbols) > ))))
 (push "nil" keywords)
 (push "true" keywords)
 (set 'keyword-regex (join keywords "|"))
@@ -251,18 +261,22 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 
 ; get command line switch -s for generating syntax highlighted source
 (let (pos (find "-s" files))
-	(if pos
-		(begin
-			(pop files pos)
-			(set 'source-link true))))
+	(when pos
+		(pop files pos)
+		(set 'source-link true)))
+
+; get command line switch -d for generating a download link
+(let (pos (find "-d" files))
+	(when pos
+		(pop files pos)
+		(set 'download-link true)))
 
 ; get command line switch -url for retrieving files via http from remote location
 (let (pos (find "-url" files))
-	(if pos
-		(begin
-			(pop files pos)
-			(set 'url-file (files pos))
-			(set 'time-out (int (last files) 5000)))))
+	(when pos
+		(pop files pos)
+		(set 'url-file (files pos))
+		(set 'time-out (int (last files) 5000))))
 
 ; if url-file is specified make a list of all urls
 (if url-file
@@ -271,9 +285,9 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 (if (= (last files) "") (pop files -1))
 
 (set 'indexpage "") ; buffer for modules index page
-(write-buffer indexpage (format prolog1 "Index"))
-(write-buffer indexpage stylesheet)
-(write-buffer indexpage (format prolog2 "Index"))
+(write indexpage (format prolog1 "Index"))
+(write indexpage stylesheet)
+(write indexpage (format prolog2 "Index"))
 
 ; reformat
 
@@ -357,18 +371,21 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 ; write the module tag link on the index page
 ; put source link on doc page if -s flag
 (define (format-module text desc filename , module)
-	(set 'module (string "<br/><br/><h2>Module:&nbsp;" text "</h2>"))
-	(write-buffer indexpage (string {<a href="} filename {.html">} module "</a>\n" ))
-	(write-buffer indexpage (string "<p>" desc "</p>\n"))
-	(if source-link
-		(string {<a href="} filename {.src.html">source</a>} module)
-		(string "<br/>" module))
+	(set 'module (string "<br/>\n<h2>Module:&nbsp;" text "</h2>"))
+	(write indexpage (string {<a href="} filename {.html">} module "</a>\n" ))
+	(write indexpage (string "<p>" desc "</p>\n"))
+
+	(let (link "")
+		(if source-link (setq link (string {<a href="} filename {.src.html">source</a>&nbsp;})))
+		(if download-link (write link (string {<a href="} filename {">download</a>})))
+		(string link module)
+	)
 )
 
 ; write the function name links on the index page under the module
 (define (format-func-link func-name file-name)
 		(let (names (if (find ":" func-name) (parse func-name ":") (list "" func-name)))
-			(write-buffer indexpage (string {<a href="} file-name 
+			(write indexpage (string {<a href="} file-name 
 					{.html#} (names 0) "_" (names 1) {">} (names 1) {</a>&nbsp; &nbsp; }))
 			(string (names 0) "_" (names 1))
 		)
@@ -385,7 +402,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 				(set 'old-syntax $1)
 				(set 'tag (format-func-link $1 file-name))
 				(set 'tag (string {<a name="} tag {"></a>}))
-				(string "<br/><br/><center>- &sect; -</center><br/>\n" tag
+				(string "<br/><br/><center>&sect;</center><br/>\n" tag
 						"<h3><font color=#CC0000>" old-syntax "</font></h3>\n"))
 		"")
 		"<b>syntax: " (trim text) "</b><br/>\n")
@@ -431,10 +448,10 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 	; link to another index page
 	(if (find ";; *@index ([^ ]*?) ([^ ]*?)\n" page 0)
 		(begin
-			(write-buffer indexpage 
+			(write indexpage 
 				(string {<br /><br /><h2><a href="} $2 {">Index:&nbsp;} $1 "</a></h2>\n"))
 			(if (find ";; *@description (.*?)\n" page 0)
-				(write-buffer indexpage (string $1 "<br/>\n")))
+				(write indexpage (string $1 "<br/>\n")))
 		)
 	)
 		
@@ -459,12 +476,12 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 			(replace ";;\\s*\n" page "<br/><br/>\n" 0)
 			(replace ";;(.*\n)" page (format-text $1) 0)
 			(set 'page (unprotect-html page))
-			(write-buffer html (format prolog1 outfile))
-			(write-buffer html stylesheet)
-			(write-buffer html (format prolog2 outfile))
-			(write-buffer html prolog3)
-			(write-buffer html page)
-			(write-buffer html epilog)
+			(write html (format prolog1 outfile))
+			(write html stylesheet)
+			(write html (format prolog2 outfile))
+			(write html prolog3)
+			(write html page)
+			(write html epilog)
 
 			(write-file (string outfile ".html") html)
 
@@ -477,7 +494,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 )
 	
 ; write the modules index page
-(write-buffer indexpage epilog)
+(write indexpage epilog)
 (write-file "index.html" indexpage)
 
 (exit)

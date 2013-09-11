@@ -2,6 +2,9 @@
 
 ;; qa reference returns from functions
 
+(println)
+(println "testing reference passing to/from built-in functions")
+
 (define (qa-ref)
 	(and
 		; replace -> nth
@@ -177,7 +180,7 @@
 		(set 's "a-b-c-d-e-f-g")
         (= (setf (first (replace "-" s "")) (upper-case $it)) "A")
         (= s "Abcdefg")
-		                
+
 		; don't mistake context in setf/setq symbol for default symbol
 		; and take as equal a context symbol and a context
 		(context 'CTX) 
@@ -188,7 +191,7 @@
 		(= new-ctx 'Second Second)
 
 		; loops
-		(not (set 'lsy '()))
+		(not (set 'lst '()))
 		(setf (last (for (i 0 5) (push i lst))) 100)
 		(= lst '(5 4 3 2 1 100))
 		(setq str "")
@@ -202,8 +205,8 @@
 (println)
 
 (if (qa-ref)
-	(println ">>>>> REFERENCE TESTING SUCCESSFUL")
-	(println ">>>>> ERROR in reference testing")
+	(println ">>>>> Reference testing SUCCESSFUL")
+	(println ">>>>> PROBLEM in reference testing")
 )
 
 

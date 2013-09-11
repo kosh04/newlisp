@@ -17,7 +17,7 @@
 //  for multiline send a [cmd] before and a [/cmd] after the code
 //  each on an extra line.
 //      
-// Copyright (C) 2007-2009 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 2007-2010 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

@@ -13,6 +13,9 @@
 # USAGE: qa-setsig
 #
 
+(println)
+(println "Testing signals")
+
 (when (= ostype "Win32")
 	(println "Cannot run qa-signal on this platform")
 	(exit))
@@ -53,8 +56,8 @@
 (println "received: " result-list)
 (println)
 (if (= result-list sig-list)
-	(println ">>>>> SIGNAL TESTING SUCCESSFUL")
-	(println ">>>>> ERROR: PROBLEM IN SIGNAL TESTING"))
+	(println ">>>>> Signal testing SUCCESSFUL")
+	(println ">>>>> PROBLEM in signal TESTING"))
 
 (println)
 (exit)

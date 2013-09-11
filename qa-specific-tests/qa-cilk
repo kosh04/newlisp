@@ -17,6 +17,7 @@
 ;10    89      177
 
 (println)
+(println "Testig Cilk API")
 
 (define (fibo n)
   (local (f1 f2)
@@ -29,8 +30,8 @@
 
 (if (not fork) ; does not have fork
   (if (= (fibo 7) 21)
-	(println "SIMULATED CILK API TESTED SUCCESSFUL ---")
-	(println "ERRORR: Problem simulated with Cilk API")
+	(println ">>>>> SIMULATED CILK API TESTED SUCCESSFUL ---")
+	(println ">>>>> PROBLEM with simulated Cilk API")
 ))
 
 (if (not fork) (exit))
@@ -74,8 +75,8 @@
          (true? result4)
          (= result5 21)
          (= result6 '((p1 400) (p2 500))))
-	(println ">>>>> THE CILK API TESTED SUCCESSFUL")
-	(println ">>>>> ERR: PROBLEM WITH CILK API")
+	(println ">>>>> The Cilk API tested SUCCESSFUL")
+	(println ">>>>> PROBLEM with Cilk API")
 )
 (println)
 (exit)

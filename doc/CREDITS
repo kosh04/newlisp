@@ -108,7 +108,7 @@ Jeremy Dunn
   and for (>> x) => (>> x 1), (div x) => (div 1 x) ... and suggestions
 
 Michael Sabin
-  contributed UTF-16 capabe file and directory routines for the Win32 versions.
+  contributed UTF-16 capable file and directory routines for the Win32 versions.
 
 Dmitri Cherniak from http://en.feautec.pp.ru/
   many ideas for the newLISP API and big contributor of newLISP expansion
@@ -119,10 +119,10 @@ Cyril Slobin from http://wagner.pp.ru/~slobin/
 
 Jeff Ober from http://www.artfulcode.net/
   many of his ideas and comments have improved newLISP. On his blog a variety 
-  of interesting and useful code examples and modules can be found
+  of interesting and useful code examples and modules can be found.
 
 Ted Walther from http://reactor-core.org/~djw/
-  helped to improve the build process
+  helped to improve the build process.
   
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel

@@ -6,9 +6,9 @@ NAME
        newlisp - lisp like programming language
 
 SYNOPSIS
-       newlisp  [-n]  [-h]  [-c | -C | -http] [-s stack] [-m max-mem-megabyte]
-       [[-l path-file | -L path-file] [-p port-number | -d  port-number]]  [-w
-       directory] [lisp-files ...] [-e programtext]
+       newlisp  [-n]  [-h]  [-c | -C | -http] [-t microseconds] [-s stack] [-m
+       max-mem-megabyte] [[-l path-file | -L path-file] [-p port-number  |  -d
+       port-number]] [-w directory] [lisp-files ...] [-e programtext]
 
 DESCRIPTION
        Invokes newLISP which first loads init.lsp if present. Then one or more
@@ -148,5 +148,5 @@ AUTHOR
 
 
 
-version 10.1.5                  September 2009                      newlisp(1)
+version 10.2.0                    March 2010                        newlisp(1)
 

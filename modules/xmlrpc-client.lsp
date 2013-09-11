@@ -3,7 +3,7 @@
 ;; @version 0.3 - comments redone for automatic documentation
 ;; @version 0.4 - multiple indices with <tt>nth</tt> redone to be compatible with future versions
 ;; @version 0.5 -  doc changes
-;; @author Lutz Mueller, 2005-2009
+;; @author Lutz Mueller, 2005-2010
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:

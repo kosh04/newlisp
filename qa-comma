@@ -169,16 +169,16 @@ true
    (if (not 
      (if (and (primitive? (eval sm)) (< sm 'zzzz)) 
        (begin 
-          (inc sm-cnt (+ (length (name sm)) 1))
+          (inc sm-cnt (+ (length (term sm)) 1))
           (if (> sm-cnt 79)
             (begin
               (set 'sm-cnt 0)
               (println)))
-          (print (name sm) " ")
+          (print (term sm) " ")
           (set 'func (eval (sym (append "test-" (string sm)))) )
           (and (catch (apply func) 'result)  result))
        true)) 
-     (failed (string ">>>> " sm " failed " result) )))
+     (failed (string " >>>> " sm " failed " result) )))
   (println))
 
 (define (test-$) (find "a|b" "xtzabc" 0) (= ($ 0) $0))
@@ -207,12 +207,18 @@ true
   (= -9223372036854775808 (& -9223372036854775808 -1)))
 
 (define (test-* )
-  (= (* (* 123456789 123456789)) 15241578750190521))
+  (and
+    (= (* (* 123456789 123456789)) 15241578750190521)
+    (= (*) 1)
+  ))
 
 (define (test-+ )
-  (= (+ 999999999999999999 1) 1000000000000000000)
-  (= (+ 9223372036854775807 -9223372036854775808) -1)
-  (= (+ -9223372036854775808 -1) 9223372036854775807)) ; wraps around
+  (and
+    (= (+ 999999999999999999 1) 1000000000000000000)
+    (= (+ 9223372036854775807 -9223372036854775808) -1)
+    (= (+ -9223372036854775808 -1) 9223372036854775807) ; wraps around
+    (= (+) 0)
+  ))
 
 (define (test-- )
   (= (- 100000000 1) 99999999))
@@ -303,9 +309,12 @@ true
 	(= (cosh (acosh 1)) 1))
 
 (define (test-add , l)
-  (dotimes (x 100) 
-   (push x l))
-  (= 4950 (apply add l)))
+  (and
+    (= (add) 0)
+    (dotimes (x 100) 
+      (push x l))
+    (= 4950 (apply add l))
+))
 
 (define (test-address s)
   (and
@@ -639,7 +648,7 @@ true
   (= from to))
 
 (define (test-crit-chi2 )
-  (< (abs (sub (crit-chi2 0,559506 10) 9,999991)) 1e-05))
+  (< (abs (sub (crit-chi2 (sub 1,0 0,559506) 10) 9,999991)) 1e-05))
 
 (define (test-crit-z )
   (< (abs (sub (crit-z 0,999) 3,090232)) 1e-05))
@@ -726,9 +735,10 @@ true
   (= "ERR: HTTP bad formed URL" (delete-url "")))
 
 (define (test-destroy)
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix" "Cygwin"))  
 		(set 'pid (fork (dotimes (t 100) (sleep 100))))
 		(set 'pid (process "newlisp"))	)
+	(if (= ostype "Cygwin") (sleep 1000))
 	(destroy pid))
 
 (define (test-det) 
@@ -855,13 +865,13 @@ true
 (define (test-ends-with )
   (and 
 	(ends-with "newlisp" "lisp") 
-	(ends-with "newlisp" "LISP" nil) 
+	(ends-with "newlisp" "LISP" 1) 
 	(ends-with "abc.def.ghi" "def|ghi" 1)
 	(ends-with "12345" "4|5" 1)
    	(ends-with (explode "newlisp") "p")
 	(set 'D:D "newlisp")
 	(ends-with D "lisp") 
-	(ends-with D "LISP" nil) 
+	(ends-with D "LISP" 1) 
 ))
 
 (define (test-env)
@@ -994,6 +1004,17 @@ true
 		(set 'D:D '(a b c d e f g))
 		(= (explode D 2) '((a b) (c d) (e f) (g)))
 ))
+
+(define (test-extend)
+	(and
+		(= (extend '() '(a) '(b c)) '(a b c))
+		(= (extend '(a) '() '(b)) '(a b))
+		(= (extend '(a) '(b) '(c d)) '(a b c d))
+		(not (set 'l '()))
+		(= (extend l '(a) '(b c)) '(a b c))
+		(= (extend l '(d e)) '(a b c d e))
+	)	
+)	
 
 (define (test-factor)
     (= (apply * (factor 0x7FFFFFFFFFFFFFFF)) 0x7FFFFFFFFFFFFFFF))
@@ -1157,7 +1178,7 @@ true
               (= (format "%lx" 0xFFFFFFFFFFFFFFFF) "ffffffffffffffff")
               (= (format "%lu" 0xFFFFFFFFFFFFFFFF) "18446744073709551615"))
           )
-          (begin
+          (begin ; all other UNIX, Linux, OS X
             (and
               (= (format "%d" 0x7fffffff) "2147483647")
               (= (format "%d" 0xffffffff) "-1")
@@ -1287,6 +1308,21 @@ true
 	(= (inc (+ 3 4)) 8)
 	(= l '(-1 3 3 3,9))
 ))
+
+(define (test---) (test-++))
+
+(define (test-++ , x)
+	(and 
+		(= (++ x) 1)
+		(= (++ x) 2)
+		(= (++ x 3) 5)
+		(set 'l '(0 nil 2,5))
+		(= (-- (l 0)) -1)
+		(= (++ (l 1)) 1)
+		(= (++ (l 2) 2) 4)
+		(= l '(-1 1 4))
+	)
+)
 
 (define (test-index )
   (= '(1 3) (index (lambda (x) (> x 3)) '(1 5 2 6 2 0))))
@@ -1577,8 +1613,6 @@ true
     )
 ))
 
-(define (test-name )
-  (= "name" (name 'name)))
 
 (define (test-net-accept )
   (and
@@ -1629,7 +1663,7 @@ true
 	(if (> (sys-info -1) 512) ; IPv6
 		(and (= "localhost" (net-lookup "::1")) (= "::1" (net-lookup "localhost")))
 	(and
-		(= "127.0.0.1" (net-lookup "localhost")) (= "localhost" (net-lookup "127.0.0.1")) )
+		(= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")) )
 	)
 )
 
@@ -1682,7 +1716,7 @@ true
     (if msg (set 'net-send-udp-test (= "HELLO" (first msg)) ) )))
 
 
-(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "True64Unix"))  
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "True64Unix" "Cygwin"))  
   (define (test-net-receive-udp)
     (fork (begin (sleep 500) (net-send-udp "localhost" 10001 "hello")))
     (set 'net-send-udp-test (= "hello" (first (net-receive-udp 10001 10)))))
@@ -1858,6 +1892,10 @@ true
 		(= (parse-date "Januar 10, 07" "%B %d, %y") 1168387200)
 ))
 
+(define (test-prefix)
+	(set 's 'Foo:bar)
+	(= s (sym (term s) (prefix s))))
+
 (define (test-peek)
 	(set 'fle (open "qa-comma" "r"))
 	(= (peek fle) (first (file-info "qa-comma")))
@@ -1883,7 +1921,7 @@ true
 	(= (read-line in) "HELLO THERE")
 	(delete-file "pipe-child.lsp"))
 
-(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix"))
+(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix" "Cygwin"))
   (define (test-pipe)
 	(set 'channel (pipe))
 	(set 'in (first channel))
@@ -1993,7 +2031,7 @@ true
 ))
 
 (define (test-pretty-print)
-  (= (pretty-print) '(80 " ")))
+  (= (pretty-print) '(80 " " "%1.10g")))
 
 (define (test-primitive? )
   (primitive? primitive?))
@@ -2164,6 +2202,8 @@ true
     (write-buffer file buff (nth 0 (file-info "qa-comma")))
     (close file)))
 
+(define test-read test-read-buffer)
+
 (define (test-read-char )
   (and 
     (file-copy "qa-comma" "junk")
@@ -2171,7 +2211,7 @@ true
 
 (define (test-read-file )
   (read-file "qa-dot")
-  (starts-with (read-file "file://qa-net") "#!/usr/bin/newlisp")
+  (starts-with (read-file "file://qa-dot") "#!/usr/bin/newlisp")
 )
 
 (define (test-read-key) true)
@@ -2328,7 +2368,7 @@ true
 
   ; regression for key cell part of list
   (setq a '(b c d))
-  (= (replace (a 0) a (name (a 0))) '("b" c d))
+  (= (replace (a 0) a (term (a 0))) '("b" c d))
 ))
  
 (define (replace-once str)
@@ -2431,14 +2471,23 @@ true
     (= (select D '(0 9 9 0 1 8 8 1)) '(0 9 9 0 1 8 8 1))
 ))
 
+(new Class 'MAIN:Circle)
+(define (test-self)
+	(define (Circle:move dx dy) (inc (self 1) dx) (inc (self 2) dy))
+	(set 'myc (list (Circle 1 2 3) (Circle 4 5 6)))
+	(:move (myc 0) 10 20)
+	(:move (myc 1) 10 20)
+	(= myc '((Circle 11 22 3) (Circle 14 25 6)))
+)
+
 ;; for testing semaphores accross processes/threads see test-share
 (define (test-semaphore)
   (and
     (set 'sid (semaphore))
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix" "Cygwin"))  
 		(= (semaphore sid) 0) true) ;; no semaphore status on Win32
     (semaphore sid 1)
- 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix"))  
+ 	(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "AIX" "Tru64Unix" "Cygwin"))  
         (= (semaphore sid) 1) true) ;; no semaphore status on Win32
     (semaphore sid 0)))
 
@@ -2661,10 +2710,10 @@ true
 (define (test-starts-with )
   (and 
 	(starts-with "newlisp" "new") 
-	(starts-with "newlisp" "NEW" nil)
+	(starts-with "newlisp" "NEW" 1)
 	(set 'D:D "newlisp")
 	(starts-with D "new") 
-	(starts-with D "NEW" nil)
+	(starts-with D "NEW" 1)
 ))
 
 (define (test-string )
@@ -2727,6 +2776,11 @@ true
 (define (test-tanh)
 	(< (abs (sub (sinh 1) (div (sub (exp 1) (exp -1)) 2))) 0,0000000001)
 )
+
+(define (test-term )
+  (= "term" (term 'term)))
+
+(define test-name test-term)
 
 (define (test-throw )
   (and (catch (throw (+ 3 4)) 'msg) (= msg 7)))
@@ -2870,6 +2924,8 @@ true
 	(= str "hel")
 ))
 
+(define test-write test-write-buffer)
+
 (define (test-write-char )
   (file-copy "qa-comma" "junk")
   (delete-file "junk"))
@@ -2982,7 +3038,7 @@ true
 (set 'var 123)
 (set 'CTX:var 456)
 (if (or (!= CTX:var 456) (!= var 123))
-	(println ">>>>> problem creating local symbols"))
+	(println " >>>> problem creating local symbols"))
 
 (set 'ctx CTX)
 
@@ -3012,7 +3068,7 @@ true
 
 
 (context 'ACCOUNT)
-    (set 'ACCOUNT:name "")      ; force creation of local symbol with
+    (set 'ACCOUNT:term "")      ; force creation of local symbol with
     (define balance 0,0)  	; same name as built in primitive
     (constant 'phone "")     
 
@@ -3025,16 +3081,16 @@ true
     ; make sure contexts are inherited
     ; but not variables containing contexts
     (if (not (context? CTX)) 
-	(QA:failed ">>>> problem inheriting context symbols"))
+	(QA:failed " >>>> problem inheriting context symbols"))
 
     ; make sure context variables get not inherited
-    (if (= ctx CTX) (QA:failed ">>>>> should not inherit context var"))
+    (if (= ctx CTX) (QA:failed " >>>> should not inherit context var"))
     
     (set 'ctx 123)
 
     ; make sure redefined primitives get inherited
     (if (not (primitive? myprint)) 
-    	(QA:failed ">>>> problem inheriting redefined primitives"))
+    	(QA:failed " >>>> problem inheriting redefined primitives"))
 
 (set 'myprint nil)
    
@@ -3042,8 +3098,8 @@ true
 
 ;; make sure again that context defs did not overwrite MAIN symbols
 (if (or (!= deposit 999) (!= clear 999) (!= withdraw 999) (!= stat 999) (!= ctx CTX)
-        (not (primitive? name)) (!= balance 1000.0) (!= phone "123-456-789"))
-	(QA:failed ">>>> context definitions are overwriting MAIN"))
+        (not (primitive? term)) (!= balance 1000.0) (!= phone "123-456-789"))
+	(QA:failed " >>>> context definitions are overwriting MAIN"))
 
 (new ACCOUNT 'John true)     ; this creates a new context copy of 
                              ; ACCOUNT called 'John' if exists overwrite symbols
@@ -3062,15 +3118,15 @@ true
 (Anne:deposit 120,00)
 (Anne:withdraw 50)
 (if (or (!= John:balance 40) (!= Anne:balance 70))
-	(QA:failed ">>>> problem with methods in contexts"))
+	(QA:failed " >>>> problem with methods in contexts"))
 
 (if (or (!= (report John) (list John:name John:balance))
         (!= (report Anne) (list Anne:name Anne:balance)))
-    (QA:failed ">>>> problem using context variables"))
+    (QA:failed " >>>> problem using context variables"))
 
 (if (!= (map report (map eval '(John Anne))) 
        '(("John Doe" 40) ("Anne Somebody" 70)) )
-    (QA:failed ">>>> problem mapping functions using context vars"))
+    (QA:failed " >>>> problem mapping functions using context vars"))
 
 
 ;; dynamic context var as symbol to be defined
@@ -3081,7 +3137,7 @@ true
 (set 'ctx ACCOUNT)
 (defit)
 (if (!= (ctx:foo 10) 20) 
-  (QA:failed ">>>> problem with dyna symbols in defined symbol"))
+  (QA:failed " >>>> problem with dyna symbols in defined symbol"))
 
 
 ;; check setq, define (as set) and inc, dec on dynamic context vars
@@ -3095,23 +3151,23 @@ true
 (set 'CTX:var 0) ;; make sure var is existent
 (foo-set CTX 1)
 (if (!= 1 CTX:var) 
-  (QA:failed ">>>> problem with set on context vars"))
+  (QA:failed " >>>> problem with set on context vars"))
 
 (foo-setq CTX 3)
 (if (!= 3 CTX:var) 
-  (QA:failed ">>>> problem with setq on context vars"))
+  (QA:failed " >>>> problem with setq on context vars"))
 
 (foo-define CTX 4)
 (if (!= 4 CTX:var) 
-  (QA:failed ">>>> problem with define on context vars"))
+  (QA:failed " >>>> problem with define on context vars"))
 
 (foo-inc CTX)
 (if (!= 5 CTX:var) 
-  (QA:failed ">>>> problem with inc on context vars"))
+  (QA:failed " >>>> problem with inc on context vars"))
 
 (foo-dec CTX)
 (if (!= 4 CTX:var) 
-  (QA:failed ">>>> problem with dec on context vars"))
+  (QA:failed " >>>> problem with dec on context vars"))
 
 ;; dynamic context vars inside a context (since version 7.5.1)
 
@@ -3132,25 +3188,25 @@ true
 (TST:init CTX 999)
 
 (if (!= 999 CTX:foo) 
-  (QA:failed ">>>> problem with dyna vars in contexts"))
+  (QA:failed " >>>> problem with dyna vars in contexts"))
 
 ;; now foo does exist
 (TST:init CTX 222)
 
 (if (!= 222 CTX:foo)
-  (QA:failed ">>>> problem with dyna vars in contexts"))
+  (QA:failed " >>>> problem with dyna vars in contexts"))
 
 
 (define (cdf:cdf a b) (+ a b))
 
 (if (!= (cdf 3 4) 7) 
-  (QA:failed ">>>> problem with context default vars"))
+  (QA:failed " >>>> problem with context default vars"))
 
 ;; check for existence of dynamic context symbol
 
 (define (check-sym-existence ctx)
   (if (symbol? 'ctx:foovar) ;; will not create is only check
-    (QA:failed ">>>> problem with symbol? for dyna vars")))
+    (QA:failed " >>>> problem with symbol? for dyna vars")))
 
 (check-sym-existence CTX)
 
@@ -3163,7 +3219,7 @@ true
 (new Actx Bctx)
 
 (if (not (= Bctx:x 999))
-  (QA:failed ">>>>> problem with new in overwriting symbols"))
+  (QA:failed " >>>> problem with new in overwriting symbols"))
 
 ;; delete contexts
  (if (not (and
@@ -3172,45 +3228,45 @@ true
         (delete 'John)
 ;		(map delete '(Actx Bctx cdf))
       ) )
-    (QA:failed ">>>>> problem deleting contexts"))
+    (QA:failed " >>>> problem deleting contexts"))
 
 ;; define static default functions
 
 (define foobar:foobar)
 
 (define (def-static s contents)
-   (def-new 'contents (sym (name s) s)))
+   (def-new 'contents (sym (term s) s)))
 
 (if (not 
   (and
     (def-static 'foobar (fn (x) (+ x x)))
     (= foobar:foobar (lambda (foobar:x) (+ foobar:x foobar:x)))
     (= (foobar 10) 20)))
-  (QA:failed ">>>>> problem with static default function definition"))
+  (QA:failed " >>>> problem with static default function definition"))
 
 ;; calling into context changes context
 (if (not TST:test-context-change)
-  (QA:failed ">>>>> problem changing runtime context with symbol"))
+  (QA:failed " >>>> problem changing runtime context with symbol"))
 
 ;; but calling with raw lambda doesn't
 (if ((eval TST:test-context-change))
-  (QA:failed ">>>>> problem maintaining runtime context with lambda"))
+  (QA:failed " >>>> problem maintaining runtime context with lambda"))
 
 ;; apply evaluates functor
 (if (not (apply 'TST:test-context-change))
-  (QA:failed ">>>>> problem changing runtime context with apply symbol"))
+  (QA:failed " >>>> problem changing runtime context with apply symbol"))
 
 ;; apply evaluates functor
 (if (apply TST:test-context-change)
-  (QA:failed ">>>>> problem maintaining runtime context with apply lambda"))
+  (QA:failed " >>>> problem maintaining runtime context with apply lambda"))
 
 ;; map evaluates functor
 (if (!= (map 'TST:test-context-change '(a b c)) '(true true true))
-  (QA:failed ">>>>> problem changing runtime context with map symbol"))
+  (QA:failed " >>>> problem changing runtime context with map symbol"))
 
 ;; map evaluates functor
 (if (!= (map TST:test-context-change '(a b c)) '(nil nil nil))
-  (QA:failed ">>>>> problem maintaining runtime context with map lambda"))
+  (QA:failed " >>>> problem maintaining runtime context with map lambda"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; testing the default functor ;;;;;;;;;;;;;;;
 
@@ -3230,7 +3286,7 @@ true
 ))
 
 (if (not (test-default-functor))
-	(QA:failed ">>>>> problem testing default functor"))
+	(QA:failed " >>>> problem testing default functor"))
 	
 ;; hash-like access functions for namespaces
 (if (not (and
@@ -3242,7 +3298,7 @@ true
 	(= (Foo '(("var" 123) ("bar" 456) ("baz" 789))) 'Foo)
 	(= (Foo) '(("bar" 456) ("baz" 789) ("var" 123)))
 	(= (Foo "var" (* 2 (Foo "var"))) 246)
-	)) (QA:failed ">>>>> problem with hash functions for namespaces") true)
+	)) (QA:failed " >>>> problem with hash functions for namespaces") true)
 
 		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

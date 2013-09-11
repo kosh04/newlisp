@@ -2,6 +2,9 @@
 #
 # two forked processes communicating via pipes
 
+(println)
+(println "Testing/benchmarking  pipes with forked processes")
+
 (set 'start (time-of-day))
 (set 'N 10000)
 
@@ -23,6 +26,7 @@
 (wait-pid observer)
 (wait-pid counter)
 
-(println "\n" (div (- (time-of-day) start)  N) " ms per write->read")
-
+(println)
+(print ">>>>> Benchmarked pipes with forked processes: ")
+(println (div (- (time-of-day) start)  N) " ms per write->read")
 (exit)

@@ -1,9 +1,23 @@
+#!/usr/bin/newlisp
+
 ;; qa-utf16path - check WIN_32 file and directory routines on 
 ;; UTF-16 encoded paths
 
-(if (not (= ostype "Win32"))
-		(println "This test is lengthy and normally only used on" 
-				" the Win32 UTF8 enabled versions.")
+;; run with N = 10000 to check for memory leaks
+;; ./qa-utf16path 10000
+;; newlisp qa-utf16path 10000
+
+
+(println)
+(println "Testing UTF-16 path names")
+
+(if (main-args 2)
+	(setq N (int (main-args 2)))
+	(setq N 10))
+
+(when (= 0 (& (sys-info -1) 128))
+		(println ">>>>> qa-utf16path: This test is only used on UTF8 enabled versions.")
+		(exit)
 )
 
 (set 'Yuki "\230\162\182\230\181\166\231\148\177\232\168\152")
@@ -25,31 +39,31 @@
 
 (define-macro (assert any)
 	(local (result)
-		(if (not (set 'result (eval any)))
-			(throw-error (string "Expression failed! " any))
+		(when (not (set 'result (eval any)))
+			(println (string " >>>> Expression failed! " any))
+			(setq fail true)
+			(if (> N 10) (exit))
 		)
 		result
 	)
 )
 
-(println "Check memory - hit <enter>.")
-(read-line)
 
-(println "Step 1")
+(println "Step 1:")
 
 (println (time 
 	(begin 
 		(assert (make-dir UnicodeStr))
 		(assert (remove-dir UnicodeStr))
 	)
-	1000
+	N	
 ))
 
-(println "Step 2")
+(println "Step 2:")
 
 (assert (make-dir UnicodeStr))
-(println (time (assert (directory? UnicodeStr)) 100000))
-(println (time (assert (file? UnicodeStr)) 100000))
+(println (time (assert (directory? UnicodeStr)) N))
+(println (time (assert (file? UnicodeStr)) N))
 (println (time (begin
 	(assert (directory))
 	(assert (directory "." UnicodeStr))
@@ -59,11 +73,10 @@
 	(assert (real-path))
 	(assert (directory))
 	(assert (change-dir ".."))
-) 5000))
+) N))
 (assert (remove-dir UnicodeStr))
 
-(println "Step 3")
-
+(println "Step 3:")
 		
 (println (time
 	(begin
@@ -72,18 +85,18 @@
 		(assert (append-file UnicodeStr (reverse sRand)))
 		(assert (delete-file UnicodeStr))
 	)
-5000 ))
+N ))
 
-(println "Step 4")
+(println "Step 4:")
 
 (assert (write-file UnicodeStr sRand))
 
-(println (time (assert (not (directory? UnicodeStr))) 100000))
-(println (time (assert (file? UnicodeStr)) 100000))
+(println (time (assert (not (directory? UnicodeStr))) N))
+(println (time (assert (file? UnicodeStr)) N))
 
-(println (time (assert (file-info UnicodeStr)) 100000))
+(println (time (assert (file-info UnicodeStr)) N))
 
-(println "Step 5")
+(println "Step 5:")
 
 (println (time (begin
 	(assert (set 'h (open UnicodeStr "w")))
@@ -98,16 +111,25 @@
 	(assert (rename-file UnicodeStr "foo"))
 	(assert (rename-file "foo" UnicodeStr))
 	(assert (rename-file UnicodeStr UnicodeStr))
-	(assert (not (rename-file UnicodeStr InvalidUTF8)))
-	(assert (not (rename-file InvalidUTF8 InvalidUTF8)))
-	(assert (not (rename-file InvalidUTF8 UnicodeStr)))
-) 10000))
+	(when (find ostype '("Win32" "Cygwin"))
+		(assert (not (rename-file UnicodeStr InvalidUTF8)))
+		(assert (not (rename-file InvalidUTF8 InvalidUTF8)))
+		(assert (not (rename-file InvalidUTF8 UnicodeStr)))
+	)
+) N))
 
 (assert (delete-file UnicodeStr))
 
-(println "Step 6")
+(println "Step 6:")
 
-(println (time (save UnicodeStr) 10000))
+(println (time (save UnicodeStr) N))
 
 (assert (delete-file UnicodeStr))
+
+(if-not fail
+	(println ">>>>> UTF-16 path-file-names testing SUCESSFUL")
+	(println ">>>>> PROBLEM with UTF-16 path-file-names processing")
+)
+
+(exit)
 

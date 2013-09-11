@@ -1,6 +1,6 @@
 /* nl-symbol.c --- symbol handling routines for newLISP
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -211,7 +211,10 @@ if(type != CELL_PRIMITIVE)
 		}
 	}
 else
+	{
 	sPtr->name = token;
+	sPtr->contents = (UINT)nilCell;
+	}
 
 sPtr->context = context;
 return(sPtr);
@@ -276,7 +279,14 @@ if(symbolType(sPtr) == CELL_CONTEXT)
 if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
 	return(nilCell);
 
-if(getFlag(params->next))
+/* nil as extra parameter deletes without reference checking
+   true as extra parameter deletes only if no references are found
+   no extra parameter assumes reference checking
+*/
+params = params->next;
+if(params != nilCell && !getFlag(params))
+	checkReferences = FALSE;
+else if(getFlag(params->next))
 	{
 	if(cell->type == CELL_CONTEXT)
 		{
@@ -346,6 +356,7 @@ if(!deleteSymbol(sPtr->name))
 
 ((CELL *)context->contents)->aux = (UINT)root; /* root may have changed */
 
+/* printf("deleting: %s\n", sPtr->name); */
 deleteList((CELL *)sPtr->contents);
 
 if(checkReferences) references(sPtr, TRUE);
@@ -358,13 +369,18 @@ void makeContextFromSymbol(SYMBOL * symbol, SYMBOL * treePtr)
 CELL * contextCell;
 UINT * idx = envStackIdx;
 
-/* make sure symbol is not used as local in call hierachy */
+/* make sure symbol is not used as local in call hierachy 
+   and symbol is legal */
 while(idx > envStack)
 	{
 	if(symbol == (SYMBOL *)*(--idx))
-		errorProcExt(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
+		errorProcExt2(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
 	--idx;
 	}
+
+if(!isLegalSymbol(symbol->name))
+		errorProcExt2(ERR_INVALID_PARAMETER, stuffString(symbol->name));
+
 
 contextCell = makeCell(CELL_CONTEXT, (UINT)symbol);
 
@@ -389,8 +405,12 @@ while(blockPtr != NULL)
 			(*(UINT *)blockPtr == CELL_SYMBOL ||  *(UINT *)blockPtr == CELL_CONTEXT))
 			{
 			count++;
-			if(replaceFlag) 
+			if(replaceFlag)
+				{
+				blockPtr->type = CELL_SYMBOL;
+				blockPtr->aux = (UINT)nilCell;	
 				blockPtr->contents = (UINT)nilSymbol;
+				}
 			}
 		blockPtr++;
 		}
@@ -429,20 +449,27 @@ while(blockPtr != NULL)
 return(count);
 }
 
+/* renamed to 'term' in v.10.1.11 */
 CELL * p_name(CELL * params)
 {
 SYMBOL * sPtr;
-CELL * cell;
 
-cell = evaluateExpression(params);
-if(cell->type == CELL_SYMBOL || cell->type == CELL_CONTEXT)
-	sPtr = (SYMBOL *)cell->contents;
+params = evaluateExpression(params);
+if(params->type == CELL_SYMBOL || params->type == CELL_CONTEXT)
+	sPtr = (SYMBOL *)params->contents;
 else
-	return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, cell));
+	return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
 
-if(getFlag(params->next))
-	return(stuffString(((SYMBOL*)sPtr->context)->name));
 return(stuffString(sPtr->name));
+}
+
+CELL * p_prefix(CELL * params)
+{
+SYMBOL * sPtr;
+
+getSymbol(params, &sPtr);
+
+return(makeCell(CELL_CONTEXT, (UINT)sPtr->context));
 }
 
 /* -------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 ;; @version v 2.5 - cleanup put-page for 10.0
 ;; @version v 2.6 - help text corrections
 ;; @version v 2.72 - help text corrections
-;; @author Lutz Mueller, 2002-2009
+;; @author Lutz Mueller, 2002-2010
 ;;
 ;; This module defines basic CGI processing tools for processing
 ;; CGI GET and POST requests and cookies.

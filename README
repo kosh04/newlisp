@@ -52,7 +52,7 @@ From a user account if the sudo command and admin password is available:
 
 If root permissions are not available:
 
-  make home_install
+  make install_home
 
 home_install does not install the newLISP-GS Java based IDE, but installs
 the supportig documentation.
@@ -70,7 +70,7 @@ To discover the platform in an extra step do:
 
   make
 
-this discovers the platform and generates a makefile_configure which
+this discovers the platform and generates a makefile_build which
 is used subsequently by make. As an alternative use:
 
   ./configure-alt
@@ -78,7 +78,7 @@ is used subsequently by make. As an alternative use:
   make
 
 this does a more elaborate analysys of options supported on a specific
-platform and custom makes a makefile_configure.
+platform and custom makes a makefile_build.
 
 See the files doc/INSTALL, doc/LOCALIZATION and doc/FILES for more
 detailed information.
@@ -109,7 +109,7 @@ MORE INFO
 ---------
 See in the doc/ directory of the source distribution
 
-Lutz Mueller, July 2009
+Lutz Mueller, July 2009/Jan 2010
 
                                   +++
 

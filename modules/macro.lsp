@@ -1,7 +1,8 @@
 ;; @module macro.lsp
 ;; @description Rewrite macros for newLISP
-;; @version 1.02
-;; @author Lutz Mueller 2009
+;; @version 1.03
+;; @version 1.04 typo in documentation
+;; @author Lutz Mueller 2010
 ;; <h2>Introduction</h2>
 ;; This module implements rewrite macros. Rewrite macros take an expression
 ;; and rewrite it to a different expression:
@@ -17,8 +18,8 @@
 ;; Whenever newLISP reads a '(double A)' expression it will translate
 ;; it to '(mul 2 A)', expanding A to its content. 
 ;; When specifying macros using the 'macro' function, variable names must start with
-;; uppercase. The rewrite can be a complex, nested functional expression 
-;; like shown in the 'queue' rewrite.
+;; uppercase. Variables are optional. The rewrite can be a complex, nested functional 
+;; expression like shown in the 'queue' rewrite.
 ;;
 ;; The module should be loaded using either:
 ;; <pre> (module "macro.lsp")</pre>
@@ -103,8 +104,7 @@
 ;; @syntax (macro:delete <sym-macro>)
 ;; @param <sym-macro> The unquoted symbol of the macro to delete.
 ;; <br>Before a macro can be redefined, it must be deleted. Trying
-;; do redefine a macro before deleting it will throw a protection
-;; error.
+;; do redefine a macro before deleting it will throw an error.
 ;;
 ;; @example
 ;; (macro:delete cube)
@@ -120,7 +120,7 @@
 	(reader-event rewrite))
 
 ;; @syntax (macro:suspend)
-;; <br>Disables all registered macros. To reenable macros use '(macros:resume)'.
+;; <br>Disables all registered macros. To reenable macros use '(macro:resume)'.
 
 (define (suspend)
 	(reader-event 'nil) true)

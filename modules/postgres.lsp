@@ -2,7 +2,8 @@
 ;; @description PostgreSQL interface (tested on PostgreSQL 8.3)
 ;; @version 1.02  - feature complete
 ;; @version 1.03  - doc formatting
-;; @author Jeremy Cowgar 2006, Ted Walther 2009, Lutz Mueller 2009
+;; @version 2.00  - replaced <tt>inc</tt> with <tt>++</tt>
+;; @author Jeremy Cowgar 2006, Ted Walther 2009, Lutz Mueller 2010
 ;;
 ;; <h3>Requirements</h3>
 ;; At the beginning of the program file include a 'load' statement for the module:
@@ -84,31 +85,35 @@
 ;;
 ;; This module doesn't support connections through a Unix socket.
 
+; make this module compatible with version less than 10.1.11
+(when (< (sys-info -2) 10110)
+	(constant (global '++) inc))
+
 (context 'PgSQL)
 
 (set 'files '(
-        "/usr/local/lib/libpq.so.5.1" ; OpenBSD 4.4
+	"/usr/local/lib/libpq.so.5.1" ; OpenBSD 4.6
 	"/usr/lib/libpq.so.5.1" ; Debian
 	"/usr/local/pgsql/lib/libpq.dylib" ; Mac OS X
 	"c:/Program Files/PostgreSQL/8.3/bin/libpq.dll" ; Win32
 ))
 
-(set 'libpq (files (or
+(set 'library (files (or
 		     (find true (map file? files))
-		     (begin (println "cannot find libpq library") (exit)))))
+		     (throw-error "cannot find libpq library"))))
 
-(import libpq "PQconnectdb" "cdecl")
-(import libpq "PQstatus" "cdecl")
-(import libpq "PQexec" "cdecl")
-(import libpq "PQresultStatus" "cdecl")
-(import libpq "PQresultErrorMessage" "cdecl")
-(import libpq "PQgetvalue" "cdecl")
-(import libpq "PQgetisnull" "cdecl")
-(import libpq "PQcmdTuples" "cdecl")
-(import libpq "PQntuples" "cdecl")
-(import libpq "PQnfields" "cdecl")
-(import libpq "PQclear" "cdecl")
-(import libpq "PQfinish" "cdecl")
+(import library "PQconnectdb" "cdecl")
+(import library "PQstatus" "cdecl")
+(import library "PQexec" "cdecl")
+(import library "PQresultStatus" "cdecl")
+(import library "PQresultErrorMessage" "cdecl")
+(import library "PQgetvalue" "cdecl")
+(import library "PQgetisnull" "cdecl")
+(import library "PQcmdTuples" "cdecl")
+(import library "PQntuples" "cdecl")
+(import library "PQnfields" "cdecl")
+(import library "PQclear" "cdecl")
+(import library "PQfinish" "cdecl")
 
 ; On some wierd platforms NULL may equal something else, we'll worry about that when we bump into it.
 (define NULL 0)
@@ -205,7 +210,7 @@
 (define (fetch-row)
   (when (and (> (num-rows) 0) (> (num-rows) rowx))
     (let (row (map (fn (x) (fetch-value rowx x)) (sequence 0 (- (num-fields) 1))))
-      (inc rowx)
+      (++ rowx)
       row)))
 
 ;; @syntax (PgSQL:fetch-all)

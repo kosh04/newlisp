@@ -1,4 +1,10 @@
 #!/bin/sh
+
+PACKAGE=newlisp
+VERSION=10.2.0
+
+rm -f config.h makefile_build makefile_install
+
 # this script tries to discover the OS platform and configuration
 # and then makes newLISP using the appropiate makefile
 # if this script fails and for other special flavors, like
@@ -136,7 +142,7 @@ main(int argc, char** argv) {
 EOF
 ${CC:-${DEFAULT_CC}} test-memorymodel.c -o test-memorymodel 2>/dev/null
 true ${memory_model:=`./test-memorymodel`}
-echo "Detected memory model `./test-memorymodel`, using memory model ${memory_model}"
+echo "Detected memory model `./test-memorymodel`"
 rm -f test-memorymodel*
 
 # If we can't compile with readline, and the environment variables don't
@@ -173,6 +179,7 @@ for cclibreadline in "-lreadline" "-lreadline -lncurses" "-lreadline -ltermcap" 
 	if ${CC:-${DEFAULT_CC}} test-readline.c ${cclibreadline} -o test-readline 2>/dev/null ; then
 		true ${enable_readline:=yes};
 		DEFAULT_RLFLAGS="${cclibreadline}";
+		echo "Detected readline flags: ${cclibreadline}";
 		break;
 	fi
 done
@@ -188,8 +195,17 @@ true ${enable_ipv6:=no};
 true ${enable_static:=no};
 true ${enable_debug:=no};
 
-for arg in "$@"; do
-case "${arg}" in
+for nlc_arg in "$@"; do
+	if test -n "$nlc_prev"; then
+		eval "$nlc_prev=\$nlc_arg"
+		nlc_prev=
+		continue
+	fi
+	case "${nlc_arg}" in
+		--*=*) nlc_optarg=`echo "$nlc_arg" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+		*) nlc_optarg= ;;
+	esac
+case "${nlc_arg}" in
 	--enable-utf8) enable_utf8=yes; ;;
 	--disable-utf8) enable_utf8=no; ;;
 	--enable-readline) enable_readline=yes; ;;
@@ -205,14 +221,38 @@ case "${arg}" in
 	--LLP64) memory_model=LLP64; ;;
 	--LP32)  memory_model=LP32; ;;
 	--ILP32) memory_model=ILP32; ;;
+	--prefix) nlc_prev=prefix ;;
+	--prefix=*) prefix="$nlc_optarg" ;;
+	--exec-prefix) nlc_prev=exec_prefix ;;
+	--exec-prefix=*) exec_prefix="$nlc_optarg" ;;
+	--bindir) nlc_prev=bindir ;;
+	--bindir=*) bindir="$nlc_optarg" ;;
+	--mandir) nlc_prev=mandir ;;
+	--mandir=*) mandir="$nlc_optarg" ;;
+	--man1dir) nlc_prev=man1dir ;;
+	--man1dir=*) man1dir="$nlc_optarg" ;;
+	--docdir) nlc_prev=docdir ;;
+	--docdir=*) docdir="$nlc_optarg" ;;
+	--datadir) nlc_prev=datadir ;;
+	--datadir=*) datadir="$nlc_optarg" ;;
 	--help) cat <<EOF
 Usage: ./configure [options]
+     --help              # Show this help message.
+
+     --prefix=dir        # standard GNU option
+     --exec-prefix=dir   # standard GNU option
+     --bindir=dir        # standard GNU option
+     --datadir=dir       # standard GNU option
+     --docdir=dir        # standard GNU option
+     --mandir=dir        # standard GNU option
+     --man1dir=dir       # standard GNU option
+
      --enable-utf8       # (default) Enable UTF8 support
      --disable-utf8      # Disable UTF8 support
      --enable-readline   # (default) Enable readline support
      --disable-readline  # Disable readline support
-     --enable-ipv6       # (default) Enable IPv6 support
-     --disable-ipv6      # Disable IPv6 support
+     --enable-ipv6       # Enable IPv6 support
+     --disable-ipv6      # (default) Disable IPv6 support
      --enable-static     # Link newlisp statically, suitable for use in chroot jails
      --disable-static    # (default) Link newlisp dynamically
      --enable-debug      # Include debugging information in the newlisp binary
@@ -222,12 +262,28 @@ Usage: ./configure [options]
      --LLP64             # Use LLP64 memory model, overriding auto-detection
      --LP32              # Use LP32 memory model, overriding auto-detection
      --ILP32             # Use ILP32 memory model, overriding auto-detection
-     --help              # Show this help message.
 EOF
 	exit; ;;	
 	*) echo "Unrecognized option, ignoring: ${arg}" ;;
 esac
 done
+
+if [ -z "$prefix" ] ; then prefix="/usr/local"; fi
+if [ -z "$exec_prefix" ] ; then exec_prefix="$prefix"; fi
+if [ -z "$bindir" ] ; then bindir="${exec_prefix}/bin"; fi
+if [ -z "$datarootdir" ] ; then datarootdir="${prefix}/share"; fi
+if [ -z "$datadir" ] ; then datadir="${datarootdir}"; fi
+if [ -z "$docdir" ] ; then docdir="${datarootdir}/doc/${PACKAGE}"; fi
+if [ -z "$mandir" ] ; then mandir="${prefix}/man"; fi
+if [ -z "$man1dir" ] ; then man1dir="${mandir}/man1"; fi
+if [ -z "$pkgdatadir" ] ; then pkgdatadir="${datadir}/${PACKAGE}-${VERSION}"; fi
+
+cat >> config.h <<EOF
+/* This file was generated automatically by ./configure-alt */
+
+#define NEWLISPDIR "${pkgdatadir}"
+
+EOF
 
 cat >> config.h <<EOF
 /* Operating System Type */
@@ -332,15 +388,15 @@ COMPILEOBJS="	\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
 
 if [ $os_type = OS2 ] ; then
 	STRIPBINARY=""
-	LINKSTAGE="\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
-	COMPILEOBJS="\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
+#	LINKSTAGE="\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+#	COMPILEOBJS="\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
 elif [ $os_type = AIX -a $memory_model = LP64 ] ; then
-  LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+	LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
 fi
 
-# Now let us make the Makefile (makefile_configure)
-cat > makefile_configure <<EOF
-# makefile for newLISP v. 10.1.x generated by the configure script
+# Now let us make the Makefile (makefile_build)
+cat > makefile_build <<EOF
+# makefile for newLISP v. 10.1.x generated by the configure script (configure-alt)
 CC = ${CC:-${DEFAULT_CC}}
 CFLAGS = ${CFLAGS:-${DEFAULT_CFLAGS}} ${INCLUDES}
 LDFLAGS = ${LDFLAGS:-${DEFAULT_LDFLAGS}}
@@ -357,11 +413,140 @@ ${STRIPBINARY}
 .c.o:
 ${COMPILEOBJS}
 
-\$(OBJS): primes.h protos.h config.h makefile_configure
+\$(OBJS): primes.h protos.h config.h makefile_build
 EOF
 
-echo
-echo "Type \"make\" to build your newlisp binary."
-echo
-echo "If that doesn't work, type \"make help\""
+cat > makefile_install <<EOF
+# This file was generated automatically by ./configure-alt
 
+package=${PACKAGE}
+version=${VERSION}
+prefix=\$(DESTDIR)${prefix}
+exec_prefix=\$(DESTDIR)${exec_prefix}
+bindir=\$(DESTDIR)${bindir}
+datarootdir=\$(DESTDIR)${datarootdir}
+datadir=\$(DESTDIR)${datadir}
+pkgdatadir=\$(DESTDIR)${pkgdatadir}
+docdir=\$(DESTDIR)${docdir}
+mandir=\$(DESTDIR)${mandir}
+man1dir=\$(DESTDIR)${man1dir}
+
+install:
+	-install -d \$(pkgdatadir)
+	-install -d \$(pkgdatadir)/modules
+	-install -d \$(pkgdatadir)/util
+	-install -d \$(docdir)
+	-install -d \$(man1dir)
+	-install -d \$(bindir)
+	-rm -f \$(bindir)/newlisp
+	-install -m 755  newlisp \$(bindir)/\$(package)-\$(version)
+	-cd \$(bindir); ln -s \$(package)-\$(version) newlisp
+	-install -m 644 examples/init.lsp.example \$(pkgdatadir)/init.lsp.example
+	-install -m 755 util/newlispdoc \$(bindir)/newlispdoc
+	-install -m 644 util/syntax.cgi \$(pkgdatadir)/util/syntax.cgi
+	-install -m 644 util/newlisp.vim \$(pkgdatadir)/util/newlisp.vim
+	-install -m 644 util/nanorc \$(pkgdatadir)/util/nanorc
+	-install -m 644 util/link.lsp \$(pkgdatadir)/util/link.lsp
+	-install -m 644 util/httpd-conf.lsp \$(pkgdatadir)/util/httpd-conf.lsp
+	-install -m 644 doc/COPYING \$(docdir)/COPYING
+	-install -m 644 doc/CREDITS \$(docdir)/CREDITS
+	-install -m 644 doc/newlisp_manual.html \$(docdir)/newlisp_manual.html
+	-install -m 644 doc/newlisp_index.html \$(docdir)/newlisp_index.html
+	-install -m 644 doc/manual_frame.html \$(docdir)/manual_frame.html
+	-install -m 644 doc/CodePatterns.html \$(docdir)/CodePatterns.html
+	-install -m 644 doc/newLISPdoc.html \$(docdir)/newLISPdoc.html
+	-install -m 644 doc/newLISP-10.2-Release.html \$(docdir)/newLISP-10.2-Release.html
+	-install -m 644 doc/newlisp.1 \$(man1dir)/newlisp.1
+	-install -m 644 doc/newlispdoc.1 \$(man1dir)/newlispdoc.1
+	-install -m 644 modules/canvas.lsp \$(pkgdatadir)/modules/canvas.lsp
+	-install -m 644 modules/cgi.lsp \$(pkgdatadir)/modules/cgi.lsp
+	-install -m 644 modules/crypto.lsp \$(pkgdatadir)/modules/crypto.lsp
+	-install -m 644 modules/ftp.lsp \$(pkgdatadir)/modules/ftp.lsp
+	-install -m 644 modules/gmp.lsp \$(pkgdatadir)/modules/gmp.lsp
+	-install -m 644 modules/infix.lsp \$(pkgdatadir)/modules/infix.lsp
+	-install -m 644 modules/macro.lsp \$(pkgdatadir)/modules/macro.lsp
+	-install -m 644 modules/mysql.lsp \$(pkgdatadir)/modules/mysql.lsp
+	-install -m 644 modules/odbc.lsp \$(pkgdatadir)/modules/odbc.lsp
+	-install -m 644 modules/pop3.lsp \$(pkgdatadir)/modules/pop3.lsp
+	-install -m 644 modules/postgres.lsp \$(pkgdatadir)/modules/postgres.lsp
+	-install -m 644 modules/postscript.lsp \$(pkgdatadir)/modules/postscript.lsp
+	-install -m 644 modules/smtp.lsp \$(pkgdatadir)/modules/smtp.lsp
+	-install -m 644 modules/smtpx.lsp \$(pkgdatadir)/modules/smtpx.lsp
+	-install -m 644 modules/sqlite3.lsp \$(pkgdatadir)/modules/sqlite3.lsp
+	-install -m 644 modules/stat.lsp \$(pkgdatadir)/modules/stat.lsp
+	-install -m 644 modules/unix.lsp \$(pkgdatadir)/modules/unix.lsp
+	-install -m 644 modules/xmlrpc-client.lsp \$(pkgdatadir)/modules/xmlrpc-client.lsp
+	-install -m 644 modules/zlib.lsp \$(pkgdatadir)/modules/zlib.lsp
+	# GUI-Server install
+	-install -d \$(pkgdatadir)/guiserver
+	-install -d \$(docdir)/guiserver
+	-install -m 755 guiserver/newlisp-edit.lsp \$(bindir)/newlisp-edit
+	-install -m 644 guiserver/guiserver.jar \$(pkgdatadir)/guiserver.jar
+	-install -m 644 guiserver/guiserver.lsp \$(pkgdatadir)/guiserver.lsp
+	-install -m 644 guiserver/images/newLISP128.png \$(pkgdatadir)/newLISP128.png
+	-install -m 644 guiserver/COPYING \$(docdir)/guiserver/COPYING
+	-install -m 644 guiserver/index.html \$(docdir)/guiserver/index.html
+	-install -m 644 guiserver/guiserver.lsp.html \$(docdir)/guiserver/guiserver.lsp.html
+	-install -m 644 util/newlispdoc.css \$(docdir)/guiserver/newlispdoc.css
+	-install -m 644 guiserver/allfonts-demo.lsp \$(pkgdatadir)/guiserver/allfonts-demo.lsp
+	-install -m 644 guiserver/animation-demo.lsp \$(pkgdatadir)/guiserver/animation-demo.lsp
+	-install -m 644 guiserver/border-layout-demo.lsp \$(pkgdatadir)/guiserver/border-layout-demo.lsp
+	-install -m 644 guiserver/button-demo.lsp \$(pkgdatadir)/guiserver/button-demo.lsp
+	-install -m 644 guiserver/clipboard-demo.lsp \$(pkgdatadir)/guiserver/clipboard-demo.lsp
+	-install -m 644 guiserver/cursor-demo.lsp \$(pkgdatadir)/guiserver/cursor-demo.lsp
+	-install -m 644 guiserver/drag-demo.lsp \$(pkgdatadir)/guiserver/drag-demo.lsp
+	-install -m 644 guiserver/font-demo.lsp \$(pkgdatadir)/guiserver/font-demo.lsp
+	-install -m 644 guiserver/frameless-demo.lsp \$(pkgdatadir)/guiserver/frameless-demo.lsp
+	-install -m 644 guiserver/html-demo.lsp \$(pkgdatadir)/guiserver/html-demo.lsp
+	-install -m 644 guiserver/image-demo.lsp \$(pkgdatadir)/guiserver/image-demo.lsp
+	-install -m 644 guiserver/midi-demo.lsp \$(pkgdatadir)/guiserver/midi-demo.lsp
+	-install -m 644 guiserver/midi2-demo.lsp \$(pkgdatadir)/guiserver/midi2-demo.lsp
+	-install -m 644 guiserver/mouse-demo.lsp \$(pkgdatadir)/guiserver/mouse-demo.lsp
+	-install -m 644 guiserver/move-resize-demo.lsp \$(pkgdatadir)/guiserver/move-resize-demo.lsp
+	-install -m 644 guiserver/pinballs-demo.lsp \$(pkgdatadir)/guiserver/pinballs-demo.lsp
+	-install -m 644 guiserver/properties-demo.lsp \$(pkgdatadir)/guiserver/properties-demo.lsp
+	-install -m 644 guiserver/rotation-demo.lsp \$(pkgdatadir)/guiserver/rotation-demo.lsp
+	-install -m 644 guiserver/shapes-demo.lsp \$(pkgdatadir)/guiserver/shapes-demo.lsp
+	-install -m 644 guiserver/sound-demo.lsp \$(pkgdatadir)/guiserver/sound-demo.lsp
+	-install -m 644 guiserver/stroke-demo.lsp \$(pkgdatadir)/guiserver/stroke-demo.lsp
+	-install -m 644 guiserver/tabs-demo.lsp \$(pkgdatadir)/guiserver/tabs-demo.lsp
+	-install -m 644 guiserver/textrot-demo.lsp \$(pkgdatadir)/guiserver/textrot-demo.lsp
+	-install -m 644 guiserver/widgets-demo.lsp \$(pkgdatadir)/guiserver/widgets-demo.lsp
+	-install -m 644 guiserver/word-count.lsp \$(pkgdatadir)/guiserver/word-count.lsp
+	-install -m 644 guiserver/uppercase.lsp \$(pkgdatadir)/guiserver/uppercase.lsp
+
+
+uninstall:
+	-rm  \$(bindir)/\$(package)
+	-rm  \$(bindir)/\$(package)-\$(version)
+	-rm  \$(bindir)/newlispdoc
+	-rm  \$(bindir)/newlisp-edit
+	-rm  -rf \$(pkgdatadir)
+	-rm  -rf \$(docdir)
+	-rm  \$(man1dir)/newlisp.1
+	-rm  \$(man1dir)/newlispdoc.1
+
+install_home uninstall_home:
+	@echo "This option is disabled; please use the prefix variables at the configure stage."
+
+# End of file
+EOF
+
+cat <<EOF
+
+Variables:
+
+	package=${PACKAGE}
+	version=${VERSION}
+	prefix=${prefix}
+	exec_prefix=${exec_prefix}
+	bindir=${bindir}
+	datarootdir=${datarootdir}
+	datadir=${datadir}
+	pkgdatadir=${pkgdatadir}
+	docdir=${docdir}
+	mandir=${mandir}
+	man1dir=${man1dir}
+
+Type "make" to build your newlisp binary.
+EOF

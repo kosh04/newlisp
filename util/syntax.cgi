@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 # - syntax.cgi - this utility formats a newLISP source file as an HTML 
 # file with syntax highlighting
@@ -18,6 +18,9 @@
 # v.2.8 - scientific format with E
 # v.2.9 - support for newLISPdoc tag color
 # v.3.0 - correctly highlight & and ^ keywords
+# v.3.1 - change additional 'nil' arg in 'starts-with' to 1
+# v.3.2 - replace 'name' with 'term' and make compatible with older versions
+# v.3.3 - added utf-8 meta tag in header
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
@@ -49,7 +52,11 @@
 #      use ; as comment starter when comment appears after code
 
 
-;(define cgi-use true)
+(define cgi-use true)
+
+; make compatible with versions prior to 10.1.11
+(when (< (sys-info -2) 10111)
+    (constant (global 'term) name))
 
 (if cgi-use 
 	(print "Content-Type: text/html\r\n\r\n"))
@@ -64,7 +71,7 @@
 
 (define function-name-color "#000088")    ; not implemented yet for func in (define (func x y z) ...)
 
-(set 'keywords (map name (filter (fn (x) (primitive? (eval x))) (sort (symbols) > ))))
+(set 'keywords (map term (filter (fn (x) (primitive? (eval x))) (sort (symbols) > ))))
 (push "nil" keywords)
 (push "true" keywords)
 (set 'keyword-regex (join keywords "|"))
@@ -86,14 +93,14 @@
 
 (if cgi-use
   (begin 
-    (if (and (not (starts-with file "http://" nil)) (not (ends-with file ".txt")))
+    (if (and (not (starts-with file "http://" 1)) (not (ends-with file ".txt")))
 	(begin
 		(println "<h3>File not allowed for viewing: " file "</h3>")
 		(exit)))
   ))
 
 
-(if (starts-with file "http://" nil)
+(if (starts-with file "http://" 1)
 	(set 'file (get-url file 10000))
 	(set 'file (read-file file )))
 
@@ -204,7 +211,9 @@
 ; add pre and post tags
 (println (append 
 	{<!DOCTYPE HTML PUBLIC "4.01 Transitional">}
-	"<html><title>" title "</title><body><pre>\n" file "\n</pre>" 
+	"<html><head><title>" title "</title>\n"
+	{<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />}
+	"</head><body>\n<pre>\n" file "\n</pre>" 
 ))
 
 (println {<center><font face='Arial' size='-2' color='#444444'>}

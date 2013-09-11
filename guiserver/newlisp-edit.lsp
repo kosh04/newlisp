@@ -8,6 +8,7 @@
 ; version 1.28 decrementing font size exited editor (missing dec conversion for 10.0)
 ; version 1.30 change fonts in both: editor and monitor depending on active window
 ; version 1.31 cmd-x/v/z/Z and ctrl-x/v/z/Z did not mark edit buffer as dirty
+; version 1.32 newlispDoc directory configured now depending on NEWLISPDIR on Unix
 
 (set-locale "C")
 
@@ -15,7 +16,7 @@
 (set 'newlispDir (env "NEWLISPDIR"))
 
 (set 'newlispDoc (if (= ostype "Win32") 
-	newlispDir "/usr/share/doc/newlisp"))
+	newlispDir (replace "newlisp" (copy newlispDir) "doc/newlisp")))
 
 (load (string newlispDir "/guiserver.lsp"))
 
@@ -918,7 +919,7 @@
 )
 
 (define (openFindDialog)
-	(gs:dialog 'FindDialog 'TheEditor "Find text" 420 200 nil nil)
+	(gs:dialog 'FindDialog 'TheEditor "Find text" 460 200 nil nil)
 	(gs:set-resizable 'FindDialog nil)
 	(gs:frame-closed 'FindDialog 'finddialogclose-handler)
 	(gs:set-grid-layout 'FindDialog 4 1)
@@ -1401,8 +1402,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2009 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2009 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2010 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2010 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)
