@@ -9,12 +9,12 @@
 
 OBJS = newlisp-amal.o pcre.o
 
-CFLAGS = -Wall -O2 -I/usr/include -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8
+CFLAGS = -Wall -O2 -I/usr/include -c -DREADLINE -DMAC_OSX -DSUPPORT_UTF8
 
 CC = cc -L/usr/lib
 
 default: $(OBJS)
-	$(CC) $(OBJS) -g -lm -lreadline -o newlisp
+	$(CC) $(OBJS) -lm -lreadline -o newlisp
 	strip newlisp
 
 .c.o:

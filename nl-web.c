@@ -83,10 +83,6 @@ void trimTrailing(char * ptr);
 CELL * webError(int no);
 CELL * base64(CELL * params, int type);
 
-size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr);
-size_t Curl_base64_decode(const char *src, char *dest);
-
-
 jmp_buf socketTimeoutJump;
 long socketTimeout;
 struct timeval socketStart;
@@ -746,6 +742,7 @@ snprintf(msg, 64, "ERR: %s", netErrorMsg[errorNo]);
 return(stuffString(msg));
 }
 
+
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -933,7 +930,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.1.0"
+#define SERVER_SOFTWARE "newLISP/10.1.5"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query);

@@ -41,7 +41,7 @@
 
 (gs:init)
 (gs:get-screen)
-(set 'ww 500 'wh 500 'sw (gs:screen 0) 'sh (gs:screen 1))
+(set 'ww 600 'wh 600 'sw (gs:screen 0) 'sh (gs:screen 1))
 (gs:frame 'F  (- (div sw 2) (div ww 2)) (- (div sh 2) (div wh 2)) ww (+ wh 20) "PinBalls")
 (gs:canvas 'C)
 (gs:set-resizable 'F nil)
@@ -51,7 +51,7 @@
 (gs:set-visible 'F true)
 
 ;; set variables
-(set 'RADIUS 40 'CIRCLE-DOTS 256 'BALLS 5)
+(set 'RADIUS 40 'CIRCLE-DOTS 256 'BALLS 8)
 (define (rcolor) (list (random) (random) (random)))
 (gs:set-stroke 3)
 
@@ -77,7 +77,7 @@
 (define (flap) (apply amb M))
 (define (flop) (apply amb P))
 
-(while (gs:check-event 10000)
+(while (gs:check-event 10) ; timeout is small, because no events are exspected
 	(dolist (L CIRCLE) 
 		(set 'tx (L 1))
 		(set 'ty (L 2))
@@ -109,8 +109,8 @@
 
 		;; update the "per" CIRCLE data	
 		(setf (assoc (L 0) CIRCLE) (list (L 0) (inc tx X) (inc ty Y) X Y (L 5)))
-		(gs:update)
 	)
+	(gs:update)
 )
 
 (exit)

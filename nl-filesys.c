@@ -713,7 +713,7 @@ copyBuffer = allocMemory(MAX_FILE_BUFFER);
 do
 	{
 	bytesRead = read(fromHandle, copyBuffer, MAX_FILE_BUFFER);
-	if(write(toHandle, copyBuffer, (int)bytesRead) < 1) 
+	if(write(toHandle, copyBuffer, (int)bytesRead) < 0) 
 		fatalError(ERR_IO_ERROR, 0, 0);
 	} while (bytesRead == MAX_FILE_BUFFER);
 
@@ -1227,6 +1227,8 @@ void * parentPad = NULL; /* written by parent for this process */
 void * thisPad = NULL;   /* written by this process for the parent */
 
 #ifdef HAVE_FORK
+#ifndef OS2
+
 typedef struct 
 	{
 	void * address;
@@ -1594,6 +1596,7 @@ if(params == nilCell)
 
 return(trueCell);
 }
+#endif /* OS 2 */
 
 #endif /* HAVE_FORK */
 
@@ -2015,21 +2018,14 @@ return(cell);
 /* Takes anyhting and passes as string or file which has to
    be compiled back into expression when reading
 
-   Should be improved for only evaluating strings from
-   expression. Add evalFlag in call pattern and control
-   evaluation in reading and TRUE/FALSE flag in printCell
-   when writing. Performance gain may not be worth it
-   because redundant evaluation only happens on strings
-   > pagesize and is fast on just a string.
+   returns a new cell object on read, old on write
 */
 
 CELL * readWriteSharedExpression(UINT * address, CELL * params)
 {
-ssize_t size;
-STREAM strStream = {0, NULL, NULL, 0, 0};
+size_t size;
 CELL * cell;
 char * buffer = NULL;
-/* int errNo; */
 
 /* read */
 if(params == nilCell)
@@ -2052,17 +2048,13 @@ if(params == nilCell)
 	}
 
 /* write */
-cell = params;
-openStrStream(&strStream, MAX_STRING, 0);
-prettyPrintFlags |= PRETTYPRINT_STRING;
-printCell(cell , TRUE, (UINT)&strStream);
+buffer = cellToString(params, &size, TRUE);
+*(address + 1) = size;
 
-*(address + 1) = strStream.position;
-
-if(strStream.position < pagesize - 3 * sizeof(long))
+if(size < pagesize - 3 * sizeof(long))
 	{
-	memcpy((char *)(address + 2), strStream.buffer, strStream.position);
-	*((char *)address + 2 * sizeof(long) + strStream.position) = 0;
+	memcpy((char *)(address + 2), buffer, size);
+	*((char *)address + 2 * sizeof(long) + size) = 0;
 	}
 else
 	{
@@ -2075,12 +2067,11 @@ else
 	strncpy((char *)(address + 2), "/temp/nls-", 11);
 	getUUID((char *)(address + 2) + 10, 0);
 #endif
-	writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
+	writeFile((char *)(address + 2), buffer, size, "w");
 	}
-closeStrStream(&strStream);
 
 *address = (CELL_STRING | SHARED_MEMORY_EVAL);
-return(cell);
+return(params);
 }
 
 void checkDeleteShareFile(UINT * address)
@@ -2220,8 +2211,7 @@ ct[strlen(ct) - 1] = 0;  /* supress linefeed */
 return(stuffString(ct));
 }
 
-
-int milliSecTime(void)
+INT64 microSecTime(void)
 {
 struct timeval tv;
 struct tm * ttm;
@@ -2230,9 +2220,15 @@ gettimeofday(&tv, NULL);
 
 ttm = localtime((time_t *)&tv.tv_sec);
 
-return (ttm->tm_hour * 3600000 + 
-       ttm->tm_min * 60000 + ttm->tm_sec * 1000 + 
-       tv.tv_usec/1000);
+return (ttm->tm_hour * 3600000000LL + 
+       ttm->tm_min * 60000000 + ttm->tm_sec * 1000000 + 
+       tv.tv_usec);
+}
+
+
+int milliSecTime(void)
+{
+return(microSecTime()/1000);
 }
 
 
@@ -2297,6 +2293,7 @@ CELL * p_time(CELL * params)
 struct timeval start, end;
 INT64 N = 1;
 UINT * resultIdxSave;
+double diff;
 
 gettimeofday(&start, NULL);
 if(params->next != nilCell)
@@ -2310,13 +2307,16 @@ while(N--)
     }
 
 gettimeofday(&end, NULL);
-return(stuffInteger((UINT)timediff(end, start)));
+
+diff = (1.0 * timediff64(end, start)) / 1000;
+return(stuffFloat(&diff));
 }
 
 
 CELL * p_timeOfDay(CELL * params)
 {
-return(stuffInteger(milliSecTime()));
+double microSecs = microSecTime()/1000.0;
+return(stuffFloat(&microSecs));
 }
 
 
@@ -2324,11 +2324,20 @@ CELL * p_now(CELL * params)
 {
 struct timeval tv;
 struct tm *ttm;
+#ifndef WIN_32
 struct tm *ltm;
-struct timezone tzp;
-ssize_t offset;
+#ifndef SUNOS
+#ifndef OS2
+long gmtoff;
+UINT isdst;
+#endif
+#endif
+#else
+TIME_ZONE_INFORMATION timeZone;
+#endif
+ssize_t offset = 0;
 
-gettimeofday(&tv, &tzp);
+gettimeofday(&tv, NULL); /* get secs and microsecs */
 
 if(params != nilCell)
 	{
@@ -2337,7 +2346,17 @@ if(params != nilCell)
         tv.tv_sec += offset;
 	}
 
+#ifndef WIN_32
 ltm = localtime((time_t *)&tv.tv_sec);
+#ifndef SUNOS
+#ifndef OS2
+isdst = ltm->tm_isdst;
+gmtoff = - ltm->tm_gmtoff/60 + isdst * 60;
+#endif
+#endif
+#else
+GetTimeZoneInformation(&timeZone);
+#endif
 
 ttm = gmtime((time_t *)&tv.tv_sec);
 
@@ -2352,27 +2371,28 @@ return(stuffIntegerList(
     (UINT)tv.tv_usec,
     (UINT)ttm->tm_yday + 1,
     (UINT)ttm->tm_wday + 1,
-/* Note, that on SOLARIS tzp.tz_minuteswest and
-   tzp.tz_dsttime might not work correctly 
-   and contain garbage 
-*/
-    (UINT)tzp.tz_minuteswest,
-#ifdef WIN_32
-/*    (UINT)ltm->tm_isdst */
-    (UINT)tzp.tz_dsttime 
+
+#if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) 
+    gmtoff, isdst
+#endif
+
+#if defined(SUNOS)
+    timezone/60, daylight
+#endif
+
+#if defined(OS2) || defined(TRU64) || defined(AIX)
+#ifdef NEWLISP64
+    (UINT)0L, (UINT)0L
 #else
-    (UINT)ltm->tm_isdst
+    (UINT)0, (UINT)0
+#endif
+#endif
+
+#if defined(WIN_32)
+     timeZone.Bias,
+     timeZone.DaylightBias	
 #endif
     ));
-}
-
-
-UINT seconds(void)
-{
-struct timeval tv;
-
-gettimeofday(&tv, NULL);
-return(tv.tv_sec);
 }
 
 
@@ -2619,15 +2639,12 @@ return(stuffInteger(c));
 } 
 
 /* --------------------- peek a file descriptor ------------------------------*/
+
 #ifndef WIN_32
 CELL * p_peek(CELL * params)
 {
 UINT handle;
-#ifdef WIN_32
-unsigned long result;
-#else
 int result;
-#endif
 
 getInteger(params, &handle);
 
@@ -2637,7 +2654,6 @@ if(ioctl((int)handle, FIONREAD, &result) < 0)
 return(stuffInteger((UINT)result));
 } 
 #endif
-
 
 /* --------------------- library functions not found on some OSs -------------*/
 
@@ -2653,7 +2669,7 @@ while(TRUE)
 	*buffer = allocMemory(size + 2);
 	pSize = vsnprintf(*buffer, size + 1, format, argptr);
 
-#if defined(WIN_32) || defined(TRU64)
+#if defined(TRU64)
 	if(pSize < 0)
 		{
 		freeMemory(*buffer);

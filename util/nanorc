@@ -1,8 +1,7 @@
 ## syntax and configuration file for the nano editor from http://www.nano-editor.org
 ## syntax for newLISP, C, HTML, nanorc
 ## this file works on nano versions 2.0.1 and later 
-## tested on 2.0.1 Mac OS X and 2.0.7 Linux, FreeBSD
-## L.M. November
+## tested on nano 2.0.1 Mac OS X and nano 2.0.7 Linux, FreeBSD, LM 2008
 ## version 1.09 ready for newLISP v 10.0
 ## version 1.10 ready for newLISP v 10.0.6
 ## version 1.11 ready for newLISP v 10.1

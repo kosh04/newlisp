@@ -92,26 +92,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10100;
+int version = 10105;
 
 char copyright[]=
-"\nnewLISP v.10.1.0 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.1.5 Copyright (c) 2009 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.0 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.5 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.0 on %s IPv%d%s\n\n";
+"newLISP v.10.1.5 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.1.0 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.1.5 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.1.0 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.1.5 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -142,8 +142,10 @@ int httpMode = 0;
 int IOchannelIsSocketStream = 0;
 #endif
 FILE * IOchannel;
-int IOport = 0;
 char * IOdomain = NULL;
+int IOport = 0;
+int connectionTimeout = 0;
+
 int logTraffic = 0;
 #define LOG_LESS 1
 #define LOG_MORE 2
@@ -565,10 +567,10 @@ int main(int argc, char * argv[])
 {
 char command[MAX_LINE];
 STREAM cmdStream = {0, NULL, NULL, 0, 0};
-int idx;
 #ifdef READLINE
 char * cmd;
 #endif
+int idx;
 
 
 #ifdef WIN_32
@@ -591,6 +593,7 @@ opsys += 512;
 #ifndef OS2
 pagesize = getpagesize();
 #endif
+tzset();
 #endif
 
 initLocale();
@@ -661,6 +664,12 @@ for(idx = 1; idx < argc; idx++)
 		continue;
 		}
 
+	if(strncmp(argv[idx], "-t", 2) == 0)
+		{
+		connectionTimeout = atoi(getArg(argv, argc, &idx));
+		continue;
+		}
+
 	if(strncmp(argv[idx], "-e", 2) == 0)
 		{
 		executeCommandLine(getArg(argv, argc, &idx), OUT_CONSOLE, &cmdStream);
@@ -721,6 +730,8 @@ else
 		varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, banner2);
 	}
 
+/* ======================= main entry on reset ====================== */
+
 
 errorReg = setjmp(errorJump);
 
@@ -739,6 +750,7 @@ rl_attempted_completion_function = (CPPFunction *)newlisp_completion;
 
 while(TRUE)
 	{
+	cleanupResults(resultStack);
 #ifdef READLINE
 	if(isTTY) 
 		{
@@ -758,6 +770,23 @@ while(TRUE)
 	if(isTTY || IOchannel != stdin || forcePromptMode) 
 		varPrintf(OUT_CONSOLE, prompt());
 #endif	
+
+	/* timeout if nothing read after accepting connection */
+	if(connectionTimeout && IOchannel && demonMode)
+		{
+#ifdef WIN_32
+		if(IOchannelIsSocketStream)
+		  if(wait_ready(getSocket(IOchannel), connectionTimeout, 0) == 0)
+#else
+		if(wait_ready(fileno(IOchannel), connectionTimeout, 0) == 0)
+#endif
+			{
+			fclose(IOchannel);
+			setupServer(1);
+			continue;
+			}
+		}
+
 	if(IOchannel == NULL || fgets(command, MAX_LINE - 1, IOchannel) == NULL)
 		{
 		if(!demonMode)  exit(1);
@@ -817,7 +846,7 @@ void printHelpText(void)
 {
 varPrintf(OUT_CONSOLE, copyright, 
 		"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
-varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
+varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
 	" -h this help",
 	" -n no init (must be first)",
 	" -s <stacksize>",
@@ -825,9 +854,10 @@ varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s
 	" -e <quoted lisp expression>",
 	" -l <path-file> log connections",
 	" -L <path-file> log all",
-	" -w <working-directory>",
+	" -w <working dir>",
 	" -c no prompts, HTTP",
 	" -C force prompts",
+	" -t <microsec-timeout>",
 	" -p <port-no>",
 	" -d <port-no>",
 	" -http only",
@@ -901,12 +931,15 @@ void reset()
 {
 recoverEnvironment(envStack);
 
-collectGarbage();
+while(resultStackIdx > resultStack)
+	deleteList(popResult());
 
-if(printDevice) close((int)printDevice);
 envStackIdx = envStack;
 lambdaStackIdx = lambdaStack;
-resultStackIdx = resultStack;
+
+freeCellBlocks();
+
+if(printDevice) close((int)printDevice);
 printDevice = recursionCount  = traceFlag = prettyPrintFlags = 0;
 evalFunc = NULL;
 pushResultFlag = TRUE;
@@ -935,82 +968,63 @@ while(envStackIdx > index)
 	}
 }
 
+char * processCommandEvent(char * command);
 
 void executeCommandLine(char * command, int outDevice, STREAM * cmdStream)
 {
 STREAM stream;
-CELL * result;
 char buff[MAX_LINE];
-char cmd[MAX_LINE];
+int batchMode;
 
-if(commandEvent != nilSymbol)
-	{
-	if(executeSymbol(commandEvent, stuffString(command), &result) == CELL_STRING)
-		{
-		strncpy(cmd, (char *)result->contents, 254);
-		cmd[MAX_LINE - 1] = 0;
-		command = cmd;
-		}
-	deleteList(result);
-	}
+batchMode = (memcmp(command, "[cmd]", 5) == 0);
+
+#ifndef LIBRARY
+if(!batchMode && commandEvent != nilSymbol)
+	command = processCommandEvent(command);
+#endif
 
 if(strlen(command) == 0 || *command == '\n') return;
 
-if(noPromptMode) 
+if(!batchMode) 
 	{
 	if(logTraffic == LOG_MORE) 
 		writeLog(command, 0);
 	if(strncmp(command, "GET /", 5) == 0) 
-		{
 		executeHTTPrequest(command + 5, HTTP_GET_URL);
-		return;
-		}
 	else if(strncmp(command, "HEAD /", 6) == 0)
-		{
 		executeHTTPrequest(command + 6, HTTP_GET_HEAD);
-		return;
-		}
 	else if(strncmp(command, "PUT /", 5) == 0)
-		{
 		executeHTTPrequest(command + 5, HTTP_PUT_URL);
-		return;
-		}
 	else if(strncmp(command, "POST /", 6) == 0)
-		{
 		executeHTTPrequest(command + 6, HTTP_POST_URL);
-		return;
-		}
 	else if(strncmp(command, "DELETE /", 8) == 0)
-		{
 		executeHTTPrequest(command + 8, HTTP_DELETE_URL);
-		return;
-		}
-
-	if(httpMode) return;
+	else if(!httpMode) goto EXEC_COMMANDLINE;
+	return;
 	}
 
+EXEC_COMMANDLINE:
 if(noPromptMode == FALSE && *command == '!' && *(command + 1) != ' ' && strlen(command) > 1)
 	{
-	if(system((command + 1)) < 0) return;
+	if(system(command + 1)) return; /* avoid stupid compiler warning */
 	return;
 	}
 	
-if(cmdStream != NULL && strncmp(command, "[cmd]", 5) == 0)
+if(cmdStream != NULL && batchMode)
 	{
-	openStrStream(cmdStream, 1024, TRUE);	
+	openStrStream(cmdStream, 1024, TRUE);
 	while(fgets(buff, MAX_LINE - 1, IOchannel) != NULL)
 		{
-		if(strncmp(buff, "[/cmd]", 6) == 0)
+		if(memcmp(buff, "[/cmd]", 6) == 0)
 			{
 			if(logTraffic) 
 				{
 				writeLog(cmdStream->buffer, 0);
 				writeLog(buff, 0);
 				}
-			/* make stream for evaluation */
+
 			makeStreamFromString(&stream, cmdStream->buffer);
-			evaluateStream(&stream, OUT_CONSOLE, 0);
-			closeStrStream(cmdStream);
+			evaluateStream(&stream, outDevice, 0);
 			return;
 			}
 		writeStreamStr(cmdStream, buff, 0);
@@ -1027,8 +1041,19 @@ prettyPrintLength = 0;
 
 makeStreamFromString(&stream, command);
 evaluateStream(&stream, outDevice, 0);
+}
 
-return;
+char * processCommandEvent(char * command)
+{
+CELL * result;
+
+if(executeSymbol(commandEvent, stuffString(command), &result) == CELL_STRING)
+	{
+	pushResult(result);
+	command = (char *)result->contents;
+	}
+
+return(command);
 }
 
 /*
@@ -1071,7 +1096,7 @@ while(result)
 				printCell(eval, TRUE, OUT_LOG);
 				writeLog("", TRUE);
 				}
-			}                      
+			}
 		if(flag) eval = copyCell(eval);
 		}
 	cleanupResults(resultIdxSave);
@@ -1178,7 +1203,7 @@ currentFunc = errorEvent = timerEvent = promptEvent = commandEvent = transferEve
 trueSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
 nilSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
 questionSymbol->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
-atSymbol->flags |=  SYMBOL_GLOBAL | SYMBOL_BUILTIN;
+atSymbol->flags |=  SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 argsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 mainArgsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 dolistIdxSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
@@ -2050,10 +2075,14 @@ while(cell != nilCell)
 	}
 }
 
-/* --------------- cell / memory allocation and deallocation ------------- */
+/* --------------- cell / memory allocation and deallocation -------------
 
-CELL * cellMemory = NULL;
-CELL * cellBlock = NULL;
+   allthough (MAC_BLOCK + 1) are allocated only MAX_BLOCK cells
+   are used. The last cell only serves as a pointer to the next block
+*/
+
+CELL * cellMemory = NULL;/* start of cell memory */
+CELL * cellBlock = NULL; /* the last block allocated */
 
 void allocBlock()
 {
@@ -2084,6 +2113,65 @@ firstFreeCell = cellBlock;
 }
 
 
+/* Return unused blocks to OS, this is normally only called under error 
+   conditions but can also be forced issuing a (reset nil)
+
+   Older versions also did a complete cell mark and sweep. Now all
+   error conditons clean out allocated cells and memory before doing
+   the longjmp().
+*/
+
+void freeCellBlocks()
+{
+CELL * blockPtr;
+CELL * lastBlockPtr = NULL;
+CELL * lastFreeCell = NULL;
+CELL * prevLastFreeCell;
+CELL * prevCellBlock;
+int i, freeCount;
+
+cellBlock = blockPtr = cellMemory;
+firstFreeCell = NULL;
+while(blockPtr != NULL)
+	{
+	prevLastFreeCell = lastFreeCell;
+	prevCellBlock = cellBlock;
+	cellBlock = blockPtr;
+	for(i = freeCount = 0; i < MAX_BLOCK; i++)
+		{
+		if(*(UINT *)blockPtr == CELL_FREE)
+			{
+			if(firstFreeCell == NULL)
+				firstFreeCell = lastFreeCell = blockPtr;
+			else
+				{
+				lastFreeCell->next = blockPtr;
+				lastFreeCell = blockPtr;
+				}
+			freeCount++;
+			}
+		blockPtr++;
+		}
+	if(freeCount == MAX_BLOCK)
+		{
+		lastFreeCell = prevLastFreeCell;
+		cellBlock = prevCellBlock;
+		blockPtr = blockPtr->next;
+		freeMemory(lastBlockPtr->next);
+		lastBlockPtr->next = blockPtr;
+		}
+	else 
+		{
+		lastBlockPtr = blockPtr;
+		blockPtr = blockPtr->next;
+		}
+	}
+lastFreeCell->next = NULL;
+}
+
+
+/* OS memory allocation */
+
 void * allocMemory(size_t nbytes)
 {
 void * ptr;
@@ -2113,135 +2201,6 @@ if( (ptr = realloc(prevPtr, size)) == NULL)
 
 return(ptr);
 }
-
-/* ----------- garbage collection , only used on error conditions ---------------
-   if environment stack recovery is done correctly and all error conditions
-   cleanup unused cells they created, then marking references where not
-   necessary and the routines would only be used to recover free blocks
-   on reset.
-   No places without cleanup are known at this moment, but for safety GC is
-   still called under error conditions.
-*/
-
-void markReferences(SYMBOL * sPtr);
-void markList(CELL * cell);
-void sweepGarbage(void);
-void relinkCells(void);
-
-void collectGarbage()
-{
-resultStackIdx = resultStack;
-nilCell->type |= (UINT)0x00008000; 
-markReferences((SYMBOL *)((CELL *)mainContext->contents)->aux);
-sweepGarbage();
-relinkCells();
-}
-
-void markReferences(SYMBOL * sPtr)
-{
-CELL * content;
-
-if(sPtr != NIL_SYM && sPtr != NULL)
-	{
-	markReferences(sPtr->left);
-	markList((CELL *)sPtr->contents);
-	if((symbolType(sPtr) & 0xFF) == CELL_CONTEXT && sPtr != mainContext)
-		{
-		content = (CELL *)sPtr->contents;
-		if((SYMBOL*)content->contents != mainContext && (SYMBOL*)content->contents == sPtr)
-			markReferences((SYMBOL *)content->aux);
-		}
-	markReferences(sPtr->right);
-	}
-}
-
-void markList(CELL * cell)
-{
-while(cell != nilCell)
-	{
-	cell->type |= (UINT)0x00008000;
-	if(isEnvelope(cell->type & RAW_TYPE_MASK)) 
-		{
-		if((RAW_TYPE_MASK & cell->type) == CELL_ARRAY)
-			markArray(cell);
-		else
-			markList((CELL *)cell->contents);
-		}
-	cell = cell->next;
-	}
-}
-
-void sweepGarbage()
-{
-CELL * blockPtr;
-CELL * lastBlockPtr;
-CELL * memPtr;
-int i, freed;
-
-lastBlockPtr = blockPtr = cellMemory;
-while(blockPtr != NULL)
-	{
-	for(i = freed = 0; i < MAX_BLOCK; i++)
-		{
-		if(*(UINT *)blockPtr != CELL_FREE)
-			{
-			if( *(UINT *)blockPtr & (UINT)0x00008000)
-				*(UINT *)blockPtr &= (UINT)0x00007FFF;
-			else 
-				{
-				blockPtr->type = CELL_FREE;
-				--cellCount;
-				freed++;
-				}
-			}
-		else freed++;
-		blockPtr++;
-		}
-	if(freed == MAX_BLOCK)
-		{
-		memPtr = blockPtr->next;
-		freeMemory(lastBlockPtr->next);
-		lastBlockPtr->next = memPtr;
-		blockPtr = memPtr;
-		}
-	else 
-		{
-		lastBlockPtr = blockPtr;
-		blockPtr = blockPtr->next;
-		}
-	}
-}
-
-void relinkCells(void)
-{
-CELL * blockPtr;
-CELL * lastFreeCell = NULL;
-int i;
-
-cellBlock = blockPtr = cellMemory;
-firstFreeCell = NULL;
-while(blockPtr != NULL)
-	{
-	cellBlock = blockPtr;
-	for(i = 0; i <  MAX_BLOCK; i++)
-		{
-		if(*(UINT *)blockPtr == CELL_FREE)
-			{
-			if(firstFreeCell == NULL)
-				firstFreeCell = lastFreeCell = blockPtr;
-			else
-				{
-				lastFreeCell->next = blockPtr;
-				lastFreeCell = blockPtr;
-				}
-			}
-		++blockPtr;
-		}
-	blockPtr = blockPtr->next;
-	}
-lastFreeCell->next = NULL;
-}
-
 
 /* -------------------------- I/O routines ------------------------------ */
 
@@ -2283,7 +2242,9 @@ switch(device)
 		else
 			{
 			if(IOchannel != NULL) 
+				{
 				fprintf(IOchannel, "%s", buffer);
+				}
 			}
 		break;
 #endif
@@ -2301,7 +2262,7 @@ va_end(argptr);
 }
 
 
-int printCell(CELL * cell, UINT printFlag, UINT device)
+void printCell(CELL * cell, UINT printFlag, UINT device)
 {
 SYMBOL * sPtr;
 SYMBOL * sp;
@@ -2401,7 +2362,6 @@ switch(cell->type)
 	}
 
 prettyPrintFlags &= ~PRETTYPRINT_DOUBLE;
-return(1);
 }
 
 
@@ -2438,7 +2398,7 @@ varPrintf(device,"\"");
 }
 
 
-int printExpression(CELL * cell, UINT device)
+void printExpression(CELL * cell, UINT device)
 {
 CELL * item;
 int i, pFlags;
@@ -2502,15 +2462,13 @@ else
 while(item != nilCell)
 	{
 	if(prettyPrintLength > prettyPrintMaxLength) prettyPrint(device);
-	if(printCell(item, TRUE, device) == 0) return(0);
+	printCell(item, TRUE, device);
 	item = item->next;
 	if(item != nilCell) varPrintf(device," ");
 	}
 
 varPrintf(device,")");
 --prettyPrintPars;
-
-return(TRUE);
 }
 
 
@@ -2834,6 +2792,7 @@ snprintf(str, 40, "...%-40s", ((char *)((stream->ptr - stream->buffer) > 40 ? st
 errorProcExt2(ERR_MISSING_PAR, stuffString(str));
 }
 
+
 CELL * errorProcAll(int errorNumber, CELL * expr, int deleteFlag)
 {
 if(!traceFlag) fatalError(errorNumber, expr, deleteFlag);
@@ -2874,7 +2833,6 @@ closeTrace();
 longjmp(errorJump, errorReg);
 }
 
-
 void printErrorMessage(UINT errorNumber, CELL * expr, int deleteFlag)
 {
 CELL * lambdaFunc;
@@ -2888,7 +2846,6 @@ if(errorNumber == EXCEPTION_THROW)
 errorReg = errorNumber;
 
 if(!errorNumber) return;
-
 
 openStrStream(&errorStream, MAX_STRING, 1);
 writeStreamStr(&errorStream, "ERR: ", 5);
@@ -3018,8 +2975,14 @@ closeStrStream(&stream);
 return(result);
 }
 
-/* -------------------------- parse / compile ----------------------------- */
+/* -------------------------- parse / compile -----------------------------
 
+   Takes source in a string stream and and envelope cell and compiles
+   newLISP source into an internal LISP cell structure tree. The tree
+   can be decompiled to source at any time and is processed by the
+   evaluateExpression() function.
+
+*/
 
 int compileExpression(STREAM * stream, CELL * cell)
 {
@@ -3030,14 +2993,8 @@ CELL * contextCell;
 SYMBOL * contextPtr;
 int listFlag, tklen;
 char * lastPtr;
-#if experimental
-SYMBOL * saveContext;
-int defaultSymbolLevel = 0;
 
-saveContext = currentContext;
-#endif
-
-listFlag = TRUE; /* assumes we just entered from an envelope cell ! */
+listFlag = TRUE; /* cell is either quote or list envelope */
 
 GETNEXT:
 lastPtr = stream->ptr;
@@ -3129,7 +3086,7 @@ switch(getToken(stream, token, &tklen))
 		break;
 
 	case TKN_CONTEXT:
-		contextPtr = NULL; /* since 7.5.1 dyna vars inside contexts */
+		contextPtr = NULL;
 		if(currentContext != mainContext)
 			{
 			if(strcmp(currentContext->name, token) == 0)
@@ -3244,7 +3201,6 @@ if(stream->ptr > (stream->buffer + stream->size - 4 * MAX_STRING))
 		memset(stream->buffer, 0, stream->size + 1);
 
 		if(read(stream->handle, stream->buffer, stream->size) > 0)
-
 	       	stream->ptr = stream->buffer;
 		else
 			{
@@ -3572,7 +3528,8 @@ else if(cell->type == CELL_LONG)
 else if(cell->type == CELL_FLOAT)
 	{
 #ifdef WIN_32
-	if(isnan(*(double *)&cell->aux) || !_finite(*(double *)&cell->aux)) *number = 0;
+	if(isinf(*(double *)&cell->aux)) *number = *number = 0x7FFFFFFFFFFFFFFFLL;
+	else if(isnan(*(double *)&cell->aux) || !_finite(*(double *)&cell->aux)) *number = 0;
 #else
 	if(isnan(*(double *)&cell->aux)) *number = 0; 
 #endif
@@ -4038,9 +3995,9 @@ CELL * p_readExpr(CELL * params) { return(evalString(params, READ_EXPR)); }
 CELL * evalString(CELL * params, int mode)
 {
 SYMBOL * context = currentContext;
-char * evalString;
+char * evalStr;
 
-params = getString(params, &evalString);
+params = getString(params, &evalStr);
 
 if(params != nilCell)
 	{
@@ -4049,10 +4006,10 @@ if(params != nilCell)
 	}
 
 if(mode == EVAL_STRING)
-	return(copyCell(sysEvalString(evalString, context, params->next, mode)));
+	return(copyCell(sysEvalString(evalStr, context, params->next, mode)));
 
 /* returns a new object not yet marked for deletion */
-return(sysEvalString(evalString, context, params->next, mode));
+return(sysEvalString(evalStr, context, params->next, mode));
 }
 
 /* modes:
@@ -4113,7 +4070,7 @@ while(TRUE)
 	if(mode == EVAL_STRING)
 		{
 		resultCell = evaluateExpression((CELL *)program->contents);
-		/* not that resultCell is already pushed for deletion
+		/* note that resultCell is already pushed for deletion
 		   as part of cell program */
 		}
 	else /* READ_EXPR or READ_EXPR_SYNC */
@@ -4121,9 +4078,9 @@ while(TRUE)
 		deleteList((CELL *)sysSymbol[0]->contents);
 		sysSymbol[0]->contents = (UINT)stuffInteger(stream.ptr - stream.buffer); 
 		resultCell = (CELL *)program->contents;
-		program->contents = (UINT)nilCell;
+		program->contents = (UINT)nilCell; /* de-couple */
 		/* note that resultCell is not marked for deletion
-		   becuase decoupled from cell program */
+		   because decoupled from cell program */
 		break;
 		}
 
@@ -4136,6 +4093,12 @@ while(TRUE)
 	}
 
 currentContext = contextSave;
+
+if(proc != nilCell)
+	{
+	memcpy(errorJump, errorJumpSave, (sizeof(jmp_buf)));
+	evalCatchFlag--;
+	}
 
 return(resultCell);
 }
@@ -5736,8 +5699,7 @@ result = nilCell;
 while(params != nilCell)
 	{
 	result = evaluateExpression(params);
-	if(printCell(result, 0, OUT_DEVICE)  == 0)
-		return(nilCell);
+	printCell(result, 0, OUT_DEVICE);
 	params = params->next;
 	}
 
@@ -5848,7 +5810,7 @@ if(sPtr != NIL_SYM && sPtr != NULL)
 		{
 		if(sPtr == (SYMBOL *)((CELL *)sPtr->contents)->contents)
 			{
-			if(sPtr != currentContext) saveContext(sPtr, device);
+			if(sPtr != currentContext && *sPtr->name != '$') saveContext(sPtr, device);
 			}
 		else printSymbol(sPtr, device);	
 		}
@@ -6444,15 +6406,23 @@ return(trueCell);
 
 CELL * p_reset(CELL * params)
 {
+if(params != nilCell)
+	{
+	
+	if(!getFlag(params)) 
+		/* only experimental not documented, not necessary */
+		freeCellBlocks();
 #ifndef LIBRARY
 #ifndef WIN_32
-if (getFlag(params))
-	execv(MainArgs[0], MainArgs);
+	else
+		execv(MainArgs[0], MainArgs);
 #endif
 #endif
+	}
+else
+	longjmp(errorJump, ERR_USER_RESET);
 
-longjmp(errorJump, ERR_USER_RESET);
-return(nilCell);
+return(trueCell);
 }
 
 CELL * setEvent(CELL * params, SYMBOL * * eventSymPtr, char * sysSymName)

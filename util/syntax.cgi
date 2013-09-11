@@ -5,7 +5,6 @@
 #
 # comment following line out when not using as CGI utilty
 # for CGI files to convert which are local must end with .txt
-(define cgi-use true)
 
 # v.1.7 - switch for using as commandline or cgi utility
 # v.1.9 - fixed highlighting problem with escaped quotes
@@ -18,12 +17,13 @@
 # v.2.7 - improved keyword regex
 # v.2.8 - scientific format with E
 # v.2.9 - support for newLISPdoc tag color
+# v.3.0 - correctly highlight & and ^ keywords
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
 # use on the command line or as cgi file together with a webserver
 # 
-# EXAMPLE command line:
+# EXAMPLE command line (set 'cgi-use nil):
 #
 #    ./syntaxi.cgi mysource.lsp > mysource.lsp.html
 #
@@ -46,14 +46,13 @@
 #    - multiline quoted strings, use [text] [/text] instead
 #    - multiline braced strings, use [text] [/text] instead
 #    - comments starting with # but not starting at beginning of line
-#    - more than one keywords in a row, the second stays black
 #      use ; as comment starter when comment appears after code
 
 
-#(define cgi-use true)
+;(define cgi-use true)
 
 (if cgi-use 
-	(print "Content-type: text/html\r\n\r\n"))
+	(print "Content-Type: text/html\r\n\r\n"))
 
 (define keyword-color "#0000AA")      ; newLISP keywords
 (define tag-color "#308080")          ; newLISPdoc tags
@@ -69,7 +68,9 @@
 (push "nil" keywords)
 (push "true" keywords)
 (set 'keyword-regex (join keywords "|"))
+(replace "&" keyword-regex "&amp&")
 (replace "?" keyword-regex "\\?")
+(replace "^" keyword-regex "\\^")
 (replace "$" keyword-regex "\\$")
 (replace "!" keyword-regex "\\!")
 (replace "+" keyword-regex "\\+")

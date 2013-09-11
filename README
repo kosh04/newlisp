@@ -14,68 +14,79 @@ distribution file: 'newlisp_manual.html' and for newlisp-tk:
 Code contributions, bug fixes, reports and comments are welcome. New
 versions are available at:
 
- http://newlisp.org
-    or
- http://newlisp.org/downloads
-    or
- http://sourceforge.net/projects/newlisp
+    http://newlisp.org
+      or
+    http://newlisp.org/downloads
+      or
+    http://sourceforge.net/projects/newlisp
 
 See the file CHANGES in the source distribtion for changes over 
 previous versions or
 
- http://newlisp.org/downloads/newLISP_xx_Release_Notes.html
+    http://newlisp.org/downloads/newLISP_xx_Release_Notes.html
 
 New versions in development are available at:
 
- http://newlisp.org/downloads/development
+    http://newlisp.org/downloads/development
 
 Please contact me via email at: lutz@nuevatec.com.
 
 
 BUILD, CHECK and INSTALL
-----------------
+------------------------
 
-See the files doc/INSTALL, doc/LOCALIZATION and doc/FILES for detailed 
-info or type: 
+Type: 
 
   make
 
 to discover the current platform and make for Linux, MacOSX, FreeBSD, OpenBSD,
-NetBSD and Solaris/SunOS automatically.
+NetBSD, Solaris/SunOS and Win32 (MinGW on MSYS) automatically.
 
-to test the compiled newlisp executable do
+To test the compiled newlisp executable do:
 
   make check
 
-then to install with superuser permissions in /usr/bin
-
-  make install
-
-or from a user account if the sudo command is available
+From a user account if the sudo command and admin password is available:
 
   sudo make install
 
-or to install in ~/bin (bin in home directory) without root permissions
+If root permissions are not available:
 
-  make install_home
+  make home_install
+
+home_install does not install the newLISP-GS Java based IDE, but installs
+the supportig documentation.
 
 see all flavors and platforms available for install:
 
   make help
 
 will list all available platforms and flavors, newLISP can also be made as
-a shared, dhynamic library: newlisp.so. newlisp.dylib and  newlisp.dll
+a shared, dhynamic library: newlisp.so, newlisp.dylib or  newlisp.dll
 
-The file configure is not required, but can be used to discover the
-makefile the make utility would use. The file configure has been
-included for compatibility with packageing/installing systems requiring
-the autoconf/automake system which is *not* required to make newLISP.
+To discover the platform in an extra step do:
 
+  ./configure
+
+  make
+
+this discovers the platform and generates a makefile_configure which
+is used subsequently by make. As an alternative use:
+
+  ./configure-alt
+
+  make
+
+this does a more elaborate analysys of options supported on a specific
+platform and custom makes a makefile_configure.
+
+See the files doc/INSTALL, doc/LOCALIZATION and doc/FILES for more
+detailed information.
 
 MINIMUM INSTALL
 ---------------
 Note that for a minumum install only the executable newlisp or newlisp.exe
-in Win32 is necessary. 
+in Win32 is necessary.
 
 On Mac OS X or other UNIX copy  newlisp to /usr/bin or to ~/bin and give
 it executable permissions.
@@ -93,11 +104,12 @@ A copy of this license is also included in the file COPYING.
 This and information about lcensing from other contributors to newLISP is
 contained in the file COPYING in the source distribution.
 
+
 MORE INFO
 ---------
 See in the doc/ directory of the source distribution
 
-Lutz Mueller, June 2009
+Lutz Mueller, July 2009
 
                                   +++
 

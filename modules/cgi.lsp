@@ -5,7 +5,7 @@
 ;; @version v 2.4 - check for empty string when aquiring HTTP_COOKIE environment
 ;; @version v 2.5 - cleanup put-page for 10.0
 ;; @version v 2.6 - help text corrections
-;; @version v 2.7 - help text corrections
+;; @version v 2.71 - help text corrections
 ;; @author Lutz Mueller, 2002-2009
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -150,7 +150,7 @@
 ;; @param <str-path> The path for the domain.
 ;; @return The string sent to standard out by 'CGI:set-cookie'.
 ;; This function should be called immedeately before
-;; closing the header with '(print "Content-type: text/html\r\n\r\n")',
+;; closing the header with '(print "Content-Type: text/html\r\n\r\n")',
 ;; which is typically the first statement in a CGI script written in
 ;; newLISP after the '(module "cgi.lsp")' statement.
 ;;
@@ -158,7 +158,7 @@
 ;; (module "cgi.lsp")
 ;;
 ;; (CGI:set-cookie "password" "secret" "asite.com" "/somedir")
-;; (print "Content-type: text/html\r\n\r\n")
+;; (print "Content-Type: text/html\r\n\r\n")
 ;; ...
 
 (define (set-cookie var value domain path)

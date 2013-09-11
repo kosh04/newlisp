@@ -1,78 +1,115 @@
 #!/bin/sh
-# this script tries to discover the OS platform and configuration
-# and then makes newLISP using the appropiate makefile
-# if this script fails and for other special flavors, like
-# making shared libraries etc., type: 
-#
-#      make help
-# to see all options specified in Makefile
-#
-# to change $(prefix) edit prefix in Makefile
 
+# Only LP64 and ILP32 memory models are supported
 echo
+echo "removing old objects and setting correct permissions ..."
+make distclean > /dev/null
+echo "discovering platform and default memory model ..."
+echo
+
 case `uname` in 
-	Darwin)
-		echo Discovered Darwin MacOS X with readline suport, enter:
-		echo "     make"
-		echo to make a UTF-8 version for MacOS X with readline support
-		exit
-		;;
-	Linux)
-		echo Discovered Linux, enter:
-		echo "     make"
-		echo to make for linux with readline and utf8 support
-		exit
-		;;
-	FreeBSD)
-		echo Discovered FreeBSD, enter
-		echo "     make"
-		echo to make for FeeBSD with readline and utf8 support
-		exit
-		;;
-	NetBSD)
-		echo Discoverd NetBSD, enter:
-		echo "     make"
-		echo to make for NetBSD with readline and utf8 support
-		exit
-		;;
-	OpenBSD)
-		echo Discoverd OpenBSD, enter:
-		echo "     make"
-		echo to make for OpenBSD with readline and utf8 support
-		exit
-		;;
-	SunOS)
-		echo  Discovered SunOS, enter:
-		echo "     make"
-		echo to make for SunOS on Sparc CPU
-		exit
-		;;
-	AIX) 
-		echo  Discovered AIX: 
-		echo "     gmake" 
-		echo to make for AIX UTF-8 using the xlc_r compiler
-		exit 
-		;; 
-	OSF1)
-		echo Discovered True64 Unix, please read doc/TRU64BUILD and enter:
-		echo "     make"
-		echo to make for True64 Unix
-		exit
-		;;
-MINGW32_NT-5.1)
-		echo Discoverd MINGW32 on NT-5.1, enter:
-		echo "     make"
-		echo to make for MinGW32 on Win32
-		exit
-		;;
-	OS/2)
-		echo Discoverd OS/2
-		echo "     make"
-		echo to make for OS/2
-		exit
+	Darwin) true ${os_type:=MAC_OSX} ;;
+	Linux)  true ${os_type:=LINUX} ;;
+	FreeBSD) true ${os_type:=_BSD} ;;
+	NetBSD) true ${os_type:=_BSD} ;;
+	OpenBSD) true ${os_type:=_BSD} ;;
+	SunOS) true ${os_type:=SUNOS} ;;
+	AIX) true ${os_type:=AIX} ;; 
+	OSF1) true ${os_type:=TRU64} ;;
+	MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
+	OS/2) true ${os_type:=OS2} ;;
+	*)
+		echo Could not discover your OS platform use one of the following commands:
+		make help
 		;;
 esac
 
-echo Could not discover your OS platform use one of the following commands:
+cat > test-memorymodel.c <<EOF
+/* test-memorymodel.c Ted Walther <ted@reactor-core.org>
+ *
+ * return a string with the type of memory model the current compiler is using.
+ */
 
-make help
+#include <stdio.h>
+
+int
+main(int argc, char** argv) {
+	short sc = sizeof(char) * 8;
+	short ss = sizeof(short) * 8;
+	short si = sizeof(int) * 8;
+	short sl = sizeof(long) * 8;
+	short sp = sizeof(void*) * 8;
+
+	if (si == 32 && sl == 64 && sp == 64) { printf("LP64\n"); return 0; }
+	if (si == 64 && sl == 64 && sp == 64) { printf("ILP64\n"); return 0; }
+	if (si == 32 && sl == 32 && sp == 64) { printf("LLP64\n"); return 0; }
+	if (si == 32 && sl == 32 && sp == 32) { printf("ILP32\n"); return 0; }
+	if (si == 16 && sl == 32 && sp == 32) { printf("LP32\n"); return 0; }
+	printf("UNKNOWN\n"); return 1;
+}
+EOF
+
+if [ `which gcc` ] ; then
+	gcc test-memorymodel.c -o test-memorymodel >/dev/null
+else
+	cc test-memorymodel.c -o test-memorymodel >/dev/null
+fi
+
+true ${memory_model:=`./test-memorymodel`}
+
+# clean up
+rm -f test-memorymodel*
+
+echo "detected memory model ${memory_model}"
+echo "detected Operating System ${os_type}"
+echo "creating makefile_configure ..."
+echo
+
+if   [ ${os_type} = MAC_OSX ] ; then
+    echo on Snow Leopard 32-bit is made even if 64-bit is the detected default
+	cp makefile_darwin_utf8 makefile_configure
+elif [ ${os_type} = LINUX ] ; then
+	if [ ${memory_model} = LP64 ] ; then
+		cp makefile_linuxLP64_utf8 makefile_configure
+	else
+		cp makefile_linux_utf8 makefile_configure
+	fi
+elif [ ${os_type} = _BSD ] ; then
+	if [ ${memory_model} = LP64 ] ; then
+		cp makefile_bsdLP64_utf8 makefile_configure
+	else
+		cp makefile_bsd_utf8 makefile_configure
+	fi
+elif [ ${os_type} = SUNOS ] ; then
+	if [ ${memory_model} = LP64 ] ; then
+		cp makefile_sunosLP64_uf8 makefile_configure
+	else
+		cp makefile_sunos_utf8 makefile_configure
+	fi
+elif [ ${os_type} = AIX ] ; then
+	if [ ${memory_model} = LP64 ] ; then
+		cp makefile_aixLP64_utf8_gcc makefile_configure
+	else
+		cp makefile_aix_utf8_gcc makefile_configure
+	fi
+elif [ ${os_type} = TRU64 ] ; then
+	cp makefile_tru64 makefile_configure
+elif [ ${os_type} = WIN_32 ] ; then
+	cp makefile_mingw makefile_configure
+elif [ ${os_type} = OS2 ] ; then
+	cp makefile_os2 makefile_configure
+fi
+
+
+
+if   [ ${os_type} = MAC_OSX ] ; then
+    echo "to make for 32-bit on MAC_OSX type:"
+else
+	echo "to make for ${memory_model} on ${os_type} type:"
+fi
+echo "    make"
+echo "to make for any other system do:"
+echo "    make -f makefile_xxx"
+echo "where makefile_xxx is one of the preconfigured makefiles"
+echo
+

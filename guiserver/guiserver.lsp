@@ -1,7 +1,9 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
 ;; @version 1.30 changes for 10.1
-;; @version 1.31 message is now a reserved word
+;; @version 1.31 syntax highlighting
+;; @version 1.32 <tt>gs:color-tag</tt> was documented but not implemented in Java
+;; @version 1.321 added flag in gs:init for remote newlisp
 ;; @author LM, August 2008, 2009
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -10,9 +12,9 @@
 ;; be installed. See the desription for 'gs:play-note' for details.
 ;; <br><br>
 ;; <h2>What is newLISP-GS</h2>
-;; <tt>guiserver.lsp</tt> is a module for interfacing to <tt>guiserver.jar</tt>
+;; 'guiserver.lsp' is a module for interfacing to 'guiserver.jar'
 ;; a Java server application for generating GUIs (graphical user interfaces)
-;; and 2D graphics for newLISP applications. The <tt>guiserver.lsp</tt> module
+;; and 2D graphics for newLISP applications. The 'guiserver.lsp', module
 ;; implements a newLISP API much smaller and more abstract than the APIs of the 
 ;; Java Swing libraries which it interfaces with. Because of this, GUI applications
 ;; can be built much faster than when using the original Java APIs.
@@ -26,34 +28,34 @@
 ;; <pre>
 ;; (load "c:/Program Files/newlisp/guiserver.lsp")
 ;; </pre>
-;; <tt>guiserver.lsp</tt> expects the server <tt>guiserver.jar</tt> to be
+;; 'guiserver.lsp' expects the server 'guiserver.jar' to be
 ;; in the directoey specified in the environment variable NEWLISPDIR.
 ;; When newLISP starts up and this variable is not set yet, it sets it
-;; to a default value of <tt>/usr/share/newlisp</tt> on MacOS X and Unix OSs, and 
-;; to <tt>C:\Program Files\newlisp</tt> or whatever it finds in the <tt>PROGRAMFILES</tt>
-;; environment variable on Win32 systems and adding <tt>/newlisp</tt> to it.
+;; to a default value of '/usr/share/newlisp' on MacOS X and Unix OSs, and 
+;; to 'C:\Program Files\newlisp' or whatever it finds in the 'PROGRAMFILES'
+;; environment variable on Win32 systems and adding '/newlisp' to it.
 ;; This can be overwritten by specifying system wide  setting for the environment 
-;; variable <tt>NEWLISPDIR</tt>, which normally is set to <tt>%PROGRAMFILES%/newlisp</tt> 
-;; on Win32. When using the Win32 binary installer <tt>NEWLISPDIR</tt> is written to
+;; variable <tt>NEWLISPDIR</tt>, which normally is set to '%PROGRAMFILES%/newlisp' 
+;; on Win32. When using the Win32 binary installer 'NEWLISPDIR' is written to
 ;; to the registry automatically and gets into effect after rebooting.
 ;; <br><br>
 ;; <h2>Architecture of a newLISP GUI application</h2>
 ;; A GUI application in newLISP is composed of four parts:
 ;;
 ;; <blockquote>
-;; <em>initialization</em> - this means starting the newLISP-GS 'guiserver.jar' and initializing 
+;; <b>initialization</b> - this means starting the newLISP-GS 'guiserver.jar' and initializing 
 ;; communications with it. Only one function call is required to do this.
 ;;
-;; <em>building widgets</em> - in this step windows, buttons, text fields etc., and
+;; <b>building widgets</b> - in this step windows, buttons, text fields etc., and
 ;; all visual aspects of the GUI are described. newLISP newLISP-GS offers a wide range
 ;; of different control widgets.
 ;;
-;; <em>defining event actions</em> - in this step all the functions are defined to
+;; <b>defining event actions</b> - in this step all the functions are defined to
 ;; react to events coming from the GUI as a consequence of button pushes, keystrokes,
 ;; mouse-movements etc.. These event actions send many commands back to the GUI
 ;; to change information for the user, popup dialogs etc..
 ;;
-;; <em>listening for events</em> - the newLISP program sits in a loop waiting for
+;; <b>listening for events</b> - the newLISP program sits in a loop waiting for
 ;; events and dispatching them to the defined event actions. Only one function call
 ;; is required for this step.
 ;; </blockquote>
@@ -521,7 +523,7 @@
 ;;    (gs:draw-polygon <sym-tag> <list-points> [<list-rgb>])
 ;;    (gs:draw-rect <sym-tag> <int-x> <int-y> <int-width> <int-height> [<list-rgb>])
 ;;    (gs:draw-round-rect <sym-tag> <int-x> <int-y> <int-width> <int-height> <int-arc-width> <int-arc-height> [<list-rgb>])
-;;    (gs:g <sym-tag> <str-text> <int-x> <int-y> [<list-rgb> [<float-angle>]])
+;;    (gs:draw-text <sym-tag> <str-text> <int-x> <int-y> [<list-rgb> [<float-angle>]])
 ;;    (gs:export <str-path-file> [<int-width> <int-height>])
 ;;    (gs:fill-arc <sym-tag> <int-x> <int-y> <int-width> <int-height> <int-start> <int-angle> [<list-rgb>])
 ;;    (gs:fill-circle <sym-tag> <int-x> <int-y> <int-radius> [<list-rgb>])
@@ -693,6 +695,8 @@
 ;; </ul>
 (context 'gs)
 
+; ======================= preset colors
+
 (set 'gs:black '(0.0 0.0 0.0))
 (set 'gs:blue '(0.0 0.0 1.0))
 (set 'gs:cyan '(0.0 1.0 1.0))
@@ -707,12 +711,56 @@
 (set 'gs:white '(1.0 1.0 1.0))
 (set 'gs:yellow '(1.0 1.0 0.0))
 
+; ====================== utility routines
 
+; set server path
 (if (= ostype "Win32")
 	; on some Win32 systems the jar -> javaw.exe association my be missing, the use the following:
 	;(set 'server-path (string "javaw.exe -jar " "'\"" (env "NEWLISPDIR") "/guiserver.jar\"'")) 
 	(set 'server-path (string  "'\"" (env "NEWLISPDIR") "/guiserver.jar\"'"))
 	(set 'server-path (string (env "NEWLISPDIR") "/guiserver.jar"))
+)
+
+; Not documented gs:begin-cmd and gs:end-cmd
+; sends graphics ommands in transactions, to be used in:
+;
+; draw-arc, draw-circle, draw-ellipse, draw-image, draw-line, 
+; draw-path, draw-polyon, draw-rect, draw-round-rect, draw-text,
+;
+; fill-arc, fill-circle, fill-ellipse, fill-polygon, fill-rect, 
+; fill-round-rect, 
+;
+; color-tag, delete-tag, hide-tag, move-tag, rotate-tag, scale-tag,
+; shear-tag, translate-tag
+;
+; example:
+; (gs:begin-cmd)
+;   ; andy code containing 
+;   ; gs:draw-xxx, gs:fill-xx, gs:xxx-tag
+;   ; comands
+; (gs:end-cmd)
+;
+; The whole command sequence between gs:begin-cmd and gs:end-cmd
+; will be sent at once to the Java guiserver. This way minimizing
+; network overhead. 
+; Turns out, the speedup is too small in most of the demos.
+
+(define (gs:begin-cmd)
+	(set 'transaction-active true)
+	(set 'transaction-buffer "")
+)
+
+(define (gs:end-cmd)
+	(net-send out transaction-buffer)
+	(set 'transaction-buffer "")
+	(set 'transaction-active nil)
+)
+	
+(define (gs:send-out str)
+	(if transaction-active
+		(write-buffer transaction-buffer str)
+		(net-send out str);
+	)
 )
 
 ;; <br><br><br>
@@ -982,12 +1030,12 @@ true
 
 
 ;; @syntax (gs:color-tag <sym-tag> <list-color> [<boolean-update>])
-;; @param <sym-tag> The name tage of the shape(s) to set a new color.
+;; @param <sym-tag> The name tag of the shape(s) to set a new color.
 ;; @param <list-color> The new color as a list of 3 numbers for the rgb components.
 ;; @param <boolean-repaint> An optional flag to indicate if repainting is required (default is 'true').
 
 (define (color-tag tag color (update true))
-	(net-send out (string "color-tag " gs:currentCanvas " " tag " "
+	(send-out (string "color-tag " gs:currentCanvas " " tag " "
 		(color 0) " " (color 1) " " (color 2) " " update "\n"))
 )
 
@@ -1036,7 +1084,7 @@ true
 ;; or more of these objects. See the file 'mouse-demo.lsp' for an example.
 
 (define (delete-tag tag (repaint true))
-	(net-send out (string "delete-tag " gs:currentCanvas " " tag  " " repaint "\n"))
+	(send-out (string "delete-tag " gs:currentCanvas " " tag  " " repaint "\n"))
 )
 
 ;; @syntax (gs:destroy-shell <sym-text-area>)
@@ -1130,10 +1178,10 @@ true
 
 (define (draw-arc id x y width height start angle color)
 	(if color
-		(net-send out (string "draw-arc " gs:currentCanvas " " id " " x " " y " "
+		(send-out (string "draw-arc " gs:currentCanvas " " id " " x " " y " "
 						width " " height " " start " " angle " " 
 						(color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "draw-arc " gs:currentCanvas " " id " " x " " y " "
+		(send-out (string "draw-arc " gs:currentCanvas " " id " " x " " y " "
 						width " " height " " start " " angle "\n"))
 	)
 )
@@ -1151,9 +1199,9 @@ true
 
 (define (draw-circle tag x y radius color)
 	(if color
-		(net-send out (string "draw-circle " gs:currentCanvas " " 
+		(send-out (string "draw-circle " gs:currentCanvas " " 
 			tag " " x " " y " " radius " " (color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "draw-circle " gs:currentCanvas " " 
+		(send-out (string "draw-circle " gs:currentCanvas " " 
 			tag " " x " " y " " radius "\n"))
 	)
 )
@@ -1171,9 +1219,9 @@ true
 
 (define (draw-ellipse tag x y radius-x radius-y color)
 	(if color
-		(net-send out (string "draw-ellipse " gs:currentCanvas " " 
+		(send-out (string "draw-ellipse " gs:currentCanvas " " 
 			tag " " x " " y " " radius-x " " radius-y " " (color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "draw-ellipse " gs:currentCanvas " " 
+		(send-out (string "draw-ellipse " gs:currentCanvas " " 
 			tag " " x " " y " " radius-x " " radius-y  "\n"))
 	)
 )
@@ -1191,9 +1239,9 @@ true
 
 (define (draw-image tag path x y width height)
 	(if (and width height)
-		(net-send out (string "draw-image " gs:currentCanvas " " tag " " 
+		(send-out (string "draw-image " gs:currentCanvas " " tag " " 
 				(base64-enc path) " " x " " y " " width " " height "\n"))
-		(net-send out (string "draw-image " gs:currentCanvas " " tag " " 
+		(send-out (string "draw-image " gs:currentCanvas " " tag " " 
 				(base64-enc path) " " x " " y "\n"))
 	)
 ) 
@@ -1210,7 +1258,7 @@ true
 
 (define (draw-line tag x1 y1 x2 y2 color)
 	(if color
-		(net-send out (string "draw-line " gs:currentCanvas " " tag " "
+		(send-out (string "draw-line " gs:currentCanvas " " tag " "
 			x1 " " y1 " " x2 " " y2 " " (color 0) " " (color 1) " " (color 2) "\n"))
 	)
 )
@@ -1233,13 +1281,13 @@ true
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s (string (color 0) " " (color 1) " " (color 2) "\n"))
-			(net-send out s)
+			(send-out s)
 		)
 		(let (s (string "draw-path " gs:currentCanvas " " tag " " (/ (length points) 2) " "))
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s "\n")
-			(net-send out s)
+			(send-out s)
 		)
 	)
 )
@@ -1262,13 +1310,13 @@ true
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s (string (color 0) " " (color 1) " " (color 2) "\n"))
-			(net-send out s)
+			(send-out s)
 		)
 		(let (s (string "draw-polygon " gs:currentCanvas " " tag " " (/ (length points) 2) " "))
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s "\n")
-			(net-send out s)
+			(send-out s)
 		)
 	)
 )
@@ -1287,9 +1335,9 @@ true
 
 (define (draw-rect tag x y width height color)
 	(if color
-		(net-send out (string "draw-rect " gs:currentCanvas " " 
+		(send-out (string "draw-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height " " (color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "draw-rect " gs:currentCanvas " " 
+		(send-out (string "draw-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height "\n"))
 	)
 )
@@ -1310,10 +1358,10 @@ true
 
 (define (draw-round-rect tag x y width height arcw arch color)
 	(if color
-		(net-send out (string "draw-round-rect " gs:currentCanvas " " 
+		(send-out (string "draw-round-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height " "  arcw " " arch " " 
 				(color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "draw-round-rect " gs:currentCanvas " " 
+		(send-out (string "draw-round-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height  " " arcw " " arch "\n"))
 	)
 )
@@ -1334,14 +1382,14 @@ true
 (define (draw-text tag text x y color angle)
 	(if color
 		(if angle
-			(net-send out (string "draw-text " gs:currentCanvas " "
+			(send-out (string "draw-text " gs:currentCanvas " "
 				tag " "  (base64-enc text) " " x " " y " " 
 				(color 0) " " (color 1) " " (color 2) " " angle "\n"))
-			(net-send out (string "draw-text " gs:currentCanvas " "
+			(send-out (string "draw-text " gs:currentCanvas " "
 				tag " "  (base64-enc text) " " x " " y " " 
 				(color 0) " " (color 1) " " (color 2) "\n"))
 		)
-		(net-send out (string "draw-text " gs:currentCanvas " "
+		(send-out (string "draw-text " gs:currentCanvas " "
 			tag " "  (base64-enc text) " " x " " y "\n"))
 	)
 )
@@ -1420,10 +1468,10 @@ true
 
 (define (fill-arc id x y width height start angle color)
 	(if color
-		(net-send out (string "fill-arc " gs:currentCanvas " " id " " x " " y " "
+		(send-out (string "fill-arc " gs:currentCanvas " " id " " x " " y " "
 						width " " height " " start " " angle " " 
 						(color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "fill-arc " gs:currentCanvas " " id " " x " " y " "
+		(send-out (string "fill-arc " gs:currentCanvas " " id " " x " " y " "
 						width " " height " " start " " angle "\n"))
 	)
 )
@@ -1440,9 +1488,9 @@ true
 
 (define (fill-circle tag x y radius color)
 	(if color
-		(net-send out (string "fill-circle " gs:currentCanvas " " 
+		(send-out (string "fill-circle " gs:currentCanvas " " 
 			tag " " x " " y " " radius " " (color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "fill-circle " gs:currentCanvas " " 
+		(send-out (string "fill-circle " gs:currentCanvas " " 
 			tag " " x " " y " " radius "\n"))
 	)
 )
@@ -1460,10 +1508,10 @@ true
 
 (define (fill-ellipse tag x y radius-x radius-y color)
 	(if color
-		(net-send out (string "fill-ellipse " gs:currentCanvas " " 
+		(send-out (string "fill-ellipse " gs:currentCanvas " " 
 			tag " " x " " y " " radius-x " " radius-y " " 
 				(color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "fill-ellipse " gs:currentCanvas " " 
+		(send-out (string "fill-ellipse " gs:currentCanvas " " 
 			tag " " x " " y " " radius-x " " radius-y  "\n"))
 	)
 )
@@ -1492,13 +1540,13 @@ true
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s (string (color 0) " " (color 1) " " (color 2) "\n"))
-			(net-send out s)
+			(send-out s)
 		)
 		(let (s (string "fill-polygon " gs:currentCanvas " " tag " " (/ (length points) 2) " "))
 			(dolist (p points)
 				(write-buffer s (string p " ")))
 			(write-buffer s "\n")
-			(net-send out s)
+			(send-out s)
 		)
 	)
 )
@@ -1516,9 +1564,9 @@ true
 
 (define (fill-rect tag x y width height color)
 	(if color
-		(net-send out (string "fill-rect " gs:currentCanvas " " 
+		(send-out (string "fill-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height " " (color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "fill-rect " gs:currentCanvas " " 
+		(send-out (string "fill-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height "\n"))
 	)
 )
@@ -1538,10 +1586,10 @@ true
 
 (define (fill-round-rect tag x y width height arcw arch color)
 	(if color
-		(net-send out (string "fill-round-rect " gs:currentCanvas " " 
+		(send-out (string "fill-round-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height " "  arcw " " arch " " 
 				(color 0) " " (color 1) " " (color 2) "\n"))
-		(net-send out (string "fill-round-rect " gs:currentCanvas " " 
+		(send-out (string "fill-round-rect " gs:currentCanvas " " 
 			tag " " x " " y " " width " " height  " " arcw " " arch "\n"))
 	)
 )
@@ -1730,7 +1778,7 @@ true
 ;;
 
 (define (hide-tag tag (repaint true))
-	(net-send out (string "hide-tag " gs:currentCanvas " " tag " " repaint "\n"))
+	(send-out (string "hide-tag " gs:currentCanvas " " tag " " repaint "\n"))
 )
 
 
@@ -1764,14 +1812,16 @@ true
 )
 
 
-;; @syntax (gs:init [<int-port> <str-host>])
+;; @syntax (gs:init [<int-port> <str-host> [bool-manual]])
 ;; @param <int-port> The optional guiserver server port.
 ;; @param <str-host> The optional remote host of the guiserver.
 
-(define (init (portIn 47011) (host "127.0.0.1"))
+(define (init (portIn 47011) (host "127.0.0.1") manual)
 	; check for server portIn and if this was started by java
 	(if (main-args 2) (set 'portIn (int (main-args 2) portIn)))
-	(if (not (= (main-args 3) "javastart"))
+	; if guiserver.jar did not start this process then guiserver.jar
+	; still has to be started, except when manual parameter is true
+	(if (and (not (= (main-args 3) "javastart")) (not manual))
 		(if (= ostype "Win32")
 			(process (string "cmd /c " server-path " " portIn))
 
@@ -2201,7 +2251,7 @@ true
 ;; will transform object coordinates only for drawing.
 
 (define (gs:move-tag tag dx dy (repaint true))
-	(net-send out (string "move-tag " gs:currentCanvas " " tag " " 
+	(send-out (string "move-tag " gs:currentCanvas " " tag " " 
 		dx " " dy " " repaint "\n"))
 )
 
@@ -2453,7 +2503,7 @@ true
 ;; Like all tag operations, multiple 'gs:rotate-tag' operations are cumulative.
 
 (define (rotate-tag tag angle x y (repaint true))
-	(net-send out (string "rotate-tag " gs:currentCanvas " " tag " " angle " " 
+	(send-out (string "rotate-tag " gs:currentCanvas " " tag " " angle " " 
 		x " " y " " repaint "\n"))
 )
 
@@ -2549,7 +2599,7 @@ true
 ;; Like all tag operations, multiple 'gs:scale-tag' operations are cumulative.
 
 (define (scale-tag tag sx sy (repaint true))
-	(net-send out (string "scale-tag " gs:currentCanvas " " tag " " 
+	(send-out (string "scale-tag " gs:currentCanvas " " tag " " 
 		sx " " sy " " repaint "\n"))
 )
 
@@ -3139,7 +3189,7 @@ true
 ;; @param <boolean-repaint> An optional flag to indicate if repainting is required (default is 'true').
 
 (define (shear-tag tag sx sy (repaint true))
-	(net-send out (string "shear-tag " gs:currentCanvas " " tag " " 
+	(send-out (string "shear-tag " gs:currentCanvas " " tag " " 
 		sx " " sy " " repaint "\n"))
 )
 
@@ -3335,7 +3385,7 @@ true
 ;; Like all tag operations multiple 'gs:translate-tag' operations are cumulative.
 
 (define (translate-tag tag x y (repaint true))
-	(net-send out (string "translate-tag " gs:currentCanvas " " tag " " x " " y " " repaint "\n"))
+	(send-out (string "translate-tag " gs:currentCanvas " " tag " " x " " y " " repaint "\n"))
 )
 
 ;; @syntax (gs:undo-text <sym-id>)

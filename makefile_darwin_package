@@ -51,6 +51,7 @@ darwin-package:
 	-install -m 644 modules/postgres.lsp $(datadir)/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(datadir)/newlisp/modules/smtp.lsp
+	-install -m 644 modules/smtpx.lsp $(datadir)/newlisp/modules/smtpx.lsp
 	-install -m 644 modules/sqlite3.lsp $(datadir)/newlisp/modules/sqlite3.lsp
 	-install -m 644 modules/stat.lsp $(datadir)/newlisp/modules/stat.lsp
 	-install -m 644 modules/unix.lsp $(datadir)/newlisp/modules/unix.lsp

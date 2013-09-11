@@ -20,6 +20,7 @@
 ;; @version 2.6 - allow custom tags e.g: @MyTag the descriptive text (may contain @link)
 ;; @version 2.7 - link rag did not work at beginnning of line
 ;; @version 2.8 - support for newLISPdoc tag color
+;; @version 2.9 - correctly highlight & and ^ keywords
 ;;
 ;; @author Lutz Mueller, 2006-2009
 ;; @location http://newlisp.org
@@ -125,7 +126,9 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
 (push "nil" keywords)
 (push "true" keywords)
 (set 'keyword-regex (join keywords "|"))
+(replace "&" keyword-regex "&amp&")
 (replace "?" keyword-regex "\\?")
+(replace "^" keyword-regex "\\^")
 (replace "$" keyword-regex "\\$")
 (replace "!" keyword-regex "\\!")
 (replace "+" keyword-regex "\\+")

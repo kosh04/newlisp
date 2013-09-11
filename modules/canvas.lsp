@@ -2,7 +2,7 @@
 ;; @description Routines for creating HTML canvas tag graphics
 ;; @version 1.0 initial release
 ;; @version 1.1 doc changes only
-;; @version 1.2 doc changes only
+;; @version 1.21 doc changes only
 ;; @author Lutz Mueller, March 2009
 ;    Copyright (C) 2009 Lutz Mueller
 ;
@@ -456,7 +456,7 @@
 ;; programs. The CGI program must take care to emit a content-type header 
 ;; first using:
 ;;
-;; <pre>(print "Content-type: text/html\r\n\r\n")</pre>
+;; <pre>(print "Content-Type: text/html\r\n\r\n")</pre>
 
 ;; @syntax (cv:rotate <num-deg>) 
 ;; @param <num-deg> The degrees of rotation: -360 to 0 to 360.

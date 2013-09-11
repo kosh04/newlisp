@@ -9,12 +9,12 @@
 
 OBJS = newlisp-amal.o pcre.o
 
-CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX
+CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -DREADLINE -DSUPPORT_UTF8 -DLINUX
 
 CC = cc -L/usr/lib
 
 default: $(OBJS)
-	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lncurses -o newlisp
+	$(CC) $(OBJS) -m32 -lm -ldl -lreadline -lncurses -o newlisp
 	strip newlisp
 
 .c.o:

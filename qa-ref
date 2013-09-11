@@ -1,3 +1,5 @@
+#!/usr/bin/newlisp
+
 ;; qa reference returns from functions
 
 (define (qa-ref)

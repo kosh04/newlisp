@@ -1,0 +1,78 @@
+#!/usr/bin/newlisp
+
+; Test IEE complience of some FP operations and handling of inf and NaN numbers
+; In all versions of newLISP (32Bit and 64Bit) floating point numbers
+; are represented as IEE 754 64-bit: Double (binary64) numbers
+
+; thanks to Nelson H.F. Beebe <beebe@math.utah.edu> for some of the tests
+; in this file
+
+
+(set 'aNan (sqrt -1))
+(set 'aInf (div 1.0 0))
+
+; operation on NaN result in NaN
+
+(set 'tests '(
+	"operation on NaN result in NaN"
+	(NaN? (mul 1.0 aNan))
+	(NaN? (div 1.0 aNan))
+	(NaN? (add 1.0 aNan))
+	(NaN? (sub 1.0 aNan))
+	(NaN? (sin aNan))
+	(NaN? (cos aNan))
+	(NaN? (tan aNan))
+	(NaN? (atan aNan))
+	"comparison with NaN is always nil"
+	(not (< 1.0 aNan))
+	(not (> 1.0 aNan))
+	(not (>= 1.0 aNan))
+	(not (<= 1.0 aNan))
+	(not (= aNan aNan))
+	"NaN is not equal to itself"
+	(not (= aNan aNan)) 
+	"integer operations assume NaN as 0"
+	(= (- 1 aNan) 1)
+	(= (+ 1 aNan) 1)
+	(= (* 1 aNan) 0)
+	(not (catch (/ 1 aNan) 'error))
+	(= (>> aNan) 0)
+	(= (<< aNan) 0)
+	"integer operations assume inf as max-int"
+	(= (* 1 aInf) 9223372036854775807)
+	(= (- aInf 1) 9223372036854775806)
+	(= (+ aInf 1) -9223372036854775808) ; wrap around
+	"division by inf results in 0"
+	(= (/ 1 aInf) 0)
+	(= (div 1 aInf) 0)
+	"inf specials"
+	(= aInf aInf)
+	(NaN? (sub aInf aInf))
+	"retain sign of -0.0"
+	(= (set 'tiny (div -1 aInf)) -0.0)
+	(= (sqrt tiny) -0.0)
+	)
+)
+
+
+(dolist (t tests)
+	(if (string? t) 
+		(println (format "\n%-47s\n%s" t (dup "-" 47)))
+		(println (format "%40s => %s" (string t) (string (eval t))))
+	)
+)
+
+(println)
+
+(set 'result '())
+(set 'u 1.0)
+(while (> u 0.0) (set 'u (mul u 0.5)) (push u result))	
+(println "support of subnormals: " (0 2 result) " => (0 4.940656458e-324)")
+
+
+(set 'result '())
+(set 'u 1.0)
+(while (!= 1.0 (add 1.0 u)) (set 'u (mul u 0.5)) (push u result))
+(println "machine epsilon: " (result 0) " => 1.110223025e-16")
+
+(exit)

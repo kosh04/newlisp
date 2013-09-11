@@ -2,6 +2,7 @@
 ;; @description Basic statistics and plotting library
 ;; @version 2.0 - fixed plot an plotXY routines for gnuplot
 ;; @version 2.1 - doc changes
+;; @version 2.2 - frequency vector in stat:power was shifted left by 1
 ;; @author Lutz Mueller, 2001-2009
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
@@ -504,7 +505,7 @@ xxxxx
 	(replace mid ps (div (nth mid ps) 2))
 	; calc a vector with frequencies, adjusted for the new power-2 length
 	; which came back from the FFT
-	(set 'frqs (sequence 1 n))
+	(set 'frqs (sequence 0 (- n 1)))
 	(set 'frqs (map (lambda (x) (mul (div x n) lenOrg)) frqs))
 	(transpose (matrix ps frqs)))
 

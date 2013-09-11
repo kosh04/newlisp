@@ -2,7 +2,6 @@
 #
 # for OS X 10.4 and later
 #
-# needs a G5 or core 2 duo to run. Passes 'make test' on intel core 2 duo
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o

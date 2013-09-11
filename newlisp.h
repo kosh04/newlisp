@@ -228,7 +228,7 @@ This is for 64bit large file support (LFS),
 #ifdef TRU64
 #define INT64 long
 #define UINT64 unsigned long
-#else /* not NEWLISP64 */
+#else /* not TRU64 */
 #define INT64 long long int
 #define UINT64 unsigned long long int
 #endif

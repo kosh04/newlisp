@@ -74,7 +74,7 @@
          (true? result4)
          (= result5 21)
          (= result6 '((p1 400) (p2 500))))
-	(println ">>>>> THE CILK API TESTED SUCESSFULL")
+	(println ">>>>> THE CILK API TESTED SUCCESSFUL")
 	(println ">>>>> ERR: PROBLEM WITH CILK API")
 )
 (println)

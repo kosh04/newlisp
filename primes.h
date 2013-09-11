@@ -283,6 +283,7 @@ PRIMITIVE primitive[] =
 	{"fork",		p_fork,		0},
 	{"wait-pid",	p_waitpid,	0},
 #endif
+#ifndef OS2
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
 	{"abort",		p_abort,	0},
@@ -290,7 +291,6 @@ PRIMITIVE primitive[] =
 	{"send",		p_send,		0},
 	{"receive",		p_receive,	0},
 #endif
-#ifndef OS2
 	{"share",		p_share,	0},
 #endif
 	{"semaphore",	p_semaphore,0},

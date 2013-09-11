@@ -1,4 +1,4 @@
-BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2008-07-23)
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2009-07-17)
 -------------------------------------------------------------------
 
 CONTENTS
@@ -58,17 +58,18 @@ This will bring up the debian installer application.
 (4) MINIMUM INSTALL
 -------------------
 
-For a minumum install only the executable file: newlisp (or newlisp.exe on Win32)
-needs to be moved to a directory in the executable path, i.e. /usr/bin/newlisp
-or ~/bin in the home directory. No other files are required. All functionality
+For a minumum install, only the executable file: newlisp (or newlisp.exe
+on Win32) needs to be moved to a directory in the executable path, i.e. 
+/usr/bin/newlisp on Unix. No other files are required. This installation
+is recommended for ISPs and other server installations.
 
+To reduce an exisiting UNIX install to a minimum installation, remove all 
+files in /usr/share/newlisp and /usr/share/doc/newlisp and the executable 
+files /usr/bin/newlisp-edit and /usr/bin/newlispdoc.
 
-To reduce an exisiting UNIX install to a minimum installation, remove all files
-in /usr/share/newlisp and /usr/share/doc/newlisp and the executable files
-/usr/bin/newlisp-edit and /usr/bin/newlispdoc.
-
-On Mac OX X remove also the files under the Applications icon in the Applications
-folder. On Windows remove all file except newlisp.exe in C:/Program Files/newlisp.
+On Mac OX X remove also the files under the Applications icon in the 
+Applications folder. On Windows remove all file except newlisp.exe in 
+C:/Program Files/newlisp.
 
 
 (5) BUILD newLISP FROM SOURCE AND INSTALL ON ALL UNIX
@@ -85,7 +86,8 @@ and check what OS flavor make would detect, type:
     ./configure
 
 This will automatically detect the platforms Linus, MacOS X, FreeBSD,
-OpenBSD, NetBSD and SunOS/Solaris.
+OpenBSD, NetBSD, SunOS/Solaris and Win32. To build on Win32 a MinGW
+installation hosted by MSYS is required. See http://mingw.org
 
 If you agree with the platform detected by configure type:
 
@@ -107,10 +109,30 @@ or if already in superuser mode:
 (6) COMMENTS FOR COMPILING AND LINKING
 --------------------------------------
 
-There are many other flavors for different OS and compilers type
-make with help to see all options: 
+If skipping the ./configure step and just doing ./make, the
+configure script will be called automatically if no makefile_configure
+can be found, else the existing makefile_configure will be used.
 
-    make help
+The standard configure script assumes READLINE support, discovers 
+the default memory model (32 but vs 64 bit) and copies one of the 
+pre-fabricated makefiles to makefile_configure.
+
+An alternative configure script with the name: configure-alt
+can be used. The configure-alt script checks if all the necessary 
+components are availabl and READLINE support are available and
+configures a makefile_configure accordingly.
+
+Both configure scripts assume UTF8-support and IPV-4 as defaults.
+The configure-alt scripts allows to overwrite and specifiy other
+option. Use 
+
+    ./configure-alt --help 
+
+to find out all possible options.
+
+To see a description of the most used pre-configured makefile do:
+
+   make help
 
 If 'make' comes back with error messages try gmake, or any other 
 make compatible with gmake.
@@ -119,35 +141,29 @@ to remove objects and before switching make flavors:
 
     make clean
 
-A makefile for a specific platform and flavor can also be used explicitly 
-by typing:
+A makefile for a specific platform and flavor can also be used i
+explicitly by typing:
 
     make -f makefile_xxxxxx
     
-where xxxx is one of the many flavors available in many makefile included.
+where xxxx is one of the many flavors available in many makefile 
+included.
 
-Some OS's and installations may not support 'readline' or support for
-milli seconds resolution in the time functions or library import functionality.
-See the options NANOSLEEP, READLINE and NOIMPORT in the makefile_xxx
-for your platform and compilation flavor. When using the READLINE option
-on some OSs the library options -lreadline and -lncurses or -ltermcap have
-to be replaced. 'readline' support enables command line editing and key-word
-expansion using the TAB-key. Study the makefile of your platform to see
-what options are supported.
+When using the READLINE option on some OSs, the library options 
+-lreadline and -lncurses or -ltermcap have to be replaced. 'readline' 
+support enables command line editing and key-word expansion using the 
+TAB-key.  Study the makefile of your platform to see what options are 
+supported.
 
-On Linux makefile_linux is without readline support, use make_debian instead
-even on non-debian Linux to gain readline support.
+If compiling with READLINE fails on Linux , it may me due to missing 
+readline.h and history.h include files. In this case the package 
+'libreadline5-dev' has to be installed.
 
-On some platforms the warning message "ANSI does not support long long" will be
-issued for every file compiled. This message can be discarded and does not occur
-on newer versions of GCC. The 'long long' data type is not used anywhere in the 
-newLISP source but part of some header files of the GCC installation.
-
-The Linux version is without readline support by default, because readline
-support does not come in the default install of many Linux distributions.
-
-When creating Win32 versions read the file README_WIN32 first.
-
+On some platforms the warning message "ANSI does not support long long 
+will be issued for every file compiled. This message can be discarded 
+and does not occur on newer versions of GCC. The 'long long' data type 
+is not used anywhere in the newLISP source but part of some header files 
+of the GCC installation.
 
 (7) LOCALIZATION
 ----------------
@@ -161,7 +177,6 @@ runtime without performance loss, (see newlisp_manual.html).
 
 There are UTF-8 versions/makefiles available in the source distribution.
 See the chapter about 'Customization, localization and UTF-8' in the manual.
-
 
 (8) UNINSTALL
 -------------

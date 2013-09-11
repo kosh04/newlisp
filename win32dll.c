@@ -19,13 +19,9 @@
 
 #include "newlisp.h"
 #include "protos.h"
-
-#ifdef WIN_32
-#define EXPORT __declspec(dllexport) __stdcall
-#define DLLCALL EXPORT
-#endif
-
 #include <winsock2.h>
+
+#define EXPORT __declspec(dllexport) __stdcall
 
 extern char linkOffset[];
 extern void loadStartup(char *name);
@@ -93,7 +89,7 @@ return 1;
 
 /* called automatically from nl-import when DLL is loaded from newLISP */
 
-int DLLCALL dllName(LPSTR name)
+int EXPORT dllName(LPSTR name)
 {
 strncpy(libName, name, MAX_LINE);
 return(1);
@@ -102,7 +98,7 @@ return(1);
 
 /* ---- imported and called from a client using newlisp.dll ---- */
 
-LPSTR DLLCALL newlispEvalStr(LPSTR cmd)
+LPSTR EXPORT newlispEvalStr(LPSTR cmd)
 {
 if(!dllInitialized) initializeMain();
 
@@ -128,7 +124,7 @@ return((LPSTR)libStrStream.buffer);
 }
 
 
-LPSTR DLLCALL dllEvalStr(LPSTR cmd)
+LPSTR EXPORT dllEvalStr(LPSTR cmd)
 {
 return(newlispEvalStr(cmd));
 }
@@ -137,7 +133,7 @@ return(newlispEvalStr(cmd));
 
 /* ------------ called from Windows when unloading DLL ------------------ */
 
-int DLLCALL WEP (int bSystemExit)
+int EXPORT WEP (int bSystemExit)
 {
 return(1);
 }

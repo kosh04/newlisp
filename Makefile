@@ -28,14 +28,16 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.1.0
-INT_VERSION = 10100
+VERSION = 10.1.5
+INT_VERSION = 10105
 
-default:
-	./build
+default: makefile_configure
+	make -f makefile_configure
 
-all:
-	./build
+makefile_configure:
+	./configure
+
+all: default
 
 help:
 	@echo "Do one of the following:"
@@ -44,7 +46,6 @@ help:
 	@echo "  make linux_utf8      # newlisp for LINUX UTF-8 and readline support"
 	@echo "  make linux_lib       # newlisp.so as shared library for LINUX"
 	@echo "  make linux_lib_utf8  # newlisp.so as shared library for LINUX with UTF-8"
-	@echo "  make tru64           # newlisp for HP tru64 with 32 bit pointers - read doc/TRU64BUILD"
 	@echo "  make bsd             # newlisp for FreeBSD and OpenBSD"
 	@echo "  make bsd_utf8        # newlisp for FreeBSD and OpenBSD with UTF-8"
 	@echo "  make bsd_lib         # newlisp.so as shared library for FreeBSD, OpenBSD, NetBSD"
@@ -52,13 +53,13 @@ help:
 	@echo "  make netbsd_utf8     # newlisp for NetBSD, readline and UTF-8 support)"
 	@echo "  make darwin          # newlisp for Mac OSX v.10.4 or later, readline support"
 	@echo "  make darwin_utf8     # newlisp for Mac OSX v.10.4 or later, readline and UTF-8 support"
+	@echo "  make darwinLP64_utf8 # newlisp for Mac OSX v.10.5 or later, 64-bit, readline and UTF-8 support"
 	@echo "  make darwin_lib      # newlisp for Mac OSX v.10.3 or later as shared library"
-	@echo "  make universal       # like makefile_darwin, but both architecturees: ppc and intel"
 	@echo "  make universal_utf8  # like makefile_darwin_utf8, but both architectures"
+	@echo "  make llvm            # make for OSX with UTF-8 support using the LLVM compiler"
 	@echo "  make opensolaris     # newlisp for Sun SOLARIS on Intel processor (little tested)"
 	@echo "  make sunos           # newlisp for SunOS (tested on Sparc)"
 	@echo "  make sunos_utf8      # newlisp for SunOS UTF-8 (tested on Sparc)"
-	@echo "  make true64          # newlisp for tru64 UNIX LP64 tested on Alpha CPU"
 	@echo "  gmake aix            # newlisp for IBM AIX 32-bit using the xlc_r compiler and for UTF-8"
 	@echo "  gmake aix_gcc        # newlisp for IBM AIX 32-bit using the gcc compiler and for UTF-8"
 	@echo "  make mingw           # newlisp.exe for Win32 (MinGW compiler)"
@@ -66,6 +67,7 @@ help:
 	@echo "  make mingwdll        # newlisp.dll for Win32 (MinGW compiler)"
 	@echo "  make mingwdll_utf8   # newlisp.dll for Win32 UTF-8 (MinGW compiler)"
 	@echo "  make os2             # newlisp for OS/2 GCC 3.3.5 with libc061.dll"
+	@echo "  make tru64           # newlisp for HP tru64 with 32 bit pointers - read doc/TRU64BUILD"
 	@echo 
 	@echo "  make install         # install on LINUX/UNIX in /usr/bin and /usr/share (need to be root)"
 	@echo "  make uninstall       # uninstall on LINUX/UNIX from /usr/bin and /usr/share (need to be root)"
@@ -73,7 +75,7 @@ help:
 	@echo "  make uninstall_home  # uninstall on LINUX/UNIX from users home directory "
 	@echo
 	@echo "  make clean           # remove all *.o and .tar files etc. USE BETWEEN FLAVORS!"
-	@echo "  make check           # run qa-dot, qa-net and qa-xml test scripts"
+	@echo "  make check           # run qa-dot, qa-net, qa-xml etc. test scripts"
 	@echo "  make test            # same as 'make check'"
 	@echo "  make version         # replace version number in several files after changing in Makefile"
 	@echo
@@ -118,17 +120,20 @@ netbsdi_utf8:
 darwin_lib:
 	make -f makefile_darwin_lib
 
-universal:
-	make -f makefile_universal
-
 universal_utf8:
-	make -f makefile_universal_utf8
+	make -f makefile_darwin_universal_utf8
 
 darwin:
 	make -f makefile_darwin
 	
 darwin_utf8:
 	make -f makefile_darwin_utf8
+
+darwinLP64_utf8:
+	make -f makefile_darwinLP64_utf8
+
+llvm:
+	make -f makefile_darwin_utf8_llvm
 
 sunos:
 	make -f makefile_sunos
@@ -203,9 +208,8 @@ dpkg_utf8:
 
 # scripts for making Mac OS X disk image installers
 # Note that since Mac OX X update 10.5.6 'PackageMaker -d -o'
-# bombs out in the following script. Do the package manually
-# instead using the PackageMaker GUI app. After that hdiutil 
-# can be used from a script as shown below. 
+# bombs out in the following script, but is fixed in 10.6.0
+# Snow Leopard.
 dmg_ppc:
 	lipo newlisp-universal -output newlisp -thin ppc
 	sudo rm -rf ../Package_contents
@@ -229,22 +233,23 @@ dmg_intel:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
 
 # this cleans up the distribution directory for a clean build
-distclean:
+distclean: clean
+	-rm -f config.h makefile_configure newlisp test-*
+
+# alternate naming for clean
+clean:
 	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz guiserver/java/._* TEST newlisp-universal
 	-rm -f guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
 	-rm -f doc/*.bak util/*.bak examples/*.bak modules/*.bak
 	-chmod 644 *.h *.c *.lsp Makefile makefile*
-	-chmod 755 build configure examples/*
+	-chmod 755 configure configure-alt examples/*
 	-chmod 644 doc/* modules/*.lsp examples/*.lsp examples/*.html
 	-chmod 644 guiserver/*
 	-chmod 755 guiserver/images
 	-chmod 644 guiserver/images/*
 	-chmod 755 guiserver/java
 	-chmod 644 guiserver/java/*
-	-rm -f config.h makefile_configure newlisp test-memorymodel
-
-# alternate naming for clean
-clean: distclean
+	-rm -f makefile_configure
 
 # run test scripts
 check:
@@ -256,6 +261,7 @@ check:
 	./newlisp qa-cilk
 	./newlisp qa-ref
 	./newlisp qa-message
+	./newlisp qa-win32dll
 
 # old naming for check 
 test: check
@@ -273,7 +279,7 @@ mandir=$(prefix)/share/man
 # guiserver/newlisp-exit.lsp must change too
 GUISERVER = $(prefix)/share/newlisp/guiserver
 
-# this is the standard install in /usr/bin and usr/share
+# this is the standard install in /usr/bin and usr/share (with prefix=/usr)
 # which as to be done as 'root' with supersuser permissions
 # for an install in your home directory use make install_home
 #
@@ -321,6 +327,7 @@ install:
 	-install -m 644 modules/postgres.lsp $(datadir)/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(datadir)/newlisp/modules/smtp.lsp
+	-install -m 644 modules/smtpx.lsp $(datadir)/newlisp/modules/smtpx.lsp
 	-install -m 644 modules/sqlite3.lsp $(datadir)/newlisp/modules/sqlite3.lsp
 	-install -m 644 modules/stat.lsp $(datadir)/newlisp/modules/stat.lsp
 	-install -m 644 modules/unix.lsp $(datadir)/newlisp/modules/unix.lsp
@@ -420,6 +427,7 @@ install_home:
 	-install -m 644 modules/postgres.lsp $(HOME)/share/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(HOME)/share/newlisp/modules/postscript.lsp
 	-install -m 644 modules/smtp.lsp $(HOME)/share/newlisp/modules/smtp.lsp
+	-install -m 644 modules/smtpx.lsp $(HOME)/share/newlisp/modules/smtpx.lsp
 	-install -m 644 modules/sqlite3.lsp $(HOME)/share/newlisp/modules/sqlite3.lsp
 	-install -m 644 modules/stat.lsp $(HOME)/share/newlisp/modules/stat.lsp
 	-install -m 644 modules/unix.lsp $(HOME)/share/newlisp/modules/unix.lsp
@@ -450,7 +458,7 @@ dist: distclean
 	cp README newlisp-$(VERSION)
 	cp nl*.c newlisp.c *.h pcre*.c newlisp-$(VERSION)
 	cp win3*.* unix*.c newlisp-$(VERSION)
-	cp Makefile build configure makefile* qa* newlisp-$(VERSION)
+	cp Makefile configure* makefile* qa* newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
 	cp examples/* newlisp-$(VERSION)/examples
 	cp doc/* newlisp-$(VERSION)/doc

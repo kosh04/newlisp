@@ -134,7 +134,6 @@ do
         position = searchBuffer(buffer, bytesRead, searchString, len, 1);
     else
         position = searchBufferRegex(buffer, 0, searchString, (int)bytesRead , options, (int *)&len);
-
     if(position != -1)
         {
 		if(flag)
@@ -769,26 +768,45 @@ return(makeStringCell(fmtStream.buffer, fmtStream.position));
 }
 
 void openStrStream(STREAM * stream, size_t buffSize, int reopenFlag)
-	{
-	if(stream->buffer != NULL && reopenFlag)
-		freeMemory(stream->buffer);
-	stream->buffer = stream->ptr = callocMemory(buffSize + 1);
-	stream->size = buffSize;	
-	stream->position = stream->handle = 0;
-	}
+{
+if(stream->buffer != NULL && reopenFlag)
+	freeMemory(stream->buffer);
+stream->buffer = stream->ptr = callocMemory(buffSize + 1);
+stream->size = buffSize;	
+stream->position = stream->handle = 0;
+}
 
 void closeStrStream(STREAM * stream)
+{
+if(stream->buffer != NULL)
+	freeMemory(stream->buffer);
+stream->buffer = stream->ptr = NULL;
+stream->size = stream->position = 0;
+if(stream->handle != 0)
 	{
-	if(stream->buffer != NULL)
-		freeMemory(stream->buffer);
-	stream->buffer = stream->ptr = NULL;
-	stream->size = stream->position = 0;
-	if(stream->handle != 0)
-            {
-            close((int)stream->handle);
-            stream->handle = 0;
-            }
+	close((int)stream->handle);
+	stream->handle = 0;
 	}
+}
+
+char * cellToString(CELL * cell, size_t * size, int quoteFlag)
+{
+static STREAM strStream = {0, NULL, NULL, 0, 0};
+
+if(cell->type == CELL_STRING)
+	{
+	*size = cell->aux -1;
+	return((char *)cell->contents);
+	}
+
+openStrStream(&strStream, MAX_STRING, TRUE);
+prettyPrintFlags |= PRETTYPRINT_STRING;
+printCell(cell , quoteFlag, (UINT)&strStream);
+prettyPrintFlags &= ~PRETTYPRINT_STRING;
+*size = strStream.position;
+
+return(strStream.buffer);
+}
 	
 
 void writeStreamChar(STREAM * stream, char chr)
@@ -894,12 +912,16 @@ return(NULL);
    stream->size does not reflect the real size of
    the buffer as in makeStreamFromFile() 
 */
-void makeStreamFromString(STREAM * stream, char * str)
+int makeStreamFromString(STREAM * stream, char * str)
 {
+int len = strlen(str);
+
 stream->handle = stream->position = 0;
 stream->buffer = stream->ptr = str;
 /* make getToken work to the end of str */
-stream->size = strlen(str) + 4 * MAX_STRING;
+stream->size = len + 4 * MAX_STRING;
+
+return(len);
 }
 
 int makeStreamFromFile(STREAM * stream, char * fileName, size_t size, size_t offset)
@@ -1212,7 +1234,6 @@ sPtr = translateCreateSymbol(token, CELL_NIL, context, TRUE);
 return(stuffSymbol(sPtr));
 }
 
-	
 
 CELL * p_symbolSource(CELL * params)
 {
@@ -1244,7 +1265,10 @@ while (params != nilCell)
     params = params->next;
 	}
 prettyPrintFlags &= ~PRETTYPRINT_STRING;
-cell = stuffString(strStream.buffer);
+/* cell = stuffString(strStream.buffer); */
+
+cell = makeStringCell(strStream.buffer, strStream.position);
+strStream.buffer = NULL; /* prevent freeing memory */
 
 closeStrStream(&strStream);
 return(cell);
@@ -2032,6 +2056,7 @@ int rc, idx;
 char * pattern;
 char * string;
 long options = 0;
+UINT offset = 0;
 int len;
 size_t size;
 CELL * cell, * result, * strCell;
@@ -2039,30 +2064,26 @@ CELL * cell, * result, * strCell;
 params = getString(params, &pattern);
 params = getStringSize(params, &string, &size, TRUE);
 
-/*
-strCell = evaluateExpression(cell);
-if(strCell->type != CELL_STRING)
-	return(errorProcExt(ERR_STRING_EXPECTED, cell));
-string = (char *)strCell->contents;
-params = cell->next;
-*/
-
 if(params != nilCell)
+	{
     params = getInteger(params, (UINT *)&options);
+	if(params != nilCell)
+		getInteger(params, &offset);
+	}
 
 /* Compile the regular expression in the first argument */
 re = pcreCachedCompile(pattern, (int)options);
 
 /* Compilation succeeded: match the subject in the second argument */
 rc = pcre_exec(
-    re,                    /* the compiled pattern */
-    NULL,                  /* no extra data - we didn't study the pattern */
-    string,                /* the subject string */
-    size, /* the length of the subject */
-    0,                     /* start at offset 0 in the subject */
-    0,                     /* default options */
-    ovector,               /* output vector for substring information */
-    OVECCOUNT);            /* number of elements in the output vector */
+    re,            /* the compiled pattern */
+    NULL,          /* no extra data - we didn't study the pattern */
+    string,        /* the subject string */
+    size,          /* the length of the subject */
+    (int)offset,   /* start at offset 0 in the subject */
+    0,             /* default options */
+    ovector,       /* output vector for substring information */
+    OVECCOUNT);    /* number of elements in the output vector */
 
 /* Matching failed */
 if (rc == -1)

@@ -349,7 +349,7 @@
               result)
             (if report-flag
 				(begin
-                    (println (format "%-14s %3d ms" 
+                    (println (format "%-14s %5.1f ms" 
                              (string (first sm)) result))
                     (inc total-time result))
                 (inc total-time result))
@@ -2701,10 +2701,10 @@
 
 ;; test everything
 (qa)
-(println total-time " ms")
+(println (format "%10.1f ms" total-time))
 ; compensate for rounding error
 (inc total-time (mul 0.5 (length primes)))
-(println (format "performance ratio:%5.1f (1.0 on Mac OS X, 1.83 GHz Intel Core 2 Duo)"
+(println (format "performance ratio:%5.2f (1.0 on Mac OS X, 1.83 GHz Intel Core 2 Duo)"
     (round (div total-time (* 10 (length primes)) multiplier) -1)))
 (dolist (msg failed-messages)
 	(println msg))

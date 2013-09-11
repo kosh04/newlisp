@@ -36,11 +36,11 @@
 
  (if (not (= (map char (explode (upper-case utf8str))) 
     '(913 914 915 916 937 913 914 915 916 937 32 1040 1041 1042 1043 1044 1040 1041 1042 1043 1044 13 10)))
-    (QA:failed "UTF-8 upper-case: failed"))
+    (println "upper-case of UTF8 characters not available - not critical -"))
 
  (if (not (= (map char (explode (lower-case utf8str))) 
     '(945 946 947 948 969 945 946 947 948 969 32 1072 1073 1074 1075 1076 1072 1073 1074 1075 1076 13 10)))
-    (QA:failed "UTF-8 lower-case: failed"))
+    (println "lower-case of UTF8 characters not available - not critical -"))
 
  (if (not (= (map char (explode (first utf8str))) '(913))) (QA:failed "UTF-8 first: failed"))
 
@@ -1739,7 +1739,11 @@ true
    (= '(nil nil nil) (map not '(true true true)))))
 
 (define (test-now )
-  (= (length (now)) 11))
+  (and
+  	(= (length (now)) 11)
+	(= 3600 (round (- (apply date-value (now 60)) (date-value)) 2))
+	)
+)
 
 (define (test-nper )
   (< (sub (nper 0.1 1000 100000 0 0) -25.15885793) 1e-08))
@@ -2262,7 +2266,10 @@ true
    (= $0 "http://nuevatec.com:80")
    (= $1 "nuevatec.com")
    (= $2 "80")
-   (= (regex "b+" "AAAABBBAAAA" 1) '("BBB" 4 3))))
+   (= (regex "b+" "AAAABBBAAAA" 1) '("BBB" 4 3))
+   (= (regex "b+" "AABBBAAABBA" 1 4) '("B" 4 1))
+   (= (regex "b+" "AABBBAAABBA" 1 5) '("BB" 8 2))
+))
 
 (define (test-regex-comp)
 	(and
@@ -2461,6 +2468,8 @@ true
     (= (series 2 2 0) '())
     (= (series 1 2 -10) '())
     (= (series 1 1 5) '(1 1 1 1 1))
+	(= (series "a" (fn (c) (char (inc (char c)))) 5) '("a" "b" "c" "d" "e"))
+	(= (series 1 (fn (x) (* 2 x)) 5) '(1 2 4 8 16))
 ))
 
 (define (test-set , x y z)
@@ -2739,10 +2748,11 @@ true
   (and (catch (throw (+ 3 4)) 'msg) (= msg 7)))
 
 (define (test-time )
-  (integer? (time)))
+	(float? (time))
+)
 
 (define (test-time-of-day )
-  (integer? (time-of-day)))
+  (float? (time-of-day)))
 
 (define (test-trace )
   (trace nil)
@@ -3246,7 +3256,7 @@ true
     (println)
     (dolist (func (reverse QA:failed-messages))
         (println func)))
-  (println ">>>>> ALL FUNCTIONS FINISHED SUCCESSFULL: " (main-args 0))
+  (println ">>>>> ALL FUNCTIONS FINISHED SUCCESSFUL: " (main-args 0))
   (println)
 )
 

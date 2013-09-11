@@ -7,6 +7,7 @@
 ; version 1.27 took out writing debug edit.txt to Application folder
 ; version 1.28 decrementing font size exited editor (missing dec conversion for 10.0)
 ; version 1.30 change fonts in both: editor and monitor depending on active window
+; version 1.31 cmd-x/v/z/Z and ctrl-x/v/z/Z did not mark edit buffer as dirty
 
 (set-locale "C")
 
@@ -845,20 +846,22 @@
 	(gs:copy-text currentEdit))
 
 (define (cutbutton-handler)
-	(gs:enable 'FileSave 'FileSaveAs 'SaveButton)
-	(gs:set-icon 'EditorTabs "/local/red10.png" currentTabIndex)
-	(set 'edit-buffer-clean nil)
+	(set-buffer-dirty)
 	(gs:cut-text currentEdit)
 	(gs:request-focus 'CutButton))
 
 (define (pastebutton-handler)
 	(paste-action))
 
+; text can be 'nil' to take from clipboard
 (define (paste-action text)
+	(set-buffer-dirty)
+	(gs:paste-text currentEdit text))
+
+(define (set-buffer-dirty)
 	(gs:enable 'FileSave 'FileSaveAs 'SaveButton)
 	(gs:set-icon 'EditorTabs "/local/red10.png" currentTabIndex)
-	(set 'edit-buffer-clean nil)
-	(gs:paste-text currentEdit text))
+	(set 'edit-buffer-clean nil))
 
 ;; goto line
 
@@ -1291,26 +1294,27 @@
 	(if redo (gs:enable 'EditRedo) (gs:disable 'EditRedo))
 	(set 'currentDot dot 'currentMark mark)
 	;(println code ":" mods)
-	(if (= code 65535) ; crtl or meta keys wit or w/o shift
-		; caret movement only
-		(if (not is-selection)
-			(if (!= dot mark) ; selection started
-				(begin
-					(gs:enable 'CutButton 'CopyButton 'EditCut 'EditCutP 'EditCopy 'EditCopyP)
-					(set 'is-selection true)))
-			(if (= dot mark)  ; de-selected
-				(begin
-					(gs:disable 'CutButton 'CopyButton 'EditCut 'EditCutP 'EditCopy 'EditCopyP)
-					(set 'is-selection nil)))
+	(if (= code 65535) ; crtl or meta keys with or w/o shift
+		(begin
+			; caret movement only
+			(if (not is-selection)
+				(when (!= dot mark) ; selection started
+						(gs:enable 'CutButton 'CopyButton 'EditCut 'EditCutP 'EditCopy 'EditCopyP)
+						(set 'is-selection true))
+				(when (= dot mark)  ; de-selected
+						(gs:disable 'CutButton 'CopyButton 'EditCut 'EditCutP 'EditCopy 'EditCopyP)
+						(set 'is-selection nil))
+			)
+			; cmd-z or cmd-Z (undo, redo)
+			(if (or (= code 256) (= code 320) (= code 128) (= code 192))
+				(set-buffer-dirty))	
 		)
 		; character typed
 		(if edit-buffer-clean
-			(when (or (<  mods 128) (and (= mods 256) (= code 118)))
-				(set 'edit-buffer-clean nil)
-				(gs:set-icon 'EditorTabs "/local/red10.png" currentTabIndex)
-				(gs:enable 'FileSave 'FileSaveAs 'SaveButton)
-			)
-		)
+			(when (or 	(<  mods 128) 
+						(and (= mods 256) (or (= code 118) (= code 120)))
+						(and (= mods 128) (or (= code 24) (= code 22))))
+				(set-buffer-dirty)))
 	)			
 )
 

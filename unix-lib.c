@@ -94,7 +94,7 @@ if(setjmp(errorJump))
 	}
 
 openStrStream(&libStrStream, MAX_STRING, 1);
-executeCommandLine(cmd, OUT_CONSOLE, NULL);
+executeCommandLine(cmd, (UINT)&libStrStream, NULL);
 
 if(evalSilent) evalSilent = 0;
 

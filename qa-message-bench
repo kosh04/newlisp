@@ -1,9 +1,21 @@
 #!/usr/bin/newlisp
+(set 'N
+	(case ostype
+		("Linux" 100)
+		("BSD" 100)
+		("OSX" 1000)
+		("Tru64Unix" 100)
+		("Solaris" 100)
+		("SunOS" 100)
+		(true (println "Not supported on this OS - will exit") 
+			(exit))
+	)
+)
 
 (println "------------------------------------------ synchronous status update")
 
 ; child process continuously generate random numbers
-; of which the first 1000 are read by the parent.
+; of which the first N are read by the parent.
 (define (child-process)
 	(set 'ppid (sys-info -4))
 	(while true
@@ -16,7 +28,6 @@
 	(push (list (spawn 'r  (child-process)) 0) plist))
 
 ; collect process status and display result
-(set 'N 1000)
 (println " " (* N 10) " = "  N " x 10 status updates")
 
 (set 'start (time-of-day))
@@ -45,14 +56,12 @@
 (define (child-process)
     (set 'ppid (sys-info -4)) ; get parent pid
     (while true
-        (until (send ppid (rand 100))))
+        (send ppid (rand 100)))
 )
 
 ; parent starts 5  child processes, listens and displays
 
 (dotimes (i 5) (spawn 'result (child-process)))
-
-(set 'N 1000)
 
 (dotimes (i N)
     (dolist (cpid (sync)) ; iterate thru child pids
@@ -68,6 +77,7 @@
 (println "per message " (div duration N) " ms")
 
 (println "----------------------------------------------------- roundtrip test")
+
 (define (child-process , pid pppid msg)
 		(setq ppid (sys-info -4))
 		(setq pid (sys-info -3))
@@ -83,8 +93,8 @@
 (set 'start (time-of-day))
 (set 'sretry 0)
 (set 'rretry 0)
-(dotimes (i 100)
-	(print " " (+ i 1) " of " 100 " \r")
+(dotimes (i N)
+	(print " " (+ i 1) " of " N " \r")
 	(dolist (ch (sync))
 		(until (send ch "hi") (inc sretry)) ; send out message
 		(until (receive ch msg) (inc rretry)) ; get response
@@ -92,8 +102,8 @@
 			(setq error-msg (append "EEROR in round trip test: " msg ))) ) 
 )
 (set 'duration (- (time-of-day) start))
-(println "\n " 100 " * 10 roundtrips in " duration 
-	" ms, per round trip: " (div duration 1000) " ms")
+(println "\n " N " * 10 roundtrips in " duration 
+	" ms, per round trip: " (div duration (* N 10)) " ms")
 ;(println (div sretry 100) "% send retries, " (div rretry 100) "% read retries"  )
 
 (abort) (sleep 200)
@@ -101,7 +111,6 @@
 (println "--------------------------------------------------- proxy messageing")
 
 ; proxy messageing B -> parent -> A
-(set 'N 1000)
 (set 'start (time-of-day))
 
 (println "sending message from A -> parent-proxy -> B")

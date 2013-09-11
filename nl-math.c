@@ -263,13 +263,6 @@ if(params == nilCell)
 else while(params != nilCell)
 	{
 	params = getFloat(params, &number);
-#ifdef WIN_32
-	if(isnan(number)) 
-		{
-		result = number;
-		break;
-		}
-#endif
 	switch(op)
 		{
 		case OP_ADD:            result += number; break;
@@ -402,10 +395,6 @@ double base;
 CELL * cell;
 
 getFloat(params, &floatN);
-#ifdef WIN_32
-if(isnan(floatN)) 
-	return( stuffFloat(&floatN) );
-#endif
 
 switch(op)
   {
@@ -1604,19 +1593,22 @@ CELL * cellIdx;
 int errNo;
 UINT * resultIdxSave;
 
-params = getFloat(params, &fromFlt);
-pCell = evaluateExpression(params);
+cell = evaluateExpression(params);
+pCell = evaluateExpression(params->next);
+params = params->next;
 getInteger(params->next, (UINT *)&count);
 
 sequence = getCell(CELL_EXPRESSION);
 if(count <= 0) return(sequence);
 
-cell = stuffFloat(&fromFlt);
-
 if(isNumber(pCell->type))
 	{
+	if(!isNumber(cell->type))
+		return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
+	fromFlt = getFloatFromCell(cell);
+	factFlt = getFloatFromCell(pCell);
+	cell = copyCell(cell);
 	sequence->contents = (UINT)cell;
-	getFloat(pCell, &factFlt);
 	for(i = 1; i < count; i++)
 		{
 		fromFlt *= factFlt;
@@ -1627,12 +1619,14 @@ if(isNumber(pCell->type))
 else /* assumes lambda or primitive */
 	{
 	cellIdx = initIteratorIndex();
-	addList(sequence, cell);
+	addList(sequence, copyCell(cell));
 	resultIdxSave = resultStackIdx;
 	for(i = 1; i < count; i++)
 		{
+		cell = copyCell(cell);
+		cleanupResults(resultIdxSave);	
 		expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
-   		((CELL *)expr->contents)->next = stuffFloat(&fromFlt);
+   		((CELL *)expr->contents)->next = cell;
 		pushResult(expr);
 		if(!(cell = evaluateExpressionSafe(expr, &errNo)))
 			{
@@ -1640,8 +1634,6 @@ else /* assumes lambda or primitive */
 			longjmp(errorJump, errNo);
 			}
 		addList(sequence, copyCell(cell));
-		getFloat(cell, &fromFlt);
-		cleanupResults(resultIdxSave);	
 		if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 		}
 	recoverIteratorIndex(cellIdx);
@@ -2080,8 +2072,6 @@ return(acc);
 }
 	 
 /* Algorithm from: http://www.w3.org/TR/PNG-CRCAppendix.html */
-
-unsigned int update_crc(unsigned int crc, unsigned char *buf, int len);
 
 CELL * p_crc32(CELL * params)
 {

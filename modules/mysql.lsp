@@ -5,6 +5,7 @@
 ;; @version 3.0  - module now independent of C-structure offsets
 ;; @version 3.1  - module now senses if running 64-bit version of newLISP
 ;; @version 3.2  - a fix when fetch-all has an empty result
+;; @version 3.3  - typo in fetch-all didn't delete old fetches
 ;; @author Lutz Mueller 2003-2009, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
@@ -219,7 +220,7 @@
 ;; The whole result set from the query is returned at once as a list of row lists.
 
 (define (fetch-all , (all '()))
-  (dotimes (x (num-rows)) (push (fetch-row) alli -1)))
+  (dotimes (x (num-rows)) (push (fetch-row) all -1)))
 
 ;; @syntax (MySQL:databases)
 ;; @return A list of databases.

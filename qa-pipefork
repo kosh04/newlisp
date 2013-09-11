@@ -2,6 +2,9 @@
 #
 # two forked processes communicating via pipes
 
+(set 'start (time-of-day))
+(set 'N 10000)
+
 (define (count-down-proc x channel)
   (while (!= x 0)
       (write-line channel (string x))
@@ -9,14 +12,17 @@
 
 (define (observer-proc channel)
   (do-until (= i "1")
-    (println "process " (setq i (read-line channel)))))
+    (print "read " (setq i (read-line channel)) "\r")
+))
 
 (map set '(in out) (pipe))
 (set 'observer (fork (observer-proc in)))
-(set 'counter (fork (count-down-proc 8 out)))
+(set 'counter (fork (count-down-proc N out)))
 
 ; avoid zombies
 (wait-pid observer)
 (wait-pid counter)
+
+(println "\n" (div (- (time-of-day) start)  N) "ms per write->read")
 
 (exit)

@@ -99,7 +99,6 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #define INVALID_SOCKET -1
 #endif
 
-
 #define ERR_INET_OPEN_SOCKET 1
 #define ERR_INET_HOST_UNKNOWN 2
 #define ERR_INET_INVALID_SERVICE 3
@@ -134,7 +133,9 @@ typedef struct
 INET_SESSION * netSessions = NULL;
 
 int deleteInetSession(int sock);
+int isSessionSocket(int sock);
 int getSocketFamily(int sock);
+
 
 #define READY_READ 0
 #define READY_WRITE 1
@@ -200,6 +201,25 @@ while(session)
         return(TRUE);
         }
     previous = session;
+    session = session->next;
+    }
+
+return(FALSE);
+}
+
+
+int isSessionSocket(int sock)
+{
+INET_SESSION * session;
+
+if(netSessions == NULL)
+    return(FALSE);
+
+session = netSessions;
+while(session)
+    {
+    if(session->socket == sock)
+		return(TRUE);
     session = session->next;
     }
 
@@ -389,14 +409,6 @@ if(prot != NULL) if(*prot == 'M' || *prot == 'B')
     memset(&iaddr, 0, sizeof(iaddr));
 
 	iaddr = defaultInAddr;
-
-/*
-#ifdef IPV6
-	iaddr = in6addr_any;
-#else
-    iaddr.s_addr = INADDR_ANY;
-#endif
-*/
 
     if(*prot == 'M')
         {
@@ -816,7 +828,6 @@ readSymbol->contents = (UINT)cell;
 errorIdx = 0; 
 return(stuffInteger(bytesReceived)); 
 } 
-
 
 
 CELL * netReceiveFrom(int sock, size_t readSize, int closeFlag)
@@ -1411,7 +1422,9 @@ else
 if((connection = netAccept(sock)) == SOCKET_ERROR)
 	return NULL;
 
-createInetSession(connection, (port != 0) ? AF_INET : AF_UNIX);
+/* avoid registering socket twice */
+if(!isSessionSocket(connection))
+	createInetSession(connection, (port != 0) ? AF_INET : AF_UNIX);
 
 /* print log */
 getPeerName(connection, PEER_INFO, name);
@@ -1424,6 +1437,7 @@ return(fdopen(connection, "r+"));
 }
 
 /******************************* distributed computing ***********************/
+
 
 #define MAX_BUFF 1024
 CELL * netEvalError(int errNo);
@@ -1471,7 +1485,10 @@ if(list->type == CELL_STRING)
 	{
 	host = (char *)list->contents;
 	params = getIntegerExt(params->next, &port, TRUE);
-	params = getStringSize(params, &prog, &size, TRUE);
+	/* params = getStringSize(params, &prog, &size, TRUE); */
+	/* convert to strong if required (since 10.1.1) */
+	prog = cellToString(evaluateExpression(params), &size, FALSE);
+	params = params->next;
 	list = nilCell;
 	singleSession = TRUE;
 	goto SINGLE_SESSION;
@@ -1498,8 +1515,9 @@ if((errNo = setjmp(errorJump)) != 0)
 	}
 cell = getStringSize(cell, &host, &size, TRUE);
 cell = getInteger(cell, &port);
-cell = getStringSize(cell, &prog, &size, TRUE);
-rawMode = getFlag(cell);
+/* cell = getStringSize(cell, &prog, &size, TRUE); */
+prog = cellToString(evaluateExpression(cell), &size, FALSE);
+rawMode = getFlag(cell->next);
 
 memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 

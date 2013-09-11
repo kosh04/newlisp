@@ -2,7 +2,7 @@
 # OpenGL and GLUT demo - opengl-demo.lsp
 # tested on Win32 and OS X (Intel)
 
-# version 1.1, May 2009 - added glutJoystickFunc
+# version 1.2, July 2009 - make drawObject working with motion
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  
@@ -118,17 +118,20 @@
 (define (drawObject)
 	(glClear GL_COLOR_BUFFER_BIT )
 	(glColor3d 1.0 0.85 0.35)
+	(glRotated rotx 0.0 1.0 0.0)
+	(glRotated roty 1.0 0.0 0.0)
 	(glBegin GL_TRIANGLES)
 	(glVertex3d 0.0 0.6 0.0)
 	(glVertex3d -0.2 -0.3 0.0)
 	(glVertex3d 0.2 -0.3 0.0)
 	(glEnd)
+	(glutSwapBuffers)
 )
 
 (define (rotation)
 	(set 'rotx (mod (sub rotx .01) PI))
-        (set 'roty (mod (sub roty .012) PI))
-	(sleep 30)
+	(set 'roty (mod (sub roty .012) PI))
+	(sleep 10)
 	(glutPostRedisplay)
 )
 

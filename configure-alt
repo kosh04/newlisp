@@ -20,49 +20,40 @@ BSD_CC="${DEFAULT_CC}"
 SUNOS_CC="${DEFAULT_CC}"
 AIX_CC="xlc_r"
 TRU64_CC="cc"
-WIN32_CC="/MinGW/bin/gcc"
+WIN32_CC="gcc"
 OS2_CC="${DEFAULT_CC}"
 
-DEFAULT_CFLAGS="-Wall           -Wno-uninitialized                -fno-strict-aliasing -O2 -c"
-DARWIN_CFLAGS=" -Wall                                                                  -O2 -c"
-LINUX_CFLAGS="  -Wall -pedantic                    -Wno-long-long -Wno-strict-aliasing -O2 -c"
-BSD_CFLAGS="    -Wall           -Wno-uninitialized                -fno-strict-aliasing -O2 -c"
-SUNOS_CFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
-AIX_XLCFLAGS="                                                                         -O2 -c"
-AIX_GCCFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
-TRU64_CFLAGS="  -ieee -pedantic                                                        -O3 -c -D_POSIX_PII_SOCKET"
-WIN32_CFLAGS="  -Wall -pedantic -Wno-uninitialized -Wno-long-long                      -O1 -c"
-OS2_CFLAGS="    -Wall -pedantic -Wno-uninitialized -Wno-long-long -Wno-strict-aliasing -O2 -c -s"
+DEFAULT_CFLAGS=" -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c"
+DARWIN_CFLAGS=" -Wall -pedantic -Wno-long-long -Wno-strict-aliasing -O2 -c"
+LINUX_CFLAGS=" -Wall -pedantic -Wno-long-long -Wno-strict-aliasing -O2 -c"
+BSD_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+SUNOS_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+AIX_XLCFLAGS=" -O2 -c"
+AIX_GCCFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+TRU64_CFLAGS=" -ieee -pedantic -O3 -c -D_POSIX_PII_SOCKET"
+WIN32_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -O1 -c"
+OS2_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -Wno-strict-aliasing -O2 -c -s"
 
-DEFAULT_LDFLAGS="       -lm"
+DEFAULT_LDFLAGS="-lm"
 DARWIN_LDFLAGS="${DEFAULT_LDFLAGS}"
-LINUX_LDFLAGS="         -lm -ldl"
+LINUX_LDFLAGS="-lm -ldl"
 BSD_LDFLAGS="${DEFAULT_LDFLAGS}"
-SUNOS_LDFLAGS="         -lm -ldl -lrt -lsocket -lnsl"
-AIX_LDFLAGS="           -lm -ldl -lrt          -lnsl"
-TRU64_LDFLAGS="         -lm      -lrt                -ldb -lbsd"
+SUNOS_LDFLAGS="-lm -ldl -lrt -lsocket -lnsl"
+AIX_LDFLAGS="-lm -ldl -lrt -lnsl"
+TRU64_LDFLAGS="-lm -lrt -ldb -lbsd"
 WIN32_LDFLAGS="-lws2_32"
 OS2_LDFLAGS="-Zomf -Zmt -lm -ldl"
 
-DEFAULT_LIBREADLINE="-lreadline -lncurses"
-DARWIN_LIBREADLINE=" -lreadline"
-LINUX_LIBREADLINE="  -lreadline"
-BSD_LIBREADLINE="${DEFAULT_LIBREADLINE}"
-TRU64_LIBREADLINE="  -lreadline -ltermcap"
-
-DEFAULT_OBJS="newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o"
+DEFAULT_OBJS="newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o"
 
 DEFAULT_STRIP="strip"
-WIN32_STRIP="/MinGW/bin/strip"
+WIN32_STRIP="strip"
 
 DEFAULT_TARG="newlisp"
 WIN32_TARG="newlisp.exe"
 OS2_TARG="newlisp.exe"
 
-# Only LP64 and ILP32 memory models are officially supported, but we'll try to
-# support the others too.
-make distclean
-make test-memorymodel >/dev/null
 echo
 case `uname` in 
 	Darwin) true ${os_type:=MAC_OSX} ;;
@@ -81,16 +72,13 @@ MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
 		;;
 esac
 
-echo "Detected memory model `./test-memorymodel`, using memory model ${memory_model}"
 echo "Detected Operating System ${os_type}"
 
 if   [ ${os_type} = MAC_OSX ] ; then
 	DEFAULT_CFLAGS="${DARWIN_CFLAGS}"
-	DEFAULT_LIBREADLINE="${DARWIN_LIBREADLINE}"
 elif [ ${os_type} = LINUX ] ; then
 	DEFAULT_CFLAGS="${LINUX_CFLAGS}"
 	DEFAULT_LDFLAGS="${LINUX_LDFLAGS}"
-	DEFAULT_LIBREADLINE="${LINUX_LIBREADLINE}"
 elif [ ${os_type} = _BSD ] ; then
 	DEFAULT_CFLAGS="${BSD_CFLAGS}"
 elif [ ${os_type} = SUNOS ] ; then
@@ -104,14 +92,15 @@ elif [ ${os_type} = TRU64 ] ; then
 	DEFAULT_CC="${TRU64_CC}"
 	DEFAULT_CFLAGS="${TRU64_CFLAGS}"
 	DEFAULT_LDFLAGS="${TRU64_LDFLAGS}"
-	DEFAULT_LIBREADLINE="${TRU64_LIBREADLINE}"
 elif [ ${os_type} = WIN_32 ] ; then
 	DEFAULT_CC="${WIN32_CC}"
 	DEFAULT_CFLAGS="${WIN32_CFLAGS}"
 	DEFAULT_LDFLAGS="${WIN32_LDFLAGS}"
+	DEFAULT_OBJS="${DEFAULT_OBJS} win32-util.o win32-path.o"
 	DEFAULT_STRIP="${WIN32_STRIP}"
 	DEFAULT_TARG="${WIN32_TARG}"
 	true ${enable_readline:=no};
+	true ${enable_utf8:=no};
 elif [ ${os_type} = OS2 ] ; then
 	DEFAULT_CFLAGS="${OS2_CFLAGS}"
 	DEFAULT_LDFLAGS="${OS2_LDFLAGS}"
@@ -119,10 +108,79 @@ elif [ ${os_type} = OS2 ] ; then
 	true ${enable_readline:=no};
 fi
 
-# Set default values if they weren't already set above
-# Default values for various config.h options
+# Only LP64 and ILP32 memory models are officially supported, but we'll try to
+# support the others too.
+cat > test-memorymodel.c <<EOF
+/* test-memorymodel.c Ted Walther <ted@reactor-core.org>
+ *
+ * return a string with the type of memory model the current compiler is using.
+ */
+
+#include <stdio.h>
+
+int
+main(int argc, char** argv) {
+	short sc = sizeof(char) * 8;
+	short ss = sizeof(short) * 8;
+	short si = sizeof(int) * 8;
+	short sl = sizeof(long) * 8;
+	short sp = sizeof(void*) * 8;
+
+	if (si == 32 && sl == 64 && sp == 64) { printf("LP64\n"); return 0; }
+	if (si == 64 && sl == 64 && sp == 64) { printf("ILP64\n"); return 0; }
+	if (si == 32 && sl == 32 && sp == 64) { printf("LLP64\n"); return 0; }
+	if (si == 32 && sl == 32 && sp == 32) { printf("ILP32\n"); return 0; }
+	if (si == 16 && sl == 32 && sp == 32) { printf("LP32\n"); return 0; }
+	printf("UNKNOWN\n"); return 1;
+}
+EOF
+${CC:-${DEFAULT_CC}} test-memorymodel.c -o test-memorymodel 2>/dev/null
 true ${memory_model:=`./test-memorymodel`}
-true ${enable_readline:=yes};
+echo "Detected memory model `./test-memorymodel`, using memory model ${memory_model}"
+rm -f test-memorymodel*
+
+# If we can't compile with readline, and the environment variables don't
+# specify otherwise, we will disable it.
+cat > test-readline.c <<EOF
+/* test-readline.c Fri Jul 10 14:57:33 PDT 2009 Ted Walther <ted@reactor-core.org>
+ *
+ * code for testing the compiler options to use for libreadline
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <readline/readline.h>
+#include <readline/history.h>
+
+char **
+test_completion (char * text, int start, int end) {
+	return NULL;
+}
+
+int
+main(int argc, char** argv) {
+
+	rl_readline_name = "test";
+	rl_attempted_completion_function = (CPPFunction *)test_completion;
+	readline(NULL);
+	add_history("test");
+
+	exit(0);
+}
+EOF
+for cclibreadline in "-lreadline" "-lreadline -lncurses" "-lreadline -ltermcap" "-lreadline -lterminfo"; do
+	if ${CC:-${DEFAULT_CC}} test-readline.c ${cclibreadline} -o test-readline 2>/dev/null ; then
+		true ${enable_readline:=yes};
+		DEFAULT_RLFLAGS="${cclibreadline}";
+		break;
+	fi
+done
+true ${enable_readline:=no};
+rm -f test-readline*
+
+
+# Safe defaults; I hope Lutz makes ipv6 default to "yes" soon.
 true ${enable_utf8:=yes};
 true ${enable_ipv6:=no};
 
@@ -207,8 +265,16 @@ if [ $enable_readline = yes ] ; then
 EOF
 	echo "readline support is enabled"
 else
-	DEFAULT_LIBREADLINE=""
-	echo "readline support is disabled"
+	DEFAULT_RLFLAGS=""
+	cat <<EOF
+readline support is disabled
+
+To enable readline support, use the --enable-readline option, and specify the
+proper libraries to link by setting the RLFLAGS variable when running
+configure.  Also if necessary, use the INCLUDES variable to specify where the
+readline header files are."
+
+EOF
 fi
 
 if [ $enable_ipv6 = yes ] ; then
@@ -233,46 +299,56 @@ if [ $enable_debug = yes ] ; then
 	echo "Debugging enabled"
 fi
 
-if [ $os_type = OS2 ] ; then
-	STRIPBINARY=""
-	LINKSTAGE="\$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
-	COMPILEOBJS="\$(CC) \$(CFLAGS) -DNEWCONFIG $<"
-else
-	STRIPBINARY="	\$(STRIP) \$(TARG)"
-	LINKSTAGE="	\$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
-	COMPILEOBJS="	\$(CC) \$(CFLAGS) -DNEWCONFIG $<"
-fi
+cat >test-archflag.c <<EOF
+#include <stdio.h>
 
+int
+main(int argc, char** argv) {
+  printf("Hello World.\n");
+}
+EOF
+
+DEFAULT_ARCHFLAGS=""
 if   [ $memory_model = LP64 ] ; then
 	if   [ $os_type = AIX -a ${CC:-${DEFAULT_CC}} = xlc_r ] ; then
-		DEFAULT_CFLAGS="-q64 ${DEFAULT_CFLAGS}"
-		LINKSTAGE="	OBJECT_MODE=64 \$(CC) \$(OBJS) \$(LDFLAGS) \$(LIBREADLINE) -o \$(TARG)"
+		DEFAULT_ARCHFLAGS="-q64"
 	elif [ $os_type = AIX -a ${CC:-${DEFAULT_CC}} = gcc ] ; then
-		DEFAULT_CFLAGS="-maix64 ${DEFAULT_CFLAGS}"
-		DEFAULT_LDFLAGS="-maix64 ${DEFAULT_LDFLAGS}"
-	elif [ $os_type = TRU64 ] ; then : # do nothing
-	elif [ ${CC:-${DEFAULT_CC}} = gcc ] ; then
-		DEFAULT_CFLAGS="-m64 ${DEFAULT_CFLAGS}"
-		DEFAULT_LDFLAGS="-m64 ${DEFAULT_LDFLAGS}"
+    DEFAULT_ARCHFLAGS="-maix64"
+  else
+    if ${CC:-${DEFAULT_CC}} -m64 -o test-archflag test-archflag.c 2>/dev/null; then
+      DEFAULT_ARCHFLAGS="-m64"
+    fi
 	fi
 elif [ $memory_model = ILP32 ] ; then
-	if   [ $os_type = AIX ] ; then : # do nothing
-	elif [ ${CC:-${DEFAULT_CC}} ] ; then
-		DEFAULT_CFLAGS="-m32 ${DEFAULT_CFLAGS}"
-		DEFAULT_LDFLAGS="-m32 ${DEFAULT_LDFLAGS}"
-	fi
+    if ${CC:-${DEFAULT_CC}} -m32 -o test-archflag test-archflag.c 2>/dev/null; then
+      DEFAULT_ARCHFLAGS="-m32"
+    fi
+fi
+rm -f test-archflag*
+
+STRIPBINARY="	\$(STRIP) \$(TARG)"
+LINKSTAGE="	\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+COMPILEOBJS="	\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
+
+if [ $os_type = OS2 ] ; then
+	STRIPBINARY=""
+	LINKSTAGE="\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+	COMPILEOBJS="\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
+elif [ $os_type = AIX -a $memory_model = LP64 ] ; then
+  LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
 fi
 
 # Now let us make the Makefile (makefile_configure)
 cat > makefile_configure <<EOF
 # makefile for newLISP v. 10.1.x generated by the configure script
 CC = ${CC:-${DEFAULT_CC}}
-CFLAGS = ${CFLAGS:-${DEFAULT_CFLAGS}}
+CFLAGS = ${CFLAGS:-${DEFAULT_CFLAGS}} ${INCLUDES}
 LDFLAGS = ${LDFLAGS:-${DEFAULT_LDFLAGS}}
 OBJS = ${OBJS:-${DEFAULT_OBJS}}
 STRIP = ${STRIP:-${DEFAULT_STRIP}}
 TARG = ${TARG:-${DEFAULT_TARG}}
-LIBREADLINE = ${LIBREADLINE:-${DEFAULT_LIBREADLINE}}
+RLFLAGS = ${RLFLAGS:-${DEFAULT_RLFLAGS}}
+ARCHFLAGS = ${ARCHFLAGS:-${DEFAULT_ARCHFLAGS}}
 
 default: \$(OBJS)
 ${LINKSTAGE}
@@ -288,3 +364,4 @@ echo
 echo "Type \"make\" to build your newlisp binary."
 echo
 echo "If that doesn't work, type \"make help\""
+

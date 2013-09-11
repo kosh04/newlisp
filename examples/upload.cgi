@@ -15,7 +15,7 @@
 		disposition filename start end size
 		bytesread buffer)
 
-	(print "Content-type: text/html\n\n")
+	(print "Content-Type: text/html\n\n")
 
 	; check for valid request header
 	(set 'len (int (env "CONTENT_LENGTH") 0))

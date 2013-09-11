@@ -64,8 +64,8 @@
     (if (not (catch (handle request) 'page))
 	(set 'page (format fault-response 0 page)))
     (print
-            "Content-type: text/xml\r\n"
-            "Content-length: " (length page) "\r\n\r\n"
+            "Content-Type: text/xml\r\n"
+            "Content-Length: " (length page) "\r\n\r\n"
             page))
 
 

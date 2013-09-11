@@ -3,18 +3,6 @@
 ;; NEWLISPDIR typically is /usr/share/newlisp on Mac OS X and other Unix
 ;; and c:/Program Files/newlisp on MS Windows
 ;;
-;; defines some useful macros, none of these are required in the other 
-;; sample programs but some implement forms frequently used in other LISPs
-;;
-
-;; macro for 'defun' like in other LISPs
-;; usage: (defun foo (x y z) body1 body2 ... ) 
-;;
-;;
-(constant (global 'defun) 
-	(lambda-macro (_func-name _arguments)
-      (set _func-name (append '(lambda ) (list _arguments) (args)))))
-
 
 ;; edits a function
 ;;
@@ -47,11 +35,6 @@
        (!  (format "lynx /usr/share/doc/newlisp/newlisp_manual.html#%s" func-name)))
    (format "%s is not a built-in function" (name func))))
 
-(constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT")))
-(if $HOME (catch (load (append $HOME "/.init.lsp")) 'error))
-
 ;;;; end of file ;;;;
 
 
-          
-          

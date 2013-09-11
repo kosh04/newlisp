@@ -886,3 +886,9 @@
 1.30 a fix in the syntax highlighter for newLISP mode 
   in newlisp-edit.sp font can now shanged in both, the editor and the monitor
 
+1.31 syntax highlighting for new functions
+
+1.32 the function gs:color-tag was documented but not implemented
+     in newlisp-edit.lsp dirty-buffer indication did not work with Ctrl-x/v/z/Z
+     and Cmd-x/v/z/Z
+

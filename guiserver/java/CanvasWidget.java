@@ -379,6 +379,24 @@ public void registerMouseWheel(StringTokenizer tokens)
 	}
 
 // manipulate shapes
+	
+public void colorTaggedShape(StringTokenizer tokens)
+	{
+	String label = tokens.nextToken();
+	Color paintColor = Shape.getColorParameter(tokens);
+	boolean updateFlag = tokens.nextToken().equals("true");
+	Shape aShape;
+		
+	for(int i = 0; i < drawobjects.size(); i++)
+		{
+		aShape = (Shape)drawobjects.elementAt(i);
+		if(aShape.tag.equals(label))
+			aShape.paintColor = paintColor;
+		}
+		
+	if(updateFlag) canvas.repaint();
+	}
+		
 
 public void deleteTaggedShape(StringTokenizer tokens)
 	{

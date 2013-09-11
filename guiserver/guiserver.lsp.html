@@ -13,7 +13,9 @@
 <center><h1>guiserver.lsp</h1></center>
 <p><a href="index.html">Module index</a></p><br/><br/><br/><h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
 <b>Version: </b>1.30 changes for 10.1<br/>
-<b>Version: </b>1.31 message is now a reserved word<br/>
+<b>Version: </b>1.31 syntax highlighting<br/>
+<b>Version: </b>1.32 <tt>gs:color-tag</tt> was documented but not implemented in Java<br/>
+<b>Version: </b>1.321 added flag in gs:init for remote newlisp<br/>
 <b>Author: </b>LM, August 2008, 2009<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -24,7 +26,7 @@
  <h2>What is newLISP-GS</h2>
  <tt>guiserver.lsp</tt> is a module for interfacing to <tt>guiserver.jar</tt>
  a Java server application for generating GUIs (graphical user interfaces)
- and 2D graphics for newLISP applications. The <tt>guiserver.lsp</tt> module
+ and 2D graphics for newLISP applications. The <tt>guiserver.lsp</tt>, module
  implements a newLISP API much smaller and more abstract than the APIs of the 
  Java Swing libraries which it interfaces with. Because of this, GUI applications
  can be built much faster than when using the original Java APIs.
@@ -53,19 +55,19 @@
  A GUI application in newLISP is composed of four parts:
 <br/><br/>
  <blockquote>
- <em>initialization</em> - this means starting the newLISP-GS <tt>guiserver.jar</tt> and initializing 
+ <b>initialization</b> - this means starting the newLISP-GS <tt>guiserver.jar</tt> and initializing 
  communications with it. Only one function call is required to do this.
 <br/><br/>
- <em>building widgets</em> - in this step windows, buttons, text fields etc., and
+ <b>building widgets</b> - in this step windows, buttons, text fields etc., and
  all visual aspects of the GUI are described. newLISP newLISP-GS offers a wide range
  of different control widgets.
 <br/><br/>
- <em>defining event actions</em> - in this step all the functions are defined to
+ <b>defining event actions</b> - in this step all the functions are defined to
  react to events coming from the GUI as a consequence of button pushes, keystrokes,
  mouse-movements etc.. These event actions send many commands back to the GUI
  to change information for the user, popup dialogs etc..
 <br/><br/>
- <em>listening for events</em> - the newLISP program sits in a loop waiting for
+ <b>listening for events</b> - the newLISP program sits in a loop waiting for
  events and dispatching them to the defined event actions. Only one function call
  is required for this step.
  </blockquote>
@@ -531,7 +533,7 @@
     (gs:draw-polygon <em>sym-tag</em> <em>list-points</em> [<em>list-rgb</em>])
     (gs:draw-rect <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> [<em>list-rgb</em>])
     (gs:draw-round-rect <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-arc-width</em> <em>int-arc-height</em> [<em>list-rgb</em>])
-    (gs:g <em>sym-tag</em> <em>str-text</em> <em>int-x</em> <em>int-y</em> [<em>list-rgb</em> [<em>float-angle</em>]])
+    (gs:draw-text <em>sym-tag</em> <em>str-text</em> <em>int-x</em> <em>int-y</em> [<em>list-rgb</em> [<em>float-angle</em>]])
     (gs:export <em>str-path-file</em> [<em>int-width</em> <em>int-height</em>])
     (gs:fill-arc <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-width</em> <em>int-height</em> <em>int-start</em> <em>int-angle</em> [<em>list-rgb</em>])
     (gs:fill-circle <em>sym-tag</em> <em>int-x</em> <em>int-y</em> <em>int-radius</em> [<em>list-rgb</em>])
@@ -700,6 +702,10 @@
     (gs:play-sound <em>str-file-path</em>)
  </pre>
  </ul>
+
+
+
+
 
 
 
@@ -912,7 +918,7 @@
 <br/><br/><center>- &sect; -</center><br/>
 <a name="gs_color-tag"></a><h3><font color=#CC0000>gs:color-tag</font></h3>
 <b>syntax: (<font color=#CC0000>gs:color-tag</font> <em>sym-tag</em> <em>list-color</em> [<em>boolean-update</em>])</b><br/>
-<b>parameter: </b><em>sym-tag</em> - The name tage of the shape(s) to set a new color.<br/>
+<b>parameter: </b><em>sym-tag</em> - The name tag of the shape(s) to set a new color.<br/>
 <b>parameter: </b><em>list-color</em> - The new color as a list of 3 numbers for the rgb components.<br/>
 <b>parameter: </b><em>boolean-repaint</em> - An optional flag to indicate if repainting is required (default is <tt>true</tt>).<br/>
 
@@ -1459,7 +1465,7 @@
 
 <br/><br/><center>- &sect; -</center><br/>
 <a name="gs_init"></a><h3><font color=#CC0000>gs:init</font></h3>
-<b>syntax: (<font color=#CC0000>gs:init</font> [<em>int-port</em> <em>str-host</em>])</b><br/>
+<b>syntax: (<font color=#CC0000>gs:init</font> [<em>int-port</em> <em>str-host</em> [bool-manual]])</b><br/>
 <b>parameter: </b><em>int-port</em> - The optional guiserver server port.<br/>
 <b>parameter: </b><em>str-host</em> - The optional remote host of the guiserver.<br/>
 

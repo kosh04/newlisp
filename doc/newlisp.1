@@ -1,4 +1,4 @@
-.TH newlisp 1 "June 2009" "version 10.1" "Commandline Parameters"
+.TH newlisp 1 "September 2009" "version 10.1.5" "Commandline Parameters"
 .SH NAME
 newlisp \- lisp like programming language
 .SH SYNOPSIS
@@ -46,6 +46,9 @@ Listen for commands on a TCP/IP socket connection. In this case standard I/O is 
 .TP
 \-d port\-number
 Run in demon mode. As for the \-p option, but newLISP does not exit after a closed connection and stays in memory listening for a new connection.
+.TP
+\-t microseconds-connection-timeout
+Specifies a connection timeout when running in \-p or \-d demon mode. Server will disconnect when no further input is read after accepting a client connection.
 
 .SH EXAMPLES
 .TP
@@ -71,9 +74,9 @@ newLISP is started as a server (the & indicates to LINUX to run the process in t
 \-p 1234 &
 .PP
 .TP
-newLISP is started as a server for another newlisp process connecting with the net\-eval function or HTTP requests
+newLISP is started as a server for another newlisp process connecting with the net\-eval function or HTTP requests. Connection timeout is 3 seconds.
 .B newlisp
-\-c \-d 4711 &
+\-c \-t 3000000 \-d 4711 &
 .PP
 .TP
 newLISP is started as a server handling HTTP requests only. Connections are logged to the file /usr/home/www/log.txt

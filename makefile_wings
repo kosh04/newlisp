@@ -68,6 +68,7 @@ win-gui:
 	cp modules/postgres.lsp /c/newlisp/modules
 	cp modules/postscript.lsp /c/newlisp/modules
 	cp modules/smtp.lsp /c/newlisp/modules
+	cp modules/smtpx.lsp /c/newlisp/modules
 	cp modules/sqlite3.lsp /c/newlisp/modules
 	cp modules/stat.lsp /c/newlisp/modules
 	cp modules/unix.lsp /c/newlisp/modules
@@ -77,7 +78,7 @@ win-gui:
 	# prepare pack program
 	cp guiserver/newlisp-gs.nsi /NSIS
 	cp guiserver/newlisp-win.ico /NSIS
-	echo 'md5 /c/newlisp/*.exe /c/newlisp/*.dll > /c/newlisp/md5-checksums.txt' >> pack-gui
+	echo 'md5sum /c/newlisp/*.exe /c/newlisp/*.dll > /c/newlisp/md5-checksums.txt' >> pack-gui
 	echo 'cd /NSIS/' >> pack-gui
 	echo './makensis newlisp-gs.nsi' >> pack-gui
 	chmod 755 pack-gui

@@ -3,6 +3,7 @@
 ;; @version 2.0 - March 2008, Cormullion added AUTH PLAIN authentication 
 ;; @version 2.1 - changes for 10.0
 ;; @version 2.2 - doc changes
+;; @version 2.3 - fix in mail-send-body, thanks to Alessandro
 ;; @author Lutz Mueller 2001-2009, Cormullion 2008
 ;; <h2>Routines for sending mail</h2> 
 ;; This module implements routines to communicate with a SMTP mail server 
@@ -98,7 +99,7 @@
     (net-send-get-result "") 
     (dolist (lne (parse mail-body "\r\n")) 
         (if (starts-with lne ".") 
-            (net-sent-get-result (append "." lne)) 
+            (net-send-get-result (append "." lne)) 
             (net-send-get-result lne))) 
     (net-send-get-result ".")) 
 

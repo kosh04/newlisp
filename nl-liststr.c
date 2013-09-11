@@ -929,6 +929,7 @@ CELL * keyCell;
 CELL * funcCell;
 size_t size;
 long options;
+size_t offset = 0;
 UINT * resultIdxSave;
 
 
@@ -945,7 +946,9 @@ if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
 	if(params != nilCell)
             {
             params = getInteger(params, (UINT*)&options);
-            found = searchBufferRegex(second, 0, key, (int)size, options, NULL);
+			if(params != nilCell)
+				getInteger(params, (UINT*)&offset);
+            found = searchBufferRegex(second, (int)offset, key, (int)size, options, NULL);
             if(found == -1) return(nilCell);
             }
         else
@@ -1186,9 +1189,13 @@ if(symbolCheckPtr != NULL)
 	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, params));
 
 if(symbolCheck != NULL)
+	{
 	if(isProtected(symbolCheck->flags))
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-return(ref);
+	return(ref);
+	}
+
+return(errorProcExt(ERR_IS_NOT_REFERENCED, params));
 }
 
 

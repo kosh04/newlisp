@@ -11,7 +11,7 @@
 #
 
 
-(print "Content-type: text/html\r\n\r\n")
+(print "Content-Type: text/html\r\n\r\n")
 (println "<h3>Post or Get Variables</h3>\n")
 
 (set 'input (read-line))

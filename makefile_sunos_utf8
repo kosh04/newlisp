@@ -7,13 +7,13 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 
 # use following for UTF-8 support and add nl-utf8.o to the OBJS line
-CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DSUNOS
+CFLAGS = -m32 -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O2 -DREADLINE -DSUPPORT_UTF8 -DSUNOS
 
 CC = gcc
 
 
 default: $(OBJS)
-	$(CC) $(OBJS) -lm -ldl -lrt -lsocket -lnsl -o newlisp
+	$(CC) $(OBJS) -m32 -lm -ldl -lrt -lsocket -lnsl -lreadline -lncurses -o newlisp
 
 .c.o:
 	$(CC) $(CFLAGS) $<

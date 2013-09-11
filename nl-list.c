@@ -1920,18 +1920,6 @@ while(size--)
 freeMemory((char *)mem);
 }
 
-void markArray(CELL * array)
-{
-CELL * * addr;
-ssize_t size;
-
-addr = (CELL * *)array->contents;
-size = (array->aux - 1) / sizeof(UINT);
-
-while(size--) markList(*(addr++));
-}
-
-
 void printArray(CELL * array, UINT device)
 {
 CELL * list;
@@ -1942,7 +1930,6 @@ printExpression(list, device);
 
 deleteList(list);
 }
-
 
 void printArrayDimensions(CELL * array, UINT device)
 {

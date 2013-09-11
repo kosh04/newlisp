@@ -78,6 +78,11 @@ OPTIONS
               exit after a closed connection and stays in memory listening for
               a new connection.
 
+       -t microseconds-connection-timeout
+              Specifies a connection timeout when running in -p  or  -d  demon
+              mode. Server will disconnect when no further input is read after
+              accepting a client connection.
+
 
 EXAMPLES
        Start interactive session
@@ -103,8 +108,9 @@ EXAMPLES
 
 
        newLISP is started as a server for another newlisp  process  connecting
-       with the net-eval function or HTTP requests
-              newlisp -c -d 4711 &
+       with  the  net-eval  function or HTTP requests. Connection timeout is 3
+       seconds.
+              newlisp -c -t 3000000 -d 4711 &
 
 
        newLISP is started as a server handling HTTP requests only. Connections
@@ -142,5 +148,5 @@ AUTHOR
 
 
 
-version 10.1                       June 2009                        newlisp(1)
+version 10.1.5                  September 2009                      newlisp(1)
 

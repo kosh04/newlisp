@@ -1,5 +1,6 @@
 #!/usr/bin/newlisp
 
+; v.1.0 - adapted to new manual HTML formatting 2009-08-04
 ; - nls- newLISP shell, put this script with executable permissions into
 ; the executable path on UNIX.
 ;
@@ -10,7 +11,7 @@
 
 (define (help func-name)
   (if (find func-name "|+*-") (push "\\" func-name))
-  (set 'html-text (join (find-all (format {<b>(syntax: \(%s.*?)</b>} func-name)    
+  (set 'html-text (join (find-all (format {(syntax: \(%s.*?\))} func-name)    
     (read-file "/usr/share/doc/newlisp/newlisp_manual.html")) "\n"))
   (replace "<.*?>" html-text "" 0)
   (replace "&lt;" html-text "<")

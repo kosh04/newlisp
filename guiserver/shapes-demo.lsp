@@ -70,10 +70,12 @@
 ;(gs:set-scale 0.5 0.5) ; only for testing scrinks or zooms
 ;(gs:set-rotation 10) ; only for testing tilts by 10 degree
 
+(set 'N 20)
 
+(set 'N-shapes (* N 11))
 
-(println (time-of-day))
-(dotimes (i 20)
+(set 'start (time-of-day))
+(dotimes (i N)
 	(random-draw-line)
 	(random-draw-rect)
 	(random-fill-rect)
@@ -86,7 +88,8 @@
 	(random-draw-arc)
 	(random-fill-arc)
 )
-(println (time-of-day))
+
+(println N-shapes " shapes " (div (- (time-of-day) start) N-shapes) "ms per shape")
 
 (gs:set-font 'MyCanvas "Lucida Sans Regular" 40 "italic")
 (gs:draw-text 'T "Random"  60 100)

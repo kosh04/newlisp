@@ -102,7 +102,7 @@
 ))
 
 (if (test-xml-parse)
-	(println "XML API OK")
+	(println ">>>>> XML API TESTED SUCCESSFUL")
     (println "ERROR IN XML API"))
 (println)
 

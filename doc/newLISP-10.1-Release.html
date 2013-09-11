@@ -3,10 +3,17 @@
 <title>newLISP  v.10.1 Release Notes </title>
 <body>
 <h1>newLISP<font size=-2>&#174;</font> v.10.1 Release Notes 
-<font size=-1 color="red">June 22nd, 2009</font></h1>
+<font size=-1 color="red">June 22nd, 2009</font> <font size=-1>,</font>
+<font size=-1 color="red">July 22nd, 2009</font> <font size=-1>and</font>
+<font size=-1 color="red">September 15th, 2009</font></h1>
 
-<p>Versions 10.0.2 to 10.0.8 are development releases leading up to this
-stable release version 10.1.</p>
+<p>Version 10.1.1 is a stable release update with bug fixes and minor
+feature additions tagged in this text with (v.10.1.1)</p>
+
+<p>Version 10.1.2 is a maintenance release for Win32 only.</p>
+
+<p>Version 10.1.5 a maintenance release for all flavors.
+Changes, additions and fixes are tagged with (v.10.1.5)</p>
 
 <h3>Improved support for concurrency and multi core CPUs</h3>
 <p>Release 10.1 improves concurrency support for multi core CPUs with
@@ -44,6 +51,8 @@ of an expression or letex body:</li>
 
 <li>Eliminated  stack-size dependence in functions <tt>find</tt> and <tt>map</tt>.</li><p>
 
+<li><tt>find</tt> for strings can take an additional offset option (v.10.1.1).</li><p>
+
 <li>A new <tt>inf?</tt> predicate tests if a number is infinite:
 <blockquote><pre>
 (inf? (div 1 0)) &rarr; true
@@ -61,14 +70,23 @@ behavior of <tt>net-error</tt> and <tt>sys-error</tt>. All three functions now
 behave the same way and can enumerate all errors when given the error number 
 as parameter.</li><p>
 
+<li><tt>net-eval</tt> can take either an expression or a string for remote
+evaluation (v.10.1.1). In previous versions only a string was accepted. Note
+that in any case symbol bindings are in the remote environment.</li><p>
+
 <li>The <tt>prob-z</tt> function is now implemented using the error function <tt>errf</tt>
 and gives results with a higher precision.</li><p>
 
 <li>The <tt>receive</tt> function receives a messge from a parent or child process
 launched with <tt>spawn</tt>.</li><p> 
 
+<li><tt>regex</tt> can take an additional offset option (v.10.1.1).</li><p>
+
 <li>The <tt>send</tt> functions sends a message to a parent or child process 
 launched with <tt>spawn</tt>.</li><p>
+
+<li>Any datatype can now be specified as a start expression in <tt>series</tt>
+(v.10.1.1).</li><p>
 
 <li>The <tt>share</tt> function now can share any lisp expression and size. On older versions
 only boolean, number and strings constants were supported.</li><p>
@@ -104,6 +122,16 @@ The pid is 0 (zero) if newLISP was launched not from <tt>fork</tt> or <tt>spawn<
 The pid can be found at position -4. It is recommended to access the last
 four members with negative offsets, to be compatible with older versions of 
 newLISP.</li><p>
+
+<li>New <tt>-t <i>connection-timeout</i></tt> commandline option, specifies timeout in
+micrsoseconds after connection when in demon mode. This avoids an unresponsive server 
+when a client connects without further action.</li> (v.10.1.5).<p>
+
+<li>The function <tt>time</tt> not returns floating point milliseconds. The decimal
+precision depends on the platform (v.10.1.5).</li><p>
+
+<li>The function <tt>time-of-day</tt> not returns floating point milliseconds. The decimal
+precision depends on the platform (v.10.1.5).</li><p>
 
 <li>The function <tt>write-buffer</tt> now behaves like <tt>write-line</tt>. When
 no parameters are given the contents of <tt>(current-line)</tt> line is written
@@ -151,7 +179,7 @@ but has no effect other wise.</li><p>
 <li>In the newLISP-GS editor newlisp-edit(.lsp) in both the editor and the monitor pane,
 font face and size now can be changed interactively.</li><p>
 
-<li>Added makefiles for 64-bit BSD, tested on OpenBSD.</li><p>
+<li>Added makefiles for 64-bit BSD, tested on OpenBSD and for ARM Nokia 810.</li><p>
 
 <li>When installing using <tt>make install</tt> or when installing from the UBUNTU Linux binary 
 installer, a newlisp-x.x.x and a symbolic link is created for newlisp &rarr; newlisp.x.x.x, 
@@ -159,7 +187,14 @@ where x.x.x is the version number. This older versions of the newLISP binary are
 and are still accessible. The binary installers for Win32 and Mac OS X have not changed.</li><p>
 
 <li>When building newLISP on Mac OS X or other Unix, <tt>make check</tt> is now recognized 
-additionally to <tt>make test</tt> and <tt>make all check</tt> will make and test.</p>
+additionally to <tt>make test</tt> and <tt>make all check</tt> will make and test.</li><p>
+
+<li>An alternative configure script <tt>configure-alt</tt> has been added see 
+<tt>doc/INSTALL</tt> for details (v.10.1.1).</li><p>
+
+<li>A new version of <tt>nls</tt> (combined newLISP and BASH shell) has been adapted to 
+the new manual formatting introduced (v.10.1.5).</li>
+
 </ul>
 
 <center>&sect;</center>
@@ -173,10 +208,14 @@ additionally to <tt>make test</tt> and <tt>make all check</tt> will make and tes
 longer code than necessary when serializing symbols using <tt>save</tt> or 
 <tt>source</tt></li><p>
 
+<li><tt>eval-string</tt> did not restore correct eror handling when an
+error procedure was specified in the parameters (v.10.1.1). This could lead
+to crashes on subsequent error conditions.</li><p>
+
 <li>Some HTTP errors where not registered in <tt>net-error</tt>.</li><p>
 
-<li>An unknown host result with <tt>net-lookup</tt> is now register with 
-<tt>net-error</tt>. </li><p>
+<li>An unknown host result with <tt>net-lookup</tt> is now registered and can be
+retrieved with <tt>net-error</tt>.</li><p>
 
 <li><tt>pack</tt> did no convert from floats (doubles) to integers only from
 integers to floats. Now <tt>pack</tt> will correctly convert in both directions.
@@ -188,6 +227,9 @@ members where <tt>nil</tt>.</li><p>
 <li>Under some circumstances <tt>nil</tt> and <tt>true</tt> could confuse
 the <tt>sort</tt> and <tt>unique</tt> functions.</li><p>
 
+<li><tt>swap</tt> now throws and error when the second parameter is mising (v.10.1.1).
+</li><p>
+
 <li>The floating point division zero by zero and subtracting two infinite numbers
 from each other will now return <tt>NaN</tt>:
 <blockquote><pre>
@@ -197,9 +239,17 @@ from each other will now return <tt>NaN</tt>:
 (NaN? (sub infinite infinite)) &rarr; true
 </pre></blockquote></li><p>
 
+<li>In the guiserver.lsp library the function <tt>gs:color-tag</tt> was documented
+but not implemented (v.10.1.1). Tnis is an important function when implementing
+animations and board games.</li><p>
+
 <li>Fixed a memory mapping problem surfacing on IBM AIX compiled newLISP.</li><p>
 
-<li>Better handling of status in HTTP headers sent back from newLISP server mode.</li>
+<li>Better handling of status in HTTP headers sent back from newLISP server mode.</li><p>
+
+<li>Net sessions list now avoids socket doubles in server mode (v.10.1.5).</li><p>
+
+<li>Copying a zero-length file will not throw an error anymore (v.10.1.5).</li><p>
 </ul>
 
 <center>&part;</center>
