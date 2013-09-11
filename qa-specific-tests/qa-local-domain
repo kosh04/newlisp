@@ -3,6 +3,9 @@
 ; test local domain UNIX sockets
 ; v 1.1 change net-receive for 10.0
 
+(println)
+(println "Testing UNIX local domain sockets")
+
 (define (listener path)
 	(set 'lsock (net-listen path))
 	(set 'csock (net-accept lsock))
@@ -34,8 +37,8 @@
 
 (net-receive conn buff 1024)
 (if (= "HELLO WORLD" buff)
-	(println buff ": Ok")
-	(prrintn buff ": Error"))
+	(println ">>>>> UNIX local domain sockets SUCCESSFUL")
+	(prrintn ">>>>> PROBLEM with UNIX loxal domain sockets"))
 
 (wait-pid pid)
 

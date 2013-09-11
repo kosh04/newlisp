@@ -3,7 +3,7 @@
 ;; @version 2.1 - comments redone for automatic documentation
 ;; @version 2.2 - fixed bug for trailing lower priority ops
 ;; @version 2.3 - doc changes
-;; @author Lutz Mueller 2006-2009
+;; @author Lutz Mueller 2006-2010
 ;; <h2>Infix expression parser</h2>
 ;; Parses infix, prefix or postfix expressions given in strings and returns a
 ;; newLISP expressions, which can be evaluated; captures syntax errors.

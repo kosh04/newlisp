@@ -892,3 +892,11 @@
      in newlisp-edit.lsp dirty-buffer indication did not work with Ctrl-x/v/z/Z
      and Cmd-x/v/z/Z
 
+1.33/34 added new functions to the syntax highlighter
+
+1.35 added new 'extend' and changed all copyright notes to 2010
+
+1.36 added 'term', '++', '--' and eliminated 'name' from
+     SyntaxHighligher.java
+
+

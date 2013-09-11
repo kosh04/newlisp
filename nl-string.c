@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,7 +55,11 @@ CELL * substring(char * string, ssize_t slen, ssize_t offset, ssize_t len)
 if(offset < 0)
 	{
 	offset = slen + offset;
+/* before 10.1.11
 	if(offset < 0) offset = 0;
+*/
+	if(offset < 0)
+		return(errorProc(ERR_STRING_INDEX_OUTOF_BOUNDS));
 	}
 else
 	offset = (offset > slen) ? slen : offset;
@@ -159,7 +163,7 @@ return(stuffInteger(foundPosition));
 #endif
 }
 
-
+/* returns a new string cell */
 CELL * implicitIndexString(CELL * cell, CELL * params)
 {
 ssize_t index;
@@ -173,6 +177,7 @@ ssize_t i, p;
 ptr = (char*)cell->contents;
 getInteger(params, (UINT *)&index);
 
+stringCell = cell;
 if(cell->aux == 1 && (index == 0 || index == -1)) 
 	return(copyCell(cell));
 
@@ -180,7 +185,7 @@ if(cell->aux == 1 && (index == 0 || index == -1))
 index = adjustNegativeIndex(index, cell->aux - 1);
 str[0] = *(ptr + index);
 str[1] = 0;
-symbolCheckPtr = ptr + index;
+stringIndexPtr = ptr + index;
 return(stuffStringN(str, 1));
 #else
 index = adjustNegativeIndex(index, utf8_wlen(ptr));
@@ -189,14 +194,16 @@ for(i = 0; i < index; i++)
 	p = utf8_1st_len(ptr);
 	ptr += p;
 	}
-symbolCheckPtr = ptr;
+stringIndexPtr = ptr;
 return(stuffStringN(ptr, utf8_1st_len(ptr)));
 #endif
 }
 
 /* only used from setf() for string insertion
-   uses the global symbolCheckPtr in insertPtr
+   uses the global stringIndexPtr in insertPtr
    the insert point set by implicitIndexString()
+
+   modifies cellStr with new and returns new
 */
 
 CELL * setNthStr(CELL * cellStr, CELL * new, char * insertPtr)
@@ -753,13 +760,6 @@ if(fType != 0)
 	}
 
 varPrintf((UINT)&fmtStream, fmt);
-/* writeStreamStr(&fmtStream, fmt, 0); */
-
-/*
-cell = getCell(CELL_STRING);
-cell->aux = fmtStream.position + 1;
-cell->contents = (UINT)fmtStream.buffer;
-*/
 
 return(makeStringCell(fmtStream.buffer, fmtStream.position));
 }
@@ -1320,7 +1320,7 @@ return(stuffString((char *)getAddress(params)));
 
 CELL * p_getInteger(CELL * params)
 {
-return(stuffInteger(*(unsigned int *)getAddress(params)));
+return(stuffInteger(*(int *)getAddress(params)));
 }
 
 CELL * p_getLong(CELL * params)

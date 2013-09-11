@@ -4,7 +4,8 @@
 ;; @version 1.2 - new library detection routine
 ;; @version 1.3 - added lib for opnBSD and tested for 64-bit newLISP
 ;; @version 1.4 - doc changes
-;; @author L.M 2006-2009
+;; @version 1.5 - replaced <tt>write-buffer</tt> with <tt>write</tt>
+;; @author L.M 2006-2010
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
 ;; from @link http://www.zlib.net/ www.zib.net is needed.
@@ -20,20 +21,21 @@
 ;; (module "zlib.lsp")
 ;; </pre>
 
+(when (< (sys-info -2) 10110)
+	(constant (global 'write) write-buffer))
 
 (context 'zlib)
 
 (set 'files '(
-	"/usr/lib/libz.so" ; Linux and BSDs
-	"/usr/lib/libz.so.4.1" ; OpenBSD
+	"/usr/lib/libz.so" ; Linux, BSD, Solaris
+	"/usr/lib/libz.so.4.1" ; OpenBSD 4.6
 	"/usr/lib/libz.dylib" ; Mac OSX / Darwin
-	"/usr/lib/libz.so" ; Solaris
 	"libz1.dll" ; Win32
 ))
 
-(set 'library (files (or 
-				(find true (map file? files)) 
-				(begin (println "cannot find zlib compression library") (exit)))))
+(set 'library (files (or
+		       (find true (map file? files))
+		       (throw-error "cannot find zlib compression library"))))
 
 (import library "compress")
 (import library "uncompress")
@@ -90,7 +92,7 @@
 		(if (!= fno 0)
 			(begin
 				(while (> (set 'bytes (gzread fno buff 0x1000)) 0)
-					(write-buffer result buff bytes))
+					(write result buff bytes))
 				(gzclose fno)
 				result))))
 

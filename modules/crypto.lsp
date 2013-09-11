@@ -42,13 +42,13 @@
 	"/usr/lib/libcrypto.so.0.9.7"
 	"/usr/lib/libcrypto.so.0.9.6"
 	"/usr/lib/libcrypto.so.4"
-	"/usr/lib/libcrypto.so.14.0"
+	"/usr/lib/libcrypto.so.18.0" ; OpenBSD 4.6
 	"/usr/lib/libcrypto.dylib"
 ))
 
-(set 'library (files (or 
-				(find true (map file? files)) 
-				(begin (println "cannot find crypto library") (exit)))))
+(set 'library (files (or
+		       (find true (map file? files))
+		       (throw-error "cannot find crypto library"))))
 
 (import library "MD5")
 (import library "RIPEMD160")

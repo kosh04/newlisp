@@ -5,7 +5,10 @@
 ;; @version 1.6 added library path for OpenBSD and tested for 64-bit newLISP
 ;; @version 1.7 doc changes
 ;; @version 1.8 doc changes
-;; @author Lutz Mueller, 2007-2009
+;; @version 1.9 fixes for 64-bit in <,>,>=,<=,factor didn't sign extend 32->64
+;; @version 2.0 more fixes for 64-bit, allocated space for handles was to small
+;; @version 2.1 changed deprecated <tt>name</tt> to <tt>term</tt>
+;; @author Lutz Mueller, 2007-2010
 ;; <h3>The GNU MP Bignum Library</h3>
 ;; This modules interfaces to libgmp which can be obtained from @link http://gmplib.org/ http://gmplib.org/ .
 ;;
@@ -13,7 +16,7 @@
 ;; is available at this site. After installing the library the correct path-name should
 ;; be added in the <tt>(set 'files ... )</tt> statement around line 130 in this module.
 ;;
-;; When compiling for Mac OS X on Intel CPUs use:
+;; When compiling libgmp for Mac OS X on Intel CPUs and for 32-bit newLISP use:
 ;; <pre>
 ;;     ./configure CFLAGS="-m32" ABI=32
 ;;     make
@@ -111,7 +114,14 @@
 
 ;(constant '+ add '- sub '* mul '/ div)
 
+(if (< (sys-info -2) 10111)
+	(constant (global 'term) name))
+
 (context 'GMP)
+
+; convert from int32 to int64 with sign extension
+; in both newLISP 32-bit and 64-bit integers are 64-bit
+(define (int64 x) (get-int (pack "ld" x)))
 
 ; maximum digits, can be set to any value higher if required
 ; when choosing a different number the functions GMP:fac and GMP:fib
@@ -126,17 +136,19 @@
 
 (set 'files '(
     "/usr/lib/libgmp.dylib" ;Mac OSX
+    "/usr/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.dylib" ;Mac OSX
+    "/usr/local/lib/libgmp.so.8.0" ; OpenBSD 4.6
+    "/usr/lib/libgmp.so.3" ; Linux, BSDs
     "/usr/local/lib/libgmp.so" ; Linux, BSDs
-    "/usr/local/lib/libgmp.so.7.1" ; OpenBSD
     "/WINDOWS/system32/libgmp-3.dll" ; Win32 DLL path on current drive
     "libgmp-3.dll" ; Win32 in path for current directory
 ))
 
-(set 'library (files (or 
-				(find true (map file? files)) 
-				(begin (println "cannot find GMP library") (exit)))))
+(set 'library (files (or
+		       (find true (map file? files))
+		       (throw-error "cannot find GMP library"))))
   
 ; integer arithmetik    
 (import library "__gmpz_init")
@@ -151,6 +163,7 @@
 (import library "__gmpz_set_si")
 (import library "__gmpz_divisible_p")
 (import library "__gmpz_pow_ui")
+(import library "__gmpz_clear")
 
 ; bit operators
 (import library "__gmpz_and")
@@ -180,11 +193,11 @@
 (import library "__gmp_randseed_ui")
 
 ; reserve handles
-(define op1 (dup "\000" 12))
-(define op2 (dup "\000" 12))
-(define rop (dup "\000" 12))
+(define op1 (dup "\000" 16)) ; 12 on 32-bit 16 on 64-bit
+(define op2 (dup "\000" 16))
+(define rop (dup "\000" 16))
 
-(define randstate (dup "\000" 60))
+(define randstate (dup "\000" 32)) ; 20 on 32-bit 32 on 64-bit
 
 ; init handles
 (__gmpz_init op1)
@@ -192,9 +205,9 @@
 (__gmpz_init rop)
 
 ; handles to speed up factor
-(define mp-n (dup "\000" 12))
-(define mp-d (dup "\000" 12))
-(define mp-k (dup "\000" 12))
+(define mp-n (dup "\000" 16))
+(define mp-d (dup "\000" 16))
+(define mp-k (dup "\000" 16))
 (__gmpz_init mp-n)
 (__gmpz_init mp-d)
 (__gmpz_init mp-k)
@@ -295,7 +308,7 @@
   (if (or (not (string? p1)) (not (string? p2))) (throw-error gmp-type-error))
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
-  (MAIN:< (__gmpz_cmp op1 op2) 0)
+  (MAIN:< (int64 (__gmpz_cmp op1 op2)) 0)
 )
 
 ; test is p1 is smaller than p2
@@ -305,7 +318,7 @@
   (if (or (not (string? p1)) (not (string? p2))) (throw-error gmp-type-error))
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
-  (MAIN:> (__gmpz_cmp op1 op2) 0)
+  (MAIN:> (int64 (__gmpz_cmp op1 op2)) 0)
 )
 
 ; test is p1 is smaller or eaual than p2
@@ -315,7 +328,7 @@
   (if (or (not (string? p1)) (not (string? p2))) (throw-error gmp-type-error))
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
-  (MAIN:<= (__gmpz_cmp op1 op2) 0)
+  (MAIN:<= (int64 (__gmpz_cmp op1 op2)) 0)
 )
 
 ; test is p1 is bigger or equal than p2
@@ -325,7 +338,7 @@
   (if (or (not (string? p1)) (not (string? p2))) (throw-error gmp-type-error))
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
-  (MAIN:>= (__gmpz_cmp op1 op2) 0)
+  (MAIN:>= (int64 (__gmpz_cmp op1 op2)) 0)
 )
 
 ; bitwise and two integers
@@ -397,7 +410,7 @@
   (set 'factors nil)
   (set 'prevfact nil)
   (__gmpz_set_str mp-n n 0)
-  (if (MAIN:> (__gmpz_cmp_si mp-n 2) 0)
+  (if (MAIN:> (int64 (__gmpz_cmp_si mp-n 2)) 0)
     (begin
       (__gmpz_set_si mp-d 2)
       (__gmpz_set_si mp-k 0)
@@ -407,23 +420,23 @@
         (__gmpz_add_ui mp-k mp-k 1)
       )
       
-      (if (MAIN:> (__gmpz_cmp_si mp-k 0) 0)
+      (if (MAIN:> (int64 (__gmpz_cmp_si mp-k 0)) 0)
         (push-factor mp-d mp-k))
       
       (__gmpz_set_si mp-d 3)
       (__gmpz_mul op1 mp-d mp-d)
-      (while (MAIN:<= (__gmpz_cmp op1  mp-n) 0)
+      (while (MAIN:<= (int64 (__gmpz_cmp op1  mp-n)) 0)
         (__gmpz_set_si mp-k 0)        
         (while (MAIN:!= 0 (__gmpz_divisible_p mp-n mp-d))
           (__gmpz_tdiv_q mp-n mp-n mp-d)
           (__gmpz_add_ui mp-k mp-k 1) )
-        (if (MAIN:> (__gmpz_cmp_si mp-k 0) 0) (push-factor mp-d mp-k))
+        (if (MAIN:> (int64 (__gmpz_cmp_si mp-k 0)) 0) (push-factor mp-d mp-k))
         (__gmpz_add_ui mp-d mp-d 2)
         (__gmpz_mul op1 mp-d mp-d) )
     ) 
   ) 
     
-  (if (MAIN:> (__gmpz_cmp_si mp-n 1))
+  (if (MAIN:> (int64 (__gmpz_cmp_si mp-n 1)))
     (if prevfact
       (begin
         (___gmpz_set_si op1 1) 
@@ -516,8 +529,8 @@
 
 (define (check func <arg1> <arg2> result)
    (if (MAIN:= (apply func (list <arg1> <arg2>)) result)
-   	(println "GMP:" (name func) "\t-> Ok")
-   	(println "Problem in GMP:" (name func)))
+   	(println "GMP:" (term func) "\t-> Ok")
+   	(println "Problem in GMP:" (term func)))
 )
 
 (context 'MAIN)

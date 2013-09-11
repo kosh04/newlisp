@@ -1,12 +1,14 @@
 #!/usr/bin/newlisp
 
-; Test IEE complience of some FP operations and handling of inf and NaN numbers
-; In all versions of newLISP (32Bit and 64Bit) floating point numbers
-; are represented as IEE 754 64-bit: Double (binary64) numbers
+; Test IEE compliance of some FP operations and handling of 'inf' and 'NaN' 
+; numbers. In all versions of newLISP (32Bit and 64Bit) floating point numbers
+; are represented as IEE 754 64-bit: Double (binary64) numbers.
 
-; thanks to Nelson H.F. Beebe <beebe@math.utah.edu> for some of the tests
+; Thanks to Nelson H.F. Beebe <beebe@math.utah.edu> for some of the tests
 ; in this file
 
+(println)
+(println "Testing floating point performance")
 
 (set 'aNan (sqrt -1))
 (set 'aInf (div 1.0 0))
@@ -87,8 +89,8 @@
 
 (println)
 (if-not (apply and result-list)
-	(println ">>>>> ERROR IN FLOATING POINT TESTS")
-	(println ">>>>> FLOATING POINT TESTS SUCCESSFUL")
+	(println ">>>>> PROBLEM in floating point tests")
+	(println ">>>>> floating point tests SUCCESSFUL")
 )
 
 (exit)

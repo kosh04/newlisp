@@ -5449,7 +5449,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
     some cleanup of itSymbol
 
-10.1.7
+10.1.7 maintenance release November 24th, 2010
 
     URLs now decoded correctly when compiled in IPv6 mode.
 	IPv6 compiled version now runs qa-net.
@@ -5486,3 +5486,175 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Do URL translation of path-file names in HTTPD server mode.
 
     A 'sql3:colnames' function has been added to the sqlite3.lsp module.
+
+
+10.1.8 This development version starts the v.10.2 generation of newLISP
+
+    Fixed a bug when replicating primitives with 'new'.
+
+    FOOP objects are now mutable, anonymous or not. The old obj parameter has been
+    dropped from FOOP methods. Instead a new function 'self' is used to access and
+    index the target object:
+
+       (new Class 'Circle)
+
+	   (define (Circle:move dx dy) 
+           (inc (self 1) dx) 
+           (inc (self 2) dy))
+       
+       (set 'aCircle (Circle 1 2 3))
+
+       (:move aCircle 10 20)
+
+       aCircle => (Circle 11 22 3)
+
+    Old FOOP methods have to be rewritten to drop the obj parameter:
+
+    old : (define (Foo:method obj p1 p2) ...)
+    new : (define (Foo:method p1 p2) ...)
+
+    This has also reduced the overhead required in FOOP methods. Allthough this
+    change creates an incompatibility with older FOOP code, the advantage
+    of having mutable objects compensates for that incompatibility. Destructive
+    methods was the FOOP feature most asked for ind newLISP.
+
+10.1.9
+    Fixed executeCommandLine() for 64-bit UBUNTU, which could cause writeStreamStr()
+    related functions to crash.
+
+    (delete <sym> nil) will delete symbols without checking any references. The 
+    symbol can be a context symbol. Note that this mode of 'delete' can crash 
+    the system if if symbols are referenced from anywhere else. 
+ 
+    Fixed double evaluation in nil? predicate
+
+    Fixed a bug in 'legal?'.
+
+    Better error reporting for url based file operations.
+
+    A sign-extension fix for 'get-int' under 64-bit
+
+    Fix in gmp.lsp for 64-bit >,<,>=,<= but still problems with 'factor'
+
+    Fix for push on fresh symbols. Did return the element pushed not the list.
+
+    Fix for push -1 optimization when copying contexts with 'new' 
+
+    Fix for a memory leak in certain applications of 'new' 
+
+    Fix for 'self' in nested FOOP functions, also eliminated FOOP stack
+
+    New smtpx.lsp module for (multiple) attachements and UTF-8 safe encoding
+
+
+10.1.10
+    New 'extend' works like 'append' but modifies first list or string
+    parameter.
+
+    New ++ and -- increment/decrement in integer mode.
+
+    Functions 'inc/dec' now always work in floating point mode.
+
+    In 'find' the regex option can be specified as nil when offset is present,
+    this way 'find' with offset does not have to be a regex search.
+
+    In 'starts-with/ends-with' nil is not allowed as a parameter for
+    case insensitivity anymore use the regex option 1 instead (nil always
+    did regex anyway).
+
+    Changed configure-alt now allows defintion of different install and
+    exe prefixes. For questions and support for configure-alt, please
+    contact Ted Walther: ted@reactor-core.org.
+
+    Makefile has been simplified and the install part extracted as:
+    makefile_original_install, (used by configure).
+
+10.1.11
+   Various documentation fixes and changes.
+
+   Additional, optional list-index parameter in 'now' makes it return a list 
+   member instead of the whole list:
+      (now 0 0) => 2010 ; year
+      (now 0 -2) => 300 ; offset west of GMT (in EST)
+
+   A string slice offset out of bounds now throws error as in lists.
+
+   'pretty-print' can addtionally define the default print format for
+   floating point numbers.
+
+   New 'prefix' returns the context of a symbol.
+
+   New 'term' replaces deprecated 'name'.
+
+   New 'caller' returns the symbol of the caller function.
+
+   'read' and 'write' may be used as shorter writings of the elementary 
+   'read-buffer' and 'write-buffer' I/O functions.
+
+   Addtional chapter in doc/INSTALL for package creators and installation
+   customization.
+
+   Updated syntax highlighing for nano, joe, and vim editors.
+
+   Added back cleaning into 'make dist'.
+
+   Re-added Cygwin flavor with 'make -f makefile_cygwin'. The make file gets
+   also chosen by 'configure' and makes a newlisp.exe, but has to be installed
+   manually together with cygwin1.dll in %NEWLISPDIR%; on Win32 normally
+   defined as C:\Program Files\newlisp. 
+   Many thanks to Niek from http://daansystems.com for helping with this.
+
+10.1.12
+   Symbol protection for containers of mutable FOOP objects
+
+   Functions 'crit-chi2' and 'prob-chi2' produced value too low on odd degrees 
+   of freedom. 'bayes-query' in Chi2 mode was not affected.
+
+   moved most qa-xxx files into qa-specific, only qa-do and qa-comma stay in
+   main source directory. The commands 'make test' alias 'make test' work like
+   before, but now taking qa-xxx files from qa-specific. A new 'make testall'
+   can be used to test with allmost all qa-xxx files. 
+   To reduce output do: make test | grep '>>>>>'
+
+   Rework of setf for in-place changes.
+
+   'caller' introduced in previous development version 10.1.11 has been
+   eliminated.
+
+   'define-macro's (fexpr's) are now included in error reporting:
+      define (foo) (bar))
+      (define-macro (bar) (+ a s f))
+      (foo) =>
+      
+      ; in older verssion 'bar' doesn't show
+      ERR: value expected in function + : a
+      called from user defined function foo
+
+      ; now 'bar' is reported
+      ERR: value expected in function + : a
+      called from user defined function bar
+      called from user defined function foo
+
+    In newLISP-GS on Win32 a messagebox pops up if a connection cannot be
+    established between the newLISP process ad Java GUI server.
+
+10.2.0 stable release March 2010
+    new 'configure-alt' fixes a problem for debian package making.
+
+    The enviroment variable REQUEST_METHOD is now set by newLISP server mode
+    to one of the strings GET, HEAD, PUT, POST, DELETE.
+
+    'det' and 'inv' now return 'nil' on singular matrices, but fall back
+    to the old behaviour when specifying a new optional 'true' flag. With
+    the flag pivot elements of 0 will assume a very small value as in
+    older versions of newLISP.
+
+    'xml-parse' did ot parse UTF-8 chracters correctly.
+
+    'make test' and 'make testall' now by default do the short display
+    with only the end result. 'make check' and 'make checkall' produce
+    the long output.
+
+    Fixed wrong error message in context creation.
+
+    The int-type field in all financial functions is optional.

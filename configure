@@ -3,7 +3,8 @@
 # Only LP64 and ILP32 memory models are supported
 echo
 echo "removing old objects and setting correct permissions ..."
-make distclean > /dev/null
+make clean > /dev/null
+cp makefile_original_install makefile_install
 echo "discovering platform and default memory model ..."
 echo
 
@@ -17,6 +18,8 @@ case `uname` in
 	AIX) true ${os_type:=AIX} ;; 
 	OSF1) true ${os_type:=TRU64} ;;
 	MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
+	MINGW32_NT-6.1) true ${os_type:=WIN_32} ;;
+	CYGWIN*) true ${os_type:=CYGWIN} ;;
 	OS/2) true ${os_type:=OS2} ;;
 	*)
 		echo Could not discover your OS platform use one of the following commands:
@@ -62,42 +65,44 @@ rm -f test-memorymodel*
 
 echo "detected memory model ${memory_model}"
 echo "detected Operating System ${os_type}"
-echo "creating makefile_configure ..."
+echo "creating makefile_build ..."
 echo
 
 if   [ ${os_type} = MAC_OSX ] ; then
     echo on Snow Leopard 32-bit is made even if 64-bit is the detected default
-	cp makefile_darwin_utf8 makefile_configure
+	cp makefile_darwin_utf8 makefile_build
 elif [ ${os_type} = LINUX ] ; then
 	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_linuxLP64_utf8 makefile_configure
+		cp makefile_linuxLP64_utf8 makefile_build
 	else
-		cp makefile_linux_utf8 makefile_configure
+		cp makefile_linux_utf8 makefile_build
 	fi
 elif [ ${os_type} = _BSD ] ; then
 	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_bsdLP64_utf8 makefile_configure
+		cp makefile_bsdLP64_utf8 makefile_build
 	else
-		cp makefile_bsd_utf8 makefile_configure
+		cp makefile_bsd_utf8 makefile_build
 	fi
 elif [ ${os_type} = SUNOS ] ; then
 	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_sunosLP64_uf8 makefile_configure
+		cp makefile_sunosLP64_uf8 makefile_build
 	else
-		cp makefile_sunos_utf8 makefile_configure
+		cp makefile_sunos_utf8 makefile_build
 	fi
 elif [ ${os_type} = AIX ] ; then
 	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_aixLP64_utf8_gcc makefile_configure
+		cp makefile_aixLP64_utf8_gcc makefile_build
 	else
-		cp makefile_aix_utf8_gcc makefile_configure
+		cp makefile_aix_utf8_gcc makefile_build
 	fi
 elif [ ${os_type} = TRU64 ] ; then
-	cp makefile_tru64 makefile_configure
+	cp makefile_tru64 makefile_build
 elif [ ${os_type} = WIN_32 ] ; then
-	cp makefile_mingw makefile_configure
+	cp makefile_mingw makefile_build
+elif [ ${os_type} = CYGWIN ] ; then
+	cp makefile_cygwin makefile_build
 elif [ ${os_type} = OS2 ] ; then
-	cp makefile_os2 makefile_configure
+	cp makefile_os2 makefile_build
 fi
 
 

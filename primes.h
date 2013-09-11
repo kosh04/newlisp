@@ -61,7 +61,7 @@ PRIMITIVE primitive[] =
 	{"curry",		p_curry,	0},
 	{"args",		p_args,		0},
 	{"map",			p_map,		0},
-	{"name",       	p_name, 	0},
+	{"term",       	p_name, 	0},
 	{"filter",		p_filter,	0},
 	{"clean",		p_clean,	0},
 	{"index",		p_index,	0},
@@ -83,6 +83,7 @@ PRIMITIVE primitive[] =
 	{"rest",		p_rest,		0},
 	{"cons",		p_cons,		0},
 	{"append",		p_append,	0},
+	{"extend",		p_extend,	0},
 	{"list",		p_list,		0},
 	{"nth",			p_nth,		0},
 	{"ref",			p_ref,		0},
@@ -122,6 +123,8 @@ PRIMITIVE primitive[] =
 	{">=",			p_greaterEqual,0},
 	{"=",			p_equal,	0},
 	{"!=",			p_notEqual,	0},
+	{"++",			p_incrementI,0},
+	{"--",			p_decrementI,0},
 
 	/* --------- bit ops --------------- */
 	{"<<",			p_shiftLeft,0},
@@ -132,8 +135,8 @@ PRIMITIVE primitive[] =
 	{"~",			p_bitNot,	0},
 
 	/* --------- math and float ------- */
-	{"inc",		    p_increment,	0},
-	{"dec",		    p_decrement,	0},
+	{"inc",		    p_incrementF,0},
+	{"dec",		    p_decrementF,0},
 	{"add",		    p_addFloat,	0},
 	{"sub",		    p_subFloat,	0},
 	{"mul",		    p_mulFloat,	0},
@@ -269,7 +272,9 @@ PRIMITIVE primitive[] =
 #endif
 	{"write-char",	p_writeChar,0},
 	{"read-buffer",	p_readBuffer,0},
+	{"read",		p_readBuffer,0},
 	{"write-buffer",p_writeBuffer,0},
+	{"write",		p_writeBuffer,0},
 	{"write-file",	p_writeFile,0},
 	{"append-file",	p_appendFile,	0},
 	{"read-file",	p_readFile, 0},
@@ -367,6 +372,8 @@ PRIMITIVE primitive[] =
 	{"env",			p_env,		0},
 	{"context",		p_context,	0},
 	{":",			p_colon,	0},
+	{"self",		p_self,		0},
+	{"prefix",		p_prefix,	0},
 	{"default",		p_default,	0},
 	{"timer",       p_timerEvent,	0},
 #ifndef NOIMPORT

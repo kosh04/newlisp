@@ -88,8 +88,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2009 July 29<sup>th</sup><br>
-<a href="http://newlisp.org">newLISP</a> v.10.1.0
+</h1>Version 2010 March 16<sup>th</sup><br>
+<a href="http://newlisp.org">newLISP</a> v.10.2.0
 </center>
 
 <br><br><br>
@@ -446,7 +446,7 @@ newLISP is a registered trademark of Lutz Mueller.
 )
 </pre>
 
-<p>Typically, there will be one MAIN module that loads and controlls all others:</p>
+<p>Typically, there will be one MAIN module that loads and controls all others:</p>
 
 <pre>
 ; application.lsp
@@ -779,8 +779,8 @@ len:10 width:20 height:40
 <p>Some times a non-recursive solution can be much faster and lighter on system resources.</p>
 
 <pre>
-;; classic recursion
-;; slow and resource hungry
+; classic recursion
+; slow and resource hungry
 (define (fib n)
     (if (&lt; n 2) 1
         (+  (fib (- n 1))
@@ -790,8 +790,8 @@ len:10 width:20 height:40
 <p>The recursive solution is slow because of the frequent calling overhead. Also, the recursive solution uses a lot of memory for holding intermediate and frequently redundant results.</p>
 
 <pre>
-;; iteration
-;; fast and also returns the whole list
+; iteration
+; fast and also returns the whole list
 (define (fibo n , f)
     (set 'f '(1 0))
     (dotimes (i n)
@@ -848,8 +848,8 @@ len:10 width:20 height:40
 <pre>
 (set 'L '(a b c (d e (f g) h i) j k))
    
-;; classic car/cdr and recursion
-;;
+; classic car/cdr and recursion
+;
 (define (walk-tree tree)
     (cond ((= tree '()) true)
           ((atom? (first tree))
@@ -859,9 +859,9 @@ len:10 width:20 height:40
              (walk-tree (first tree))
              (walk-tree (rest tree)))))
    
-;; classic recursion
-;; 3 times faster
-;;
+; classic recursion
+; 3 times faster
+;
 (define (walk-tree tree)
     (dolist (elmnt tree)
         (if (list? elmnt)
@@ -880,9 +880,9 @@ len:10 width:20 height:40
 <p>Using the built-in <tt>flat</tt> in newLISP a nested list can be transformed into a flat list. Now the list can be processed with a <tt>dolist</tt> or <tt>map</tt>:</p>
 
 <pre>
-;; fast and short using 'flat'
-;; 30 times faster with map
-;;
+; fast and short using 'flat'
+; 30 times faster with map
+;
 (map println (flat L))
   
 (dolist (item (flat L)) (println item)
@@ -966,6 +966,25 @@ L → (a b (c x d (e f) g) h i))
 (pop L V) → 'v
 </pre>
 
+<h3>'extend'</h3>
+
+<p>Using <tt>extend</tt> lists can be appended destructively.
+Like <tt>push</tt> and <tt>pop</tt>, <tt>extend</tt> modifies the list in the first
+argument.</p>
+
+<pre>
+(set 'L '(a b c))
+(extend L '(d e) '(f g))
+
+L &rarr; '(a b c d e f g)
+
+; extending in a place
+
+(set 'L '(a b "CD" (e f)))
+(extend (L 3) '(g))
+L → (a b "CD" (e f g))
+</pre>
+
 <h3>Accessing lists</h3>
 
 <p>Multiple indexes can be specified to access elements in a nested list structure:</p>
@@ -1017,11 +1036,11 @@ L → (a b (c x d (e f) g) h i))
 <p>Sometimes more than one element must be selected from a list. This is done using select:</p>
 
 <pre>
-;; pick several elements from a list
+; pick several elements from a list
 (set 'L '(a b c d e f g))
 (select L 1 2 4 -1) → (b c e g)
    
-;; indices can be delivered in an index vector:
+; indices can be delivered in an index vector:
 (set 'vec '(1 2 4 -1))
 (select L vec) → (b c e g)
 </pre>
@@ -1322,7 +1341,7 @@ E → (x y z)
     ...
 )
    
-; loop through a sring
+; loop through a string
 ; takes the ASCII or UTF-8 value of each character in aString
 (dostring (e aString)
     ...
@@ -1407,8 +1426,8 @@ E → (x y z)
 ;or unary if for (filter if '(...))
 (if condition)
    
-;; more than one statement in the true or false
-;; part must be blocked with (begin ...)
+; more than one statement in the true or false
+; part must be blocked with (begin ...)
 (if (= x Y)
     (begin
         (some-func x)
@@ -1631,12 +1650,12 @@ called from user defined function double
 <p>Some errors originating at operating system level are not caught by newLISP, but can be inspected using the function <tt>sys-error</tt>. For example the failure to open a file could have different causes:</p>
 
 <pre>
-;; trying to open a nonexistent file
+; trying to open a nonexistent file
 (open "blahbla" "r")  →  nil
 (sys-error)           →  (2 "No such file or directory")
    
    
-;; to clear errno specify 0
+; to clear errno specify 0
 (sys-error 0)         →  (0 "Unknown error: 0")
 </pre>
 
@@ -1655,7 +1674,7 @@ called from user defined function double
 (first double) → (x)
 (last double)  → (+ x x)
     
-;; make a fuzzy double
+; make a fuzzy double
 (setf (nth 1 double) '(mul (normal x (div x 10)) 2))
     
 (double 10) → 20.31445313
@@ -1823,44 +1842,52 @@ called from user defined function double
 (set 'lstr (map string (rand 1000 100)))
 → ("976" "329" ... "692" "425")
    
-;; the wrong slowest way
+; the wrong slowest way
 (set 'bigStr "")
 (dolist (s lstr)
     (set 'bigStr (append bigStr s)))
    
-;; smarter way - 50 times faster
-;;
+; smarter way - 50 times faster
+;
 (apply append lstr)
 </pre>
 
 <p>Sometimes strings are not readily available in a list like in the above examples. In this case push can be used to push strings on a list while they get produced. The list then can be used as an argument for join, making the fastest method for putting strings together from existing pieces:</p>
 
 <pre>
-;; smartest way - 300 times faster
-;; join an existing list of strings
-;;
+; smartest way - 300 times faster
+; join an existing list of strings
+;
 (join lstr) → "97632936869242555543 ...."
    
-;; join can specify a string between the elements
-;; to be joined
+; join can specify a string between the elements
+; to be joined
 (join lstr "-") → "976-329-368-692-425-555-43 ...."
 </pre>
 
-<h3>Growing strings in place</h3>
+<h3>Growing strings</h3>
 
-<p>Very often the best method is to grow a string in place. The functions <tt>write-buffer</tt>, <tt>write-line</tt> and <tt>push</tt> can be used not only to write to file handles or push on lists but also to write/append to existing strings:</p>
+<p>Often it is best to grow a string in place. The function <tt>extend</tt> can be used to append to a string at the end. The function <tt>push</tt> can be used to insert new content at any place in the string.</p>.
 
 <pre>
-;; smartest way - 150 times faster
-;; grow a string in place
-;;
-;; using write-buffer
-(set 'bigStr "")
-(dolist (s lstr) (write-buffer bigStr s))
-   
-;; using push
-(set 'bigStr "")
-(dolist (s lstr) (push s bigStr -1))
+; smartest way - much faster on big strings
+; grow a string in place
+
+; using extend
+(set 'str "")
+(extend str "AB" "CD")
+str &rarr; "ABCD"
+
+; extending in a place
+(set 'L '(a b "CD" (e f)))
+(extend (L 2) "E")
+L &rarr; (a b "CDE" (e f))
+
+; using push
+(set 'str "")
+(push "AB" str -1)
+(push "CD" str -1)
+str &rarr; "ABCD"
 </pre>
 
 <h3>Rearranging strings</h3>
@@ -1884,7 +1911,7 @@ called from user defined function double
 <table  summary='table'>
 <tr align='left'><th> function </th><th> description </th></tr>
 <tr><td> <tt>replace</tt></td><td> Replace all occurrences of a string or string pattern with a string.</td></tr>
-<tr><td> <tt>setf</tt></td><td> Replace a chracter in a string with one or more characters.</td></tr>
+<tr><td> <tt>setf</tt></td><td> Replace a character in a string with one or more characters.</td></tr>
 <tr><td> <tt>push pop</tt></td><td> Insert or extract one or more characters at a specific position.</td></tr>
 </table>
 <p><tt>replace</tt> can also be used to remove all occurrences of string or string pattern when specifying an empty string <tt>""</tt> as replacement.</p>
@@ -1897,7 +1924,7 @@ called from user defined function double
 
 <h3>Hash-like key → value access</h3>
 
-<p>newLISP has functions to create and manipulate symbols using the functions <tt>sym</tt> and a special syntax of the function <tt>context</tt>. In older versions of newLISP, these functions were used to program hash-like creation and access of key-value pairs. Now a shorter and more convenient method is available, using the un-initialized <tt>default functor</tt> of a context (namespace):</p>
+<p>newLISP has functions to create and manipulate symbols using the functions <tt>sym</tt> and a special syntax of the function <tt>context</tt>. In older versions of newLISP, these functions were used to program hash-like creation and access of key-value pairs. Now a shorter and more convenient method is available, using the un-initialized <tt>default functor</tt> of a namespace context:</p>
 
 <pre>
 (define Myhash:Myhash) ; establish the namespace and default functor
@@ -1969,7 +1996,7 @@ called from user defined function double
 (load "Myhash")
 </pre>
 
-<p>Note that hashes create contexts similar to the <tt>bayes-train</tt> function. All string keys are prepended with an underscore and then transfomed into a symbol. This means that namespaces created using <tt>bayes-train</tt> can be used like hashes to retrieve words and their statistics. See the <tt>bayes-train</tt> function in the manual for more detail.</p>
+<p>Note that hashes create contexts similar to the <tt>bayes-train</tt> function. All string keys are prepended with an underscore and then transformed into a symbol. This means that namespaces created using <tt>bayes-train</tt> can be used like hashes to retrieve words and their statistics. See the <tt>bayes-train</tt> function in the manual for more detail.</p>
 
 <br><center>&sect;</center><br>
 <a name="toc-12"></a>
@@ -1985,7 +2012,7 @@ called from user defined function double
 (if (not (set 'listen (net-listen 123)))
     (print (net-error)))
 (while (not (net-error))
-    (set 'connection (net-accept listen)) ;; blocking here
+    (set 'connection (net-accept listen)) ; blocking here
     (while (not (net-error))
          (net-receive connection message-from-client max-bytes)
          .... process message from client ...
@@ -2018,7 +2045,7 @@ called from user defined function double
 <pre>
 ; sender
 (while (not (net-error))
-    (set 'connection (net-accept listen)) ;; blocking here
+    (set 'connection (net-accept listen)) ; blocking here
     (net-receive connection message-from-client max-bytes)
         .... process message from client ...
         .... configure message to client ...
@@ -2089,11 +2116,11 @@ called from user defined function double
 <p>This form is sometimes used for controlling hardware or equipment. No setup is required, just one function for sending, another one for receiving.</p>
 
 <pre>
-;; wait for data gram with maximum 20 bytes
+; wait for data gram with maximum 20 bytes
 (net-receive-udp 1001 20)
-;; or
-(net-receive-udp 1001 20 5000000)  ;; wait for max 5 seconds
-;; the sender
+; or
+(net-receive-udp 1001 20 5000000)  ; wait for max 5 seconds
+; the sender
 (net-send-udp "host.com" 1001 "Hello")
 </pre>
 
@@ -2104,14 +2131,14 @@ called from user defined function double
 <p>In this scheme the server subscribes to one of a range of multi cast addresses using the net-listen function.</p>
 
 <pre>
-;; example server
+; example server
 (net-listen 4096 "226.0.0.1" "multi") → 5
 (net-receive-from 5 20)
  
-;; example client I
+; example client I
 (net-connect "226.0.0.1" 4096 "multi") → 3
 (net-send 3 "hello")
-;; example client II
+; example client II
 (net-connect "" 4096 "multi") → 3
 (net-send-to "226.0.0.1" 4096 "hello" 3)
 </pre>
@@ -2127,7 +2154,7 @@ called from user defined function double
 <p>In all previous patterns the client blocks when in receive. The net-select call can be used to unblock communications:</p>
 
 <pre> 
-;; optionally poll for arriving data with 100ms timeout
+; optionally poll for arriving data with 100ms timeout
 (while (not (net-select connection "r" 100000))
     (do-something-while-waiting ...))
  
@@ -2177,7 +2204,7 @@ called from user defined function double
 
 <h3>STD I/O pipes</h3>
 
-<p>The <tt>process</tt> fucntion allows specifying 2 pipes for communications with the launched application.</p>
+<p>The <tt>process</tt> function allows specifying 2 pipes for communications with the launched application.</p>
 
 <pre>
 ; setup communications
@@ -2186,7 +2213,7 @@ called from user defined function double
 (process "/usr/bin/wish" tcin tcout)
  
 ; make GUI
-(write-buffer myout
+(write myout
 [text]
 wm geometry . 250x90
 wm title . "Tcl/Tk and newLISP"
@@ -2238,10 +2265,10 @@ bind . &lt;Destroy&gt; {puts {(exit)}}
 ; Define communication function
 (define (gtk str)
 	(set 'handle (open "myfifo" "write"))
-	(write-buffer handle str)
+	(write handle str)
 	(close handle)
 	(set 'handle (open "myfifo" "read"))
-	(read-buffer handle tmp 20)
+	(read handle tmp 20)
 	(close handle)
 tmp)
 </pre>
@@ -2313,7 +2340,7 @@ tmp)
 
 <p>The producer loops through all n values from i = 0 to n - 1 and puts each value into shared memory where it is picked up by the consumer thread. Semaphores are used to signal that a data value is ready for reading.</p>
 
-<p>Allthough controlling processes with semaphores and shared memory is fast, it is also error prone, specially when more the two processes are involved. It is easier to control mulitple processes using the Cilk API and mesaging between processes. See shapters 18. and 19. for these topics.</p>
+<p>Allthough controlling processes with semaphores and shared memory is fast, it is also error prone, specially when more the two processes are involved. It is easier to control multiple processes using the Cilk API and messaging between processes. See chapters 18. and 19. for these topics.</p>
 
 <pre>
 #!/usr/bin/newlisp
@@ -2442,7 +2469,7 @@ plist))
 <a name="toc-19"></a>
 <h2>19. Message exchange</h2>
 
-<p>Parent and child processes started with <tt>spawn</tt> can exchange messages. Messages flow either from the parent to child processes or from child processes to the parent. By means of evaluating messsages in the parent process, the parent process can be used as a proxy routing message between peer child processes.</p>
+<p>Parent and child processes started with <tt>spawn</tt> can exchange messages. Messages flow either from the parent to child processes or from child processes to the parent. By means of evaluating messages in the parent process, the parent process can be used as a proxy routing message between peer child processes.</p>
 
 <p>The message calls itself are non-blocking returning <tt>nil</tt> on failure. They can be made blocking using loops.</p>
 
@@ -2605,9 +2632,9 @@ pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:5317
 <p>The association list is a classic LISP data structure for storing information for associative retrieval:</p>
 
 <pre>
-;; creating association lists
-;; pushing at the end with -1 is optimized and
-;; as fast as pushing in front
+; creating association lists
+; pushing at the end with -1 is optimized and
+; as fast as pushing in front
  
 (push '("John Doe" "123-5555" 1200.00) Persons -1)
 (push '("Jane Doe" "456-7777" 2000.00) Persons -1)
@@ -2617,7 +2644,7 @@ Persons →  (
 ("John Doe" "123-5555" 1200.00)
 ("Jane Doe" "456-7777" 2000.00) ...)
  
-;; access/lookup data records
+; access/lookup data records
 (assoc "John Doe" Persons)
  
 → ("John Doe" "123-5555" 1200.00 male)
@@ -2635,14 +2662,14 @@ Persons →  (
 (lookup "Jane Doe" Persons 1)   → 2000.00
 (lookup "Jane Doe" Persons -2)  → 2000.00
  
-;; update data records
+; update data records
 (setf (assoc "John Doe" Persons)
     '("John Doe" "123-5555" 900.00 male))
  
-;; replace as a function of existing/replaced data
+; replace as a function of existing/replaced data
 (setf (assoc "John Doe" Persons) (update-person $it))
  
-;; delete data records
+; delete data records
 (replace (assoc "John Doe" Persons) Persons)
 </pre>
 
@@ -2714,7 +2741,7 @@ Persons →  (
 <a name="toc-21"></a>
 <h2>21. Distributed computing</h2>
 
-<p>Many of todays applications are distributed on to several computers on the network or distibuted on to several processes on one CPU. Often both methods of distributing an application are used at the same time.</p>
+<p>Many of todays applications are distributed on to several computers on the network or distributed on to several processes on one CPU. Often both methods of distributing an application are used at the same time.</p>
 
 <p>newLISP has facilities to evaluate many expressions in parallel on different network nodes or processes running newLISP. The <tt>net-eval</tt> function does all the work necessary to communicate to other nodes, distribute expressions for evaluation and collect results in either a blocking or event driven fashion.</p>
 
@@ -2741,6 +2768,8 @@ newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;amp;
 <p>newLISP is now listening on port 4711, the &amp; (ampersand) sign tells newLISP to run in the background (UNIX only). The <tt>-c</tt> switch suppresses command line prompts. newLISP now behaves like a newLISP console without prompts listening on port 4711 for command line like input. Any other available port could have been chosen. Note that on UNIX, ports below 1024 need administrator access rights.</p>
 
 <p>The second example also pre-loads code. The third example also specifies a working directory using the <tt>-w</tt> option. If no working directory is specified using <tt>-w</tt>, the startup directory is assumed to be the working directory.</p>
+
+<p>After each transaction, when a connection closes, newLISP will go through a reset process, reinitialize stack and signals and go to the <tt>MAIN</tt> context. Only the contents of program and variable symbols will be preserved.</p>
 
 <h3>Stateless server with inetd</h3>
 
@@ -2792,7 +2821,7 @@ service net-eval
 
 <p>After configuring <tt>inetd</tt> or <tt>xinetd</tt> either process must be restarted to re-read the configuration files. This can be accomplished by sending the UNIX <tt>HUP</tt> signal to either the <tt>inetd</tt> or <tt>xinetd</tt> process using the UNIX <tt>kill</tt> or UNIX <tt>nohup</tt> utility.</p>
 
-<p>On Mac OS X the <tt>launchd</tt> facility can be used in a similar fashion. The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt> in the <tt>util/</tt> directory. This file can be used to launch newlisp server during OS boot time as a persisten server.</p>
+<p>On Mac OS X the <tt>launchd</tt> facility can be used in a similar fashion. The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt> in the <tt>util/</tt> directory. This file can be used to launch newlisp server during OS boot time as a persistent server.</p>
 
 <h3>Test the server with telnet</h3>
 
@@ -3068,11 +3097,11 @@ newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;amp;
 <p>All requests will be pre-processed with a function specified using <tt>command-event</tt> in <tt>httpd-conf.lsp</tt>:</p>
 
 <pre>
-;; httpd-conf.lsp
-;;
-;; filter and translate HTTP request for newLISP
-;; -c or -http server modes
-;; reject query commands using CGI with .exe files
+; httpd-conf.lsp
+;
+; filter and translate HTTP request for newLISP
+; -c or -http server modes
+; reject query commands using CGI with .exe files
  
 (command-event (fn (s)
     (local (request)
@@ -3265,7 +3294,7 @@ the string: hello the number: 123
  
 &gt;
 ; import a library compiled for cdecl
-; calling conventsions
+; calling conventions
 &gt; (import "foo.dll" "func" "cdecl")
 </pre>
 
@@ -3314,7 +3343,7 @@ MYSTRUC * foo3(char * ptr, int num )
 <p>Sometimes data structures contain data types of different length than the normal CPU register word:</p>
 
 <pre>
-sruct mystruct
+struct mystruct
     {
     short int x;
     int z;
@@ -3418,7 +3447,7 @@ foo &lt;281A1588&gt;
 
 <h3>Writing library wrappers</h3>
 
-<p>Sometimes newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libararies installed by default on Mac OS X cannot be used.</p>
+<p>Sometimes newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on Mac OS X cannot be used.</p>
 
 <p>A special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
 

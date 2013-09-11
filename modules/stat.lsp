@@ -3,7 +3,9 @@
 ;; @version 2.0 - fixed plot an plotXY routines for gnuplot
 ;; @version 2.1 - doc changes
 ;; @version 2.2 - frequency vector in stat:power was shifted left by 1
-;; @author Lutz Mueller, 2001-2009
+;; @version 2.3 - $TEMP should be global
+;; @version 2.4 - changed deprecated <tt>name</tt> to <tt>term</tt>
+;; @author Lutz Mueller, 2001-2010
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
@@ -85,8 +87,15 @@
 ;; stat:get-diagonal - return the diagonal of a matrix in a vector
 ;; stat:mat-map      - map a binary function on to matrices
 ;; </pre>
-(constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
-(constant '$TEMP (if (= ostype "Win32") (or (env "TEMP") "C:\\temp") (string $HOME "/tmp")))
+
+
+(if (< (sys-info -2) 10111)
+	(constant (global 'term) name))
+
+(constant (global '$HOME) 
+	(or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
+(constant (global '$TEMP) 
+	(if (= ostype "Win32") (or (env "TEMP") "C:\\temp") (string $HOME "/tmp")))
 
 (if-not $HOME (println "Cannot find home directory"))
 (if-not $TEMP (println "Cannot find tmp or temp directory"))
@@ -100,8 +109,6 @@
                 (find true (map file? files))
                 (begin (println "Cannot find the gnuplot executable") (exit)))))
 
-
-xxxxx
 ;; @syntax (stat:corr <X> <Y>)
 ;; @param <X> A list of numbers.
 ;; @param <Y> A list of numbers.
@@ -278,8 +285,8 @@ xxxxx
 	(dolist (elmnt (args))
 		(if (symbol? elmnt)
 			(begin
-				(set 'filepath (string $TEMP "/" (name elmnt)))
-				(set 'filename (name elmnt))
+				(set 'filepath (string $TEMP "/" (term elmnt)))
+				(set 'filename (term elmnt))
 				(set 'data (eval elmnt)))
 	   		(begin 
 				(set 'filepath (string $TEMP "/series-" cnt))

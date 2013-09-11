@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2009 Lutz Mueller
+//    Copyright (C) 2010 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -34,34 +34,34 @@ static String reserved[] = {
 "$idx","$it","$main-args","%","&","*","+","-","/","<","<<","<=","=",">",">=",">>","?","@","MAIN","NaN?",
 "^","abort","abs","acos","acosh","add","address","amb","and","append","append-file","apply","args","array",
 "array-list","array?","asin","asinh","assoc","atan","atan2","atanh","atom?","base64-dec","base64-enc",
-"bayes-query","bayes-train","begin","beta","betai","bind","binomial","bits","callback","case","catch","ceil",
-"change-dir","char","chop","clean","close","command-event","command-line","cond","cons","constant","context",
-"context?","copy","copy-file","cos","cosh","count","cpymem","crc32","crit-chi2","crit-z","current-line",
+"bayes-query","bayes-train","begin","beta","betai","bind","binomial","bits","callback","case","catch",
+"ceil","change-dir","char","chop","clean","close","command-event","command-line","cond","cons","constant",
+"context","context?","copy","copy-file","cos","cosh","count","cpymem","crc32","crit-chi2","crit-z","current-line",
 "curry","date","date-value","debug","dec","def-new","default","define","define-macro","delete","delete-file",
 "delete-url","destroy","det","device","difference","directory","directory?","div","do-until","do-while","doargs",
 "dolist","dostring","dotimes","dotree","dump","dup","empty?","encrypt","ends-with","env","erf","error-event",
-"estack","eval","eval-string","exec","exists","exit","exp","expand","explode","factor","fft","file-info",
+"estack","eval","eval-string","exec","exists","exit","exp","expand","explode","extend","factor","fft","file-info",
 "file?","filter","find","find-all","first","flat","float","float?","floor","flt","for","for-all","fork",
 "format","fv","gammai","gammaln","gcd","get-char","get-float","get-int","get-long","get-string","get-url",
 "global","global?","if","if-not","ifft","import","inc","index","inf?","int","integer","integer?","intersect",
 "invert","irr","join","lambda?","last","last-error","legal?","length","let","letex","letn","list","list?",
 "load","local","log","lookup","lower-case","macro?","main-args","make-dir","map","mat","match","max","member",
-"min","mod","mul","multiply","name","net-accept","net-close","net-connect","net-error","net-eval",
+"min","mod","mul","multiply","net-accept","net-close","net-connect","net-error","net-eval",
 "net-interface", "net-listen","net-local","net-lookup","net-peek","net-peer","net-ping","net-receive",
 "net-receive-from", "net-receive-udp","net-select","net-send","net-send-to","net-send-udp","net-service",
 "net-sessions","new", "nil","nil?","normal","not","now","nper","npv","nth","null?","number?","open","or",
-"ostype","pack","parse", "parse-date","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","pretty-print",
-"primitive?","print", "println","prob-chi2","prob-z","process","prompt-event","protected?","push","put-url","pv",
-"quote","quote?","rand", "random","randomize","read-buffer","read-char","read-expr","read-file","read-key",
-"read-line","reader-event", "read-utf8", "real-path","receive","ref","ref-all","regex","regex-comp","remove-dir",
-"rename-file","replace", "replace-assoc","reset", "rest","reverse", "rotate","round","save","search","seed",
-"seek","select","semaphore","send", "sequence","series","set", "set-locale","set-ref", "set-ref-all","setq",
-"setf","sgn","share","signal","silent", "sin","sinh","sleep","slice", "sort","source","spawn", "sqrt",
-"starts-with","sync","string","string?","sub", "swap","sym","symbol?","symbols", "sys-error","sys-info","tan", 
-"tanh","throw","throw-error","time","time-of-day", "timer","title-case","trace", "trace-highlight","transpose",
-"trim", "true","true?","unicode","unify","unique", "unless","unpack", "until","upper-case","utf8","utf8len",
-"uuid", "wait-pid","when","while","write-buffer", "write-char","write-file", "write-line","xfer-event","xml-error",
-"xml-parse", "xml-type-tags","zero?","|","~" };
+"ostype","pack","parse", "parse-date","path","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","prefix",
+"pretty-print", "primitive?","print", "println","prob-chi2","prob-z","process","prompt-event","protected?",
+"push","put-url","pv","quote","quote?","rand", "random","randomize","read","read-buffer","read-char","read-expr",
+"read-file","read-key","read-line","reader-event", "read-utf8", "real-path","receive","ref","ref-all","regex",
+"regex-comp","remove-dir", "rename-file","replace", "replace-assoc","reset", "rest","reverse", "rotate","round",
+"save","search","seed","seek","select","self","semaphore","send", "sequence","series","set", "set-locale",
+"set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent", "sin","sinh","sleep","slice", "sort",
+"source","spawn", "sqrt","starts-with","sync","string","string?","sub", "swap","sym","symbol?","symbols", 
+"sys-error","sys-info","tan", "tanh","term","throw","throw-error","time","time-of-day", "timer","title-case",
+"trace", "trace-highlight","transpose", "trim", "true","true?","unicode","unify","unique", "unless","unpack", 
+"until","upper-case","utf8","utf8len", "uuid", "wait-pid","when","while","write","write-buffer", "write-char",
+"write-file", "write-line","xfer-event","xml-error","xml-parse", "xml-type-tags","zero?","|","~" };
 
 static SimpleAttributeSet comment;
 static SimpleAttributeSet keyword;

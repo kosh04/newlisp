@@ -4,7 +4,7 @@
 ;; @version 2.1 - changes for 10.0
 ;; @version 2.2 - doc changes
 ;; @version 2.3 - fix in mail-send-body, thanks to Alessandro
-;; @author Lutz Mueller 2001-2009, Cormullion 2008
+;; @author Lutz Mueller 2001-2010, Cormullion 2008
 ;; <h2>Routines for sending mail</h2> 
 ;; This module implements routines to communicate with a SMTP mail server 
 ;; for sending email. To use this module include the following 'load' statement 

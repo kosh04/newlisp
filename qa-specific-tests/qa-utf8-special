@@ -1,0 +1,25 @@
+#!/usr/bin/env newlisp
+
+; utf8 - transforming from and to nmbers, upper-case'ing and lower-case'ing
+
+; should show Chinese characters if editor or terminal is UTF-8 capable
+(println "characters entered by keyboard:")
+
+(println (set 'utf8str "我能吞下玻璃而不伤身体。"))
+
+(println "should look the same as made from unicode numbers:")
+
+(set 'utf8chars '(25105 33021 21534 19979 29627 29827 32780 19981 20260 36523 20307 12290))
+(println (set 'utf8str (join (map char utf8chars))))
+
+(print "and be transformd back to the same numbers: ")
+(println (= (map char (explode utf8str)) utf8chars))
+
+(println "checking upper-case'ing on russian letters")
+(println "абвгдеёжзийклмнопрстуфхцчшщъыьэюя")
+(println (upper-case "абвгдеёжзийклмнопрстуфхцчшщъыьэюя") " should be uppercase of previous")
+(println (lower-case (upper-case "абвгдеёжзийклмнопрстуфхцчшщъыьэюя")) " and back to lowercase")
+
+(exit)
+
+

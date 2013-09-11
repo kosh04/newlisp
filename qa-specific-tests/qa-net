@@ -26,6 +26,14 @@
 ; 
 ;
 
+(println)
+(println "Testing network API and server mode")
+
+(when (not (or (file? "newlisp") (file? "newlisp.exe")))
+	(println ">>>>> Need a newlisp executable in the current directory for qa-net")
+	(exit)
+)
+
 (set 'start (time-of-day))
 
 (when (> (sys-info -1) 512)  ; IPv6
@@ -41,7 +49,7 @@
 
 	(set 'host (1 ((regex {http://(.*?)\]:} targetURL) 3)))
 	(set 'port (int ((regex {http://.*?\]:(\d+)/} targetURL) 3)))
-	(set 'path ((regex {http://.*\]:\d+/(.*)} targetURL) 3))
+	(set 'file-path ((regex {http://.*\]:\d+/(.*)} targetURL) 3))
 )
 
 (when (<= (sys-info -1) 512) ; IPv4
@@ -57,7 +65,7 @@
 
 	(set 'host ((regex "http://(.*?):" targetURL) 3))
 	(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
-	(set 'path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
+	(set 'file-path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
 )
 
 
@@ -66,7 +74,7 @@
 
 (println "host: " host)
 (println "port: " port)
-(println "path: " path)
+(println "path: " file-path)
 
 ; check if server is online or start it, if not
 ; start one on localhost if no URL was specified
@@ -89,12 +97,12 @@
 ; test short syntax normal mode
 (if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
 	(set 'result1 (println "net-eval normal mode ->OK"))
-	(println "net-eval poblem with normal mode ->ERROR"))
+	(println " >>>> net-eval poblem with normal mode ->ERROR"))
 
 ; test error reporting
 (if (= (net-eval host port "(abc)") "\nERR: invalid function : (abc)\n")
 	(set 'result2 (println "net-eval error reporting ->OK"))
-	(println "net-eval problem with error reporting ->ERROR"))
+	(println " >>>> net-eval problem with error reporting ->ERROR"))
 
 ; test secure mode in both syntaxes
 (set 'result3 true)
@@ -104,17 +112,21 @@
 (set 'verify key)
 (if (catch (save targetURL 'key) 'res)
 	(set 'result4 (println "save to URL ->OK"))
-	(println "save to URL ->ERROR"))
+	(println " >>>> save to URL ->ERROR"))
 
-(if (= ostype "Win32") (sleep 4000)) ; for Win32
+(if (find ostype '("Win32""Cygwin"))
+    (sleep 2000))
 
 ; test loading from URL
 (if (and
-	(println "loading target URL: " targetURL)
-	(= (load targetURL) verify)
-	(= key verify))
-	(set 'result5 (println "load from URL ->OK"))
-	(println "load from URL ->ERROR"))
+       (println "loading target URL: " targetURL)
+       (catch (= (load targetURL) verify) 'result) 
+       (= key verify))
+       (set 'result5 (println "load from URL ->OK"))
+	(begin
+    	(println "load from URL ->ERROR")
+		(println result))
+)
 
 ; test writing file to remote
 
@@ -131,15 +143,18 @@
 (if (= ostype "Win32" ) (sleep 4000)) ; for Win32
 
 ; read content from remote URL
-(if (= content (read-file targetURL))
-	(set 'result7 (println "read-file from remote URL ->OK"))
-	(println "read-file from  remote URL ->ERROR"))
+(if (catch (= contents (read-file targetURL)) 'result)
+    (set 'result7 (println "read-file from remote URL ->OK"))
+    (begin
+        (println " >>>> read-file from  remote URL ->ERROR")
+		(println result))
+)
 
 ; delete file at remote URL
 (if (!= ostype "Win32") ; does not work on Windows when on the same machine
 	(if (delete-file targetURL)
 		(set 'result8 (println "delete-file from remote URL ->OK"))
-		(println "delete-file from remote URL ->Error"))
+		(println " >>>> delete-file from remote URL ->Error"))
 	(set 'result8 true)
 )
 
@@ -149,8 +164,8 @@
 (println "\nduration -> " (- (time-of-day) start) " ms\n")
 
 (if (and result1 result2 result3 result4 result5 result6 result7 result8)
-	(println ">>>>> NETWORK EVAL AND NETWORK FILE FUNCTIONS SUCCESSFUL")
-	(println ">>>>> ERROR: PROBLEM IN NETWORK EVAL AND NETWORK FILE FUNCTIONS")
+	(println ">>>>> Network eval and network file functions SUCCESSFUL")
+	(println ">>>>> PROBLEM in network eval and network file functions")
 )
 (println)
 (exit)

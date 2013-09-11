@@ -11,7 +11,8 @@
 ;; @version 2.4 - doc changes
 ;; @version 2.5 - changed sqlite3_bind_blob to sqlite3_bind_text in function bind-parameter
 ;; @version 2.61 - added function  <tt>sql3:colnames</tt>.
-;; @author Lutz Mueller 2004-2009, Dmitri Cherniak 2007, Clemens Hintze 2009
+;; @version 2.7 - changed deprecated <tt>name</tt> to <tt>term</tt>, <tt>inc</tt> to <tt>++</tt>
+;; @author Lutz Mueller 2004-2010, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
 ;; To use this module include the following 'load'  or 'module' statement at the
@@ -63,6 +64,13 @@
 ;; At the bottom of the source file 'sqlite3.lsp' a test routine called
 ;; 'test-sqlite3' can be found to test for correct installation of SQLite.
 
+; make this module compatible with version less than 10.1.11
+(when (< (sys-info -2) 10111)
+	(constant (global 'term) name))
+
+(when (< (sys-info -2) 10110)
+	(constant (global '++) inc))
+
 (context 'sql3)
 
 ; fetch-row and keep-type functions depend on this
@@ -72,18 +80,17 @@
 ;
 (set 'files (list
 	"/usr/lib/libsqlite3.so" ; SuSE Linux
-	"/usr/local/lib/libsqlite3.so" ; Linux and BSDs
+	"/usr/local/lib/libsqlite3.so" ; Linux, BSD, Solaris
 	"/usr/pkg/lib/libsqlite3.so" ; NetBSD
+	"/usr/local/lib/libsqlite3.so.13.3" ; OpenBSD 4.6
 	"/usr/lib/libsqlite3.0.dylib" ; Mac OSX Darwin
-	"/usr/local/lib/libsqlite3.so" ; Solaris
-	"/usr/local/lib/libsqlite3.so.11.0" ; OpenBSD
 	(string (env "PROGRAMFILES") "/sqlite3/sqlite3.dll") ; Win32/MinGW
 ))
 
 
-(set 'library (files (or 
-				(find true (map file? files)) 
-				(begin (println "cannot find sqlite3 library") (exit)))))
+(set 'library (files (or
+		       (find true (map file? files)) 
+		       (throw-error "cannot find sqlite3 library"))))
 
 (import library "sqlite3_open" "cdecl")
 (import library "sqlite3_close" "cdecl")
@@ -226,7 +233,7 @@
     			(dolist (entry sql-args (!= result SQLITE_OK))
       				(if (list? entry) 
         				(set 'result (bind-parameter pstm (first entry) (last entry)))
-        				(set 'result (bind-parameter pstm (inc argi) entry))
+        				(set 'result (bind-parameter pstm (++ argi) entry))
 				)))
 	)
 
@@ -257,7 +264,7 @@
 	(let (idx param)
 		(unless (integer? param)
 			(set 'idx (sqlite3_bind_parameter_index pstm
-				(if (symbol? param) (name param) (string param)))))
+				(if (symbol? param) (term param) (string param)))))
 		(cond
 			((float? value) (sqlite3_bind_double pstm idx (float value)))
 			;((string? value) (sqlite3_bind_blob pstm idx value (length value) -1))

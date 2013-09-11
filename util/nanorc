@@ -6,6 +6,9 @@
 ## version 1.10 ready for newLISP v 10.0.6
 ## version 1.11 ready for newLISP v 10.1
 ## version 1.12 added a few missing functions
+## version 1.13 added new 'self'
+## version 1.14 added new 'extend'
+## version 1.15 added new 'term', "++", "--", eliminated 'name'
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -26,39 +29,39 @@ set historylog
 
 syntax "lisp" "\.lsp$"
 ## keywords
-color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|-|/|:|<|<<|<=|=|>|>=|>>|@|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|++|-|--|/|:|<|<<|<=|=|>|>=|>>|@|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(add|address|amb|and|append|append-file|apply|args|array|array-list|array\?)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(asin|asinh|assoc|atan|atan2|atanh|atom\?|base64-dec|base64-enc)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(bayes-query|bayes-train|begin|beta|betai|bind|binomial|bits|callback|case|catch)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(asin|asinh|assoc|atan|atan2|atanh|atom\?|base64-dec|base64-enc|bayes-query)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(bayes-train|begin|beta|betai|bind|binomial|bits|callback|case|catch)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(ceil|change-dir|char|chop|clean|close|command-event|cond|cons|constant|context)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(context\?|copy|copy-file|cos|cosh|count|cpymem|crc32|crit-chi2|crit-z|current-line)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(curry|date|date-value|debug|dec|def-new|default|define|define-macro|delete)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(delete-file|delete-url|destroy|det|device|difference|directory|directory\?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(div|do-until|do-while|doargs|dolist|dostring|dotimes|dotree|dump|dup|empty\?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(encrypt|ends-with|env|erf|error-event|eval|eval-string)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(exec|exists|exit|exp|expand|explode|factor|fft|file-info|file\?|filter|find)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(exec|exists|exit|exp|expand|explode|extend|factor|fft|file-info|file\?|filter|find)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(find-all|first|flat|float|float\?|floor|flt|for|for-all|fork|format|fv|gammai)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(gammaln|gcd|get-char|get-float|get-int|get-long|get-string|get-url|global|global\?)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(if|ifft|import|inc|inf?|index|int|integer|integer\?|intersect|invert|irr|join|lambda\?|last)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(gammaln|gcd|get-char|get-float|get-int|get-long|get-string|get-url|global|global\?|if)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(ifft|import|inc|inf?|index|int|integer|integer\?|intersect|invert|irr|join|lambda\?|last)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(last-error|legal\?|length|let|letex|letn|list|list\?|load|local|log|lookup|lower-case)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(macro\?|main-args|make-dir|map|mat|match|max|member|min|mod|mul|multiply|name)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(macro\?|main-args|make-dir|map|mat|match|max|member|min|mod|mul|multiply)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-accept|net-close|net-connect|net-error|net-eval|net-interface|net-listen)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-local|net-lookup|net-peek|net-peer|net-ping|net-receive|net-receive-from)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-receive-udp|net-select|net-send|net-send-to|net-send-udp|net-service)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-sessions|new|nil|nil\?|normal|not|now|nper|npv|nth|null\?|number\?)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(open|or|ostype|pack|parse|parse-date|peek|pipe|pmt|pop|pop-assoc|post-url)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(pow|pretty-print|primitive\?|print|println|prob-chi2|prob-z|process)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(prompt-event|protected\?|push|put-url|pv|quote|quote\?|rand|random|randomize)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(read-buffer|read-char|read-expr|read-file|read-key|read-line|reader-event|real-path|receive|ref)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(ref-all|regex|regex-comp|remove-dir|rename-file|replace|replace-assoc)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(reset|rest|reverse|rotate|round|save|search|seed|seek|select|semaphore|send|sequence)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(series|set|set-locale|set-ref|set-ref-all|setf|setq|sgn|share)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(open|or|ostype|pack|parse|parse-date|path|peek|pipe|pmt|pop|pop-assoc|post-url)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(pow|prefix|pretty-print|primitive\?|print|println|prob-chi2|prob-z|process)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(prompt-event|protected\?|push|put-url|pv|quote|quote\?|rand|random|randomize|read)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(read-buffer|read-char|read-expr|read-file|read-key|read-line|reader-event|real-path)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(receive|ref|ref-all|regex|regex-comp|remove-dir|rename-file|replace|replace-assoc)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(reset|rest|reverse|rotate|round|save|search|seed|seek|select|self|semaphore|send)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(sequence|series|set|set-locale|set-ref|set-ref-all|setf|setq|sgn|share)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(signal|silent|sin|sinh|sleep|slice|sort|source|spawn|sqrt|starts-with|string)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(string\?|sub|swap|sym|symbol\?|symbols|sync|sys-error|sys-info|tan|tanh|throw)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(string\?|sub|swap|sym|symbol\?|symbols|sync|sys-error|sys-info|tan|tanh|term|throw)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(throw-error|time|time-of-day|timer|title-case|trace|trace-highlight|transpose)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(trim|true|true\?|unicode|unify|unique|unless|unpack|until|upper-case|utf8|utf8len)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(uuid|wait-pid|when|while|write-buffer|write-char|write-file|write-linei|xfer-event)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(xml-error|xml-parse|xml-type-tags|zero\?|\||~)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(uuid|wait-pid|when|while|write|write-buffer|write-char|write-file|write-line)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(xfer-event|xml-error|xml-parse|xml-type-tags|zero\?|\||~)([[:space:]()]|$)"
 ## decimal and float numbers
 color yellow "(^|[[:space:]()-])([0-9]+|[0-9]+\.[0-9]+)"
 ## hex numbers

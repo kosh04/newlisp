@@ -5,9 +5,13 @@
 # v 1.2 - eliminated quote in write-buffer syntax
 # v 1.3 - change in read-buffer for version 10.0
 # v 1.4 - change in exit condition for reader loop
+# v 1.4 - changed 'write-bufffer' to 'write'
 # serves POST request from upload.html
 # 
-#
+
+; make compatible with older versions of newLISP
+(when (< (sys-info -2) 10110)
+    (constant (global 'write) write-buffer))
 
 (define (process-upload,
 		; locals
@@ -26,7 +30,7 @@
 	; read data into intermediate file
 	(set 'infile (open "upload-file" "write"))
 	(while (read-buffer (device) buffer 1024)
-	    (write-buffer infile buffer))
+	    (write infile buffer))
 	(close infile)
 	; get filename and boundaries
 	(set 'infile (open "upload-file" "read"))
@@ -49,7 +53,7 @@
 	(seek infile start)
 	(while (> size 0)
 	    (set 'bytesread (read-buffer infile buffer (min 1024 size)))
-	    (write-buffer outfile buffer bytesread)
+	    (write outfile buffer bytesread)
 	    (dec size bytesread))
 	(close infile)
 	(close outfile)

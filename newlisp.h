@@ -20,9 +20,11 @@
 #ifndef NEWLISP_H
 #define NEWLISP_H
 
-/* only neede when doing auto configuration with ./configure-alt */
+/* config.h is only needed when doing auto configuration with ./configure-alt */
 #ifdef NEWCONFIG
 #include "config.h"
+#else
+#define NEWLISPDIR "/usr/share/newlisp"
 #endif
 
 #ifdef LINUX
@@ -57,6 +59,10 @@
 
 #ifdef WIN_32
 #define OSTYPE "Win32"
+#endif
+
+#ifdef CYGWIN
+#define OSTYPE "Cygwin"
 #endif
 
 #ifdef OS2 
@@ -106,6 +112,10 @@ This is for 64bit large file support (LFS),
 #endif
 #ifdef WIN_32
 #include <wchar.h>
+#endif
+#ifdef CYGWIN
+#include <wchar.h>
+#define WCSFTIME
 #endif
 #endif
 
@@ -282,8 +292,6 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_GLOBAL 0x20
 #define SYMBOL_BUILTIN 0x40
 #define SYMBOL_PRIMITIVE 0x80
-#define SYMBOL_UNSAFE 0x100
-#define SYMBOL_ANONYMOUS 0x200
 
 /* cell masks */
 
@@ -433,8 +441,7 @@ This is for 64bit large file support (LFS),
 #define ERR_IO_ERROR 63
 #define ERR_WORKING_DIR 64
 #define ERR_INVALID_PID 65
-#define ERR_CONTINUE_WO_CATCH 66
-#define MAX_ERROR_NUMBER 66
+#define MAX_ERROR_NUMBER 65
 #define UNKNOWN_ERROR "Unknown error"
 
 /* I/O routines */
@@ -444,12 +451,12 @@ This is for 64bit large file support (LFS),
 #define OUT_LOG 3
 
 /* HTTP in nl-web.c */
-#define HTTP_GET_URL 0
-#define HTTP_GET_HEAD 1
-#define HTTP_PUT_URL 2
-#define HTTP_PUT_APPEND_URL 3
-#define HTTP_POST_URL 4
-#define HTTP_DELETE_URL 5
+#define HTTP_GET 0
+#define HTTP_HEAD 1
+#define HTTP_PUT 2
+#define HTTP_PUT_APPEND 3
+#define HTTP_POST 4
+#define HTTP_DELETE 5
 
 /* sysEvalString() in newlisp.c */
 #define EVAL_STRING 0 /* the classic eval-string: read, xlate, evaluate */
@@ -535,7 +542,8 @@ extern SYMBOL * errorEvent;
 extern SYMBOL * symbolCheck;
 extern SYMBOL * itSymbol;
 extern SYMBOL sentinel;
-extern void * symbolCheckPtr;
+extern void * stringIndexPtr;
+extern CELL * stringCell;
 extern int traceFlag;
 extern int errorReg;
 extern char * errorMessage[];

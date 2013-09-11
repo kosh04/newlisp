@@ -1,0 +1,151 @@
+#!/usr/bin/newlisp
+
+; qa-inplace - test in-place modificatin since v.10.1.12 
+; This file tests a usually not used ability of
+; destructive functions to modify not only the
+; contents of symbols and places in list structures
+; but also the programming text in-place of a function.
+; newLISP has supported this for some destructive
+; functions for a long time, but it has never been
+; publicized or promoted.
+
+; Many will in-place modification as bad programming
+; style, but I think that it has interesting and little
+; explored possibilties. 
+
+; Changes for in-place also have made code smaller and 
+; faster of the functions involved.
+
+
+(define (inplace-++---)
+	(++ 0)
+	(-- 0))
+
+(define (inplace-inc-dec)
+	(inc 0)
+	(dec 0))
+
+(define (inplace-extend)
+	(extend "abc" "def")
+	(extend '(1 2 3) '(4 5 6)))
+
+(define (inplace-pop-assoc) 
+	(pop-assoc 'b '((a 1) (b 2))))
+
+(define (inplace-push-pop)
+	(push "a" "bc")
+	(push 'a '(b c))
+	(pop "abc")
+	(pop '(a b c)))
+
+(define (inplace-replace)
+	(replace "de" "abcdefg" "XX"))
+
+(define (inplace-rotate)
+	(rotate '(a b c)))
+
+; also check nth, first, last indexing 
+(define (inplace-setf-setq)
+	(setf 0 1)
+	(setf ('(a b) 0) 'A)
+	(setf (first '(a b c)) 'A)
+	(setf (last '(a b c)) 'C)
+	(setf (first "abc") "A")
+	(setf (last "abc") "C")
+	(setf (nth 1 '(a b c)) 'B))
+	
+(define (inplace-sort)
+	(sort '(q t r w e)))
+
+(define (inplace-swap)
+	(swap "abc" 123))
+
+(define (qa-inplace)
+	(and
+		(inplace-++---)
+		(= inplace-++--- (lambda () (++ 1) (-- -1)))
+
+		(inplace-inc-dec)
+		(= inplace-inc-dec (lambda () (inc 1) (dec -1)))
+
+		(inplace-extend)
+		(= inplace-extend 
+			(lambda () (extend "abcdef" "def") (extend '(1 2 3 4 5 6) '( 4 5 6))))
+
+		(inplace-pop-assoc)
+		(= inplace-pop-assoc (lambda () (pop-assoc 'b '((a 1)))))		
+
+		(inplace-push-pop)
+		(= inplace-push-pop
+			(lambda () (push "a" "abc") (push 'a '(a b c)) (pop "bc") (pop '(b c))))
+	
+		(inplace-replace)
+		(= inplace-replace (lambda () (replace "de" "abcXXfg" "XX")))
+
+		(inplace-rotate)
+		(= inplace-rotate (lambda () (rotate '(c a b))))
+
+		(inplace-setf-setq)
+		(= inplace-setf-setq (lambda () (setf 1 1) (setf ('(A b) 0) 'A)
+				(setf (first '(A b c)) 'A) (setf (last '(a b C)) 'C)
+				(setf (first "Abc") "A") (setf (last "abC") "C")
+				(setf (nth 1 '(a B c)) 'B)))
+
+		(inplace-sort)
+		(= inplace-sort (lambda () (sort '(e q r t w))))
+
+		(inplace-swap)
+		(= inplace-swap (lambda () (swap 123 "abc")))
+	)
+)
+
+; check if destructive functions return reference to 
+; in-place data for modification with other desctructive
+; functions, e.g. setf.
+
+(define (qa-inplace-2)
+  (and 
+	(define (foo) (setf (first (push 1 '(2 3 4))) 11))
+	(foo) (= (eval (nth '(1 1 1 2) foo)) '(11 2 3 4))
+
+	(define (foo) (setf (first (push "a" "bc")) "A"))
+	(foo) (= (eval (nth '(1 1 1 2) foo)) "Abc")
+
+	(define (foo) (setf (first (sort '(3 6 4 9))) 11))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) '(11 4 6 9))
+
+	(define (foo) (setf (first (reverse '(4 3 2))) 11))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) '(11 3 4))
+
+	(define (foo) (setf (first (reverse "abc")) "C"))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) '"Cba")
+
+	(define (foo) (setf (first (rotate '(4 3 2 1))) 11))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) '(11 4 3 2))
+
+	(define (foo) (setf (first (rotate "abc")) "C"))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) "Cab")
+
+	(define (foo) (setf (first (extend "abc" "def")) "A"))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) "Abcdef")
+
+	(define (foo) (setf (first (extend '(a b c) '(d e f))) 'A))
+	(foo) (= (eval (nth '(1 1 1 1) foo)) '(A b c d e f))
+
+	(define (foo) (setf (first (replace "c" "abc" "C")) "A"))
+	(foo) (= (eval (nth '(1 1 1 2) foo)) "AbC")
+
+	(define (foo) (setf (first (replace 'c '(a b c) 'C)) 'A))
+	(foo) (= (eval (nth '(1 1 1 2) foo)) '(A b C))
+  )	
+)
+
+(if (and (qa-inplace) (qa-inplace-2))
+	(println ">>>>> in-place modification passed SUCCESSFUL")
+	(println ">>>>> PROBLEM in-place modification passed")
+)
+
+(exit)
+
+; eof
+	

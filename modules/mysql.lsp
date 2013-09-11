@@ -7,7 +7,7 @@
 ;; @version 3.2  - a fix when fetch-all has an empty result
 ;; @version 3.3  - typo in fetch-all didn't delete old fetches
 ;; @version 3.4  - documentaion error for load path
-;; @author Lutz Mueller 2003-2009, Gordon Fischer 2005, Jeff Ober 2007
+;; @author Lutz Mueller 2003-2010, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
 ;; of mysql from @link http://www.mysql.com www.mysql.com
@@ -92,33 +92,33 @@
 (set 'NEWLISP64 (not (zero? (& (sys-info -1) 256))))
 
 (set 'files '(
-	"/usr/local/lib/libmysqlclient.so.19.0" ; OpenBSD 4.4
+	"/usr/local/lib/libmysqlclient.so.19.0" ; OpenBSD 4.6
 	"/usr/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.dylib" ; MacOS X
 ))
 
-(set 'libmysqlclient (files (or 
-				(find true (map file? files)) 
-				(begin (println "cannot find libmysqlclient library") (exit)))))
+(set 'library (files (or 
+		       (find true (map file? files)) 
+		       (throw-error "cannot find libmysqlclient library"))))
 
-(import libmysqlclient "mysql_init")
-(import libmysqlclient "mysql_real_connect")
-(import libmysqlclient "mysql_get_host_info")
-(import libmysqlclient "mysql_real_escape_string")
-(import libmysqlclient "mysql_query")
-(import libmysqlclient "mysql_real_query")
-(import libmysqlclient "mysql_store_result")
-(import libmysqlclient "mysql_free_result")
-(import libmysqlclient "mysql_data_seek")
-(import libmysqlclient "mysql_fetch_row")
-(import libmysqlclient "mysql_close")
-(import libmysqlclient "mysql_fetch_field_direct")
-(import libmysqlclient "mysql_insert_id")
-(import libmysqlclient "mysql_num_rows")
-(import libmysqlclient "mysql_num_fields")
-(import libmysqlclient "mysql_affected_rows")
-(import libmysqlclient "mysql_error")
+(import library "mysql_init")
+(import library "mysql_real_connect")
+(import library "mysql_get_host_info")
+(import library "mysql_real_escape_string")
+(import library "mysql_query")
+(import library "mysql_real_query")
+(import library "mysql_store_result")
+(import library "mysql_free_result")
+(import library "mysql_data_seek")
+(import library "mysql_fetch_row")
+(import library "mysql_close")
+(import library "mysql_fetch_field_direct")
+(import library "mysql_insert_id")
+(import library "mysql_num_rows")
+(import library "mysql_num_fields")
+(import library "mysql_affected_rows")
+(import library "mysql_error")
 
 ; check endianess of the host CPU 
 (set 'big-endian (= (pack ">ld" 1) (pack "ld" 1)))

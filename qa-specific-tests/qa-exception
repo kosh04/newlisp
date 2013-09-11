@@ -2,25 +2,28 @@
 
 ; check exception handling with 'catch' and 'throw'
 
+(println)
+(println "Testing 'catch' and 'throw'")
+
 (set 'start (time-of-day))
 
 (set 'HI 0 'LO 0)
 
 (define (some_function num)
 	(catch (hi_function num) 'result)
-	(if (not (integer? result))
+	(when (not (integer? result))
 		(println "we never get here")))
 
 (define (hi_function num)
 	(catch (lo_function num) 'result)
 	(if (= result 'HI_exception)
-		(inc HI)
+		(++ HI)
 		(throw result)))
 		
 (define (lo_function num)
 	(catch (blowup num) 'result)
 	(if (= result 'LO_exception) 
-		(inc LO)
+		(++ LO)
 		(throw result)))
 
 (define (blowup num)
@@ -36,6 +39,11 @@
 
 (main 10000)
 (println (format " %6.3f ms per exception" (div (sub (time-of-day) start) 10000) ))
+
+(if (= (+ HI LO) 10000)
+	(println ">>>>> Exception testing SUCCESSFUL")
+	(println ">>>>> PROBLEM in testing exceptions")
+)
 
 (exit)
 

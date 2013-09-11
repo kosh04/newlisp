@@ -8,9 +8,11 @@
 " Last change:  2009 Jun 19 added new functions 'send'and 'receive'
 " Last change:  2009 Oct 20 added new function 'reader-event' 
 " Last change:  2009 Nov 15 removed experimental 'estack' L.M.
+" Last change:  2009 Dec 6 added new 'self' L.M.
+" Last change:  2010 Feb 9th, added 'extend','term','++','--' eliminated 'name'
 " newLISP site: http://www.newlisp.org/
 
-" $Id: newlisp.vim,v 1.28 2009/10/20 17:27:33 slobin Exp $
+" $Id: newlisp.vim,v 1.29 2009/10/20 17:27:33 slobin Exp $
 
 " *** Some syntax quirks of newLISP and how this file treats them: ***
 "
@@ -119,10 +121,10 @@ syn region newlispStringTexted start="\[text\]" end="\[\/text\]"
 " This keywords list is based on newLISP v.10.0.8 build primes.h file
 " XXX Don't forget to remove colon ":" and escape vertical bar "|"
 
-syn keyword newlispFunction ! != $ % & * + - / < << <= = > >= >> NaN? ^ abort abs acos acosh add
+syn keyword newlispFunction ! != $ % & * + ++ - -- / < << <= = > >= >> NaN? ^ abort abs acos acosh add
 syn keyword newlispFunction address amb and append append-file apply args array array-list array?
 syn keyword newlispFunction asin asinh assoc atan atan2 atanh atom? base64-dec base64-enc
-syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback
+syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback 
 syn keyword newlispFunction case catch ceil change-dir char chop clean close command-event cond cons
 syn keyword newlispFunction constant context context? copy copy-file cos cosh count cpymem crc32
 syn keyword newlispFunction crit-chi2 crit-z current-line curry date date-value debug dec def-new
@@ -130,30 +132,30 @@ syn keyword newlispFunction default define define-macro delete delete-file delet
 syn keyword newlispFunction device difference directory directory? div do-until do-while doargs
 syn keyword newlispFunction dolist dostring dotimes dotree dump dump-symbol dup empty? encrypt
 syn keyword newlispFunction ends-with env erf error-event error-number error-text estack eval
-syn keyword newlispFunction eval-string exec exists exit exp expand explode factor fft file-info
+syn keyword newlispFunction eval-string exec exists exit exp expand explode extend factor fft file-info
 syn keyword newlispFunction file? filter find find-all first flat float float? floor flt for for-all
 syn keyword newlispFunction fork format fv gammai gammaln gcd get-char get-float get-int get-long
 syn keyword newlispFunction get-string get-url global global? if if-not ifft import inc index inf?
 syn keyword newlispFunction int integer integer? intersect invert irr join lambda? last last-error
 syn keyword newlispFunction legal? length let letex letn list list? load local log lookup lower-case
 syn keyword newlispFunction macro? main-args make-dir map mat match max member min mod mul multiply
-syn keyword newlispFunction name net-accept net-close net-connect net-error net-eval net-interface
+syn keyword newlispFunction net-accept net-close net-connect net-error net-eval net-interface
 syn keyword newlispFunction net-listen net-local net-lookup net-peek net-peer net-ping net-receive
 syn keyword newlispFunction net-receive-from net-receive-udp net-select net-send net-send-to
 syn keyword newlispFunction net-send-udp net-service net-sessions new nil? normal not now nper npv
-syn keyword newlispFunction nth null? number? open or pack parse parse-date peek pipe pmt pop
-syn keyword newlispFunction pop-assoc post-url pow pretty-print primitive? print println prob-chi2
+syn keyword newlispFunction nth null? number? open or pack parse parse-date path peek pipe pmt pop
+syn keyword newlispFunction pop-assoc post-url pow prefix pretty-print primitive? print println prob-chi2
 syn keyword newlispFunction prob-z process prompt-event protected? push put-url pv quote quote? rand
-syn keyword newlispFunction random randomize read-buffer read-char read-expr read-file read-key
+syn keyword newlispFunction random randomize read read-buffer read-char read-expr read-file read-key
 syn keyword newlispFunction read-line read-utf8 reader-event real-path receive ref ref-all regex 
 syn keyword newlispFunction regex-comp remove-dir rename-file replace reset rest reverse rotate round
-syn keyword newlispFunction save search seed seek select semaphore send sequence series set set-locale 
+syn keyword newlispFunction save search seed seek select self semaphore send sequence series set set-locale 
 syn keyword newlispFunction set-ref set-ref-all setf setq sgn share signal silent sin sinh sleep slice 
 syn keyword newlispFunction sort source spawn sqrt starts-with string string? sub swap sym symbol? 
-syn keyword newlispFunction symbols sync sys-error sys-info tan tanh throw throw-error time time-of-day 
+syn keyword newlispFunction symbols sync sys-error sys-info tan tanh term throw throw-error time time-of-day 
 syn keyword newlispFunction timer title-case trace trace-highlight transpose trim true? unicode unify
 syn keyword newlispFunction unique unless unpack until upper-case utf8 utf8len uuid wait-pid when
-syn keyword newlispFunction while write-buffer write-char write-file write-line xfer-event xml-error
+syn keyword newlispFunction while write write-buffer write-char write-file write-line xfer-event xml-error
 syn keyword newlispFunction xml-parse xml-type-tags zero? \| ~
 
 syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $args $idx $it $main-args

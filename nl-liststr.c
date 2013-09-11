@@ -1,7 +1,7 @@
 /* nl-liststr.c --- newLISP primitives handling lists and strings
 
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -229,6 +229,68 @@ return(result);
 }
 
 
+CELL * p_extend(CELL * params)
+{
+CELL * target;
+CELL * head;
+CELL * tail;
+SYMBOL * symbolRef;
+char * pStr;
+size_t size;
+
+params = getEvalDefault(params, &target);
+if((symbolRef = symbolCheck))
+	{
+	if(isProtected(symbolCheck->flags))
+		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+	}
+
+if(isList(target->type))
+	{
+	tail = (CELL *)target->aux;
+	target->aux = (UINT)nilCell;
+	if(tail == nilCell)
+		{
+		tail = (CELL *)target->contents;
+		while(tail->next != nilCell)
+			tail = tail->next;
+		}
+
+	while(params != nilCell)
+		{	
+		params = getListHead(params, &head);
+		if(head == nilCell) continue;
+		if(target->contents == (UINT)nilCell)
+			{
+			target->contents = (UINT)copyList(head);
+			tail = lastCellCopied;
+			}
+		else
+			{
+			tail->next = copyList(head);
+			target->aux = (UINT)lastCellCopied;
+			tail = (CELL *)target->aux;
+			}
+		}
+		
+	}	
+else if(target->type == CELL_STRING)
+	{
+	while(params != nilCell)
+		{
+		params = getStringSize(params, &pStr, &size, TRUE);
+		appendCellString(target, pStr, size);
+		}
+	}
+else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, target));
+
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(target);
+}
+
+
+
 CELL * p_chop(CELL * params)
 {
 size_t number = 1;
@@ -274,11 +336,11 @@ return(sublist((CELL *)params->contents, 0, length - number));
 CELL * p_nth(CELL * params)
 {
 CELL * list; 
-CELL * next;
+CELL * cell;
 CELL * (*implicitIndexFunc)(CELL *, CELL *);
 SYMBOL * symbolRef;
 
-next = getEvalDefault(params->next, &list); /* list or string to be indexed */
+cell = getEvalDefault(params->next, &list); /* list or string to be indexed */
 symbolRef = symbolCheck;
 
 params = copyCell(params); /* indices */
@@ -301,15 +363,10 @@ else if(list->type == CELL_STRING)
 		
 else return(errorProcExt(ERR_LIST_EXPECTED, list));
 
-if(symbolRef)
-	{
-	next = (*implicitIndexFunc)(list, params);
-	symbolCheck = symbolRef;
-	pushResultFlag = FALSE;
-	return(next);
-	}
-else
-	return(copyCell((*implicitIndexFunc)(list, params)));
+cell = (*implicitIndexFunc)(list, params);
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -337,7 +394,8 @@ if((symbolRef = symbolCheck))
 	if(isNil((CELL *)symbolCheck->contents))
 		{
         deleteList((CELL*)symbolCheck->contents);
-        symbolCheck->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)copyCell(newCell));
+		listOrg = makeCell(CELL_EXPRESSION, (UINT)copyCell(newCell));
+        symbolCheck->contents = (UINT)listOrg;
         goto PUSH_RETURN;
 	    }
 	}                                   
@@ -453,12 +511,9 @@ else if(insert == INSERT_AFTER || insert == INSERT_END)
     }
 
 PUSH_RETURN:
-if((symbolCheck = symbolRef))
-	{
-	pushResultFlag = FALSE;
-	return(listOrg);
-	}
-return(copyCell(listOrg));
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(listOrg);
 }
 
 
@@ -744,10 +799,8 @@ while(params->type != CELL_NIL)
 	if(index < 0) index = convertNegativeOffset(index, head);
 	if(index < idx) list = head, idx = 0;
 	while(idx < index  && list != nilCell) list = list->next, idx++; 
-#ifdef VERSION_10200
 	if(list == nilCell) 
 		errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
-#endif
 	if(result == NULL)
 		{
 		result = getCell(CELL_EXPRESSION);
@@ -876,13 +929,8 @@ else if(list->type == CELL_STRING)
 	}
 else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
 
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-
-return(copyCell(list));
+pushResultFlag = FALSE;
+return(list);
 }
 
 
@@ -913,40 +961,39 @@ return(appendString(list, list->next, joint, jointLen, trailJoint, FALSE));
 CELL * p_find(CELL * params) 
 {
 char * key;
-char * second;
+char * str;
 ssize_t found;
 CELL * next;
 CELL * keyCell;
 CELL * funcCell;
 size_t size;
-long options;
+long options = -1;
 size_t offset = 0;
 UINT * resultIdxSave;
-
 
 keyCell = evaluateExpression(params);
 params = getEvalDefault(params->next, &next);
 
-
 if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
 	{
 	key = (char *)keyCell->contents;
-	second = (char *)next->contents;
+	str = (char *)next->contents;
 	size = next->aux - 1;
 
 	if(params != nilCell)
-            {
-            params = getInteger(params, (UINT*)&options);
-			if(params != nilCell)
-				getInteger(params, (UINT*)&offset);
-            found = searchBufferRegex(second, (int)offset, key, (int)size, options, NULL);
-            if(found == -1) return(nilCell);
-            }
-        else
-            {
-            found = searchBuffer(second, size, key, keyCell->aux - 1, TRUE);
-            if(found == -1) return(nilCell);
-            }
+		{
+		if(params->next != nilCell)
+			getInteger(params->next, (UINT*)&offset);
+		if(offset > size) offset = size;
+		if(!isNil(params) )
+			getIntegerExt(params, (UINT *)&options, FALSE);
+		}
+
+	if(options == -1)
+		found = searchBuffer(str + offset, size - offset, key, keyCell->aux - 1, TRUE);
+	else
+        found = searchBufferRegex(str, (int)offset, key, (int)size, options, NULL) - offset;
+	if(found < 0) return(nilCell);
 	}
 else
 	{
@@ -969,9 +1016,8 @@ else
            	{
            	if(next->type == CELL_STRING)
                	{
-               	second = (char *)next->contents;
-               	if(searchBufferRegex(second, 0, key, next->aux - 1 , options, NULL) != -1)
-                   	break;
+               	if(searchBufferRegex((char *)next->contents, 0, 
+						key, next->aux - 1 , options, NULL) != -1) break;
                	}
            	found++;
            	next = next->next;
@@ -999,7 +1045,7 @@ else
 	if(next == nilCell) return(nilCell);
 	}
 
-return(stuffInteger(found));
+return(stuffInteger(found + offset));
 }
 
 /* ------- find-all ---- finds all strings matching a pattern in a list ----- */
@@ -1177,9 +1223,6 @@ CELL * ref;
 
 ref = evaluateExpression(params);
 
-if(symbolCheckPtr != NULL)
-	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, params));
-
 if(symbolCheck != NULL)
 	{
 	if(isProtected(symbolCheck->flags))
@@ -1291,10 +1334,7 @@ else
 if(cell->next != nilCell)
 	{
 	cell = evaluateExpression(cell->next);
-	if(isNil(cell) )
-		options = 1;
-	else 
-		getIntegerExt(cell, (UINT*)&options, FALSE);
+	getIntegerExt(cell, (UINT*)&options, FALSE);
 	}
 
 klen = strlen(key);
@@ -1397,7 +1437,8 @@ COMPARE_START:
 		if(repCell != NULL)
 			{
 			/* take out usage of sysSymbol0] in 10.2
-               should only be used for regex replacements */
+               should only be used for regex replacements 
+			   then $it doesn't need to be a copy */
 			deleteList((CELL*)sysSymbol[0]->contents);
 			itSymbol->contents = (UINT)copyCell(list);
 			sysSymbol[0]->contents = itSymbol->contents;
@@ -1451,13 +1492,9 @@ COMPARE_START:
 	/* sysSymbol[0] should not be used here, introduce $count */
 	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
 	itSymbol->contents = (UINT)nilCell;
-	if((symbolCheck = refSymbol))
-		{
-		pushResultFlag = FALSE;
-		return(newList);
-		}
-	else
-		return(copyCell(newList));
+	symbolCheck = refSymbol;
+	pushResultFlag = FALSE;
+	return(newList);
 	}
 
 if(cell->type == CELL_STRING)
@@ -1486,13 +1523,9 @@ if(cell->type == CELL_STRING)
 
 	deleteList((CELL*)sysSymbol[0]->contents);	
 	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
-	if((symbolCheck = refSymbol))
-		{
-		pushResultFlag = FALSE;
-		return(cell);
-		}
-	else
-		return(copyCell(cell));
+	symbolCheck = refSymbol;
+	pushResultFlag = FALSE;
+	return(cell);
 	}
 
 return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
@@ -1534,14 +1567,9 @@ if(list->type == CELL_STRING)
 	memcpy((char*)cell->contents, (char *)(list->contents + length - count), count);
 	memcpy((char*)(cell->contents + count), (char *)list->contents, length - count);
 	memcpy((char*)list->contents, (char*)cell->contents, length);
-	if(symbolCheck)
-		{
-		deleteList(cell);
-		pushResultFlag = FALSE;
-		return(list);
-		}
-	else
-		return(cell);
+	deleteList(cell);
+	pushResultFlag = FALSE;
+	return(list);
 	}	
 
 if(!isList(list->type))
@@ -1560,12 +1588,8 @@ while(cell != nilCell)
 
 if((count = adjustCount(count, length))== 0) 
 	{
-	if(symbolCheck)
-		{
-		pushResultFlag = FALSE;
-		return(list);
-		}
-	return(copyCell(list));
+	pushResultFlag = FALSE;
+	return(list);
 	}
 	
 index = length - count;
@@ -1581,13 +1605,8 @@ previous->next = nilCell;
 last->next = (CELL *)list->contents;
 list->contents = (UINT)cell;
 
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-
-return(copyCell(list));
+pushResultFlag = FALSE;
+return(list);
 }
 
 /* eof */

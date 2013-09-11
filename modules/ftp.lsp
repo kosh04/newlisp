@@ -4,7 +4,8 @@
 ;; @version 1.5 - change in read-buffer for v.10.0
 ;; @version 1.6 - change in net-receive for v.10.0
 ;; @version 1.7 - doc changes
-;; @author Eddie Rucker, Lutz Mueller, 2003-2009
+;; @version 1.8 - <tt>write</tt>, <tt>read</tt> and compatibility with pre v10.1.11
+;; @author Eddie Rucker, Lutz Mueller, 2003-2010
 ;; <h2>FTP file transfer routines</h2>
 ;; To use the module put a 'load' statement at beginning of your
 ;; program file:
@@ -20,6 +21,11 @@
 ;; 'FTP:debug-flag':
 ;; 
 ;; <tt>(set 'FTP:debug-flag true)</tt>
+
+; compatibility with versions older than 10.1.11
+(when (< (sys-info -2) 10111)
+	(constant (global 'write) write-buffer)
+	(constant (global 'read) read-buffer))
 
 (context 'FTP)
 
@@ -80,7 +86,7 @@
             (net-send socket (append "STOR " file-name "\r\n"))
             (send-get-result "STAT\r\n" "1")
             (set 'fle (open file-name "r"))
-            (while (> (read-buffer fle buffer 512) 0)
+            (while (> (read fle buffer 512) 0)
                 (if debug-mode (print "."))
                 (net-send socket2 buffer 512))
             (close fle)) true)
@@ -92,7 +98,7 @@
             (set 'fle (open file-name "w"))
             (while (net-receive socket2 buffer 512)
                 (if debug-mode (print "."))
-                (write-buffer fle buffer))
+                (write fle buffer))
             (close fle)) true)
 
     (or (net-close socket2) true)

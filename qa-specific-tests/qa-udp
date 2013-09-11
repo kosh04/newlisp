@@ -1,18 +1,22 @@
 #!/usr/bin/newlisp
 
-; benchmark net work functions with spawnded processes
+(println)
+(println "Testing UDP communicatiobs woth spawned processes")
+
+; benchmark net work functions with spawned processes
 
 ; non-blocking simole UDP communications
 
 (set 'N
 	(case ostype
 		("Linux" 1000)
+		("Cygwin" 1000)
 		("BSD" 1000)
 		("OSX" 10000)
 		("Tru64Unix" 1000)
 		("Solaris" 1000)
 		("SunOS" 1000)
-		(true (println "Not supported on this OS - will exit") 
+		(true (println ">>>>> UDP Not supported on this OS - will exit") 
 			(exit))
 	)
 )
@@ -54,6 +58,8 @@
 (println (div duration counter) " ms per message")
 
 (abort)
+
+(println ">>>>> Benchmarked UDP API")
 
 (exit)
 

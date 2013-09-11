@@ -24,6 +24,8 @@
 # 12 June 2009, L.M. added send and receive
 # 20 October 2009, L.M. added reader-event
 # 10 November 2009, L.M. removed experimental estack
+# 6 December 2009, LM added new 'self'
+# 9 February 2010, LM added new 'extend', 'term', '++', '--' eliminated 'name'
 # version 1.7
 
 =Idle
@@ -80,7 +82,9 @@
 "&"	prim
 "*"	prim
 "+"	prim
+"++"	prim
 "-"	prim
+"--"	prim
 "/"	prim
 ":"	prim
 "<"	prim
@@ -193,6 +197,7 @@
 "exp"	prim
 "expand"	prim
 "explode"	prim
+"extend"	prim
 "factor"	prim
 "fft"	prim
 "file-info"	prim
@@ -262,7 +267,6 @@
 "mod"	prim
 "mul"	prim
 "multiply"	prim
-"name"	prim
 "net-accept"	prim
 "net-close"	prim
 "net-connect"	prim
@@ -301,6 +305,7 @@
 "pack"	prim
 "parse"	prim
 "parse-date"	prim
+"path"	prim
 "peek"	prim
 "pipe"	prim
 "pmt"	prim
@@ -309,6 +314,7 @@
 "post-url"	prim
 "pow"	prim
 "pretty-print"	prim
+"prefix"	prim
 "primitive?"	prim
 "print"	prim
 "println"	prim
@@ -325,6 +331,7 @@
 "rand"	prim
 "random"	prim
 "randomize"	prim
+"read"	prim
 "read-buffer"	prim
 "read-char"	prim
 "read-expr"	prim
@@ -353,6 +360,7 @@
 "seed"	prim
 "seek"	prim
 "select"	prim
+"self"	prim
 "semaphore"	prim
 "send"	prim
 "sequence"	prim
@@ -415,6 +423,7 @@
 "wait-pid"	prim
 "when"	prim
 "while"	prim
+"write"	prim
 "write-buffer"	prim
 "write-char"	prim
 "write-file"	prim

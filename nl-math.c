@@ -1,6 +1,6 @@
 /* nl-math.c
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,66 +64,67 @@
 int _matherr(struct _exception *e) {return 1;}
 #endif
 
-CELL * incDec(CELL * params, int type)
+CELL * incDecI(CELL * params, int type)
 {
-INT64 lValue;
-double fValue;
-double adjust;
 CELL * cell;
-
-if(params->next != nilCell)
-	{
-	getFloat(params->next, &adjust);
-	adjust = adjust * type;
-	type = 0;
-	}
+INT64 adjust = 1;
+INT64 lValue = 0;
 
 cell = evaluateExpression(params);
-if(cell == nilCell)
-	return(errorProcExt(ERR_INVALID_PARAMETER, params));
 
 if(symbolCheck != NULL)
 	if(isProtected(symbolCheck->flags))
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
-if(!isNumber(cell->type) && !isNil(cell))
-	return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
+if(!isNil(cell)) getInteger64(cell, &lValue);
 
-if(type == 0) /* do float arithmetik */
-	{
-	if(cell->contents == (UINT)nilCell)
-		fValue = 0.0;
-	else
-		getFloat(cell, &fValue);
-	fValue = fValue + adjust;
-	cell->type = CELL_FLOAT;
+if(params->next != nilCell)
+	getInteger64(params->next, &adjust);
+
 #ifndef NEWLISP64
-	*(double *)&cell->aux = fValue;
+cell->type = CELL_INT64;
+*(INT64 *)&cell->aux = lValue + adjust * type;
 #else
-	*(double *)&cell->contents = fValue;
+cell->type = CELL_LONG;
+cell->contents = lValue + adjust * type;
 #endif
-	}
-else /* do integer arithmetik */
-	{
-	if(cell->contents == (UINT)nilCell)
-		lValue = 0;
-	else
-		getInteger64(cell, &lValue);
-#ifndef NEWLISP64
-	cell->type = CELL_INT64;
-	*(INT64 *)&cell->aux = lValue + type;
-#else
-	cell->type = CELL_LONG;
-	cell->contents = lValue + type;
-#endif
-	}
 
 return(copyCell(cell));
 }
 
 
-CELL * p_increment(CELL * params) { return(incDec(params, 1)); }
-CELL * p_decrement(CELL * params) { return(incDec(params, -1)); }
+CELL * incDecF(CELL * params, int type)
+{
+CELL * cell;
+double adjust = 1.0;
+double lValue = 0.0;
+
+cell = evaluateExpression(params);
+
+if(symbolCheck != NULL)
+	if(isProtected(symbolCheck->flags))
+		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck))); 
+
+if(!isNil(cell)) getFloat(cell, &lValue);
+
+if(params->next != nilCell)
+	getFloat(params->next, &adjust);
+
+cell->type = CELL_FLOAT;
+#ifndef NEWLISP64
+*(double *)&cell->aux = lValue + adjust * type;
+#else
+*(double *)&cell->contents = lValue + adjust * type;
+#endif
+
+return(copyCell(cell));
+}
+
+
+CELL * p_incrementI(CELL * params) { return(incDecI(params, 1)); }
+CELL * p_decrementI(CELL * params) { return(incDecI(params, -1)); }
+CELL * p_incrementF(CELL * params) { return(incDecF(params, 1)); }
+CELL * p_decrementF(CELL * params) { return(incDecF(params, -1)); }
 
 
 CELL * arithmetikOp(CELL * params, int op)
@@ -134,13 +135,12 @@ INT64 result;
 if(params == nilCell)
 	{
 	if(op == OP_ADD)
-		return(stuffInteger(0));
+		return(stuffInteger64(0));
 	if(op == OP_MULTIPLY)
-		return(stuffInteger(1));
+		return(stuffInteger64(1));
 	}
 
-params = getInteger64(params, &number);	
-result = number;
+params = getInteger64(params, &result);	
 
 if(params == nilCell)
 	{
@@ -248,6 +248,7 @@ if(params == nilCell)
 	}
 
 params = getFloat(params, &result);
+
 if(params == nilCell)
 	{
 	if(op == OP_SUBTRACT)
@@ -1224,7 +1225,7 @@ return(stuffFloat((double *)&p));
 
 double probChi2(double chi2, int df)
 {
-return(1.0 - gammap(df/2, chi2/2));
+return(1.0 - gammap(df/2.0, chi2/2.0));
 }
 
 CELL * p_probabilityChi2(CELL * params)
@@ -1251,7 +1252,7 @@ double chi;
 params = getFloat(params, &p);
 getInteger(params, (UINT *)&df);
 
-chi = critChi2(p, df);
+chi = critChi2((1.0 - p), df);
 
 return(stuffFloat((double *)&chi));
 }
@@ -1291,7 +1292,7 @@ else if (p >= 1.0) return 0.0;
 chisqval = df / sqrt(p);    /* fair first value */
 while ((maxchisq - minchisq) > CHI_EPSILON)
 	{
-	if (gammap(df/2, chisqval/2) < p) minchisq = chisqval;
+	if (gammap(df/2.0, chisqval/2.0) < p) minchisq = chisqval;
 	else maxchisq = chisqval;
 	chisqval = (maxchisq + minchisq) * 0.5;
 	}
@@ -1739,11 +1740,12 @@ return(stuffInteger64(n));
 
 CELL * p_pmt(CELL * params)
 {
-long nper, type;
+long nper;
 double rate, pv;
 double fv = 0.0;
 double pmt = 0.0;
 double inc;
+int type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1751,10 +1753,8 @@ params = getFloat(params, &pv);
 if(params != nilCell)
 	{
 	params = getFloat(params, &fv);
-	getInteger(params, (UINT *)&type);
+	if(params != nilCell) getInteger(params, (UINT *)&type);
 	}
-else type = 0;
-
 
 if(rate == 0)
     pmt = (-pv - fv) / nper;
@@ -1770,10 +1770,11 @@ return stuffFloat(&pmt);
 
 CELL * p_pv(CELL * params)
 {
-long nper, type;
+long nper;
 double rate, pmt, pv;
 double fv = 0.0;
 double inc;
+int type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1782,9 +1783,9 @@ params = getFloat(params, &pmt);
 if(params != nilCell)
 	{
 	params = getFloat(params, &fv);
-	getInteger(params, (UINT *)&type);
+	if(params != nilCell)
+		getInteger(params, (UINT *)&type);
 	}
-else type = 0;
 
 if(rate == 0)
     pv = - pmt * nper - fv;
@@ -1829,8 +1830,8 @@ CELL * p_nper(CELL * params)
 {
 double rate, pmt, pv;
 double fv = 0.0;
-long type;
 double R, c, nper;
+int type = 0;
 
 params = getFloat(params, &rate);
 params = getFloat(params, &pmt);
@@ -1839,9 +1840,8 @@ params = getFloat(params, &pv);
 if(params != nilCell)
 	{
 	params = getFloat(params, &fv);
-	getInteger(params, (UINT *)&type);
+	if(params != nilCell) getInteger(params, (UINT *)&type);
 	}
-else type = 0;
   
 if(rate == 0)
     nper = (-pv - fv) / pmt;
@@ -2043,6 +2043,7 @@ return(stuffFloat(&result));
 
 /* ----------------------------------- CRC32 ----------------------- */
 
+#ifdef CRC16
 unsigned short crc16(unsigned char * buff, int len)
 {
 int i;
@@ -2059,7 +2060,8 @@ for(i = 0; i < len; i++)
 
 return(acc);
 }
-	 
+#endif
+
 /* Algorithm from: http://www.w3.org/TR/PNG-CRCAppendix.html */
 
 CELL * p_crc32(CELL * params)
@@ -2150,7 +2152,7 @@ while(list != nilCell) list = list->next, maxIdx++;
 if(maxIdx < 1) errorProc(ERR_MISSING_ARGUMENT);
 
 category = alloca(maxIdx * sizeof(CELL *));
-total = alloca(sizeof(int));
+total = alloca(maxIdx * sizeof(int));
 token = alloca(MAX_STRING + 1);
 
 for(idx = 0; idx < maxIdx; idx++)
@@ -2522,7 +2524,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2009 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2010 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

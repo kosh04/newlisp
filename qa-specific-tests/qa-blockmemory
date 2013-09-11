@@ -1,0 +1,45 @@
+#!/usr/bin/newlisp
+
+(println)
+(println "Testing cell block allocation and deallocation:")
+
+b1 b2 b3 b4 initial
+
+
+(define (run)
+	(set 'initial (sys-info 0))
+	(println "initially: " (sys-info 0))
+	(set 'b1 (sequence 1 (+ 6000 (rand 10000))))
+	(println "after b1:" (sys-info 0))
+	(set 'b2 (sequence 1 (+ 6000 (rand 10000))))
+	(println "after b2:" (sys-info 0))
+	(set 'b3 (sequence 1 (+ 6000 (rand 10000))))
+	(println "after b3:" (sys-info 0))
+	(set 'b4 (sequence 1 (+ 6000 (rand 10000))))
+	(println "after b4:" (sys-info 0))
+
+
+	(set 'b2 nil)
+	(reset nil)
+	(println "return b2: " (sys-info 0))
+	(set 'b4 nil)
+	(reset nil)
+	(println "return b4: " (sys-info 0))
+	(set 'b1 nil)
+	(reset nil)
+	(println "return b1: " (sys-info 0))
+	(set 'b3 nil)
+	(reset nil)
+	(println "return b3: " (sys-info 0))
+	(unless (= initial (sys-info 0))
+		(println "Error in cell block allocation"))
+)
+
+(if (run)
+	(println ">>>>> Memory allocation/deallocation SUCCESSFUL")
+	(println ">>>>> PROBLEM in memory allocation/deallocaton"))
+	
+(exit)
+
+
+

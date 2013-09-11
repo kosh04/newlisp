@@ -49,7 +49,7 @@
     (set 'GL_LIB "/System/Library/Frameworks/OpenGL.Framework/libraries/libGL.dylib")
     (set 'GLUT_LIB "/System/Library/Frameworks/GLUT.Framework/GLUT")
   )
-  (= ostype "Win32") ;; everything works
+  (find ostype '("Win32", "Cygwin"))
   (begin
     (set 'GL_LIB "opengl32.dll")
     (set 'GLUT_LIB "glut32.dll"))

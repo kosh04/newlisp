@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ INT64 fileSizeW(WCHAR * pathName);
 #define INVALID_SOCKET -1
 #endif
 
-#ifdef LINUX
+#if defined(LINUX) || defined(CYGWIN)
 char * strptime(const char * str, const char * fmt, struct tm * ttm);
 #endif
 
@@ -312,7 +312,7 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_GET_URL, 0);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, 0);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
@@ -434,7 +434,7 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
 	result = getPutPostDeleteUrl(fileName, params, 
-				(*type == 'w') ? HTTP_PUT_URL : HTTP_PUT_APPEND_URL, 0);
+				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, 0);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
@@ -742,7 +742,7 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE_URL, 0);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, 0);
 	return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
 	}
 
@@ -760,7 +760,7 @@ char * fileName;
 
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	return(getPutPostDeleteUrl(fileName, params, HTTP_DELETE_URL, 0));
+	return(getPutPostDeleteUrl(fileName, params, HTTP_DELETE, 0));
 
 if(my_strnicmp(fileName, "file://", 7) == 0)
 	fileName = fileName + 7;
@@ -1339,7 +1339,7 @@ while(pidSpawn)
 
 /* spawn (fork) a process and assign result to the symbol given
      (spawn <quoted-symbol> <epxression>) => pid
-   creates a memory share and passes it to the spaned process
+   creates a memory share and passes it to the spawned process
    when the spawned child finishes, it copies the result
    to the memory share. If the result does not fit in the pagesize
    store the result in a file with a unique filename which is
@@ -1351,10 +1351,10 @@ while(pidSpawn)
 CELL * p_spawn(CELL * params)
 {
 int forkResult;
-void * address;
 int pid;
-void * parent;
-void * child;
+void * address; /* share memory area for result */
+void * parent;  /* receive messages from parent here */
+void * child;   /* write message for parent here */
 SYMBOL * symPtr;
 
 /* make signals processable by waitpid() in p_sync() */
@@ -2336,12 +2336,13 @@ UINT isdst;
 TIME_ZONE_INFORMATION timeZone;
 #endif
 ssize_t offset = 0;
+CELL * cell;
 
 gettimeofday(&tv, NULL); /* get secs and microsecs */
 
 if(params != nilCell)
 	{
-	getInteger(params, (UINT*)&offset);
+	params = getInteger(params, (UINT*)&offset);
 	offset *= 60;
         tv.tv_sec += offset;
 	}
@@ -2351,7 +2352,11 @@ ltm = localtime((time_t *)&tv.tv_sec);
 #ifndef SUNOS
 #ifndef OS2
 isdst = ltm->tm_isdst;
+#ifdef CYGWIN
+gmtoff = _timezone/60;
+#else
 gmtoff = - ltm->tm_gmtoff/60 + isdst * 60;
+#endif
 #endif
 #endif
 #else
@@ -2360,7 +2365,7 @@ GetTimeZoneInformation(&timeZone);
 
 ttm = gmtime((time_t *)&tv.tv_sec);
 
-return(stuffIntegerList(
+cell = stuffIntegerList(
     11,
     (UINT)ttm->tm_year + 1900,
     (UINT)ttm->tm_mon + 1,
@@ -2372,7 +2377,7 @@ return(stuffIntegerList(
     (UINT)ttm->tm_yday + 1,
     (UINT)ttm->tm_wday + 1,
 
-#if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) 
+#if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) || defined(CYGWIN)
     gmtoff, isdst
 #endif
 
@@ -2392,7 +2397,15 @@ return(stuffIntegerList(
      timeZone.Bias,
      timeZone.DaylightBias	
 #endif
-    ));
+    );
+
+if(params != nilCell)	
+	{
+	pushResult(cell);
+	return(copyCell(implicitIndexList(cell, params)));
+	}
+
+return(cell);
 }
 
 

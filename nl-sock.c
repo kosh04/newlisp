@@ -1,6 +1,6 @@
 /* nl-sock.c
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2010 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,10 +51,25 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #ifndef OS2
+#ifndef CYGWIN
 #include <netinet/icmp6.h>
+#endif
 #endif
 #include <netdb.h>
 #include <arpa/inet.h>
+#endif
+
+#ifdef CYGWIN
+#define ICMP_ECHO 8
+
+struct icmp
+{
+   unsigned char icmp_type;
+   unsigned char icmp_code;
+   unsigned short icmp_cksum;
+   unsigned short icmp_id;
+   unsigned short icmp_seq;
+};
 #endif
 
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX)
@@ -116,10 +131,17 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #define ERR_INET_PEEK_FAILED 15
 #define ERR_INET_NOT_VALID_SOCKET 16
 #define ERR_INET_TIMEOUT 17
+/* used in nl-web.c */
 #define ERROR_BAD_URL 18
 #define ERROR_FILE_OP 19
 #define ERROR_TRANSFER 20
-#define MAX_NET_ERROR 20
+#define ERROR_INVALID_RESPONSE 21
+#define ERROR_NO_RESPONSE 22
+#define ERROR_DOCUMENT_EMPTY 23
+#define ERROR_HEADER 24
+#define ERROR_CHUNKED_FORMAT 25
+
+#define MAX_NET_ERROR 25
 
 #define isnum(A) ((A)>= '0' && (A) <= '9')
 
@@ -1777,11 +1799,16 @@ char * netErrorMsg[] =
     "Select failed",
     "Peek failed",
     "Not a valid socket",
-	"Operation timed out",
+    "Operation timed out",
 /* for nl-web.c */
-	"HTTP bad formed URL",
-	"HTTP file operation failed",
-	"HTTP transfer failed"
+    "HTTP bad formed URL",
+    "HTTP file operation failed",
+    "HTTP transfer failed",
+    "HTTP invalid response from server",
+    "HTTP no response from server",
+    "HTTP document empty",
+    "HTTP error in header",
+    "HTTP error in chunked format"
     };
 
 

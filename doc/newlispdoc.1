@@ -1,10 +1,10 @@
-.TH newlispdoc 1 "June 2009" "version 2.8" "Commandline Parameters"
+.TH newlispdoc 1 "January 2010" "version 3.0" "Commandline Parameters"
 .SH NAME
 .B newlispdoc
 \- generate documentation from newLISP source comments
 .SH SYNOPSIS
 .B newlispdoc 
-[\-s] lisp\-file1 [lisp\-file2 ...]
+[\-s] [\-d] lisp\-file1 [lisp\-file2 ...]
 
 .B newlispdoc
 [\s] [\-url] urls-file
@@ -14,6 +14,9 @@ newlispdoc is a commandline utility written in newLISP to generate HTML document
 .TP
 \-s
 this option causes newlispdoc to also generate a syntax highlighted HTML file of the source. A link to this file will be present in the HTML documentation of this file. The generated file will have the added extension .src.html.
+.TP
+\-d
+also generate a link to the raw unformatted sourcefile.
 .TP
 lisp\-file
 is a commented newLISP source file from which a documentation file will be generated.
@@ -30,9 +33,9 @@ Generate all documentation form files in the current directory.
 afile.lsp bfile.lsp
 .PP
 .TP
-Generate documentation and syntax highlighted HTML versions from all lisp files in the current directory
+Generate documentation and syntax highlighted HTML versions from all lisp files in the current directory and also supply a download link.
 .B newlispdoc
-\-s *.lsp
+\-s -d *.lsp
 .TP
 Retrieve source files for documentation from remote locations. Each file is specified on one line in urls.txt with its http:// address.
 .B newlispdoc

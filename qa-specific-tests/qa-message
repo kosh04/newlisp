@@ -1,5 +1,8 @@
 #!/usr/bin/newlisp
 
+(println)
+(println "testing message API")
+
 ; qa-message, check send and receive functions
 ; child processes
 
@@ -31,7 +34,7 @@
 		(until (send ch "pid") ) ; send out message
 		(until (receive ch msg))  ; get response
 		(unless (= msg (string "PID-" ch)) ; check
-			(setq error-msg (append "EEROR in round trip test: " msg )))
+			(setq error-msg (append " >>>> ERROR in round trip test: " msg )))
 		(print  msg " ") )
 	(println)
 )
@@ -79,8 +82,8 @@
 (sleep 300)
 
 (if error-msg 
-	(println error-msg)
-	(println "message API TESTED SUCCESSFUL"))
+	(println ">>>>> PROBLEM " error-msg)
+	(println ">>>>> Message API tested SUCCESSFUL"))
 
 (exit)
 

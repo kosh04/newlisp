@@ -1,13 +1,13 @@
 LOCALIZATION
 ============
 
-See chapter 'Customization Localizattion and UTF-8' in the 
+See chapter 'Customization Localization and UTF-8' in the 
 Users Manual and the usage of 'set-locale' function in the 
 Function Reference.
 
 The 'set-locale' function will not influence the behaviour of
 PCRE (Perl Compatible Regular Expressions) in newLISP, but a
-special option flag number  can be set to support UTF-8 in all
+special option flag number can be set to support UTF-8 in all
 functions supporting regular expressions like: regex, find,
 replace, parse and search.
 
