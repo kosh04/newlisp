@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2012 December 10<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.3.10
+</h1>Version 2012 February 14<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.4.0
 </center>
 
 <br/><br/><br/>
@@ -578,10 +578,8 @@ containing <tt>0</tt>'s :</p>
 <pre>
 (context 'generator)
    
-(set 'acc 0)
-   
 (define (generator:generator)
-    (inc acc))
+    (inc acc)) ; when acc is nil, assumes 0
  
 (context MAIN)
    

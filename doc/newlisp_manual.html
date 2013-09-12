@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.10 Manual and Reference</title>
+   <title>newLISP v.10.4.0 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.10</h2>
+<h2>User Manual and Reference v.10.4.0</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -12203,6 +12203,9 @@ x  <span class='arw'>&rarr;</span> 123  ; x has still its old value
 	The loop index is of integer type. 
 	<tt>dotimes</tt> returns the result of 
 	the last expression evaluated in <em>body</em>.
+	After evaluation of the <tt>dotimes</tt>
+    statement <em>sym</em> assumes its previous
+    value.
 </p>
 
 <p>
@@ -13904,7 +13907,9 @@ from the string in <em>str</em> as a string.</p>
 	in the specified range as an integer value 
 	if no step size is specified, or
 	as a floating point value when a step size is
-	present.
+	present. After evaluation of the <tt>for</tt>
+    statement <em>sym</em> assumes its previous
+    value.
 </p>
 
 <!-- example -->
@@ -19004,8 +19009,8 @@ return a specific member in the result list.</p>
 <!-- example -->
 
 <pre>
-(now)       <span class='arw'>&rarr;</span> (2002 2 27 18 21 30 140000 57 3 300 0)
-(now 0 -2)  <span class='arw'>&rarr;</span> 300 ; minutes west of GMT
+(now)       <span class='arw'>&rarr;</span> (2002 2 27 18 21 30 140000 57 3 -300 0)
+(now 0 -2)  <span class='arw'>&rarr;</span> -300 ; minutes west of GMT
 
 
 (apply date-value (now))  <span class='arw'>&rarr;</span> 1014834090
@@ -21153,17 +21158,14 @@ form still works but is deprecated and should be avoided in new code.</p>
 <a name="read-char"></a>
 <h2><span class="function">read-char</span></h2>
 
-<h4>syntax: (read-char <em>int-file</em>)</h4>
+<h4>syntax: (read-char [<em>int-file</em>])</h4>
 
 <p>
-	Reads a byte from a file specified 
-	by the file handle in <em>int-file</em>. 
-	The file handle is obtained from 
-	a previous <a HREF="#open">open</a> operation. 
-	Each <tt>read-char</tt> advances 
-	the file pointer by one byte. 
-	Once the end of the file is reached, 
-	<tt>nil</tt> is returned.
+Reads a byte from a file specified by the file handle in <em>int-file</em> 
+or from the current I/O device - e.g. <em>stdin</em> - when no file handle is specified.
+The file handle is obtained from a previous <a HREF="#open">open</a> operation. 
+Each <tt>read-char</tt> advances the file pointer by one byte. 
+Once the end of the file is reached, <tt>nil</tt> is returned.
 </p>
 
 <!-- example -->
@@ -25228,7 +25230,7 @@ context prefix from a symbol.</p>
 
 result  <span class='arw'>&rarr;</span> "interrupted"
 
-(catch (throw-text))  <span class='arw'>&rarr;</span> "interrupted"
+(catch (throw-test))  <span class='arw'>&rarr;</span> "interrupted"
 </pre>
 
 
@@ -25737,6 +25739,7 @@ and rejects the empty list <tt>()</tt>.</p>
 
 <p>Converts ASCII/UTF-8 character strings in <em>str</em> 
 to UCS-4&ndash;encoded Unicode of 4-byte integers per character.
+The string is terminated with a 4-byte integer <tt>0</tt>.
 This function is only available on UTF-8&ndash;enabled versions 
 of newLISP.</p>
 
@@ -25783,6 +25786,9 @@ Most systems use UTF-8 encoding only.</p>
     with <em>occurs check</em>.
 </p>
 
+<p>Since version 10.4.0 the underscore symbol <tt>_</tt> (ASCII 95) matches any atom,
+list or unbound variable.</p>
+
 <p>
     Like <a href="#match">match</a>, <tt>unify</tt> is frequently 
     employed as a parameter functor in <a href="#find">find</a>,
@@ -25823,6 +25829,12 @@ Most systems use UTF-8 encoding only.</p>
 (unify '(p X Y a) '(p Y X X))  <span class='arw'>&rarr;</span> '((Y a) (X a)))  ; X alias Y and binding to 'a
 
 (unify '(q (p X Y) (p Y X)) '(q Z Z))  <span class='arw'>&rarr;</span> ((Y X) (Z (p X X)))  ; indirect alias
+
+(unify '(A b _) '(x G z)) <span class='arw'>&rarr;</span> ((A x) (G b)) ; _ matches atom z 
+
+(unify '(A b c _) '(x G _ z)) <span class='arw'>&rarr;</span> ((A x) (G b)) ; _ never binds, matches c and z
+
+(unify '(A b _) '(x G (x y z))) <span class='arw'>&rarr;</span> ((A x) (G b)) ; _ matches list (x y z)
 
 ;; some examples taken from <a href="http://en.wikipedia.org/wiki/Unification">http://en.wikipedia.org/wiki/Unification</a>
 </pre>

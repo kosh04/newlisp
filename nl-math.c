@@ -2677,6 +2677,7 @@ return(unify(left, right));
 #define UNIFY_ATOM 0
 #define UNIFY_LIST 1
 #define UNIFY_VAR 2
+#define UNIFY_ANY 3
 
 void pushSet(TERMSET * * root, CELL * left, CELL * right)
 {
@@ -2728,6 +2729,13 @@ while(ws != NULL)
 
     leftType = unifyGetType(left);
     rightType = unifyGetType(right);
+
+    if(leftType == UNIFY_ANY || rightType == UNIFY_ANY)
+        {
+        deleteList(left);
+        deleteList(right);
+        continue;
+        }
 
     if( (leftType == UNIFY_ATOM && rightType == UNIFY_ATOM) ||
         (left->contents == right->contents))
@@ -2842,6 +2850,9 @@ if(isSymbol(cell->type))
         sPtr = (SYMBOL *)cell->contents;
     else
         sPtr = getDynamicSymbol(cell);
+
+    if(*sPtr->name == '_' && *(sPtr->name + 1) == 0)
+        return(UNIFY_ANY);
     
 #ifndef SUPPORT_UTF8
     wchar = *sPtr->name;

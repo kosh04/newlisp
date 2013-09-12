@@ -4,8 +4,11 @@
 # tested on Win32 and OS X (Intel) 32-bit only!
 
 # version 1.2, July 2009 - make drawObject working with motion
+
 # this version runs only on 32-bit newLISP and libraries
-# for 64-bit newlisp use opendl-demo-ex.lsp, which runs both 32/64
+# for 64-bit newlisp use opendl-demo-ffi.lsp, which runs both 32/64
+# for this extended ffi version newLISP 10.3.10 or later is required
+# www.newlisp.org/code/opengl-demo-ffi-lsp.txt
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  

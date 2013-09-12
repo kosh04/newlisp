@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title>newLISP  v.10.3.10 Development Release Notes </title>
+<title>newLISP  v.10.4.0 Release Notes </title>
 
 <style type="text/css" media="screen">
 
@@ -43,17 +43,17 @@ li {
 </head>
 
 <body>
-<h1>newLISP<font size=-2>&#174;</font> v.10.3.10 Development Release&nbsp;<font color="red" size="-1">rev 2012-1-5</font></h1>
+<h1>newLISP<font size=-2>&#174;</font> v.10.4.0 Stable Release&nbsp;<font color="red" size="-1">rev 2012-2-14</font></h1>
 
-<p>Versions 10.3.4, 10.3.5 and 10.3.6 development releases reworked the
-<tt>spawn</tt> and message <tt>send</tt> and <tt>receive</tt> functions. The
-development releases 10.3.7, 10.3.8, 10.3.9 and 10.3.10 extend the <tt>import</tt> FFI facility to 
-be used with <a href="http://sourceware.org/libffi/">libffi</a> and make speed improvements.</p> 
+<p>This stable release features a rewritten message queue interface for 
+multiprocessing and an extension of the foreign function <tt>import</tt> API. 
+This release also fixes bugs and makes efficiency inprovements.</p>
+
 
 <h3>Additions and changes</h3>
 <ul>
 <li><tt>import</tt> now has a second syntax to specify return and parameter value
-data types. This new extended API uses <tt>libffi</tt>. 
+data types. This new extended API usese <a href="http://sourceware.org/libffi/">libffi</a>. 
 This extension to the current foreign functions interface is available in all 
 standard binary installs of newLISP.</li>
 
@@ -61,8 +61,10 @@ standard binary installs of newLISP.</li>
 data types. Like the extended <tt>import</tt>, the enhanced <tt>callback</tt>
  syntax uses <tt>libffi</tt>. </li>
 
-<li><tt>struct</tt> allows creating structure data types for usage with the extended
-<tt>import</tt> API.</li>
+<li>The <tt>now</tt> time function now returns the GMT offset with opoposite signs,
+positive for east and negative for west of the UCT Meridian. The day-of-the-year
+number now starts with 1 instead of offset 0. Both changes make <tt>now</tt> more 
+ISO 8601 compliant.</li>
 
 <li>Bit 11 - hex 0x400 - in the last field of <tt>sys-info</tt> is set for extended 
 FFI enabled versions requiring <tt>libffi</tt>.</li>
@@ -93,12 +95,23 @@ is now optional:<br/>
 </pre>
 If the <tt>send</tt> or <tt>receive</tt> is used with <em>child-process</em> spawned, the
 optional flag must be set to <tt>true</tt>.</li>
+
 <li>The dummy versions of <tt>spawn</tt>, <tt>sync</tt> and <tt>abort</tt> in the 
 MS Windows version have been taken out.</li>
+
+<li><tt>struct</tt> allows creating structure data types for usage with the extended
+<tt>import</tt> API.</li>
+
+<li>In <tt>unify</tt> the underscore symbol: <tt>_</tt> matches any atom, list or
+bound or unbound variable.</li>
+
 <li>The library file <tt>newlisp.dll</tt> is now installed in its old location
 in the main <tt>newlisp</tt> program directory. No administrator rights are necessary
 for installing in that location. This library is only required for third party
 applications, not for newLISP itself.</li>
+
+<li>The minumum Java version to run Guiserver is now Java JRE version 1.6.</li>
+
 </ul>
 
 <h3>Bug fixes</h3>
@@ -115,7 +128,8 @@ linking with 64-bit versions of newLISP.</li>
 in <tt>spawn</tt> calls to enable communications channel between parent and
 child processes. <tt>spawn</tt> should specify the optional <tt>true</tt> flag
 to enable <tt>send</tt> and <tt>receive</tt> messaging with spawned child
-processes. In all other areas, this version if fully compatible with the 
+processes. The GMT offset and day-of-the-year values are reported differently.
+In all other areas, this version if fully compatible with the 
 previous stable release version 10.3.3.</p>
 <br/>
 <center>&part;</center>

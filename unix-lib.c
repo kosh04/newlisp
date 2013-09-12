@@ -144,12 +144,7 @@ deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 pCell->contents = (UINT)funcAddr;
 
-#ifdef FFI
-pCell->aux = (UINT)calloc(sizeof(FFIMPORT), 1);
-((FFIMPORT *)pCell->aux)->name = symbol->name;
-#else
 pCell->aux = (UINT)symbol->name;
-#endif
 
 return(funcAddr);
 }

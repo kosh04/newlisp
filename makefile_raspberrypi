@@ -1,0 +1,26 @@
+# makefile for newLISP v.10.x.x on LINUX raspberry PI 
+#
+# Note, that readline support may require different libraries on different OSs
+#
+# USAGE: sb2 make -f makefile_raspberrypi
+# 
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -mcpu=arm1176jzf-s -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DLINUX
+#CFLAGS = -mcpu=arm1176jzf-s -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DLINUX -DREADLINE
+
+CC = gcc
+
+
+default: $(OBJS)
+#	$(CC) $(OBJS) -g -lm -ldl -lreadline -o newlisp # with readline support 
+	$(CC) $(OBJS) -g -lm -ldl -o newlisp # without readline support
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_raspberrypi
+

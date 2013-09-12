@@ -44,7 +44,7 @@
 #endif
 
 /* from nl-sock.c */
-extern UINT errorIdx;
+extern UINT netErrorIdx;
 extern char * netErrorMsg[];
 
 #define OK_FILE_DELETED "file deleted"
@@ -294,7 +294,7 @@ int responseLoop;
 int statusCode;
 
 /* reset net-error */
-errorIdx = 0;
+netErrorIdx = 0;
 
 /* get parameters */
 
@@ -409,7 +409,7 @@ if(sock)
 
 
 if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, timeout)) == SOCKET_ERROR)
-    return(webError(errorIdx));
+    return(webError(netErrorIdx));
 
 if(type == HTTP_GET)
     if(headRequest == TRUE) type = HTTP_HEAD;
@@ -771,7 +771,7 @@ CELL * webError(int errorNo)
 {
 char msg[64];
 
-errorIdx = errorNo;
+netErrorIdx = errorNo;
 snprintf(msg, 64, "ERR: %s", netErrorMsg[errorNo]);
 
 return(stuffString(msg));
@@ -966,7 +966,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.3.10"
+#define SERVER_SOFTWARE "newLISP/10.4.0"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);

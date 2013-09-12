@@ -11,7 +11,7 @@
 (set-locale "en_US")
 
 (println)
-(println "Benchmarking all non I/O primitives")
+(println ">>>>> Benchmarking all non I/O primitives ... may take a while ...")
 
 (context 'Lex)  ; predeclare/create context for bayes-train
 (context MAIN)

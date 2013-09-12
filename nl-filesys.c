@@ -238,12 +238,17 @@ if(close((int)handle) == -1) return(nilCell);
 return(trueCell);
 }
 
+
 CELL * p_readChar(CELL * params)
 {
 UINT handle;
 unsigned char chr;
 
-getInteger(params, &handle);
+if(params != nilCell)
+    getInteger(params, &handle);
+else 
+    handle = printDevice;
+
 if(read((int)handle, &chr, 1) <= 0) return(nilCell);
 
 return(stuffInteger((UINT)chr));
@@ -619,7 +624,6 @@ if(feof(inStream)) clearerr(inStream);
 if(chr == EOF && stream->position == 0) return(NULL);
 return(stream->buffer);
 }
-
 
 CELL * p_readLine(CELL * params)
 {
@@ -1041,7 +1045,7 @@ getStringSize(params, &data, &size, TRUE);
 if((handle = popen(command, "w")) == NULL)
     return(nilCell);
 
-if(fwrite(data, 1, (size_t)size, handle) < strlen(data))
+if(fwrite(data, 1, (size_t)size, handle) < size)
     return(nilCell);
 
 pclose(handle);
@@ -1704,7 +1708,7 @@ params = getInteger(params, &pid);
 
 if(params != nilCell)
     {
-    params = getEvalDefault(params, &cell);
+    getEvalDefault(params, &cell);
     if(!symbolCheck)
         return(errorProc(ERR_IS_NOT_REFERENCED));
     if(isProtected(symbolCheck->flags))
@@ -1714,37 +1718,36 @@ if(params != nilCell)
     sPtr = symbolCheck;
     }
 
-if(params == nilCell) /* read from parent */
+/* read from parent */
+if(pid == parentPid)
     {
-    if(pid == parentPid)
-        {
-        socket = thisSocket;
-        }
-    else  /* read from child */
-        {
-        if((child = getSpawnedChild(pid)) == NULL)
-            errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
-        socket = child->socket;
-        }
-
-    if(!socket)
-        errorProc(ERR_NO_SOCKET);
-
-    cell = readWriteSocket(socket, params);
-    if(cell == nilCell)
-        return(nilCell);
-
-    /* if no msg variable is given make message the return value */
-    if(sPtr == NULL)
-        return(cell);
-
-    deleteList((CELL *)sPtr->contents);
-    sPtr->contents = (UINT)cell;
-    pushResultFlag = FALSE;
+    socket = thisSocket;
     }
+else  /* read from child */
+    {
+    if((child = getSpawnedChild(pid)) == NULL)
+        errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
+        socket = child->socket;
+    }
+
+if(!socket)
+    errorProc(ERR_NO_SOCKET);
+
+cell = readWriteSocket(socket, nilCell);
+if(cell == nilCell)
+    return(nilCell);
+
+/* if no msg variable is given make message the return value */
+if(sPtr == NULL)
+    return(cell);
+
+deleteList((CELL *)sPtr->contents);
+sPtr->contents = (UINT)cell;
+pushResultFlag = FALSE;
 
 return(trueCell);
 }
+
 
 /* evaluate expression in params and write to socket,
    part of a socket pair. Similar to readWriteShare()
@@ -2588,7 +2591,7 @@ long gmtoff;
 UINT isdst;
 #endif
 #endif
-#else
+#else /* WIN_32 */
 TIME_ZONE_INFORMATION timeZone;
 #endif
 ssize_t offset = 0;
@@ -2608,14 +2611,16 @@ ltm = localtime((time_t *)&tv.tv_sec);
 #ifndef SUNOS
 #ifndef OS2
 isdst = ltm->tm_isdst;
+
 #ifdef CYGWIN
 gmtoff = _timezone/60;
 #else
-gmtoff = - ltm->tm_gmtoff/60 + isdst * 60;
+gmtoff = ltm->tm_gmtoff/60;
+#endif
+
 #endif
 #endif
-#endif
-#else
+#else /* WIN_32 */
 GetTimeZoneInformation(&timeZone);
 #endif
 
@@ -2630,7 +2635,7 @@ cell = stuffIntegerList(
     (UINT)ttm->tm_min,
     (UINT)ttm->tm_sec,
     (UINT)tv.tv_usec,
-    (UINT)ttm->tm_yday,
+    (UINT)ttm->tm_yday + 1,
     ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday),
 
 #if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) || defined(CYGWIN)
@@ -2650,7 +2655,7 @@ cell = stuffIntegerList(
 #endif
 
 #if defined(WIN_32)
-     timeZone.Bias,
+     -timeZone.Bias,
      timeZone.DaylightBias  
 #endif
     );

@@ -28,7 +28,7 @@
 
 ; only headers no data
 (set 'tcp-packet
-        ; UP header                      ; TCP header
+        ; IP header                      ; TCP header
   (pack "b b bb bb bb b b bb bbbb bbbb   bb bb bbbb bbbb b b bb bb bb " 
 ; IP header in BSD form
 0x45       ; ip_hl, ip_v IPV 4 and header length in quads
@@ -93,7 +93,7 @@ dip1 dip2 dip3 dip4 ; destination IP
 
 ; ==============================================================================
 
-; on this packet cheksums are already set, to find out if ip_len and ip_off
+; on this packet checksums are already set, to find out if ip_len and ip_off
 ; swapping is handled correctly (assuming 10.0.2.15 -> 10.0.2.2 configuration
 ; under VirtualBox)
 

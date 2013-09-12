@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10310;
+int version = 10400;
 
 char copyright[]=
-"\nnewLISP v.10.3.10 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.4.0 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.10 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.4.0 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.10 on %s IPv4/6%s\n\n";
+"newLISP v.10.4.0 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.10 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.4.0 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.10 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.4.0 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 

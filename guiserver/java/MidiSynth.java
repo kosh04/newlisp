@@ -61,7 +61,7 @@ public static void midiInit(StringTokenizer params)
 		} 
 	catch (Exception me)
 		{
-		ErrorDialog.show("gs:midi-init", "MIDI system unavailable");	
+		ErrorDialog.showExit("gs:midi-init", "MIDI system unavailable - will exit");	
 		return;	
 		}
 		
@@ -117,7 +117,7 @@ public static void playNote(StringTokenizer params)
 	
 	if(channels == null)
 		{
-		ErrorDialog.show("gs:play-note", "MIDI system no initialized");
+		ErrorDialog.showExit("gs:play-note", "MIDI system no initialized - will exit");
 		return;
 		}
 		
@@ -136,7 +136,7 @@ public static void getInstruments()
 	{
 	if(instruments == null)
 		{
-		ErrorDialog.show("gs:get-instruments", "MIDI system no initialized");
+		ErrorDialog.showExit("gs:get-instruments", "MIDI system no initialized - will exit");
 		return;
 		}
 		
@@ -157,7 +157,7 @@ public static void midiPatch(StringTokenizer params)
 	int chan = Integer.parseInt(params.nextToken());
 	
 	if(synth == null)
-		ErrorDialog.show("gs:midi-patch", "MIDI system no initialized");
+		ErrorDialog.showExit("gs:midi-patch", "MIDI system no initialized - will exit");
 
 	int program = 0;
 	
@@ -230,7 +230,7 @@ public static void addTrack(StringTokenizer params)
 			sequence = new Sequence(Sequence.PPQ, sysResolution);
 			}
 		catch (Exception ex) {
-			ErrorDialog.show("gs:add-track", "Cannot create sequence");
+			ErrorDialog.showExit("gs:add-track", "Cannot create sequence - will exit");
 		}
 
 
@@ -307,10 +307,10 @@ public static void soloTrack(StringTokenizer params)
 public static void playSequence(StringTokenizer params)
 	{
 	if(synth == null)
-		ErrorDialog.show("gs:play-sequence", "MIDI system not initialized");
+		ErrorDialog.showExit("gs:play-sequence", "MIDI system not initialized - will exit");
 
 	if(sequence == null)
-		ErrorDialog.show("gs:play-sequence", "No tracks created");
+		ErrorDialog.showExit("gs:play-sequence", "No tracks created - will exit");
 
 	int start = Integer.parseInt(params.nextToken()); // default = 0	
 	int loopCount = Integer.parseInt(params.nextToken()); // default = 0
@@ -336,7 +336,7 @@ public static void playSequence(StringTokenizer params)
 		sequencer.setTempoInBPM(sysBpm);
 		} 
 	catch (Exception e)
-		{ ErrorDialog.show("gs:play-sequence", "Cannot start sequencer"); }
+		{ ErrorDialog.showExit("gs:play-sequence", "Cannot start sequencer - will exit"); }
 
 	}
 	
@@ -383,4 +383,3 @@ public static void midiClose()
 
 
 /* eof */
-

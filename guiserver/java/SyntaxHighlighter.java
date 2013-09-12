@@ -58,7 +58,7 @@ static String reserved[] = {
 "regex-comp","remove-dir", "rename-file","replace", "replace-assoc","reset", "rest","reverse", "rotate","round",
 "save","search","seed","seek","select","self","semaphore","send", "sequence","series","set", "set-locale",
 "set-ref", "set-ref-all","setq","setf","sgn","share","signal","silent", "sin","sinh","sleep","slice", "sort",
-"source","spawn", "sqrt","starts-with","sync","string","string?","sub", "swap","sym","symbol?","symbols", 
+"source","spawn", "sqrt","starts-with","string","string?","struct","sub","sync","swap","sym","symbol?","symbols", 
 "sys-error","sys-info","tan", "tanh","term","throw","throw-error","time","time-of-day", "timer","title-case",
 "trace", "trace-highlight","transpose", "trim", "true","true?","unicode","unify","unique", "unless","unpack", 
 "until","upper-case","utf8","utf8len", "uuid", "wait-pid","when","while","write","write-buffer", "write-char",

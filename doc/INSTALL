@@ -100,7 +100,11 @@ If you agree with the platform detected by configure type:
  
 After building has finished type:
 
-    make check
+    make testall
+
+or for a shorter version
+
+    make test
 
 when all tests are passed OK do a
 
@@ -270,6 +274,11 @@ Both makefiles are used by Makefile when doing:
 
     make
     make install
+    make test
+
+or for a bigger testsuite
+
+    make testall
 
 These are the standard configuration options recommended by newlisp.org:
 

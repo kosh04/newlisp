@@ -6150,7 +6150,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      The link feature using util/link.lsp did no works with 64-bit versions
      of newLISP.
 
-     In the MinGW compile of nl-socj.c the include file wspapi.h has been
+     In the MinGW compile of nl-sock.c the include file wspapi.h has been
      replaced with ws2spi.h. This file is part of the normal MinGW install.
 
      newlisp.dll now lives in NEWLISPDIR again as it did before 10.3.3
@@ -6293,7 +6293,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      SHA256 crypto algorithm has been added to the module crypto.lsp.
      Thanks to Marc Hildman for this contribution. 
 
-10.3.10
+10.3.10 Development release Janaury 10th, 2012
      Repeating ffi 'callback' with the same symbol will just return the old
      address but not redefine the callback or return nil (as in 10.3.9).
 
@@ -6313,10 +6313,30 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Imported functions can now be default functors:
         (define myprintf:myprintf (import "libc.dylib" "printf"))
+        (myprintf "%s %d" "hello world" 123)
 
      All makefile_mingwdll* tweaked for MinGW gcc 4.6.2. But binaries are still
      delivered compiled on gcc 4.4.0 and made on Windows XP SP2, run fine on
      Windows 7. 10.3.6 to 10.3.9 had newlisp.dll compiled for cdecl now in
      10.3.10 newlisp.dll calling conventations are back to stdcall.
 
+10.4.0
+     UCT offset minutes as reported by the 'now' function now have reversed the
+     sign conform to ISO 8601. Positive for locations east of UCT and negative
+     for locations west of the UCT meridian (formerly GMT). Days of the year are
+     now reported from 1 - 365 (366 in leap years) instead of starting with
+     offset 0. 
 
+     'read-char' w/o file handle reads from the current I/O device.
+
+     New version Guiserver 1.45 avoids error loops when midi system is unavailable.
+
+     In 'unify' the underscore symbol '_' matches any atom or list or variable.
+
+     Two new make files for the Raspberry PI development VM from:
+         http://russelldavis.org/2012/01/20/new-raspberry-pi-development-vm-v0-2/
+     These makefikes don't need the readline library, although it could be installed
+     as shown here:
+         http://russelldavis.org/2012/01/23/building-newlisp-for-the-raspberry-pi-using-the-development-vm/
+
+     newlisp.dll now also on Winsock version 2.2 (like the main executable since 10.2.10)

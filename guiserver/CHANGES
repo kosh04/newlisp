@@ -946,4 +946,10 @@
 
 1.44
     fixed error message in gs:save-sequence
+
+1.45
+    Some error messages in the Midi part now exit the program to avoid error dialog
+    loops.
+
+    Added struct to SyntaxHighlighter.java
  

@@ -42,7 +42,7 @@
 (abort) ; cancel child-processes
 
 (set 'ms (div (- (time-of-day) start) (* k N )))
-(println ">>>>> time per simple message: " (mul ms 1000) " micro seconds")
+(println ">>>>> Time per simple message: " (mul ms 1000) " micro seconds")
 
 ; --------------------------------- roundtrip test
 (set 'N 10)
@@ -74,7 +74,7 @@
 )
 
 (set 'ms (div (- (time-of-day) start) (* k N )))
-(println ">>>>> time per round trip : " (mul ms 1000) " micros seconds")
+(println ">>>>> Time per round trip : " (mul ms 1000) " micros seconds")
 
 (abort) (sleep 100)
 
@@ -118,7 +118,7 @@
 (until finished (if (receive A msg) (eval msg)))
 
 (set 'ms (div (- (time-of-day) start) N))
-(println ">>>>> time per proxy trip: " (mul ms 1000) " micro seconds")
+(println ">>>>> Time per proxy trip: " (mul ms 1000) " micro seconds")
 (println)
 
 (sleep 300)

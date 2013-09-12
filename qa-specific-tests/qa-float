@@ -91,7 +91,7 @@
 (println)
 (if-not (apply and result-list)
 	(println ">>>>> PROBLEM in floating point tests")
-	(println ">>>>> floating point tests SUCCESSFUL")
+	(println ">>>>> Floating point tests SUCCESSFUL")
 )
 
 (exit)

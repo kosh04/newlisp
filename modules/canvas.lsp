@@ -6,6 +6,7 @@
 ;; @version 1.3 compatibility pre and post 10.2.0 for new extend
 ;; @version 1.32 doc formatting, spelling
 ;; @version 1.33 took out license
+;; @version 1.4 cv:petal was broken (JavaScript change?)
 ;; @author Lutz Mueller, March 2009
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
@@ -77,7 +78,7 @@
 ;; (exit)
 
 ;; A package with more demo files can be downloaded from 
-;; @link http://www.newlisp.org/canvas/canvas-13.tgz www.newlisp.org/canvas/canvas-13.tgz .
+;; @link http://www.newlisp.org/canvas/canvas-14.tgz www.newlisp.org/canvas/canvas-14.tgz .
 ;; The demo files assume the Safari (4.0 beta) browser on Mac OS X and Win32 or
 ;; The Firefox browser (3.1. beta 3) on Linux and start the browser automatically.
 ;; Change the last 'cv:render' line in each of the demo file to manually load
@@ -945,7 +946,8 @@ function drawAllCanvas() { try
 
 
 (define (cv:petal width height flag)
-	(bezier (sub width) height width height 0 0 flag)
+    ; x3 (offset from x1) cannot be 0 or the Bezier does not get drawn
+	(bezier (sub width) height width height 0.001 0 flag)
 	(cv "ctx.closPath")
 	(if flag (cv "ctx.fill();"))
 )

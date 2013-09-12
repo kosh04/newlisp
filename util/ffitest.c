@@ -6,6 +6,8 @@
  testffi.c
  test FFI correct passing of parameter and return types
 
+ this file is used in qa-specific-tests/qa-libffi
+
  compile using either:
      gcc -m32 ffitest.c -shared -o ffitest.dylib
  or

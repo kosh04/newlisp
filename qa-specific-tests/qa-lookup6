@@ -1,0 +1,25 @@
+#!/usr/bin/env newlisp
+
+;(net-ipv 6)
+;(net-ping '("maryannemacmini.local" "lutzmacmini.local"))
+
+;;;;
+
+(net-ipv 6)
+
+(set 'domains '(
+	"altavista.ipv6.digital.com"
+	"ipv6.research.microsoft.com"
+	"www.ipv6forum.com"
+	"ipv6.google.com"
+	"www.google.com"
+	"www.cisco.com"
+))
+
+(dolist (dm domains)
+	(set 'ip (net-lookup dm))
+	(println dm " -> " ip " -> " (or (net-lookup (string ip)) (last (net-error))) )
+)
+
+(exit)
+

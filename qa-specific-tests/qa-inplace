@@ -142,7 +142,7 @@
 )
 
 (if (and (qa-inplace) (qa-inplace-2))
-	(println ">>>>> in-place modification passed SUCCESSFUL")
+	(println ">>>>> In-place modification passed SUCCESSFUL")
 	(println ">>>>> PROBLEM in-place modification passed")
 )
 

@@ -46,7 +46,13 @@ static public void show(String command, String message)
 	//System.exit(0);
 	return;
 	}
-	
+
+static public void showExit(String command, String message)
+    {
+    show(command, message);
+    System.exit(0);
+    }
+
 static public void wrongApplication(String command, String id)
 	{
 	int len = command.length();

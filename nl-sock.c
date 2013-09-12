@@ -123,7 +123,7 @@ int getSocketFamily(int sock);
 #define READY_READ 0
 #define READY_WRITE 1
 
-UINT errorIdx = 0;
+UINT netErrorIdx = 0;
 
 extern int logTraffic;
 extern int noPromptMode;
@@ -334,7 +334,7 @@ deleteIOsession((int)sock);
 if(close((int)sock) == SOCKET_ERROR)
     return(netError(ERR_INET_NOT_VALID_SOCKET));
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(trueCell);
 }
 
@@ -352,7 +352,7 @@ while(session)
     {
     sPtr = session;
     session = session->next;
-    if(sPtr->family != AF_UNSPEC)
+    if(sPtr->family != AF_UNSPEC || getFlag(params))
         addList(sList, stuffInteger(sPtr->handle));
     }
 
@@ -381,7 +381,7 @@ if(cell->type == CELL_STRING)
  
     port = (int)ntohs(pSe->s_port); 
  
-    errorIdx = 0; 
+    netErrorIdx = 0; 
     return(stuffInteger((UINT)port)); 
     }
 if(isNumber(cell->type))
@@ -391,7 +391,7 @@ if(isNumber(cell->type))
     if((pSe = getservbyport(htons(port), protocol)) == NULL) 
         return(netError(ERR_INET_INVALID_SERVICE)); 
 
-    errorIdx = 0;
+    netErrorIdx = 0;
     return(stuffString(pSe->s_name));
     }
 
@@ -414,7 +414,7 @@ params = getString(params, &remoteHostName);
 if(params == nilCell)
     {
     if((sock = netConnectLocal(remoteHostName)) == SOCKET_ERROR)
-        return(netError(errorIdx));
+        return(netError(netErrorIdx));
     else    
         return(stuffInteger((UINT)sock));
     }
@@ -448,11 +448,11 @@ if(params != nilCell)
 
 if((sock = netConnect(remoteHostName, 
         (int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
-    return(netError(errorIdx));
+    return(netError(netErrorIdx));
 
 createIOsession(sock, ADDR_FAMILY);
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(stuffInteger((UINT)sock)); 
 }
 
@@ -466,7 +466,7 @@ struct sockaddr_un remote_sun;
 
 if((sock = socket(AF_UNIX, SOCK_STREAM, 0)) == SOCKET_ERROR)
     {
-    errorIdx = ERR_INET_OPEN_SOCKET;
+    netErrorIdx = ERR_INET_OPEN_SOCKET;
     return(SOCKET_ERROR);
     }
     
@@ -476,13 +476,13 @@ remote_sun.sun_path[sizeof (remote_sun.sun_path) - 1] = '\0';
 if (connect(sock, (struct sockaddr *)&remote_sun, SUN_LEN(&remote_sun)) == -1) 
     {
     close(sock);
-    errorIdx = ERR_INET_CONNECT_FAILED;
+    netErrorIdx = ERR_INET_CONNECT_FAILED;
     return(SOCKET_ERROR);
     }
 
 createIOsession(sock, AF_UNIX);
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(sock); 
 }
 #endif
@@ -536,7 +536,7 @@ int sinlen;
 /* create socket */
 if((sock = socket(ADDR_FAMILY, type, 0)) == INVALID_SOCKET)
     {
-    errorIdx = ERR_INET_OPEN_SOCKET;
+    netErrorIdx = ERR_INET_OPEN_SOCKET;
     return(SOCKET_ERROR);
     }
 
@@ -545,14 +545,14 @@ if(prot == NULL) /* topt is timeout in millisecs */
 #ifdef WIN_32
     if(ioctlsocket(sock, FIONBIO, &arg) != 0)
         {
-        errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+        netErrorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
         return(SOCKET_ERROR);
         }
 #else /* UNIX */
     arg = fcntl(sock, F_GETFL, NULL);
     if(fcntl(sock, F_SETFL, arg | O_NONBLOCK) < 0)
         {
-        errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+        netErrorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
         return(SOCKET_ERROR);
         }
 #endif
@@ -585,7 +585,7 @@ snprintf(portStr, 10, "%d", portNo);
 
 if(getaddrinfo(remoteHostName, portStr, &hints, &res0) != 0)
     {
-    errorIdx = ERR_INET_HOST_UNKNOWN;
+    netErrorIdx = ERR_INET_HOST_UNKNOWN;
     return(SOCKET_ERROR);
     }
 
@@ -602,14 +602,14 @@ for(res = res0; res; res = res->ai_next)
             {
             if((result = wait_ready(sock, topt * 1000, READY_WRITE)) <= 0)
                 {
-                errorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
+                netErrorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
                 goto CONNECT_FAILED;
                 }
 #ifndef WIN_32 
             getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)&value, &socklen); 
             if (value) 
                 { 
-                errorIdx =  ERR_INET_CONNECT_FAILED;
+                netErrorIdx =  ERR_INET_CONNECT_FAILED;
                 goto CONNECT_FAILED;
                 } 
 #endif
@@ -618,7 +618,7 @@ for(res = res0; res; res = res->ai_next)
             }
         else
             {
-            errorIdx =  ERR_INET_CONNECT_FAILED;
+            netErrorIdx =  ERR_INET_CONNECT_FAILED;
             goto CONNECT_FAILED;
             }
         break;
@@ -628,18 +628,18 @@ for(res = res0; res; res = res->ai_next)
 
 if(result != 0)
     {
-    errorIdx = ERR_INET_CONNECT_FAILED;
+    netErrorIdx = ERR_INET_CONNECT_FAILED;
     goto CONNECT_FAILED;
     }
 
 if(blockSocket(sock) != 0)
     {
-    errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+    netErrorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
     goto CONNECT_FAILED;
     }
     
 freeaddrinfo(res0);
-errorIdx = 0;
+netErrorIdx = 0;
 return(sock);
 
 CONNECT_FAILED:
@@ -682,7 +682,7 @@ CELL * p_netInterface(CELL * params)
 char * ifAddr;
 char IPaddress[STRADDR_LEN];
 
-errorIdx = 0;
+netErrorIdx = 0;
 
 if(params != nilCell)
     {
@@ -735,7 +735,7 @@ getInteger(params, &listenSock);
 if((sock = netAccept((int)listenSock)) == INVALID_SOCKET)
     return(netError(ERR_INET_ACCEPT));
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(stuffInteger(sock)); 
 }
 
@@ -771,7 +771,7 @@ else
 if(sock != INVALID_SOCKET) 
     {
     createIOsession(sock, family);
-    errorIdx = 0;
+    netErrorIdx = 0;
     }
 
 return(sock);
@@ -844,7 +844,7 @@ result = makeCell(CELL_EXPRESSION, (UINT)stuffString(name));
 cell = (CELL *)result->contents; 
 cell->next = stuffInteger((UINT)addressPort); 
  
-errorIdx = 0; 
+netErrorIdx = 0; 
 return(result); 
 } 
 
@@ -856,7 +856,7 @@ struct addrinfo hints, *res;
 char hbuf[NI_MAXHOST];
 int flags = NI_NUMERICHOST;
 
-errorIdx = 0;
+netErrorIdx = 0;
 params = getString(params, &hostString);
 forceByName = getFlag(params);
 
@@ -975,7 +975,7 @@ closeStrStream(&netStream);
 deleteList((CELL *)readSymbol->contents); 
 readSymbol->contents = (UINT)cell; 
  
-errorIdx = 0; 
+netErrorIdx = 0; 
 return(stuffInteger(bytesReceived)); 
 } 
 
@@ -1032,7 +1032,7 @@ if(closeFlag)
     close(sock);
     }
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(result);
 }
 
@@ -1110,7 +1110,7 @@ if((bytesSent = sendall((int)sock, buffer, size))  == SOCKET_ERROR)
     return(netError(ERR_INET_WRITE)); 
     }
 
-errorIdx = 0; 
+netErrorIdx = 0; 
 return(stuffInteger(bytesSent)); 
 }
 
@@ -1173,7 +1173,7 @@ if(type == SEND_TO_UDP) close((int)sock);
 if(bytesSent == SOCKET_ERROR)
         return(netError(ERR_INET_WRITE));
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(stuffInteger(bytesSent));
 }
 
@@ -1210,7 +1210,7 @@ params = params->next;
 if(cell->type == CELL_STRING)
     {
     if((sock = netListenLocal((char *)cell->contents)) == SOCKET_ERROR)
-        return(netError(errorIdx));
+        return(netError(netErrorIdx));
     else
         return(stuffInteger((UINT)sock));
     }
@@ -1271,20 +1271,20 @@ if(bind(sock, (struct sockaddr *)&local_sun, SUN_LEN(&local_sun)) != 0)
 #endif
     {
     close(sock);
-    errorIdx = ERR_INET_CANNOT_BIND;
+    netErrorIdx = ERR_INET_CANNOT_BIND;
     return(SOCKET_ERROR);
     }
 
 if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)
     {
     close(sock);
-    errorIdx = ERR_INET_LISTEN_FAILED;
+    netErrorIdx = ERR_INET_LISTEN_FAILED;
     return(SOCKET_ERROR);
     }
 
 createIOsession(sock, AF_UNIX);
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(sock);
 }
 #endif
@@ -1299,7 +1299,7 @@ socklen_t local_len;
 
 if((sock = socket(ADDR_FAMILY, stype, option)) == INVALID_SOCKET)
     {
-    errorIdx = ERR_INET_OPEN_SOCKET; 
+    netErrorIdx = ERR_INET_OPEN_SOCKET; 
     return SOCKET_ERROR;
     }
 
@@ -1318,7 +1318,7 @@ setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const void*)&one, sizeof(one));
 if(bind(sock, (struct sockaddr *)local, local_len) == SOCKET_ERROR) 
     { 
     close(sock);
-    errorIdx = ERR_INET_CANNOT_BIND; 
+    netErrorIdx = ERR_INET_CANNOT_BIND; 
     return(SOCKET_ERROR);
     } 
 
@@ -1340,14 +1340,14 @@ if(stype == SOCK_STREAM)
     if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)  
         { 
         close(sock); 
-        errorIdx = ERR_INET_LISTEN_FAILED;
+        netErrorIdx = ERR_INET_LISTEN_FAILED;
         return(SOCKET_ERROR);
         } 
     }
 
 createIOsession(sock, ADDR_FAMILY); 
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(sock);
 }
 
@@ -1367,7 +1367,7 @@ getInteger(params, &sock);
 if(ioctl((int)sock, FIONREAD, &result) == SOCKET_ERROR)
     return(netError(ERR_INET_PEEK_FAILED));
 
-errorIdx = 0;
+netErrorIdx = 0;
 return(stuffInteger((UINT)result));
 } 
 
@@ -1394,7 +1394,7 @@ struct timeval* tmvPtr;
 UINT socket;
 int setSize = 0;
 
-errorIdx = 0;
+netErrorIdx = 0;
 
 FD_ZERO(&socketSet);
 
@@ -1645,7 +1645,7 @@ sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
 
 if(sock == SOCKET_ERROR)
         {
-        session->result = netEvalError(errorIdx);
+        session->result = netEvalError(netErrorIdx);
         goto CONTINUE_CREATE_SESSION;
         }
     
@@ -1814,8 +1814,8 @@ while(base != NULL)
     }
 
 if(elapsed > timeOut) 
-    errorIdx = ERR_INET_TIMEOUT;
-else errorIdx = 0;
+    netErrorIdx = ERR_INET_TIMEOUT;
+else netErrorIdx = 0;
 if(netEvalIdle == NULL) return(result);
 return(trueCell);
 }    
@@ -1895,13 +1895,13 @@ char * netErrorMsg[] =
 
 CELL * netError(int errorNo) 
 { 
-errorIdx = errorNo; 
+netErrorIdx = errorNo; 
 return(nilCell); 
 } 
 
 CELL * netEvalError(int errorNo)
 { 
-errorIdx = errorNo; 
+netErrorIdx = errorNo; 
 return(p_netLastError(nilCell));
 }
 
@@ -1909,7 +1909,7 @@ CELL * p_netLastError(CELL * params)
 {
 CELL * result;
 char str[40];
-UINT numError = errorIdx;
+UINT numError = netErrorIdx;
 
 if(params != nilCell)
     getInteger(params, &numError);
@@ -2180,8 +2180,8 @@ while(sendCount)
 
 shutdown(s, SHUT_RDWR); 
 
-if(timeout) errorIdx = ERR_INET_TIMEOUT;
-else errorIdx = 0;
+if(timeout) netErrorIdx = ERR_INET_TIMEOUT;
+else netErrorIdx = 0;
 return(result == NULL ? getCell(CELL_EXPRESSION) : result);
 }
 
