@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\WinDev\newlisp\newlisp-10200-win-gs-136.exe"
+OutFile "c:\WinDev\newlisp\newlisp-10201-win-gs-136.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.36 and newLISP 10.2.0 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
+DirText "This will install the newLISP-GS 1.36 and newLISP 10.2.1 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3

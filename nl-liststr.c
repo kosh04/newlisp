@@ -1223,6 +1223,9 @@ CELL * ref;
 
 ref = evaluateExpression(params);
 
+if(ref == nilCell || ref == trueCell)
+	errorProcExt(ERR_IS_NOT_REFERENCED, ref);
+
 if(symbolCheck != NULL)
 	{
 	if(isProtected(symbolCheck->flags))

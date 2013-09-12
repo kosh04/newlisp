@@ -5638,7 +5638,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     In newLISP-GS on Win32 a messagebox pops up if a connection cannot be
     established between the newLISP process ad Java GUI server.
 
-10.2.0 stable release March 2010
+10.2.0 stable release March 16th, 2010
     new 'configure-alt' fixes a problem for debian package making.
 
     The enviroment variable REQUEST_METHOD is now set by newLISP server mode
@@ -5658,3 +5658,8 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Fixed wrong error message in context creation.
 
     The int-type field in all financial functions is optional.
+
+10.2.1 stable release March 17th, 2010
+    'setf' and 'swap' could change the values of 'true' and 'nil'.
+
+

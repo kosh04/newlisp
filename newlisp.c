@@ -98,26 +98,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10200;
+int version = 10201;
 
 char copyright[]=
-"\nnewLISP v.10.2.0 Copyright (c) 2010 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.2.1 Copyright (c) 2010 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.0 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.2.1 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.0 on %s IPv%d%s\n\n";
+"newLISP v.10.2.1 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.0 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.2.1 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.0 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.2.1 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -2809,7 +2809,7 @@ char * errorMessage[] =
 	"received SIGINT -",		 	/* 58 */
 	"function is not reentrant",	/* 59 */
 	"not allowed on local symbol",  /* 60 */
-	"no symbol reference found",	/* 61 */
+	"no reference found",			/* 61 */
 	"list is empty",				/* 62 */
 	"I/O error",					/* 63 */
 	"no working directory found",	/* 64 */
@@ -4529,7 +4529,9 @@ if(params->next == nilCell)
 	return(errorProc(ERR_MISSING_ARGUMENT));
 		
 cell = evaluateExpression(params);
-		
+if(cell == nilCell || cell == trueCell)
+	errorProcExt(ERR_IS_NOT_REFERENCED, cell);
+			
 symbolRef = symbolCheck;
 stringRef = stringCell;
 indexRefPtr = stringIndexPtr;

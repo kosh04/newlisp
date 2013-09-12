@@ -2,7 +2,7 @@
 <html>
 <title>newLISP  v.10.2 Release Notes </title>
 <body>
-<h1>newLISP<font size=-2>&#174;</font> v.10.2 Release Notes <font color="red" size="-2">rev 2010-03-16</font></h1>
+<h1>newLISP<font size=-2>&#174;</font> v.10.2.1 Release Notes <font color="red" size="-2">rev 2010-03-17</font></h1>
 
 <p>This release introduces mutable objects in the FOOP object system and 
 some additions and changes to the API.</p>
@@ -13,7 +13,8 @@ incompatibilities when running new code under older 10.0 and 10.1 based versions
 or when running older code under the new 10.2 version. For these cases, the release notes 
 show code tips, to make code run on the new and older versions.</p>
 
-<p>Version 10.1.8 to 10.1.12 are versions leading up to version 10.2.</p>
+<p>Version 10.1.8 to 10.1.12 are versions leading up to version 10.2.0</p>
+<p>Version 10.2.1 fixes a severe bug in <tt>setf</tt> and <tt>swap</tt> introduced in v.10.1.12.</tt>
 
 <p>Many thanks to all in the newLISP community who have contributed to this
 release with advice, discussion and code.</p>
@@ -83,7 +84,7 @@ symbols or namespaces whose symbols are referenced externally will crash the
 system.</li><br>
 
 <li><tt>define-macro</tt>'s (fexpr's) are now included in error reporting. Before
-they would be reported as part of a <tt>define</tt> function callint it.</li><br>
+they would be reported as part of a <tt>define</tt> function which called it.</li><br>
 
 <li>In <tt>det</tt> and <tt>invert</tt> a new optional parameter controls
 how zero pivot elements are handled in the LU decomposition algorithm . 
@@ -218,24 +219,24 @@ published on http://newlisp.org have been updated to run on both
 
 <h3>Bug fixes</h3>
 <ul>
-<li>The <em>Chi2</em> values calculated by <tt>crit-chi2</tt> where to low for 
+<li>The <em>Chi2</em> values calculated by <tt>crit-chi2</tt> were too low for 
 odd numbers of <em>degrees of freedom</em> &ndash; the <tt>bayes-query</tt> function
 was <u>not</u> affected by this.</li><br>
 
-<li>FOOP objects where not protected if held by a protected symbol.</li><br>
+<li>FOOP objects were not protected if held by a protected symbol.</li><br>
 
 <li><tt>get-int</tt> did not do proper sign-extension in the 64-bit version
 of newLISP.</li><br>
 
 <li><tt>get-url</tt> now also handles error code 302 for re-location using the 
-<tt>location:</tt> header. In the past only codes 301 and 303 where handled for
+<tt>location:</tt> header. In the past only codes 301 and 303 were handled for
 automatic re-requesting with changed URI.</li><br>
 
 <li><tt>new</tt> had a memory leak in certain applications of this function.</li><br>
 
 <li>The <tt>nil?</tt> predicate evaluated twice.</li><br>
 
-<li>The probabilities calculated by <tt>prob-chi2</tt> where to low for
+<li>The probabilities calculated by <tt>prob-chi2</tt> were too low for
 odd numbers of <em>degrees of freedom</em>.</li><br>
 
 <li><tt>push</tt> on <tt>-1</tt> (end of list) optimization was broken when copying 

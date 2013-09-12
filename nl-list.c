@@ -1525,12 +1525,6 @@ void updateCell(CELL * cell, CELL * val)
 {
 CELL * new;
 
-if(cell == nilCell) 
-	{
-	/* printf("nilCell\n"); */
-	return;
-	}
-
 /* deprecate 10.1.6/ then eliminate usage of sysSymbol[0
 	and $it does not need a copy anymore 
     TAKE OUT AFTER 10.2.00 
