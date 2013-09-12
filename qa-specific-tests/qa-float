@@ -57,6 +57,7 @@
 	"inf is signed too"
 	(= aNegInf (div -1 0))
 	(!= aNegInf (div 1 0))
+    (= (int aNegInf) -9223372036854775808)
 	"mod with 0 divisor is NaN"
 	(NaN? (mod 10 0))
 	"% with 0 divisor throws error"

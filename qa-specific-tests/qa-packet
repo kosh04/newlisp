@@ -1,0 +1,128 @@
+#!/usr/bin/newlisp
+
+
+; set source and destination IP addresses for all test packages
+
+(map set '(sip1 sip2 sip3 sip4) '(10 0 2 15))
+(map set '(dip1 dip2 dip3 dip4) '(10 0 2 2))
+
+(define (send-packet packet)
+	(let (bytes-sent (net-packet packet))
+		(unless bytes-sent
+			(println " >>>> net-error:" (net-error)) 
+			(println " >>>> sys-error:" (sys-error)))
+		bytes-sent)
+)
+
+
+; ==============================================================================
+
+; example for sendig a TCP packet using net-packet and raw sockets
+; checksums ip_sum and th_sum are only calculated if given as zero
+; change at least the destination IP to a valid IP.
+; tcp header options and data can be added at the end; this would
+; increase the total packet length ip_len and would increase th_off,
+; if tcp header options are present. TCP header options must be
+; padded at the end for 32bit alignment. After TCP header options
+; data can be added.
+
+; only headers no data
+(set 'tcp-packet
+        ; UP header                      ; TCP header
+  (pack "b b bb bb bb b b bb bbbb bbbb   bb bb bbbb bbbb b b bb bb bb " 
+; IP header in BSD form
+0x45       ; ip_hl, ip_v IPV 4 and header length in quads
+0x00       ; ip_tos, type of service
+0x00 0x28  ; ip_len, total length=40 in network order
+0x22 0x79  ; ip_id, identification (random)
+0x00 0x00  ; ip_off, fragment offset field
+0x3c       ; ip_ttl, time to live TTL
+0x06       ; ip_p, protocl 6 for TCP
+0x00 0x00  ; ip_sum, checksum set automatically by net-packet if zero
+sip1 sip2 sip3 sip4 ; source IP
+dip1 dip2 dip3 dip4 ; destination IP
+; TCP header in BSD form
+0x14 0x03  ; th_sport, source port 5123 in big-endian
+0x30 0x39  ; th_dport, destination port 12345 in big-endian
+0x08 0xd7 0x35 0xef ; th_seq, sequence number in big-endian (random)
+0x1d 0x41 0x5f 0x04 ; th_ack, achnowledgement in big-emdian number (random)
+0x50       ; th_off, data offset 5 * 4 = 20 and th_x2, 0 unused
+0x03       ; th_flags on of: TH_FIN,TH_SYN,TH_RST,TH_PUSH,TH_ACK,TH_URG
+0x02 0x00  ; th_win window
+0x00 0x00  ; th_sum, checksum set automatically by net-packet if zero 
+0x00 0x00  ; th_urp
+) ; end pack
+) ; end tcp-packet
+
+(if (= 0x28 (send-packet tcp-packet))
+	(println ">>>>> packet with headers only OK")
+	(println ">>>>> ERROR sending packet with headers only"))
+
+; ==============================================================================
+
+; (get-url "http://192.168.1.92") -> connect to port 80
+; no data but TCP header options
+ 
+(set 'tcp-packet (pack (dup "b" 64) (list
+    0x45 0x00 0x00 0x40 0x73 0xa6 0x40 0x00 0x40 0x06 0x00 0x00 sip1 sip2 sip3 sip4
+    dip1 dip1 dip3 dip4 0xcd 0x15 0x00 0x50 0x46 0x0a 0x32 0xe9 0x00 0x00 0x00 0x00
+    0xb0 0x02 0xff 0xff 0x00 0x00 0x00 0x00 0x02 0x04 0x05 0xb4 0x01 0x03 0x03 0x03
+    0x01 0x01 0x08 0x0a 0x11 0xd3 0xaf 0x10 0x00 0x00 0x00 0x00 0x04 0x02 0x00 0x00))
+)
+
+(if (= 0x40 (send-packet tcp-packet))
+	(println ">>>>> packet with headers, header options and no data OK")
+	(println ">>>>> ERROR sending packet with headers only"))
+
+; ==============================================================================
+
+; (get-url "http://192.168.1.92") -> send "GET / HTTP/1.1" request
+; header options and data
+
+; 16 bytes of data
+(set 'tcp-packet (pack (dup "b" 68) (list
+    0x45 0x00 0x00 0x44 0x30 0x20 0x40 0x00 0x40 0x06 0x00 0x00 sip1 sip2 sip3 sip4 
+    dip1 dip2 dip3 dip4 0xc3 0xe3 0x00 0x50 0x7f 0x0e 0xbb 0x5d 0x85 0x9d 0x90 0xd3 
+    0x80 0x18 0xff 0xff 0x00 0x00 0x00 0x00 0x01 0x01 0x08 0x0a 0x00 0x15 0xac 0x3e
+    0x53 0xfe 0xe8 0xb0 0x47 0x45 0x54 0x20 0x2f 0x20 0x48 0x54 0x54 0x50 0x2f 0x31
+    0x2e 0x31 0x0d 0x0a)))
+
+(if (= 0x44 (send-packet tcp-packet))
+	(println ">>>>> packet with headers, header options and data OK")
+	(println ">>>>> ERROR sending packet with headers only"))
+
+; ==============================================================================
+
+; on this packet cheksums are already set, to find out if ip_len and ip_off
+; swapping is handled correctly (assuming 10.0.2.15 -> 10.0.2.2 configuration
+; under VirtualBox)
+
+; (net-send-udp "10.0.2.2" 12345 "Hello World")
+(set 'udp-packet (pack (dup "b" 39) (list
+    0x45 0x00 0x00 0x27 0x00 0x00 0x40 0x00 0x40 0x11 0x22 0xb6 sip1 sip2 sip3 sip4 
+    dip1 dip2 dip3 dip4 0xe4 0x05 0x30 0x39 0x00 0x13 0x81 0xaa 0x48 0x65 0x6c 0x6c
+    0x6f 0x20 0x57 0x6f 0x72 0x6c 0x64)))
+
+(if (= 0x27 (send-packet udp-packet))
+	(println ">>>>> UDP packet with data OK")
+	(println ">>>>> ERROR sending UDP packet with data"))
+
+; ==============================================================================
+
+; (net-ping "192.168.1.92")
+
+(set 'icmp-packet (pack (dup "b" 84) (list
+    0x45 0x00 0x00 0x54 0x81 0xcf 0x00 0x00 0x40 0x01 0x00 0x00 sip1 sip2 sip3 sip4 
+    dip1 dip2 dip3 dip4 0x08 0x00 0x00 0x00 0xfd 0x30 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0xb9 0x6d 0xd8 0x4b 0xdd 0x69 0x03 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+    0x00 0x00 0x00 0x00)))
+
+(if (= 0x54 (send-packet icmp-packet))
+	(println ">>>>> ICMP packet with data OK")
+	(println ">>>>> ERROR sending ICMP packet with data"))
+
+(exit)
+
+;; eof

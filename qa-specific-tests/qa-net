@@ -79,7 +79,7 @@
 ; check if server is online or start it, if not
 ; start one on localhost if no URL was specified
 ; on the command line
-(set 'connection (net-connect host port))
+(set 'connection (net-connect host port 1000))
 (if (not connection)
 	(begin
 		(println "Starting server on localhost")
@@ -93,6 +93,22 @@
 
 (println "waiting for server ...")
 (sleep 1000)
+
+(if (net-connect host (+ port 1) 500)
+	(println " >>>> net-connect -> ERROR")
+	(println "net-connect to wrong port ->OK"))
+
+(when (<= (sys-info -1) 512) ; IPv4
+	(if (find "server code 404:" (get-url (string "http://" host ":" port)))
+		(println "get-url ->OK")
+		(println " >>>> get-url problem ->ERROR"))
+)
+
+(when (> (sys-info -1) 512) ; IPv6
+	(if (find "server code 404:" (get-url "http://[::1]:10001/"))
+		(println "get-url ->OK")
+		(println " >>>> get-url problem ->ERROR"))
+)
 
 ; test short syntax normal mode
 (if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
@@ -114,8 +130,10 @@
 	(set 'result4 (println "save to URL ->OK"))
 	(println " >>>> save to URL ->ERROR"))
 
-(if (find ostype '("Win32""Cygwin"))
+(when (find ostype '("Win32""Cygwin"))
+	(println "waiting on Windows for file to be unlocked ...")
     (sleep 2000))
+
 
 ; test loading from URL
 (if (and
@@ -124,7 +142,7 @@
        (= key verify))
        (set 'result5 (println "load from URL ->OK"))
 	(begin
-    	(println "load from URL ->ERROR")
+    	(println " >>>> load from URL ->ERROR OK on some Win32")
 		(println result))
 )
 
@@ -146,7 +164,7 @@
 (if (catch (= contents (read-file targetURL)) 'result)
     (set 'result7 (println "read-file from remote URL ->OK"))
     (begin
-        (println " >>>> read-file from  remote URL ->ERROR")
+        (println " >>>> read-file from  remote URL ->ERROR OK on some Win32")
 		(println result))
 )
 

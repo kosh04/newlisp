@@ -11,9 +11,10 @@
 			link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
-<p><a href="index.html">Module index</a></p><br/>
+<p><a href="index.html">Module index</a></p><a href="guiserver.lsp.src.html">source</a>&nbsp;<a href="guiserver.lsp">download</a><br/>
 <h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
 <b>Version: </b>1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar<br/>
+<b>Version: </b>1.37c documentation corrections<br/>
 <b>Author: </b>LM, August 2008, 2009, 2010<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -922,7 +923,7 @@
 <b>parameter: </b><em>str-title</em> - The title of the color dialog.<br/>
 <b>parameter: </b><em>float-red</em> - The initial red color component.<br/>
 <b>parameter: </b><em>float-green</em> - The initial green color component.<br/>
-<b>parameter: </b><float-blue - The initial blue color component.<br/>
+<b>parameter: </b><em>float-blue</em> - The initial blue color component.<br/>
 
 
 
@@ -1194,8 +1195,8 @@
 
 
 <br/><br/><center>&sect;</center><br/>
-<a name="gs_eva-shell"></a><h3><font color=#CC0000>gs:eva-shell</font></h3>
-<b>syntax: (<font color=#CC0000>gs:eva-shell</font> <em>sym-id-text-area</em> <em>str-command</em>)</b><br/>
+<a name="gs_eval-shell"></a><h3><font color=#CC0000>gs:eval-shell</font></h3>
+<b>syntax: (<font color=#CC0000>gs:eval-shell</font> <em>sym-id-text-area</em> <em>str-command</em>)</b><br/>
 <b>parameter: </b><em>sym-id-text-area</em> - The name of the text are in which to evaluate text.<br/>
 <b>parameter: </b><em>str-command</em> - The text to evaluate in the shell.<br/>
 
@@ -1840,7 +1841,7 @@
 <b>parameter: </b><em>sym-action</em> - The handler function symbol.<br/>
 <b>parameter: </b><em>str-directory</em> - The initial directory to show.<br/>
 <b>parameter: </b><em>str-mask</em> - An optonal string mask.<br/>
-<b>parameter: </b>Mstr-description> - An optional mask description.<br/>
+<b>parameter: </b><em>str-description</em> - An optional mask description.<br/>
 
 
 <br/><br/><center>&sect;</center><br/>
@@ -2623,7 +2624,7 @@
 <b>parameter: </b><em>str-orientation</em> - The orientation <tt>"horizontal"</tt> or <tt>"vertical"</tt>.<br/>
 <b>parameter: </b><em>float-weight</em> - The optional weight distribution between <tt>0.0</tt> and <tt>1.0</tt> when re-sizing the window. The default is <tt>0.0</tt>.<br/>
 <b>parameter: </b><em>float-location</em> - The optional initial divider location between <tt>0.0</tt> and <tt>1.0</tt>.<br/>
-<b>parameter: </b><int-divider-size) - The optional size of the draggable divider in pixels.<br/>
+<b>parameter: </b><em>int-divider-size</em> - The optional size of the draggable divider in pixels.<br/>
 
 
 <br/><br/><center>&sect;</center><br/>
@@ -2758,8 +2759,9 @@
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_undo-enable"></a><h3><font color=#CC0000>gs:undo-enable</font></h3>
-<b>syntax: (<font color=#CC0000>gs:undo-enable</font> <em>sym-id</em> <boolean-enabled)</b><br/>
+<b>syntax: (<font color=#CC0000>gs:undo-enable</font> <em>sym-id</em> <em>boolean-enabled</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The id of the <tt>gs:text-pane</tt> for which to enabe/disable undo.<br/>
+<b>parameter: </b><em>boolean-enabled</em> - <tt>true</tt> or <tt>nil</tt> to enable or disable undo.  <br/>
 
 
 

@@ -312,14 +312,11 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, 0);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, DEFAULT_TIMEOUT);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
 	}
-
-if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
 
 if((size = readFile(fileName, &buffer)) == -1)
 	return(nilCell);
@@ -333,6 +330,8 @@ ssize_t readFile(char * fileName, char * * buffer)
 int handle; 
 size_t size;
 struct stat fileInfo;
+
+fileName = getLocalPath(fileName);
 
 #ifdef USE_WIN_UTF16PATH
 if(stat_utf16(fileName, &fileInfo) != 0)
@@ -434,14 +433,11 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
 	result = getPutPostDeleteUrl(fileName, params, 
-				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, 0);
+				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, DEFAULT_TIMEOUT);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
 	}
-
-if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
 
 getStringSize(params, &buffer, &size, TRUE);
 
@@ -652,9 +648,25 @@ return(stuffString(readLineStream.buffer));
 }
 
 
+char * getLocalPath(char * fileName)
+{
+if(my_strnicmp(fileName, "file://", 7) == 0)
+	fileName = fileName + 7;
+
+#ifdef WIN_32
+if(*fileName == '/' && *(fileName + 2) == ':')
+	fileName = fileName + 1;
+#endif
+
+return(fileName);
+}
+
+
 int openFile(char * fileName, char * accessMode, char * option)
 {
 int blocking = 0;
+
+fileName = getLocalPath(fileName);
 
 #ifndef WIN_32
 if(option != NULL && *option == 'n')
@@ -734,6 +746,7 @@ getString(params, &newName);
 return(rename(oldName, newName) == 0 ? trueCell : nilCell);
 }
 
+
 CELL * p_deleteFile(CELL * params)
 {
 char * fileName;
@@ -742,32 +755,13 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, 0);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, DEFAULT_TIMEOUT);
 	return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
 	}
 
-if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
-
+fileName = getLocalPath(fileName);
 return(unlink(fileName) == 0 ? trueCell : nilCell);
 }
-
-
-#ifdef OLDDELETEFILE
-CELL * p_deleteFile(CELL * params)
-{
-char * fileName;
-
-params = getString(params, &fileName);
-if(my_strnicmp(fileName, "http://", 7) == 0)
-	return(getPutPostDeleteUrl(fileName, params, HTTP_DELETE, 0));
-
-if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
-
-return(unlink(fileName) == 0 ? trueCell : nilCell);
-}
-#endif
 
 
 CELL * p_makeDir(CELL * params)
@@ -2250,13 +2244,16 @@ return(out.tv_sec*1000 + (out.tv_usec/1000));
 */
 UINT64 timediff64(struct timeval out, struct timeval in )
 {
+UINT64 usec;
+
 	if( (out.tv_usec -= in.tv_usec) < 0 )   {
 		out.tv_sec--;
 		out.tv_usec += 1000000;
 	}
 	out.tv_sec -= in.tv_sec;
 
-return(out.tv_sec*1000000 + out.tv_usec);
+usec = (UINT64)1000000 * out.tv_sec + out.tv_usec;
+return(usec);
 }
 
 #ifndef WIN_32

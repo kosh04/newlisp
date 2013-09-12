@@ -286,7 +286,7 @@ if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
 params = params->next;
 if(params != nilCell && !getFlag(params))
 	checkReferences = FALSE;
-else if(getFlag(params->next))
+else if(getFlag(params))
 	{
 	if(cell->type == CELL_CONTEXT)
 		{

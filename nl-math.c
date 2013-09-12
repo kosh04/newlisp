@@ -1745,7 +1745,7 @@ double rate, pv;
 double fv = 0.0;
 double pmt = 0.0;
 double inc;
-int type = 0;
+long type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1774,7 +1774,7 @@ long nper;
 double rate, pmt, pv;
 double fv = 0.0;
 double inc;
-int type = 0;
+long type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1831,7 +1831,7 @@ CELL * p_nper(CELL * params)
 double rate, pmt, pv;
 double fv = 0.0;
 double R, c, nper;
-int type = 0;
+long type = 0;
 
 params = getFloat(params, &rate);
 params = getFloat(params, &pmt);
@@ -1842,7 +1842,7 @@ if(params != nilCell)
 	params = getFloat(params, &fv);
 	if(params != nilCell) getInteger(params, (UINT *)&type);
 	}
-  
+ 
 if(rate == 0)
     nper = (-pv - fv) / pmt;
 else if(rate > -1.0)
@@ -2107,6 +2107,7 @@ for (n = 0; n < len; n++)
 
 return c;
 }
+
 
 /* ----------------------------------- Bayesian statistics -------------------------- */
 

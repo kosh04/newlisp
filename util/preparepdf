@@ -13,6 +13,10 @@
 #
 (set 'text (read-file (main-args 2))) ; input file
 
+(println "taking out xml tag and DOCTYPE tag")
+(replace {<\?xml[^>]*>} text "" 0)
+(replace {<\!DOCTYPE[^>]*>} text "" 0)
+
 (replace {(<h2><span class="function">)(.*?)</span>(.*?)</h2>} text 
          (append {<h2><font color="#DD0000">} $2 {</font>} $3 {</h2>}) 0)
 

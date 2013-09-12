@@ -1,0 +1,22 @@
+#!/usr/bin/newlisp
+
+(define (count-down-proc x channel)
+  (while (!= x 0)
+      (write-line channel (string x))
+      (dec x)))
+
+(define (observer-proc channel)
+  (do-until (= i "1")
+    (println "process " (setq i (read-line channel)))))
+
+(map set '(in out) (pipe))
+(set 'observer (fork (observer-proc in)))
+(set 'counter (fork (count-down-proc 5 out)))
+
+; avoid zombies
+(wait-pid observer)
+(wait-pid counter)
+
+(exit)
+
+

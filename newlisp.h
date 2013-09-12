@@ -213,6 +213,7 @@ This is for 64bit large file support (LFS),
 #ifndef WIN_32
 #define LINE_FEED "\n"
 #define NET_PING
+#define NET_PACKET
 #define NANOSLEEP
 #define HAVE_FORK 
 #endif
@@ -231,6 +232,8 @@ This is for 64bit large file support (LFS),
 #else
 #define MAX_LONG 0x7FFFFFFFFFFFFFFFLL
 #endif
+
+#define DEFAULT_TIMEOUT 3000 /* 3 sec for connection phase in getPutPostUrl */
 
 #ifndef NEWLISP64
 #ifdef TRU64
@@ -270,6 +273,7 @@ This is for 64bit large file support (LFS),
 #define MAX_URL_LEN 256
 
 #define MAX_REGEX_EXP 16
+
 
 /* token types */
 #define TKN_ERROR -1
@@ -443,6 +447,38 @@ This is for 64bit large file support (LFS),
 #define ERR_INVALID_PID 65
 #define MAX_ERROR_NUMBER 65
 #define UNKNOWN_ERROR "Unknown error"
+
+/* network error handling */
+#define ERR_INET_OPEN_SOCKET 1
+#define ERR_INET_HOST_UNKNOWN 2
+#define ERR_INET_INVALID_SERVICE 3
+#define ERR_INET_CONNECT_FAILED 4
+#define ERR_INET_ACCEPT 5
+#define ERR_INET_CONNECTION_DROPPED 6
+#define ERR_INET_CONNECTION_BROKEN 7
+#define ERR_INET_READ 8
+#define ERR_INET_WRITE 9
+#define ERR_INET_CANNOT_BIND 10
+#define ERR_INET_TOO_MUCH_SOCKETS 11
+#define ERR_INET_LISTEN_FAILED 12
+#define ERR_INET_BAD_FORMED_IP 13
+#define ERR_INET_SELECT_FAILED 14
+#define ERR_INET_PEEK_FAILED 15
+#define ERR_INET_NOT_VALID_SOCKET 16
+#define ERR_INET_CANNOT_NOBLOCK 17
+#define ERR_INET_TIMEOUT 18
+/* used in nl-web.c */
+#define ERROR_BAD_URL 19
+#define ERROR_FILE_OP 20
+#define ERROR_TRANSFER 21
+#define ERROR_INVALID_RESPONSE 22
+#define ERROR_NO_RESPONSE 23
+#define ERROR_DOCUMENT_EMPTY 24
+#define ERROR_HEADER 25
+#define ERROR_CHUNKED_FORMAT 26
+
+#define MAX_NET_ERROR 26
+
 
 /* I/O routines */
 #define OUT_NULL 0

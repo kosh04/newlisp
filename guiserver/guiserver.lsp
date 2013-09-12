@@ -1,6 +1,7 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
 ;; @version 1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar
+;; @version 1.37c documentation corrections
 ;; @author LM, August 2008, 2009, 2010
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -1032,7 +1033,7 @@ true
 ;; @param <str-title> The title of the color dialog.
 ;; @param <float-red> The initial red color component.
 ;; @param <float-green> The initial green color component.
-;; @param <float-blue The initial blue color component.
+;; @param <float-blue> The initial blue color component.
 
 (define (color-dialog parent action title red green blue)
 	(net-send out (string "color-dialog " parent " " action " " (base64-enc title) " " red " " green " " blue "\n"))
@@ -1421,7 +1422,7 @@ true
 	)
 )
 
-;; @syntax (gs:eva-shell <sym-id-text-area> <str-command>)
+;; @syntax (gs:eval-shell <sym-id-text-area> <str-command>)
 ;; @param <sym-id-text-area> The name of the text are in which to evaluate text.
 ;; @param <str-command> The text to evaluate in the shell.
 
@@ -2293,7 +2294,7 @@ true
 ;; @param <sym-action> The handler function symbol.
 ;; @param <str-directory> The initial directory to show.
 ;; @param <str-mask> An optonal string mask.
-;; @param Mstr-description> An optional mask description.
+;; @param <str-description> An optional mask description.
 
 (define (open-file-dialog parent action dir mask desc)
 	(if dir
@@ -3243,7 +3244,7 @@ true
 ;; @param <str-orientation> The orientation '"horizontal"' or '"vertical"'.
 ;; @param <float-weight> The optional weight distribution between '0.0' and '1.0' when re-sizing the window. The default is '0.0'.
 ;; @param <float-location> The optional initial divider location between '0.0' and '1.0'.
-;; @param <int-divider-size) The optional size of the draggable divider in pixels.
+;; @param <int-divider-size> The optional size of the draggable divider in pixels.
 
 (define (split-pane id orient (weight 0.0)  (pos 0.5)  (dvdr 5))
 	(net-send out (string "split-pane " id " " orient " " weight " " pos " " dvdr "\n"))
@@ -3409,8 +3410,9 @@ true
 	(net-send out (string "undo-text " id "\n"))
 )
 
-;; @syntax (gs:undo-enable <sym-id> <boolean-enabled)
+;; @syntax (gs:undo-enable <sym-id> <boolean-enabled>)
 ;; @param <sym-id> The id of the 'gs:text-pane' for which to enabe/disable undo.
+;; @param <boolean-enabled> 'true' or 'nil' to enable or disable undo.  
 
 (define (undo-enable id enabled)
 	(net-send out (string "undo-enable " id  " " enabled "\n"))

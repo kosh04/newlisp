@@ -497,7 +497,7 @@ CELL * cell;
 
 name = (char *)callocMemory(tagLen + 1);
 memcpy(name, tagStart, tagLen);
-cell = stuffSymbol(translateCreateSymbol(name, CELL_NIL, XMLcontext, 0));
+cell = stuffSymbol(translateCreateSymbol(name, CELL_NIL, XMLcontext, 1));
 freeMemory(name);
 return(cell);
 }

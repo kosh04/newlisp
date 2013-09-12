@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "4.01 Transitional">
+<html>
+<head>
+<title>newLISP  v.10.2.8 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #505050;
+	line-height: 140%;
+	}
+
+
+li {
+	margin-bottom: 15px;
+	}
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.2.8 Release Notes <font color="red" size="-1">rev 2010-05-20</font></h1>
+
+<p>Version 10.2.8 is a stable maintenance version of the 10.2 series of releases. 
+It introduces a new <tt>net-packet</tt> functions, other minor API enhancements in 
+network and other functions and fixes bugs.</p>
+
+<p>If upgrading from versions previous to 10.2, pease read the 
+<a href=http://www.newlisp.org/downloads/previous-release-notes/newLISP-10.2-Release.html>
+10.2 Release notes</a></p>
+
+
+<h3>Additions and improvements to networking functionality</h3>
+<ul>
+<li>A new <tt>net-packet</tt> function can be used to inject custom configured
+IP packets. The function is only available on UNIX like operating systems and
+has been configued and tested for Mac OS X on PPC and Intel CPUs, UBUNTU Linux
+on Intel CPUs and OpenBSD on Intel CPUs.</li>
+
+<li>The <tt>net-connect</tt> function now has a timeout parameter. In older
+versions connection timeout behavior was controlled by the OS. Now connection
+timeout is under programmer control.</li>
+
+<li>The timeout parameter in the web functions <tt>get-url</tt>, <tt>post-url</tt>,
+<tt>put-url</tt> and <tt>delete-url</tt> now also controls the connection phase.
+In older versions, it only controlled the processs after connecting. This gave
+web functions the appearance of hanging when the target server was disconnected
+or down. Now these functions already can timout during the connection phase.</li>
+
+<li>The <tt>net-service</tt> function now works in both directions. Now port
+number can be translated to service names too. In older versions only translation
+from service names to port numbers was possible.</li>
+</ul>
+
+<h3>Other changes and additions</h3>
+
+<ul>
+<li>The timing function <tt>time</tt> did overflow after 35 minutes in the
+10.x generation of newLISP; now it can count to about 68 years.</li>
+
+<li>Speedup of hash entry deleletion. No reference checks are made anymore
+when deleting hash entries using <tt>(<hash-symbol> <str-token> nil)</tt>.</li>
+
+<li><tt>find-all</tt> has improved behavior on looping conditions, where it
+no will increment the search offset by 1. Looping conditions occur, when
+regular expressions result in zero-length strings found. In previous
+versions <tt>find-all</tt> did exit on looping conditions.</li>
+
+<li>In MS Windows both URLs forms: <tt>file://C:/example.txt</tt> and 
+<tt>file:///C:/example.txt</tt> are now valid.</li> 
+
+<li>The <tt>save</tt> function has been made faster up to a factor of 10x.</li>
+
+<li>OpenBSD 4.6 now added as a regular test environment additionally
+to Mac OSX, FreeBSD, UBUNTU Linux, SunOs Sparc and Windows XP/7.</li>
+
+</ul>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li>The <tt>map</tt> function now handles short parameter lists in a consistent
+manner when mapping string manipulating functions onto lists of strings.</li>
+
+<li><tt>xml-parse</tt> with context option did not convert names of built-in
+primitives.</li>
+
+<li><tt>load</tt> in HTTP mode did not return to previous context, but always
+went into MAIN.</li>
+
+<li>On Win32 negative <tt>-Inf</tt> lost the sign when converting to the
+maximum integer value.</li>
+
+<li>The <tt>true</tt> flag in <tt>delete</tt> was not handled correctly 
+since 10.2.0.</li>
+
+<li>In <tt>get-url</tt> the <tt>"list-debug"</tt> option did return a string 
+instead of a list.</li>
+
+<li>The <tt>find</tt> function accepted the regex option number only as
+a constant.</li>
+</ul>
+
+<center>&part;</center>
+
+</body>
+</html>

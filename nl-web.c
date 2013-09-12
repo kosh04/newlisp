@@ -47,16 +47,6 @@
 /* from nl-sock.c */
 extern UINT errorIdx;
 extern char * netErrorMsg[];
-#define ERR_INET_CONNECT_FAILED 4
-#define ERR_INET_TIMEOUT 17
-#define ERROR_BAD_URL 18
-#define ERROR_FILE_OP 19
-#define ERROR_TRANSFER 20
-#define ERROR_INVALID_RESPONSE 21
-#define ERROR_NO_RESPONSE 22
-#define ERROR_DOCUMENT_EMPTY 23
-#define ERROR_HEADER 24
-#define ERROR_CHUNKED_FORMAT 25
 
 #define OK_FILE_DELETED "file deleted"
 
@@ -203,24 +193,24 @@ return(result);
 
 CELL * p_getUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_GET, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_GET, DEFAULT_TIMEOUT));
 }
 
 
 CELL * p_putUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_PUT, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_PUT, DEFAULT_TIMEOUT));
 }
 
 
 CELL * p_postUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_POST, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_POST, DEFAULT_TIMEOUT));
 }
 
 CELL * p_deleteUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, 0));
+return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, DEFAULT_TIMEOUT));
 }
 
 #define BASE64_ENC 0
@@ -318,7 +308,6 @@ if(type == HTTP_PUT || type == HTTP_PUT_APPEND || type == HTTP_POST)
 
 if(my_strnicmp(url, "file://", 7) == 0)
 	{
-	url = url + 7;
 	if(type == HTTP_GET)
 		{
 		if((size = readFile(url, &buffPtr)) == -1)
@@ -333,7 +322,11 @@ if(my_strnicmp(url, "file://", 7) == 0)
 		return(stuffString(errorTxt));
 		}
 	if(type == HTTP_DELETE)
+		{
+		url = getLocalPath(url);
 		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
+		}
+
 	return(webError(ERROR_BAD_URL));
 	}
 
@@ -348,23 +341,27 @@ if(type == HTTP_POST)
 
 result = evaluateExpression(params);
 params = params->next;
-socketTimeout = timeout;
+
 if(isNumber(result->type))
+	{
     getIntegerExt(result, (UINT*)&socketTimeout, FALSE);
+	timeout = socketTimeout;
+	}
+
 else if(isString(result->type))
     {
     option = (char *)result->contents;    
     if(my_strnicmp(option, "header", 6) == 0)
       headRequest = TRUE;
-    if(my_strnicmp(option, "list", 5) == 0)
+    if(my_strnicmp(option, "list", 4) == 0)
       listFlag = TRUE;
     /* "debug" or "header debug" or "list-debug" options
        print all outgoing informatiopn on the console */	
 	if(my_strnicmp(option, "debug", 5) == 0)
       debugFlag = TRUE;
-	if(my_strnicmp(option + 7, "debug", 5) == 0)
+	if(my_strnicmp(option + 7, "debug", 5) == 0) /* header debug */
       debugFlag = TRUE;
-	if(my_strnicmp(option + 6, "debug", 5) == 0)
+	if(my_strnicmp(option + 5, "debug", 5) == 0) /* list-debug */
       debugFlag = TRUE;
     if(params != nilCell)
         params = getInteger(params, (UINT*)&socketTimeout);
@@ -388,7 +385,10 @@ path = alloca(maxlen + 1);
 if(parseUrl(url, protocol, host, &port, path, maxlen) == FALSE)
 	return(webError(ERROR_BAD_URL));
 
+/* printf("protocol: %s host:%s port %d path:%s\n", protocol, host, port, path); */
+
 proxyUrl = getenv("HTTP_PROXY");
+
 if(proxyUrl == NULL)
 	{
 	strncpy(pHost, host, maxlen);
@@ -407,8 +407,8 @@ CONNECT_TO_HOST:
 if(sock) 
     close(sock);
 
-if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, 3)) == SOCKET_ERROR)
-	return(webError(ERR_INET_CONNECT_FAILED));
+if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, timeout)) == SOCKET_ERROR)
+	return(webError(errorIdx));
 
 if(type == HTTP_GET)
 	if(headRequest == TRUE) type = HTTP_HEAD;
@@ -662,9 +662,8 @@ int parseUrl(char * url, char * protocol, char * host, int * port, char * path, 
 {
 #ifdef IPV6
 char * bracketPtr;
-#else
-char * colonPtr;
 #endif
+char * colonPtr;
 char * slashPtr;
 int len;
 
@@ -713,9 +712,18 @@ slashPtr = strchr(host, '/');
 if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
 	{
 	*bracketPtr = '\0';
-	if(*(bracketPtr + 1))
+	if(*(bracketPtr + 1) == ':')
 		*port = atoi(bracketPtr + 2);
 	}
+else
+	{
+	colonPtr = strchr(host, ':');
+	if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
+		{
+		*colonPtr++ = '\0';
+		*port = atoi(colonPtr);
+		}
+	}	
 #else
 if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
 	{
@@ -963,8 +971,8 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
    Subset HTTP/1.0 compliant.
 */
 
-/* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.2.1"
+/* #define DEBUGHTTP  */
+#define SERVER_SOFTWARE "newLISP/10.2.8"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query);

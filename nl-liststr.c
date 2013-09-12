@@ -985,7 +985,8 @@ if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
 		if(params->next != nilCell)
 			getInteger(params->next, (UINT*)&offset);
 		if(offset > size) offset = size;
-		if(!isNil(params) )
+		params = evaluateExpression(params);
+		if(!isNil(params))
 			getIntegerExt(params, (UINT *)&options, FALSE);
 		}
 
@@ -1060,8 +1061,9 @@ CELL * result = nilCell;
 CELL * cell = NULL;
 CELL * exprCell;
 CELL * exprRes;
-int errNo;
 UINT * resultIdxSave;
+int errNo; 
+int lastPos = -1;
 
 exprCell = params;
 if((params = params->next) != nilCell)
@@ -1084,8 +1086,15 @@ while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &l
 	else
 		exprRes = stuffStringN(str + findPos, len);
 
-	if(findPos == offset && len == 0) break;
-		
+	if(lastPos == findPos)
+		{
+		++findPos;
+		pushResult(exprRes);
+ 		goto FINDALL_CONTINUE;
+		}	
+
+	lastPos = findPos;
+
 	if(result == nilCell)
 		{
 		cell = exprRes;
@@ -1097,6 +1106,7 @@ while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &l
 		cell = cell->next;
 		}
 
+	FINDALL_CONTINUE:
 	offset = (findPos + len);
 	cleanupResults(resultIdxSave);
 	}

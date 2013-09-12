@@ -85,6 +85,13 @@
    (FRUIT (NAME "orange") (COLOR "orange") (PRICE "1.00")) 
    (FRUIT (NAME "banana") (COLOR "yellow") (PRICE "0.60")))))
 
+(set 'result4 
+	'((CTX:DATABASE (@ (CTX:name "example.xml")) 
+		(CTX:FRUIT (CTX:NAME "apple") (CTX:COLOR "red") (CTX:PRICE "0.80"))
+		(CTX:FRUIT (CTX:NAME "orange") (CTX:COLOR "orange") (CTX:PRICE "1.00"))
+		(CTX:FRUIT (CTX:NAME "banana") (CTX:COLOR "yellow") (CTX:PRICE "0.60"))))
+)
+
 ;(define CTX:msg)
 
 (println "testing: xml-parse and xml-type-tags")
@@ -96,6 +103,7 @@
 	(print (= result2 (xml-parse example-xml (+ 1 2 4))) " ")
  	(xml-type-tags nil 'cdata '!-- nil) 
 	(print (= result3 (xml-parse example-xml (+ 1 2 8))) " ")
+	(print (= result4 (xml-parse example-xml (+ 1 2 4 8 16) 'CTX)) " ")
 	(xml-type-tags nil nil nil nil)
 	(print (= (xml-parse "<msg>Hello World</msg>" (+ 1 2 4 8 16) 'CTX)
     		'((CTX:msg "Hello World"))) )

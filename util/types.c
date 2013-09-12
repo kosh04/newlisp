@@ -17,6 +17,8 @@ long long 8
 float     4
 double    8
 wchar_t   4
+size_t    4
+off_t     4
 
 output on AMD64 and Intel dual Core 2
 
@@ -34,6 +36,8 @@ float       4
 double      8
 long double 16
 wchar_t     4
+size_t      8
+off_t       8
 
 */
 
@@ -64,6 +68,8 @@ printf("float       %lu\n", sizeof(float));
 printf("double      %lu\n", sizeof(double));
 printf("long double %lu\n", sizeof(long double));
 printf("wchar_t     %lu\n", sizeof(wchar_t));
+printf("size_t      %lu\n", sizeof(size_t));
+printf("off_t       %lu\n", sizeof(off_t));
 
 printf("\n");
 printf("format input              output\n");

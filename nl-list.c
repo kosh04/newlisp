@@ -82,6 +82,7 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 	while(arg != nilCell)              /* for all args */
 		{
 		argCell = (CELL *)arg->contents; /* pop out first */
+		if(argCell == nilCell) break;
 		arg->contents = (UINT)argCell->next;
 		argCell->next = nilCell; /* unlink */
 		if(isSelfEval(argCell->type))

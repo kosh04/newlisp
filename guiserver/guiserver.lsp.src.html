@@ -2,6 +2,7 @@
 <font color='#555555'>;; <font color='#308080'>@module</font> guiserver.lsp</font>
 <font color='#555555'>;; <font color='#308080'>@description</font> Functions for programming GUIs and 2D graphics.</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.37c documentation corrections</font>
 <font color='#555555'>;; <font color='#308080'>@author</font> LM, August 2008, 2009, 2010</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the</font>
@@ -138,6 +139,11 @@
 <font color='#555555'>;; 'newlisp.exe' is in the path for executables, and it also assumes that the Windows registry has</font>
 <font color='#555555'>;; an association of the &lt;tt&gt;.jar&lt;/tt&gt; file extension with the &lt;tt&gt;javaw.exe&lt;/tt&gt; executable. This</font>
 <font color='#555555'>;; association is normally present when a java run-time environment (JRE) is installed in Windows.</font>
+<font color='#555555'>;; If this association is not registered, the following method can be used:</font>
+<font color='#555555'>;; &lt;pre&gt;</font>
+<font color='#555555'>;;    javaw -jar "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 47011 c:\myprogs\MyApplication.lsp</font>
+<font color='#555555'>;; &lt;/pre&gt;</font>
+<font color='#555555'>;; The quotes are necessary for path-names containing spaces.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; &lt;h2&gt;Debugging&lt;/h2&gt;</font>
 <font color='#555555'>;; &lt;b&gt;Tracing commands to newLISP-GS&lt;/b&gt;&lt;br&gt;&lt;br&gt;</font>
@@ -263,12 +269,12 @@
 <font color='#555555'>;; may be more efficient using the other forms.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; Except for the symbols used for action handlers, all symbols are used only by their</font>
-<font color='#555555'>;; face (name) value. This means that reserved symbols of the newLISP programming</font>
+<font color='#555555'>;; face (term) value. This means that reserved symbols of the newLISP programming</font>
 <font color='#555555'>;; language can be used freely in symbol ids for all components, e.g:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;     (gs:label 'name "Input here")</font>
+<font color='#555555'>;;     (gs:label 'term "Input here") ; term is a reserved name since v10.2.0</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;; The usage of the reserved symbol 'name' will not pose a problem.</font>
+<font color='#555555'>;; The usage of the reserved symbol 'term' will not pose a problem.</font>
 <font color='#555555'>;; &lt;br&gt;&lt;br&gt;</font>
 <font color='#555555'>;; &lt;h2&gt;Return values&lt;/h2&gt;</font>
 <font color='#555555'>;; newLISP-GS is an event driven asyncronous system. Most functions return</font>
@@ -1028,7 +1034,7 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-title&gt; The title of the color dialog.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-red&gt; The initial red color component.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-green&gt; The initial green color component.</font>
-<font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-blue The initial blue color component.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-blue&gt; The initial blue color component.</font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>color-dialog parent action title red green blue<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"color-dialog "</font> parent <font color='#008800'>" "</font> action <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> title<font color='#AA0000'>)</font> <font color='#008800'>" "</font> red <font color='#008800'>" "</font> green <font color='#008800'>" "</font> blue <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
@@ -1417,7 +1423,7 @@
 	<font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
-<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:eva-shell &lt;sym-id-text-area&gt; &lt;str-command&gt;)</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:eval-shell &lt;sym-id-text-area&gt; &lt;str-command&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id-text-area&gt; The name of the text are in which to evaluate text.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-command&gt; The text to evaluate in the shell.</font>
 
@@ -2289,7 +2295,7 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-action&gt; The handler function symbol.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-directory&gt; The initial directory to show.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-mask&gt; An optonal string mask.</font>
-<font color='#555555'>;; <font color='#308080'>@param</font> Mstr-description&gt; An optional mask description.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-description&gt; An optional mask description.</font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>open-file-dialog parent action dir mask desc<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> dir
@@ -3239,7 +3245,7 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-orientation&gt; The orientation '"horizontal"' or '"vertical"'.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-weight&gt; The optional weight distribution between '0.0' and '1.0' when re-sizing the window. The default is '0.0'.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;float-location&gt; The optional initial divider location between '0.0' and '1.0'.</font>
-<font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-divider-size) The optional size of the draggable divider in pixels.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-divider-size&gt; The optional size of the draggable divider in pixels.</font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>split-pane id orient <font color='#AA0000'>(</font>weight <font color='#665500'>0.0</font><font color='#AA0000'>)</font>  <font color='#AA0000'>(</font>pos <font color='#665500'>0.5</font><font color='#AA0000'>)</font>  <font color='#AA0000'>(</font>dvdr <font color='#665500'>5</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"split-pane "</font> id <font color='#008800'>" "</font> orient <font color='#008800'>" "</font> weight <font color='#008800'>" "</font> pos <font color='#008800'>" "</font> dvdr <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
@@ -3405,8 +3411,9 @@
 	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"undo-text "</font> id <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
-<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:undo-enable &lt;sym-id&gt; &lt;boolean-enabled)</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:undo-enable &lt;sym-id&gt; &lt;boolean-enabled&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The id of the 'gs:text-pane' for which to enabe/disable undo.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;boolean-enabled&gt; 'true' or 'nil' to enable or disable undo.  </font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>undo-enable id enabled<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"undo-enable "</font> id  <font color='#008800'>" "</font> enabled <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>

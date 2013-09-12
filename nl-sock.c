@@ -16,12 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* this file is in the process of beeing ifdeffed to IPv6, but not completed yet
-
-in the makefile_xxx add -DIPV6 in the CC compile flags
-
-*/
-
 #ifdef IPV6
 #define ADDR_TYPE AF_INET6
 #define ICMP_TYPE IPPROTO_ICMPV6
@@ -46,9 +40,12 @@ in the makefile_xxx add -DIPV6 in the CC compile flags
 #include <sys/un.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#define __FAVOR_BSD
 #include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
 #ifndef OS2
 #ifndef CYGWIN
@@ -113,35 +110,6 @@ struct icmp
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #endif
-
-#define ERR_INET_OPEN_SOCKET 1
-#define ERR_INET_HOST_UNKNOWN 2
-#define ERR_INET_INVALID_SERVICE 3
-#define ERR_INET_CONNECT_FAILED 4
-#define ERR_INET_ACCEPT 5
-#define ERR_INET_CONNECTION_DROPPED 6
-#define ERR_INET_CONNECTION_BROKEN 7
-#define ERR_INET_READ 8
-#define ERR_INET_WRITE 9
-#define ERR_INET_CANNOT_BIND 10
-#define ERR_INET_TOO_MUCH_SOCKETS 11
-#define ERR_INET_LISTEN_FAILED 12
-#define ERR_INET_BAD_FORMED_IP 13
-#define ERR_INET_SELECT_FAILED 14
-#define ERR_INET_PEEK_FAILED 15
-#define ERR_INET_NOT_VALID_SOCKET 16
-#define ERR_INET_TIMEOUT 17
-/* used in nl-web.c */
-#define ERROR_BAD_URL 18
-#define ERROR_FILE_OP 19
-#define ERROR_TRANSFER 20
-#define ERROR_INVALID_RESPONSE 21
-#define ERROR_NO_RESPONSE 22
-#define ERROR_DOCUMENT_EMPTY 23
-#define ERROR_HEADER 24
-#define ERROR_CHUNKED_FORMAT 25
-
-#define MAX_NET_ERROR 25
 
 #define isnum(A) ((A)>= '0' && (A) <= '9')
 
@@ -306,7 +274,6 @@ return(sList);
 }
 
 
-
 /*********************************************************************/
 
 CELL * p_netService(CELL * params) 
@@ -314,29 +281,47 @@ CELL * p_netService(CELL * params)
 struct servent * pSe; 
 char * service = NULL; 
 char * protocol = NULL; 
-int port; 
+CELL * cell;
+UINT port; 
  
-params = getString(params, &service); 
+params = getEvalDefault(params, &cell);
 getString(params, &protocol); 
+if(cell->type == CELL_STRING)
+    {
+    service = (char *)cell->contents;
  
-if((pSe = getservbyname(service, protocol)) == NULL) 
-    return(netError(ERR_INET_INVALID_SERVICE)); 
+    if((pSe = getservbyname(service, protocol)) == NULL) 
+        return(netError(ERR_INET_INVALID_SERVICE)); 
  
-port = (int)ntohs(pSe->s_port); 
+    port = (int)ntohs(pSe->s_port); 
  
-errorIdx = 0; 
-return(stuffInteger((UINT)port)); 
+    errorIdx = 0; 
+    return(stuffInteger((UINT)port)); 
+    }
+if(isNumber(cell->type))
+    {
+    getIntegerExt(cell, &port, FALSE);
+
+    if((pSe = getservbyport(htons(port), protocol)) == NULL) 
+        return(netError(ERR_INET_INVALID_SERVICE)); 
+
+    errorIdx = 0;
+    return(stuffString(pSe->s_name));
+    }
+
+return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, cell));
 } 
 
 
 CELL * p_netConnect(CELL * params)
 {
-UINT ttl = 3;
+CELL * cell;
 char * remoteHostName; 
-int type; 
 UINT portNo;
+UINT topt = 10000; /* default timeout 10secs */
 char * protocol = NULL;
 int sock;
+int type; 
 
 params = getString(params, &remoteHostName); 
 #ifndef WIN_32
@@ -353,21 +338,32 @@ params = getInteger(params, &portNo);
 
 type = SOCK_STREAM;
 if(params != nilCell)
-    {
-    params = getString(params, &protocol);
-    *protocol = toupper(*protocol);
-    type = SOCK_DGRAM;
-    if(*protocol == 'M')
-        {
-        if(params != nilCell)
-            getInteger(params, &ttl);
-        }
-    }
+	{
+	cell = evaluateExpression(params);
+	if(cell->type == CELL_STRING)
+		{
+		protocol = (char *)cell->contents;
+    	*protocol = toupper(*protocol);
+    	type = SOCK_DGRAM;
+    	if(*protocol == 'M') /* get ttl */
+        	{
+        	if(params->next != nilCell)
+            	getInteger(params->next, &topt);
+			else topt = 3;
+        	}
+    	}
+	else if(isNumber(cell->type)) 
+		/* topt is timeout , protocol stays NULL */
+		getIntegerExt(cell, &topt, FALSE);
+	else
+		return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, cell));		
+	}
 
-if((sock = netConnect(remoteHostName, (int)portNo, type, protocol, (int)ttl)) == SOCKET_ERROR)
+if((sock = netConnect(remoteHostName, 
+		(int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
     return(netError(errorIdx));
 
-createInetSession(sock, AF_INET);
+createInetSession(sock, ADDR_TYPE);
 
 errorIdx = 0;
 return(stuffInteger((UINT)sock)); 
@@ -395,7 +391,7 @@ if (connect(sock, (struct sockaddr *)&remote_sun, SUN_LEN(&remote_sun)) == -1)
 	close(sock);
 	errorIdx = ERR_INET_CONNECT_FAILED;
 	return(SOCKET_ERROR);
-    }
+	}
 
 createInetSession(sock, AF_UNIX);
 
@@ -404,8 +400,23 @@ return(sock);
 }
 #endif
 
+
+int unblockSocket(int sock)
+{
+#ifndef WIN_32
+long arg;
+arg = fcntl(sock, F_GETFL, NULL);
+arg &= (~O_NONBLOCK);
+return(fcntl(sock, F_SETFL, arg));
+#else
+unsigned long arg = 0;
+return(ioctlsocket(sock, FIONBIO, &arg));
+#endif
+}
+
+
 /* create internet socket */
-int netConnect(char * remoteHostName, int portNo, int type, char * prot, int ttl)
+int netConnect(char * remoteHostName, int portNo, int type, char * prot, int topt)
 {
 #ifdef IPV6
 struct sockaddr_in6 dest_sin;
@@ -416,69 +427,124 @@ struct in_addr iaddr;
 #endif
 struct hostent * pHe;
 int sock, idx;
-/* char opt; */
-int opt;
+int opt, result;
+#ifndef WIN_32
+int arg, value;
+socklen_t socklen = sizeof(sock);
+#else
+unsigned long arg = 1;
+#endif
 
 /* create socket */
 if((sock = socket(ADDR_TYPE, type, 0)) == INVALID_SOCKET)
-    {
-    errorIdx = ERR_INET_OPEN_SOCKET;
-    return(SOCKET_ERROR);
-    }
+	{
+	errorIdx = ERR_INET_OPEN_SOCKET;
+	return(SOCKET_ERROR);
+	}
 
-if(prot != NULL) if(*prot == 'M' || *prot == 'B')
-    {
-    memset(&iaddr, 0, sizeof(iaddr));
-
+if(prot == NULL) /* topt is timeout in microsecs */
+	{
+#ifndef WIN_32
+	arg = fcntl(sock, F_GETFL, NULL);
+	if(fcntl(sock, F_SETFL, arg | O_NONBLOCK) < 0)
+		{
+		errorIdx = ERR_INET_CANNOT_NOBLOCK;
+		return(SOCKET_ERROR);
+		}
+#else
+	if(ioctlsocket(sock, FIONBIO, &arg) != 0)
+		{
+		errorIdx = ERR_INET_CANNOT_NOBLOCK;
+		return(SOCKET_ERROR);
+		}
+#endif
+	}
+else if(*prot == 'M' || *prot == 'B') 
+	{
+	memset(&iaddr, 0, sizeof(iaddr));
 	iaddr = defaultInAddr;
 
-    if(*prot == 'M')
-        {
-        setsockopt(sock, 0, IP_MULTICAST_IF, (const void *)&iaddr, sizeof(iaddr));
-        opt = ttl;
-        setsockopt(sock, 0, IP_MULTICAST_TTL, (const void *)&opt, sizeof(opt));
-        }
+	if(*prot == 'M')
+		{
+		setsockopt(sock, 0, IP_MULTICAST_IF, (const void *)&iaddr, sizeof(iaddr));
+		opt = topt;
+		setsockopt(sock, 0, IP_MULTICAST_TTL, (const void *)&opt, sizeof(opt));
+		}
 
-    if(*prot == 'B')
-        {
-        opt = 1;
-        setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&opt, sizeof(opt));
-        }
-    }
+	if(*prot == 'B')
+		{
+		opt = 1;
+		setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&opt, sizeof(opt));
+		}
+	}
 
-/* 10.0.1 */
+/* 10.0.1 remoteHostName is "", return socket unconnected */
 if(type == SOCK_DGRAM && *remoteHostName == 0)
 	return(sock);
 
 if((pHe = gethostbyname2(remoteHostName, ADDR_TYPE)) == NULL)
-    {
-    errorIdx = ERR_INET_HOST_UNKNOWN;
-    return(SOCKET_ERROR);
-    }
+	{
+	errorIdx = ERR_INET_HOST_UNKNOWN;
+	return(SOCKET_ERROR);
+	}
 
 for(idx = 0; ; idx++)
-    {
+	{
 #ifdef IPV6
-    memcpy((char *)&(dest_sin.sin6_addr), pHe->h_addr_list[idx], pHe->h_length);
-    dest_sin.sin6_port = htons((u_short)portNo);
-    dest_sin.sin6_family = AF_INET6;
+	memcpy((char *)&(dest_sin.sin6_addr), pHe->h_addr_list[idx], pHe->h_length);
+	dest_sin.sin6_port = htons((u_short)portNo);
+	dest_sin.sin6_family = AF_INET6;
 #else
-    memcpy((char *)&(dest_sin.sin_addr), pHe->h_addr_list[idx], pHe->h_length);
-    dest_sin.sin_port = htons((u_short)portNo);
-    dest_sin.sin_family = AF_INET;
+	memcpy((char *)&(dest_sin.sin_addr), pHe->h_addr_list[idx], pHe->h_length);
+	dest_sin.sin_port = htons((u_short)portNo);
+	dest_sin.sin_family = AF_INET;
 	memset(&(dest_sin.sin_zero), '\0', sizeof(dest_sin.sin_zero));
 #endif
-    if(connect(sock,(struct sockaddr *)&dest_sin, sizeof(dest_sin)) == 0)
-        break;
+	result = connect(sock,(struct sockaddr *)&dest_sin, sizeof(dest_sin));
+	if(result < 0)
+		{
+#ifndef WIN_32
+		if(errno == EINPROGRESS) 
+#else
+		if(WSAGetLastError() == WSAEWOULDBLOCK)
+#endif
+			{
+			if((result = wait_ready(sock, topt * 1000, READY_WRITE)) <= 0)
+				{
+				errorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
+				close(sock);
+				return(SOCKET_ERROR);
+				}
+#ifndef WIN_32
+			getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)&value, &socklen); 
+			if (value) 
+				{ 
+				errorIdx =  ERR_INET_CONNECT_FAILED;
+				close(sock);
+				return(SOCKET_ERROR);
+				} 
+#endif
+			break;
+			}
+		else
+			{
+			errorIdx =  ERR_INET_CONNECT_FAILED;
+			close(sock);
+			return(SOCKET_ERROR);
+			}
+		break;
+		}
+else break; /* result == 0 */
 
-    if(pHe->h_addr_list[idx+1] != NULL)
-        continue;
+	if(pHe->h_addr_list[idx+1] != NULL)
+		continue;
 
-    close(sock);
-    errorIdx = ERR_INET_CONNECT_FAILED;
-    return(SOCKET_ERROR);
-    }
+	close(sock);
+	errorIdx = ERR_INET_CONNECT_FAILED;
+	return(SOCKET_ERROR);
+	}
 
+unblockSocket(sock);
 errorIdx = 0;
 return(sock);
 }
@@ -540,10 +606,9 @@ if(params != nilCell)
 #ifdef IPV6
 inet_ntop(AF_INET6, &defaultInAddr, IPaddress, 40); 
 #else
-/* snprintf(IPaddress, 16, inet_ntoa(defaultInAddr)); */
 strncpy(IPaddress, inet_ntoa(defaultInAddr), 16);
-	
 #endif
+
 return(stuffString(IPaddress));
 }
 
@@ -625,7 +690,6 @@ struct sockaddr_in address_sin;
 
 if(getSocketFamily(sock) == AF_UNIX)
 	{
-	/* snprintf(IPaddress, 6, "local"); */
 	strncpy(IPaddress, "local", 6);
 	return(0);
 	}
@@ -650,7 +714,6 @@ else
 inet_ntop(AF_INET6, &address_sin.sin6_addr, IPaddress, 40); 
 return(ntohs(address_sin.sin6_port));
 #else
-/* snprintf(IPaddress, 16, inet_ntoa(address_sin.sin_addr)); */
 strncpy(IPaddress, inet_ntoa(address_sin.sin_addr), 16);
 return(ntohs(address_sin.sin_port));
 #endif
@@ -718,12 +781,16 @@ forceByName = getFlag(params);
 
 /* get hostname from ip-number */
 #ifdef IPV6
-if((isHexDigit((unsigned char)*hostString) || hostString[0] == ':') && !forceByName)
+if(((isHexDigit((unsigned char)*hostString) && strstr(hostString, ":")) || hostString[0] == ':') && !forceByName)
 	{
+/*
+	if((pHe = gethostbyname2(hostString, AF_INET6)) == NULL)
+		return(netError(ERR_INET_HOST_UNKNOWN));
+*/
 	if(inet_pton(AF_INET6, hostString, &address.sin6_addr) == 0)
         return(netError(ERR_INET_BAD_FORMED_IP));
 
-	if((pHe = gethostbyaddr(&address.sin6_addr, AF_INET6, PF_INET6)) == NULL)
+	if((pHe = gethostbyaddr(&address.sin6_addr, sizeof(struct in6_addr), AF_INET6)) == NULL)
 		return(netError(ERR_INET_HOST_UNKNOWN));
 
     return(stuffString((char *)pHe->h_name));
@@ -750,7 +817,6 @@ memcpy((char *)&(address.sin6_addr), pHe->h_addr_list[0], pHe->h_length);
 inet_ntop(AF_INET6, &address.sin6_addr, IPaddress, 40); 
 #else
 memcpy((char *)&(address.sin_addr), pHe->h_addr_list[0], pHe->h_length);
-/* snprintf(IPaddress, 16, inet_ntoa(address.sin_addr)); */
 strncpy(IPaddress, inet_ntoa(address.sin_addr), 16);
 #endif
 
@@ -895,7 +961,6 @@ if(bytesReceived == SOCKET_ERROR)
 inet_ntop(AF_INET6, &remote_sin.sin6_addr, IPaddress, 40); 
 portNo = ntohs(remote_sin.sin6_port);
 #else
-/* snprintf(IPaddress, 16, inet_ntoa(remote_sin.sin_addr));  */
 strncpy(IPaddress, inet_ntoa(remote_sin.sin_addr), 16); 
 portNo = ntohs(remote_sin.sin_port);
 #endif
@@ -1013,7 +1078,6 @@ size_t size;
 char * buffer;
 ssize_t bytesSent;
 UINT sock;
-/* char one = 1; */
 int one = 1;
 
 params = getString(params, &remoteHost);
@@ -1177,14 +1241,12 @@ int netListenOrDatagram(int portNo, int type, char * ifAddr, char * mcAddr)
 {
 int sock; 
 int one = 1;
-/* char one = 1; */
 #ifdef IPV6
 struct sockaddr_in6 local_sin; 
 #else
 struct sockaddr_in local_sin; 
 #endif
 struct ip_mreq mcast;
-/* struct hostent * pHe; */
 
 if((sock = socket(ADDR_TYPE, type, 0)) == INVALID_SOCKET)
     {
@@ -1241,7 +1303,7 @@ if(type == SOCK_STREAM)
 		} 
 	}
 
-createInetSession(sock, AF_INET); 
+createInetSession(sock, ADDR_TYPE); 
 
 errorIdx = 0;
 return(sock);
@@ -1446,7 +1508,7 @@ if((connection = netAccept(sock)) == SOCKET_ERROR)
 
 /* avoid registering socket twice */
 if(!isSessionSocket(connection))
-	createInetSession(connection, (port != 0) ? AF_INET : AF_UNIX);
+	createInetSession(connection, (port != 0) ? ADDR_TYPE : AF_UNIX);
 
 /* print log */
 getPeerName(connection, PEER_INFO, name);
@@ -1490,7 +1552,7 @@ int ready;
 int sock;
 size_t size, count = 0;
 ssize_t bytes;
-long timeOut = MAX_LONG;
+long timeOut = 60000; /* milli secs */
 int start, elapsed = 0;
 CELL * result;
 STREAM * netStream;
@@ -1537,7 +1599,6 @@ if((errNo = setjmp(errorJump)) != 0)
 	}
 cell = getStringSize(cell, &host, &size, TRUE);
 cell = getInteger(cell, &port);
-/* cell = getStringSize(cell, &prog, &size, TRUE); */
 prog = cellToString(evaluateExpression(cell), &size, FALSE);
 rawMode = getFlag(cell->next);
 
@@ -1558,11 +1619,11 @@ else
 
 #ifndef WIN_32
 if(port != 0)
-	sock = netConnect(host, (int)port, SOCK_STREAM, NULL, 3);
+	sock = netConnect(host, (int)port, SOCK_STREAM, NULL, DEFAULT_TIMEOUT);
 else
 	sock = netConnectLocal(host);
 #else
-sock = netConnect(host, (int)port, SOCK_STREAM, NULL, 3);
+sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
 #endif
 
 if(sock == SOCKET_ERROR)
@@ -1587,7 +1648,7 @@ if( sendall(sock, "[cmd]\n", 6)  == SOCKET_ERROR ||
 session->netStream = (void *)allocMemory(sizeof(STREAM));
 memset(session->netStream, 0, sizeof(STREAM));
 openStrStream(session->netStream, MAX_BUFF, 0);
-createInetSession(sock, AF_INET);
+createInetSession(sock, ADDR_TYPE);
 count++;
 CONTINUE_CREATE_SESSION:
 list = list->next;
@@ -1784,7 +1845,7 @@ char * netErrorMsg[] =
     {
     "No error",
     "Cannot open socket",
-    "Host name not known",
+    "DNS resolution failed",
     "Not a valid service",
     "Connection failed",
     "Accept failed",
@@ -1799,6 +1860,7 @@ char * netErrorMsg[] =
     "Select failed",
     "Peek failed",
     "Not a valid socket",
+	"Cannot unblock socket",
     "Operation timed out",
 /* for nl-web.c */
     "HTTP bad formed URL",
@@ -2124,7 +2186,7 @@ left->next = right;
 return(makeCell(CELL_EXPRESSION, (UINT)left));
 }
 
-int in_cksum(unsigned short * addr, int len)
+unsigned short in_cksum(unsigned short * addr, int len)
 {
 int nleft = len;
 unsigned short *w = addr;
@@ -2167,11 +2229,150 @@ timeOut.tv_sec = wait/1000000;
 timeOut.tv_usec = wait - timeOut.tv_sec * 1000000;
 
 if(mode == READY_READ)
-    return(select(FD_SETSIZE, &socketSet, NULL, &socketSet, &timeOut));
+    return(select(sock + 1, &socketSet, NULL, NULL, &timeOut));
 else
-    return(select(FD_SETSIZE, NULL, &socketSet, &socketSet, &timeOut));
+    return(select(sock + 1, NULL, &socketSet, NULL, &timeOut));
 }
 
+
+#ifdef NET_PACKET
+/* ------------------------- raw sockets ---------------------------------------
+
+   (net-packet packet)
+
+   Checksums are only gnerated if set to zero in the packet.
+
+   Packets start with the ip header followed by either a TCP, UDP or ICMP
+   header and data.
+*/
+
+/* for checksum calculation in TCP packets */
+struct pseudohdr
+	{
+	struct in_addr source_addr;
+	struct in_addr dest_addr;
+	unsigned char dummy;
+	unsigned char protocol;
+	unsigned short len;
+	};
+
+
+unsigned short pseudo_chks( struct ip * iph, char * packet, char * header, int data_offset);
+
+CELL * p_netPacket(CELL * params)
+{
+char * packet;
+int sock;
+int one = 1;
+struct sockaddr_in dest_sin;
+size_t size;
+ssize_t bytesSent;
+struct ip * iph;
+struct tcphdr * tcph;
+struct udphdr * udph;
+struct icmp * icmph;
+int dport;
+/* ip_len  and ip_off must be check-summed in network order (big-Endian),
+   but one or both must be given to the sendto() in host byte-order on
+   some OS. As of 10.2.6 the following configFLags work for Mac OS X
+   on PPC and Intel, Linux on Intel and OpenBSD on Intel.
+*/
+#if defined(MAC_OSX)
+UINT configFlags = 3; /* ntohs() both ip_len and ip_off */
+#elif defined(LINUX)
+UINT configFlags = 1; /* ntohs() ip_len only */
+#else /* works for OpenBSD */
+UINT configFlags = 0; /* none */
+#endif
+
+params = getStringSize(params, &packet, &size, TRUE);
+/* undocumented user-supplied extra configFlags parameter
+   can have a value of 0,1,2,3
+*/
+if(params != nilCell)
+	getInteger(params, &configFlags);
+
+iph = (struct ip *)packet;
+
+if(iph->ip_sum == 0)
+	iph->ip_sum = in_cksum((unsigned short *)iph, sizeof(struct ip));
+
+switch(iph->ip_p)
+  {
+  case IPPROTO_TCP:
+	tcph = (struct tcphdr *)(packet + sizeof(struct ip));
+	dport = tcph->th_dport;
+	if(tcph->th_sum == 0) 
+		tcph->th_sum = pseudo_chks(iph, packet, (char *) tcph, tcph->th_off * 4);
+	break;
+  case IPPROTO_UDP:
+	udph = (struct udphdr *)(packet + sizeof(struct ip));
+	dport = udph->uh_dport;
+	if(udph->uh_sum == 0)
+		udph->uh_sum = pseudo_chks(iph, packet, (char *) udph, sizeof(struct udphdr));
+	break;
+  case IPPROTO_ICMP:
+	icmph = (struct icmp *)(packet + sizeof(struct ip));
+	dport = 0;
+	if(icmph->icmp_cksum == 0)
+	icmph->icmp_cksum = in_cksum((unsigned short *)icmph, 
+			ntohs(iph->ip_len) - iph->ip_hl * 4);
+	break;
+  default:
+	return(nilCell);
+  }
+
+if(configFlags & 0x1) iph->ip_len = ntohs(iph->ip_len);
+if(configFlags & 0x2) iph->ip_off = ntohs(iph->ip_off);
+
+memset(&dest_sin, 0, sizeof(dest_sin));
+dest_sin.sin_family = AF_INET;
+dest_sin.sin_port = dport;
+dest_sin.sin_addr = iph->ip_dst;
+
+if((sock = socket(ADDR_TYPE, SOCK_RAW, IPPROTO_RAW)) < 0)
+    return(netError(ERR_INET_OPEN_SOCKET));
+  
+if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, (char *)&one, sizeof(one)) < 0)
+    return(netError(ERR_INET_OPEN_SOCKET));
+
+if((bytesSent = sendto(sock, packet, size, NO_FLAGS_SET, 
+		(struct sockaddr *)&dest_sin, sizeof(dest_sin))) != size)
+	return(nilCell);
+
+return(stuffInteger(bytesSent));
+}
+
+unsigned short pseudo_chks(
+		struct ip * iph, char * packet, char * header, int data_offset)
+{
+/* packet was give with ip_len in net-work byte order */
+unsigned short checksum;
+int segment_len = ntohs(iph->ip_len) - iph->ip_hl * 4;
+int data_len = segment_len - data_offset;
+struct pseudohdr * pseudoh = alloca(sizeof(struct pseudohdr) + segment_len);
+
+pseudoh->source_addr = iph->ip_src;	
+pseudoh->dest_addr = iph->ip_dst;	
+pseudoh->dummy = 0;
+pseudoh->protocol = iph->ip_p;
+pseudoh->len = htons(segment_len);
+
+data_len = segment_len - data_offset;
+memcpy((char *)pseudoh + sizeof(struct pseudohdr), header, data_offset);
+memcpy((char *)pseudoh + sizeof(struct pseudohdr) + data_offset,
+	packet + iph->ip_hl * 4 + data_offset, data_len);
+
+checksum = in_cksum((unsigned short *)pseudoh, sizeof(struct pseudohdr) + segment_len);
+#ifdef DEBUG
+	printf("segment_len:%d\n", segment_len);
+	printf("data_offset:%d\n", data_offset);
+	printf("data_len:%d\n", data_len);
+	printf("checksum:%x\n", ntohs(checksum));
+#endif
+return(checksum);
+}
+#endif
 
 /* ----------------------------- socket->filestream stuff for win32 ------------------------*/
 

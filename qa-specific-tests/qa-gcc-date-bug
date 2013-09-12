@@ -1,0 +1,10 @@
+#!/usr/bin/newlisp
+
+; this wasn't working on some versions of GCC on Mac OS X 10.4 Tiger
+
+(if (not (parse-date "20090726" "%Y%m%d"))
+	(println {>>>>> compiler used doesn't handle "%Y%m%d" format})
+	(println ">>>>> date format Ok"))
+
+(exit)
+

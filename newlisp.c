@@ -98,26 +98,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10201;
+int version = 10208;
 
 char copyright[]=
-"\nnewLISP v.10.2.1 Copyright (c) 2010 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.2.8 Copyright (c) 2010 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.1 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.2.8 on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.1 on %s IPv%d%s\n\n";
+"newLISP v.10.2.8 on %s IPv%d%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.1 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.2.8 64-bit on %s IPv%d UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.1 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.2.8 64-bit on %s IPv%d%s\n\n";
 #endif 
 #endif
 
@@ -1520,7 +1520,7 @@ if(pCell->type == CELL_STRING)
 		
 		if(isNil((CELL *)sPtr->contents))
 			{
-			deleteFreeSymbol(sPtr, TRUE);
+			deleteFreeSymbol(sPtr, FALSE);
 			return(nilCell);
 			}
 
@@ -2967,12 +2967,11 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
 	pushResult(result);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-	return(copyCell(sysEvalString((char *)result->contents, context, nilCell, EVAL_STRING)));
+	result = copyCell(sysEvalString((char *)result->contents, context, nilCell, EVAL_STRING));
+	currentContext = contextSave;
+	return(result);
 	}
 
-if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
-	
 if(makeStreamFromFile(&stream, fileName, dataLen + 4 * MAX_STRING, offset) == 0) 
 	return(NULL);
 
@@ -3558,12 +3557,7 @@ else if(cell->type == CELL_LONG)
 	*number = (int)cell->contents;
 else if(cell->type == CELL_FLOAT)
 	{
-#ifdef WIN_32
-	if(isinf(*(double *)&cell->aux)) *number = *number = 0x7FFFFFFFFFFFFFFFLL;
-	else if(isnan(*(double *)&cell->aux) || !_finite(*(double *)&cell->aux)) *number = 0;
-#else
 	if(isnan(*(double *)&cell->aux)) *number = 0; 
-#endif
 	else if(*(double *)&cell->aux >  9223372036854775807.0) *number = 0x7FFFFFFFFFFFFFFFLL;
 	else if(*(double *)&cell->aux < -9223372036854775808.0) *number = 0x8000000000000000LL;
 	else *number = *(double *)&cell->aux;
@@ -3868,15 +3862,15 @@ CELL * p_setLocale(CELL * params)
 struct lconv * lc;
 char * locale;
 UINT category;
-CELL * result;
-char decimal[6];
+CELL * cell;
 
 if(params != nilCell)
 	params = getString(params, &locale);
 else locale = NULL;
 
-if(params != nilCell)
-	getInteger(params, &category);
+getEvalDefault(params, &cell);
+if(isNumber(cell->type)) /* second parameter */
+	getIntegerExt(cell, &category, FALSE);
 else category = LC_ALL;
 
 locale = setlocale(category, locale);
@@ -3887,14 +3881,16 @@ if(locale == NULL)
 stringOutputRaw = (strcmp(locale, "C") == 0);
 
 lc = localeconv();	
+#ifdef WIN_32
+if(cell->type == CELL_STRING) /* second parameter */
+	*lc->decimal_point = *(char *)cell->contents; 
+#endif
 lc_decimal_point = *lc->decimal_point;
 
-result = getCell(CELL_EXPRESSION);
-addList(result, stuffString(locale));
-snprintf(decimal, 5, "%c", lc_decimal_point);
-addList(result, stuffString(decimal));
-
-return(result);
+cell = getCell(CELL_EXPRESSION);
+addList(cell, stuffString(locale));
+addList(cell, stuffStringN(lc->decimal_point, 1));
+return(cell);
 }
 
 CELL * p_quote(CELL * params)
@@ -5489,7 +5485,8 @@ for(i = 0; i <= stepCnt; i++)
 	cell = evaluateBlock(block);
 	}
 
-if(symbolCheck && cell != (CELL *)symbol->contents)
+
+if(symbolCheck && cell != (CELL *)symbol->contents && symbol != symbolCheck)
 	pushResultFlag = FALSE;
 else
 	cell = copyCell(cell);
@@ -5633,7 +5630,7 @@ while(list!= nilCell)
 	}
 
 FINISH_DO:
-if(symbolCheck && cell != (CELL *)symbol->contents)
+if(symbolCheck && cell != (CELL *)symbol->contents && symbol != symbolCheck)
 	pushResultFlag = FALSE;
 else
 	cell = copyCell(cell);
@@ -5893,7 +5890,6 @@ CELL * p_save(CELL * params)
 {
 char * fileName;
 STREAM strStream = {0, NULL, NULL, 0, 0};
-UINT printDeviceSave;
 CELL * result;
 SYMBOL * contextSave;
 CELL * dataCell;
@@ -5901,35 +5897,27 @@ int errorFlag = 0;
 
 contextSave = currentContext;
 currentContext = mainContext;
-printDeviceSave = printDevice;
 
 params = getString(params, &fileName);
+
+openStrStream(&strStream, MAX_STRING, 0);
+serializeSymbols(params, (UINT)&strStream);
 
 /* check for URL format */
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	openStrStream(&strStream, MAX_STRING, 0);
-	serializeSymbols(params, (UINT)&strStream);
 	dataCell = stuffString(strStream.buffer);
 	result = getPutPostDeleteUrl(fileName, dataCell, HTTP_PUT, 60000);
 	pushResult(result);
-	closeStrStream(&strStream);
 	deleteList(dataCell);
 	errorFlag = (strncmp((char *)result->contents, "ERR:", 4) == 0);
 	}
 else
-	{
-	if(my_strnicmp(fileName, "file://", 7) == 0)
-		fileName = fileName + 7; 
-	if( (printDevice = (UINT)openFile(fileName, "write", NULL)) == (UINT)-1)
-		errorFlag = 1;
-	else
-		serializeSymbols(params, OUT_DEVICE);
-	close((int)printDevice);
-	}
+	errorFlag = writeFile(fileName, strStream.buffer, strStream.position, "w");
+		
+closeStrStream(&strStream);
 
 currentContext = contextSave;
-printDevice = printDeviceSave;
 
 if(errorFlag)
 	return(errorProcExt2(ERR_SAVING_FILE, stuffString(fileName)));
@@ -6464,7 +6452,7 @@ if(demonMode)
 	longjmp(errorJump, ERR_USER_RESET);
 	}
 
-if(params != nilCell) getInteger(params, (UINT*)&result);
+if(params != nilCell) getInteger(params, &result);
 else result = 0;
 exit(result);
 return(trueCell);
@@ -6543,7 +6531,7 @@ if(params != nilCell)
     params = getFloat(params, &seconds);
     duration = seconds;
     if(params != nilCell)
-        getInteger(params, (UINT*)&timerOption);
+        getInteger(params, &timerOption);
     memset(&timerVal, 0, sizeof(timerVal));
     timerVal.it_value.tv_sec = seconds;
     timerVal.it_value.tv_usec = (seconds - timerVal.it_value.tv_sec) * 1000000;
@@ -6568,7 +6556,7 @@ SYMBOL * signalEvent;
 UINT sig;
 char sigStr[12];
 
-params = getInteger(params, (UINT *)&sig);
+params = getInteger(params, &sig);
 if(sig > 32 || sig < 1) return(nilCell);
     
 if(params != nilCell)

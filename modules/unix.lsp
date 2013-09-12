@@ -1,8 +1,9 @@
 ;; @module unix.lsp
-;; @description Itreface to various UNIX libc functions
+;; @description Interface to various UNIX libc functions
 ;; @version 0.1 alpha - mostly untested
 ;; @version 0.2 alpha - eliminated getpid and getppid, included in 'sys-info'
-;; @author L.M. 2006-Sep-12, Feb-2010 lutz@nuevatec.com
+;; @version 0.3 alpha - added diferent libc.so library path for UBUNTU 9.04
+;; @author L.M. 2006-Sep-12, March-2010 lutz@nuevatec.com
 ;; 
 ;;
 ;; <h2>UNIX libc function support</h2>
@@ -36,9 +37,10 @@
 (context 'unix)
 
 (set 'files (list
-	      "/usr/lib/libc.dylib" ; MacOS/Darwin
-	      "/usr/lib/libc.so.51.0" ; OpenBSD 4.6
-	      "/usr/lib/libc.so" ; Linux, BSD, Solaris
+	"/usr/lib/libc.dylib" ; MacOS/Darwin
+	"/usr/lib/libc.so.51.0" ; OpenBSD 4.6
+	"/lib/libc.so.6" ; UBUNTU Linux 9.04
+	"/usr/lib/libc.so" ; Linux, BSD, Solaris
 ))
 
 (set 'library (files (or

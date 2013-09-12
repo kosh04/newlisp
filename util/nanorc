@@ -9,6 +9,7 @@
 ## version 1.13 added new 'self'
 ## version 1.14 added new 'extend'
 ## version 1.15 added new 'term', "++", "--", eliminated 'name'
+## version 1.16 added new 'net-packet'
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -29,7 +30,7 @@ set historylog
 
 syntax "lisp" "\.lsp$"
 ## keywords
-color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|++|-|--|/|:|<|<<|<=|=|>|>=|>>|@|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|\+\+|-|--|/|:|<|<<|<=|=|>|>=|>>|@|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(add|address|amb|and|append|append-file|apply|args|array|array-list|array\?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(asin|asinh|assoc|atan|atan2|atanh|atom\?|base64-dec|base64-enc|bayes-query)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(bayes-train|begin|beta|betai|bind|binomial|bits|callback|case|catch)([[:space:]()]|$)"
@@ -46,7 +47,7 @@ color blue "([[:space:]()]|^)(ifft|import|inc|inf?|index|int|integer|integer\?|i
 color blue "([[:space:]()]|^)(last-error|legal\?|length|let|letex|letn|list|list\?|load|local|log|lookup|lower-case)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(macro\?|main-args|make-dir|map|mat|match|max|member|min|mod|mul|multiply)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-accept|net-close|net-connect|net-error|net-eval|net-interface|net-listen)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(net-local|net-lookup|net-peek|net-peer|net-ping|net-receive|net-receive-from)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(net-local|net-lookup|net-packet|net-peek|net-peer|net-ping|net-receive|net-receive-from)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-receive-udp|net-select|net-send|net-send-to|net-send-udp|net-service)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-sessions|new|nil|nil\?|normal|not|now|nper|npv|nth|null\?|number\?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(open|or|ostype|pack|parse|parse-date|path|peek|pipe|pmt|pop|pop-assoc|post-url)([[:space:]()]|$)"

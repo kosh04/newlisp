@@ -16,6 +16,8 @@
 (context 'Lex)  ; predeclare/create context for bayes-train
 (context MAIN)
 
+(set-locale "C")
+
 (when utf8
  (set-locale "en_US")
  (set 'unicodelist '(913 914 915 916 937 945 946 947 948 969 32 
@@ -160,7 +162,7 @@ true
 (define (qa)
   (dolist (sm (symbols 'MAIN)) 
    (if (not 
-     (if (and (primitive? (eval sm)) (< sm 'zzz)) 
+     (if (and (primitive? (eval sm)) (< sm 'zzzzz)) 
        (begin 
           (print "  -> " (term sm) "          \r")
           (set 'func (eval (sym (append "test-" (string sm)))) )
@@ -717,7 +719,11 @@ true
 	(MAIN:test-default-functor))
 
 (define (test-delete )
-  (delete (sym "xxx")))
+  (and
+    (set 'l (list (sym "xxx")))
+    (not (delete (sym "xxx") true))
+	(delete (sym "xxx")))
+)
 
 (define (test-delete-file ) 
   (and (copy-file "qa-dot" "junk") (delete-file "junk")))
@@ -1082,6 +1088,9 @@ true
 	(= (find-all {\d+} D) '("2" "44" "890"))
 	(set 'D:D "newLISPisNEWLISP")
 	(= (find-all {(new)(lisp)} D (append $2 $1) 1) '("LISPnew" "LISPNEW"))
+    (= (find-all {(^|(?<=,))("(([^"]|"")*)"|([^",]*))}
+	       {Ten Thousand,10000, 2710 ,,"10,000","It's ""10 Grand"", baby",10K})
+       '("Ten Thousand" "10000" " 2710 " "" "\"10,000\"" "\"It's \"\"10 Grand\"\", baby\"" "10K"))
 ))
 
 (define (test-first )
@@ -1691,6 +1700,8 @@ true
 		(= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")) )
 	)
 )
+
+(define (test-net-packet) true);
 
 (define (test-net-peek ) net-peek-test)
 

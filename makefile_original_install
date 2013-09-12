@@ -1,6 +1,6 @@
 #
 
-VERSION=10.2.1
+VERSION=10.2.8
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -48,7 +48,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.2-Release.html $(datadir)/doc/newlisp/newLISP-10.2-Release.html
+	-install -m 644 doc/newLISP-10.2.8-Release.html $(datadir)/doc/newlisp/newLISP-10.2.8-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -149,7 +149,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.2-Release.html $(HOME)/share/doc/newlisp/newLISP-10.2-Release.html
+	-install -m 644 doc/newLISP-10.2.8-Release.html $(HOME)/share/doc/newlisp/newLISP-10.2.8-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp

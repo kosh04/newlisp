@@ -923,7 +923,7 @@ return(len);
 
 int makeStreamFromFile(STREAM * stream, char * fileName, size_t size, size_t offset)
 {
-if((stream->handle = open(fileName, O_RDONLY | O_BINARY, 0)) == -1)
+if((stream->handle = openFile(fileName, "r", NULL)) == -1)
 	return(0);
 
 stream->ptr = stream->buffer = (char *)callocMemory(size + 1);

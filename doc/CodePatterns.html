@@ -88,7 +88,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2010 March 16<sup>th</sup><br>
+</h1>Version 2010 May 12<sup>th</sup><br>
 <a href="http://newlisp.org">newLISP</a> v.10.2.0
 </center>
 
@@ -97,7 +97,7 @@ tt {
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2009 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
+Copyright &copy; 2010 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
 Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br>
 Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br>
 and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br>
@@ -2340,7 +2340,7 @@ tmp)
 
 <p>The producer loops through all n values from i = 0 to n - 1 and puts each value into shared memory where it is picked up by the consumer thread. Semaphores are used to signal that a data value is ready for reading.</p>
 
-<p>Allthough controlling processes with semaphores and shared memory is fast, it is also error prone, specially when more the two processes are involved. It is easier to control multiple processes using the Cilk API and messaging between processes. See chapters 18. and 19. for these topics.</p>
+<p>Although controlling processes with semaphores and shared memory is fast, it is also error prone, specially when more the two processes are involved. It is easier to control multiple processes using the Cilk API and messaging between processes. See chapters 18. and 19. for these topics.</p>
 
 <pre>
 #!/usr/bin/newlisp

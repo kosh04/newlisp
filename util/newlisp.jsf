@@ -26,7 +26,8 @@
 # 10 November 2009, L.M. removed experimental estack
 # 6 December 2009, LM added new 'self'
 # 9 February 2010, LM added new 'extend', 'term', '++', '--' eliminated 'name'
-# version 1.7
+# 29 April 2010, LM added new 'net-packet'
+# version 1.8
 
 =Idle
 =Comment 	green
@@ -276,6 +277,7 @@
 "net-listen"	prim
 "net-local"	prim
 "net-lookup"	prim
+"net-packet"	prim
 "net-peek"	prim
 "net-peer"	prim
 "net-ping"	prim

@@ -408,6 +408,9 @@ PRIMITIVE primitive[] =
 	{"net-send-to",		p_netSendTo,	0},
 	{"net-send-udp",	p_netSendUDP,	0},
 	{"net-listen",		p_netListen,	0},
+#ifdef NET_PACKET
+	{"net-packet",		p_netPacket,	0},
+#endif
 	{"net-peek",		p_netPeek,	0},
 	{"net-select",		p_netSelect,	0},
 	{"net-sessions",	p_netSessions,	0},

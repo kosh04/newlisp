@@ -5662,4 +5662,100 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 10.2.1 stable release March 17th, 2010
     'setf' and 'swap' could change the values of 'true' and 'nil'.
 
+10.2.2
+    'time' did overflow after 35 minutes now can count to about 68 years.
+
+    Speed up of Hash deletion with: (<tree> <token> nil). No reference
+    checks are made. This means that tree hashes should only be used as
+    such and symbols not be referenced directly with the prepended 
+    underscore, as is usual practice already, or be deleted explicitely 
+    using 'delete'.
+
+    'xml-parse' with context option did not convert names of built-in
+    primitives.
+
+    New second syntax pattern for 'net-service':
+       (net-service <port> <protocol>) => service-name
+       (net-service 22 "tcp") => "ssh"
+
+10.2.3
+    The 'net-connection' functons now can take a timeout ms parameter:
+       (net-connnect <str-host> <int-port> <int-milli-sec>)
+    on UNIX the function will fail returning 'nil' before the timeout
+    expires. On Win32 the 'net-connect' will not fail until the timout 
+    is run out. This makes the function return 'nil' on closed ports
+    much faster on UNIX.
+
+    New documentation for 'net-service' and 'net-connect'
+
+10.2.4
+    'find-all' will not exit anymore on loop conditions but retry
+    incrementing the the search offset by 1. 
+
+    'load' in HTTP mode did not return to previous context, but always
+    went into MAIN.
+
+    "file://C:/example.txt" and "file:///C:/example.txt" both forms are
+    now valid on Win32.
+
+    On Win32 negative Inf lost the sign when converting to maxint
+
+    Shorten p_setLocale() code. 
+
+    A fix for ref-passing out of loop primitives.
+
+10.2.5
+    Additions, modifications to qa-xxx files
+
+    The 'true' flag in 'delete' was not handled correctly since 10.2.0
+
+    10 times speedup of 'save'
+
+    new 'net-packet' function, UNIX only tested on Mac OSX 10.4 PPC G4,
+    Mac OSX 10.6 Intel, Linux UBUNTU 9.10  (root privileges required).
+    See newlisp-10.2.5/qa-specific-tests/qa-packet for working TCP examples.
+    Change target IP numbers in packet examples in qa-packet to working ones.
+    Protocols TCP, UDP and ICMP have all been tested on OSX X PPC, OSX Intel
+    and Linux UBUNTU 9.10 communicating with raw packets between Big-Endian
+    and Little-Endian CPUs, sending a raw-packet and receiving a correct
+    response packet.
+
+    handling on short lists when mapping strings now consistent: 
+    'map' stops collecting as soon as one argument list is short. This
+    ensures that elements in the nth row appear always in the nth column
+    after the transposition caused by 'map'. This was working on lists
+    but did not work accordingly on strings.
+
+10.2.6
+    In 'get-url' the "list" option in combination with the "debug" options
+    did return a string instead of a list.
+
+    'net-packet' now also works with OpenBSD addtonally to: Mac OS X on 
+    PPC and Intel and Linux on Intel CPUs. 
+
+    The timeout parameter in 'get-url', 'post-url' and 'put-url' did not 
+    work correctly since 10.2.3 after introducing the 'net-connect' timeout
+    parameter.
+ 
+    OpenBSD 4.6 now added as a regular test environment additionally
+    to Mac OSX, FreeBSD, UBUNTU Linux, SunOs Sparc and Windows XP/7.
+
+10.2.7
+    In  'pmt', 'ipv', 'nper' int -> long for Linux 64-bit
+
+    Cell leak in 'find-all' when new handling of looping condition (v.10.2.4)
+
+    Fixes in qa-net for IPv6
+
+	Note, that net-packet is currently coded only for IPV4
+
+    Fixed a bug in URL parsing for IPv6
+
+    'find' did not evaluate regex option parameter since 10.1.10
+
+10.2.8 stable maintenance release May 20th 2010
+    Backed out some IPv4/6 changes in 10.2.7 reverting to 10.2.6 plus some
+    IPv6 fixes. Next development version will split up nl-sock.c into UNIX 
+    and Windows versions; recoding the UNIX version using getaddrinfo() and 
+    getnameinfo() for dynamic IPv4 and IPv6 support in the same version.
 
