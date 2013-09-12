@@ -670,7 +670,7 @@ true
 
 (define (test-curry)
   (and
-    (= (set 'f (curry + 10)) (lambda () (+ 10 ($args 0))))
+    (= (set 'f (curry + 10)) (lambda ($x) (+ 10 $x)))
     (= (filter (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
        '((a 10) (a 3) (a 9)))
     (= (clean (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
@@ -1049,6 +1049,8 @@ true
 
 (define (test-factor)
     (= (apply * (factor 0x7FFFFFFFFFFFFFFF)) 0x7FFFFFFFFFFFFFFF))
+
+(define (test-fcall) true)
 
 (define (test-fft )
   (= '((1 2) (3 4)) (ifft (fft '((1 2) (3 4))))))
@@ -1654,9 +1656,9 @@ true
 (define (test-net-accept )
   (and
 	(set 'net-listen-test (set 'listen (net-listen 12345)))
-	(if (> (sys-info -1) 512) ; IPv6
-		(set 'net-connect-test (set 'connect (net-connect "::1" 12345)))
+	(if (zero? (& (sys-info -1) 512)) ; IPv4
 		(set 'net-connect-test (set 'connect (net-connect "localhost" 12345)))
+		(set 'net-connect-test (set 'connect (net-connect "::1" 12345)))
 	)
 	(set 'server (net-accept listen))
 	(set 'net-send-test (= (net-send server "hello") 5))
@@ -1700,10 +1702,9 @@ true
 	(and (= (net-ipv) 4) (= (net-ipv 6) 6) (= (net-ipv 4) 4)))
 
 (define (test-net-lookup )
-	(if (> (sys-info -1) 512) ; IPv6
+	(if (zero? (& (sys-info -1) 512)) ; IPv4
+	    (and (= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")))
 		(and (= "localhost" (net-lookup "::1")) (= "::1" (net-lookup "localhost")))
-	(and
-		(= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")) )
 	)
 )
 
@@ -1943,6 +1944,7 @@ true
 (exit)
 [/text]
 	)
+  (and
 	(set 'channel (pipe))
 	(set 'in (first channel))
 	(set 'out (last channel))
@@ -1953,7 +1955,9 @@ true
 	(write-line out "hello there")
 	(sleep 500)
 	(= (read-line in) "HELLO THERE")
-	(delete-file "pipe-child.lsp"))
+	(delete-file "pipe-child.lsp")
+  )
+)
 
 (if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix" "Cygwin"))
   (define (test-pipe)
@@ -2767,6 +2771,8 @@ true
 
 (define (test-string? )
   (and (string? "1234") (not (string? 1234))))
+
+(define (test-struct) true) ;; gets tested in qa-libffi
 
 (define (test-sub )
   (= 0 (sub 0,99999999 0,99999999))

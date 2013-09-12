@@ -1,8 +1,11 @@
 #!/usr/bin/newlisp 
 # OpenGL and GLUT demo - opengl-demo.lsp
-# tested on Win32 and OS X (Intel)
+# using simple import and callback API
+# tested on Win32 and OS X (Intel) 32-bit only!
 
 # version 1.2, July 2009 - make drawObject working with motion
+# this version runs only on 32-bit newLISP and libraries
+# for 64-bit newlisp use opendl-demo-ex.lsp, which runs both 32/64
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  
@@ -19,8 +22,6 @@
 # GLUT - in /System/Library/Frameworks/GLUT.Framework
 #
 # for a complete function reference for OpenGL look here:
-#     http://rush3d.com/reference/opengl-bluebook-1.0/index.html
-# linked from:
 #     http://www.opengl.org/documentation/
 #
 # for descriptions and refence to GLU see here:
@@ -44,6 +45,7 @@
 
 (when (= 256 (& 256 (last (sys-info)))) ; if it is 64 bit version
 	(println "This file can run only on the 32-bit version of newLISP")
+	(println "Use opengl-demo-ffi.lsp, which runs on both, 32-bit and 64-bit")
 	(exit))
 
 (if 
@@ -55,7 +57,7 @@
   (find ostype '("Win32", "Cygwin"))
   (begin
     (set 'GL_LIB "opengl32.dll")
-    (set 'GLUT_LIB "/c/Windows/System32/glut32.dll"))
+    (set 'GLUT_LIB "glut32.dll"))
   (= ostype "Linux") ;; not tested
   (begin
     (set 'GL_LIB "libGL.so")

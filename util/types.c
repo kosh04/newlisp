@@ -2,7 +2,7 @@
 
 /* 
 
-output on Mac OS X PPC
+output on Mac OS X PPCi, memory model ILP32
 
 type      bytes
 ---------------
@@ -21,7 +21,7 @@ size_t    4
 off_t     4
 time_t    4
 
-output on AMD64 and Intel dual Core 2
+output on AMD64 and Intel dual Core 2, memory model LP64
 
 type      bytes
 ---------------
@@ -52,12 +52,42 @@ time_t      8
 #include <time.h>
 #endif
 
+typedef struct {
+    char one;
+    short int two;
+    int four;
+    } alignment1;
+
+typedef struct {
+    char one;
+    int four;
+    short int two;
+    } alignment2;
+
+typedef struct {
+    char one;
+    short int two;
+    long three;
+    int four;
+    } alignment3;
+
+typedef struct {
+    char one;
+    long three;
+    short int two;
+    int four;
+    } alignment4;
+
 #define str2cmp(s1,s2) ( ( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
 						 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )		 
 
 int main(int argc, char * argv[])
 {
 int x = 1;
+alignment1 checkstruct1;
+alignment2 checkstruct2;
+alignment3 checkstruct3;
+alignment4 checkstruct4;
 
 printf("\n");
 printf("type      bytes\n");
@@ -126,6 +156,13 @@ printf("The constant __LITTLE_ENDIAN__ is defined by the compiler\n");
 #ifdef __BIG_ENDIAN__
 printf("The constant __BIG_ENDIAN__ is defined by the compiler\n");
 #endif
+
+printf("\n");
+
+printf("size of struct {char, short int, int} is: %ld\n", sizeof(checkstruct1));
+printf("size of struct {char, int, short int} is: %ld\n", sizeof(checkstruct2));
+printf("size of struct {char, short int, long, int} is: %ld\n", sizeof(checkstruct3));
+printf("size of struct {char, long, short int, int} is: %ld\n", sizeof(checkstruct4));
 
 exit(0);
 }

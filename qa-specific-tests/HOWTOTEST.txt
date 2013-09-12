@@ -1,0 +1,40 @@
+There is a shorter and a longer test suite. And both can run with more or less reporting. After making the newlisp executable do from the main distribution directory:
+
+For a short suite and less reporting:
+make test
+
+For a short suite with full reporting:
+make check
+
+For a long suite with less reporting:
+make testall
+
+For a long suite with full reporting:
+make checkall
+
+On a modern machine just do a 'make testall'. I normally do:
+
+make clean; make; make testall
+
+all in a row separated by semicolons. On Windows, I work in a MSYS Bash shell.
+
+When you write a qa-xxx, write your diagnostics, whatever else, to the console. At the end do a: 
+
+(println ">>>>> <your description here> SUCCESSFUL")
+
+or a:
+
+(println ">>>>> PROBLEM <your description here>")
+
+'make test' and 'make testall' basically run check and checkall but only report lines with at least 3 angle brackets ">>>".
+
+You can run a single qa- file, as an example:
+
+./newlisp qa-specific-tests/qa-net6
+
+Most qa-xxx files are in the qa-specific-tests/ directory, but there are two 'qa-xxxx' files in the main directory: 'qa-dot' and 'qa-comma'. Both do a quick test of all functions in the system. qa-dot does for locales with a decimal "." dot and qa-comma does for locales with a decimal "," comma.
+
+I also use qa-dot and qa-comma to check for cell or memory leakage. Comment out the last 'exit' statement in the script and report (sys-info). From the newlisp command line do several (load "qa-dot") to check for cell leakage. After no more than two invocations the cell count should remain constant. Once in a while I use 'valgrind' to check for general memory leaks.
+
+For main releases, I also check some files from the example/ directory and run the old modified Debian benchmark suite and applications offered at newlisp.org (the wiki and the ide).
+

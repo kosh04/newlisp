@@ -1,0 +1,89 @@
+#!/usr/bin/newlisp
+
+; Test libffi routines - all of the tests are performed using only the
+; OS platforms libc system library. For tests compiling a C libray
+; with source code in util/ffitest.c see qa-libffi
+
+; some simple libc functions
+
+(when (zero? (& 1024 (sys-info -1)))
+    (println "These tests only run on extended FFI enabled versions compiled with ffilib")
+    (exit))
+
+(set 'is64bit (not (zero? (& 256 (sys-info -1))))) ; used later
+
+(define LIBC (lookup ostype '(
+    ("Win32" "msvcrt.dll")
+    ("OSX" "libc.dylib")
+    ("Linux" "/lib/i386-linux-gnu/libc.so.6")
+)))
+
+
+(println "\nTesting imports from " LIBC "\n")
+
+(import LIBC "printf" "int" "char*" "int" "double")
+(println "printf: "
+    (printf "  int 42 => %i   double Pi=> %f\n" 
+            42 (mul 2 (acos 0)))  
+    " => 38 characters\n"
+)
+
+(import LIBC "atof" "double" "char*")
+(println {(atof "3.141") => } (atof "3.141"))
+
+(import LIBC "atoi" "int" "char*")
+(println {(atoi "3434") => } (atoi "3434"))
+
+(import LIBC "strcpy" "char*" "char*" "char*")
+(set 'from "Hello World")
+(set 'to (dup "\000" (length from)))
+(strcpy to from)
+(println "(strcpy from to) => " to)
+
+(when (!= ostype "Linux")
+    (import LIBC "fabs" "double" "double")
+    (println {(fabs -8.230) => } (fabs 8.230))
+    (println {(fabs 3.14159) => } (fabs 3.14159))
+)
+
+; test struct pack unpack
+
+(import LIBC "asctime" "char*" "void*")
+(import LIBC "localtime" "void*" "void*")
+
+(if (= ostype "Win32")
+	(struct 'tm "int" "int" "int" "int" "int" "int" "int" "int" "int")
+	(struct 'tm "int" "int" "int" "int" "int" "int" "int" "int" "int" "long" "char*")
+)
+
+(if (= ostype "Win32")
+	(println "unpack pack => " 
+		(= (unpack tm (pack tm '(1 2 3 4 5 6 7 8 9)))
+                '(1 2 3 4 5 6 7 8 9)))
+	(println "unpack pack => " 
+		(= (unpack tm (pack tm '(1 2 3 4 5 6 7 8 9 10 "hello world")))
+                '(1 2 3 4 5 6 7 8 9 10 "hello world")))
+)
+
+(set 'ptr (localtime (address (date-value))))
+(println "unpack localtime structure => " (unpack tm ptr))
+(println "struct testing, today => " (asctime (localtime (address (date-value)))))
+
+; test callback
+
+(import LIBC "qsort" "void" "void*" "int" "int" "void*")
+(set 'len 1000)
+(set 'rlist (rand 10 len))
+(set 'carray (pack (dup "ld " len) rlist))
+(define (cmp a b) (- (get-int a) (get-int b)))
+(qsort (address carray) len 4 (callback 'cmp "int" "void*" "void*"))
+(println "qsort " len " elements => " (apply <= (unpack (dup "ld " len) carray)))
+
+(unless (= ostype "Linux")
+    (import LIBC "atexit" "void" "void*")
+    (define (quit) (println "Quit !"))
+    (print "atexit callback => ")
+    (atexit (callback 'quit "void" "void"))
+)
+
+(exit)

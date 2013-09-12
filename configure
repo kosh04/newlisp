@@ -70,12 +70,12 @@ echo
 
 if   [ ${os_type} = MAC_OSX ] ; then
     echo on Snow Leopard 32-bit is made even if 64-bit is the detected default
-	cp makefile_darwin_utf8 makefile_build
+	cp makefile_darwin_utf8_ffi makefile_build
 elif [ ${os_type} = LINUX ] ; then
 	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_linuxLP64_utf8 makefile_build
+		cp makefile_linuxLP64_utf8_ffi makefile_build
 	else
-		cp makefile_linux_utf8 makefile_build
+		cp makefile_linux_utf8_ffi makefile_build
 	fi
 elif [ ${os_type} = _BSD ] ; then
 	if [ ${memory_model} = LP64 ] ; then
@@ -98,7 +98,7 @@ elif [ ${os_type} = AIX ] ; then
 elif [ ${os_type} = TRU64 ] ; then
 	cp makefile_tru64 makefile_build
 elif [ ${os_type} = WIN_32 ] ; then
-	cp makefile_mingw makefile_build
+	cp makefile_mingw_ffi makefile_build
 elif [ ${os_type} = CYGWIN ] ; then
 	cp makefile_cygwin makefile_build
 elif [ ${os_type} = OS2 ] ; then

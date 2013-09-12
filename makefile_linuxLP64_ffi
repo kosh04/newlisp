@@ -1,0 +1,23 @@
+# makefile for newLISP 64bit v.10.x.x on 64 bit LINUX tested on Intel Core Duo 2
+# and FFI
+# Note, that readline support may require different libraries on different OSs
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -fPIC -m64 -Wall -pedantic -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DNEWLISP64 -DLINUX -DFFI
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m64 -g -lm -ldl -lreadline -lffi -o newlisp # for UBUNTU Debian
+#	$(CC) $(OBJS) -m64 -g -lm -ldl -lreadline -ltermcap -o newlisp # slackware
+#	$(CC) $(OBJS) -m64 -g -lm -ldl -lreadline -lncurses -o newlisp # other Linux Dist
+#	$(CC) $(OBJS) -m64 -g -lm -ldl -o newlisp # without readline support
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_linuxLP64

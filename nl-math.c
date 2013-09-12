@@ -1,6 +1,6 @@
 /* nl-math.c
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2585,7 +2585,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2011 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2012 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 #include "newlisp.h"
 #include <errno.h>
 #include "protos.h"
+
+#define AF_UNSPEC 0 /* from socket.h or winsock2.h */
+
 
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
 #include <stropts.h>
@@ -199,6 +202,7 @@ char * fileName;
 char * accessMode;
 char * option = NULL;
 int handle;
+IO_SESSION * session;
 
 params = getString(params, &fileName);
 params = getString(params, &accessMode);
@@ -208,6 +212,17 @@ if(params != nilCell)
     
 if( (handle = openFile(fileName, accessMode, option)) == (int)-1)
     return(nilCell);
+
+session = createIOsession(handle, AF_UNSPEC);
+if(*accessMode == 'r')
+    session->stream = fdopen(handle, "r");
+else if(*accessMode == 'w')
+    session->stream = fdopen(handle, "w");
+else if(*accessMode == 'u')
+    session->stream = fdopen(handle, "r+");
+else if(*accessMode == 'a')
+    session->stream = fdopen(handle, "a+");
+
 return(stuffInteger((UINT)handle));
 }
 
@@ -218,6 +233,7 @@ UINT handle;
 getInteger(params, &handle);
 if(handle == 0) return(nilCell);
 if(handle == printDevice) printDevice = 0;
+deleteIOsession(handle);
 if(close((int)handle) == -1) return(nilCell);
 return(trueCell);
 }
@@ -504,7 +520,7 @@ if(isNumber(device->type))
     getIntegerExt(device, &handle, FALSE);
     if(write((int)handle, buffer, size) == -1) return(nilCell);
     if(lineFeed)
-        if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
+        if(write((int)handle, LINE_FEED, LINE_FEED_LEN) == -1) return(nilCell);
     }
 
 else if(device->type == CELL_STRING)
@@ -514,14 +530,14 @@ else if(device->type == CELL_STRING)
 
     appendCellString(device, buffer, size);
     if(lineFeed)
-        appendCellString(device, LINE_FEED, strlen(LINE_FEED));
+        appendCellString(device, LINE_FEED, LINE_FEED_LEN);
     }
 else
     return(errorProcExt(ERR_INVALID_PARAMETER, device));
 
 
 RETURN_WRITE_BUFFER:
-return(stuffInteger(size + (lineFeed ? strlen(LINE_FEED) : 0)));
+return(stuffInteger(size + (lineFeed ? LINE_FEED_LEN : 0)));
 }
 
 
@@ -611,6 +627,7 @@ UINT handle;
 unsigned char chr;
 char * line;
 int bytesRead;
+FILE * fstream;
 
 
 if(params != nilCell)
@@ -618,14 +635,17 @@ if(params != nilCell)
 else 
     handle = printDevice;
 
-if(handle == 0) 
+/* check if stream input can be done */
+fstream = (handle == 0) ? IOchannel : getIOstream(handle);
+if(fstream != NULL)
     {
-    if((line = readStreamLine(&readLineStream, IOchannel)) == NULL)
+    if((line = readStreamLine(&readLineStream, fstream)) == NULL)
         return(nilCell);
-
     return(stuffString(line));
     }
 
+/* do raw handle input only happens when using read-line on sockets on UNIX
+   and pipes on Windows  */
 openStrStream(&readLineStream, MAX_STRING, 1);
 while(TRUE)
     {
@@ -642,7 +662,7 @@ while(TRUE)
 if(bytesRead <= 0 && readLineStream.position == 0)
     return(nilCell);
 
-return(stuffString(readLineStream.buffer));;
+return(stuffStringN(readLineStream.buffer, readLineStream.position));;
 }
 
 
@@ -771,19 +791,20 @@ return(unlink(fileName) == 0 ? trueCell : nilCell);
 CELL * p_makeDir(CELL * params)
 {
 char * dirString;
-mode_t mode;
-UINT inMode;
+UINT mode;
 
+mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
+
+/* consume param regardless of OS */
 params = getString(params, &dirString);
+
 if(params != nilCell)
     {
-    getInteger(params, &inMode);
-    mode = inMode;
+    getInteger(params, &mode);
+    mode = mode > 0xfff ? 0xfff : mode;
     }
-else
-    mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
 
-#ifdef WIN_32 
+#ifdef WIN_32
 return(mkdir(dirString) == 0 ? trueCell : nilCell);
 #else
 return(mkdir(dirString, (mode_t)mode) == 0 ? trueCell : nilCell);
@@ -1073,9 +1094,15 @@ CELL * plainProcess(char * command, size_t size);
 CELL * p_pipe(CELL * params)
 {
 UINT hin, hout;
+IO_SESSION * session;
 
 if(!winPipe(&hin, &hout))    /* see file win32-util.c */
     return(nilCell);
+
+session = createIOsession(hin, AF_UNSPEC);
+session->stream = fdopen(hin, "r");
+session = createIOsession(hout, AF_UNSPEC);
+session->stream = fdopen(hout, "w");
 
 return(stuffIntegerList(2, hin, hout));
 }
@@ -1146,8 +1173,19 @@ return(trueCell);
 CELL * p_pipe(CELL * params)
 {
 int handles[2];
+#ifndef SUNOS
+IO_SESSION * session;
+#endif
+
 if(pipe(handles) != 0)
     return(nilCell);
+
+#ifndef SUNOS
+session = createIOsession(handles[0], AF_UNSPEC);
+session->stream = fdopen(handles[0], "r");
+session = createIOsession(handles[1], AF_UNSPEC);
+session->stream = fdopen(handles[0], "w");
+#endif
 
 return(stuffIntegerList(2, (UINT)handles[0], (UINT)handles[1]));
 }
@@ -1359,7 +1397,8 @@ while(pidSpawn)
             }
         else if(mode == PROCESS_SPAWN_ABORT)
             {
-            close(pidSpawn->socket);
+            /* close(pidSpawn->socket);  10.3.6 */
+            FD_CLR(pidSpawn->socket, &myFdSet); /* 10.3.6 */
             kill(pidSpawn->pid, 9);
             waitpid(pidSpawn->pid, (int *)0, 0);
             }
@@ -1582,7 +1621,7 @@ fd_set thisFdSet;
 tv.tv_sec = 0;
 tv.tv_usec = 892 + random() / 10000000;
 
-#if defined(SUNOS) || defined(LINUX)
+#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN)
 memcpy(&thisFdSet, &myFdSet, sizeof(fd_set));
 #else
 FD_COPY(&myFdSet, &thisFdSet);

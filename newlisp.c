@@ -1,7 +1,7 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,31 +96,30 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10305;
+int version = 10310;
 
 char copyright[]=
-"\nnewLISP v.10.3.5 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.10 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.5 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.10 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.5 on %s IPv4/6%s\n\n";
+"newLISP v.10.3.10 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.5 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.10 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.5 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.3.10 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
-char banner2[]=
-", execute 'newlisp -h' for more info.";
+char banner2[]= ", execute 'newlisp -h' for more info.";
 
 char linkOffset[] = "@@@@@@@@";
 char preLoad[] = 
@@ -182,6 +181,7 @@ SYMBOL * argsSymbol;
 SYMBOL * mainArgsSymbol;
 SYMBOL * dolistIdxSymbol;
 SYMBOL * itSymbol;
+SYMBOL * currySymbol;
 
 SYMBOL * sysSymbol[MAX_REGEX_EXP];
 
@@ -562,9 +562,7 @@ char ** MainArgs;
 CELL * getMainArgs(char * mainArgs[])
 {
 CELL * argList;
-#ifndef LIBRARY
 int idx = 0;
-#endif
 
 #ifndef WIN_32
 MainArgs = mainArgs;
@@ -572,10 +570,8 @@ MainArgs = mainArgs;
 
 argList = getCell(CELL_EXPRESSION);
 
-#ifndef LIBRARY
 while(mainArgs[idx] != NULL)
     addList(argList, stuffString(mainArgs[idx++]));
-#endif 
 
 return(argList);
 }
@@ -603,8 +599,14 @@ pagesize = 4096;
 #ifdef SUPPORT_UTF8
 opsys += 128;
 #endif
+
 #ifdef NEWLISP64
 opsys += 256;
+#endif
+
+#ifdef FFI
+opsys += 1024;
+initFFI();
 #endif
 
 #ifndef WIN_32
@@ -1288,6 +1290,7 @@ argsSymbol = translateCreateSymbol("$args", CELL_NIL, mainContext, TRUE);
 mainArgsSymbol = translateCreateSymbol("$main-args", CELL_NIL, mainContext, TRUE);
 dolistIdxSymbol = translateCreateSymbol("$idx", CELL_NIL, mainContext, TRUE);
 itSymbol = translateCreateSymbol("$it", CELL_NIL, mainContext, TRUE);
+currySymbol = translateCreateSymbol("$x", CELL_NIL, mainContext, TRUE);
 
 for(i = 0; i < MAX_REGEX_EXP; i++)
     {
@@ -1306,6 +1309,7 @@ argsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 mainArgsSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 dolistIdxSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
 itSymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
+currySymbol->flags |= SYMBOL_GLOBAL | SYMBOL_BUILTIN;
 argsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 objSymbol.contents = (UINT)nilCell;
 objSymbol.context = mainContext;
@@ -1364,6 +1368,7 @@ switch(cell->type)
     case CELL_PRIMITIVE:
     case CELL_IMPORT_CDECL:
     case CELL_IMPORT_DLL:
+    case CELL_IMPORT_FFI:
     case CELL_LAMBDA:
     case CELL_MACRO:
     case CELL_ARRAY:
@@ -1427,7 +1432,7 @@ switch(cell->type)
             break;
             }
 
-        if(pCell->type == CELL_IMPORT_CDECL
+        if(pCell->type == CELL_IMPORT_CDECL || pCell->type == CELL_IMPORT_FFI
 #if defined(WIN_32) || defined(CYGWIN)
            || pCell->type == CELL_IMPORT_DLL
 #endif
@@ -1476,6 +1481,16 @@ switch(cell->type)
                 result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext); 
                 --lambdaStackIdx; 
                 break; 
+                }
+
+            else if(pCell->type == CELL_IMPORT_CDECL || pCell->type == CELL_IMPORT_FFI
+#if defined(WIN_32) || defined(CYGWIN)
+               || pCell->type == CELL_IMPORT_DLL
+#endif
+                )
+                {
+                result = executeLibfunction(pCell, args->next);  
+                break;
                 }
 
             }
@@ -2067,7 +2082,6 @@ cell->contents = (UINT)contents;
 return(cell);
 }
 
-
 CELL * copyCell(CELL * cell)
 {
 CELL * newCell;
@@ -2438,11 +2452,23 @@ switch(cell->type)
         break;
     
     case CELL_PRIMITIVE:
+        varPrintf(device,"%s@%lX", (char *)cell->aux, cell->contents);
+        break;
     case CELL_IMPORT_CDECL:
+    case CELL_IMPORT_FFI:
 #if defined(WIN_32) || defined(CYGWIN)
     case CELL_IMPORT_DLL:
 #endif
-        varPrintf(device,"%s<%lX>", (char *)cell->aux, cell->contents);
+
+#ifdef FFI
+        if(cell->type == CELL_IMPORT_FFI)
+            varPrintf(device,"%s@%lX", (char *)((FFIMPORT *)cell->aux)->name,
+                                                 cell->contents);
+        else
+            varPrintf(device,"%s@%lX", (char *)cell->aux, cell->contents);
+#else
+        varPrintf(device,"%s@%lX", (char *)cell->aux, cell->contents);
+#endif
         break;
     
     case CELL_QUOTE:
@@ -2899,6 +2925,11 @@ char * errorMessage[] =
     "cannot open socket pair",      /* 67 */
     "cannot fork process",          /* 68 */
     "no comm channel found",        /* 69 */
+#ifdef FFI
+    "ffi preparation failed",       /* 70 */
+    "invalid ffi type",             /* 71 */
+    "ffi struct expected",          /* 72 */
+#endif
     NULL
     };
 
@@ -4251,7 +4282,7 @@ CELL * p_curry(CELL * params)
 CELL * lambda;
 CELL * cell;
 
-cell = getCell(CELL_EXPRESSION);
+cell = makeCell(CELL_EXPRESSION, (UINT)stuffSymbol(currySymbol));
 lambda = makeCell(CELL_LAMBDA, (UINT)cell);
 cell->next = getCell(CELL_EXPRESSION);
 cell = cell->next;
@@ -4259,10 +4290,7 @@ cell->contents = (UINT)copyCell(params);
 cell = (CELL *)cell->contents;
 cell->next = copyCell(params->next);
 cell = cell->next;
-cell->next = makeCell(CELL_EXPRESSION, (UINT)stuffSymbol(argsSymbol));
-cell = cell->next;
-cell = (CELL *)cell->contents;
-cell->next = stuffInteger(0);
+cell->next = stuffSymbol(currySymbol);
 
 return(lambda);
 }
@@ -6645,7 +6673,7 @@ while(blockPtr != NULL)
             {
             varPrintf(OUT_DEVICE, "address=%lX type=%d contents=", blockPtr, blockPtr->type);
             printCell(blockPtr, TRUE, OUT_DEVICE);
-            varPrintf(OUT_DEVICE,LINE_FEED);
+            varPrintf(OUT_DEVICE, LINE_FEED);
             }
         ++blockPtr;
         }

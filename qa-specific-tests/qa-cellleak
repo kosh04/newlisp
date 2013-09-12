@@ -1,0 +1,31 @@
+; check for cell leaks
+; to discover the source of the cell leak
+; limit the script changing the line:
+;   (if (and (primitive? (eval sm)) (< sm 'zzzz))
+; in procedure (qa) defined arounf line 160
+
+(write-line 2 "Testung for cell leaks, wait ...")
+
+(set 'testing-cell-leaks true)
+
+(set 'before (sys-info 0))
+(set 'after (sys-info 0))
+
+(load "qa-dot")
+
+(load "qa-dot")
+(println (sys-info))
+(set 'before (sys-info 0))
+
+(load "qa-dot")
+(println (sys-info))
+(set 'after (sys-info 0))
+
+(if (= (abs (- before after)) 0)
+    (write-line 2 ">>>>> cell leaks test passed SUCCESSFUL")
+    (write-line 2 ">>>>> ERROR: cell leak discovered"))
+
+(exit)
+
+
+

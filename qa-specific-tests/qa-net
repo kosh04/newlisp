@@ -101,13 +101,12 @@
 	(set 'result3 (println "save to URL ->OK"))
 	(println " >>>> save to URL ->ERROR"))
 
-(when (find ostype '("Win32""Cygwin"))
+(when (find ostype '("Win32" "Cygwin"))
 	(print "waiting on Windows for file to be unlocked .")
-	(until (= 53 (first (file-info file-path)))
+	(until (= (length (source 'key)) (first (file-info file-path)))
 		(sleep 1000) 
 		(print "."))
 	(println))
-
 
 ; test loading from URL
 (if (and

@@ -1,0 +1,23 @@
+# makefile for newLISP  v. 10.x.x on MinGW DLL with UTF-8 support and FFI
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o nl-sock.o \
+	nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o win32-util.o \
+	win32-path.o win32dll.o
+
+CFLAGS = -Wall -pedantic -Wno-uninitialized -Wno-long-long -c -O1 -DLIBRARY -DSUPPORT_UTF8 -DWIN_32 -DFFI
+
+CC = /MinGW/bin/gcc
+STRIP = /MinGW/bin/strip
+WRAP = /MinGW/bin/dllwrap
+
+default: $(OBJS)
+	$(WRAP) *.o -Wl,--enable-stdcall-fixup --def win32dll.def -lffi -o newlisp.dll -lws2_32
+	$(STRIP) newlisp.dll
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_mingwdll_utf8
+
+

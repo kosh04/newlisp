@@ -6150,6 +6150,173 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      The link feature using util/link.lsp did no works with 64-bit versions
      of newLISP.
 
-     In the MinGW compile of nl-sock.c the include file wspapi.h has been
+     In the MinGW compile of nl-socj.c the include file wspapi.h has been
      replaced with ws2spi.h. This file is part of the normal MinGW install.
+
+     newlisp.dll now lives in NEWLISPDIR again as it did before 10.3.3
+
+10.3.6 development release November 18th, 2011
+
+     Speedup of string stream conversion for 'format', 'string'.
+
+     A bug fix in 'spawn' when aborting child processes
+
+     Preparations for expanded FFI (grep for FFI in all files)
+
+10.3.7 development release
+     
+     Fix in printing FFI primitives (FFI is disabled by default)
+
+     Updated newlispdoc now all tags (including custom) are title-case'ed
+
+     Simple ffi calls working on Mac OSX, UBUNTU Linux (Intel) and Win32
+     three (and more) new ffi makfiles:
+        makefile_darwin_utf8_ffi  # std OSX install has libs and headers
+        makefile_linux_utf8_ffi   # must install package libffi-dev
+        makefile_mingw_ffi        # must install libffi.a library for build
+
+     New qa-specific-tests/qa-ffi for ffi API testing
+
+     The new ffi extension work with the existing 'import' functon:
+        (import "libc.dylib" "atof" "double" "char*") 
+        (atof "123.456") => 123.456
+
+     No "cdecl" or "stdcall" mustbe specified. The parameter after
+     the function name is the return type. The remaining parameters
+     are the function arguments.
+
+     As before, the imported function can be renamed:
+
+        (set 'strtof (import "libc.dylib" "atof" "double" "char*"))
+        (strtof "123.456") => 123.456
+
+     The followong types are implemented for LP64, LLP64 and ILP32
+
+         "byte"
+         "char"
+         "short int"
+         "unsigned short int"
+         "unsigned int"
+         "int"
+         "long long"
+         "float"
+         "double"
+         "char*"
+         "void*"
+
+      For pointer return values "char*" and "void*", the address
+      is returned as a number. Use 'get-string' or 'unpack' to
+      retrieve contents. This method allows returning binary info.
+      THIS IS CHANGED IN 10.3.9 where "char*" returns a string
+      directly and "void*" a number
+
+10.3.8
+      Make sure FFIMPORT struct memory gets freed when doing multiple
+      'import' of the same function or deleting the func symbol.
+
+      When using 'configure' and 'make' FFI will be chosen by
+      default on Mac OSX, Linux and Windows (MinGW)
+
+      Both "char*" and "void*" accept either a  newLISP string buffer or an 
+      address number as input. On return "char*" will return a newLISP
+      string buffer and "void*" will return an address number.
+
+      Comprehensive qa-specific-tests/qa-ffitest compiles util/ffitest.c
+      on the current platform then tests all data types.
+
+      Now ffi checks for nummber of arguments matching call pattern.
+
+      The opengl-demo-ffi.lsp now runs on both 32-bit and 64-bit newLISP
+      and libraries. On Windows glut32.dll is required. On Mac OSX everything 
+      is installed by default.
+
+      ffi callback (ffi closure) working now on Mac OS X, Win32 and UBUNTU Linux
+      with standard installed libraries. Only for compiling/linking
+      libfffi-dev is necessary on UBUNTU linux. 
+
+      The extended 'callback' API will not work on 64-bit Mac OSX newLISP, 
+      but there is no problem to mix extended 'import' and simple 'callback' API
+      (see examples/opengl-demo.lsp)
+
+      Bit 11 for 0x400 in the last field of 'sys-info' is set for extended ffi 
+      enabled versions requiring ffilib.
+            (not (zero? (& 0x400 (sys-info -1)))) => true for FFI support
+
+      Avoid passing on list or string references in primitives taking strings
+      or lists but creating new objects.  This caused an error when doing 
+      (inc (char str)) when str is protected. symbolCheck = NULL only neccessary
+      if not set to NULL by previous evaluateExprtession() to non-string/list.
+      Fixed on selected primitives.
+
+      qa-ffi and qa-libffi are now part of 'make testall'. They will not be
+      executed on versions not compiled for libffi based FFI.
+
+10.3.9 development release December 21st 2011
+     'struct' function for extended FFI usage now working for 32 and 64 bit
+        (struct 'foo "char" "int" "short int")
+     Foo can now be used as a data type in the extended FFI API:
+        (import "thelib" "afunc" "foo" "foo") ; takes ans returns a struct foo
+     (unpack foo (afunc (pack foo 1 2 3))) => returns a list with 3 numbers
+     The additional syntax forms of 'pack' and 'unpack' take care for packing
+     and unpacking wirth the correct number of pad bytes to make align
+     structures on different Architectures.
+ 
+     See qa-special-tests/qa-libffi for an example.
+
+     Accept data lists in struct packing just like in traditional 'pack':
+        (struct 'pair "int" "int") => pair
+        (pack pair 1 2)    => "\001\000\000\000\002\000\000\000"
+        (pack pair '(1 2)) => "\001\000\000\000\002\000\000\000"
+
+     Nested structure now can be packed:
+        (struct 'pair "char" "char") => pair
+        (struct 'comp "pair" "short int") => comp
+        (pack comp (pack pair 1 2) 3) => "\001\002\003\000"
+
+     Sub-structures are unpacked manually (may be changed):
+        (unpack comp (pack comp (pack pair 1 2) 3)) => ("\001\002" 3)
+        (set 'p (first (unpack comp (pack comp (pack pair 1 2) 3))))
+        (unpack pair p) => (1 2)
+
+     Because of memory management issues with cells in FFI symbols
+     extended ffi functions, structs and callbacks can only be defined
+     once. Subsequent definitions return nil and the existing definition
+     stays untouched.
+
+     Miscellanous fixes for 64-bit newLISP and ffilib usage.
+
+     Added custom ffi_type ffi_type_charpointer for displayable strings
+     now 'unpack' unpacks strings for "char*", not address numbers.
+
+     On Mac OSX 64-bits extended callback (ffi closure) does now work.
+
+     SHA256 crypto algorithm has been added to the module crypto.lsp.
+     Thanks to Marc Hildman for this contribution. 
+
+10.3.10
+     Repeating ffi 'callback' with the same symbol will just return the old
+     address but not redefine the callback or return nil (as in 10.3.9).
+
+     examples/opengl-demo-ffi.lsp now also working with extended callback API 
+     on 32-bit and 64-bit.
+
+     Huge speed improvement in 'read-line' with file handle parameter,
+     now as fast as STDIN. For file and pipe operations.
+
+     'struct's returned by the extended FFI will now be unpacked automatically.
+     Nested structures will be unpacked recursively too:
+
+         (struct 'pair "char" "char") -> pair
+         (struct 'comp "pair" "int") => comp
+         (pack comp (pack pair 1 2) 3) => "\001\002\000\000\003\000\000\000"
+         (unpack comp "\001\002\000\000\003\000\000\000") => ((1 2) 3)
+
+     Imported functions can now be default functors:
+        (define myprintf:myprintf (import "libc.dylib" "printf"))
+
+     All makefile_mingwdll* tweaked for MinGW gcc 4.6.2. But binaries are still
+     delivered compiled on gcc 4.4.0 and made on Windows XP SP2, run fine on
+     Windows 7. 10.3.6 to 10.3.9 had newlisp.dll compiled for cdecl now in
+     10.3.10 newlisp.dll calling conventations are back to stdcall.
+
 

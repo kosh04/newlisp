@@ -1,6 +1,6 @@
 /* unix-lib.c - make the newlisp shared newlisp library
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,8 +39,14 @@ opsys += 64;
 #ifdef SUPPORT_UTF8
 opsys += 128;
 #endif
+
 #ifdef NEWLISP64
 opsys += 256;
+#endif
+
+#ifdef FFI
+opsys += 1024;
+initFFI();
 #endif
 
 initLocale();
@@ -137,7 +143,13 @@ if(isProtected(symbol->flags))
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 pCell->contents = (UINT)funcAddr;
+
+#ifdef FFI
+pCell->aux = (UINT)calloc(sizeof(FFIMPORT), 1);
+((FFIMPORT *)pCell->aux)->name = symbol->name;
+#else
 pCell->aux = (UINT)symbol->name;
+#endif
 
 return(funcAddr);
 }

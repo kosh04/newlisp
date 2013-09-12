@@ -1402,8 +1402,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2011 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2011 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2012 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2012 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)

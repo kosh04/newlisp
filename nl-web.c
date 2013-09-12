@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@
 #define SOCKET_ERROR -1
 #else
 #define fgets win32_fgets
-#define fgetc win32_fgetc
 #define close closesocket
 #endif
 
@@ -967,7 +966,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.3.5"
+#define SERVER_SOFTWARE "newLISP/10.3.10"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1417,19 +1416,18 @@ typedef struct
     } MEDIA_TYPE;
     
 MEDIA_TYPE mediaType[] = {
-    {".jpg", "image/jpeg"},
-    {".png", "image/png"},
-    {".gif", "image/gif"},
-    {".css", "text/css"},
-    {".js", "application/javascript"},
-    {".pdf", "application/pdf"},
-    {".mp3", "audio/mpeg"},
-    {".mov", "video/quicktime"},
-    {".mpg", "video/mpeg"},
-    {".html","text/html"},
-    {".htm", "text/html"},
-    {".mpg", "video/mpeg"},
     {".avi", "video/x-msvideo"},
+    {".css", "text/css"},
+    {".gif", "image/gif"},
+    {".htm", "text/html"},
+    {".html","text/html"},
+    {".jpg", "image/jpeg"},
+    {".js", "application/javascript"},
+    {".mov", "video/quicktime"},
+    {".mp3", "audio/mpeg"},
+    {".mpg", "video/mpeg"},
+    {".pdf", "application/pdf"},
+    {".png", "image/png"},
     {".wav", "audio/x-wav"},
     {".zip", "application/zip"},
     { NULL, NULL},

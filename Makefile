@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.3.5
-INT_VERSION = 10305
+VERSION = 10.3.10
+INT_VERSION = 10310
 
 default: makefile_build
 	make -f makefile_build
@@ -64,18 +64,18 @@ help:
 # also needs the installer NSYS installed
 winall:
 	make clean
-	make -f makefile_mingw
+	make -f makefile_mingw_ffi
 	rm *.o
-	make -f makefile_mingwdll
+	make -f makefile_mingwdll_ffi
 	rm *.o
 	./newlisp qa-dot
 
 # make newlisp.exe and newlisp.dll in UTF-8 flavor
 winall_utf8:
 	make clean
-	make -f makefile_mingw_utf8
+	make -f makefile_mingw_utf8_ffi
 	rm *.o
-	make -f makefile_mingwdll_utf8
+	make -f makefile_mingwdll_utf8_ffi
 	rm *.o
 	./newlisp qa-dot
 	tar czvf newlisp-win-utf8.tgz newlisp.exe newlisp.dll
@@ -90,7 +90,7 @@ wings:
 dpkg:
 	make clean
 	cp makefile_original_install makefile_install
-	make -f makefile_linux
+	make -f makefile_linux_ffi
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease 1 --default
 	rm description-pak
@@ -99,7 +99,7 @@ dpkg:
 dpkg_utf8:
 	make clean
 	cp makefile_original_install makefile_install
-	make -f makefile_linux_utf8
+	make -f makefile_linux_utf8_ffi
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease utf8 --default
 	rm description-pak
@@ -110,7 +110,7 @@ dpkg_utf8:
 # bombs out in the following script, but is fixed in 10.6.0
 # Snow Leopard.
 dmg_ppc:
-	make -f makefile_darwin_utf8_leopardPPC
+	make -f makefile_darwin_utf8_leopardPPC_ffi
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -121,7 +121,7 @@ dmg_ppc:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
 
 dmg_intel:
-	make -f makefile_darwin_utf8_leopardIntel
+	make -f makefile_darwin_utf8_ffi
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -184,6 +184,8 @@ checkall:
 	./newlisp qa-specific-tests/qa-inplace
 	./newlisp qa-specific-tests/qa-utf16path
 	./newlisp qa-specific-tests/qa-pipefork
+	./newlisp qa-specific-tests/qa-ffi
+	./newlisp qa-specific-tests/qa-libffi
 	./newlisp qa-specific-tests/qa-bench
 
 testall: 

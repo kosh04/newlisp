@@ -1,6 +1,6 @@
 /* primes.h - table of primitives
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -372,6 +372,9 @@ PRIMITIVE primitive[] =
 #ifndef NOIMPORT
 	{"import",		p_importLib,	0},
 	{"callback",	p_callback,		0},
+#ifdef FFI
+    {"struct",      p_struct,       0},
+#endif
 #endif
 	{"delete",		p_deleteSymbol,	0},
 	{"new",			p_new,		0},

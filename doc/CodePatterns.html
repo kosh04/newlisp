@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2011 Ocober 20<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.3
+</h1>Version 2012 December 10<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.3.10
 </center>
 
 <br/><br/><br/>
@@ -99,7 +99,7 @@ tt {
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2011 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
+Copyright &copy; 2012 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
 Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br/>
 Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br/>
 and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br/>
@@ -277,6 +277,7 @@ newLISP is a registered trademark of Lutz Mueller.
   </ul></li>
 <li><a href="#toc-23">23. Extending newLISP</a>
   <ul>
+  <li>Simple versus extended FFI interface</li>
   <li>A shared library in C</li>
   <li>Compile on Unix</li>
   <li>Compile a DLL on Win32</li>
@@ -377,6 +378,29 @@ newLISP is a registered trademark of Lutz Mueller.
 </pre>
 
 <p>The file will be printed to <tt>std-out</tt> translated to uppercase.</p>
+
+<p>The following program would also work with binary non-textual information
+containing <tt>0</tt>'s :</p>
+
+<pre>
+#!/usr/bin/newlisp
+;
+; inout - demo binary pipe
+;
+; read from stdin into buffer
+; then write to stdout
+;
+; usage: ./inout < inputfile > outputfile
+;
+
+(while (read 0 buffer 1024)
+    (write 1 buffer 1024))
+
+(exit)
+</pre>
+
+<p>Set buffersize to best performance.</p>
+
 
 <h3>File filters</h3>
 
@@ -1313,9 +1337,9 @@ L → (j r r s w)
 
 <pre>
 ; uses unify together with bind for destructuring
-(set 'struct '((one "two") 3 (four (x y z))))
+(set 'structure '((one "two") 3 (four (x y z))))
 (set 'pattern '((A B) C (D E)))
-(bind (unify pattern struct))
+(bind (unify pattern structure))
 A → one
 B → "two"
 C → 3
@@ -3301,33 +3325,61 @@ at: http://www.newlisp.org/modules/.</p>
 
 <p>In both the <tt>-c</tt> and <tt>-http</tt> HTTP modes the following file types are recognized and a correctly formatted <tt>Content-Type:</tt> header is sent back:</p>
 
-<table  summary='table'>
-<tr align='left'><th> file extension </th><th> media type </th></tr>
-<tr><td>.html</td><td>text/html</td></tr>
-<tr><td>.html</td><td>text/htm</td></tr>
+<table  summary="media types">
+<tr align="left"><th>file extension</th><th>media type</th></tr>
+<tr><td>.avi</td><td>video/x-msvideo</td></tr>
 <tr><td>.css</td><td>text/css</td></tr>
 <tr><td>.gif</td><td>image/gif</td></tr>
-<tr><td>.png</td><td>image/png</td></tr>
-<tr><td>.mp3</td><td>audio/mpeg</td></tr>
-<tr><td>.wav</td><td>audio/x-wav</td></tr>
-<tr><td>.mpg</td><td>video/mpeg</td></tr>
-<tr><td>.mov</td><td>video/quicktime</td></tr>
-<tr><td>.avi</td><td>video/x-msvideo</td></tr>
-<tr><td>.pdf</td><td>application/pdf</td></tr>
+<tr><td>.htm</td><td>text/htm</td></tr>
+<tr><td>.html</td><td>text/html</td></tr>
+<tr><td>.jpg</td><td>image/jpg</td></tr>
 <tr><td>.js</td><td>application/javascript</td></tr>
+<tr><td>.mov</td><td>video/quicktime</td></tr>
+<tr><td>.mp3</td><td>audio/mpeg</td></tr>
+<tr><td>.mpg</td><td>video/mpeg</td></tr>
+<tr><td>.pdf</td><td>application/pdf</td></tr>
+<tr><td>.png</td><td>image/png</td></tr>
+<tr><td>.wav</td><td>audio/x-wav</td></tr>
 <tr><td>.zip</td><td>application/zip</td></tr>
-<tr><td>any other</td><td>text/plain</td></tr>
+<tr><td><em>any other</em></td><td>text/plain</td></tr>
 </table>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-23"></a>
 <h2>23. Extending newLISP</h2>
 
-<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so).</p>
+<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so, ending in .dylib on Mac OS X).</p>
 
-<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/Unix platforms. We will compile a DLL and a Linux/Unix shared library from the following 'C' program.</p>
+<h3>Simple versus extended FFI interface</h3>
+
+<p>In versions 10.3.8/9/10 newLISP introduced an extended syntax for the <tt>import</tt>, 
+<tt>callback</tt> and <tt>struct</tt> functions and for the <tt>pack</tt> and <tt>unpack</tt>
+support functions. This extended syntax is only available 
+on newLISP versions built with <a href="http://sourceware.org/libffi/">libffi</a> . 
+All standard binary versions distributed on www.newlisp.org are enabled to use the new 
+extensions additionally to the simpler API. The simpler API is used by all standard extension 
+modules part of the distribution.</p>
+
+<p>The extended syntax allows specifying C-language types for parameter and return values of imported 
+functions and for functions registered as callbacks. The extended syntax also allows handling
+of floating point values and C-structures in parameters and returns. Handling of floating point 
+types was either impossible or unreliable using the simple API that depended on pure <em>cdecl</em>
+calling conventions. These are not available on all platforms. The extended API also handles
+packing and unpacking of C-structures with automatic alignment of C-types on different CPU
+architectures. See the extended syntax of the <tt>pack</tt> and <tt>unpack</tt> functions in
+the <a href="http://www.newlisp.org/newlisp_manual.html">User Manual and Reference</a>.</p>
+
+<p>The following chapters describe the older simple API. Much of it is applicable to the 
+extended API as well. For details on the new API, consult the 
+<a href="http://www.newlisp.org/newlisp_manual.html">User Manual and Reference</a> 
+for the functions <tt>import</tt>, <tt>callback</tt>, <tt>struct</tt>, <tt>pack</tt>
+and <tt>unpack</tt>.</p>
 
 <h3>A shared library in C</h3>
+
+<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/Unix 
+platforms. We will compile a DLL and a Linux/Unix shared library from the following 'C' program.</p>
+
 
 <pre>
 #include &lt;stdio.h&gt;
@@ -3577,7 +3629,13 @@ foo &lt;281A1588&gt;
 <tr><td> <tt>double array</tt></td><td> <tt>(foo (pack "lf lf lf) 1.23 4.56 7.89)</tt></td><td> <tt>foo(double[])</tt></td></tr>
 <tr><td> <tt>string array</tt></td><td> <tt>(foo (pack "lu lu lu" "one" "two" "three")))</tt></td><td> <tt>foo(char * string[])</tt></td></tr>
 </table>
-<p>Note that <tt>floats</tt> and <tt>double floats</tt> are only passed correctly on x86 platforms with <tt>cdecl</tt> calling conventions or when passed by pointer reference as in variable argument functions, i.e: <tt>printf()</tt>. </p>
+<p>Note that <tt>floats</tt> and <tt>double floats</tt> are only passed correctly on x86 
+platforms with <em>cdecl</em> calling conventions or when passed by pointer reference as 
+in variable argument functions, i.e: <tt>printf()</tt>. For reliable handling of single
+and double precision floating point types and for advanced usage of <tt>pack</tt> and
+<tt>unpack</tt> for handling C-structures, see the descriptions of the <tt>import</tt>,
+<tt>callback</tt> and <tt>struct</tt> functions in the 
+<a href="http://www.newlisp.org/newlisp_manual.html">newLISP User Manual and Reference</a>.</p>
 
 <p><tt>pack</tt> can receive multiple arguments after the format specifier in a list too:</p>
 
@@ -3701,6 +3759,10 @@ function:</p>
 the <tt>newlisp-x.x.x/examples/</tt> directory of the source distribution.
 A file <tt>win32demo.lsp</tt> can be found in the same directory demonstrating 
 callbacks on the Windows platform.</p>
+
+<p>For an advanced syntax of <tt>callback</tt> using C-type specifiers see
+<a href="http://www.newlisp.org/newlisp_manual.html">newLISP User Manual and Reference</a>.
+</p>
 
 <br/><center>&sect;</center><br/>
 

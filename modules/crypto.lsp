@@ -7,7 +7,10 @@
 ;; @version 1.06 - added ripemd160
 ;; @version 1.07 - added libcrypto for OpenBSD and tested for 64-bit
 ;; @version 1.08 - help text corrections
-;; @author Lutz Mueller 2007, Martin Quiroga 2007, Norman Deppenbroek 2009
+;; @version 1.09 - added lib path for Windows 7
+;; @version 1.10 - added SHA256
+;; @author Lutz Mueller 2007, Martin Quiroga 2007, Norman Deppenbroek 2009, 
+;; @author Marc Hildman, 2011
 ;;
 ;; <h2>Module for SSL lib crypto  bindings</h2>
 ;; This modules imports functions for the MD5 and SHA-1 hashing algorithms described
@@ -36,23 +39,25 @@
 ; set library to path-name of the library on your platform OS
 ;
 (set 'files '(
-	"C:/Program Files/gnuwin32/bin/libeay32.dll"
-	"/usr/lib/libcrypto.so"
-	"/usr/lib/libcrypto.so.0.9.8"
-	"/usr/lib/libcrypto.so.0.9.7"
-	"/usr/lib/libcrypto.so.0.9.6"
-	"/usr/lib/libcrypto.so.4"
-	"/usr/lib/libcrypto.so.18.0" ; OpenBSD 4.6
-	"/usr/lib/libcrypto.dylib"
+    "C:/Program Files/gnuwin32/bin/libeay32.dll" ; XP
+    "C:/Program Files (x86)/gnuwin32/bin/libeay32.dll" ; 7
+    "/usr/lib/libcrypto.so"
+    "/usr/lib/libcrypto.so.0.9.8"
+    "/usr/lib/libcrypto.so.0.9.7"
+    "/usr/lib/libcrypto.so.0.9.6"
+    "/usr/lib/libcrypto.so.4"
+    "/usr/lib/libcrypto.so.18.0" ; OpenBSD 4.6
+    "/usr/lib/libcrypto.dylib"
 ))
 
 (set 'library (files (or
-		       (find true (map file? files))
-		       (throw-error "cannot find crypto library"))))
+               (find true (map file? files))
+               (throw-error "cannot find crypto library"))))
 
 (import library "MD5")
 (import library "RIPEMD160")
 (import library "SHA1")
+(import library "SHA256")
 
 ;; @syntax (crypto:md5 <string> <bool-raw>)
 ;; @param <string> The string buffer for which to calculate a MD5 hash
@@ -64,14 +69,14 @@
 ;; (crypto:md5 (read-file "newlisp-9.1.0.tgz")) => "46c79c93e904df35c6a8474ace406c92"
 
 (define (md5 str raw-flag)
-	(if raw-flag
-		(let (buff (dup "\000" 16))
-			(cpymem (MD5 str (length str) 0) buff 16)
-			buff)
-		(join
-			(map (lambda (x) (format "%02x" (& x 0xff))) 
-				(unpack (dup "c" 16) (MD5 str (length str) 0))))
-	)
+    (if raw-flag
+        (let (buff (dup "\000" 16))
+            (cpymem (MD5 str (length str) 0) buff 16)
+            buff)
+        (join
+            (map (lambda (x) (format "%02x" (& x 0xff))) 
+                (unpack (dup "c" 16) (MD5 str (length str) 0))))
+    )
 )
 
 ;; @syntax (crypto:sha1 <string> <bool-raw>)
@@ -84,16 +89,36 @@
 ;; (crypto:sha1 (read-file "newlisp-9.1.0.tgz")) => "2127a9c487f338b00f36cfd60b5f33d27b8d0010"
 
 (define (sha1 str raw-flag)
-	(if raw-flag
-		(let (buff (dup "\000" 20))
-			(cpymem (SHA1 str (length str) 0) buff 20)
-			buff)
-		(join
-   			(map (lambda (x) (format "%02x" (& x 0xff))) 
-				(unpack (dup "c" 20) (SHA1 str (length str) 0)))
-		)
-	)
+    (if raw-flag
+        (let (buff (dup "\000" 20))
+            (cpymem (SHA1 str (length str) 0) buff 20)
+            buff)
+        (join
+            (map (lambda (x) (format "%02x" (& x 0xff))) 
+                (unpack (dup "c" 20) (SHA1 str (length str) 0)))
+        )
+    )
 )
+
+;; @syntax (crypto:sha256 <string> <bool-raw>)
+;; @param <string> The string buffer for which to calculate a SHA-256 hash
+;; @param <bool-raw> Return the raw binay buffer when 'true'.
+;; @return The 32 Byte SHA-1 hash as a 64 Byte long hex string or as a 32 byte binary buffer.
+;; @example
+;; (crypto:sha256 "ABC") => "b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78" 
+;;
+(define (sha256 str raw-flag)
+    (if raw-flag
+        (let (buff (dup "\000" 32))
+            (cpymem (SHA256 str (length str) 0) buff 32)
+            buff)
+        (join
+            (map (lambda (x) (format "%02x" (& x 0xff))) 
+                (unpack (dup "c" 32) (SHA256 str (length str) 0)))
+        )
+    )
+)
+
 
 ;; @syntax (crypto:hmac <func-hash> <str-message> <str-key>)
 ;; @param <func-hash> The hash function to use.
@@ -133,15 +158,15 @@
 ;; (crypto:ripemd160 (read-file "newlisp.exe")) => "9c1185a5c5e9fc54612808977ee8f548b2258d31" 
 
 (define (ripemd160 str raw-flag) 
-	(if raw-flag 
-		(let (buff (dup "\000" 20)) 
-			(cpymem (RIPEMD160 str (length str) 0) buff 20) 
-		buff) 
-		(join 
-			(map (lambda (x) (format "%02x" (& x 0xff))) 
-				(unpack (dup "c" 20) (RIPEMD160 str (length str) 0))) 
-		) 
-	) 
+    (if raw-flag 
+        (let (buff (dup "\000" 20)) 
+            (cpymem (RIPEMD160 str (length str) 0) buff 20) 
+        buff) 
+        (join 
+            (map (lambda (x) (format "%02x" (& x 0xff))) 
+                (unpack (dup "c" 20) (RIPEMD160 str (length str) 0))) 
+        ) 
+    ) 
 )
 
 ; eof ;

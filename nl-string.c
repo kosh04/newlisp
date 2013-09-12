@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -264,6 +264,7 @@ params = getEvalDefault(params, &datCell);
 switch(datCell->type)
     {
     case CELL_STRING:
+        symbolCheck = NULL;
         string = (char *)datCell->contents;
 
 #ifndef SUPPORT_UTF8
@@ -285,7 +286,7 @@ switch(datCell->type)
         else offset = 0;
 
         offset = adjustNegativeIndex(offset, len);
-
+        
 #ifndef SUPPORT_UTF8
         return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));
 
@@ -648,7 +649,7 @@ char * format;
 char * fmt;
 char * nextfmt;
 CELL * cell;
-STREAM fmtStream = {0, NULL, NULL, 0, 0};
+STREAM fmtStream = {0, NULL, NULL, 0, 14};
 int fType;
 double floatNum;
 UINT intNum;
@@ -661,7 +662,7 @@ char saveChar;
 params = getString(params, &format);
 fmt = format;
 
-openStrStream(&fmtStream, MAX_STRING, 0);
+fmtStream.buffer = fmtStream.ptr = callocMemory(15);
 
 while(params->type != CELL_NIL)
     {
@@ -690,7 +691,7 @@ while(params->type != CELL_NIL)
     if(fType == 0)
         {
         closeStrStream(&fmtStream);
-        return(errorProcExt(ERR_FORMAT_NUM_ARGS, params));
+        return(errorProcExt(ERR_NUM_ARGS, params));
         }
 
     saveChar = *nextfmt;
@@ -756,20 +757,31 @@ getFormatType(fmt, &fType);
 if(fType != 0)
     {
     closeStrStream(&fmtStream);
-    errorProcExt2(ERR_FORMAT_NUM_ARGS, stuffString(format));
+    errorProcExt2(ERR_NUM_ARGS, stuffString(format));
     }
 
 varPrintf((UINT)&fmtStream, fmt);
 
-cell = stuffStringN(fmtStream.buffer, fmtStream.position);
-closeStrStream(&fmtStream);
+cell = makeStringCell(fmtStream.buffer, fmtStream.position);
+
+symbolCheck = NULL;
 return(cell);
 }
 
 void openStrStream(STREAM * stream, size_t buffSize, int reopenFlag)
 {
 if(stream->buffer != NULL && reopenFlag)
-    freeMemory(stream->buffer);
+    {
+    if(buffSize == stream->size)
+        {
+        memset(stream->buffer, 0, buffSize);
+        stream->position = stream->handle = 0;
+        stream->ptr = stream->buffer;
+        return;
+        }
+    }
+
+freeMemory(stream->buffer);
 stream->buffer = stream->ptr = callocMemory(buffSize + 1);
 stream->size = buffSize;    
 stream->position = stream->handle = 0;
@@ -1080,6 +1092,7 @@ CELL * deflt, * cell;
 INT64 result;
 
 deflt = getEvalDefault(params, &cell);
+symbolCheck = NULL;
 
 if(cell->type == CELL_STRING)
     intString = (char *)cell->contents;
@@ -1131,15 +1144,17 @@ CELL * p_float(CELL * params)
 char * fltString;
 double value;
 CELL * deflt;
+CELL * cell;
 
 deflt = params->next;
 params = evaluateExpression(params);
+deflt = getEvalDefault(params, &cell);
 
-if(params->type == CELL_STRING)
-    fltString = (char *)params->contents;
-else if(isNumber(params->type))
+if(cell->type == CELL_STRING)
+    fltString = (char *)cell->contents;
+else if(isNumber(cell->type))
     {
-    getFloat(params, &value);
+    getFloat(cell, &value);
     return(stuffFloat(&value));
     }
 else
@@ -1250,9 +1265,9 @@ return(cell);
 CELL * p_string(CELL * params)
 {
 CELL * cell;
-STREAM strStream = {0, NULL, NULL, 0, 0};
+STREAM strStream = {0, NULL, NULL, 0, 14};
 
-openStrStream(&strStream, MAX_STRING, 0);
+strStream.buffer = strStream.ptr = callocMemory(15);
 prettyPrintFlags |= PRETTYPRINT_STRING;
 while (params != nilCell)
     {
@@ -1265,9 +1280,9 @@ while (params != nilCell)
     }
 prettyPrintFlags &= ~PRETTYPRINT_STRING;
 
-cell = stuffStringN(strStream.buffer, strStream.position);
+/* cell = stuffStringN(strStream.buffer, strStream.position); */
+cell = makeStringCell(strStream.buffer, strStream.position);
 
-closeStrStream(&strStream);
 return(cell);
 }
 
@@ -1360,6 +1375,7 @@ switch(params->type)
     default:
         break;
     }
+
 return(stuffInteger(params->contents));
 }
 
@@ -1557,7 +1573,18 @@ unsigned long long  uint64V; /* 64 bit */
 float floatV;
 double doubleV;
 
+#ifdef FFI
+cell = evaluateExpression(params);
+params = params->next;
+if(cell->type == CELL_IMPORT_FFI)
+    return(packFFIstruct(cell, params)); /* nl-import.c */
+if(cell->type != CELL_STRING)
+    return(errorProc(ERR_INVALID_PARAMETER));
+format = (char *)cell->contents;
+#else
 params = getString(params, &format);
+#endif
+
 source = format;
 length = 0;
 while((source = parsePackFormat(source, &len, &type)) != NULL)
@@ -1589,7 +1616,7 @@ while((source = parsePackFormat(source, &len, &type)) != NULL)
         cell = params;
     else
         cell = evaluateExpression(params);
-    /* accept data in a list, (will recurse into it but never come out) */
+    /* accept data in a list */
     if(isList(cell->type))
         {
         cell = (CELL *)cell->contents;
@@ -1793,12 +1820,12 @@ return(format);
 
 CELL * p_unpack(CELL * params)
 {
+CELL * cell;
 char * format;
 char * source;
 char * pPtr;
-CELL * cell;
 CELL * result;
-CELL * next;
+CELL * next = NULL;
 size_t length, maxlen;
 int len;
 int type;
@@ -1813,19 +1840,29 @@ unsigned long long int uint64V;
 float floatV;
 double doubleV;
 
-params = getString(params, &format);
-params = evaluateExpression(params);
-
-if(params->type == CELL_STRING)
+cell = evaluateExpression(params->next);
+if(cell->type == CELL_STRING)
     {
-    pPtr = (char *)params->contents; 
-    maxlen = params->aux - 1;
+    pPtr = (char *)cell->contents; 
+    maxlen = cell->aux - 1;
     }
 else
     {
-    getIntegerExt(params, (void*)&pPtr, FALSE);
+    getIntegerExt(cell, (void*)&pPtr, FALSE);
     maxlen = MAX_LONG;
     }
+
+#ifdef FFI
+cell = evaluateExpression(params);
+if(cell->type == CELL_IMPORT_FFI)
+    return(unpackFFIstruct(cell, pPtr)); /* nl-import.c */
+if(cell->type != CELL_STRING)
+    return(errorProc(ERR_INVALID_PARAMETER));
+format = (char *)cell->contents;
+#else
+params = getString(params, &format);
+#endif
+
     
 length = 0;
 source = format;

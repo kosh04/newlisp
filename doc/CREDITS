@@ -132,6 +132,9 @@ Joh from http://johu02.spaces.live.com/default.aspx
   did a  thorough pass through the manual correcting many erros. His website  
   and his Japanese translations of the reference manual and other documentation
   help to make newLISP popular in Japan.
+
+Stefan Sonnenberg implemented the extended libffi based API for the import
+  and callback functions starting version 10.3.8
   
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel
@@ -142,7 +145,7 @@ Phillip Hazel
 Jorge Acereda and Peter O'Gorman
   wrote dyna link library functions for OSX which are used in this project,
   their files osx-dlfcn.c/.h were necessary on pre 10.3 versions of MacOSX
-  (functionality/code? now part of OX X since 10.3)
+  (functionality/code? now part of OS X since 10.3)
 
 Daniel Stenberg
   from the cURL project, newLISP adapted the base64 encoding and decoding routines

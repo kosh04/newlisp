@@ -1,0 +1,106 @@
+#!/usr/bin/newlisp
+
+# run this from either the main distribution directory newlisp-x.x.x/
+# or from qa-specific-tests/
+
+(when (zero? (& 1024 (sys-info -1)))
+    (println "These tests only run on extended FFI enabled versions compiled with ffilib")
+    (exit))
+
+(if (ends-with (real-path) "qa-specific-tests")
+    (if (zero? (& 0x100 (sys-info -1)))
+        (! "gcc -m32 ../util/ffitest.c -shared -o ffitest.dylib")
+        (! "gcc -m64 ../util/ffitest.c -shared -o ffitest.dylib"))
+    (if (zero? (& 0x100 (sys-info -1)))
+        (! "gcc -m32 util/ffitest.c -shared -o ffitest.dylib")
+        (! "gcc -m64 util/ffitest.c -shared -o ffitest.dylib"))
+)
+
+(if (and
+    (import "./ffitest.dylib" "ret_float" "float" "float")
+    (println "float => " (< (abs (sub (ret_float 123456.7890) 123456.7890)) 0.0001))
+;    (println "float => " (sub (ret_float 123456.7890) 123456.7890)) 
+
+    (import "./ffitest.dylib" "ret_double" "double" "double")
+    (println "double => "(= (ret_double 123456.7890) 123456.7890))
+
+    (import "./ffitest.dylib" "add_double" "double" "double" "double")
+    (println "add double => "(= (add_double 123456.7890 123456.7890) 246913.578))
+
+    (import "./ffitest.dylib" "ret_uint8" "byte" "byte")
+    (println "byte => " (= (ret_uint8 -1) 255))
+
+    (import "./ffitest.dylib" "ret_uint16" "unsigned short int" "unsigned short int")
+    (println "unsigned short int => "(= (ret_uint16 -1) 65535))
+
+    (import "./ffitest.dylib" "ret_uint32" "unsigned int" "unsigned int")
+    (println "unsigned int => "(= (ret_uint32 -1) 4294967295))
+
+    (import "./ffitest.dylib" "ret_sint8" "char" "char")
+    (println "char => " (= (ret_sint8 255) -1))
+
+    (import "./ffitest.dylib" "ret_sint16" "short int" "short int")
+    (println "short int => " (= (ret_sint16 65535) -1))
+
+    (import "./ffitest.dylib" "ret_sint32" "int" "int")
+    (println "int => " (= (ret_sint32 4294967295) -1))
+
+    (import "./ffitest.dylib" "ret_pointer" "char*" "char*")
+    (println "char* => " (= (ret_pointer "hello world") "HELLO WORLD"))
+
+    (import "./ffitest.dylib" "string_copy" "char*" "char*" "char*")        
+    (set 'from "hello")
+    (set 'to (dup "\000" (length from)))
+    ; char* accepts both, string or address number
+    (set 'ret (string_copy (address from) to)) ; copy from to
+    (println "copy char* => " to " => " (= "hello" to) )
+    (println "return => " ret)
+    )
+  (println ">>>>> ffilib API testing SUCCESSFUL")
+  (println ">>>>> ERR testing libffi API"))
+
+;; test extended callback API
+(import "./ffitest.dylib" "register_callback" "void" "void*")
+(import "./ffitest.dylib" "trigger_callback" "void")
+
+(define (callme ptr int-num double-num) 
+    (print (get-string ptr)  int-num " " double-num)
+    (if (and (= int-num 1234567890) (= double-num 12345.67890))
+        (println " (extended callback API) SUCCESSFUL")
+        (println "ERR in callback API")
+    ))
+
+(set 'is64bit (not (zero? (& 256 (sys-info -1)))))
+
+(register_callback (callback 'callme "void" "char*" "int" "double" ))
+(trigger_callback)
+
+(if (and
+		(= (struct 'clock "char" "int" "short int") 'clock)
+		(= (struct 'foo "char" "int" "short int") 'foo)
+		(= (unpack clock (pack clock 1 2 3)) '(1 2 3))
+		(import "./ffitest.dylib" "addClock" "clock" "clock")
+		(= (addClock (pack clock 1 2 3)) '(2 3 4)) )
+	(println ">>>>> struct tested SUCCESSFUL")
+	(println ">>>>> ERR in struct function")
+)
+
+
+(if (and
+        (= (struct 'sfoo "char" "int" "short int" "char*") 'sfoo)
+        (import "./ffitest.dylib" "useFoo" "void*" "int")
+        (= (unpack sfoo (pack sfoo 1 2 3 "hello world")) '(1 2 3 "hello world"))
+        (= (unpack sfoo (useFoo 10)) '(11 12 13 "hello world")) )
+    (println ">>>>> struct ptr tested SUCCESSFUL")
+    (println ">>>>> ERR in struct ptr testing"))
+
+
+
+
+(delete-file "ffitest.dylib")
+
+(exit)
+
+
+
+

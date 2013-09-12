@@ -63,7 +63,7 @@
 (push (list (spawn 'p1 (sleep 400)) 'p1) plist)
 (push (list (spawn 'p2 (sleep 500)) 'p2) plist)
 
-(println (sync 2000 inlet))
+(println (sync 5000 inlet))
 (println)
 
 (if (and

@@ -12,6 +12,7 @@ CC = gcc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m64 -lm -lreadline -bundle -o newlisp.dylib
+	strip newlisp
 
 .c.o:
 	$(CC) $(CFLAGS) $<

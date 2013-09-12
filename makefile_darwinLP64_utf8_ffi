@@ -1,0 +1,22 @@
+# makefile for newLISP v. 10.x.x on Mac OSX LP64 memory model with readline support, UTF8, FFI
+#
+# for OS X 10.4 and later
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+CFLAGS = -m64 -Wall -O1 -c -g -DREADLINE -DMAC_OSX -DNEWLISP64 -DSUPPORT_UTF8 -DFFI
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m64 -g -lm -lreadline -lffi -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): newlisp.h primes.h protos.h makefile_darwinLP64_utf8_ffi
+
+

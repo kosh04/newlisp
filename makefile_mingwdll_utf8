@@ -12,7 +12,7 @@ STRIP = /MinGW/bin/strip
 WRAP = /MinGW/bin/dllwrap
 
 default: $(OBJS)
-	$(WRAP) *.o --enable-stdcall-fixup --def win32dll.def -o newlisp.dll -lws2_32
+	$(WRAP) *.o -Wl,--enable-stdcall-fixup --def win32dll.def -o newlisp.dll -lws2_32
 	$(STRIP) newlisp.dll
 
 .c.o:

@@ -49,6 +49,11 @@ opsys += 64;
 opsys += 128;
 #endif
 
+#ifdef FFI
+opsys += 1024;
+initFFI();
+#endif
+
 initLocale();
 initStacks();
 initialize();
@@ -57,16 +62,16 @@ mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 initFile = getenv("NEWLISPLIB_INIT");
 
 if(initFile)
-    {
-    strncpy(name, initFile, MAX_LINE);
-    loadFile(name, 0, 0, mainContext);
-    }
+	{
+	strncpy(name, initFile, MAX_LINE);
+	loadFile(name, 0, 0, mainContext);
+	}
 
 if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
-    {
-    GetModuleFileName(GetModuleHandle(libName), name, MAX_LINE);
-    loadFile(name, *(UINT*)linkOffset, 1, mainContext);
-    }
+	{
+	GetModuleFileName(GetModuleHandle(libName), name, MAX_LINE);
+	loadFile(name, *(UINT*)linkOffset, 1, mainContext);
+	}
 
 dllInitialized = 1;
 reset();
@@ -99,7 +104,7 @@ int EXPORT debugConsole() {
    IOchannel = stdin;
 
    if(!AllocConsole())
-        return(0);
+		return(0);
 
    if(freopen("CONOUT$","w+t",stdout) == NULL) return(0);
    if(freopen("CONIN$","r+t",stdin) == NULL) return(0);  
@@ -114,17 +119,17 @@ LPSTR EXPORT newlispEvalStr(LPSTR cmd)
 if(!dllInitialized) initializeMain();
 
 if(setjmp(errorJump)) 
-    {
-    reset();
-    initStacks();
-    if(errorReg) 
-        {
-        executeSymbol(errorEvent, NULL, NULL);
-        return((LPSTR)libStrStream.buffer);
-        }
-    else
-    return((LPSTR)errorStream.buffer);
-    }
+	{
+	reset();
+	initStacks();
+	if(errorReg) 
+		{
+		executeSymbol(errorEvent, NULL, NULL);
+		return((LPSTR)libStrStream.buffer);
+		}
+	else
+	return((LPSTR)errorStream.buffer);
+	}
 
 openStrStream(&libStrStream, MAX_STRING, 1);
 executeCommandLine(cmd, (UINT)&libStrStream, NULL);
@@ -162,22 +167,28 @@ SYMBOL * symbol;
 if(!dllInitialized) initializeMain();
 
 if(callType != NULL && strcmp(callType, "cdecl") ==  0)
-    pCell = getCell(CELL_IMPORT_CDECL);
+	pCell = getCell(CELL_IMPORT_CDECL);
 else
-    pCell = getCell(CELL_IMPORT_DLL);
+	pCell = getCell(CELL_IMPORT_DLL);
 
 symbol = translateCreateSymbol(funcName, pCell->type, currentContext, TRUE);
 
 if(isProtected(symbol->flags))
     {
-    errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol));
+	errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol));
     return(-1);
     }
 
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 pCell->contents = (UINT)funcAddr;
+
+#ifdef FFI
+pCell->aux = (UINT)calloc(sizeof(FFIMPORT), 1);
+((FFIMPORT *)pCell->aux)->name = symbol->name;
+#else
 pCell->aux = (UINT)symbol->name;
+#endif
 
 return(funcAddr);
 }

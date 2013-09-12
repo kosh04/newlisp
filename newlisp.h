@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,28 @@
 
 #ifndef NEWLISP_H
 #define NEWLISP_H
+
+/* include -DFFI in your makefile on the compile line 
+   and -lffi on the link line */
+#ifdef FFI
+
+#if defined(MAC_OSX)
+#include <ffi/ffi.h>
+#endif
+
+#if defined(WIN_32) || defined(CYGWN) 
+#include "win32-ffi.h" 
+#endif
+
+#ifdef LINUX
+# ifdef NEWLISP64
+#  include <x86_64-linux-gnu/ffi.h>    /* ubuntu_x64 */
+# else
+#  include <i386-linux-gnu/ffi.h>
+# endif
+#endif
+
+#endif /* FFI */
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */
 #ifdef NEWCONFIG
@@ -172,6 +194,7 @@ This is for 64bit large file support (LFS),
 #define MY_VASPRINTF
 #define MY_SETENV
 #define LINE_FEED "\r\n"
+#define LINE_FEED_LEN 2
 
 #define getSocket(A) ((A)->_file)
 
@@ -215,6 +238,7 @@ This is for 64bit large file support (LFS),
 
 #ifndef WIN_32
 #define LINE_FEED "\n"
+#define LINE_FEED_LEN 1
 #define NET_PING
 #define NET_PACKET
 #define NANOSLEEP
@@ -302,6 +326,7 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_GLOBAL 0x20
 #define SYMBOL_BUILTIN 0x40
 #define SYMBOL_PRIMITIVE 0x80
+#define SYMBOL_FFI 0x100
 
 /* cell masks */
 
@@ -313,6 +338,8 @@ This is for 64bit large file support (LFS),
 #define NUMBER_TYPE_MASK 0x0080
 #define EVAL_SELF_TYPE_MASK 0x0100
 #define INT64_MASK 0x0200
+#define CALL_CDECL_MASK 0x0400
+#define CALL_DLL_MASK 0x0800
 
 /* only used for type ids used in shared memory
    to indicate translation from string */
@@ -329,8 +356,9 @@ This is for 64bit large file support (LFS),
 #define CELL_SYMBOL (5 | SYMBOL_TYPE_MASK)
 #define CELL_CONTEXT 6
 #define CELL_PRIMITIVE (7 | EVAL_SELF_TYPE_MASK)
-#define CELL_IMPORT_CDECL (8 | EVAL_SELF_TYPE_MASK)
-#define CELL_IMPORT_DLL (9 | EVAL_SELF_TYPE_MASK)
+#define CELL_IMPORT_CDECL (8 | EVAL_SELF_TYPE_MASK | CALL_CDECL_MASK)
+#define CELL_IMPORT_DLL (8 | EVAL_SELF_TYPE_MASK | CALL_DLL_MASK)
+#define CELL_IMPORT_FFI (9 | EVAL_SELF_TYPE_MASK)
 #define CELL_QUOTE (10 | ENVELOPE_TYPE_MASK)
 #define CELL_EXPRESSION (11 | ENVELOPE_TYPE_MASK | LIST_TYPE_MASK)
 #define CELL_LAMBDA (12 | ENVELOPE_TYPE_MASK | LIST_TYPE_MASK | EVAL_SELF_TYPE_MASK)
@@ -349,6 +377,7 @@ This is for 64bit large file support (LFS),
 #define isProtected(A) ((A) & SYMBOL_PROTECTED)
 #define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
+#define isFFI(A) ((A) & SYMBOL_FFI)
 #define isDigit(A) isdigit((int)(A))
 #define isHexDigit(A) isxdigit((int)(A))
 
@@ -426,7 +455,7 @@ This is for 64bit large file support (LFS),
 #define ERR_NUMBER_OUT_OF_RANGE 38
 #define ERR_REGEX 39
 #define ERR_MISSING_TEXT_END 40
-#define ERR_FORMAT_NUM_ARGS 41
+#define ERR_NUM_ARGS 41
 #define ERR_FORMAT_STRING 42
 #define ERR_FORMAT_DATA_TYPE 43
 #define ERR_INVALID_PARAMETER 44
@@ -455,7 +484,14 @@ This is for 64bit large file support (LFS),
 #define ERR_CANNOT_OPEN_SOCKETPAIR 67
 #define ERR_CANNOT_FORK_PROCESS 68
 #define ERR_NO_SOCKET 69
+#ifdef FFI
+#define ERR_FFI_PREP_FAILED 70
+#define ERR_FFI_INVALID_TYPE 71
+#define ERR_FFI_STRUCT_EXPECTED 72
+#define MAX_ERROR_NUMBER 72
+#else
 #define MAX_ERROR_NUMBER 69
+#endif
 #define UNKNOWN_ERROR "Unknown error"
 
 /* network error handling */
@@ -553,6 +589,38 @@ typedef struct
 	CELL * (*function)(CELL *);
 	short int flags;
 	} PRIMITIVE;
+
+typedef struct
+    {
+    int handle;
+    int family;
+    FILE * stream;
+    void * next;
+    } IO_SESSION;
+
+#ifdef FFI
+
+#define FFI_FUNCTION (1)
+#define FFI_CLOSURE  (2)
+#define FFI_STRUCT   (3)
+
+typedef struct {
+  SYMBOL *symbol;
+  void *code;
+} ffi_closure_data;
+
+typedef struct
+    {
+    short int type;
+    char *name;
+    void (*func)(void);
+    ffi_cif cif;
+    void *code;
+    ffi_closure *clos;
+    ffi_closure_data *data;
+    ffi_type *cstruct;
+    } FFIMPORT;
+#endif
 
 /* --------------------------- globals -------------------------------- */
 

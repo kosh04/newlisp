@@ -1,6 +1,6 @@
 /* nl-symbol.c --- symbol handling routines for newLISP
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,11 @@
 
 #include "newlisp.h"
 #include "protos.h"
+
+#ifdef MAC_OSX
+#include <sys/mman.h>
+#endif
+
 
 #define str2cmp(s1,s2) \
     (( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
@@ -276,7 +281,7 @@ if(symbolType(sPtr) == CELL_CONTEXT)
         }
     }
 
-if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
+if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN)) 
     return(nilCell);
 
 /* nil as extra parameter deletes without reference checking.
@@ -359,7 +364,6 @@ if(!deleteSymbol(sPtr->name))
 
 ((CELL *)context->contents)->aux = (UINT)root; /* root may have changed */
 
-/* printf("deleting: %s\n", sPtr->name); */
 deleteList((CELL *)sPtr->contents);
 
 if(checkReferences) references(sPtr, TRUE);

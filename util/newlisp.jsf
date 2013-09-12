@@ -32,7 +32,8 @@
 # 23 March 2011, Norman updated list with prim and depr functions
 # 28 March 2011, Norman updated list with prim and depr functions
 # 28 March 2011, L.M. added write-buffer (like write) to depr functions
-# version 1.11
+# 23 December 2011, L.M. added struct
+# version 1.12
 
 =Idle		
 =Comment 	bold green
@@ -395,6 +396,7 @@
 "starts-with"	prim
 "string"	prim
 "string?"	prim
+"struct"	prim
 "sub"	prim
 "swap"	prim
 "sym"	prim

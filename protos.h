@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,9 @@ CELL * evaluateLambdaMacro(CELL * macro, CELL * arg, SYMBOL * newContext);
 CELL * evaluateNamespaceHash(CELL * args, SYMBOL * newContext);
 CELL * evaluateStream(STREAM * stream, UINT printDevice, int flag);
 CELL * executeLibfunction(CELL * pcell, CELL * params);
+#ifdef FFI
+CELL * executeLibFFI(CELL * pcell, CELL * params);
+#endif
 CELL * expand(CELL * expr, SYMBOL * symbol);
 CELL * explodeList(CELL * list, CELL * params);
 CELL * floatOp(CELL * params, int operand);
@@ -81,6 +84,7 @@ CELL * initArray(CELL * array, CELL * list, CELL * * next);
 CELL * loadFile(char * fileName, UINT offset, int encryptFlag, SYMBOL * context);
 CELL * makeArray(ssize_t * index, int p);
 CELL * makeCell(int type, UINT contents);
+CELL * makeCellFromStream(STREAM * stream);
 CELL * makeStringCell(char * contents, size_t size);
 CELL * makePair(CELL * left, CELL * right);
 CELL * makeElementNode(CELL * tagNode, CELL * attributesNode, CELL * childrenNode);
@@ -89,6 +93,10 @@ CELL * matScalar(CELL * params, char type);
 CELL * mpdArithmetik(CELL * num, CELL * params, int op);
 CELL * netError(int errorNo);
 CELL * netPeerLocal(CELL * params, int peerLocalFlag);
+#ifdef FFI
+CELL * packFFIstruct(CELL * cell, CELL * params);
+CELL * unpackFFIstruct(CELL * cell, char * data);
+#endif
 CELL * setEvent(CELL * params, SYMBOL * * eventSymPtr, char * sysSymName);
 CELL * setNthStr(CELL * cellStr, CELL * new, char * insertPtr);
 CELL * subarray(CELL * array, ssize_t offset, ssize_t length);
@@ -130,6 +138,9 @@ CELL * p_bitNot(CELL * params);
 CELL * p_bitOr(CELL * params);
 CELL * p_bitXor(CELL * params);
 CELL * p_callback(CELL * params);
+#ifdef FFI
+CELL * p_struct(CELL * params);
+#endif
 CELL * p_case(CELL * params);
 CELL * p_catch(CELL * params);
 CELL * p_ceil(CELL * params);
@@ -483,6 +494,7 @@ CELL * sublist(CELL * list, ssize_t offset, ssize_t length);
 CELL * substring(char * string, ssize_t slen, ssize_t offset, ssize_t len);
 CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 CELL * whileUntil(CELL * params, int whileUntilFlag);
+FILE * getIOstream(int handle);
 FILE * serverFD(int port, char * domain, int reconnect);
 FILE * win32_fdopen(int handle, const char * mode);
 SYMBOL * createRootContext(char * token);
@@ -516,6 +528,8 @@ int compareFloats(CELL * left, CELL * right);
 int compareFunc(CELL * left, CELL * right, CELL * func);
 int compareLists(CELL * left, CELL * right);
 int compileExpression(STREAM * stream, CELL * cell);
+IO_SESSION * createIOsession(int handle, int family);
+int deleteIOsession(int sock);
 int elmntInList(CELL * elmnt, CELL * listHead);
 int evalHttpRequest(char * command, UINT outDevice);
 int executeHTTPrequest(char * request, int type);
@@ -580,6 +594,9 @@ void executeCommandLine(char * command, UINT outDevice, STREAM * cmdStream);
 void expandSymbol(CELL * cell, SYMBOL * sPtr);
 void errorMissingPar(STREAM * stream);
 void fatalError(int errorNumber, CELL * expr, int deleteFlag);
+#ifdef FFI
+void initFFI(void);
+#endif
 void initLocale(void);
 void initStacks(void);
 void initialize(void);

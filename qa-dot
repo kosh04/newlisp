@@ -164,14 +164,14 @@ true
 (define (qa)
   (dolist (sm (symbols 'MAIN)) 
    (if (not 
-     (if (and (primitive? (eval sm)) (>= (term sm) "s") (< (term sm) "t")) ; >= kpst
+     (if (and (primitive? (eval sm)) (< sm 'zzzz))
        (begin 
-          (print "  -> " (term sm) "          \r")
+          (unless MAIN:testing-cell-leaks (print "  -> " (term sm) "          \r"))
           (set 'func (eval (sym (append "test-" (string sm)))) )
           (and (catch (apply func) 'result)  result))
        true)) 
      (failed (string " >>>> " sm " failed " result) )))
-  (print "                             \n"))
+  (unless MAIN:testing-cell-leaks (print "                             \n")))
 
 (define (test-$) (find "a|b" "xtzabc" 0) (= ($ 0) $0))
 
@@ -658,7 +658,7 @@ true
 
 (define (test-curry)
   (and
-    (= (set 'f (curry + 10)) (lambda () (+ 10 ($args 0))))
+    (= (set 'f (curry + 10)) (lambda ($x) (+ 10 $x)))
     (= (filter (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
        '((a 10) (a 3) (a 9)))
     (= (clean (curry match '(a *)) '((a 10) (b 5) (a 3) (c 8) (a 9)))
@@ -1053,6 +1053,8 @@ true
 
 (define (test-factor)
 	(= (apply * (factor 0x7FFFFFFFFFFFFFFF)) 0x7FFFFFFFFFFFFFFF))
+
+(define (test-fcall) true)
 
 (define (test-fft )
   (= '((1 2) (3 4)) (ifft (fft '((1 2) (3 4))))))
@@ -1677,9 +1679,9 @@ true
 (define (test-net-accept )
   (and
 	(set 'net-listen-test (set 'listen (net-listen 12345)))
-	(if (> (sys-info -1) 512) ; IPv6
-		(set 'net-connect-test (set 'connect (net-connect "::1" 12345)))
+	(if (zero? (& (sys-info -1) 512)) ; IPv4
 		(set 'net-connect-test (set 'connect (net-connect "localhost" 12345)))
+		(set 'net-connect-test (set 'connect (net-connect "::1" 12345)))
 	)
 	(set 'server (net-accept listen))
 	(set 'net-send-test (= (net-send server "hello") 5))
@@ -1720,10 +1722,9 @@ true
 (define (test-net-local ) net-local-test)
 
 (define (test-net-lookup )
-	(if (> (sys-info -1) 512) ; IPv6
+	(if (zero? (& (sys-info -1) 512)) ; IPv4
+	    (and (= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")))
 		(and (= "localhost" (net-lookup "::1")) (= "::1" (net-lookup "localhost")))
-	(and
-		(= "127.0.0.1" (net-lookup "localhost")) (string? (net-lookup "127.0.0.1")) )
 	)
 )
 
@@ -1963,6 +1964,7 @@ true
 (exit)
 [/text]
 	)
+  (and
 	(set 'channel (pipe))
 	(set 'in (first channel))
 	(set 'out (last channel))
@@ -1973,9 +1975,12 @@ true
 	(write-line out "hello there")
 	(sleep 500)
 	(= (read-line in) "HELLO THERE")
-	(delete-file "pipe-child.lsp"))
+	(delete-file "pipe-child.lsp")
+  )
+)
 
-(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix" "Cygwin"))
+;(if (find ostype '("Linux" "BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix" "Cygwin"))
+(if (find ostype '("BSD" "OSX" "Solaris" "SunOS" "Aix" "True64Unix" "Cygwin"))
   (define (test-pipe)
 	(set 'channel (pipe))
 	(set 'in (first channel))
@@ -2804,6 +2809,8 @@ true
 (define (test-string? )
   (and (string? "1234") (not (string? 1234))))
 
+(define (test-struct) true) ;; gets tested in qa-libffi
+
 (define (test-sub )
   (= 0 (sub 0.99999999 0.99999999))
   (= -123 (sub 123)))
@@ -3076,7 +3083,8 @@ true
 (define (test-abort)
 	(and 
 		(spawn 'x (+ 1 2))
-		(abort)))
+		(abort)
+))
 
 (define (test-spawn)
 	(and 
@@ -3101,6 +3109,7 @@ true
 
 (define (test-sync) true)
 (define (test-schedule) true)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MAIN ENTRY POINT ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (if (or (not (or (file? "newlisp") (file? "newlisp.exe"))) (not (file? "qa-dot")))
@@ -3109,16 +3118,21 @@ true
 		(exit)))
 
 (cleanup)
-(println)
-(println "Testing built-in functions ...")
+
+(unless MAIN:testing-cell-leaks
+    (println)
+    (println "Testing built-in functions ..."))
+
 (qa)
 (cleanup)
 
 (context 'MAIN)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(println "Testing contexts as objects and scoping rules ...")
-(println)
+
+(unless MAIN:testing-cell-leaks
+    (println "Testing contexts as objects and scoping rules ...")
+    (println))
 
 ;; check creating local symbols
 ;; in case they already exist in MAIN
@@ -3371,21 +3385,22 @@ true
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(println "total time: " (- (time-of-day) start-of-qa) "\n")
+(unless testing-cell-leaks (println "total time: " (- (time-of-day) start-of-qa) "\n"))
 (if QA:failed-messages
   (begin
     (println ">>>>> TESTING: " (main-args 0) " FINISHED WITH ERRORS:")
     (println)
     (dolist (func (reverse QA:failed-messages))
         (println func)))
-  (println ">>>>> ALL FUNCTIONS FINISHED SUCCESSFUL: " (main-args 0))
-  (println)
+  (unless testing-cell-leaks
+    (println ">>>>> ALL FUNCTIONS FINISHED SUCCESSFUL: " (main-args 0))
+    (println))
 )
 
 (delete-file "sharetest.lsp")
 (delete-file "udptest.lsp")
 (sys-info)
-(exit)
+(unless testing-cell-leaks (exit))
 ;; eof
 
 

@@ -1,0 +1,22 @@
+#!/usr/bin/newlisp
+
+; this may not run on newer CPUs and definitely only runs in Intel i386
+; runs fine on Mac OSX 10.6 Intel dual core 2 MacMini (2007)
+; runs fine on Windows XP 2 Intel dual core 2 and core i5 (2011)
+
+(set 'foo-code (append
+     (pack "bbbbbbbbbb" 0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D)
+     (if (= ostype "Win32") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
+(set 'foo print)
+;(cpymem (pack "ld" (if (= ostype "Win32") 265 264)) (first (dump foo)) 4) ; pre v10.3.10
+(cpymem (pack "ld" (if (= ostype "Win32") 2312 1288)) (first (dump foo)) 4) 
+(cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
+(set 'foo-name "foo")
+(cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)
+(if (=  (foo 3 4) 7)
+    (println ">>>>> cpymem testing code implanting SUCCESSFUL")
+    (println ">>>>> ERR problem testing code implanting with cpymem")
+)
+
+(exit)
+

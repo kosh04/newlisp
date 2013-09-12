@@ -1,6 +1,6 @@
 /* nl-sock.c
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -115,16 +115,8 @@ struct icmp
 
 #define isnum(A) ((A)>= '0' && (A) <= '9')
 
-typedef struct
-    {
-    int socket;
-    int family;
-    void * next;
-    } INET_SESSION;
+IO_SESSION * ioSessions = NULL;
 
-INET_SESSION * netSessions = NULL;
-
-int deleteInetSession(int sock);
 int isSessionSocket(int sock);
 int getSocketFamily(int sock);
 
@@ -181,46 +173,47 @@ else
 
 }
 
-/********************** session functions *******************/
+/********************** IO session functions *******************/
 
-int createInetSession(int sock, int family)
+IO_SESSION * createIOsession(int handle, int family)
 {
-INET_SESSION * iSession;
+IO_SESSION * iSession;
 
-iSession = (INET_SESSION *)malloc(sizeof(INET_SESSION));
+iSession = (IO_SESSION *)calloc(sizeof(IO_SESSION), 1);
 
-iSession->socket = sock;
+iSession->handle = handle;
 iSession->family = family;
 
-if(netSessions == NULL)
+if(ioSessions == NULL)
     {
-    netSessions = iSession;
+    ioSessions = iSession;
     iSession->next = NULL;
     }
 else
     {
-    iSession->next = netSessions;
-    netSessions = iSession;
+    iSession->next = ioSessions;
+    ioSessions = iSession;
     }
-return(TRUE);
+
+return(iSession);
 }
 
-int deleteInetSession(int sock)
+int deleteIOsession(int handle)
 {
-INET_SESSION * session;
-INET_SESSION * previous;
+IO_SESSION * session;
+IO_SESSION * previous;
 
-if(netSessions == NULL)
+if(ioSessions == NULL)
     return(0);
 else
-    session = previous = netSessions;
+    session = previous = ioSessions;
 
 while(session)
     {
-    if(session->socket == sock)
+    if(session->handle == handle)
         {
-        if(session == netSessions)
-            netSessions = session->next;
+        if(session == ioSessions)
+            ioSessions = session->next;
         else
             previous->next = session->next;
         free((char *)session);
@@ -236,15 +229,15 @@ return(FALSE);
 
 int isSessionSocket(int sock)
 {
-INET_SESSION * session;
+IO_SESSION * session;
 
-if(netSessions == NULL)
+if(ioSessions == NULL)
     return(FALSE);
 
-session = netSessions;
+session = ioSessions;
 while(session)
     {
-    if(session->socket == sock)
+    if(session->handle == sock)
         return(TRUE);
     session = session->next;
     }
@@ -255,19 +248,38 @@ return(FALSE);
 
 int getSocketFamily(int sock)
 {
-INET_SESSION * session;
+IO_SESSION * session;
 
-session = netSessions;
+session = ioSessions;
 
 while(session)
     {
-    if(session->socket == sock)
+    if(session->handle == sock)
         return(session->family);
     session = session->next;
     }
 
 return(-1);
 }
+
+
+FILE * getIOstream(int handle)
+{
+IO_SESSION * session;
+
+session = ioSessions;
+
+while(session)
+    {
+    if(session->handle == handle)
+        return(session->stream);
+    session = session->next;
+    }
+
+return(NULL);
+}
+
+/* ========================= IO session functions end ===================== */
 
 #ifdef WIN_32
 int ipstrFromSockAddr(struct sockaddr * addr, char * host, int len)
@@ -317,7 +329,7 @@ CELL * p_netClose(CELL * params)
 UINT sock; 
  
 getInteger(params, &sock); 
-deleteInetSession((int)sock);
+deleteIOsession((int)sock);
 
 if(close((int)sock) == SOCKET_ERROR)
     return(netError(ERR_INET_NOT_VALID_SOCKET));
@@ -329,18 +341,19 @@ return(trueCell);
 
 CELL * p_netSessions(CELL * params)
 {
-INET_SESSION * session;
-INET_SESSION * sPtr;
+IO_SESSION * session;
+IO_SESSION * sPtr;
 CELL * sList;
 
-session = netSessions;
+session = ioSessions;
 sList = getCell(CELL_EXPRESSION);
 
 while(session)
     {
     sPtr = session;
     session = session->next;
-    addList(sList, stuffInteger(sPtr->socket));
+    if(sPtr->family != AF_UNSPEC)
+        addList(sList, stuffInteger(sPtr->handle));
     }
 
 return(sList);
@@ -437,7 +450,7 @@ if((sock = netConnect(remoteHostName,
         (int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
     return(netError(errorIdx));
 
-createInetSession(sock, ADDR_FAMILY);
+createIOsession(sock, ADDR_FAMILY);
 
 errorIdx = 0;
 return(stuffInteger((UINT)sock)); 
@@ -467,7 +480,7 @@ if (connect(sock, (struct sockaddr *)&remote_sun, SUN_LEN(&remote_sun)) == -1)
     return(SOCKET_ERROR);
     }
 
-createInetSession(sock, AF_UNIX);
+createIOsession(sock, AF_UNIX);
 
 errorIdx = 0;
 return(sock); 
@@ -757,7 +770,7 @@ else
 
 if(sock != INVALID_SOCKET) 
     {
-    createInetSession(sock, family);
+    createIOsession(sock, family);
     errorIdx = 0;
     }
 
@@ -943,7 +956,7 @@ else
 if(bytesReceived == 0 || found == 0) 
     { 
     closeStrStream(&netStream); 
-    deleteInetSession(sock); 
+    deleteIOsession(sock); 
     close(sock); 
     return(netError(ERR_INET_CONNECTION_DROPPED)); 
     } 
@@ -951,7 +964,7 @@ if(bytesReceived == 0 || found == 0)
 if(bytesReceived == SOCKET_ERROR) 
     { 
     closeStrStream(&netStream);         
-    deleteInetSession(sock); 
+    deleteIOsession(sock); 
     close(sock); 
     return(netError(ERR_INET_READ)); 
     } 
@@ -997,7 +1010,7 @@ bytesReceived = recvfrom(sock, buffer, readSize, 0,
 if(bytesReceived == SOCKET_ERROR) 
     {
     freeMemory(buffer);
-    deleteInetSession(sock);
+    deleteIOsession(sock);
     close(sock); 
     return(netError(ERR_INET_READ)); 
     }
@@ -1015,7 +1028,7 @@ freeMemory(buffer);
 
 if(closeFlag) 
     {
-    deleteInetSession(sock);
+    deleteIOsession(sock);
     close(sock);
     }
 
@@ -1092,7 +1105,7 @@ if(params->type != CELL_NIL)
 
 if((bytesSent = sendall((int)sock, buffer, size))  == SOCKET_ERROR) 
     { 
-    deleteInetSession((int)sock); 
+    deleteIOsession((int)sock); 
     close((int)sock); 
     return(netError(ERR_INET_WRITE)); 
     }
@@ -1269,7 +1282,7 @@ if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)
     return(SOCKET_ERROR);
     }
 
-createInetSession(sock, AF_UNIX);
+createIOsession(sock, AF_UNIX);
 
 errorIdx = 0;
 return(sock);
@@ -1332,7 +1345,7 @@ if(stype == SOCK_STREAM)
         } 
     }
 
-createInetSession(sock, ADDR_FAMILY); 
+createIOsession(sock, ADDR_FAMILY); 
 
 errorIdx = 0;
 return(sock);
@@ -1469,7 +1482,7 @@ handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
 
 if(write(handle, text, strlen(text)) < 0) return;
 if(newLine) 
-    if(write(handle, &LINE_FEED, strlen(LINE_FEED)) < 0) return;
+    if(write(handle, &LINE_FEED, LINE_FEED_LEN) < 0) return;
 close(handle);
 }
 
@@ -1485,8 +1498,6 @@ text[79] = 0;
 
 if(!reconnect)
     {
-
-
 #ifndef WIN_32
     if(port != 0)
         sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
@@ -1504,7 +1515,7 @@ if(!reconnect)
     }
 else
     {
-    deleteInetSession(connection);
+    deleteIOsession(connection);
     close(connection); 
     }
 
@@ -1513,7 +1524,7 @@ if((connection = netAccept(sock)) == SOCKET_ERROR)
 
 /* avoid registering socket twice */
 if(!isSessionSocket(connection))
-    createInetSession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX);
+    createIOsession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX);
 
 /* print log */
 getIpPortFromSocket(connection, PEER_INFO, name);
@@ -1654,7 +1665,7 @@ if( sendall(sock, "[cmd]\n", 6)  == SOCKET_ERROR ||
 session->netStream = (void *)allocMemory(sizeof(STREAM));
 memset(session->netStream, 0, sizeof(STREAM));
 openStrStream(session->netStream, MAX_BUFF, 0);
-createInetSession(sock, ADDR_FAMILY);
+createIOsession(sock, ADDR_FAMILY);
 count++;
 CONTINUE_CREATE_SESSION:
 list = list->next;
@@ -1741,7 +1752,7 @@ while(count)
             session->result = result;
             
         closeStrStream(netStream);
-        deleteInetSession(session->sock);
+        deleteIOsession(session->sock);
         close(session->sock);
         free(netStream);
         session->netStream = NULL;
@@ -1821,7 +1832,7 @@ while(base != NULL)
         if(base->result != NULL)
           deleteList(base->result);
         closeStrStream(base->netStream);
-        deleteInetSession(base->sock);
+        deleteIOsession(base->sock);
         close(base->sock);
         free(base->netStream);
         base->netStream = NULL;
@@ -2406,10 +2417,8 @@ if((fPtr = (FILE *)malloc(sizeof(FILE))) == NULL)
 
 memset(fPtr, 0, sizeof(FILE));
 
-#ifdef WIN_32
 fPtr->_file = handle;
 fPtr->_flag = 0xFFFF;
-#endif
 
 return(fPtr);
 }

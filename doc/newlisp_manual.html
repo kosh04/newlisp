@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.5 Manual and Reference</title>
+   <title>newLISP v.10.3.10 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,14 +135,14 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.5</h2>
+<h2>User Manual and Reference v.10.3.10</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2011 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2012 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -503,11 +503,6 @@ run-time using the new <a href="#net-ipv">net-ipv</a> function. The
 After transition to IPv6 the <tt>-6</tt>
 commandline switch will be changed to <tt>-4</tt> for starting up in IPv4
 mode.</p>
-
-<p><a href="#date-parse">date-parse</a> is a new writing for the previously
-named <tt>parse-date</tt> function. The old writing is deprecated but will
-still work for some time in future versions. In the VIM editor, the old writing is
-highlighted as obsolete.</p> 
 
 <br/>
 
@@ -967,18 +962,19 @@ recognized, and a correctly formatted <tt>Content-Type:</tt> header is sent back
 
 <table  summary="media types">
 <tr align="left"><th>file extension</th><th>media type</th></tr>
-<tr><td>.html</td><td>text/html</td></tr>
-<tr><td>.htm</td><td>text/htm</td></tr>
+<tr><td>.avi</td><td>video/x-msvideo</td></tr>
 <tr><td>.css</td><td>text/css</td></tr>
 <tr><td>.gif</td><td>image/gif</td></tr>
-<tr><td>.png</td><td>image/png</td></tr>
-<tr><td>.mp3</td><td>audio/mpeg</td></tr>
-<tr><td>.wav</td><td>audio/x-wav</td></tr>
-<tr><td>.mpg</td><td>video/mpeg</td></tr>
-<tr><td>.mov</td><td>video/quicktime</td></tr>
-<tr><td>.avi</td><td>video/x-msvideo</td></tr>
-<tr><td>.pdf</td><td>application/pdf</td></tr>
+<tr><td>.htm</td><td>text/htm</td></tr>
+<tr><td>.html</td><td>text/html</td></tr>
+<tr><td>.jpg</td><td>image/jpg</td></tr>
 <tr><td>.js</td><td>application/javascript</td></tr>
+<tr><td>.mov</td><td>video/quicktime</td></tr>
+<tr><td>.mp3</td><td>audio/mpeg</td></tr>
+<tr><td>.mpg</td><td>video/mpeg</td></tr>
+<tr><td>.pdf</td><td>application/pdf</td></tr>
+<tr><td>.png</td><td>image/png</td></tr>
+<tr><td>.wav</td><td>audio/x-wav</td></tr>
 <tr><td>.zip</td><td>application/zip</td></tr>
 <tr><td><em>any other</em></td><td>text/plain</td></tr>
 </table><br/>
@@ -1426,10 +1422,10 @@ floating point results. </p>
 <a href="#for">for</a>, as well as the result of 
 <a href="#sequence">sequence</a>, use floating point numbers for their values.
 </p>
-<p>Care must be taken when importing from libraries that use functions 
-expecting integers. After redefining <tt>+, -, *</tt>, and <tt>/</tt>, 
-a double floating point number may be unintentionally passed to an 
-imported function instead of an integer. In this case, floating point 
+<p>Care must be taken when <a href="#imoport">importing</a> from libraries 
+that use functions expecting integers. After redefining <tt>+, -, *</tt>, 
+and <tt>/</tt>, a double floating point number may be unintentionally passed 
+to an imported function instead of an integer. In this case, floating point 
 numbers can be converted into integers by using the function 
 <a href="#int">int</a>. Likewise, integers can be transformed into 
 floating point numbers using the <a href="#float">float</a> function:</p>
@@ -7244,6 +7240,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#struct">struct</a></td>
+<td>Defines a data structure with C types</td>
+</tr>
+
+<tr>
 <td><a href="#unpack">unpack</a></td>
 <td>unpacks a binary structure into newLISP expressions</td>
 
@@ -9356,9 +9357,9 @@ Y    <span class='arw'>&rarr;</span> a
 <p>This can be used for de-structuring:</p>
 
 <pre>
-(set 'struct '((one "two") 3 (four (x y z))))
+(set 'structure '((one "two") 3 (four (x y z))))
 (set 'pattern '((A B) C (D E)))
-(bind (unify pattern struct))
+(bind (unify pattern structure))
 
 A <span class='arw'>&rarr;</span> one
 B <span class='arw'>&rarr;</span> "two"
@@ -9463,16 +9464,18 @@ indexing and program control switching on the result.</p>
 
 <a name="callback"></a>
 <h2><span class="function"> callback </span></h2>
-<h4>syntax: (callback <em>int-index</em> <em>sym-function</em>)</h4>
+<h4>syntax: (callback <em>int-index</em> <em>sym-function</em>)<br/>
+syntax: (callback <em>sym-function</em> <em>str-return-type</em> [<em>str_param_type</em> ...])<br/>
+stntax: (callback <em>sym-function</em>)</h4>
 
-<p>Up to sixteen (0 to 15) <em>callback</em> functions for up to eight 
-parameters can be registered with imported libraries. The <tt>callback</tt> 
-function returns a procedure address that invokes a user-defined function 
-in <em>sym-function</em>. The following example shows the usage of callback 
-functions when importing the <a href="http://www.opengl.org">OpenGL</a> 
+<p>In the first <b>simple <tt>callback</tt> syntax</b> up to sixteen (0 to 15) <em>callback</em> 
+functions for up to eight parameters can be registered with imported libraries. 
+The <tt>callback</tt> function returns a procedure address that invokes a 
+user-defined function in <em>sym-function</em>. The following example shows 
+the usage of callback functions when importing the <a href="http://www.opengl.org">OpenGL</a> 
 graphics library:</p>
 
-<p>If more than sixteen callback functions are required, slots can be 
+<p>If more than sixteen callback functions are required, slots must be 
 reassigned to a different callback function.</p>
 
 <!-- example -->
@@ -9507,6 +9510,59 @@ reassigned to a different callback function.</p>
 <a href="http://www.opengl.org/documentation/specs/glut/spec3/spec3.html">Glut</a> library. 
 The above code is a snippet from the file <tt>opengl-demo.lsp</tt>, 
 in the <tt>examples/</tt> directory of the source distribution of newLISP.</p>
+
+<p>In the second <b>expanded <tt>callback</tt> syntax</b> type specifiers are used to 
+describe the functions return and parameter value types when the function is called. 
+An unlimited number of callback functions can be registered with the second syntax, and 
+return values are passed back to the calling function. The symbol in <em>sym-function</em>
+contains a newLISP defined function used as a callback function callable from a C program.</p>
+
+<p>In the third syntax <tt>callback</tt> returns a previously returned C-callable
+address for that symbol.</p>
+
+<p>While the first simple <tt>callback</tt> syntax only handles integers and pointer
+values, <tt>callback</tt> in the expanded syntax can also handle simple and double precision
+floationg point numbers passed in an out of the <tt>callback</tt> function.</p>
+
+<p>Both the simple and extended syntax can be mixed inside the same program.</p>
+
+<p>The following example shows the <a href="#import">import</a> of the <tt>qsort</tt>
+C library function, which takes as one of it's arguments the address of a comparison
+function. The comparison function in this case is written in newLISP and called into
+by the imported <tt>qsort</tt> function:</p>
+
+<pre>
+; C void qsort(...) takes an integer array with number and width
+; of array elements and a pointer to the comparison function
+(import "libc.dylib" "qsort" "void" "void*" "int" "int" "void*")
+
+(set 'rlist '(2 3 1 2 4 4 3 3 0 3))
+; pack the list into an C readable 32-bit integer array
+(set 'carray (pack (dup "ld " 10) rlist))
+
+; the comparison callback function receives pointers to integers
+(define (cmp a b) 
+    (- (get-int a) (get-int b)))
+
+; generate a C callable address for cmp
+(set 'func (callback 'cmp "int" "void*" "void*"))
+
+; sort the carray
+(qsort carray 10 4 func)
+
+; unpack the sorted array into a LISP list
+(unpack (dup "ld" 10) carray)  <span class='arw'>&rarr;</span>  (0 1 2 2 3 3 3 3 4 4) 
+</pre>
+
+<p>As type specifiers the same string tags can be used as in the 
+<a href="#import">import</a> function. All pointer types are passed as numbers in and
+out of the <tt>callback</tt> function. The functions <a href="#get-char">get-char</a>,
+<a href="#get-int">get-int</a>, <a href="#get-long">get-long</a> and 
+<a href="#get-string">get-string</a> can be used to extract numbers of
+different precision from parameters. Use <a href="#pack">pack</a> and 
+<a href="#unpack">unpack</a> to extract data from binary buffers and structures.</p>
+
+<p>Note that newLISP as already a fast built-in <a href="#sort">sort</a> function.</p>
 
 <br/><br/>
 
@@ -9694,10 +9750,11 @@ result  <span class='arw'>&rarr;</span> "fin"
 <h4>syntax: (char <em>str</em> [<em>int-index</em>])<br/>
 syntax: (char <em>int</em>)</h4>
 
-<p>Given a string argument, extracts the character at <em>int-index</em> from <em>str</em>, 
-returning the ASCII value of that character.  If <em>int-index</em> is omitted, 
-0 (zero) is assumed. The empty string returns <tt>nil</tt>. 
-Both <tt>(char 0)</tt> and <tt>(char nil)</tt> will return <tt>"\000"</tt>.</p>
+<p>Given a string argument, extracts the character at <em>int-index</em> from <em>str</em>,
+returning either the ASCII value of that character or the Unicode value on UTF-8 enabled 
+versions of newLISP.  If <em>int-index</em> is omitted, 0 (zero) is assumed. The empty 
+string returns <tt>nil</tt>. Both <tt>(char 0)</tt> and <tt>(char nil)</tt> will return 
+<tt>"\000"</tt>.</p>
 
 <p>
 See <a HREF="#indexing">Indexing elements of strings and lists</a>.
@@ -10563,18 +10620,21 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 <p>
 	The following example creates a new function from scratch, 
 	runs a piece of binary code, and adds up two numbers. 
-	This assembly language snippet shows the x86 code 
+	This assembly language snippet shows the x86 (Intel CPU) code 
 	to add up two numbers and return the result:
 </p>
 
 
 <pre>
- 55       push epb
+ 55       push ebp
  8B EC    mov  ebp, esp
  8B 45 08 mov  eax, [ebp+08]
  03 45 0C add  eax, [ebp+0c]
  5D       pop  ebp
  C3       ret
+
+ ; for Win32/stdcall change last line
+ C2 08 00 ret 
 </pre>
 
 
@@ -10585,24 +10645,26 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 
 
 <pre>
-(set 'foo-code (pack "ccccccccccc" 
-    0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D 0xC3))
+(set 'foo-code (append
+     (pack "bbbbbbbbbb" 0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D)
+     (if (= ostype "Win32") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
 (set 'foo print)
-(cpymem (pack "ld" (if (= ostype "Win32") 265 264)) (first (dump foo)) 4)
+(cpymem (pack "ld" (if (= ostype "Win32") 2312 1288)) (first (dump foo)) 4)
 (cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
 (set 'foo-name "foo")
 (cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)
 
 (foo 3 4)  <span class='arw'>&rarr;</span>  7
-
 </pre>
 
+<p>The last example will not work on all hardware platforms and OSs.</p>
 
 <p>
 	Use the <a href="#dump">dump</a> function 
 	to retrieve binary addresses 
 	and the contents from newLISP cells.
 </p>
+
 
 <br/><br/>
 
@@ -11439,45 +11501,6 @@ function.</li>
 
 (define-macro (my-setq) (set (args 0) (eval (args 1))))
 </pre>
-
-
-<p>
-	The last example shows how <a href="#letex">letex</a> can be combined with 
-	<tt>define-macro</tt> to expand macro variables into an expression to be evaluated: </p>
-
-<!-- example -->
-
-<pre>
-(define-macro (dolist-while)
-  (letex (var (args 0 0)
-          lst (args 0 1)
-          cnd (args 0 2)
-          body (cons 'begin (1 (args))))
-    (let (res)
-      (catch (dolist (var lst)
-               (if (set 'res cnd) body (throw res)))))))
-
-&gt; (dolist-while (x '(a b c d e f) (!= x 'd)) (println x))
-<b>a
-b
-c
-nil</b>
-&gt;
-</pre>
-
-
-<p>
-	<tt>dolist-while</tt> loops through a list 
-	while the condition is true. 
-	Note that a similar feature is already built into 
-	<a href="#dolist">dolist</a> as a <em>break condition</em> 
-	optional parameter.
-</p>
-
-<p>
-	Also, the <a href="#expand">expand</a> function performs variable
-	expansion explicitly, without evaluating the expanded expression.
-</p>
 
 <br/><br/>
 
@@ -15086,21 +15109,40 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 
 <a name="import"></a>
 <h2><span class="function">import</span></h2>
-<h4>syntax: (import <em>str-lib-name</em> <em>str-function-name</em> ["cdecl"])</h4>
+<h4>syntax: (import <em>str-lib-name</em> <em>str-function-name</em> ["cdecl"])<br/>
+syntax: (import <em>str-lib-name</em> <em>str-function-name</em> <em>str-return-type</em> [<em>str-param-type</em> . . .])</h4>
 
 <p>Imports the function specified in <em>str-function-name</em> 
-from a shared library named in <em>str-lib-name</em>. 
-The functions <a HREF="#address">address</a>, 
+from a shared library named in <em>str-lib-name</em>. Depending on the syntax used, string 
+labels for return and parameter types can be specified</p>
+
+<p>If the libary in <em>str-lib-name</em> is not in the system's library path, the
+full path name should be specified.</p>
+
+<h3>The simple <tt>import</tt> syntax</h3>
+<p>Most library functions can be imported using the simpler first syntax. The API expects
+all function arguments to be passed on the stack in either <em>cdecl</em> or <em>stdcall</em> 
+conventions. On 32-bit platforms, integers, pointers to strings and buffers sometimes floating 
+point values can be passed as parameters. On 64-bit platforms only 
+integers  can be passed but no floating point values. 
+As return values only 32-bit or 64-bit values and pointers are allowed. 
+No floating point numbers can be returned. Strings must be retrieved with the
+<a href="#get-string">get-string</a> helper function. Regardless of these 
+limitations, most  modules included in the distribution use 
+this simple import API.</p>
+
+<p>If pointers are returned to strings or structures the following helper functions
+can be used extract data:
 <a HREF="#get-char">get-char</a>, 
 <a HREF="#get-int">get-int</a>, 
 <a HREF="#get-float">get-float</a>, 
 <a HREF="#get-string">get-string</a>, 
-<a HREF="#pack">pack</a>, and 
-<a HREF="#unpack">unpack</a> 
-can be used to retrieve return values or to unpack data from returned 
-structure addresses. If the library is not located in the normal library 
-search path, <em>str-lib-name</em> must contain the full path name.
-</p>
+<a HREF="#unpack">unpack</a> </p>
+
+<p>To pass pointers for data structures the following functions help to pack data
+and calculate addresses:
+<a HREF="#address">address</a>, 
+<a HREF="#pack">pack</a>.</p>
 
 <p>To transform newLISP data types into the data types needed by the 
 imported function, use the functions 
@@ -15109,22 +15151,19 @@ imported function, use the functions
 and <a href="#int">int</a> for 32-bit integers. 
 By default, newLISP passes floating point numbers as 64-bit double floats, 
 integers as 32-bit integers, and strings as 32-bit integers for string 
-addresses (pointers in C).
+addresses (pointers in C). Floats can only be used with 32-bit versions
+of newLISP and libraries. To use floating point numbers in a 64-bit
+environment use the <a href="#extended_syntax">extended <tt>import</tt> syntax</a>. 
 </p>
 
 <!-- example -->
 
 <pre>
-;; import in Linux
+;; define LIBC platform independent
 
-(import "libc.so.6" "printf")  <span class='arw'>&rarr;</span> printf &lt;400862A0&gt;
-
-;; import in Mac OS X
-
-(import "libc.dylib" "printf")  <span class='arw'>&rarr;</span> printf &lt;90022080&gt;
-
-;; import on Win32
-(import "msvcrt.dll" "printf")  <span class='arw'>&rarr;</span> printf &lt;77C4186A&gt;
+(define LIBC (lookup ostype '(
+    ("Win32" "msvcrt.dll")
+    ("OSX" "libc.dylib")
 
 (printf "%g %s %d %c\n" 1.23 "hello" 999 65)
 <b>1.23 hello 999 A</b>
@@ -15137,8 +15176,6 @@ addresses (pointers in C).
 (GetTickCount)                          <span class='arw'>&rarr;</span> 3328896
 </pre>
 
-
-
 <p>In the first example, the string "1.23 hello 999 A" 
 is printed as a side effect, and the value 17 (number of 
 characters printed) is returned. Any C function can be imported 
@@ -15149,14 +15186,11 @@ from any shared library in this way.
 behind the console window.  The console prompt does not return until the 
 'OK' button is pressed in the message box.</p>
 
-
 <pre>
 ;;this pops up a message box
 
 (MessageBoxA 0 "This is the body" "Caption" 1) 
 </pre>
-
-
 
 <p>The other examples show several imports of Win32 DLL functions and 
 the details of passing values <em>by value</em> or <em>by reference</em>. 
@@ -15165,44 +15199,37 @@ reserved beforehand.</p>
 
 
 <pre>
-;; allocating space for a string return value
-
 (import "kernel32.dll" "GetWindowsDirectoryA")
-(set 'str (dup "\000" 64)  ; reserve space and initialize
+
+;; allocating space for a string return value
+(set 'str (dup "\000" 64))  ; reserve space and initialize
 
 (GetWindowsDirectoryA str (length str))
 
-str  <span class='arw'>&rarr;</span> "C:\\WINDOWS\000                     "
+str  <span class='arw'>&rarr;</span> "C:\\WINDOWS\000\000\000 ... "
 
-(slice str 0 (find "\000" str))  <span class='arw'>&rarr;</span> "C:\\WINDOWS"
-
-;; or use trim
-(trim str)  <span class='arw'>&rarr;</span> "C:\\WINDOWS"
-
+;; use trim or get-string to cut of binary zeros
+(get-string str)  <span class='arw'>&rarr;</span> "C:\\WINDOWS"
+(trim str)        <span class='arw'>&rarr;</span> "C:\\WINDOWS"
 
 (import "kernel32.dll" "GetComputerNameA")
 
 ;; allocate memory and initialize to zeros
-(set 'str (dup "\000" 64)  
-
-;; get size in a buffer lpNum to pass
-;; an integer parameter by reference
-(set 'lpNum (pack "lu" (length str)))  
+(set 'str (dup "\000" 64))
+(set 'len (length str)
 
 ;; call the function
-;; the size of the string is passed by reference
-;; str contains the string address (C pointer)
-(GetComputerNameA str lpNum) 
+;; the length of the string is passed as address reference 
+;; string str is automatically past by address (C pointer)
+(GetComputerNameA str (address len)) 
 
-str  <span class='arw'>&rarr;</span> "LUTZ-PC\000                        "
+str  <span class='arw'>&rarr;</span> "LUTZ-PC\000\000 ... "
 
 (trim str)  <span class='arw'>&rarr;</span> "LUTZ-PC"
 </pre>
 
-
 <p><tt>import</tt> returns the address of the function, which can be 
 used to assign a different name to the imported function.</p>
-
 
 <pre>
 (set 'imprime (import "libc.so.6" "printf")) 
@@ -15212,17 +15239,13 @@ used to assign a different name to the imported function.</p>
 <span class='arw'>&rarr;</span> "hola 123"
 </pre>
 
-
-<p>
-Note that the Win32 and Cygwin versions of newLISP uses standard call <em>stdcall</em> conventions 
+<p>The Win32 and Cygwin versions of newLISP uses standard call <em>stdcall</em> conventions 
 to call DLL library routines by default.  This is necessary for calling DLLs that belong 
-to the Win32 operating system (e.g., odbc32.dll).  Most third-party DLLs are compiled for 
+to the Win32 operating system.  Most third-party DLLs are compiled for 
 C declaration <em>cdecl</em> calling conventions and may need to specify the string 
 <tt>"cdecl"</tt> as an additional last argument when importing functions. 
-newLISP compiled for Mac OS X, Linux and other Unix systems uses the <em>cdecl</em> calling 
-conventions by default and ignores any additional string.
-</p>
-
+newLISP compiled for Mac OS X, Linux and other Unix systems uses the 
+<em>cdecl</em> calling conventions by default and ignores any additional string.</p>
 
 <pre>
 ;; force cdecl calling conventions on Win32
@@ -15234,16 +15257,92 @@ floating point arguments take up two spaces each
 (e.g., passing five floats takes up ten of the fourteen parameters).
 </p>
 
+<a name="extended_syntax"></a>
+<h3>The extended <tt>import</tt> syntax</h3>
+
+<p>The extended import API works with the second syntax. It is based on the popular 
+<tt>libffi</tt> library and is pre-installed on most OS platforms. The API works 
+with all atomic C data types for passed parameters and return values. The extended 
+API requires that parameter types are specified in the <tt>import</tt> statement as
+string type labels. Programs written with extended import API will run without change
+on 32-bit and 64-bit newLISP and libraries. Integers, floating point values and strings 
+can be returned without using helper functions.</p>
+
+<p>The following types can be specified for the return value in <em>str-return-type</em>
+and for function parameters in <em>str-param-type</em>:</p>
+
+<table summary="data types">
+<tr align="left"><th>label</th><th>C type for return value and arguments</th><th>newLISP return and argument type</th></tr>
+<tr><td>"void"</td><td>void (only as return type)</td><td><tt>nil</tt> is returned</td></tr>
+<tr><td>"byte"</td><td>byte unsigned 8 bit</td><td>integer</td></tr>
+<tr><td>"char"</td><td>char signed 8 bit</td><td>integer</td></tr>
+<tr><td>"unsigned short int"</td><td>unsigned short int 16 bit</td><td>integer</td></tr>
+<tr><td>"short int"</td><td>short int signed 16 bit</td><td>integer</td></tr>
+<tr><td>"unsigned int"</td><td>unsigned int 32 bit</td><td>integer</td></tr>
+<tr><td>"int"</td><td>int signed 32 bit</td><td>integer</td></tr>
+<tr><td>"long"</td><td>long signed 32 or 64 bit depending on platform</td><td>integer</td></tr>
+<tr><td>"long long"</td><td>long long signed 64 bit</td><td>integer</td></tr>
+<tr><td>"float"</td><td>float 32 bit</td><td>IEEE-754 64 bit float cut to 32-bit precision</td></tr>
+<tr><td>"double"</td><td>double 64 bit</td><td>IEEE-754 64 bit float</td></tr>
+<tr><td>"char*"</td><td>char* 32 or 64 bit ptr depending on platform</td><td>displayable string return (zero terminated)<br/>any string buffer or integer address arg</td></tr>
+<tr><td>"void*"</td><td>void* 32 or 64 bit ptr depending on platform</td><td>integer address return<br/>any string buffer  or integer address arg</td></tr>
+</table>
+
+<p>The following examples show how the extendet <tt>import</tt> syntax can
+handle return values of floating point values and strings:</p>
+
+<pre>
+;; return a float value, LIBC was defined earlier
+;             name   return   arg
+(import LIBC "atof" "double" "char*")
+(atof "3.141") <span class='arw'>&rarr;</span> 3.141
+
+;; return a copied string
+;             name     return  arg-1   arg-2
+(import LIBC "strcpy" "char*" "char*" "char*")
+(set 'from "Hello World")
+
+(set 'to (dup "\000" (length from))) ; reserve memory
+(strcpy to from) <span class='arw'>&rarr;</span> "Hello World"
+</pre>
+
+<p>Both, the <tt>"char*"</tt> and the <tt>"void*</tt> type can take either
+a string buffer or an memory address number as input. When using <tt>"void*"</tt>
+as a return type the address of the result bufffer will be returned. This is
+useful when returning pointers to data structures. These pointers can then
+be used with <a href="#unpack">unpack</a> for destructuring. In the following
+example the rerturn type is changed to <tt>void*</tt>:</p>
+
+<pre>
+(import LIBC "strcpy" "void*" "char*" "char*")
+(set 'from "Hello World")
+(set 'to (dup "\000" (length from)))
+
+(strcpy to from)       <span class='arw'>&rarr;</span> 2449424
+(address to)           <span class='arw'>&rarr;</span> 2449424
+(unpack "s11" 2449424) <span class='arw'>&rarr;</span> "Hello World"
+(get-string 2449424)   <span class='arw'>&rarr;</span> "Hello World"
+to                     <span class='arw'>&rarr;</span> "Hello World"
+</pre>
+
+<p>A newLISP string is always passed by it's address reference.</p>
+
+
+<p>For a more complex example see this
+<a href="http://www.newlisp.org/syntax.cgi?code/opengl-demo-ffi-lsp.txt">OpenGL demo</a>.</p>
+
 <h3>Memory management</h3>
+
 <p>Any allocation performed by imported foreign functions has to be 
-deallocated manually if there's no call in the imported API to do so.
+de-allocated manually if there's no call in the imported API to do so.
 See the <a href="http://www.newlisp.org/CodePatterns.html">Code Patterns in newLISP</a>
 document for an example.</p>
 
 <p>In case of calling foreign functions with passing by reference, 
 memory for variables needs to be allocated beforehand by newLISP
 &mdash; see import of <tt>GetWindowsDirectoryA</tt> above &mdash; 
-and hence, memory needs not be deallocated manually.</p>
+and hence, memory needs not be deallocated manually, because it is
+managed automatically by newLISP.</p>
 
 <br/><br/>
 
@@ -15860,6 +15959,9 @@ memory to store that number: 4 or 8 for integers and 8 for floating point number
 
 (length (get-int "\000\000\000\001")) <span class='arw'>&rarr;</span> 4
 </pre>
+
+<p>Use <a href="#utf8len">utf8len</a> to calculate the number of UTF-8 characters 
+in a string.</p>
 
 <br/><br/>
 
@@ -17316,7 +17418,7 @@ newlisp -c -d 4711 &amp;
 
 newlisp -l -c -d 4711 &amp;
 
-; communicate via Uix loacal domain socket
+; communicate via Uix local domain socket
 
 newlisp -c /tmp/mysocket
 </pre>
@@ -19398,26 +19500,28 @@ appendix.</p>
 <a name="pack"></a>
 <h2><span class="function">pack</span></h2>
 <h4>syntax: (pack <em>str-format</em> <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
-syntax: (pack <em>str-format</em> <em>list</em>)</h4>
+syntax: (pack <em>str-format</em> <em>list</em>)<br/><br/>
+syntax: (pack <em>struct</em> <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (pack <em>struct</em> <em>list</em>)</h4>
 
-<p>
-Packs one or more expressions (<em>exp-1</em> to <em>exp-n</em>) 
-into a binary format specified in the format string <em>str-format</em>,
-returning the binary structure in a string buffer.
+<p>When the first parameter is a string, <tt>pack</tt> packs one or more expressions 
+(<em>exp-1</em> to <em>exp-n</em>) into a binary format specified in the format 
+string <em>str-format</em>, and returning the binary structure in a string buffer.
 The symmetrical <a HREF="#unpack">unpack</a> function is used 
 for unpacking. The expression arguments can also be given in a <em>list</em>.
-<tt>pack</tt> and <tt>unpack</tt> are useful 
-when reading and writing binary files 
-(see <a HREF="#read">read</a> and 
-<a HREF="#write">write</a>) 
-or when unpacking binary structures 
-from return values of imported C functions 
-using <tt>import</tt>.
-</p>
+<tt>pack</tt> and <tt>unpack</tt> are useful when reading and writing binary files 
+(see <a HREF="#read">read</a> and <a HREF="#write">write</a>) 
+or when unpacking binary structures from return values of imported C functions 
+using <tt>import</tt>.</p>
 
-<p>
-The following characters are used in <em>str-format</em>:
-</p>
+<p>When the first parameter is the symbol of a <a href="#struct">struct</a>
+definition, <tt>pack</tt> uses the format as specified in <em>struct</em>. 
+While <tt>pack</tt> with <em>str-format</em> literally packs as specified,
+<tt>pack</tt> with <em>struct</em> will insert structure aligning pad-bytes
+depending on data type, order of elements and CPU architecture.
+Refer to the description of the <a href="#struct">struct</a> function for more detail.</p>
+
+<p>The following characters are used in <em>str-format</em>:</p>
 
 <table  summary="format characters">
 <tr align="left"><th>format</th><th>description</th></tr>
@@ -21268,6 +21372,9 @@ newLISP Unix shared library or newLISP Win32 DLL (Dynamic Link Library).</p>
 
 <p>When <tt>read-line</tt> is reading from a file or from <em>stdin</em>
 in a CGI program or pipe, it will return <tt>nil</tt> when input is exhausted.</p>
+
+<p>When using <tt>read-line</tt> on <em>stdin</em>, line length is limited
+to 2048 characters and performance is much faster.</p>
 
 <!-- example -->
 
@@ -24491,6 +24598,110 @@ is returned depending on outcome.</p>
 
 <br/><br/>
 
+<a name="struct"></a>
+<h2><span class="function">struct</span></h2>
+<h4>syntax: (struct <em>symbol</em> [<em>str-data-type</em> ... ])</h4>
+
+<p>The <tt>struct</tt> function can be used to define aggregate data types for 
+usage with the extended syntax of <a href="#import">import</a>,
+<a href="#pack">pack</a> and <a href="#unpack">unpack</a>. This allows importing
+functions which take C-language <em>struct</em> data types or pointers to these
+aggregate data types.</p>
+
+<p>The following example illustrates the usage of <tt>struct</tt> together with
+the C data functions <tt>localtime</tt> and <tt>asctime</tt>. The <tt>localtime</tt>
+functions works similar to the built-in <a href="#now">now</a> function. The
+<tt>asctime</tt> function takes the numerical data output by <tt>localtime</tt>
+and formats these to readable text.</p>
+
+<pre>
+/* The C function prototypes for the functions to import */
+
+struct tm * localtime(const time_t *clock);
+
+char * asctime(const struct tm *timeptr);
+
+/* the tm struct aggregating different time related values */
+
+struct tm {
+    int tm_sec;      /* seconds after the minute [0-60] */
+    int tm_min;      /* minutes after the hour [0-59] */
+    int tm_hour;     /* hours since midnight [0-23] */
+    int tm_mday;     /* day of the month [1-31] */
+    int tm_mon;      /* months since January [0-11] */
+    int tm_year;     /* years since 1900 */
+    int tm_wday;     /* days since Sunday [0-6] */
+    int tm_yday;     /* days since January 1 [0-365] */
+    int tm_isdst;    /* Daylight Savings Time flag */
+    long tm_gmtoff;  /* offset from CUT in seconds */   /*** not on Windows ***/
+    char *tm_zone;   /* timezone abbreviation */        /*** not on Windows ***/
+};
+</pre>
+
+<p>Function import and definition of the structure data type in newLISP:</p>
+
+<pre>
+;; for pointers to structs always use void*
+;; as a library use msvcrt.dll on Windows or libc.so on Unix.
+;; The tm struct type is configured for Mac OSX and Linux.
+;; On other OS the tm structure may be different
+ 
+(import "libc.dylib" "asctime" "char*" "void*")
+(import "libc.dylib" "localtime" "void*" "void*")
+
+; definition of the struct
+(struct 'tm "int" "int" "int" "int" "int" "int" "int" "int" "int" "long" "char*")
+
+
+;; use import and struct
+
+; todays date number (seconds after 1970 also called Unix epoch time)
+(set 'today (date-value))  <span class='arw'>&rarr;</span> 1324134913
+
+;; the time value is passed by it's address
+;; localtime retirns a pointer to a tm struct
+
+(set 'ptr (localtime (address today))) <span class='arw'>&rarr;</span> 2896219696
+
+; unpack the the tm struct  (7:15:13 on the 17th etc.)
+(unpack tm ptr) <span class='arw'>&rarr;</span> (13 15 7 17 11 111 6 350 0 -28800 "PST")
+
+; transform to readable form
+(asctime ptr) <span class='arw'>&rarr;</span> "Sat Dec 17 07:15:13 2011\n"
+
+; all in one statement does actually not use struct, pointers are passed directly
+(asctime (localtime (address today))) <span class='arw'>&rarr;</span> "Sat Dec 17 07:15:13 2011"
+
+; same as the built-in date function
+(date today) <span class='arw'>&rarr;</span> "Sat Dec 17 07:15:13 2011"
+</pre>
+
+<p>Care must be taken to pass valid addresses to pointer parameters in imported functions
+or when passing address pointers to <a href="#unpack">unpack</a>. Invalid address pointers
+can crash newLISP or make it unstable.</p>
+
+<p><tt>struct</tt> defininitions can be nested:</p>
+
+<pre>
+; the pair aggregate type
+(struct 'pair "char" "char") <span class='arw'>&rarr;</span> pair
+
+; nested struct type
+(struct 'comp "pair" "int")  <span class='arw'>&rarr;</span> comp
+
+; pack data using the extended pack syntax
+; not the insertion of structure alignment bytes after the pair
+(pack comp (pack pair 1 2) 3) <span class='arw'>&rarr;</span> "\001\002\000\000\003\000\000\000"
+
+; unpack reverses the process
+(unpack comp "\001\002\000\000\003\000\000\000") <span class='arw'>&rarr;</span> ((1 2) 3)
+</pre>
+
+<p>Nested structures are unpacked recursively.</p>
+
+<br/><br/>
+
+
 <a name="sub"></a>
 <h2><span class="function">sub</span></h2>
 <h4>syntax: (sub <em>num-1</em> [<em>num-2</em> ... ])</h4>
@@ -24898,8 +25109,9 @@ resource statistics. Ten integers report the following status:</p>
 <tr><td>8</td><td>Version number as an integer constant</td></tr>
 <tr><td>9</td><td>Operating system constant:<br/>
 linux=1, bsd=2, osx=3, solaris=4, cygwin=5, win32=6, os/2=7, tru64unix=9 <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;bit 11 will be set for ffilib (extended import/callback API) versions (add 1024)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 10 will be set for IPv6 versions (add 512)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;bit 9 will be set for 64-bit versions (add 256)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;bit 9 will be set for 64-bit (changeable at runtime) versions (add 256)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 8 will be set for UTF-8 versions (add 128)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 7 will be added for library versions (add 64)</td></tr>
 </table><br/>
@@ -25682,9 +25894,9 @@ B <span class='arw'>&rarr;</span> (g xyz)
 <p>This can be used for de-structuring:</p>
 
 <pre>
-(set 'struct '((one "two") 3 (four (x y z))))
+(set 'structure '((one "two") 3 (four (x y z))))
 (set 'pattern '((A B) C (D E)))
-(bind (unify pattern struct))
+(bind (unify pattern structure))
 
 A <span class='arw'>&rarr;</span> one
 B <span class='arw'>&rarr;</span> "two"
@@ -25741,12 +25953,12 @@ E <span class='arw'>&rarr;</span> (x y z)
 ))
 
 
-(define (query term)
-    (or  (if (find term facts) true) (catch (prove-rule term))))
+(define (query trm)
+    (or  (if (find trm facts) true) (catch (prove-rule trm))))
 
-(define (prove-rule term)
+(define (prove-rule trm)
     (dolist (r rules)
-        (if (list? (set 'e (unify term (first r))))
+        (if (list? (set 'e (unify trm (first r))))
             (if (query (expand (last r) e))
                 (throw true))))
     nil
@@ -25885,21 +26097,28 @@ not to be grouped with <a href="#begin">begin</a>:</p>
 <h2><span class="function">unpack</span></h2> 
 
 <h4>syntax: (unpack <em>str-format</em> <em>str-addr-packed</em>)<br/>
-syntax: (unpack <em>str-format</em> <em>num-addr-packed</em>)</h4> 
+syntax: (unpack <em>str-format</em> <em>num-addr-packed</em>)<br/><br/>
+syntax: (unpack <em>struct</em> <em>num-addr-packed</em>)<br/> 
+syntax: (unpack <em>struct</em> <em>str-addr-packed</em>)</h4> 
 
-<p>Unpacks a binary structure in <em>str-addr-packed</em> or pointed to 
-by <em>num-addr-packed</em> into newLISP variables using the format in 
-<em>str-format</em>. <tt>unpack</tt> is the reverse operation of <tt>pack</tt>.
-Using <em>num-addr-packed</em> facilitates the unpacking of structures 
-returned from imported, shared library functions.</p>
+<p>When the first parameter is a string, <tt>unpack</tt> unpacks a binary structure 
+in <em>str-addr-packed</em> or pointed to by <em>num-addr-packed</em> into newLISP 
+variables using the format in <em>str-format</em>. <tt>unpack</tt> is the reverse 
+operation of <tt>pack</tt>.  Using <em>num-addr-packed</em> facilitates the unpacking 
+of structures returned from imported, shared library functions.</p>
 
 <p>If the number specified in <em>num-addr-packed</em> is not a valid memory 
 address, a system bus error or segfault can occur and crash newLISP or leave 
 it in an unstable state.</p>
 
-<p>
-	The following characters may define a format:
-</p>
+<p>When the first parameter is the symbol of a <a href="#struct">struct</a> definition, 
+<tt>unpack</tt> uses the format as specified in <em>struct</em>. 
+While <tt>unpack</tt> with <em>str-format</em> literally unpacks as specified,
+<tt>unpack</tt> with <em>struct</em> will skip structure aligning pad-bytes
+depending on data type, order of elements and CPU architecture.
+Refer to the description of the <a href="#struct">struct</a> function for more detail.</p>
+
+<p>The following characters may define a format:</p>
  
 <table width="98%" summary="format chracters in pack">
 

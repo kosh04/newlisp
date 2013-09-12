@@ -5,7 +5,7 @@
 ;; @version 1.42 new table UI
 ;; @version 1.43 bug fix in new table UI action parameters
 ;; @version 1.44 fixes in newlisp-edit.lsp
-;; @author LM, August 2008, 2009, 2010, 2011
+;; @author LM, August 2008, 2009, 2010, 2012
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on

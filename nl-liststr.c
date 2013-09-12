@@ -1,7 +1,7 @@
 /* nl-liststr.c --- newLISP primitives handling lists and strings
 
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2012 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,6 +190,7 @@ while(params != nilCell)
 if(list == NULL)
     return(getCell(CELL_EXPRESSION));
 
+symbolCheck = NULL;
 return(list);
 }
 
@@ -225,6 +226,7 @@ result = stuffStringN(stream.buffer, stream.position);
 
 closeStrStream(&stream);
 
+symbolCheck = NULL;
 return(result);
 }
 
@@ -1279,7 +1281,11 @@ ssize_t n, len;
 expr = evaluateExpression(params);
 if((params = params->next) != nilCell)
     getInteger(params, (UINT *)&n);
-else n = 2;
+else 
+    {
+    n = 2;
+    symbolCheck = NULL;
+    }
 
 if(n < 0) n = 0;
 

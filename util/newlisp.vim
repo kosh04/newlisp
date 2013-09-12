@@ -4,10 +4,10 @@
 " URL:          http://www.vim.org/scripts/script.php?script_id=2067
 " Another URL:  http://slobin.pp.ru/vim/syntax/newlisp.vim
 " Started at:   2007 Nov 07 (The Great Revolution 90th anniversary)
-" Last change:  2011 Apr 13
+" Last change:  2011 Dec 23rd, LM added struct
 " newLISP site: http://www.newlisp.org/
 
-" $Id: newlisp.vim,v 1.35 2011/04/13 13:55:35 slobin Exp $
+" $Id: newlisp.vim,v 1.36 2011/12/23 13:55:35 slobin Exp $
 
 " *** Some syntax quirks of newLISP and how this file treats them: ***
 
@@ -134,7 +134,7 @@ syn keyword newlispFunction reader-event real-path receive ref ref-all regex reg
 syn keyword newlispFunction rename-file replace reset rest reverse rotate round save search seed
 syn keyword newlispFunction seek select self semaphore send sequence series set set-locale set-ref
 syn keyword newlispFunction set-ref-all setf setq sgn share signal silent sin sinh sleep slice sort
-syn keyword newlispFunction source spawn sqrt starts-with string string? sub swap sym symbol?
+syn keyword newlispFunction source spawn sqrt starts-with string string? struct sub swap sym symbol?
 syn keyword newlispFunction symbols sync sys-error sys-info tan tanh term throw throw-error time
 syn keyword newlispFunction time-of-day timer title-case trace trace-highlight transpose trim true?
 syn keyword newlispFunction unicode unify unique unless unpack until upper-case utf8 utf8len uuid
