@@ -1,0 +1,89 @@
+#!/usr/bin/newlisp
+
+(define (test-prob-t)
+  (and
+    (< (abs (sub (prob-t 1.886 2) 0.1)) 0.001)
+    (< (abs (sub (prob-t 1.303 40) 0.1)) 0.001)
+    (< (abs (sub (prob-t 6.965 2) 0.01)) 0.0001)
+    (< (abs (sub (prob-t 2.423 40) 0.01)) 0.0001)
+))
+
+(define (test-crit-t)
+  (and
+    (< (abs (sub (crit-t (prob-t 1.886 2) 2) 1.886)) 0.001)
+    (< (abs (sub (crit-t (prob-t 1.303 40) 40) 1.303)) 0.001)
+    (< (abs (sub (crit-t (prob-t 6.965 2) 2) 6.965)) 0.001)
+    (< (abs (sub (crit-t (prob-t 2.423 40) 40) 2.423)) 0.001)
+))
+
+(define (test-prob-f)
+  (and
+    (< (abs (sub (prob-f 6.59 3 4) 0.05)) 0.001)
+    (< (abs (sub (prob-f 2.79 12 11) 0.05)) 0.001)
+    (< (abs (sub (prob-f 16.69 3 4) 0.01)) 0.0001)
+    (< (abs (sub (prob-f 4.40 12 11) 0.01)) 0.0001)
+))
+    
+
+(define (test-crit-f)
+  (and
+    (< (abs (sub (crit-f (prob-f 6.59 3 4) 3 4) 6.59)) 0.001)
+    (< (abs (sub (crit-f (prob-f 2.79 12 11) 12 11) 2.79)) 0.001)
+    (< (abs (sub (crit-f (prob-f 16.59 3 4) 3 4) 16.59)) 0.001)
+    (< (abs (sub (crit-f (prob-f 4.40 12 11) 12 11) 4.40)) 0.001)
+))
+
+
+(define (test-prob-chi2)
+  (and
+    (< (abs (sub (prob-chi2 4.605 2) 0.1)) 0.001)
+    (< (abs (sub (prob-chi2 51.805 40) 0.1)) 0.001)
+    (< (abs (sub (prob-chi2 9.210 2) 0.01)) 0.0001)
+    (< (abs (sub (prob-chi2 63.691 40) 0.01)) 0.0001)
+))
+    
+(define (test-crit-chi2)
+  (and
+    (< (abs (sub (crit-chi2 (prob-chi2 4.605 2) 2) 4.605)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 51.805 40) 40) 51.805)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 9.210 2) 2) 9.210)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 63.691 40) 40) 63.691)) 0.001)
+))
+
+(define (test-crit-z)
+(for (z -6 6 0.3)
+  (let (flag true)
+    (if (> (abs (sub (crit-z (prob-z z)) z)) 0.0001)
+        (set 'flag nil))
+  flag)
+))
+        
+(define (test-prob-z)
+    (and
+        (< (sub (prob-z -0.1) 0.4601721627) 0.00001)
+        (< (sub (prob-z 0.1) 0.5398278373) 0.00001)
+        (< (sub (prob-z -1) 0.1586552539) 0.00001)
+        (< (sub (prob-z 1) 0.8413447461) 0.00001)
+        (< (sub (prob-z -2) 0.02275013195) 0.00001)
+        (< (sub (prob-z 2) 0.9772498681) 0.00001)
+        (< (sub (prob-z -3) 0.001349898032) 0.00001)
+        (< (sub (prob-z 3) 0.998650102) 0.00001)
+))
+
+(if-not 
+    (and
+        (test-prob-f)
+        (test-crit-f)
+        (test-prob-chi2)
+        (test-crit-chi2)
+        (test-prob-t)
+        (test-crit-t)
+        (test-prob-z)
+        (test-crit-z))
+
+	(println ">>>>> PROBLEM in statistical distributions tests")
+	(println ">>>>> Statisitical distribution tests SUCCESSFUL")
+)
+
+(exit)
+

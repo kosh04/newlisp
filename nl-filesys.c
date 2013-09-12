@@ -120,9 +120,12 @@ void checkDeleteShareFile(UINT * address);
 CELL * p_isFile(CELL * params) /* includes dev,socket,dir,file etc. */
 {
 char * fileName;
+int flag;
 
-getString(params, &fileName);
-return(isFile(fileName) ? nilCell : trueCell);
+params = getString(params, &fileName);
+flag = getFlag(params);
+
+return(isFile(fileName) ? nilCell : flag ? stuffString(fileName) : trueCell);
 }
 
 int isFile(char * fileName)
@@ -2340,7 +2343,6 @@ if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
     unlink((char *)(address + 2)); 
 }
 
-/* ------------------------------ time and date functions -------------------- */
 extern int ADDR_FAMILY;
 CELL * p_systemInfo(CELL * params)
 {
@@ -2392,7 +2394,7 @@ if(errnum == 0) errno = 0;
 return(cell);
 }
 
-
+/* ------------------------------ time and date functions -------------------- */
 CELL * p_date(CELL * params)
 {
 time_t t;
@@ -2687,7 +2689,7 @@ cell = stuffIntegerList(
     (UINT)ttm->tm_hour,
     (UINT)ttm->tm_min,
     (UINT)ttm->tm_sec,
-    (UINT)ttm->tm_yday,
+    (UINT)ttm->tm_yday + 1,
     ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday)
 );
 

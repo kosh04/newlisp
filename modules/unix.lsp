@@ -3,7 +3,9 @@
 ;; @version 0.1 alpha - mostly untested
 ;; @version 0.2 alpha - eliminated getpid and getppid, included in 'sys-info'
 ;; @version 0.3 alpha - added diferent libc.so library path for UBUNTU 9.04
-;; @author L.M. 2006-Sep-12, March-2010 lutz@nuevatec.com
+;; @version 0.4 alpha - take care of overwrite protection of imports in ffilib versions
+;; @version 0.5 alpha - precautions for multiple load of module because of overwritten symbols
+;; @author L.M. 2006-Sep-12, March-2012 lutz@nuevatec.com
 ;; 
 ;;
 ;; <h2>UNIX libc function support</h2>
@@ -32,7 +34,6 @@
 ;; 'getuid', 'geteuid', 'getgid', 'getegid', 
 ;; 'setuid', 'seteuid', 'setgid', 'setegid',
 ;; 'kill', 'chmod', 'ioctl', 'mkfifo', 'mltemp', 'syslog'
-;; 
 
 (context 'unix)
 
@@ -48,25 +49,35 @@
 		       (throw-error "cannot find standard C library (libc)"))))
 
 
+(unless module-is-loaded
+    (import library "getuid")`
+    (import library "geteuid")
+    (import library "getgid")
+    (import library "getegid")
+    (set '_setuid (import library "setuid"))
+    (set '_seteuid (import library "seteuid"))
+    (set '_setegid (import library "setegid"))
+    (set '_setgid (import library "setgid"))
+    (set '_kill (import library "kill"))
+    (set '_chmod (import library "chmod"))
+    (set '_ioctl (import library "ioctl"))
+    (set '_mkfifo (import library "mkfifo"))
+    (set '_mktemp (import library "mktemp"))
+    (set '_syslog (import library "syslog"))
+    (set 'module-is-loaded true)
+)
+
 ;; @syntax (unix:getuid)
 ;; @return Returns the real and effective user ID
-
-(import library "getuid")`
 
 ;; @syntax (unix:geteuid)
 ;; @return Returns the effective user ID
 
-(import library "geteuid")
-
 ;; @syntax (unix:getgid)
 ;; @return Returns the real group ID.
 
-(import library "getgid")
-
 ;; @syntax (unix:getegid)
 ;; @return Returns the effective group ID
-
-(import library "getegid")
 
 ;; @syntax (unix:setuid <num-id>)
 ;; @param <num-id> The number of the real and effective user IDs to set.
@@ -76,11 +87,9 @@
 ;; If no argument or the argument given is not a number then sets
 ;; current real and effective user IDs.
 
-(set '_setuid (import library "setuid"))
-
-(define (setuid id)
+(constant 'setuid  (lambda (id)
 	(zero? (_setuid (int id (getuid))))
-)
+))
 
 ;; @syntax (unix:seteuid <num-id>)
 ;; @param <num-id> The number of the effective user ID to set.
@@ -90,12 +99,10 @@
 ;; If no argument or the argument given is not a number then sets
 ;; current effective user ID.
 ;;
-(set '_seteuid (import library "seteuid"))
 
-(define (seteuid id)
+(constant 'seteuid (lambda (id)
 	(zero? (_seteuid (int id (geteuid))))
-)
-
+))
 
 ;; @syntax (unix:setgid <num-id>)
 ;; @param <num-id> The number of the real and effective group ID to set.
@@ -105,12 +112,9 @@
 ;; If no argument or the argument given is not a number then sets
 ;; current real and effective group IDs.
 
-(set '_setgid (import library "setgid"))
-
-(define (setgid id)
+(constant 'setgid (lambda (id)
 	(zero? (_setgid (int id (getgid))))
-)
-
+))
 
 ;; @syntax (unix:setegid <num-id>)
 ;; @param <num-id> the number of the effective group ID to set.
@@ -120,11 +124,9 @@
 ;; If no argument or the argument given is not a number then sets
 ;; current effective group ID.
 
-(set '_setegid (import library "setegid"))
-
-(define (setegid id)
+(constant 'setegid (lambda (id)
 	(zero? (_setegid (int id (getegid))))
-)
+))
 
 ;; @syntax (unix:kill <num-pid> <num-sig>)
 ;; @param <num-pid> The process ID of the process to send a signal to.
@@ -139,11 +141,9 @@
 ;; kill used in on the shell command line. '(unix:kill ...)' works
 ;; like the libc 'kill()' counterpart.
 
-(set '_kill (import library "kill"))
-
-(define (kill pid sig)
+(constant 'kill (lambda (pid sig)
 	(zero? (_kill (int pid 0) (int sig 0)))
-)
+))
 
 ;; @example
 ;; (unix:kill 2652 9)
@@ -160,11 +160,9 @@
 ;; a -rwxr-xr-x permission pattern, '0644' for '-rw-r--r--' etc.
 ;; If no <int-option> is given unix:chmod assumes '0644'.
 
-(set '_chmod (import library "chmod"))
-
-(define (chmod file-path option)
+(constant 'chmod (lambda (file-path option)
 	(zero? (_chmod (string file-path) (int option 0644)))
-)
+))
 
 ;; @example
 ;; (unix:chmod "myfile.txt" 0644)
@@ -180,11 +178,10 @@
 ;; Manipulates the underlying device parameters of special
 ;; files.
 ;;
-(set '_ioctl (import library "ioctl"))
 
-(define (ioctl id request argp)
+(constant 'ioctl (lambda (id request argp)
 	(zero? (_ioctl (int id 0) (int request 0) (string argp)))
-)
+))
 
 ;; @syntax (unix:mkfifo <str-path> <num-mode>)
 ;; @param <str-path> The path  of the new fifo filename.
@@ -195,17 +192,14 @@
 ;; are specified by mode and restricted by the 'umask(2)' of the calling
 ;; process.
 
-(set '_mkfifo (import library "mkfifo"))
-
-(define (mkfifo file-path mode)
+(constant 'mkfifo (lambda (file-path mode)
 	(zero? (_mkfifo (string file-path) (int mode)))
-)
+))
 
 ;; @example
 ;; (unix:mkfifo "myfifo" 0755)
 
 ;; This will create a fifo node with 'prwxr-xr-x' permissions
-
 
 ;; @syntax (unix:mktemp <str-template>)
 ;; @param <str-template> A file template with Xs appended, i.e. '/tmp/temp.XXXX'.
@@ -218,11 +212,9 @@
 ;; appended to it, for example '/tmp/temp.XXXXXX'.  The trailing 'X's are
 ;; replaced with a unique alphanumeric combination.
 
-(set '_mktemp (import library "mktemp"))
-
-(define (mktemp template)
+(constant 'mktemp (lambda (template)
 	(zero? (_mktemp (string template)))
-)
+))
 
 ;; @syntax (unix:syslog <num-priority> <str-message> ...)
 ;; @param <num-priority> The priority of the message.
@@ -233,11 +225,9 @@
 ;; message is then written to the system console, log files, logged-in
 ;; users, or forwarded to other machines as appropriate.
 
-(set '_syslog (import library "syslog"))
-
-(define (syslog priority message)
+(constant 'syslog (lambda (priority message)
 	(zero? (_syslog (int priority 0) (string message)))
-)
+))
 
 ; eof
 

@@ -1,10 +1,16 @@
 #!/usr/bin/newlisp
 
+; - nls - newLISP shell combines interactive OS and LISP shell
+;
 ; v.1.0 - adapted to new manual HTML formatting 2009-08-04
 ; v.1.1 - better regex string for syntax filtering 2011-11-01
 ;         now formats dolist, dotimes ... etc. correctly
+; v.1.2 - fix for Windows probelm passing cr-lf in command-event
+; c.1.3 - cut off cr-lf only on versions < 10.4.1
 ;
-; - nls - newLISP shell combines interactive OS and LISP shell
+; Directory and file commands to not work yet on names containing spaces!
+; Does not work with <,>,<<,>>
+;
 ;
 ; Use the prompt as if a Bash shell. Commands not starting with an opening
 ; parenthesis or space are interpreted as UNIX shell cmomands, commands
@@ -31,12 +37,12 @@
 
 ; handle some special commands, newLISP expressions and shell commands
 (command-event (fn (s) 
+  (if (and (< (sys-info -2) 10401) (= ostype "Win32"))
+        (set 's (chop s 2)))
   (if 
     ; get syntax help
     (starts-with s "\\?|help" 0)
-    (if (= ostype "Win32")
-        (help (last (parse (chop s 2) " ")))
-        (help (last (parse s " "))))
+    (help (last (parse s " ")))
 
     ; restart newLISP
     (starts-with s "reset")

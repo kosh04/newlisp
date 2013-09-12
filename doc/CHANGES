@@ -6320,7 +6320,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Windows 7. 10.3.6 to 10.3.9 had newlisp.dll compiled for cdecl now in
      10.3.10 newlisp.dll calling conventations are back to stdcall.
 
-10.4.0
+10.4.0 stable release February 14th, 2012
      UCT offset minutes as reported by the 'now' function now have reversed the
      sign conform to ISO 8601. Positive for locations east of UCT and negative
      for locations west of the UCT meridian (formerly GMT). Days of the year are
@@ -6340,3 +6340,54 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
          http://russelldavis.org/2012/01/23/building-newlisp-for-the-raspberry-pi-using-the-development-vm/
 
      newlisp.dll now also on Winsock version 2.2 (like the main executable since 10.2.10)
+
+10.4.1 Development release April 3rd, 2012
+     The day-of-year value in 'date-list' now also starts with 1, like in 'now'.
+
+     Added CELL_IMPORT_FFI to various output functions (source, save etc.).
+
+     Added UTF-8 meta tag to newlispdoc HTML output.
+
+     Protect internally variable $x used in 'curry' and predefined 'module'.
+
+     When extended FFI is compiled, show 'libffi' in banner. 
+
+     Added new function 'union' (composed of (unique (append ...))).
+
+     New functions 'odd?' and 'even?'
+
+     Fixed unix.lsp for new overwrite protection of imported symbols in ffilib version
+
+     An additional 'true' flag in (char str idx true) returns the byte value instead
+     of the UTF-8 character value at index idx in the string.
+
+     Handle probablilities less 0.5 in crit-z.
+
+     New 'prob-t', 'crit-t', 'prob-f', 'crit-f' for Student's t and F statistic.
+     'crit-chi2' redone for extreme values. All report small, significant
+     one-tailed probabilities for higher values of t, or F.
+
+     Adjustments in 'normal' for better fit.
+
+     Optional 'true' flag in 'file?' lets it return filename string.
+
+     Windows version should cut off trailing CR-LFs in string passed to 'command-event'.
+
+10.4.2
+     In extended ffi "char*" will now only accept strings not integer addresses to
+     string buffers. For passing integer addresses use "void*" - internally libffi
+     treats them as the same, but the new approach gives automatic type-checking
+     at the newLISP level without causing a segfault. Already for return values
+     "char*" always returns a newLISP string and "void*" an integer address.
+
+     A fix for 'pack' when packing structures made with 'struct' in 64-bit newLISP.
+
+     In 'import' for OSX/Linux/Unix allow libraries to be opened without importing
+     functions. This is necessary if an imported library refers to another one, e.g.:
+        (import "libgslcblas.dylib")
+    
+     New module gsl.lsp with SVD, QR and Cholesky decompositions.
+ 
+     
+
+          

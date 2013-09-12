@@ -218,6 +218,19 @@ return(setInterDiff(params, SET_DIFF));
 }
 
 
+CELL * p_union(CELL * params)
+{
+CELL * result;
+CELL * appnd;
+
+appnd = makeCell(CELL_QUOTE, (UINT)p_append(params));
+result = setInterDiff(appnd, SET_UNIQUE);
+deleteList(appnd);
+
+return(result);
+}
+
+
 CELL * p_unique(CELL * params)
 {
 return(setInterDiff(params, SET_UNIQUE));

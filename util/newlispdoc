@@ -26,6 +26,7 @@
 ;; @version 3.2 - formatting when view source, new stylesheet newlispdoc.css
 ;; @version 3.3 - allow descriving variables using the @syntax tag. They will be colored red as well.
 ;; @version 3.4 - make sure all @xxxxxx custom tags are title cased
+;; @version 3.4 - added META tag for UTF-8 encoding for html output
 ;;
 ;; @author Lutz Mueller, 2006-2011
 ;; @location http://newlisp.org
@@ -252,6 +253,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
     (write-file (string outputfile ".src.html") 
         (append
             {<!DOCTYPE HTML PUBLIC "4.01 Transitional">}
+            {<META http-equiv="Content-Type" content="text/html; charset=utf-8" />}
             "<html><title>" title "</title><body><pre>\n" src-file "\n</pre>" 
             {<center><font face='Arial' size='-3' color='#666666'>}
             {syntax highlighting with <a href="http://newlisp.org">newLISP</a>&nbsp;}

@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.4.0 Manual and Reference</title>
+   <title>newLISP v.10.4.2 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.4.0</h2>
+<h2>User Manual and Reference v.10.4.2</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -475,14 +475,14 @@ libraries are also available.</p>
 newLISP-GS a platform-independent solution for writing GUI applications.</p>
 
 <p>For more information on newLISP-GS, see 
-<a HREF="http://newlisp.org/guiserver">newLISP-GS</a>.</p>
+<a href="http://newlisp.org/guiserver">newLISP-GS</a>.</p>
 
 <br/>
 
 <h3>Licensing</h3>
 
 <p>newLISP and newLISP-GS are licensed under version 3
-of the <a HREF="#GNUGPL">GPL (General Public License)</a>.
+of the <a href="#GNUGPL">GPL (General Public License)</a>.
 The newLISP documentation as well as other documentation packaged with newLISP 
 are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p>
 
@@ -890,7 +890,7 @@ newlisp -d 4711 &amp;
 <p>
 This works like the <tt>-p</tt> option, but newLISP does not exit after a 
 connection closes. Instead, it stays in memory, listening for a new connection 
-and preserving its state. An <a HREF="#exit">exit</a> issued from a client 
+and preserving its state. An <a href="#exit">exit</a> issued from a client 
 application closes the network connection, and the newLISP daemon remains resident, 
 waiting for a new connection. Any port number could be used in place of <tt>4711</tt>.
 </p>
@@ -1691,12 +1691,12 @@ by Paul Graham for his Arc language project.
 <p>
 A lambda expression is a <em>lambda list</em>, a subtype of <em>list</em>, and its 
 arguments can associate from left to right or right to left. When using 
-<a HREF="#append">append</a>, for example, the arguments associate from left to right:
+<a href="#append">append</a>, for example, the arguments associate from left to right:
 </p>
 <pre>
 (append (lambda (x)) '((+ x x)))  <span class='arw'>&rarr;</span> (lambda (x) (+ x x))
 </pre>		<p>
-<a HREF="#cons">cons</a>, on the other hand, associates the arguments from right to left:
+<a href="#cons">cons</a>, on the other hand, associates the arguments from right to left:
 </p>
 <pre>
 (cons '(x) (lambda (+ x x)))  <span class='arw'>&rarr;</span> (lambda (x) (+ x x))
@@ -1967,9 +1967,9 @@ retrieve the elements of a list or array or the characters of a string:</p>
 <pre>
 (set 'lst '(a b c (d e) (f g)))
 
-(lst 0)    <span class='arw'>&rarr;</span> a      ; same as (nth (lst 0))
+(lst 0)    <span class='arw'>&rarr;</span> a      ; same as (nth 0 lst)
 (lst 3)    <span class='arw'>&rarr;</span> (d e)
-(lst 3 1)  <span class='arw'>&rarr;</span> e      ; same as (nth (lst 3 1))
+(lst 3 1)  <span class='arw'>&rarr;</span> e      ; same as (nth '(3 1) lst)
 (lst -1)   <span class='arw'>&rarr;</span> (f g)
 
 (set 'myarray (array 3 2 (sequence 1 6)))
@@ -4401,19 +4401,16 @@ for Unix/Linux</em></a> by <em>Markus Kuhn</em>.</p>
 (define (my-func a b c , x y z)
     (set 'x &hellip;)
 (&hellip;))
-</pre>		<p>
-	When calling this function,
-	only <tt>a, b</tt>, and <tt>c</tt> are used as parameters.
-	The others (<tt>x, y</tt>, and <tt>z</tt>)
-	are initialized to nil
-	and are local to the function.
-	After execution, the function's contents are forgotten
-	and the environment's symbols are restored
-	to their previous values.
+</pre>		
+<p>
+When calling this function, only <tt>a, b</tt>, and <tt>c</tt> are used as parameters.
+The others (the comma symbol, <tt>x</tt>, <tt> y</tt>, and <tt>z</tt>) are initialized 
+to <tt>nil</tt> and are local to the function.  After execution, the function's contents 
+are forgotten and the environment's symbols are restored to their previous values.
 </p>
 <p>
 	For other ways of declaring and initializing local variables,
-	see <a HREF="#let">let</a>, <a href="#letex">letex</a>, 
+	see <a href="#let">let</a>, <a href="#letex">letex</a>, 
 	<a href="#letn">letn</a> and <a href="#local">local</a>.
 </p>
 
@@ -4426,8 +4423,8 @@ for Unix/Linux</em></a> by <em>Markus Kuhn</em>.</p>
 <a name="linking"></a>
 <h2>23. Linking newLISP source and executable</h2>
 
-<p>Source code and the newLISP executable can be linked together to build
-a self-contained application by using <tt>link.lsp</tt>. This program is 
+<p>On MS Windows, source code and the newLISP executable can be linked together 
+to build a self-contained application by using <tt>link.lsp</tt>. This program is 
 located in the <tt>newlisp/util</tt> directory of the distributions.
 As an example, the following code is linked to the newLISP executable
 to form a simple, self-contained application:
@@ -4444,8 +4441,8 @@ first word on the command-line and converts it to uppercase.</p>
 follow these four steps:</p>
 
 <p><tt>(1)</tt> Put the following files into the same directory:
-(a) a copy of the newLISP executable; (b) <tt>newlisp</tt>
-(or <tt>newlisp.exe</tt> on Win32); (c) <tt>link.lsp</tt>; and (d) the program to 
+(a) a copy of the newLISP executable; (b) <tt>newlisp.exe</tt>;  
+(c) <tt>link.lsp</tt>; and (d) the program to 
 link with (<tt>uppercase.lsp</tt> in this example).</p>
 
 <p><tt>(2)</tt> In a shell, go to the directory referred to in step 1
@@ -4458,8 +4455,7 @@ newlisp link.lsp
 <p><tt>(3)</tt> In the newLISP shell, type one of the following:</p>
 
 <pre>
-(link "newlisp.exe" "uppercase.exe" "uppercase.lsp")  ; Win32
-(link "newlisp" "uppercase" "uppercase.lsp")          ; Linux/BSD
+(link "newlisp.exe" "uppercase.exe" "uppercase.lsp")
 </pre>		<p>
 	<tt>(4)</tt> Exit the newLISP shell and type:
 </p>
@@ -4472,16 +4468,6 @@ uppercase "convert me to uppercase"
 <pre>
 CONVERT ME TO UPPERCASE
 </pre>		
-
-<p>Note: On Linux/BSD, the new file must be marked
-executable for the operating system to recognize it:</p>
-
-<pre>
-chmod 755 uppercase
-</pre>		
-
-<p>This gives the file executable permission (this step is unnecessary on Win32).
-</p>
 
 <p>Note that neither one of the initialization files <tt>init.lsp</tt> nor 
 <tt>.init.lsp</tt> is loaded during startup of linked programs.</p>
@@ -4801,7 +4787,7 @@ or an array in which each row element is itself an array.
 All element lists or arrays (rows) are of the same length.
 Any data type can be element of a matrix, but when
 using specific matrix operations like <a href="#det">det</a>, 
-<A HREF="#multiply">multiply</A>, or <A HREF="#invert">invert</A>, 
+<A href="#multiply">multiply</A>, or <A href="#invert">invert</A>, 
 all numbers must be floats or integers.
 </p>
 
@@ -4912,9 +4898,9 @@ HTML.</p>
 
 
 <pre>
-(print "&lt;A HREF=\"http://mysite.com\"&gt;" ) ; the cryptic way
+(print "&lt;A href=\"http://mysite.com\"&gt;" ) ; the cryptic way
 
-(print {&lt;A HREF="http://mysite.com"&gt;} )   ; the readable way
+(print {&lt;A href="http://mysite.com"&gt;} )   ; the readable way
 
 
 ; path names on MS Windows
@@ -5413,7 +5399,7 @@ arithmetic">
 
 <tr>
 <td><a href="#silent">silent</a></td>
-<td>works like <a HREF="#begin">begin</a> but suppresses console output of the return value</td>
+<td>works like <a href="#begin">begin</a> but suppresses console output of the return value</td>
 </tr>
 
 <tr>
@@ -5444,6 +5430,11 @@ arithmetic">
 <tr>
 <td><a href="#unique">unique</a></td>
 <td>returns a list without duplicates</td>
+</tr>
+
+<tr>
+<td><a href="#union">union</a></td>
+<td>returns a unique list of elements found in two or more lists.</td>
 </tr>
 
 <tr>
@@ -5847,12 +5838,22 @@ arithmetic">
 
 <tr>
 <td><a href="#crit-chi2">crit-chi2</a></td>
-<td>calculates the Chi&sup2; for a given probability</td>
+<td>calculates the <em>Chi&sup2;</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#crit-f">crit-f</a></td>
+<td>calculates the <em>F</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#crit-t">crit-t</a></td>
+<td>calculates the <em>Student's t</em> statistic for a given probability</td>
 </tr>
 
 <tr>
 <td><a href="#crit-z">crit-z</a></td>
-<td>calculates the normal distributed Z for a given probability</td>
+<td>calculates the normal distributed <em>Z</em> for a given probability</td>
 </tr>
 
 <tr>
@@ -5964,6 +5965,26 @@ arithmetic">
 <tr>
 <td><a href="#pow">pow</a></td>
 <td>calculates <em>x</em> to the power of <em>y</em></td>
+</tr>
+
+<tr>
+<td><a href="#prob-chi2">prob-chi2</a></td>
+<td>calculates the tail probability of a <em>Chi&sup2;</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-f">prob-f</a></td>
+<td>calculates the tail probability of a <em>F</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-t">prob-t</a></td>
+<td>calculates the tail probability of a <em>Student's t</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-z">prob-z</a></td>
+<td>calculates the cumulated probability of a <em>Z</em> distribution value</td>
 </tr>
 
 <tr>
@@ -6198,6 +6219,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#evenp">even?</a></td>
+<td>checks the parity of an integer number</td>
+</tr>
+
+<tr>
 <td><a href="#filep">file?</a></td>
 <td>checks if a file exists</td>
 </tr>
@@ -6260,6 +6286,11 @@ arithmetic">
 <tr>
 <td><a href="#numberp">number?</a></td>
 <td>checks if an expression is a float or an integer</td>
+</tr>
+
+<tr>
+<td><a href="#oddp">odd?</a></td>
+<td>checks the parity of an integer number</td>
 </tr>
 
 <tr>
@@ -6366,17 +6397,6 @@ arithmetic">
 <tr>
 <td><a href="#normal">normal</a></td>
 <td>makes a list of normal distributed floating point numbers</td>
-</tr>
-
-<tr>
-<td><a href="#prob-chi2">prob-chi2</a></td>
-
-<td>calculates the cumulated probability of Chi&sup2;</td>
-</tr>
-
-<tr>
-<td><a href="#prob-z">prob-z</a></td>
-<td>calculates the cumulated probability of a Z-value</td>
 </tr>
 
 <tr>
@@ -7554,14 +7574,12 @@ See <a href="#dec">dec</a> for decrementing numbers in floating point mode.</p>
 <br/><br/>
 <a name="logical"></a>
 <h2><span class="function">&lt;, &gt;, =, &lt;=, &gt;=, !=</span></h2>
-<h4>syntax: (&lt; <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])<br/>
-
-syntax: (&gt; <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])<br/>
-syntax: (= <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])<br/>
-syntax: (&lt;= <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])<br/>
-
-syntax: (&gt;= <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])<br/>
-syntax: (!= <em>exp-1</em> <em>exp-2</em> [<em>exp-3</em> ... ])</h4>
+<h4>syntax: (&lt; <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (&gt; <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (= <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (&lt;= <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (&gt;= <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
+syntax: (!= <em>exp-1</em> [<em>exp-2</em> ... ])</h4>
 
 <p>
 Expressions are evaluated and the results are compared successively. 
@@ -7571,9 +7589,9 @@ and the result is <tt>true</tt>. As soon as one comparison fails,
 <tt>nil</tt> is returned.
 </p>
 
-<p>If only one argument is supplied, 
-all comparison operators assume <tt>0</tt> (zero)
-as a second argument.</p>
+<p>If only one argument is supplied, all comparison operators assume <tt>0</tt> (zero)
+as a second argument. This can be used to check if a numer is negative, positive, zero 
+or not zero.</p>
 
 
 <p>
@@ -7752,7 +7770,9 @@ and <tt>&gt;&gt;</tt> shift by one bit.
 <h2><span class="function">:</span></h2>
 <h4>syntax: (: <em>sym-function</em> <em>list-object</em> [ ... ])</h4>
 
-<p>When used as an operator, the colon <tt>:</tt> constructs a 
+<p>The colon is used not only as a syntactic separator between
+between namespace prefix  and the term inside but also as an operator.
+When used as an operator, the colon <tt>:</tt> constructs a 
 context symbol from the context name in the object list and the 
 symbol following the colon. The object list in <em>list-object</em> 
 can be followed by other parameters.</p>
@@ -7791,7 +7811,7 @@ No space is required between the colon and the symbol following it.</p>
 
 ;; map class methods uses curry to enclose the colon operator and class function
 
-(map (curry :area) (list (myrect mycircle))) <span class='arw'>&rarr;</span> (200 314.1592654)
+(map (curry :area) (list myrect mycircle)) <span class='arw'>&rarr;</span> (200 314.1592654)
 
 (map (curry :area) '((Rectangle 5 5 10 20) (Circle 1 2 10))) <span class='arw'>&rarr;</span> (200 314.1592654) 
 
@@ -7864,7 +7884,7 @@ function <a href="#spawn">spawn</a> for a full discussion of the Cilk API.</p>
 
 <a name="acos"></a>
 <h2><span class="function">acos</span></h2>
-<h4>syntax: (acos <em>num</em>)</h4>
+<h4>syntax: (acos <em>num-radians</em>)</h4>
 
 <p>
 	The arc-cosine function is calculated 
@@ -8093,7 +8113,7 @@ The <a href="#string">string</a> function would cut of strings at zero bytes.</p
 
 <p>
 Linkage characters or strings can be specified using the 
-<a HREF="#join">join</a> function. Use the <a HREF="#string">string</a> 
+<a href="#join">join</a> function. Use the <a href="#string">string</a> 
 function to convert arguments to strings and append in one step.</p>
 
 <p>Use the functions <a href="#extend">extend</a> and <a href="#push">push</a>
@@ -8227,7 +8247,7 @@ syntax: (args <em>int-idx-1</em> [<em>int-idx-2</em> ... ])</h4>
 
 <p>
 Accesses a list of all unbound arguments passed to the currently evaluating 
-<a href="#define">define</a>, <a HREF="#define-macro">define-macro</a> 
+<a href="#define">define</a>, <a href="#define-macro">define-macro</a> 
 lambda, or lambda-macro expression. Only the arguments of the current function 
 or macro that remain after local variable binding has occurred are available. 
 The <tt>args</tt> function is useful for defining functions or macros 
@@ -8251,7 +8271,7 @@ variable capture. See <a href="#define-macro">define-macro</a>.
 <p>
 	This example prints a line-feed after each argument. 
 	The macro mimics the effect of the built-in function 
-	<a HREF="#println">println</a>.
+	<a href="#println">println</a>.
 </p>
 
 <p>
@@ -9239,15 +9259,15 @@ singularly trained by specifying an empty list for the absent corpus:
 
 
 <p>
-	Some built-in functions like <a HREF="#cond">cond</a>, <a HREF="#define">define</a>,
-	<a href="#doargs">doargs</a>, <a HREF="#dolist">dolist</a>, <a href="#dostring">dostring</a>, 
-    <a HREF="#dotimes">dotimes</a>, <a href="#when">when</a> and <a HREF="#while">while</a> 
+	Some built-in functions like <a href="#cond">cond</a>, <a href="#define">define</a>,
+	<a href="#doargs">doargs</a>, <a href="#dolist">dolist</a>, <a href="#dostring">dostring</a>, 
+    <a href="#dotimes">dotimes</a>, <a href="#when">when</a> and <a href="#while">while</a> 
 	already allow multiple expressions in their bodies,
-	but <tt>begin</tt> is often used in an <a HREF="#if">if</a> expression.
+	but <tt>begin</tt> is often used in an <a href="#if">if</a> expression.
 </p>
 
 <p>
-	The <a HREF="#silent">silent</a> function works like <tt>begin</tt>, 
+	The <a href="#silent">silent</a> function works like <tt>begin</tt>, 
 	but suppresses console output on return.
 </p>
 
@@ -9295,25 +9315,15 @@ beta = exp(gammaln(a) + gammaln(b) - gammaln(a + b))
 
 <pre>
 (betai 0.5 3 8)  <span class='arw'>&rarr;</span> 0.9453125
-
-;; probability of F ratio for df1/df2
-;;
-(define (f-prob f df1 df2)
-  (let (prob (mul 2 (betai (div df2 (add df2 (mul df1 f))) 
-                           (mul 0.5 df2) 
-                           (mul 0.5 df1)))) 
-    (div (if (&gt; prob 1) (sub 2 prob) prob) 2)))
 </pre>
 
 
 <p>
-	The first example calculates the probability for an event 
-	with a probability of 0.5 to occur 3 or more times in 10 trials (8 = 10 - 3 + 1). 
-	The incomplete Beta distribution can be used to derive a variety of other functions 
-	in mathematics and statistics. 
-	The second example calculates the one-tailed probability of a variance, <em>F ratio</em>. 
-	In similar fashion, <em>students t</em> could be calculated using <tt>betai</tt>. 
-	See also the <a HREF="#binomial">binomial</a> function.
+The example calculates the probability for an event 
+with a probability of 0.5 to occur 3 or more times in 10 trials (8 = 10 - 3 + 1). 
+The incomplete Beta distribution can be used to derive a variety of other functions 
+in mathematics and statistics. 
+See also the <a href="#binomial">binomial</a> function.
 </p>
 
 <br/><br/>
@@ -9428,7 +9438,7 @@ probability of <em>float-p</em> and all trials are independent of one another:</
 	The example calculates the probability for an event 
 	with a probability of 0.5 to occur 3 times in 10 trials. 
 	For a cumulated distribution, 
-	see the <a HREF="#betai">betai</a> function.
+	see the <a href="#betai">betai</a> function.
 </p>
 
 <br/><br/>
@@ -9717,7 +9727,7 @@ result  <span class='arw'>&rarr;</span> "fin"
 </pre>
 
 
-<p>See also the <a HREF="#floor">floor</a> function.
+<p>See also the <a href="#floor">floor</a> function.
 </p>
 
 <br/><br/>
@@ -9747,17 +9757,22 @@ result  <span class='arw'>&rarr;</span> "fin"
 
 <a name="char"></a>
 <h2><span class="function">char</span>&nbsp;<font size="-1"><a href="#utf8_capable">utf8</a></font></h2>
-<h4>syntax: (char <em>str</em> [<em>int-index</em>])<br/>
+<h4>syntax: (char <em>str</em> [<em>int-index</em> [true]])<br/>
 syntax: (char <em>int</em>)</h4>
 
 <p>Given a string argument, extracts the character at <em>int-index</em> from <em>str</em>,
 returning either the ASCII value of that character or the Unicode value on UTF-8 enabled 
-versions of newLISP.  If <em>int-index</em> is omitted, 0 (zero) is assumed. The empty 
-string returns <tt>nil</tt>. Both <tt>(char 0)</tt> and <tt>(char nil)</tt> will return 
-<tt>"\000"</tt>.</p>
+versions of newLISP.</p>
+
+<p>If <em>int-index</em> is omitted, 0 (zero) is assumed. If <em>int-idx</em>
+is followed by a boolean <tt>true</tt> value, than the index treats <em>str</em> as an 8-bit  byte
+array instead of an array of multi-byte UTF-8 characters.</p>
+
+<p>The empty string returns <tt>nil</tt>. Both <tt>(char 0)</tt> and <tt>(char nil)</tt> will 
+return <tt>"\000"</tt>.</p>
 
 <p>
-See <a HREF="#indexing">Indexing elements of strings and lists</a>.
+See <a href="#indexing">Indexing elements of strings and lists</a>.
 </p>
 
 <p>
@@ -9778,6 +9793,8 @@ is taken as Unicode and a UTF-8 character is returned.
 (char "ABC" 1)   <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
 (char "ABC" -1)  <span class='arw'>&rarr;</span> 67  ; ASCII code for "C"
 (char "B")       <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
+(char "Ω")       <span class='arw'>&rarr;</span> 937 ; UTF-8 code for "Ω"
+(char "Ω" 1)     <span class='arw'>&rarr;</span> 169 ; byte value at offset 1
 
 (char 65)  <span class='arw'>&rarr;</span> "A"
 (char 66)  <span class='arw'>&rarr;</span> "B"
@@ -9785,6 +9802,9 @@ is taken as Unicode and a UTF-8 character is returned.
 (char (char 65))  <span class='arw'>&rarr;</span> 65      ; two inverse applications
 
 (map char (sequence 1 255))  ; returns current character set
+
+; The Zen of UTF-8
+(char (&amp; (char "生") (char "死"))) <span class='arw'>&rarr;</span> 愛 ; by @kosh_bot
 </pre>
 
 <br/><br/>
@@ -9879,7 +9899,7 @@ lst  <span class='arw'>&rarr;</span> (a b (c d) e)
 </p>
 
 <p>
-	See also the related function <a HREF="#index">index</a>, 
+	See also the related function <a href="#index">index</a>, 
 	which returns the indices of the remaining elements, 
 	and <a href="#filter">filter</a>, 
 	which returns all elements for which a predicate returns true.
@@ -9894,7 +9914,7 @@ lst  <span class='arw'>&rarr;</span> (a b (c d) e)
 <p>
 	Closes the file specified by the file handle in <em>int-file</em>. 
 	The handle would have been obtained 
-	from a previous <a HREF="#open">open</a> operation. 
+	from a previous <a href="#open">open</a> operation. 
 	If successful, <tt>close</tt> returns <tt>true</tt>; otherwise  <tt>nil</tt> is returned.
 </p>
 
@@ -10697,12 +10717,11 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 <a name="crit-chi2"></a>
 <h2><span class="function">crit-chi2</span></h2>
 
-<h4>syntax: (crit-chi2 <em>num-probability</em> <em>num-df</em>)</h4>
+<h4>syntax: (crit-chi2 <em>num-probability</em> <em>int-df</em>)</h4>
 
-<p>Calculates the critical minimum Chi&sup2; for a given confidence probability 
-<em>num-probability</em> under the null hypothesis and the degrees of freedom i
-<em>num-df</em> for testing the significance of a statistical null hypothesis.
-</p>
+<p>Calculates the critical minimum <em>Chi&sup2;&nbsp;</em> for a given confidence probability 
+<em>num-probability</em> under the null hypothesis and the degrees of freedom in
+<em>int-df&nbsp;</em> for testing the significance of a statistical null hypothesis.</p>
 
 <p>Note that versions prior to 10.2.0 took <em>(1.0 - p)</em> for the probability
 instead of <em>p</em>.</p>
@@ -10720,15 +10739,59 @@ instead of <em>p</em>.</p>
 
 <br/><br/>
 
+<a name="crit-f"></a>
+<h2><span class="function">crit-f</span></h2>
+
+<h4>syntax: (crit-f <em>num-probability</em> <em>int-df1</em> <em>int-df2</em>)</h4>
+
+<p>Calculates the critical minimum <em>F&nbsp;</em> for a given confidence probability
+<em>num-probability</em> under the null hypothesis and the degrees of freedmom 
+given in <em>int-df1</em> and <em>int-df2</em> for testing the significance of a 
+statistical null hypothesis using the <em>F-test</em>.</p>
+
+<!-- example -->
+
+<pre>
+(crit-f 0.05 10 12)  <span class='arw'>&rarr;</span> 2.753386727
+</pre>
+
+<p>
+See also the inverse function <a href="#prob-f">prob-f</a>.
+</p> 
+
+<br/><br/>
+
+<a name="crit-t"></a>
+<h2><span class="function">crit-t</span></h2>
+
+<h4>syntax: (crit-t <em>num-probability</em> <em>int-df</em>)</h4>
+
+<p>Calculates the critical minimum <em>Student's t</em> for a given confidence probability 
+<em>num-probability</em> under the null hypothesis and the degrees of freedom in
+<em>int-df&nbsp;</em> for testing the significance of a statistical null hypothesis.
+</p>
+
+<!-- example -->
+
+<pre>
+(crit-t 0.05 14)  <span class='arw'>&rarr;</span> 1.761310142
+</pre>
+
+
+<p>
+See also the inverse function <a href="#prob-t">prob-t</a>.
+</p> 
+
+<br/><br/>
+
+
 <a name="crit-z"></a>
 <h2><span class="function">crit-z</span></h2>
 <h4>syntax: (crit-z <em>num-probability</em>)</h4>
 
-<p>
-	Calculates the critical normal distributed Z value 
-	of a given cumulated probability (<em>num-probability</em>) 
-	for testing of statistical significance and confidence intervals.
-</p>
+<p>Calculates the critical normal distributed Z value 
+of a given cumulated probability <em>num-probability</em> 
+for testing of statistical significance and confidence intervals.</p>
 
 <!-- example -->
 
@@ -10749,9 +10812,9 @@ instead of <em>p</em>.</p>
 
 <p>
 	Retrieves the contents of the last 
-	<a HREF="#read-line">read-line</a> operation. 
+	<a href="#read-line">read-line</a> operation. 
 	<tt>current-line</tt>'s contents are also implicitly used 
-	when <a HREF="#write-line">write-line</a> 
+	when <a href="#write-line">write-line</a> 
 	is called without a string parameter.
 </p>
 
@@ -10805,7 +10868,7 @@ Instead, they are evaluated during the application of <em>func</em>.</p>
 <!-- example -->
 
 <pre>
-(set 'f (curry + 10))  <span class='arw'>&rarr;</span> (lambda (_x) (+ 10 _x))
+(set 'f (curry + 10))  <span class='arw'>&rarr;</span> (lambda ($x) (+ 10 $x))
 
 (f 7)  <span class='arw'>&rarr;</span> 17
 
@@ -10842,7 +10905,7 @@ In the second syntax, <tt>date</tt> translates the number of seconds
 in <em>int-secs</em> into its date/time string representation 
 for the local time zone. 
 The number in <em>int-secs</em> is usually retrieved from the system 
-using <a HREF="#date-value">date-value</a>. 
+using <a href="#date-value">date-value</a>. 
 Optionally, a time-zone offset (in minutes) can be specified 
 in <em>int-offset</em>, which is added 
 or subtracted before conversion of <em>int-sec</em> to a string.
@@ -10951,10 +11014,10 @@ using <tt>"%-d"</tt> on Linux and FreeBSD and using <tt>"%e"</tt>
 on OpenBSD, SunOS/Solaris and Mac OS X.  On Win32 use <tt>"%#d"</tt>.
 </p>
 
-<p>See also <a HREF="#date-value">date-value</a>, <a href="#date-list">date-list</a>,
+<p>See also <a href="#date-value">date-value</a>, <a href="#date-list">date-list</a>,
 <a href="#date-parse">date-parse</a>, 
-<a HREF="#time-of-day">time-of-day</a>, 
-<a HREF="#time">time</a>, and <a HREF="#now">now</a>.
+<a href="#time-of-day">time-of-day</a>, 
+<a href="#time">time</a>, and <a href="#now">now</a>.
 </p>
 
 <br/><br/>
@@ -10977,7 +11040,7 @@ The date and time values aren given as UTC, which may differ from the local time
 
 (apply date-value (date-list 1282479244)) <span class='arw'>&rarr;</span> 1282479244
 
-(date-list 0)   <span class='arw'>&rarr;</span> (1970 1 1 0 0 0 1 5) ; Thursday 1st, Jan 1900
+(date-list 0)   <span class='arw'>&rarr;</span> (1970 1 1 0 0 0 1 4) ; Thursday 1st, Jan 1900
 </pre>
 
 <p>A second optional <em>int-index</em> parameter can be used to return
@@ -11055,10 +11118,10 @@ a <tt>date-value</tt> back into a list:</p>
 </pre>
 
 
-<p>See also <a HREF="#date">date</a>, 
+<p>See also <a href="#date">date</a>, 
 <a href="#date-list">date-list</a>, <a href="#date-parse">date-parse</a>, 
-<a HREF="#time-of-day">time-of-day</a>, <a HREF="#time">time</a>, and 
-<a HREF="#now">now</a>.</p>
+<a href="#time-of-day">time-of-day</a>, <a href="#time">time</a>, and 
+<a href="#now">now</a>.</p>
 
 <br/><br/>
 
@@ -11067,7 +11130,7 @@ a <tt>date-value</tt> back into a list:</p>
 <h4>syntax: (debug <em>func</em>)</h4>
 
 <p>
-Calls <a HREF="#trace">trace</a> and begins evaluating the user-defined 
+Calls <a href="#trace">trace</a> and begins evaluating the user-defined 
 function in <em>func</em>. <tt>debug</tt> is a shortcut for executing 
 <tt>(trace true)</tt>, then entering the function to be debugged.</p>
 
@@ -11083,12 +11146,12 @@ function in <em>func</em>. <tt>debug</tt> is a shortcut for executing
 (debug (my-func a b c))
 </pre>
 
-<p>When in <tt>debug</tt> or <a HREF="#trace">trace</a> mode, error messages
+<p>When in <tt>debug</tt> or <a href="#trace">trace</a> mode, error messages
 will be printed. The function causing the exception will return either
 <tt>0</tt> or <tt>nil</tt> and processing will continue. This way, variables 
 and the current state of the program can still be inspected while debugging.</p>
 
-<p>See also the <a HREF="#trace">trace</a> function.</p>
+<p>See also the <a href="#trace">trace</a> function.</p>
 
 <br/><br/>
 
@@ -11145,7 +11208,7 @@ l <span class='arw'>&rarr;</span> (0 2 3 3.9)
 </pre>
 
 <p>Use the <a href="#deci">--</a> function to decrement in integer mode.
-Use the <a HREF="#inc">inc</a> function to increment numbers floating point mode.</p>
+Use the <a href="#inc">inc</a> function to increment numbers floating point mode.</p>
 
 <br/><br/>
 
@@ -11164,13 +11227,12 @@ Use the <a HREF="#inc">inc</a> function to increment numbers floating point mode
 	will be translated into symbol references into the current context,
     which must not be MAIN.</p>
 <p>
-	If an argument is present in <em>sym-target</em>, 
-	the copy will be made into a symbol and context 
-	as referenced by the symbol in <em>sym-target</em>. 
-	In addition to allowing renaming of the function while copying, 
-	this also enables the copy to be placed in a different context. 
-	All symbol references will be translated into symbol references 
-	of the target context.
+If an argument is present in <em>sym-target</em>, the copy will be made
+into a symbol and context as referenced by the symbol in <em>sym-target</em>. 
+In addition to allowing renaming of the function while copying, this also 
+enables the copy to be placed in a different context.  All symbol references 
+in <em>sym-source</em> with the same context as <em>sym-source</em> will 
+be translated into symbol references of the target context.
 </p>
 
 <p>
@@ -11198,12 +11260,41 @@ K&gt; var
 <b>(x y)</b>
 </pre>
 
+<p>The following example shows how a statically scoped function can
+be created by moving it its own namespace:</p>
 
-<p>
-	The function <tt>def-new</tt> can be used to configure contexts 
-	or context objects in a more granular fashion than is possible 
-	with <a href="#new">new</a>, which copies a whole context.
-</p>
+<pre>
+&gt; (set 'temp (lambda (x) (+ x x)))
+<b>(lambda (x) (+ x x))</b>
+&gt; (def-new 'temp 'double:double)
+<b>double:double</b>
+&gt; (double 10)
+<b>20</b>
+&gt; double:double
+<b>(lambda (double:x) (+ double:x double:x))</b>
+</pre>
+
+<p>The following definition of <tt>def-static</tt> can be used to
+create functions living in their own lexically protected name-space:</p>
+<pre>
+(define (def-static s body) 
+      (def-new 'body (sym s s)))
+
+(def-static 'acc (lambda (x)
+          (inc sum x)))
+
+&gt; (acc 1)
+<b>1</b>
+&gt; (acc 1)
+<b>2</b>
+&gt; (acc 8)
+<b>10</b>
+&gt;
+</pre>
+
+<p>The function <tt>def-new</tt> can also be used to configure contexts 
+or context objects in a more granular fashion than is possible 
+with <a href="#new">new</a>, which copies a whole context.</p>
 
 <br/><br/>
 
@@ -11340,7 +11431,7 @@ syntax: (define <em>sym-name</em> <em>exp</em>)</h4>
 
 <p>
 	The second version of <tt>define</tt> 
-	works like the <a HREF="#set">set</a> function.
+	works like the <a href="#set">set</a> function.
 </p>
 
 <!-- example -->
@@ -11484,7 +11575,7 @@ function.</li>
 <p>
 	The definition in the example is lexically isolated, 
 	and no variable capture can occur. 
-	Instead of the macro being called using <tt>(my-setq:my-setq &hellip;)</tt>, 
+	Instead of the function being called using <tt>(my-setq:my-setq &hellip;)</tt>, 
 	it can be called with just <tt>(my-setq &hellip;)</tt> 
 	because it is a <a href="#default_function"><em>default function</em></a>.
 </p>
@@ -11723,11 +11814,11 @@ When no argument is supplied, the current I/O device number is returned.
 </p>
 
 <p>The I/O channel specified by <tt>device</tt> is used internally 
-by the functions <a HREF="#print">print</a> and <a HREF="#read-line">read-line</a>. 
-When the current I/O device is 0 or 1, <a HREF="#print">print</a> 
-sends output to the console window and <a HREF="#read-line">read-line</a> 
+by the functions <a href="#print">print</a> and <a href="#read-line">read-line</a>. 
+When the current I/O device is 0 or 1, <a href="#print">print</a> 
+sends output to the console window and <a href="#read-line">read-line</a> 
 accepts input from the keyboard. If the current I/O device has been set 
-by opening a file, then <a HREF="#print">print</a> and <a HREF="#read-line">read-line</a> 
+by opening a file, then <a href="#print">print</a> and <a href="#read-line">read-line</a> 
 work on that file.</p>
 
 <!-- example -->
@@ -11740,7 +11831,7 @@ work on that file.</p>
 
 
 <p>
-	Note that using <a HREF="#close">close</a> on <tt>device</tt> 
+	Note that using <a href="#close">close</a> on <tt>device</tt> 
 	automatically resets <tt>device</tt> to 0 (zero).
 </p>
 
@@ -11785,8 +11876,8 @@ syntax: (difference <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 
 
 <p>
-	See also the set functions <a HREF="#intersect">intersect</a> 
-	and <a HREF="#unique">unique</a>.
+	See also the set functions <a href="#intersect">intersect</a>,
+	<a href="#unique">unique</a> and <a href="#union">union</a>.
 </p>
 
 <br/><br/>
@@ -11852,7 +11943,7 @@ syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>int-regex-option<
 	Other functions that use regular expressions 
 	are <a href="#find">find</a>, <!-- 8.9.4 --><a href="#find-all">find-all</a>,
 	<a href="#parse">parse</a>, 
-	<a HREF="#regex">regex</a>, <a href="#replace">replace</a>, 
+	<a href="#regex">regex</a>, <a href="#replace">replace</a>, 
 	and <a href="#search">search</a>.
 </p>
 
@@ -12486,7 +12577,7 @@ specified, <em>str-key</em> contains a regular expression pattern. See
 </p>
 
 <p>
-	See also the <a HREF="#starts-with">starts-with</a> function.
+	See also the <a href="#starts-with">starts-with</a> function.
 </p>
 
 <br/><br/>
@@ -12568,9 +12659,9 @@ where the variable stays with an empty string.</p>
 <h4>syntax: (error-event <em>sym-event-handler | func-event-handler</em>)</h4>
 
 <p><em>sym-event-handler</em> contains a user-defined function for handling errors. 
-Whenever an error occurs, the system performs a <a HREF="#reset">reset</a> 
+Whenever an error occurs, the system performs a <a href="#reset">reset</a> 
 and executes the user-defined error handler.  The error handler can use the 
-built-in function <a HREF="#last-error">last-error</a> to retrieve the number 
+built-in function <a href="#last-error">last-error</a> to retrieve the number 
 and text of the error. The event handler is specified as either a quoted
 symbol or a lambda function.</p>
 
@@ -12724,6 +12815,25 @@ without evaluating it.</p>
 
 <br/><br/>
 
+<a name="evenp"></a>
+<h2><span class="function">even?</span></h2>
+<h4>syntax: (even? <em>int-number</em>)</h4>
+
+<p>Checks if an integer number is <em>even divisable</em> by <tt>2</tt>, without remainder. 
+When a floating point number is passed for <em>int-number</em>, it will be converted to an
+integer by cutting off its fractional part.</p>
+
+<pre>
+(even? 123)  <span class='arw'>&rarr;</span> nil
+(even? 8)    <span class='arw'>&rarr;</span> true
+(even? 8.7)  <span class='arw'>&rarr;</span> true
+</pre>
+
+<p>Use <a href="#oddp">odd?</a> to check if an integer is not divisable by <tt>2</tt>.</p>
+
+<br/><br/>
+
+
 <a name="exec"></a>
 <h2><span class="function">exec</span></h2>
 <h4>syntax: (exec <em>str-process</em>)<br/>
@@ -12821,7 +12931,7 @@ to check if a condition is met for all elements in a list.</p>
 	Exits newLISP. 
 	An optional exit code, <em>int</em>, may be supplied. 
 	This code can be tested by the host operating system. 
-	When newLISP is run in <a HREF="#daemon">daemon server mode</a> 
+	When newLISP is run in <a href="#daemon">daemon server mode</a> 
  	using <tt>-d</tt> as a command-line option, 
 	only the network connection is closed, 
 	while newLISP stays resident, 
@@ -13098,7 +13208,7 @@ in <em>int-chunk</em>.
 
 
 <p>
-The <a HREF="#join">join</a> and <a HREF="#append">append</a> functions
+The <a href="#join">join</a> and <a href="#append">append</a> functions
 are inverse operations of <tt>explode</tt>.
 </p>
 
@@ -13227,7 +13337,7 @@ their integer part first.</p>
 
 <p>
 	The inverse operation of <tt>fft</tt> 
-	is the <a HREF="#ifft">ifft</a> function.
+	is the <a href="#ifft">ifft</a> function.
 </p>
 
 <br/><br/>
@@ -13283,11 +13393,12 @@ not the link, except for the <em>mode</em> field.</p>
 <a name="filep"></a>
 <h2><span class="function">file?</span></h2>
 
-<h4>syntax: (file? <em>str-path-name</em>)</h4>
+<h4>syntax: (file? <em>str-path-name</em> [<em>bool</em>])</h4>
 
 <p>Checks for the existence of a file in <em>str-name</em>. Returns <tt>true</tt> 
 if the file exists; otherwise, it returns <tt>nil</tt>.  This function will also return 
-<tt>true</tt> for directories. The existence of a file does not imply anything about 
+<tt>true</tt> for directories. If the optional <em>bool</em> value is <tt>true</tt>,
+<em>str-path-name</em> is returned. The existence of a file does not imply anything about 
 its read or write permissions. A file may exist while not having the permissions 
 to read from or write to it by the current user.</p>
 
@@ -13295,6 +13406,9 @@ to read from or write to it by the current user.</p>
 
 <pre>
 (if (file? "afile") (set 'fileNo (open "afile" "read")))
+
+(file? "/usr/bin/newlisp" true) <span class='arw'>&rarr;</span> "/usr/bin/newlisp"
+(file? "/usr/bin/foo" true)     <span class='arw'>&rarr;</span> nil
 </pre>
 
 <br/><br/>
@@ -13344,7 +13458,7 @@ use the <a href="#difference"> difference</a> function or
 </p>
 
 <p>
-See also the related function <a HREF="#index">index</a>, which returns the 
+See also the related function <a href="#index">index</a>, which returns the 
 indices of the filtered elements and <a href="#clean">clean</a>, 
 which returns all elements of a list for which a predicate is false.
 </p>
@@ -13449,7 +13563,7 @@ This method allows indexed access
 (i.e., <tt>($ i)</tt>, where <tt>i</tt> is an integer).
 </p> 
 	
-<p>See <a HREF="#regex">regex</a> for the meaning of the  
+<p>See <a href="#regex">regex</a> for the meaning of the  
 option numbers and more information on regular expression searching.
 </p> 
 	
@@ -13503,7 +13617,7 @@ $2  <span class='arw'>&rarr;</span> "80"
 	see <a href="#directory">directory</a>, 
     <a href="#find-all">find-all</a>,
 	<a href="#parse">parse</a>, 
-	<a HREF="#regex">regex</a>, 
+	<a href="#regex">regex</a>, 
 	<a href="#replace">replace</a>, 
 	and <a href="#search">search</a>.
 </p>
@@ -13654,8 +13768,8 @@ from the string in <em>str</em> as a string.</p>
 	Note that <a href="#first">first</a> works on character boundaries 
 	rather than byte boundaries 
 	when the UTF-8&ndash;enabled version of newLISP is used.
-	See also the functions <a HREF="#last">last</a> 
-	and <a HREF="#rest">rest</a>.
+	See also the functions <a href="#last">last</a> 
+	and <a href="#rest">rest</a>.
 </p>
 
 <br/><br/>
@@ -13740,7 +13854,7 @@ from the string in <em>str</em> as a string.</p>
 
 
 <p>
-	Use the <a HREF="#int">int</a> function 
+	Use the <a href="#int">int</a> function 
 	to parse integer numbers.
 </p>
 
@@ -13783,7 +13897,7 @@ from the string in <em>str</em> as a string.</p>
 
 
 <p>
-	See also the <a HREF="#ceil">ceil</a> function.
+	See also the <a href="#ceil">ceil</a> function.
 </p>
 
 <br/><br/>
@@ -13949,7 +14063,7 @@ true</b>
 </p>
 
 <p>
-	Use the <a HREF="#sequence">sequence</a> function
+	Use the <a href="#sequence">sequence</a> function
 	to make a sequence of numbers.
 </p>
 
@@ -14340,8 +14454,8 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 
 <p>
 	See also the functions <a href="#irr">irr</a>, 
-	<a HREF="#nper">nper</a>, <a HREF="#npv">npv</a>, 
-	<a HREF="#pmt">pmt</a>, and <a HREF="#pv">pv</a>.
+	<a href="#nper">nper</a>, <a href="#npv">npv</a>, 
+	<a href="#pmt">pmt</a>, and <a href="#pv">pv</a>.
 </p>
 
 <br/><br/>
@@ -14374,7 +14488,7 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 </BLOCKQUOTE>
 
 <p>
-	See also the <a HREF="#prob-chi2">prob-chi2</a> function.
+	See also the <a href="#prob-chi2">prob-chi2</a> function.
 </p>
 
 <br/><br/>
@@ -14456,7 +14570,7 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 	specified in <em>int-address</em>. 
 	This function is useful when using 
 	imported shared library functions 
-	with <a HREF="#import">import</a>.
+	with <a href="#import">import</a>.
 </p>
 
 <!-- example -->
@@ -14494,11 +14608,11 @@ char * foo(void)
 
 <p>
 	See also the <a href="#address">address</a>, 
-	<a HREF="#get-int">get-int</a>, 
-    <a HREF="#get-long">get-long</a>, 
-	<a HREF="#get-float">get-float</a>, 
-	<a HREF="#get-string">get-string</a>, 
-	<a HREF="#pack">pack</a>, and <a HREF="#unpack">unpack</a> functions.
+	<a href="#get-int">get-int</a>, 
+    <a href="#get-long">get-long</a>, 
+	<a href="#get-float">get-float</a>, 
+	<a href="#get-string">get-string</a>, 
+	<a href="#pack">pack</a>, and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -14551,12 +14665,12 @@ double float * foo(void)
 
 <p>
 	See also the <a href="#address">address</a>, 
-	<a HREF="#get-int">get-int</a>, 
-    <a HREF="#get-long">get-long</a>,
-	<a HREF="#get-char">get-char</a>, 
-	<a HREF="#get-string">get-string</a>,
-	<a HREF="#pack">pack</a>, 
-	and <a HREF="#unpack">unpack</a> functions.
+	<a href="#get-int">get-int</a>, 
+    <a href="#get-long">get-long</a>,
+	<a href="#get-char">get-char</a>, 
+	<a href="#get-string">get-string</a>,
+	<a href="#pack">pack</a>, 
+	and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -14616,12 +14730,12 @@ int foo-b(void)
 
 <p>
 	See also the <a href="#address">address</a>, 
-	<a HREF="#get-char">get-char</a>, 
-	<a HREF="#get-float">get-float</a>, 
-    <a HREF="#get-long">get-long</a>,
-	<a HREF="#get-string">get-string</a>,
-	<a HREF="#pack">pack</a>, 
-	and <a HREF="#unpack">unpack</a> functions.
+	<a href="#get-char">get-char</a>, 
+	<a href="#get-float">get-float</a>, 
+    <a href="#get-long">get-long</a>,
+	<a href="#get-string">get-string</a>,
+	<a href="#pack">pack</a>, 
+	and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -14681,12 +14795,12 @@ long long int foo-b(void)
 
 <p>
 	See also the <a href="#address">address</a>, 
-	<a HREF="#get-char">get-char</a>, 
-	<a HREF="#get-float">get-float</a>, 
-    <a HREF="#get-int">get-int</a>,
-	<a HREF="#get-string">get-string</a>,
-	<a HREF="#pack">pack</a>, 
-	and <a HREF="#unpack">unpack</a> functions.
+	<a href="#get-char">get-char</a>, 
+	<a href="#get-float">get-float</a>, 
+    <a href="#get-int">get-int</a>,
+	<a href="#get-string">get-string</a>,
+	<a href="#pack">pack</a>, 
+	and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -14700,7 +14814,7 @@ long long int foo-b(void)
 	specified in <em>int-address</em>.
 	This function is helpful when 
 	using imported shared library functions 
-	with <a HREF="#import">import</a>.
+	with <a href="#import">import</a>.
 </p>
 
 <!-- example -->
@@ -14754,11 +14868,11 @@ char * foo(void)
 </pre>
 
 <p>
-	See also the <a HREF="#get-char">get-char</a>, 
-	<a HREF="#get-int">get-int</a>,
-	<a HREF="#get-float">get-float</a>,
-	<a HREF="#pack">pack</a>,
-	and <a HREF="#unpack">unpack</a> functions.
+	See also the <a href="#get-char">get-char</a>, 
+	<a href="#get-int">get-int</a>,
+	<a href="#get-float">get-float</a>,
+	<a href="#pack">pack</a>,
+	and <a href="#unpack">unpack</a> functions.
 </p>
 
 <p>
@@ -14833,7 +14947,7 @@ to access <tt>/home/db/data.txt</tt> on the local file system.</p>
 	in the operating system's environment. 
 	As shown in the example, 
 	this can be added using 
-	the <a HREF="#env">env</a> 
+	the <a href="#env">env</a> 
 	function.
 </p>
 
@@ -14916,8 +15030,8 @@ Connection: close
 
 <p>
 	Custom headers can also be used 
-	in the <a HREF="#put-url">put-url</a> 
-	and <a HREF="#post-url">post-url</a> functions.
+	in the <a href="#put-url">put-url</a> 
+	and <a href="#post-url">post-url</a> functions.
 </p>
 
 <br/><br/>
@@ -15044,7 +15158,7 @@ syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</e
 </p>
 
 <p>
-	See also the <a HREF="#unless">unless</a> function.
+	See also the <a href="#unless">unless</a> function.
 </p>
 
 <br/><br/>
@@ -15054,7 +15168,7 @@ syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</e
 <h4>syntax: (if-not <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])</h4>
 
 <p>
-<tt>if-not</tt> is equivalent to (<a HREF="#if">if</a> (<a HREF="#not">not</a> 
+<tt>if-not</tt> is equivalent to (<a href="#if">if</a> (<a href="#not">not</a> 
 <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])).
 If the value of <em>exp-condition</em> is <tt>nil</tt> 
 or the empty list <tt>()</tt>, <em>exp-1</em> is evaluated;
@@ -15107,7 +15221,7 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 
 <p>
 	The inverse operation of <tt>ifft</tt> 
-	is the <a HREF="#fft">fft</a> function.
+	is the <a href="#fft">fft</a> function.
 </p>
 
 <br/><br/>
@@ -15115,7 +15229,8 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 <a name="import"></a>
 <h2><span class="function">import</span></h2>
 <h4>syntax: (import <em>str-lib-name</em> <em>str-function-name</em> ["cdecl"])<br/>
-syntax: (import <em>str-lib-name</em> <em>str-function-name</em> <em>str-return-type</em> [<em>str-param-type</em> . . .])</h4>
+syntax: (import <em>str-lib-name</em> <em>str-function-name</em> <em>str-return-type</em> [<em>str-param-type</em> . . .])<br>
+syntax: (import <em>str-lib-name</em>)</h4>
 
 <p>Imports the function specified in <em>str-function-name</em> 
 from a shared library named in <em>str-lib-name</em>. Depending on the syntax used, string 
@@ -15123,6 +15238,17 @@ labels for return and parameter types can be specified</p>
 
 <p>If the libary in <em>str-lib-name</em> is not in the system's library path, the
 full path name should be specified.</p>
+
+<p>A function can be imported only once. A repeated import of the same function
+will simply return the same - already allocated - function address.</p>
+
+<p>On <em>libffi</em> enabled versions - capable of the second extended syntax -
+imported symbols are protected against change and can only be modified using
+<a href="#constant">constant</a>.</p>
+
+<p>The third syntax - on OSX, Linux and other Unix only -  allows loading libraries 
+without importing functions. This is necessary when other libraries need access 
+to functions they need internally.</p>
 
 <h3>The simple <tt>import</tt> syntax</h3>
 <p>Most library functions can be imported using the simpler first syntax. The API expects
@@ -15138,16 +15264,16 @@ this simple import API.</p>
 
 <p>If pointers are returned to strings or structures the following helper functions
 can be used extract data:
-<a HREF="#get-char">get-char</a>, 
-<a HREF="#get-int">get-int</a>, 
-<a HREF="#get-float">get-float</a>, 
-<a HREF="#get-string">get-string</a>, 
-<a HREF="#unpack">unpack</a> </p>
+<a href="#get-char">get-char</a>, 
+<a href="#get-int">get-int</a>, 
+<a href="#get-float">get-float</a>, 
+<a href="#get-string">get-string</a>, 
+<a href="#unpack">unpack</a> </p>
 
 <p>To pass pointers for data structures the following functions help to pack data
 and calculate addresses:
-<a HREF="#address">address</a>, 
-<a HREF="#pack">pack</a>.</p>
+<a href="#address">address</a>, 
+<a href="#pack">pack</a>.</p>
 
 <p>To transform newLISP data types into the data types needed by the 
 imported function, use the functions 
@@ -15158,7 +15284,7 @@ By default, newLISP passes floating point numbers as 64-bit double floats,
 integers as 32-bit integers, and strings as 32-bit integers for string 
 addresses (pointers in C). Floats can only be used with 32-bit versions
 of newLISP and libraries. To use floating point numbers in a 64-bit
-environment use the <a href="#extended_syntax">extended <tt>import</tt> syntax</a>. 
+environment use the <a href="#extended_import">extended <tt>import</tt> syntax</a>. 
 </p>
 
 <!-- example -->
@@ -15238,7 +15364,7 @@ used to assign a different name to the imported function.</p>
 
 <pre>
 (set 'imprime (import "libc.so.6" "printf")) 
-<span class='arw'>&rarr;</span> printf &lt;400862A0&gt;
+<span class='arw'>&rarr;</span> printf@400862A0
 
 (imprime "%s %d" "hola" 123)                 
 <span class='arw'>&rarr;</span> "hola 123"
@@ -15263,6 +15389,7 @@ floating point arguments take up two spaces each
 </p>
 
 <a name="extended_syntax"></a>
+<a name="extended_import"></a>
 <h3>The extended <tt>import</tt> syntax</h3>
 
 <p>The extended import API works with the second syntax. It is based on the popular 
@@ -15289,11 +15416,15 @@ and for function parameters in <em>str-param-type</em>:</p>
 <tr><td>"long long"</td><td>long long signed 64 bit</td><td>integer</td></tr>
 <tr><td>"float"</td><td>float 32 bit</td><td>IEEE-754 64 bit float cut to 32-bit precision</td></tr>
 <tr><td>"double"</td><td>double 64 bit</td><td>IEEE-754 64 bit float</td></tr>
-<tr><td>"char*"</td><td>char* 32 or 64 bit ptr depending on platform</td><td>displayable string return (zero terminated)<br/>any string buffer or integer address arg</td></tr>
-<tr><td>"void*"</td><td>void* 32 or 64 bit ptr depending on platform</td><td>integer address return<br/>any string buffer  or integer address arg</td></tr>
+<tr><td>"char*"</td><td>char* 32 or 64 bit ptr depending on platform</td><td>displayable string return (zero terminated)<br/>string buffer arg (no addr. since 10.4.2)</td></tr>
+<tr><td>"void*"</td><td>void* 32 or 64 bit ptr depending on platform</td><td>integer address return<br/>either string buffer or integer address arg</td></tr>
 </table>
 
-<p>The following examples show how the extendet <tt>import</tt> syntax can
+<p>The types <tt>"char*"</tt> and <tt>"void*</tt> can be interchanged and are treated 
+identical inside <tt>libffi</tt>. Depending on the type of arguments passed and the type
+of return values, one or the other is used.</p>
+
+<p>The following examples show how the extended <tt>import</tt> syntax can
 handle return values of floating point values and strings:</p>
 
 <pre>
@@ -15438,7 +15569,7 @@ for which <em>exp-predicate</em> is true.</p>
 </p>
 
 <p>
-	Use the <a HREF="#filter">filter</a> function 
+	Use the <a href="#filter">filter</a> function 
 	to return the elements themselves.
 </p>
 
@@ -15531,7 +15662,7 @@ is converted to <tt>0</tt> (zero).</p>
 <p>The inverse function to <tt>int</tt> with base <tt>2</tt> is
 <a href="#bits">bits</a>.</p>
 
-<p>Use the <a HREF="#float">float</a> function 
+<p>Use the <a href="#float">float</a> function 
 to convert arguments to floating point numbers.</p>
 
 <br/><br/>
@@ -15595,8 +15726,8 @@ syntax: (intersect <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 
 <p>
 	See also the set functions 
-	<a HREF="#difference">difference</a> and 
-	<a HREF="#unique">unique</a>.
+	<a href="#difference">difference</a>, <a href="#unique">unique</a>
+    and <a href="#union">union</a>.
 </p>
 
 <br/><br/>
@@ -15628,6 +15759,10 @@ A matrix can either be a nested list or an <a href="#array">array</a>.
 <pre>
 (set 'A '((-1 1 1) (1 4 -5) (1 -2 0)))
 (invert A)  <span class='arw'>&rarr;</span> ((10 2 9) (5 1 4) (6 1 5))
+(invert (invert A)) <span class='arw'>&rarr;</span> ((-1 1 1) (1 4 -5) (1 -2 0))
+
+; solve Ax = b for x
+(multiply (invert A) '((1) (2) (3))) <span class='arw'>&rarr;</span> ((41) (19) (23))
 
 ; treatment of singular matrices
 (invert '((2 -1) (4 -2)))        <span class='arw'>&rarr;</span> nil
@@ -15646,8 +15781,8 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 
 <p>
 	See also the matrix functions <a href="#det">det</a>,
-	<a href="#mat">mat</a>, <a HREF="#multiply">multiply</a>
-    and <a HREF="#transpose">transpose</a>.
+	<a href="#mat">mat</a>, <a href="#multiply">multiply</a>
+    and <a href="#transpose">transpose</a>.
 </p>
 
 <br/><br/>
@@ -15723,10 +15858,10 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 </p>
 
 <p>
-	See also the <a HREF="#fv">fv</a>, 
-	<a HREF="#nper">nper</a>, 
-	<a HREF="#npv">npv</a>, 
-	<a HREF="#pmt">pmt</a>, 
+	See also the <a href="#fv">fv</a>, 
+	<a href="#nper">nper</a>, 
+	<a href="#npv">npv</a>, 
+	<a href="#pmt">pmt</a>, 
 	and <a href="#pv">pv</a> functions.
 </p> 
 
@@ -15763,9 +15898,9 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 
 
 <p>
-	See also the <a HREF="#append">append</a>, 
-	<a HREF="#string">string</a>, 
-	and <a HREF="#explode">explode</a> functions, 
+	See also the <a href="#append">append</a>, 
+	<a href="#string">string</a>, 
+	and <a href="#explode">explode</a> functions, 
 	which are the inverse of the <tt>join</tt> operation.
 </p>
 
@@ -15850,7 +15985,7 @@ string.
 Note that <a href="#last">last</a> works on character boundaries 
 rather than byte boundaries 
 when the UTF-8&ndash;enabled version of newLISP is used.
-See also <a HREF="#first">first</a>, <a HREF="#rest">rest</a> and <a href="#nth">nth</a>.
+See also <a href="#first">first</a>, <a href="#rest">rest</a> and <a href="#nth">nth</a>.
 </p>
 
 <br/><br/>
@@ -16286,7 +16421,7 @@ logarithmic function is calculated from the result.
 </pre>
 
 
-<p>See also <a HREF="#exp">exp</a>, which is the inverse function to <tt>log</tt> with
+<p>See also <a href="#exp">exp</a>, which is the inverse function to <tt>log</tt> with
 base <b><em>e</em></b> (2.718281828).</p>
 
 <br/><br/>
@@ -16303,7 +16438,7 @@ association (or the last element if <em>int-index</em> is absent).</p>
 <em>exp-key</em> cannot be found. If the <em>exp-default</em> is absent and no association
 has been found, <tt>nil</tt> is returned.</p>
 
-<p>See also <a HREF="#indexing">Indexing elements of strings and lists</a>.
+<p>See also <a href="#indexing">Indexing elements of strings and lists</a>.
 </p>
 
 <p><tt>lookup</tt> is similar to <a href="#assoc">assoc</a> but goes one step further 
@@ -16366,7 +16501,7 @@ Str               <span class='arw'>&rarr;</span> "ABC"
 
 
 <p>
-See also the <a HREF="#upper-case">upper-case</a> and 
+See also the <a href="#upper-case">upper-case</a> and 
 <a href="#title-case">title-case</a> functions.
 </p>
 
@@ -16783,7 +16918,7 @@ the largest number.</p>
 
 
 <p>
-See also the <a HREF="#min">min</a> function.
+See also the <a href="#min">min</a> function.
 </p>
 
 <br/><br/>
@@ -16860,7 +16995,7 @@ and returns the smallest number.
 </pre>
 
 <p>
-See also the <a HREF="#max">max</a> function.
+See also the <a href="#max">max</a> function.
 </p>
 
 <br/><br/>
@@ -16899,7 +17034,7 @@ result is the fractional part of <em>num-1</em>.</p>
 
 
 <p>
-Use the <a HREF="#arithmetic">%</a> (percent sign) 
+Use the <a href="#arithmetic">%</a> (percent sign) 
 function when working with integers only.
 </p>
 
@@ -16961,8 +17096,14 @@ or <a href="#array">array</a>.
 (set 'A '((1 2 3) (4 5 6)))
 (set 'B '((1 2) (1 2) (1 2)))
 (multiply A B)  <span class='arw'>&rarr;</span> ((6 12) (15 30))
+
+(set 'v '(10 20 30))
+(multiply A (transpose (list v))) <span class='arw'>&rarr;</span> ((140) (320))
 </pre>
 
+<p>When multiplying a matrix with a vector of <tt>n</tt> elements, the vector
+must be transformed into <tt>n</tt> rows by <tt>1</tt> column matrix using
+ <a href="#transpose">transpose</a>.</p>
 
 <p>
 All operations shown here on lists 
@@ -16971,8 +17112,8 @@ can be performed on arrays, as well.
 
 <p>
 See also the matrix operations <a href="#det">det</a>,
-<a HREF="#invert">invert</a>, <a HREF="#mat">mat</a> 
-and <a HREF="#transpose">transpose</a>.
+<a href="#invert">invert</a>, <a href="#mat">mat</a> 
+and <a href="#transpose">transpose</a>.
 </p>
 
 <br/><br/>
@@ -17066,8 +17207,8 @@ in the <tt>examples/</tt> directory of the source distribution.</p>
 <p>
 Closes a network socket in <em>int-socket</em> that 
 was previously created by a 
-<a HREF="#net-connect">net-connect</a> 
-or <a HREF="#net-accept">net-accept</a> function. 
+<a href="#net-connect">net-connect</a> 
+or <a href="#net-accept">net-accept</a> function. 
 Returns <tt>true</tt> on success and 
 <tt>nil</tt> on failure.
 </p>
@@ -17325,24 +17466,24 @@ This type of connection is not available on Win32 platforms.</p>
 syntax: (net-error <em>int-error</em>)</h4>
 
 <p>Retrieves the last error that occurred when calling a any of the
-following functions: <a HREF="#net-accept">net-accept</a>,
-<a HREF="#net-connect">net-connect</a>,
-<a HREF="#net-eval">net-eval</a>,
-<a HREF="#net-listen">net-listen</a>,
-<a HREF="#net-lookup">net-lookup</a>,
-<a HREF="#net-receive">net-receive</a>,
-<a HREF="#net-receive-udp">net-receive-udp</a>,
-<a HREF="#net-select">net-select</a>,
-<a HREF="#net-send">net-send</a>,
-<a HREF="#net-send-udp">net-send-udp</a>,
-and <a HREF="#net-service">net-service</a>. 
+following functions: <a href="#net-accept">net-accept</a>,
+<a href="#net-connect">net-connect</a>,
+<a href="#net-eval">net-eval</a>,
+<a href="#net-listen">net-listen</a>,
+<a href="#net-lookup">net-lookup</a>,
+<a href="#net-receive">net-receive</a>,
+<a href="#net-receive-udp">net-receive-udp</a>,
+<a href="#net-select">net-select</a>,
+<a href="#net-send">net-send</a>,
+<a href="#net-send-udp">net-send-udp</a>,
+and <a href="#net-service">net-service</a>. 
 Whenever one of these functions fails, it returns <tt>nil</tt> and <tt>net-error</tt>
 can be used to retrieve more information.</p>
 
 <p>Functions that communicate using sockets close the socket automatically and 
-remove it from the <a HREF="#net-sessions">net-sessions</a> list.</p>
+remove it from the <a href="#net-sessions">net-sessions</a> list.</p>
 
-<p>Each successful termination of a <a HREF="#socket_tcpip">net-*</a> 
+<p>Each successful termination of a <a href="#socket_tcpip">net-*</a> 
 function clears the error number.</p>
 
 <p>The following messages are returned:</p>
@@ -17675,7 +17816,7 @@ syntax: (net-listen <em>str-file-path</em>)</h4>
 
 <p>Listens on a port specified in <em>int-port</em>.  A call to <tt>net-listen</tt>
 returns immediately with a socket number, which is then used by 
-the blocking <a HREF="#net-accept">net-accept</a> function 
+the blocking <a href="#net-accept">net-accept</a> function 
 to wait for a connection.  As soon as a connection is accepted, 
 <a href="#net-accept">net-accept</a> returns a socket number 
 that can be used to communicate with the connecting client.</p>
@@ -17941,7 +18082,7 @@ for a connection on a specific <em>int-socket</em>.</p>
 </pre>
 
 <p>
-Use the <a HREF="#net-peer">net-peer</a> 
+Use the <a href="#net-peer">net-peer</a> 
 function to access the remote computer's 
 IP number and port.
 </p>
@@ -18093,7 +18234,7 @@ for a connection on <em>int-socket</em>.
 
 
 <p>
-Use the <a HREF="#net-local">net-local</a> function
+Use the <a href="#net-local">net-local</a> function
 to access the local computer's IP number and port number.
 </p>
 
@@ -18252,8 +18393,8 @@ The space reserved in <em>sym-buffer</em> is exactly the size of bytes read.</p>
 <p>
 Note that <tt>net-receive</tt> is a blocking call 
 and does not return until the data arrives at <em>int-socket</em>. 
-Use <a HREF="#net-peek">net-peek</a> 
-or <a HREF="#net-select">net-select</a> to find out 
+Use <a href="#net-peek">net-peek</a> 
+or <a href="#net-select">net-select</a> to find out 
 if a socket is ready for reading.
 </p>
 
@@ -18937,7 +19078,7 @@ of random, continuously distributed floating point numbers
 with a mean of <em>float-mean</em> 
 and a standard deviation of <em>float-stdev</em>. 
 The random generator used internally 
-can be seeded using the <a HREF="#seed">seed</a> function.
+can be seeded using the <a href="#seed">seed</a> function.
 </p>
 
 <!-- example -->
@@ -18962,7 +19103,7 @@ normal distributed floating point number:
 
 
 <p>
-See also the <a HREF="#random">random</a> 
+See also the <a href="#random">random</a> 
 and <a href="#rand">rand</a> functions 
 for evenly distributed numbers, 
 <a href="#amb">amb</a> for randomizing evaluation 
@@ -19069,7 +19210,7 @@ has a different value from 1 to 6:</p>
 </table>
 
 
-<p>See also the <a HREF="#date">date</a>, 
+<p>See also the <a href="#date">date</a>, 
 <a href="#date-list">date-list</a>, 
 <a href="#date-parse">date-parse</a>, 
 <a href="#date-value">date-value</a>, 
@@ -19102,11 +19243,11 @@ $100,000 at a yearly interest rate of 7 percent with payments of $775.30.
 </p>
 
 <p>
-See also the <a HREF="#fv">fv</a>,
+See also the <a href="#fv">fv</a>,
 <a href="#irr">irr</a>,
-<a HREF="#npv">npv</a>,
-<a HREF="#pmt">pmt</a>,
-and <a HREF="#pv">pv</a> functions.
+<a href="#npv">npv</a>,
+<a href="#pmt">pmt</a>,
+and <a href="#pv">pv</a> functions.
 </p>
 
 <br/><br/>
@@ -19141,11 +19282,11 @@ and third years.
 </p>
 
 <p>
-See also the <a HREF="#fv">fv</a>,
+See also the <a href="#fv">fv</a>,
 <a href="#irr">irr</a>,
-<a HREF="#nper">nper</a>,
-<a HREF="#pmt">pmt</a>,
-and <a HREF="#pv">pv</a> functions.
+<a href="#nper">nper</a>,
+<a href="#pmt">pmt</a>,
+and <a href="#pv">pv</a> functions.
 </p> 
 
 <br/><br/>
@@ -19162,7 +19303,7 @@ syntax: (nth <em>list-indices</em> <em>array</em>)</h4>
 <p>
 In the first syntax group <tt>nth</tt> uses <em>int-index</em> an index into the 
 <em>list</em>, <em>array</em> or <em>str</em> found and returning the element found 
-at that index. See also <a HREF="#indexing">Indexing elements of strings and lists</a>.</p>
+at that index. See also <a href="#indexing">Indexing elements of strings and lists</a>.</p>
 
 <p>Multiple indices may be specified to recursively access elements in nested lists
 or arrays. If there are more indices than nesting levels, the extra indices are ignored. 
@@ -19353,6 +19494,24 @@ See the functions <a href="#floatp">float?</a> and <a href="#integerp">integer?<
 
 <br/><br/>
 
+<a name="oddp"></a>
+<h2><span class="function">odd?</span></h2>
+<h4>syntax: (odd? <em>int-number</em>)</h4>
+
+<p>Checks the parity of an integer number. If the number is not <em>even divisable</em> by <tt>2</tt>, 
+it has <em>odd</em> parity.  When a floating point number is passed for <em>int-number</em>, 
+it will be converted first to an integer by cutting off its fractional part.</p>
+
+<pre>
+(odd? 123)  <span class='arw'>&rarr;</span> true
+(odd? 8)    <span class='arw'>&rarr;</span> nil
+(odd? 8.7)  <span class='arw'>&rarr;</span> nil
+</pre>
+
+<p>Use <a href="#evenp">even?</a> to check if an integer is even, divisable by <tt>2</tt>.</p>
+
+<br/><br/>
+
 <a name="open"></a>
 <h2><span class="function">open</span></h2>
 
@@ -19397,11 +19556,11 @@ The following strings are legal access modes:
 
 
 <p>
-The first example uses <tt>open</tt> to set the device for <a HREF="#print">print</a> 
+The first example uses <tt>open</tt> to set the device for <a href="#print">print</a> 
 and writes the word <tt>"hello world"</tt> into the file <tt>newfile.data</tt>.
 The second example reads a byte value at offset 6 in the same file (the ASCII value 
-of <tt>'w'</tt> is 119). Note that using <tt>close</tt> on <a HREF="#device">(device)</a> 
-automatically resets <a HREF="#device">device</a> to <tt>0</tt> (zero).
+of <tt>'w'</tt> is 119). Note that using <tt>close</tt> on <a href="#device">(device)</a> 
+automatically resets <a href="#device">device</a> to <tt>0</tt> (zero).
 </p>
 
 <p>
@@ -19512,10 +19671,10 @@ syntax: (pack <em>struct</em> <em>list</em>)</h4>
 <p>When the first parameter is a string, <tt>pack</tt> packs one or more expressions 
 (<em>exp-1</em> to <em>exp-n</em>) into a binary format specified in the format 
 string <em>str-format</em>, and returning the binary structure in a string buffer.
-The symmetrical <a HREF="#unpack">unpack</a> function is used 
+The symmetrical <a href="#unpack">unpack</a> function is used 
 for unpacking. The expression arguments can also be given in a <em>list</em>.
 <tt>pack</tt> and <tt>unpack</tt> are useful when reading and writing binary files 
-(see <a HREF="#read">read</a> and <a HREF="#write">write</a>) 
+(see <a href="#read">read</a> and <a href="#write">write</a>) 
 or when unpacking binary structures from return values of imported C functions 
 using <tt>import</tt>.</p>
 
@@ -19707,11 +19866,11 @@ These are not required but can be used to improve readability.
 
 <p>
 See also the <a href="#address">address</a>,
-<a HREF="#get-int">get-int</a>,
-<a HREF="#get-long">get-long</a>,
-<a HREF="#get-char">get-char</a>,
-<a HREF="#get-string">get-string</a>,
-and <a HREF="#unpack">unpack</a> functions.
+<a href="#get-int">get-int</a>,
+<a href="#get-long">get-long</a>,
+<a href="#get-char">get-char</a>,
+<a href="#get-string">get-string</a>,
+and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -19764,7 +19923,7 @@ with the default option <tt>0</tt> (zero).  Instead of
 quotes can be used to limit the pattern.  In this case, double 
 backslashes must be used inside the pattern.  The last pattern could 
 be used for parsing CSV (Comma Separated Values) files.  For the regular expression option 
-numbers, see <a HREF="#regex">regex</a>.</p>
+numbers, see <a href="#regex">regex</a>.</p>
 
 <p>
 <tt>parse</tt> will return empty fields 
@@ -19796,7 +19955,7 @@ in an empty list.
 </p>
 
 <p>
-Use the <a HREF="#regex">regex</a> function 
+Use the <a href="#regex">regex</a> function 
 to break strings up 
 and the <a href="#directory">directory</a>, 
 <a href="#find">find</a>, 
@@ -19912,11 +20071,11 @@ This illustrates the typical way payment is calculated for mortgages.
 </p>
 
 <p>
-See also the <a HREF="#fv">fv</a>,
+See also the <a href="#fv">fv</a>,
 <a href="#irr">irr</a>,
-<a HREF="#nper">nper</a>,
-<a HREF="#npv">npv</a>,
-and <a HREF="#pv">pv</a> functions.
+<a href="#nper">nper</a>,
+<a href="#npv">npv</a>,
+and <a href="#pv">pv</a> functions.
 </p>
 
 <br/><br/>
@@ -19935,7 +20094,7 @@ In the first syntax, <tt>pop</tt> extracts an element from the list found
 by evaluating <em>list</em>.
 If a second parameter is present,
 the element at <em>int-index</em> is extracted and returned.
-See also <a HREF="#indexing">Indexing elements of strings and lists</a>.
+See also <a href="#indexing">Indexing elements of strings and lists</a>.
 </p>
 
 <p>
@@ -20017,7 +20176,7 @@ str  <span class='arw'>&rarr;</span> "nw"
 <p>Popping an empty string will return an empty string.</p>
 
 <p>
-See also the <a HREF="#push">push</a> function, the inverse operation to <tt>pop</tt>.
+See also the <a href="#push">push</a> function, the inverse operation to <tt>pop</tt>.
 </p>
 
 <br/><br/>
@@ -20127,7 +20286,7 @@ See the function <a href="#get-url">get-url</a> for details on both of these opt
 </p>
 
 <p>
-See also the <a HREF="#get-url">get-url</a> and <a HREF="#put-url">put-url</a> functions.
+See also the <a href="#get-url">get-url</a> and <a href="#put-url">put-url</a> functions.
 </p>
 
 <br/><br/>
@@ -20272,7 +20431,7 @@ Evaluates and tests if <em>exp</em> is a primitive symbol and returns
 Evaluates and prints <em>exp-1</em>&mdash;
 to the current I/O device,
 which defaults to the console window.
-See the built-in function <a HREF="#device">device</a> for details on how to specify a different I/O device.
+See the built-in function <a href="#device">device</a> for details on how to specify a different I/O device.
 </p>
 
 <p>
@@ -20328,7 +20487,7 @@ Several special characters may be included in strings encoded with the escape ch
 
 <p>
 	To finish printing with a line-feed,
-	use <a HREF="#println">println</a>.
+	use <a href="#println">println</a>.
 </p>
 
 <br/><br/>
@@ -20342,24 +20501,23 @@ Several special characters may be included in strings encoded with the escape ch
 	to the current I/O device,
 	which defaults to the console window.
 	A line-feed is printed at the end.
-	See the built-in function <a HREF="#device">device</a> for details on how to specify a different I/O device.
-	<tt>println</tt> works exactly like <a HREF="#print">print</a> but emits a line-feed character at the end.
+	See the built-in function <a href="#device">device</a> for details on how to specify a different I/O device.
+	<tt>println</tt> works exactly like <a href="#print">print</a> but emits a line-feed character at the end.
 </p>
 
 <p>
-	See also the <a HREF="#write-line">write-line</a> and <a HREF="#print">print</a> functions.
+	See also the <a href="#write-line">write-line</a> and <a href="#print">print</a> functions.
 </p>
 
 <br/><br/>
 
 <a name="prob-chi2"></a>
 <h2><span class="function">prob-chi2</span></h2>
-<h4>syntax: (prob-chi2 <em>num-chi2</em> <em>num-df</em>)</h4>
+<h4>syntax: (prob-chi2 <em>num-chi2</em> <em>int-df</em>)</h4>
 
-<p>
-	Returns the probability Q of an observed Chi&sup2;
-	statistic in <em>num-chi2</em> with <em>num-df</em> degrees of freedom to be equal to or greater than.
-	<tt>prob-chi2</tt> is derived from the incomplete Gamma function <a HREF="#gammai">gammai</a>.
+<p>Returns the probability of an observed <em>Chi&sup2;</em> statistic in <em>num-chi2</em> 
+with <em>num-df</em> degrees of freedom to be equal or greater under the null hypothesis.
+<tt>prob-chi2</tt> is derived from the incomplete Gamma function <a HREF="#gammai">gammai</a>.
 </p>
 
 <!-- example -->
@@ -20371,6 +20529,48 @@ Several special characters may be included in strings encoded with the escape ch
 
 <p>
 	See also the inverse function <a href="#crit-chi2">crit-chi2</a>.
+</p> 
+
+<br/><br/>
+
+<a name="prob-f"></a>
+<h2><span class="function">prob-f</span></h2>
+<h4>syntax: (prob-f <em>num-f</em> <em>int-df1</em> <em>int-df2</em>)</h4>
+
+<p>Returns the probability of an observed <em>F</em> statistic in <em>num-f</em> 
+with <em>int-df1</em> and <em>int-df2</em> degrees of freedom to be equal or greater 
+under the null hypothesis.</p>
+
+<!-- example -->
+
+<pre>
+(prob-f 2.75 10 12)  <span class='arw'>&rarr;</span> 0.0501990804
+</pre>
+
+
+<p>
+See also the inverse function <a href="#crit-f">crit-f</a>.
+</p> 
+
+<br/><br/>
+
+<a name="prob-t"></a>
+<h2><span class="function">prob-t</span></h2>
+<h4>syntax: (prob-t <em>num-t</em> <em>int-df1</em>)</h4>
+
+<p>Returns the probability of an observed <em>Student's t</em> statistic in <em>num-t</em> 
+with <em>int-df</em> degrees of freedom to be equal or greater 
+under the null hypothesis.</p>
+
+<!-- example -->
+
+<pre>
+(prob-t 1.76 14)  <span class='arw'>&rarr;</span> 0.05011454551
+</pre>
+
+
+<p>
+See also the inverse function <a href="#crit-t">crit-t</a>.
 </p> 
 
 <br/><br/>
@@ -20611,7 +20811,7 @@ the first element. <tt>push</tt> is a destructive operation that changes the
 contents of the target list.</p>
 
 <p>The list changed is returned as a reference on which other built-in
-functions can work. See also <a HREF="#indexing">Indexing elements of 
+functions can work. See also <a href="#indexing">Indexing elements of 
 strings and lists</a>.</p>
 
 <p>
@@ -20723,7 +20923,7 @@ str                   <span class='arw'>&rarr;</span> "abcdefghijk"
 lst <span class='arw'>&rarr;</span> ("xabc" "xyz")
 </pre>
 
-<p>See also the <a HREF="#pop">pop</a> function, which is the inverse operation to <tt>push</tt>.
+<p>See also the <a href="#pop">pop</a> function, which is the inverse operation to <tt>push</tt>.
 </p>
 
 <br/><br/>
@@ -20860,7 +21060,7 @@ Script PUT /cgi-bin/put.cgi
 </p>
 
 <p>
-	See also the functions <a HREF="#get-url">get-url</a> and <a HREF="#post-url">post-url</a>,
+	See also the functions <a href="#get-url">get-url</a> and <a href="#post-url">post-url</a>,
 	which can be used to upload files when formatting form data as <tt>multipart/form-data</tt>.
 </p>
 
@@ -20891,11 +21091,11 @@ for payment at the beginning of each period, <em>int-type</em> is 1.</p>
 </p>
 
 <p>
-	See also the <a HREF="#fv">fv</a>,
+	See also the <a href="#fv">fv</a>,
 	<a href="#irr">irr</a>,
-	<a HREF="#nper">nper</a>,
-	<a HREF="#npv">npv</a>,
-	and <a HREF="#pmt">pmt</a> functions.
+	<a href="#nper">nper</a>,
+	<a href="#npv">npv</a>,
+	and <a href="#pmt">pmt</a> functions.
 </p>
 
 <br/><br/>
@@ -20979,8 +21179,8 @@ for payment at the beginning of each period, <em>int-type</em> is 1.</p>
 	while the second line produces a list 
 	of 100 integers with 
 	<tt>0</tt>, <tt>1</tt>, and <tt>2</tt> equally distributed. 
-	Use the <a HREF="#random">random</a> 
-	and <a HREF="#normal">normal</a> functions
+	Use the <a href="#random">random</a> 
+	and <a href="#normal">normal</a> functions
 	to generate floating point
 	random numbers, 
 	and use <a href="#seed">seed</a> to vary 
@@ -21002,7 +21202,7 @@ syntax: (random <em>float-offset</em> <em>float-scale</em>)</h4>
 	scaled (multiplied) by <em>float-scale</em>, 
 	with an added offset of <em>float-offset</em>. 
 	The starting point of the internal random generator 
-	can be seeded using <a HREF="#seed">seed</a>.
+	can be seeded using <a href="#seed">seed</a>.
 </p>
 
 <!-- example -->
@@ -21027,8 +21227,8 @@ syntax: (random <em>float-offset</em> <em>float-scale</em>)</h4>
 
 
 <p>
-	See also the <a HREF="#normal">normal</a> 
-	and <a HREF="#rand">rand</a> functions.
+	See also the <a href="#normal">normal</a> 
+	and <a href="#rand">rand</a> functions.
 </p>
 
 <br/><br/>
@@ -21087,7 +21287,7 @@ syntax: (random <em>float-offset</em> <em>float-scale</em>)</h4>
 Reads a maximum of <em>int-size</em> bytes from a file specified in <em>int-file</em> 
 into a buffer in <em>sym-buffer</em>.  Any data referenced by the symbol <em>sym-buffer</em> 
 prior to the reading is deleted.  The handle in <em>int-file</em> is obtained from a 
-previous <a HREF="#open">open</a> statement. The symbol <em>sym-buffer</em> contains 
+previous <a href="#open">open</a> statement. The symbol <em>sym-buffer</em> contains 
 data of type string after the read operation.  <em>sym-buffer</em> can also be a default 
 functor specified by a context symbol for reference passing in and out of user-defined 
 functions.</p>
@@ -21150,7 +21350,7 @@ form still works but is deprecated and should be avoided in new code.</p>
 </p>
 
 <p>
-	See also the <a HREF="#write">write</a> function.
+	See also the <a href="#write">write</a> function.
 </p>
 
 <br/><br/>
@@ -21163,7 +21363,7 @@ form still works but is deprecated and should be avoided in new code.</p>
 <p>
 Reads a byte from a file specified by the file handle in <em>int-file</em> 
 or from the current I/O device - e.g. <em>stdin</em> - when no file handle is specified.
-The file handle is obtained from a previous <a HREF="#open">open</a> operation. 
+The file handle is obtained from a previous <a href="#open">open</a> operation. 
 Each <tt>read-char</tt> advances the file pointer by one byte. 
 Once the end of the file is reached, <tt>nil</tt> is returned.
 </p>
@@ -21183,17 +21383,17 @@ Once the end of the file is reached, <tt>nil</tt> is returned.
 
 
 <p>
-	Use <a HREF="#read-line">read-line</a> 
-	and <a HREF="#device">device</a> to read 
+	Use <a href="#read-line">read-line</a> 
+	and <a href="#device">device</a> to read 
 	whole text lines at a time. 
 	Note that newLISP supplies 
 	a fast built-in function 
-	called <a HREF="#copy-file">copy-file</a> 
+	called <a href="#copy-file">copy-file</a> 
 	for copying files.
 </p>
 
 <p>
-	See also the <a HREF="#write-char">write-char</a> function.
+	See also the <a href="#write-char">write-char</a> function.
 </p>
 
 <br/><br/>
@@ -21288,8 +21488,8 @@ When the prefix is <tt>http://</tt>, <tt>read-file</tt> works exactly like
 	In this mode, <tt>read-file</tt> can also be used 
 	to transfer files from remote newLISP server nodes.</p>
 
-<p>See also the <a HREF="#write-file">write-file</a> and 
-<a HREF="#append-file">append-file</a> functions.
+<p>See also the <a href="#write-file">write-file</a> and 
+<a href="#append-file">append-file</a> functions.
 </p>
 
 <br/><br/>
@@ -21356,20 +21556,20 @@ newLISP Unix shared library or newLISP Win32 DLL (Dynamic Link Library).</p>
 
 <p>
 	By default, 
-	the current <a HREF="#device">device</a> 
-	is the keyboard (<a HREF="#device">device</a> <tt>0</tt>). 
-	Use the built-in function <a HREF="#device">device</a> 
+	the current <a href="#device">device</a> 
+	is the keyboard (<a href="#device">device</a> <tt>0</tt>). 
+	Use the built-in function <a href="#device">device</a> 
 	to specify a different I/O device (e.g., a file). 
 	Optionally, 
 	a file handle can be specified 
 	in the <em>int-file</em> obtained 
-	from a previous <a HREF="#open">open</a> statement.
+	from a previous <a href="#open">open</a> statement.
 </p>
 
 <p>
 	The last buffer contents 
 	from a read-line operation 
-	can be retrieved using <a HREF="#current-line">current-line</a>.
+	can be retrieved using <a href="#current-line">current-line</a>.
 </p>
 
 <p>When <tt>read-line</tt> is reading from a file or from <em>stdin</em>
@@ -21402,7 +21602,7 @@ to 2048 characters and performance is much faster.</p>
 	that the result from the last 
 	<tt>read-line</tt> operation 
 	is stored in a system internal buffer. 
-	When <a HREF="#write-line">write-line</a> 
+	When <a href="#write-line">write-line</a> 
 	is used without argument, 
 	it writes the contents 
 	of the last <tt>read-line</tt> buffer 
@@ -21410,7 +21610,7 @@ to 2048 characters and performance is much faster.</p>
 </p>
 
 <p>
-	See also the <a HREF="#current-line">current-line</a> function
+	See also the <a href="#current-line">current-line</a> function
 	for retrieving this buffer.
 </p>
 
@@ -21422,7 +21622,7 @@ to 2048 characters and performance is much faster.</p>
 <h4>syntax: (read-utf8 <em>int-file</em>)</h4>
 
 <p>Reads an UTF-8 character from a file specified by the file handle in <em>int-file</em>. 
-The file handle is obtained from a previous <a HREF="#open">open</a> operation. 
+The file handle is obtained from a previous <a href="#open">open</a> operation. 
 Each <tt>read-utf8</tt> advances the file pointer by the number of bytes contained
 in the UTF-8 character.  Once the end of the file is reached, <tt>nil</tt> is returned. </p>
 
@@ -21480,6 +21680,9 @@ A full version is installed in the standard location as module file <tt>macro.ls
 <!-- example -->
 <pre>
 (context 'macro)
+
+; initialize macro list
+(setf macro-list '())
 
 ; registers a macro
 (define-macro (macro:macro callp body)
@@ -21848,9 +22051,9 @@ for strings.
 on <em>str-text</em> with the pattern specified in <em>str-pattern</em>. 
 The same regular expression pattern matching 
 is also supported in the functions <a href="#directory">directory</a>, 
-<a HREF="#find">find</a>, <a href="#find-all">find-all</a>, 
-<a href="#parse">parse</a>, <a HREF="#replace">replace</a>, 
-and <a HREF="#search">search</a> when using these functions on strings.
+<a href="#find">find</a>, <a href="#find-all">find-all</a>, 
+<a href="#parse">parse</a>, <a href="#replace">replace</a>, 
+and <a href="#search">search</a> when using these functions on strings.
 </p>
 
 <p>
@@ -21975,7 +22178,8 @@ nuevatec.com
 
 <p>
 	 The following constants can be used for <em>int-option</em>.
-	Several options can be combined using a binary or <tt>|</tt> (pipe).
+	Several options can be combined using a binary or <tt>|</tt> (pipe) operator. 
+    E.g. <tt>(| 1 4)</tt> would combine options <tt>1</tt> and <tt>4</tt>.
 	The uppercase names are used in the PCRE regex documentation and could be predefined in <tt>init.lsp</tt>.
 	The last option is a newLISP custom option only to be used in <a href="#replace">replace</a>;
 	it can be combined with PCRE options.
@@ -22015,7 +22219,7 @@ and feature-rich with many special characters and forms.
 Please consult a book or the PCRE manual pages for more detail.
 Most PERL books or introductions to Linux or Unix 
 also contain chapters about regular expressions.
-See also <a HREF="http://www.pcre.org">http://www.pcre.org</a> 
+See also <a href="http://www.pcre.org">http://www.pcre.org</a> 
 for further references and manual pages.  </p>
 
 <p>Regular expression patterns can be precompiled for higher speed when using 
@@ -22236,7 +22440,7 @@ The presence of a fourth parameter indicates that a regular expression search
 should be performed with a regular expression pattern specified in <em>str-pattern</em> 
 and an option number specified in <em>int-option</em> (e.g., <tt>1</tt> (one) for 
 case-insensitive searching or <tt>0</tt> (zero) for a standard Perl Compatible Regular 
-Expression (PCRE) search). See <a HREF="#regex">regex</a> above for details.
+Expression (PCRE) search). See <a href="#regex">regex</a> above for details.
 </p>
 
 <p>
@@ -22323,7 +22527,7 @@ syntax: (reset true)</h4>
 
 <p>
 In the first syntax, <tt>reset</tt> returns to the top level of evaluation,
-switches the <a HREF="#trace">trace</a> mode off, and switches to the MAIN 
+switches the <a href="#trace">trace</a> mode off, and switches to the MAIN 
 context/namespace. <tt>reset</tt> restores the top-level variable environment 
 using the saved variable environments on the stack. It also fires an error 
 "user reset - no error". This behavior can be used when writing error handlers.
@@ -22388,7 +22592,7 @@ of the string <em>str</em> in a string.
 
 
 <p>
-See also the <a HREF="#first">first</a> and <a HREF="#last">last</a> functions.
+See also the <a href="#first">first</a> and <a href="#last">last</a> functions.
 </p>
 
 <p>
@@ -22441,7 +22645,7 @@ str            <span class='arw'>&rarr;</span> "PSILwen"
 
 
 <p>
-	See also the <a HREF="#sort">sort</a> function.
+	See also the <a href="#sort">sort</a> function.
 </p>
 
 <br/><br/>
@@ -22563,10 +22767,10 @@ syntax: (save <em>str-file</em> <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <p>
 	Each symbol is saved 
-	by means of a <a HREF="#set">set</a> statement or&mdash;if 
+	by means of a <a href="#set">set</a> statement or&mdash;if 
 	the symbol contains a lambda or lambda-macro function&mdash;by 
-	means of <a HREF="#define">define</a> 
-	or <a HREF="#define-macro">define-macro</a> statements.
+	means of <a href="#define">define</a> 
+	or <a href="#define-macro">define-macro</a> statements.
 </p>
 
 <p>
@@ -22623,7 +22827,7 @@ syntax: (save <em>str-file</em> <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 </p>
 
 <p>
-	See also the functions <a HREF="#load">load</a> 
+	See also the functions <a href="#load">load</a> 
 	(the inverse operation of <tt>save</tt>) 
 	and <a href="#source">source</a>,
 	which saves symbols and contexts to a string 
@@ -22638,7 +22842,7 @@ syntax: (save <em>str-file</em> <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <p>
 Searches a file specified by its handle in <em>int-file</em> for a string in <em>str-search</em>.
-<em>int-file</em> can be obtained from a previous <a HREF="#open">open</a> file.  After the search, 
+<em>int-file</em> can be obtained from a previous <a href="#open">open</a> file.  After the search, 
 the file pointer is positioned at the beginning  or the end of the searched string or at the end 
 of the file if nothing is found.</p>
 
@@ -22681,7 +22885,7 @@ the string <tt>#define</tt> and prints the rest of the line after the string "#d
 	<a href="#find">find</a>,
 	<a href="#find-all">find-all</a>, 
 	<a href="#parse">parse</a>,
-	<a HREF="#regex">regex</a>, 
+	<a href="#regex">regex</a>, 
 	and <a href="#replace">replace</a>.
 </p>
 
@@ -22695,8 +22899,8 @@ the string <tt>#define</tt> and prints the rest of the line after the string "#d
 	Seeds the internal random generator 
 	that generates numbers for <a href="#amb">amb</a>,
 	<a href="#normal">normal</a>,
-	<a HREF="#rand">rand</a>, 
-	and <a HREF="#random">random</a> 
+	<a href="#rand">rand</a>, 
+	and <a href="#random">random</a> 
 	with the number specified in <em>int-seed</em>.
 	Note that the random generator used in newLISP 
 	is the C-library function <em>rand()</em>.
@@ -23301,7 +23505,7 @@ document.</p>
 </p>
 
 <p>
-	Use the <a HREF="#series">series</a> function
+	Use the <a href="#series">series</a> function
 	to generate geometric sequences.
 </p>
 
@@ -23381,7 +23585,7 @@ previously for better readability of the <tt>series</tt> statement.</p>
 index value, which can be used inside <em>func</em>.</p>
 
 
-<p>Use the <a HREF="#sequence">sequence</a> function to generate arithmetic sequences.
+<p>Use the <a href="#sequence">sequence</a> function to generate arithmetic sequences.
 </p>
 
 <br/><br/>
@@ -23432,8 +23636,8 @@ x  <span class='arw'>&rarr;</span> 123
 
 <p>
 Symbols can be set to lambda or lambda-macro expressions.
-This operation is equivalent to using <a HREF="#define">define</a> 
-or <a HREF="#define-macro">define-macro</a>.</p>
+This operation is equivalent to using <a href="#define">define</a> 
+or <a href="#define-macro">define-macro</a>.</p>
 
 
 <pre>
@@ -24018,7 +24222,7 @@ the currently defined handler function or <tt>nil</tt>.
 
 <p>
 	Evaluates one or more expressions in <em>exp-1</em>&mdash;.
-	<tt>silent</tt> is similar to <a HREF="#begin">begin</a>,
+	<tt>silent</tt> is similar to <a href="#begin">begin</a>,
 	but it suppresses console output 
 	of the return value 
 	and the following prompt.
@@ -24131,7 +24335,7 @@ up to that offset.  If the parameter is omitted,
 <tt>slice</tt> copies all of the elements to the end of the list.</p>
 
 <p>
-	See also <a HREF="#indexing">Indexing elements of strings and lists</a>.
+	See also <a href="#indexing">Indexing elements of strings and lists</a>.
 </p>
 
 <!-- example -->
@@ -24154,7 +24358,7 @@ and <em>int-length</em> contains the length of the substring.
 If <em>int-length</em> is not specified, everything to the end of the string is extracted.
 <tt>slice</tt> also works on string buffers containing binary data like <tt>0</tt>'s (zeroes). 
 It operates on byte boundaries rather than character boundaries.
-See also <a HREF="#indexing">Indexing elements of strings and lists</a>.</p>
+See also <a href="#indexing">Indexing elements of strings and lists</a>.</p>
 
 <p>Note that <tt>slice</tt> always works on single 8-bit byte boundaries for
 offset and length numbers, even when running the UTF-8 enabled version of newLISP.</p>
@@ -24522,7 +24726,7 @@ is returned depending on outcome.</p>
 
 
 <p>
-	See also the <a HREF="#ends-with">ends-with</a> function.
+	See also the <a href="#ends-with">ends-with</a> function.
 </p>
 
 <br/><br/>
@@ -24568,8 +24772,8 @@ is returned depending on outcome.</p>
 
 
 <p>
-	Use the <a HREF="#append">append</a> 
-	and <a HREF="#join">join</a> 
+	Use the <a href="#append">append</a> 
+	and <a href="#join">join</a> 
 	(allows the joining string 
 	to be specified) functions 
 	to concatenate strings containing zero bytes.
@@ -24868,7 +25072,7 @@ var                    <span class='arw'>&rarr;</span> 345
 <pre>
 ;; using sym for simulating hash tables
 
-(set (sym "John Doe" 'MyDB') 1.234)
+(set (sym "John Doe" 'MyDB) 1.234)
 (set (sym "(" 'MyDB) "parenthesis open")
 (set (sym 12 'MyDB) "twelve")
 
@@ -25110,7 +25314,8 @@ resource statistics. Ten integers report the following status:</p>
 <tr><td>7</td><td>Pid of running newLISP process</td></tr>
 <tr><td>8</td><td>Version number as an integer constant</td></tr>
 <tr><td>9</td><td>Operating system constant:<br/>
-linux=1, bsd=2, osx=3, solaris=4, cygwin=5, win32=6, os/2=7, tru64unix=9 <br/>
+linux=1, bsd=2, osx=3, solaris=4,  win32=6, os/2=7, cygwin=8, tru64unix=9, aix=10
+<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 11 will be set for ffilib (extended import/callback API) versions (add 1024)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 10 will be set for IPv6 versions (add 512)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 9 will be set for 64-bit (changeable at runtime) versions (add 256)<br/>
@@ -25322,10 +25527,10 @@ decimals of milliseconds are shown or not shown.</p>
 <p>In first the example, 450 milliseconds elapsed 
 while evaluating <tt>(myprog x y z)</tt>.  The second example 
 returns the time for ten evaluations of  <tt>(myprog x y z)</tt>.
-See also <a HREF="#date">date</a>,
-<a HREF="#date-value">date-value</a>,
-<a HREF="#time-of-day">time-of-day</a>, 
-and <a HREF="#now">now</a>.</p>
+See also <a href="#date">date</a>,
+<a href="#date-value">date-value</a>,
+<a href="#time-of-day">time-of-day</a>, 
+and <a href="#now">now</a>.</p>
 
 <br/><br/>
 
@@ -25337,10 +25542,10 @@ and <a HREF="#now">now</a>.</p>
 <p>Returns the time in milliseconds since the start of the current day. 
 </p>
 
-<p>See also the <a HREF="#date">date</a>,
-<a HREF="#date-value">date-value</a>,
-<a HREF="#time">time</a>, 
-and <a HREF="#now">now</a> functions.</p>
+<p>See also the <a href="#date">date</a>,
+<a href="#date-value">date-value</a>,
+<a href="#time">time</a>, 
+and <a href="#now">now</a> functions.</p>
 
 <br/><br/>
 
@@ -25501,7 +25706,7 @@ upon entry and exit.</p>
 	Highlighting is done by bracketing the expression 
 	between two # (number sign) characters.
 	This can be changed to a different character 
-	using <a HREF="#trace-highlight">trace-highlight</a>. 
+	using <a href="#trace-highlight">trace-highlight</a>. 
 	Upon exit from the expression, 
 	the result of its evaluation 
 	is also reported.
@@ -25558,7 +25763,7 @@ or set to different values.
 </p>
 
 <p>
-	Use the <a HREF="#debug">debug</a> function
+	Use the <a href="#debug">debug</a> function
 	as a shortcut for the above example.
 </p>
 
@@ -25569,9 +25774,9 @@ or set to different values.
 <h4>syntax: (trace-highlight <em>str-pre</em> <em>str-post</em> [<em>str-header</em> <em>str-footer</em>])</h4>
 
 <p>Sets the characters or string of characters used to enclose expressions 
-during <a HREF="#trace">trace</a>.  By default, 
+during <a href="#trace">trace</a>.  By default, 
 the # (number sign) is used to enclose the expression highlighted 
-in <a HREF="#trace">trace</a> mode.  This can be changed to different characters 
+in <a href="#trace">trace</a> mode.  This can be changed to different characters 
 or strings of up to seven characters.  If the console window accepts terminal 
 control characters, this can be used to display the expression in a different 
 color, bold, reverse, and so forth.</p>
@@ -25666,8 +25871,8 @@ of that data type:</p>
 
 <p>
 	See also the matrix operations 
-	<a href="#det">det</a>, <a HREF="#invert">invert</a>,
-    <a href="#mat">mat</a> and <a HREF="#multiply">multiply</a>.
+	<a href="#det">det</a>, <a href="#invert">invert</a>,
+    <a href="#mat">mat</a> and <a href="#multiply">multiply</a>.
 </p>
 
 <br/><br/>
@@ -25783,11 +25988,14 @@ Most systems use UTF-8 encoding only.</p>
 	but the match is still successful,
 	<tt>unify</tt> returns an empty list.
     newLISP uses a modified <em>J. Alan Robinson</em> unification algorithm
-    with <em>occurs check</em>.
+    with correctly applied <em>occurs check</em>. 
+See also <em>Peter Norvig</em>'s paper about a common 
+<a href="http://norvig.com/unify-bug.pdf">unifcation algorithm bug</a>, which 
+is not present in this implementation.
 </p>
 
 <p>Since version 10.4.0 the underscore symbol <tt>_</tt> (ASCII 95) matches any atom,
-list or unbound variable.</p>
+list or unbound variable and never binds.</p>
 
 <p>
     Like <a href="#match">match</a>, <tt>unify</tt> is frequently 
@@ -26051,6 +26259,24 @@ E <span class='arw'>&rarr;</span> (x y z)
 
 <br/><br/>
 
+<a name="union"></a>
+<h2><span class="function">union</span></h2>
+<h4>syntax: (union <em>list-1</em> <em>list-2</em> [<em>list-3</em> ... ])</h4>
+
+<p><tt>union</tt> returns a unique collection list of distinct elements found in two 
+or more lists.</p>
+
+<pre>
+(union '(1 3 1 4 4 3) '(2 1 5 6 4))  <span class='arw'>&rarr;</span>  (1 3 4 2 5 6)
+</pre>
+
+<p>Like the other set functions <a href="#difference">difference</a>, 
+<a href="#interset">intersect</a> and <a href="#unique">unique</a>,
+<tt>union</tt> maintains the order of elements as found in the original
+lists.</p>
+
+<br/><br/>
+
 <a name="unique"></a>
 <h2><span class="function">unique</span></h2>
 <h4>syntax: (unique <em>list</em>)</h4>
@@ -26073,8 +26299,8 @@ E <span class='arw'>&rarr;</span> (x y z)
 </p>
 
 <p>
-	The functions <a HREF="#difference">difference</a> 
-	and <a HREF="#intersect">intersect</a> work with sets.
+	Other <em>set</em> functions are <a href="#difference">difference</a>,
+	<a href="#intersect">intersect</a> and <a href="#union">union</a>.
 </p>
 
 <br/><br/>
@@ -26282,11 +26508,11 @@ some formatting characters may be left unused.</p>
 
 <p>
 	See also the <a href="#address">address</a>,
-	<a HREF="#get-int">get-int</a>,
-	<a HREF="#get-long">get-long</a>,
-	<a HREF="#get-char">get-char</a>,
-	<a HREF="#get-string">get-string</a>, 
-	and <a HREF="#pack">pack</a> functions.
+	<a href="#get-int">get-int</a>,
+	<a href="#get-long">get-long</a>,
+	<a href="#get-char">get-char</a>,
+	<a href="#get-string">get-string</a>, 
+	and <a href="#pack">pack</a> functions.
 </p>
 
 <br/><br/>
@@ -26304,7 +26530,7 @@ The result of the last expression evaluated in <em>body</em>
 is the return value of the <tt>until</tt> expression. If
 <em>body</em> is empty, the result of last <em>exp-condition</em>
 is returned. <tt>until</tt> works like 
-(<a HREF="#while">while</a> (<a HREF="#not">not</a> &hellip;)).
+(<a href="#while">while</a> (<a href="#not">not</a> &hellip;)).
 </p>
 
 <p><tt>until</tt> also updates the system iterator symbol <tt>$idx</tt>.</p>
@@ -26343,7 +26569,7 @@ International characters are converted correctly.</p>
 
 
 <p>
-	See also the <a HREF="#lower-case">lower-case</a> 
+	See also the <a href="#lower-case">lower-case</a> 
 	and <a href="#title-case">title-case</a> functions.
 </p>
 
@@ -26625,7 +26851,7 @@ string appending:</p>
 str   <span class='arw'>&rarr;</span> "hello world"
 </pre>
 
-<p>See also the <a HREF="#read">read</a> function.</p>
+<p>See also the <a href="#read">read</a> function.</p>
 
 <br/><br/>
 
@@ -26656,16 +26882,16 @@ by one 8-bit byte.</p>
 
 
 <p>
-Use the <a HREF="#print">print</a> 
-and <a HREF="#device">device</a> functions 
+Use the <a href="#print">print</a> 
+and <a href="#device">device</a> functions 
 to write larger portions of data at a time.
 Note that newLISP already supplies a faster 
 built-in function called 
-<a HREF="#copy-file">copy-file</a>.
+<a href="#copy-file">copy-file</a>.
 </p>
 
 <p>
-	See also the <a HREF="#read-char">read-char</a> function.
+	See also the <a href="#read-char">read-char</a> function.
 </p>
 
 <br/><br/>
@@ -26685,7 +26911,7 @@ in one swoop and returns the number of bytes written.</p>
 </pre>
 
 
-<p>The file <tt>myfile</tt> is read, <a HREF="#encrypt">encrypted</a> using the 
+<p>The file <tt>myfile</tt> is read, <a href="#encrypt">encrypted</a> using the 
 password <tt>secret</tt>, and written back into the new file <tt>myfile.enc</tt>
 in the current directory.</p>
 
@@ -26707,21 +26933,24 @@ and can take the same additional parameters:</p>
 In this mode, <tt>write-file</tt> can also be used to transfer files 
 to remote newLISP server nodes.</p>
 
-<p>See also the <a HREF="#append-file">append-file</a> 
-and <a HREF="#read-file">read-file</a> functions.</p>
+<p>See also the <a href="#append-file">append-file</a> 
+and <a href="#read-file">read-file</a> functions.</p>
 
 <br/><br/>
 
 <a name="write-line"></a>
 <h2><span class="function">write-line</span>&nbsp;<a href="#destructive">!</a></h2>
-<h4>syntax: (write-line [<em>int-file</em> [<em>str</em>]])</h4>
+<h4>syntax: (write-line [<em>int-file</em> [<em>str</em>]])<br/>
+syntax: (write-line <em>str-out</em> [<em>str</em>]])</h4>
 
 <p>The string in <em>str</em> and the line termination character(s) 
 are written to the device specified in <em>int-file</em>.
 When the string argument is omitted <tt>write-line</tt> writes the 
-contents of the last <a HREF="#read-line">read-line</a> to <em>int-file</em>
+contents of the last <a href="#read-line">read-line</a> to <em>int-file</em>
 If the first argument is omitted too then it writes to  to standard out 
 (STDOUT) or to whatever device is set by <a href="#device">device</a>.</p> 
+
+<p>In the second syntax lines are appended to a string in <em>str-out</em>.</p>
 
 <p><tt>write-line</tt> returns the number of bytes written.</p>
 
@@ -26734,6 +26963,12 @@ If the first argument is omitted too then it writes to  to standard out
 
 (set 'myFile (open "init.lsp" "read")
 (while (read-line myFile) (write-line))
+
+(set 'str "")
+(write-line str "hello")
+(write-line str "world")
+
+str  <span class='arw'>&rarr;</span>  "hello\nworld\n"
 </pre>
 
 
@@ -26820,7 +27055,7 @@ lasting byte transfers in HTTP uploads or downloads.</p>
 
 <p>
 	Returns a list of error information 
-	from the last <a HREF="#xml-parse">xml-parse</a> operation; 
+	from the last <a href="#xml-parse">xml-parse</a> operation; 
 	otherwise, returns <tt>nil</tt>
 	if no error occurred.
 	The first element contains text 
@@ -26852,9 +27087,9 @@ Nodes of type ELEMENT, TEXT, CDATA, and COMMENT are parsed, and
 a newLISP list structure is returned.  When an element node does not have 
 attributes or child nodes, it instead contains an empty list.
 Attributes are returned as association lists, 
-which can be accessed using <a HREF="#assoc">assoc</a>.
+which can be accessed using <a href="#assoc">assoc</a>.
 When <tt>xml-parse</tt> fails due to malformed XML, <tt>nil</tt> is returned 
-and <a HREF="#xml-error">xml-error</a> can be used to access error information.
+and <a href="#xml-error">xml-error</a> can be used to access error information.
 </p>
 
 <!-- example -->
@@ -26876,7 +27111,7 @@ and <a HREF="#xml-error">xml-error</a> can be used to access error information.
 Optionally, the <em>int-options</em> parameter can be specified 
 to suppress whitespace, empty attribute lists, and comments.
 It can also be used to transform tags from strings into symbols.
-Another function, <a HREF="#xml-type-tags">xml-type-tags</a>, 
+Another function, <a href="#xml-type-tags">xml-type-tags</a>, 
 serves for translating the XML tags.
 The following option numbers can be used:
 </p>
@@ -26996,10 +27231,10 @@ option <tt>(+ 1 2 4)</tt>:</p>
 The resulting output looks much more readable, but it can still be improved 
 by using symbols instead of strings for the tags "FRUIT", "NAME", "COLOR", and "PRICE",
 as well as by suppressing the XML type tags "ELEMENT" and "TEXT" completely 
-using the <a HREF="#xml-type-tags">xml-type-tags</a> directive.
+using the <a href="#xml-type-tags">xml-type-tags</a> directive.
 </p>
 
-<h3>Suppressing XML type tags with <a HREF="#xml-type-tags">xml-type-tags</a> 
+<h3>Suppressing XML type tags with <a href="#xml-type-tags">xml-type-tags</a> 
 and translating string tags into symbol tags:</h3>
 
 
@@ -27069,7 +27304,7 @@ causes an <tt>@</tt> (at symbol) to be added to attribute lists.
 </p>
 
 <p>
-See also the <a HREF="#xml-type-tags">xml-type-tags</a> function 
+See also the <a href="#xml-type-tags">xml-type-tags</a> function 
 for further information on XML parsing.
 </p>
 
@@ -27149,7 +27384,7 @@ in the parameters.
 <p>
 Note that <tt>xml-type-tags</tt> only suppresses or translates the tags themselves 
 but does not suppress or modify the tagged information.  The latter would be done 
-using option numbers in <a HREF="#xml-parse">xml-parse</a>.
+using option numbers in <a href="#xml-parse">xml-parse</a>.
 </p>
 
 <p>
@@ -27287,7 +27522,15 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <tr><td>working directory not found</td><td>65</td></tr>
 <tr><td>invalid PID</td><td>66</td></tr>
 <tr><td>cannot open socket pair</td><td>67</td></tr>
-<tr><td>cannot fork process</td><td>68</td></tr>
+</table><br/>
+
+<h2>Error codes extended FFI</h2>
+<table summary="Error codes extended FFI">
+<tr align="left"><th>description</th><th>no</th></tr>
+<tr><td>no comm channel found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>69</td></tr>
+<tr><td>FFI preparation failed</td><td>70</td></tr>
+<tr><td>invalid FFI type</td><td>71</td></tr>
+<tr><td>FFI struct expected</td><td>72</td></tr>
 </table><br/>
 
 <br/><br/><br/>
@@ -27426,13 +27669,15 @@ variable, the <tt>module</tt> function loads automatically from
 
 ; load modules from standard path
 ; usage (module "mymodule.lsp")
-(define (module m)
-  (load (append (env "NEWLISPDIR") "/modules/" m)))
+(define (module $x)
+  (load (append (env "NEWLISPDIR") "/modules/" $x)))
 
 (global 'module)
 </pre>
 
-<p>These symbols are not protected and can be redefined by the user.</p>
+<p>These symbols are not protected and can be redefined by the user.
+The <tt>$x</tt> variable is built-in and proteced against deletion.
+This <tt>$x</tt> variable is also used in <a href="#curry">curry</a> expressions.</p>
 
 <br/><br/>
 

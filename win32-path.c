@@ -49,7 +49,7 @@ WCHAR * utf8_to_utf16(const char *utf8str)
     
     if (size == 0) return (NULL);
     
-    utf16str = (WCHAR*)allocMemory((size+1) * sizeof(WCHAR));
+    utf16str = (WCHAR*)callocMemory((size+1) * sizeof(WCHAR));
     
     size = MultiByteToWideChar(
         CP_UTF8,
@@ -122,7 +122,7 @@ char * utf16_to_utf8(const WCHAR *utf16str)
     
     if (size == 0) return (NULL);   
     
-    utf8str = (char*)allocMemory((size+1) * sizeof(char));
+    utf8str = (char*)callocMemory((size+1) * sizeof(char));
     
     if (utf16_to_utf8ptr(utf16str, utf8str, size) == -1)
     {
@@ -132,6 +132,25 @@ char * utf16_to_utf8(const WCHAR *utf16str)
     else
         return(utf8str);
 }
+
+/* wrapper to return a cell */
+
+#if SUPPORT_UTF8
+CELL * utf8_from_mbcs(void * str)
+{
+WCHAR * utf16str;
+char * utf8str;
+
+utf16str = ansi_mbcs_to_utf16(str); 
+utf8str = utf16_to_utf8(utf16str);
+free(utf16str); 
+
+if(utf8str != NULL)
+	return(makeStringCell(utf8str, strlen(utf8str)));
+else
+	return(nilCell);
+}
+#endif
 
 /*
 mbcs_to_utf16
@@ -154,7 +173,7 @@ WCHAR * ansi_mbcs_to_utf16(const char *mbcsStr)
     
     if (size == 0) return (NULL);
     
-    utf16str = (WCHAR*)allocMemory((size+1) * sizeof(WCHAR));
+    utf16str = (WCHAR*)callocMemory((size+1) * sizeof(WCHAR));
     
     size = MultiByteToWideChar(
         CP_OEMCP,

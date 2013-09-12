@@ -1,20 +1,9 @@
-;; link.lsp - v.1.1
-;; link.lsp - v.1.2 fix for '.exe' problem on CYGWIN
-;; link.lsp - v.1.3 no code change, added note for win32 dll
-;; link.lsp - v.1.4 no code change, reformatted comments 
-;; link.lsp - v.1.5 no code change, changed dllEvalStr to newlispEvalStr 
-;; link.lsp - v.1.6 eliminated old quoted write-buffer syntax for 10.0
+;; link.lsp - v.1.8
 ;;
 ;; links newLISP executable and a .lsp source file to a new
 ;; executable containing both. This way newLISp and a source
 ;; file can be packaged together for easier distribution and install.
-;;
 ;; 
-;; NOTES FOR LINKING AND IMPORTING WIN32 DLLs
-;; Since newLISP v.7.3.16 CYGWIN is not supported anymore for
-;; linking source to the executable, use a native Win32 instead
-;; which also can be used in an CYGWIN environment
-;;
 ;; When importing a linked win32 dll from win32 programs other
 ;; then newlisp.exe, than the following statment should be executed
 ;; directly after importing functions and before any 'newlispEvalStr'
@@ -22,6 +11,12 @@
 ;; name of the linked win32 newlisp dll. This will enable the autoload
 ;; of linked newlisp source in the dll. When importing to newlisp.exe
 ;; this is not required.
+;;
+;; The utility should only be used on MS Windows. On Mac OSX and
+;; other UNIX platforms, the resulting executable will only work
+;; when present in and executed from the current directory. Only
+;; on MS Windows, the resulting executable can be put anywhere
+;; in the execution path of the OS.
 ;;
 ;; How it works:
 ;; =============
@@ -35,8 +30,8 @@
 ;; the new executable file will not load init.lsp but
 ;; the appended file instead
 ;;
-;; How to use on CYGWIN WIn32:
-;; ===========================
+;; How to use on Win32:
+;; ====================
 ;; example: to link the source mySource.lsp to myProg.exe
 ;;
 ;; (link "newlisp.exe" "myProg.exe" "mySource.lsp")
@@ -44,15 +39,6 @@
 ;; then:
 ;;
 ;; c:\> myProg
-;;
-;; 
-;; On Linux/freeBSD implementations:
-;; =================================
-;; (link "newlisp" "myProg" "mySource.lsp")
-;;
-;; and to execute myProg assuming myProg is in the current directory
-;;
-;; /home/joe > ./myProg
 ;;
 
 

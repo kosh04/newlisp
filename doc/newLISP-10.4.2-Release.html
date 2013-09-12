@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.4.2 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	max-width: 800px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #505050;
+	line-height: 140%;
+	}
+
+em {
+	font-family: Courier;
+	color: #202020;
+	line-height: 140%;
+	}
+
+li {
+	margin-bottom: 15px;
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.4.2 Stable Maintenance Release <font color="red" size="-1">rev 2012-4-14</font></h1>
+
+<p>This stable maintenance release fixes minor bugs and adds new functions in the math and statistics
+area.</p>
+
+<h3>Additions and changes</h3>
+<ul>
+<li>A new set function <tt>union</tt> works like <tt>(unique (append ... ))</tt>.</li>
+
+<li>Two new predicates <tt>even?</tt> and <tt>odd?</tt> test the parity of integers.</li>
+
+<li>The new <tt>prob-t</tt> function returns the one-tailed probablitiy of a <em>Student's t</em>
+statistic to be equal or greater than the observed value.</li>
+
+<li>The new <tt>prob-f</tt> function returns the probablitiy of <em>F</em>
+statistic to be equal or greater than the observed value.</li>
+
+<li>The new <tt>crit-t</tt> function calculates the critical value of <em>Student's t</em>
+for a given one-tailed probability.</li>
+
+<li>The new <tt>crit-f</tt> function calculates the critical value of <em>F</em> for
+a given probability level.</li>
+
+<li>The <tt>prob-z</tt> and <tt>crit-z</tt> functions now handle probabilities less than 
+<tt>0.5</tt> for negative <em>Z</em>-values.</li>
+
+<li>An additional <tt>true</tt> flag in the <tt>char</tt> function can turn on 8-bit byte value
+translation instead of multibyte UTF-8 translation in UTF-8 enabed versions of newLISP.</li>
+
+<li>A <tt>true</tt> flag in the <tt>file?</tt> forces the return value to the name string
+of the file, if it exists.</li>
+
+<li>Versions compiled for the new extended FFI now show "libffi" in the banner.</li>
+
+<li>Better mean-value adherence of the <tt>normal</tt> function.</li>
+
+<li>In the extended ffi the <tt>char*</tt> type will now only accept strings as
+arguments. For string or buffer integer addresses <tt>void*</tt> must be used.</li>
+
+<li><tt>import</tt> now can load a library without importing a function. This is necessary
+on Mac OSX, Linux and other Unix when external functions are referenced from an imported
+function.</li>
+
+</ul>
+
+<h3>Modules</h3>
+<ul>
+<li><tt>newlispdoc</tt> now outputs a UTF-8 meta tag in the HTML header.</li>
+
+<li>A new module <tt>gsl.lsp</tt> imports SV, QR and Cholesky decomposition and
+solver functions from the GNU Scientific Library 
+<a href="http://www.gnu.org/software/gsl/">GSL</a>. Both SV and QR can handle
+rectangular non-sqare matrices for decomposition of <em>A</em> and 
+solving <em>Ax = b</em> for <em>x</em>.</li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+
+<li>The <em>day-of-year</em> value in <tt>date-list</tt> now starts with <tt>1</tt> 
+instead of <tt>0</tt>. The previous version made the same change for the <tt>now</tt> function.
+</li>
+
+<li>The <tt>command-event</tt> function now trims trailing line-feed characters in
+all compile and platform flavors. Previously only UNIX and readline lib enabled versions
+would trim the string passed by <tt>command-event</tt>.</li>
+
+<li>A fix for <tt>pack</tt> when packing structures made with <tt>struct</tt> 
+in 64-bit newLISP.</li>
+
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+
+<p>Except for bug fixes and behavior of <tt>char*</tt> argument types in the  extended 
+ffi interface, this version is fully compatible with previous versions.</p>
+
+<br/>
+<center>&part;</center>
+
+</body>
+</html>

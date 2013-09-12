@@ -475,7 +475,7 @@ switch(op)
         return(isinf(floatN) ? trueCell : nilCell);
 #endif
     default: break;
-}
+    }
 
 cell = getCell(CELL_FLOAT);
 #ifndef NEWLISP64
@@ -503,7 +503,6 @@ cell = getCell(CELL_FLOAT);
 #endif
 return(cell);
 }
-
 
 CELL * p_round(CELL * params)
 {
@@ -1113,7 +1112,7 @@ if(type == DIST_NORMAL)
     randnum = 0.0;
     for(i = 0; i < 12; i++)
         randnum += random() % 1024;
-    return(scale * (randnum - 6144)/1024 + offset);
+    return(scale * (randnum - 6144 + 6)/1024 + offset);
     }
 
 return(0.0);
@@ -1236,22 +1235,19 @@ free(vector);
 return(list);
 }
 
-/*
-   probZ  - probability of normal z value
-   critChi2 - Compute critical chi-square value for p and df
-   critZ - Compute critical Z-value from p
-*/
-
-double probChi2(double chi2, int df);
-double critChi2(double p, int df);
-double probZ(double z);
-double critZ(double p);
+CELL * probability_x(CELL * params, int type);
+double probChi2(double chi2, UINT df);
+double probT(double t, UINT df);
+double probF(double t, UINT df1, UINT df2);
+double critical_value(double p, UINT df1, UINT df2, double max_val, int type);
 double gammaln(double xx);
 double betai(double a, double b, double x);
 double gammap(double a, double x);
 double betacf(double a, double b, double x);
 static double gser(double a, double x, double gln);
 double gcf(double a, double x, double gln);
+
+#define SQRT2 1.414213562373095
 
 CELL * p_probabilityZ(CELL * params)
 {
@@ -1260,107 +1256,191 @@ double p;
 
 getFloat(params, &z);
 
-p = probZ(z);
+p = 0.5 + erf(z/SQRT2) / 2.0;
 
 return(stuffFloat((double *)&p));
-}
-
-
-double probChi2(double chi2, int df)
-{
-return(1.0 - gammap(df/2.0, chi2/2.0));
-}
-
-CELL * p_probabilityChi2(CELL * params)
-{
-double chi2;
-double df;
-double q;
-
-params = getFloat(params, &chi2);
-getFloat(params, &df);
-
-q = probChi2(chi2, df);
-
-return(stuffFloat((double *)&q));
-}
-
-
-CELL * p_criticalChi2(CELL  * params)
-{
-double p;
-long df;
-double chi;
-
-params = getFloat(params, &p);
-getInteger(params, (UINT *)&df);
-
-chi = critChi2((1.0 - p), df);
-
-return(stuffFloat((double *)&chi));
 }
 
 
 CELL * p_criticalZ(CELL * params)
 {
 double p;
-double Z;
-
-getFloat(params, &p);
-Z = critZ(p);
-
-return(stuffFloat((double *)&Z));
-}
-
-
-#define Z_MAX 6.0  /* Maximum meaningful z value */
-#define SQRT2 1.414213562373095
-
-double probZ(double z) 
-{
-return(0.5 + erf(z/SQRT2) / 2.0);
-}
-
-double critChi2(double p, int df)
-{
-#define CHI_EPSILON 0.000001   /* Accuracy of critchi approximation */
-#define CHI_MAX 99999.0        /* Maximum chi-square value */
-double minchisq = 0.0;
-double maxchisq = CHI_MAX;
-double chisqval;
-        
-if (p <= 0.0) return maxchisq;
-else if (p >= 1.0) return 0.0;
-        
-chisqval = df / sqrt(p);    /* fair first value */
-while ((maxchisq - minchisq) > CHI_EPSILON)
-    {
-    if (gammap(df/2.0, chisqval/2.0) < p) minchisq = chisqval;
-    else maxchisq = chisqval;
-    chisqval = (maxchisq + minchisq) * 0.5;
-    }
-return chisqval;
-}
-
-
-double critZ(double p)
-{
-#define Z_EPSILON 0.000001   /* Accuracy of critchi approximation */
+double sign = 1.0;
+#define Z_EPSILON 0.000001   /* Accuracy of Z approximation */
 double minZ = 0.0;
-double maxZ = Z_MAX;
+double maxZ = 6.0;
 double Zval;
+double Z;
         
-if (p <= 0.0) return maxZ;
-else if (p >= 1.0) return 0.0;
+getFloat(params, &p);
+
+if (p < 0.5)
+    {
+    p = 1.0 - p;
+    sign = -1.0;
+    }
         
 Zval = 2.0;    /* fair first value */
 while ((maxZ - minZ) > Z_EPSILON)
     {
-    if (probZ(Zval) < p) minZ = Zval;
+    if ( (0.5 + erf(Zval/SQRT2) / 2.0) < p) minZ = Zval;
     else maxZ = Zval;
     Zval = (maxZ + minZ) * 0.5;
     }
-return Zval;
+
+Z = (Zval > 5.999999) ? sign * 6.0 : Zval * sign;
+
+return(stuffFloat(&Z));
+}
+
+
+double probChi2(double chi2, UINT df)
+{
+return(gammap(df/2.0, chi2/2.0));
+}
+
+
+double probT(double t, UINT df)
+{
+double bta;
+
+bta = betai(df/2.0, 0.5, 1.0/(1.0 + t*t/df));
+if(t > 0.0) return(1.0 - 0.5 * bta);
+else if(t < 0.0) return(0.5 * bta);
+return(0.5);
+}
+
+double probF(double f, UINT df1, UINT df2)
+{
+double prob;
+
+prob = 2.0 * betai(0.5 * df2, 0.5 * df1, df2 / (df2 + df1 * f));
+
+if(prob > 1) prob = 2.0 - prob; 
+return(prob / 2.0);
+}
+
+#define STAT_CHI2 1
+#define STAT_T 2
+#define STAT_F 3
+
+CELL * p_probabilityChi2(CELL * params)
+{
+return(probability_x(params, STAT_CHI2));
+}
+
+CELL * p_probabilityT(CELL * params)
+{
+return(probability_x(params, STAT_T));
+}
+
+CELL * p_probabilityF(CELL * params)
+{
+return(probability_x(params, STAT_F));
+}
+
+
+CELL * probability_x(CELL * params, int type)
+{
+double x;
+UINT df1;
+UINT df2;
+double prob;
+
+params = getFloat(params, &x);
+params = getInteger(params, &df1);
+if(type == STAT_F)
+    getInteger(params, &df2); 
+
+switch(type)
+    {
+    case STAT_CHI2:
+        prob = 1.0 - probChi2(x, df1);
+        break;
+    case STAT_T:
+        prob = 1.0 - probT(x, df1);
+        break;
+    case STAT_F:
+        prob = probF(x, df1, df2);
+        break;
+    default:
+        break;
+    }
+
+return(stuffFloat(&prob));
+}
+
+
+double critical_value(double p, UINT df1, UINT df2, double max_val, int type)
+{
+#define NEWTON_EPSILON 0.000001   /* Accuracy of Newton approximation */
+double minval = 0.0;
+double maxval = max_val;
+double critval;
+double prob = 0.0;
+
+if (p <= 0.0) return 0.0;
+else if (p >= 1.0) return maxval;
+    
+critval = (df1 + df2) / sqrt(p);    /* fair first value */
+while ((maxval - minval) > NEWTON_EPSILON)
+    {
+    switch(type)
+        {
+        case STAT_CHI2:
+            prob = probChi2(critval, df1);
+            break;
+        case STAT_T: 
+            prob = probT(critval, df1);
+            break;
+        case STAT_F:
+            prob = 1.0 - probF(critval, df1, df2);
+            break;
+        default:
+            break;
+        }
+    if (prob < p) minval = critval;
+    else maxval = critval;
+    critval = (maxval + minval) * 0.5;
+    }
+
+return critval;
+}
+
+
+CELL * criticalX(CELL * params, int type)
+{
+double p;
+UINT df1;
+UINT df2 = 0;
+double x;
+
+params = getFloat(params, &p);
+params = getInteger(params, &df1);
+if(type == STAT_F) getInteger(params, &df2);
+
+x = critical_value((1.0 - p), df1, df2, 99999.0, type);
+
+if(x < NEWTON_EPSILON) x = 0.0;
+
+return(stuffFloat(&x));
+}
+
+
+CELL * p_criticalChi2(CELL  * params)
+{
+return(criticalX(params, STAT_CHI2));
+}
+
+CELL * p_criticalT(CELL * params)
+{
+return(criticalX(params, STAT_T));
+}
+
+
+CELL * p_criticalF(CELL  * params)
+{
+return(criticalX(params, STAT_F));
 }
 
 
@@ -1479,7 +1559,7 @@ qam=a-1.0;
 bz=1.0-qab*x/qap;
 for (m=1;m<=ITMAX;m++) 
     {
-        em=(double) m;
+    em=(double) m;
     tem=em+em;
     d=em*(b-em)*x/((qam+tem)*(a+tem));
     ap=az+d*am;
@@ -2634,7 +2714,7 @@ int occurCheck(CELL * symCell, CELL * expr);
 void printStack(TERMSET * tset);
 void freeTermSet(TERMSET * * tset);
 
-TERMSET * mgu = NULL;
+TERMSET * mgu = NULL; /* most general unifier */
 TERMSET * ws = NULL;
 
 int bindFlag;
@@ -2757,7 +2837,7 @@ while(ws != NULL)
     if(leftType == UNIFY_VAR && !occurCheck(left, right))
         {
         substitute(right, left, mgu); /* expand(right-expr, left-sym) in mgu set */
-        substitute(right, left, ws); /* expand(right-expr, left-sym) in  ws set */
+        substitute(right, left, ws);  /* expand(right-expr, left-sym) in ws set */
 
 #ifdef DEBUG
         if(debugFlag)
@@ -3071,9 +3151,24 @@ if(getFlag(params))
 
 for(i = 0; i < count; i++) 
     result[i] = temp[count - 1 - i] + 48;
-
+ 
 return(stuffStringN(result, count));
 }
 
+CELL * p_isOdd(CELL * params)
+{
+INT64 num;
+
+getInteger64(params, &num);
+return((0 == (num & 1)) ? nilCell : trueCell);
+}
+
+CELL * p_isEven(CELL * params)
+{
+INT64 num;
+
+getInteger64(params, &num);
+return((0 == (num & 1)) ? trueCell : nilCell);
+}
 
 /* eof */

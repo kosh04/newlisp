@@ -11,24 +11,29 @@
 ; or rename to query.cgi and run on a web server
 ; using the following query.html:
 
-; <html> 
-; <head><title>Query</title></head> 
-; <body><font face="Verdana">
-; <form name="query" action="query.cgi" method="POST"> 
-; Input your query:&nbsp;<input type="text" name="query" size="48"> 
-; &nbsp;<input type="submit" value="Submit" name="submit"> 
-; </form> 
-; </font></body></html> 
+; NOTE!!! Google changes the formatting of links (see LINK_REGEX) once
+; in a while and then the whole thing breaks! 
+
+
+;<html> 
+;<head><title>Query</title></head> 
+;<body><font face="Verdana">
+;<p>Parallel processing support on newLISP using 'spawn'</p>
+;<form name="query" action="query.cgi" method="POST"> 
+;Input a search word:&nbsp;<input type="text" name="query" size="48"> 
+;&nbsp;<input type="submit" value="Submit" name="submit"> 
+;</form> 
+;</font></body></html> 
 
 (set 'cgi-mode nil)
 ;(set 'cgi-mode true) ; run as CGI get question from query.html
 
 (when cgi-mode 
-    (load "cgi.lsp")
+    (module "cgi.lsp")
     (print "Content-Type: text/html\n\n"))
 
 ;; globals and constants in this namespace
-(set 'LINK_REGEX {<h3 class="r"><a href="(http://[^> ]+)"})
+(set 'LINK_REGEX {q=(http://[^>& ]+)&})
 (set 'START_TIME 0)
 (set 'SITES '())
 (set 'CONTENT "")
@@ -84,28 +89,37 @@
 
 (println "query term: " (url-decode question) BRK)
 (set 'START_TIME (time-of-day))
+
+######################### this is, where all the pages are retrieved #################
+; spawn a childprocess for each link
 (dolist (lnk (0 20 links))
 	(set 'pid (spawn 'page (get-url lnk 4000)))
 	(push (list pid lnk) SITES -1))
 
+; this gets executed whenever a page has been retrieved
 (define (page-ready-event pid)
-	(println (inc cnt) " pid:" pid " " (- (time-of-day) START_TIME) " ms " 
-		(lookup pid SITES) BRK)
-	(push (lower-case (clean-html page)) CONTENT -1)	
-	(inc xferred (length page))
+    (let (link (0 80 (lookup pid SITES)))
+        (set 'link (url-decode link))
+        (println (inc cnt) " pid:" pid " " (- (time-of-day) START_TIME) " ms " link BRK)
+        (push (lower-case (clean-html page)) CONTENT -1)
+        (inc xferred (length page)))
 )
 
+; start waiting for pages
 (println "waiting: ..." BRK BRK)
 (unless (sync 10000  page-ready-event)
 	(println BRK "timeout" BRK))
+#####################################################################################
 
 (println BRK "bytes transferred: " xferred BRK)
 (println "total time: " (- (time-of-day) START_TIME) " ms" BRK)
 
+######################### all the counting is done here using bayes-train ###########
 (catch (load "Lex") 'result)
 (println "training: " (time (bayes-train (find-all {[a-zA-Z]+} CONTENT) 'Lex)) " ms" BRK)
 (println "total words processed: " (Lex:total 0) BRK)
 (println BRK)
+#####################################################################################
 
 ; sort by frequency and print in four columns
 (set 'items (sort (Lex) (fn (x y) (> (x 1 0) (y 1 0)))))

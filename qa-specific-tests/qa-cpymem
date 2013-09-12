@@ -2,6 +2,7 @@
 
 ; this may not run on newer CPUs and definitely only runs in Intel i386
 ; runs fine on Mac OSX 10.6 Intel dual core 2 MacMini (2007)
+; does not run on Mac OSX 10.7 Lion dual core 2 MacMini (2007)
 ; runs fine on Windows XP 2 Intel dual core 2 and core i5 (2011)
 
 (set 'foo-code (append

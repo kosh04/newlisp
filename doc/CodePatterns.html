@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2012 February 14<sup>th</sup><br/>
+</h1>Version 2012 April 6<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.4.0
 </center>
 
@@ -2865,7 +2865,7 @@ See the users manual chapter "18. Functional object-oriented programming" for de
 <p>The functions <tt>assoc</tt> and <tt>setf</tt> can be used to update simple or nested associations:</p>
 
 <pre>
-(setf '("Anne" address city) persons '(city "Boston")) → (city "New York")
+(setf (assoc ("Anne" address city) persons) '(city "Boston")) → (city "New York")
 </pre>
 
 <p><tt>setf</tt> always returns the newly set element.</p>
@@ -3169,7 +3169,7 @@ result: (7 11 15 19 23)
     (list (nodes 4 0) (nodes 4 1) (format program 400000 499999 5))
 ))
  
-(set 'result (net-eval node-eval-list  20000 idle-loop))
+(set 'result (net-eval node-eval-list  20000))
 </pre>
 
 <p>The function <tt>idle-loop</tt> aggregates all lists of primes received and generates the following output:</p>
@@ -3365,7 +3365,8 @@ types was either impossible or unreliable using the simple API that depended on 
 calling conventions. These are not available on all platforms. The extended API also handles
 packing and unpacking of C-structures with automatic alignment of C-types on different CPU
 architectures. See the extended syntax of the <tt>pack</tt> and <tt>unpack</tt> functions in
-the <a href="http://www.newlisp.org/newlisp_manual.html">User Manual and Reference</a>.</p>
+the <a href="http://www.newlisp.org/newlisp_manual.html">User Manual and Reference</a>
+and <a href="http://www.newlisp.org/syntax.cgi?code/opengl-demo-ffi-lsp.txt">OpenGL demo</a>.</p>
 
 <p>The following chapters describe the older simple API. Much of it is applicable to the 
 extended API as well. For details on the new API, consult the 
@@ -3533,7 +3534,7 @@ MYSTRUC * foo3(char * ptr, int num )
 &gt;
 </pre>
 
-<p>The return value from <tt>foo</tt> is the address to the structure <tt>astruc</tt>. To access the string pointer, 4 must be added as the size of an integer type in the 'C' programming language. The string in the string pointer then gets accessed using get-string.</p>
+<p>The return value from <tt>foo3</tt> is the address to the structure <tt>astruc</tt>. To access the string pointer, 4 must be added as the size of an integer type in the 'C' programming language. The string in the string pointer then gets accessed using get-string.</p>
 
 <h3>Memory management</h3>
 
@@ -3661,7 +3662,7 @@ and double precision floating point types and for advanced usage of <tt>pack</tt
 
 <p>All pack and unpack and formats can also be given without spaces, but are spaced in the examples for better readability.</p>
 
-<p>The formats <tt>"ld"</tt> and <tt>"lu"</tt> are interchangeable, but the 16-bit formats <tt>"u"</tt> and <tt>"d"</tt> may produce different results, because of sign expansion from 16 to 32 bits.</p>
+<p>The formats <tt>"ld"</tt> and <tt>"lu"</tt> are interchangeable, but the 16-bit formats <tt>"u"</tt> and <tt>"d"</tt> may produce different results, because of sign extension when going from unsigned 16 bits to signed 32 or 64-bits bits of newLISP's internal integer format.</p>
 
 <p>Flags are available for changing endian byte order during <tt>pack</tt> and <tt>unpack</tt>.</p>
 

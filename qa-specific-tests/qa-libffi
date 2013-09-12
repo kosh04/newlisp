@@ -51,8 +51,9 @@
     (import "./ffitest.dylib" "string_copy" "char*" "char*" "char*")        
     (set 'from "hello")
     (set 'to (dup "\000" (length from)))
-    ; char* accepts both, string or address number
-    (set 'ret (string_copy (address from) to)) ; copy from to
+    ; char* will only accept string since 10.4.2
+    ; for address number use void*
+    (set 'ret (string_copy from to)) ; copy from to
     (println "copy char* => " to " => " (= "hello" to) )
     (println "return => " ret)
     )

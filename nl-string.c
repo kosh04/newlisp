@@ -282,7 +282,13 @@ switch(datCell->type)
 #endif
 
         if(params != nilCell)
-            getInteger(params, (UINT*)&offset);
+            {
+            params = getInteger(params, (UINT*)&offset);
+            offset = adjustNegativeIndex(offset, (size_t)datCell->aux - 1);
+            if(getFlag(params))
+                return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));
+            }
+
         else offset = 0;
 
         offset = adjustNegativeIndex(offset, len);

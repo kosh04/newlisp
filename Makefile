@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.4.0
-INT_VERSION = 10400
+VERSION = 10.4.2
+INT_VERSION = 10402
 
 default: makefile_build
 	make -f makefile_build
@@ -257,7 +257,7 @@ version:
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' configure-alt
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_original_install 
 
-# Prepare the manual file for PDF conversion, byt replaceing all <span class="function"></span>
+# Prepare the manual file for PDF conversion, by replaceing all <span class="function"></span>
 # with <font color="#DD0000"></font> in the syntax statements and replacing &rarr; (one line
 # arrow with &rArr; (double line arrow). This is necessary when using OpenOffcice PDF conversion 
 #

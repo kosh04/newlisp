@@ -14,6 +14,7 @@
 #	method name for newLISP.evalString was listed wrong
 # v.1.3  - 2010-10-07
 #	replaced obsolete 'error-text' with 'last-error'
+# v.1.4  - 2012-03-16 bugfixes, thanks Kosh
 #
 # supports the following methods:
 #
@@ -26,11 +27,7 @@
 #
 #
 
-; make compatible with older versions of newLISP
-(when (< (sys-info -2) 10111)
-    (constant (global 'write) write-buffer))
-
-(set 'version "1.3")
+(set 'version "1.4")
 
 # formatting templates for responses
 
@@ -128,17 +125,17 @@
     
 
 (define (system.methodHelp params, methodName)
-    (set 'methodName (nth (params 0 1 1 1 1)))
+    (set 'methodName (params 0 1 1 1 1))
     (case methodName
         ("system.listMethods" (format normal-response "Lists all methods implemented."))
         ("system.methodHelp" (format normal-response "Documents a method."))
-	("system.methodSignature" (format normal-response "Shows the signatures of a method."))
-	("newLISP.evalString" (format normal-response "Evaluate a base64 encoded string."))
+        ("system.methodSignature" (format normal-response "Shows the signatures of a method."))
+        ("newLISP.evalString" (format normal-response "Evaluate a base64 encoded string."))
         (true (error 7 "Method name in system.methodHelp not known")))
 )
 
 (define (system.methodSignature params)
-    (set 'methodName (nth (params 0 1 1 1 1)))
+    (set 'methodName (params 0 1 1 1 1))
     (case methodName
         ("system.listMethods" (format normal-response 
 "<array>

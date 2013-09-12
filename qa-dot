@@ -470,6 +470,13 @@ true
    (inc x) 
    (= x 2)))
 
+(define (test-bessel)
+    (and
+        (< (abs (sub (bessel 0 1.23) 0.6560705717)) 0.000000001)
+        (< (abs (sub (bessel 1 1.23) 0.5058005726)) 0.000000001)
+        (< (abs (sub (bessel 2 1.23) 0.1663693838)) 0.000000001)
+))
+
 (define (test-beta )
   (< (abs (sub (beta 1 2) 0.5)) 1e-05))
 
@@ -536,6 +543,17 @@ true
 	(set 'D:D "ABCDEFG")
 	(= (char D 0) 65)
 	(= (char D -1) 71)
+	(if utf8
+      (let (s (char 937))
+        (and
+            (= (char s 0 true) 206)
+            (= (char s 1 true) 169)
+            (= (char s -1 true) 169)
+            (= (char s -2 true) 206)
+        )
+	  )
+	  true
+    )
 ))
 
 (define (test-chop )
@@ -643,11 +661,37 @@ true
   (cpymem (address from) (address to) 5)
   (= from to))
 
-(define (test-crit-chi2 )
-  (< (abs (sub (crit-chi2 (sub 1.0 0.559506) 10) 9.999991)) 1e-05))
+(define (test-crit-chi2)
+  (and
+    (< (abs (sub (crit-chi2 (prob-chi2 4.605 2) 2) 4.605)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 51.805 40) 40) 51.805)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 9.210 2) 2) 9.210)) 0.001)
+    (< (abs (sub (crit-chi2 (prob-chi2 63.691 40) 40) 63.691)) 0.001)
+))
 
-(define (test-crit-z )
-  (< (abs (sub (crit-z 0.999) 3.090232)) 1e-05))
+(define (test-crit-f)
+  (and
+    (< (abs (sub (crit-f (prob-f 6.59 3 4) 3 4) 6.59)) 0.001)
+    (< (abs (sub (crit-f (prob-f 2.79 12 11) 12 11) 2.79)) 0.001)
+    (< (abs (sub (crit-f (prob-f 16.59 3 4) 3 4) 16.59)) 0.001)
+    (< (abs (sub (crit-f (prob-f 4.40 12 11) 12 11) 4.40)) 0.001)
+))
+
+(define (test-crit-t)
+  (and
+    (< (abs (sub (crit-t (prob-t 1.886 2) 2) 1.886)) 0.001)
+    (< (abs (sub (crit-t (prob-t 1.303 40) 40) 1.303)) 0.001)
+    (< (abs (sub (crit-t (prob-t 6.965 2) 2) 6.965)) 0.001)
+    (< (abs (sub (crit-t (prob-t 2.423 40) 40) 2.423)) 0.001)
+))
+
+(define (test-crit-z)
+(for (z -6 6 0.3)
+  (let (flag true)
+    (if (> (abs (sub (crit-z (prob-z z)) z)) 0.0001)
+        (set 'flag nil))
+  flag)
+))
 
 (define (test-current-line , handle)
   (and
@@ -679,8 +723,10 @@ true
 ))
 
 (define (test-date-list)
-	(let (value (date-value))
-		(= (apply date-value (date-list value)) value))
+	(let (value (date-value) vlist (now))
+		(= (apply date-value (date-list value)) value)
+        (= (vlist -4) ((date-list (apply date-value vlist)) -2))
+    )
 )
 
 (define (test-date-value )
@@ -915,7 +961,10 @@ true
 (define (test-erf)
    (<  (abs (sub 0.5204998778 (erf 0.5))) 0.000001))
 
-(define (test-estack) (list? (estack)))
+;(define (test-estack) (list? (estack)))
+
+(define (test-even?)
+    (and (even? 2) (not (even? 3)) (even? 0.9) (not (even? 3.9))))
 
 (define (alarm) (println "ring..."))
 
@@ -1764,18 +1813,18 @@ true
     (if (find ostype '("Win32" "OS/2"))
       (process (string "newlisp udptest.lsp " 10001 " " 10002 " " sid))
       (process (string "./newlisp udptest.lsp " 10001 " " 10002 " " sid)))
-    (println "---------- testing UDP Win32 and OS/2 -------------")
-    (println "waiting ...");
+    ;(println "---------- testing UDP Win32 and OS/2 -------------")
+    ;(println "waiting ...");
     (semaphore sid -1) ; wait for child process
     (sleep 100)
-    (println "sending ...")
+    ;(println "sending ...")
     (net-send-udp "localhost" 10001 "hello") 
-    (println "receiving ...")
+    ;(println "receiving ...")
     (set 'msg (net-receive-udp 10002 20 3000000))
-    (println "msg:" msg)
+    ;(println "msg:" msg)
     (or (delete-file "udptest.lsp") true)
-    (println "deleting semaphore:" (semaphore sid 0)) ; delete semaphore
-    (println "------------------------------------------")
+    ;(println "deleting semaphore:" (semaphore sid 0)) ; delete semaphore
+    ;(println "------------------------------------------")
     (if msg (set 'net-send-udp-test (= "HELLO" (first msg)) ) )))
 
 
@@ -1898,6 +1947,9 @@ true
   (and 
     (set 'fle (open "qa-dot" "read"))
     (close fle)))
+
+(define (test-odd?)
+    (and (odd? 3) (not (odd? 2)) (odd? 3.34) (not (odd? 2.999))))
 
 (define (test-or )
   (and (or (or (= 1 2) nil nil) (or nil nil nil true)) (not (or nil 
@@ -2110,11 +2162,42 @@ true
      (= "hello" (slice (read-file "testprintln") 0 5))
      (delete-file "testprintln")))
 
-(define (test-prob-chi2 )
-  (< (abs (sub (prob-chi2 10 10) 0.440493)) 1e-05))
+(define (test-prob-f)
+  (and
+    (< (abs (sub (prob-f 6.59 3 4) 0.05)) 0.001)
+    (< (abs (sub (prob-f 2.79 12 11) 0.05)) 0.001)
+    (< (abs (sub (prob-f 16.69 3 4) 0.01)) 0.0001)
+    (< (abs (sub (prob-f 4.40 12 11) 0.01)) 0.0001)
+))
 
-(define (test-prob-z )
-  (< (abs (sub (prob-z 0) 0.5)) 1e-05))
+(define (test-prob-chi2)
+  (and
+    (< (abs (sub (prob-chi2 4.605 2) 0.1)) 0.001)
+    (< (abs (sub (prob-chi2 51.805 40) 0.1)) 0.001)
+    (< (abs (sub (prob-chi2 9.210 2) 0.01)) 0.0001)
+    (< (abs (sub (prob-chi2 63.691 40) 0.01)) 0.0001)
+))
+
+(define (test-prob-t)
+  (and
+    (< (abs (sub (prob-t 1.886 2) 0.1)) 0.001)
+    (< (abs (sub (prob-t 1.303 40) 0.1)) 0.001)
+    (< (abs (sub (prob-t 6.965 2) 0.01)) 0.0001)
+    (< (abs (sub (prob-t 2.423 40) 0.01)) 0.0001)
+))
+
+(define (test-prob-z)
+    (and
+        (< (sub (prob-z -0.1) 0.4601721627) 0.00001)
+        (< (sub (prob-z 0.1) 0.5398278373) 0.00001)
+        (< (sub (prob-z -1) 0.1586552539) 0.00001)
+        (< (sub (prob-z 1) 0.8413447461) 0.00001)
+        (< (sub (prob-z -2) 0.02275013195) 0.00001)
+        (< (sub (prob-z 2) 0.9772498681) 0.00001)
+        (< (sub (prob-z -3) 0.001349898032) 0.00001)
+        (< (sub (prob-z 3) 0.998650102) 0.00001)
+))
+
 
 (define (test-process ) 
    (write-file "process test" {(write-file "test process" "hello") (exit)})
@@ -2809,7 +2892,9 @@ true
 (define (test-string? )
   (and (string? "1234") (not (string? 1234))))
 
-(define (test-struct) true) ;; gets tested in qa-libffi
+(define (test-struct) ; more tests in qa-libffi
+    (struct 'complex "double" "double")
+    (= (unpack complex (pack complex 1.23 4.56)) '(1.23 4.56)))
 
 (define (test-sub )
   (= 0 (sub 0.99999999 0.99999999))
@@ -2903,9 +2988,6 @@ true
 (define (test-true?)
  (= (map true? '(x nil  1 nil "hi" ())) '(true nil true nil true nil)))
 
-(define (test-unique )
-  (= (unique '(2 3 4 4 6 7 8 7)) '(2 3 4 6 7 8)))
-
 (define (test-unicode)
   (= (utf8 (unicode "newLISP")) "newLISP"))
 
@@ -2932,6 +3014,14 @@ true
 		(= (unify '(A (B) X) '(A (A) Z) '((A 1) (Z 4)))
 		   '((A 1) (Z 4) (B 1) (X 4)))
 ))
+
+
+(define (test-union)
+    (= (union '(1 3 1 4 4 3) '(2 1 5 6 4)) '(1 3 4 2 5 6)))
+
+(define (test-unique )
+  (= (unique '(2 3 4 4 6 7 8 7)) '(2 3 4 6 7 8)))
+
 
 (define (test-unless )
 	(and 

@@ -5,6 +5,7 @@
 ;; @version 1.42 new table UI
 ;; @version 1.43 bug fix in new table UI action parameters
 ;; @version 1.44 fixes in newlisp-edit.lsp
+;; @version 1.45 doc fixes
 ;; @author LM, August 2008, 2009, 2010, 2012
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -473,7 +474,7 @@
 ;;    (gs:set-font <sym-id> <str-family> <int-size> <str-type>)
 ;;    (gs:set-foreground <sym-id> <float-red> <float-green> <float-blue> [<float-alpha>])
 ;;    (gs:set-foreground <sym-id> <list-rgb> [<float-alpha>])
-;;    (gs:set-grid-layout <sym-container> <int-columns> <int-rows> [<int-hgap> <int-vgap>])
+;;    (gs:set-grid-layout <sym-container> <int-rows> <int-columns> [<int-hgap> <int-vgap>])
 ;;    (gs:set-icon <sym-id> <str-icon-path> [<int-index>])
 ;;    (gs:set-look-and-feel <str-look>)
 ;;    (gs:set-resizable <sym-frame> <boolean-flag>)
@@ -1265,6 +1266,7 @@ true
 
 ;; @syntax (gs:draw-image <sym-tag> <str-path> <int-x> <int-y> [<int-width> <int-height>])
 ;; @param <sym-tag> The tag group of the image.
+;; @param <str-path> The file path-name of the image.
 ;; @param <int-x> The X position of the image top left corner.
 ;; @param <int-y> The Y position of the image top left corner.
 ;; @param <int-width> The optional width in which to draw the image.
@@ -1824,7 +1826,7 @@ true
 ;; @param <sym-id> The name of the image button.
 ;; @param <sym-action> The name of the event handler.
 ;; @param <str-icon-path> The path for an image icon.
-;; @param <str-down-con-path> The path for a pressed down image icon.
+;; @param <str-down-icon-path> The path for a pressed down image icon.
 ;; @param <int-width> The optional width of the image button.
 ;; @param <int-height> The optional height of the image button.
 

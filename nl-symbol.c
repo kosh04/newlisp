@@ -371,6 +371,24 @@ freeMemory(sPtr->name);
 freeMemory(sPtr);
 }
 
+/*
+There is more stuff then below to free for callback closures.
+At the moment not used instead overwriting is disabled.
+*/
+/*
+void deleteFFImemory(CELL * pCell)
+{
+FFIMPORT * ffi;
+
+if(cell->type == CELL_IMPORT_FFI)
+    {
+    ffi = (FFIMPORT *)pCell->aux;
+    free(ffi->cif.arg_types);
+    free(ffi);
+    }
+}
+*/
+
 void makeContextFromSymbol(SYMBOL * symbol, SYMBOL * treePtr)
 {
 CELL * contextCell;

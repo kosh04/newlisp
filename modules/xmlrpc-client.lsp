@@ -5,7 +5,8 @@
 ;; @version 0.5 - doc changes
 ;; @version 0.6 - fixed bug in error handler
 ;; @version 0.61 - fixed doc typo
-;; @author Lutz Mueller, 2005-2011
+;; @version 0.7 - check for valid list type in (get-value expr) thanks Kosh
+;; @author Lutz Mueller 2005-2011, Kosh 2012
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:
@@ -113,7 +114,10 @@
 ; get contents from expr = (value ...)
 ;
 (define (get-value expr)
-    (if (empty? expr) nil
+    (if 
+        (empty? expr) nil
+        
+        (list? (expr 1))
         (case (expr 1 0)
             ("i4" (int (expr 1 1)))
             ("int" (int (expr 1 1)))
@@ -126,7 +130,12 @@
                          (get-array (rest (expr 1 1)))) )
             ("struct" (get-struct (rest (expr 1))))
             ("string" (expr 1 1))
-            (true (expr 1)))) )
+            (true (expr 1))
+        ) ; end case
+        
+        true (string (expr 1))
+    ) ; end if
+) 
 
 ; get contents from expr = ((value ...) (value ...) ...)
 ;

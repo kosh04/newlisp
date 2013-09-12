@@ -1,6 +1,6 @@
 #
 
-VERSION=10.4.0
+VERSION=10.4.2
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -48,7 +48,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.4.0-Release.html $(datadir)/doc/newlisp/newLISP-10.4.0-Release.html
+	-install -m 644 doc/newLISP-10.4.2-Release.html $(datadir)/doc/newlisp/newLISP-10.4.2-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -57,6 +57,7 @@ install:
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/getopts.lsp $(datadir)/newlisp/modules/getopts.lsp
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
+	-install -m 644 modules/gsl.lsp $(datadir)/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
 	-install -m 644 modules/json.lsp $(datadir)/newlisp/modules/json.lsp
 	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
@@ -153,7 +154,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.4.0-Release.html $(HOME)/share/doc/newlisp/newLISP-10.4.0-Release.html
+	-install -m 644 doc/newLISP-10.4.2-Release.html $(HOME)/share/doc/newlisp/newLISP-10.4.2-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp
@@ -162,6 +163,7 @@ install_home:
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp
 	-install -m 644 modules/getopts.lsp $(HOME)/share/newlisp/modules/getopts.lsp
 	-install -m 644 modules/gmp.lsp $(HOME)/share/newlisp/modules/gmp.lsp
+	-install -m 644 modules/gsl.lsp $(HOME)/share/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
 	-install -m 644 modules/json.lsp $(HOME)/share/newlisp/modules/json.lsp
 	-install -m 644 modules/macro.lsp $(HOME)/share/newlisp/modules/macro.lsp

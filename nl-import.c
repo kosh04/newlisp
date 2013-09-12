@@ -127,7 +127,10 @@ int type = CELL_IMPORT_CDECL;
 
 
 params = getString(params, &libName);
-params = getString(params, &funcName);
+if(params != nilCell)
+    params = getString(params, &funcName);
+else funcName = NULL;
+
 #ifdef CYGWIN
 if(params != nilCell)
     { 
@@ -152,8 +155,12 @@ hLibrary = 0;
 if((hLibrary = dlopen(libName, RTLD_LAZY)) == 0)
 #else
 if((hLibrary = dlopen(libName, RTLD_GLOBAL|RTLD_LAZY)) == 0)
+/* if((hLibrary = dlopen(libName, RTLD_GLOBAL)) == 0) */
 #endif
     return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString((char *)dlerror())));
+
+if(funcName == NULL)
+    return(trueCell);
 
 symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
 if(isFFI(symbol->flags)) /* don't redefine */
@@ -810,7 +817,7 @@ while( (elem = *elements++) != NULL)
         }
     else if(elem == &ffi_type_double)
         {
-        doubleV = (double) *(double *)&cell->aux;
+        doubleV = getDirectFloat(cell);
         memcpy(data+offset, &doubleV, sizeof(double));
         }
     else if(elem == &ffi_type_pointer || elem == &ffi_type_charpointer)
@@ -1000,7 +1007,7 @@ CELL * executeLibFFI(CELL * pCell, CELL * params)
                 }
             params = params->next;
             }
-        else if(ffiType ==  &ffi_type_pointer || ffiType == &ffi_type_charpointer) /*  "void*"  "char*" */
+        else if(ffiType ==  &ffi_type_pointer) /*  "void*" */
             {
             cell = evaluateExpression(params);
             if(cell->type == CELL_STRING)
@@ -1008,6 +1015,10 @@ CELL * executeLibFFI(CELL * pCell, CELL * params)
             else
                 getIntegerExt(cell, avalues[c], FALSE);
             params = params->next;
+            }
+        else if(ffiType ==  &ffi_type_charpointer) /*  "char*" */
+            {
+            params = getString(params, avalues[c]);
             }
         else if(ffiType == &ffi_type_float)  /* float 64-bit */
             {

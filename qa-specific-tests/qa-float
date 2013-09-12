@@ -54,6 +54,7 @@
 	"retain sign of -0.0"
 	(= (set 'tiny (div -1 aInf)) -0.0)
 	(= (sqrt tiny) -0.0)
+    (= (div -1 (div 1.0 0)) -0.0)
 	"inf is signed too"
 	(= aNegInf (div -1 0))
 	(!= aNegInf (div 1 0))

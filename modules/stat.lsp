@@ -1,14 +1,8 @@
 ;; @module stat.lsp
 ;; @description Basic statistics and plotting library
-;; @version 2.0 - fixed plot an plotXY routines for gnuplot
-;; @version 2.1 - doc changes
-;; @version 2.2 - frequency vector in stat:power was shifted left by 1
-;; @version 2.3 - $TEMP should be global
-;; @version 2.4 - changed deprecated <tt>name</tt> to <tt>term</tt>
-;; @version 2.5 - fix in cov-matrix and dependents multiple-reg and corr-matrix
-;; @version 2.6 - fix in plot routines for version 4.4 of Gnuplot
-;; @version 2.7 - fix in extract-col fnd reduce-col or reserved variable mat
-;; @author Lutz Mueller, 2001-2010
+;; @version 3.0 - Eliminated plot functions and f-prob which now is built-in as prob-f
+;;
+;; @author Lutz Mueller, 2001-2012
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
@@ -22,39 +16,15 @@
 ;; two dimensional data matrix. See the function 'stat:matrix' on how to make matrices
 ;; from lists.
 ;;
-;; This file also shows how to use some of the built in matrix math functions
-;; like 'multiply', 'transpose', 'invert' and 'fft'. 
-;;
-;; Note, that the plot functions need 'gnuplot' installed, a free graphing 
-;; package available for most operating systems.
-;; See: @link http://www.gnuplot.info/ http://www.gnuplot.info/
-;;
-;; If no Gnuplot program is found by the module all non-plot routines are still
-;; usable.
+;; In version 3.0 of 'stat.lsp' the usage for Gnuplot the stat:plot and stat:plotXY 
+;; functions has been eliminated. Instead use the module 'plot.lsp' shipped with all binary and
+;; source distributions. The F-distribution fucntion 'f-prob' has also been eliminated
+;; instead use one of new the built-in 'prob-f' or 'crit-f' functions.
 ;;
 ;; The documention contains only the call patterns. See the source for more
 ;; documentation.
 ;;
 ;; <h2>Summary of functions</h2><br>
-;; <h3>Plot functions (requires 'gnuplot')</h3>
-;; <pre>
-;; stat:plot     - plots one ore more vectors (lists)
-;; stat:plotXY   - plots an XY graph from to vectors
-;; </pre>
-;; The plot functions rely on a $HOME/tmp directory on Mac OS X and other Unix
-;; or <tt>c:\tmp</tt> or <tt>c:\tmp</tt> on Windows. When loading the module,
-;; a message will be printed to stdout if either the gnuplot executable or a 
-;; temporary directory cannot be found.
-;;
-;; The plot functions are designed for interactive use with no special options,
-;; titles on the top or the X and Y axes. Only a legend is printed in the top
-;; right corner to identify different data ranges. On Win32 plot functions 
-;; should only be used when using newLISP in a command shell, not inside the 
-;; newLISP-GS application.
-;;
-;; To produce more refined graphics the file <tt>tmp/plot</tt> can be edited
-;; to produce a different output. The Gnuplot command-file <tt>plot</tt> will
-;; look for data files in the same directory. One file for each data range.
 ;; <h3>General uni- and bi- variate statistics</h3>
 ;; <pre>
 ;; stat:sum      - returns the sum of a vector of numbers
@@ -67,9 +37,8 @@
 ;; stat:cov      - returns the covariance of two number vectors
 ;; stat:sum-d2   - returns the sum of squared differences of a vector from its mean
 ;; stat:sum-d2xy - returns sum of squared diffferences of two vectors
-;; stat:reqression - calculates the intecept and slope of a regression estimate
+;; stat:regression - calculates the intecept and slope of a regression estimate
 ;; stat:fit      - return the fitted line using regression coefficients
-;; stat:f-prob   - return the probability of an F-ratio of two variances
 ;; stat:moments  - calulates 1st to 3rd moments from a vector of numbers
 ;; </pre>
 ;; <h3>Multi variate statistics</h3>
@@ -96,23 +65,6 @@
 
 (if (< (sys-info -2) 10111)
 	(constant (global 'term) name))
-
-(constant (global '$HOME) 
-	(or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
-(constant (global '$TEMP) 
-	(if (= ostype "Win32") (or (env "TEMP") "C:\\temp") (string $HOME "/tmp")))
-
-(if-not $HOME (println "Cannot find home directory"))
-(if-not $TEMP (println "Cannot find tmp or temp directory"))
-
-(set 'files '(
-	"/usr/local/bin/gnuplot" ; Unix
-	"c:/gnuplot/bin/pgnuplot.exe" ; Win32
-))
-
-(set 'stat:gnuplot-program (files (or
-                (find true (map file? files))
-                (begin (println "Cannot find the gnuplot executable") (exit)))))
 
 ;; @syntax (stat:corr <X> <Y>)
 ;; @param <X> A list of numbers.
@@ -184,37 +136,6 @@
 ;; @param <offY> Zero based offset into <Y>.
 ;; @return Multiple regression of vars in <X> onto <Y> at <offsetY>.
 
-;; @syntax (stat:plot <p1> <p2> ... <pN>)        
-;; @param <p1> First list of data.
-;; @param <p2> Second list of data.
-;; @param <pN> Nth list o data
-;; @return The process ID of the gnuplot process.
-;; @example
-;;    (stat:plot '(1 2 3 4 5 4 3 2 1))
-;;
-;;    (set 'data-A '(1 2 3 2 1 2 3))
-;;    (set 'data-B '(2 2 2 2 2 2 2))
-;;    (stat:plot data-A data-B)
-
-;; The first example plots one data range. It will appear as <tt>series-1</tt>
-;; in the legend. In the second example two data ranges are drawn each in a 
-;; distinct color the variable names <tt>data-X</tt> and <tt>data-Y</tt> will
-;; be used as labeld in the legend.
-
-;; @syntax (stat:plotXY <list-X> <list-Y> [<srt-style>])
-;; @param <list-X> List of x-coordinates to plot.
-;; @param <list-Y> List of y-coordinates to plot.
-;; @param <str-style> Optional style parameter, e.g. "line"
-;; @return The process ID of the gnuplot process.
-;; @example
-;;    (set 'data-X (random 1 10 100))
-;;    (set 'data-Y (random 2 8 100))
-;;    (stat:plotXY data-X data-Y)
-
-;; Data points X,Y are plotted on the plane. If no style is specyfied points
-;; appear as little crosses. The style <tt>"line"</tt> would connect all data
-;; points.
-
 ;; @syntax (stat:power <TS>)
 ;; @param <TS> A time series of numbers.
 ;; @return The power spectrum of a time series
@@ -261,101 +182,6 @@
 
 (context 'stat)
 
-;---------------------------- gnuplot interface -------------------------------
-; 
-;  The plot functions produce data files for the plot data and acommand files
-;  for gnuplot, then execute gnuplot. Thye data and command files are produced
-;  in the platforms $HOME/tmp directory
-; 
-;  The file 'plot' contains the generated plot commands for gnuplot
-;  data is saved in files with the names of symbols containing the data
-;  or in files named 'series-1', 'series-2' etc.
-; 
-;  e.g.: (plot '(1 3 2 5 4)) will produce a 'series-1' ascii file 
-;  but (plot age height) will produce 'age' and 'height' data files
-; 
-
-;
-; plot one or more lists of numbers 'args' is used to access the list of
-; input parameters to 'plot'
-;
-(define-macro (plot)
-  (let  ( filelist '()
-            cnt 0
-            unix (< (& 0xF (last (sys-info))) 5)
-            filepath ""
-            filename ""
-			data "")
-	; for each list write an ascii file
-	(dolist (elmnt (args))
-		(if (symbol? elmnt)
-			(begin
-				(set 'filepath (string $TEMP "/" (term elmnt)))
-				(set 'filename (term elmnt))
-				(set 'data (eval elmnt)))
-	   		(begin 
-				(set 'filepath (string $TEMP "/series-" cnt))
-				(set 'filename (string "series-" cnt))
-				(set 'data (eval elmnt))))
-
-
-		(inc cnt)
-		(write-file filepath (list2ascii data))
-		(push (append "'" filepath "' t \"" filename "\"") filelist))
-
-
-	(set 'filelist (join (reverse filelist) ","))
-	; write file with plot commands depending on OS - Windows doesn't have PWD
-
-;	(println "$TEMP:" $TEMP)
-;	(println "filelist:" filelist)
-;	(println "filepath:" filepath)
-;	(println "filename:" filename)
-;	(println "program:" gnuplot-program)
-
-	(if unix
-		(begin
-			(write-file (append $TEMP "/plot") 
-					;(append "set data style lines; plot " filelist "\r\n"))
-					(append "set style data lines; plot " filelist "\r\n")) ; gnuplot v4.4
-			(process (append gnuplot-program " -persist "  (env "HOME") "/tmp/plot")))
-	/* else Win32 */
-		(begin
-			(write-file (append $TEMP "/plot") 
-					(append "set data style lines; plot " filelist ";pause -1;\r\n"))
-			(process (append gnuplot-program " " $TEMP "/plot")))
-)))
-
-;
-; plot to lists of numbers in XY-fashion
-;
-; optionally define a style e.g: "line"
-; if style is unused dots are plotted
-;
-(define (plotXY X Y style , data st fle unix)
-	(set 'unix (< (& 0xF (last (sys-info))) 5 ))
-	(set 'data (map list (map string X) (map string Y)))
-	(set 'filepath (append $TEMP "/plot-XY"))
-	(set 'fle (open filepath "write"))
-	(dolist (x data)	
-		(write-line fle (join x " ")))
-	(close fle)
-	(if (not style) 
-		(set 'st "")
-		(set 'st (append "set data style " style "; ")))
-
-	(if unix
-		(begin
-			(write-file (append $TEMP "/plot") (append st "plot '" filepath "' t \"\";"))
-			(process (append gnuplot-program " -persist " $TEMP "/plot")))
-		/* else Win32 */
-		(begin
-			(write-file (append $TEMP "/plot") (append st "plot '" filepath "' t \"\"; pause -1;"))
-			(process (append gnuplot-program " " $TEMP "/plot")))
-	)
-)
-
-
 ;-------------------  General uni and bi-variate statistics --------------------
 
 ; sum of a data vector X
@@ -366,7 +192,7 @@
 (define (mean X)
 	(div (sum X) (length X)))
 
-; variance of a data vecor X
+; variance of a data vector X
 (define (var X)
 	(div (sum-d2 X) (sub (length X) 1)))
 
@@ -511,9 +337,7 @@
 	(set 'ps (map (lambda (x) (mul (div x n2) 2)) ps))
 	; the first and last are not multiplied by 2, divide them back
 	; use deprecated nth-set in versions older than 9.9.02
-	(if (< (sys-info -2) 9902)
-		(nth-set (ps 0) (div (first ps) 2))
-		(setf (ps 0) (div (first ps) 2)))
+	(setf (ps 0) (div (first ps) 2))
 	(set 'mid (sub (div n 2) 1))
 	(replace mid ps (div (nth mid ps) 2))
 	; calc a vector with frequencies, adjusted for the new power-2 length
@@ -616,13 +440,12 @@
 ;
 ; probablity of F variance ratio with degrees of freedom df1 df2
 ;
-;; 
+; 
 (define (f-prob F df1 df2)
   (let (prob (mul 2 (betai (div df2 (add df2 (mul df1 F))) 
                            (mul 0.5 df2) 
                            (mul 0.5 df1)))) 
    (div (if (> prob 1) (sub 2 prob) prob) 2)))	
-
 
 ;----------------------------- utility functions -------------------------------
 

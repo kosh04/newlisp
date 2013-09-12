@@ -5,6 +5,8 @@
 " Another URL:  http://slobin.pp.ru/vim/syntax/newlisp.vim
 " Started at:   2007 Nov 07 (The Great Revolution 90th anniversary)
 " Last change:  2011 Dec 23rd, LM added struct
+" Last change:  2012 March 7th, LM added union
+" Last change:  2012 Aprik 2nd, LM added union,odd?,even?,crit-f,cri-t,prob-f,prob-t
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.36 2011/12/23 13:55:35 slobin Exp $
@@ -109,12 +111,12 @@ syn keyword newlispFunction array? asin asinh assoc atan atan2 atanh atom? base6
 syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback
 syn keyword newlispFunction case catch ceil change-dir char chop clean close command-event cond cons
 syn keyword newlispFunction constant context context? continue copy copy-file cos cosh count cpymem
-syn keyword newlispFunction crc32 crit-chi2 crit-z current-line curry date date-list date-parse
+syn keyword newlispFunction crc32 crit-chi2 crit-f crit-t crit-z current-line curry date date-list date-parse
 syn keyword newlispFunction date-value debug dec def-new default define define-macro delete
 syn keyword newlispFunction delete-file delete-url destroy det device difference directory
 syn keyword newlispFunction directory? div do-until do-while doargs dolist dostring dotimes dotree
 syn keyword newlispFunction dump dump-symbol dup empty? encrypt ends-with env erf error-event eval
-syn keyword newlispFunction eval-string exec exists exit exp expand explode extend factor fft
+syn keyword newlispFunction eval-string even? exec exists exit exp expand explode extend factor fft
 syn keyword newlispFunction file-info file? filter find find-all first flat float float? floor flt
 syn keyword newlispFunction for for-all fork format fv gammai gammaln gcd get-char get-float get-int
 syn keyword newlispFunction get-long get-string get-url global global? if if-not ifft import inc
@@ -125,9 +127,9 @@ syn keyword newlispFunction mul multiply net-accept net-close net-connect net-er
 syn keyword newlispFunction net-interface net-ipv net-listen net-local net-lookup net-packet
 syn keyword newlispFunction net-peek net-peer net-ping net-receive net-receive-from net-receive-udp
 syn keyword newlispFunction net-select net-send net-send-to net-send-udp net-service net-sessions
-syn keyword newlispFunction new nil? normal not now nper npv nth null? number? open or pack parse
+syn keyword newlispFunction new nil? normal not now nper npv nth null? number? odd? open or pack parse
 syn keyword newlispFunction parse-date peek pipe pmt pop pop-assoc post-url pow prefix pretty-print
-syn keyword newlispFunction primitive? print println prob-chi2 prob-z process prompt-event
+syn keyword newlispFunction primitive? print println prob-chi2 prob-f prob-t prob-z process prompt-event
 syn keyword newlispFunction protected? push put-url pv quote quote? rand random randomize read
 syn keyword newlispFunction read-buffer read-char read-expr read-file read-key read-line read-utf8
 syn keyword newlispFunction reader-event real-path receive ref ref-all regex regex-comp remove-dir
@@ -137,7 +139,7 @@ syn keyword newlispFunction set-ref-all setf setq sgn share signal silent sin si
 syn keyword newlispFunction source spawn sqrt starts-with string string? struct sub swap sym symbol?
 syn keyword newlispFunction symbols sync sys-error sys-info tan tanh term throw throw-error time
 syn keyword newlispFunction time-of-day timer title-case trace trace-highlight transpose trim true?
-syn keyword newlispFunction unicode unify unique unless unpack until upper-case utf8 utf8len uuid
+syn keyword newlispFunction unicode unify union unique unless unpack until upper-case utf8 utf8len uuid
 syn keyword newlispFunction wait-pid when while write write-buffer write-char write-file write-line
 syn keyword newlispFunction xfer-event xml-error xml-parse xml-type-tags zero? \| ~
 

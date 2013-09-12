@@ -4,6 +4,7 @@
 # tested on Win32 and OS X 32/64-bit (Intel) minimum version newLISP 10.3.10
 
 # verson 2.1 December 2011 - remade with extended FFI for 32 and 64-bit
+# verson 2.2 February 2012 - check if newLISP compiled for extended FFI
 # this version works on both, 32-bit and 64-bit newLISP
 # on a Mac OSX standard install everything neede for 32-bit or 64-bit
 # is included. On Windows XP and Windows 7, glut32.dll must be added. 
@@ -35,6 +36,11 @@
 # 
 
 (set 'is-64-bit (= 1 (& 0x100 (sys-info -1))))
+(set 'has-ffi (= 1024 (& 1024 (sys-info -1))))
+
+(unless has-ffi
+    (println "need newLISP compiled for extended FFI")
+    (exit))
 
 (if 
   (= ostype "OSX") ;; drawings will be visible only on x86 based OS X
@@ -104,7 +110,7 @@
 (set 'argv (pack "lu" argv1))
 (set 'rotx 0.0)
 (set 'roty 0.0)
-(set 'PI (mul (acos 0) 2))
+(set 'PI (atan2 0 -1))
 
 (define (draw) 
 	(glClear GL_COLOR_BUFFER_BIT)

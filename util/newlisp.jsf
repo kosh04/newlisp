@@ -33,7 +33,8 @@
 # 28 March 2011, Norman updated list with prim and depr functions
 # 28 March 2011, L.M. added write-buffer (like write) to depr functions
 # 23 December 2011, L.M. added struct
-# version 1.12
+# 2 April 2012, L.M. added union, even?, odd?, crit-f, crit-t, prob-f, prob-t
+# version 1.14
 
 =Idle		
 =Comment 	bold green
@@ -160,6 +161,8 @@
 "cpymem"	prim
 "crc32"	prim
 "crit-chi2"	prim
+"crit-f"	prim
+"crit-t"	prim
 "crit-z"	prim
 "current-line"	prim
 "curry"	prim
@@ -200,6 +203,7 @@
 "error-event"	prim
 "eval"	prim
 "eval-string"	prim
+"even?" prim
 "exec"	prim
 "exists"	prim
 "exit"	prim
@@ -310,6 +314,7 @@
 "nth"	prim
 "null?"	prim
 "number?"	prim
+"odd?"  prim
 "open"	prim
 "or"	prim
 "ostype"	prim
@@ -329,6 +334,8 @@
 "print"	prim
 "println"	prim
 "prob-chi2"	prim
+"prob-f"	prim
+"prob-t"	prim
 "prob-z"	prim
 "process"	prim
 "prompt-event"	prim
@@ -425,6 +432,7 @@
 "unicode"	prim
 "unify"	prim
 "unique"	prim
+"union"	prim
 "unless"	prim
 "unpack"	prim
 "until"	prim

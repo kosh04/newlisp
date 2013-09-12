@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10400;
+int version = 10402;
 
 char copyright[]=
-"\nnewLISP v.10.4.0 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.4.2 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.0 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.4.2 on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.0 on %s IPv4/6%s\n\n";
+"newLISP v.10.4.2 on %s IPv4/6%s%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.0 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.4.2 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.0 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.4.2 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif
 
@@ -125,7 +125,7 @@ char linkOffset[] = "@@@@@@@@";
 char preLoad[] = 
     "(define Tree:Tree)"
     "(define (Class:Class) (cons (context) (args)))"
-    "(set (global 'module) (fn (m) (load (append (env {NEWLISPDIR}) {/modules/} m))))";
+    "(set (global 'module) (fn ($x) (load (append (env {NEWLISPDIR}) {/modules/} $x))))";
 void printHelpText(void);
 #ifdef READLINE
 char ** newlisp_completion (char * text, int start, int end);
@@ -758,7 +758,7 @@ for(idx = 1; idx < argc; idx++)
 
     if(strcmp(argv[idx], "-v") == 0)
         {
-        varPrintf(OUT_CONSOLE, banner, OSTYPE, ".");
+        varPrintf(OUT_CONSOLE, banner, OSTYPE, LIBFFI, ".");
         exit(0);
         }
 
@@ -777,7 +777,7 @@ if(isatty(fileno(IOchannel)))
     {
     isTTY = TRUE;
     if(!noPromptMode)   
-        varPrintf(OUT_CONSOLE, banner, OSTYPE, banner2);
+        varPrintf(OUT_CONSOLE, banner, OSTYPE, LIBFFI, banner2);
     }
 else
     {
@@ -786,7 +786,7 @@ else
 #endif
         setbuf(IOchannel,0);
     if(forcePromptMode)
-        varPrintf(OUT_CONSOLE, banner, OSTYPE,  banner2);
+        varPrintf(OUT_CONSOLE, banner, OSTYPE, LIBFFI, banner2);
     }
 
 /* ======================= main entry on reset ====================== */
@@ -896,17 +896,21 @@ return(completion_matches(text, (CPFunction *)command_generator));
 char * getCommandLine(int batchMode)
 {
 char * cmd;
+#ifndef READLINE
+int len;
 
-#ifdef READLINE
+if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
+cmd = calloc(MAX_COMMAND_LINE, 1);
+if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) exit(1);
+len = strlen(cmd);
+/* cut off line terminators  left by fgets */
+*(cmd + len - LINE_FEED_LEN) = 0;
+#else /*  READLINE */
 int errnoSave = errno;
 if((cmd = readline(batchMode ? "" : prompt())) == NULL) exit(0);
 errno = errnoSave; /* reset errno, set by readline() */
 if(strlen(cmd) > 0) 
     add_history(cmd);
-#else
-if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
-cmd = calloc(MAX_COMMAND_LINE, 1);
-if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) exit(1);
 #endif  
 return(cmd);
 }
@@ -953,7 +957,7 @@ if(!IOchannelIsSocketStream)
     setbuf(IOchannel,0);
 
 if(!reconnect && !noPromptMode)
-    varPrintf(OUT_CONSOLE, banner, OSTYPE, ".");
+    varPrintf(OUT_CONSOLE, banner, OSTYPE, LIBFFI, ".");
 }
 
 
@@ -1097,12 +1101,8 @@ if(cmdStream != NULL && batchMode)
         if(isTTY) 
             {
             cmd = getCommandLine(TRUE);
-#ifdef READLINE
             strncpy(buff, cmd, MAX_COMMAND_LINE -2);
-            strlcat(buff, "\n", 1);
-#else
-            strncpy(buff, cmd, MAX_COMMAND_LINE -1);
-#endif
+            strlcat(buff, LINE_FEED, LINE_FEED_LEN);
             free(cmd);
             }
         else
@@ -2641,6 +2641,7 @@ switch(symbolType(sPtr))
     {
     case CELL_PRIMITIVE:
     case CELL_IMPORT_CDECL:
+    case CELL_IMPORT_FFI:
 #if defined(WIN_32) || defined(CYGWIN) 
     case CELL_IMPORT_DLL:
 #endif
@@ -5910,7 +5911,7 @@ if(sPtr != NIL_SYM && sPtr != NULL)
         }
     /* don't save primitives, symbols containing nil and the trueSymbol */
     else if(type != CELL_PRIMITIVE && type != CELL_NIL
-        && sPtr != trueSymbol && type != CELL_IMPORT_CDECL
+        && sPtr != trueSymbol && type != CELL_IMPORT_CDECL && type != CELL_IMPORT_FFI
 #if defined(WIN_32) || defined(CYGWIN)
         && type != CELL_IMPORT_DLL
 #endif
@@ -6417,6 +6418,7 @@ switch(operand)
     {
     case CELL_PRIMITIVE:
         if(params->type == CELL_IMPORT_CDECL
+        || params->type == CELL_IMPORT_FFI
 #if defined(WIN_32) || defined(CYGWIN)
         || params->type == CELL_IMPORT_DLL 
 #endif

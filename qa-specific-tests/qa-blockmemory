@@ -27,8 +27,7 @@ b1 b2 b3 b4 initial
 	(set 'b3 nil)
 	(println "return b3, cell count:" (sys-info 0) ", block count:" (reset nil))
 
-	(unless (= initial (sys-info 0))
-		(println "Error in cell block allocation"))
+    (= initial (sys-info 0))
 )
 
 (if (run)

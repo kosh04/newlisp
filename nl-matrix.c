@@ -39,7 +39,6 @@ void freeMatrix(double * * m, int rows);
 /* since version 7.4.8 'transpose' tramspose any matrix not only
    matrices containing numbers.
 */ 
-
 CELL * p_matTranspose(CELL * params)
 {
 CELL * A;

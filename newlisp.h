@@ -40,6 +40,11 @@
 # endif
 #endif
 
+#define LIBFFI " libffi"
+
+#else /* FFI */
+#define LIBFFI ""
+
 #endif /* FFI */
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */

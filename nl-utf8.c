@@ -27,6 +27,8 @@
 #include <wctype.h>
 #include "protos.h"
 
+/* from win32-path.c */
+CELL * utf8_from_mbcs(void * mbcs_str);
 
 /*************************************************
 *    Macros and tables for character handling    *
@@ -237,18 +239,18 @@ int * unicode;
 size_t size;
 char * utf8str;
 
-getStringSize(params, (void *)&unicode, &size, TRUE);
-utf8str = allocMemory(size * UTF8_MAX_BYTES + 1);
+params = getStringSize(params, (void *)&unicode, &size, TRUE);
+#ifdef WIN_32
+if(getFlag(params)) /* its a MBCS string */
+    return(utf8_from_mbcs((void *)unicode));
+#endif
+    
+
+utf8str = callocMemory(size * UTF8_MAX_BYTES + 1);
 
 size = wstr_utf8(utf8str, unicode, size);
 utf8str = reallocMemory(utf8str, size + 1);
-
-/*
-cell = getCell(CELL_STRING);
-cell->contents = (UINT)utf8str;
-cell->aux = size + 1;
-return(cell);
-*/
+*(utf8str + size) = 0;
 
 return(makeStringCell(utf8str, size));
 }
