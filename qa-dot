@@ -164,7 +164,7 @@ true
 (define (qa)
   (dolist (sm (symbols 'MAIN)) 
    (if (not 
-     (if (and (primitive? (eval sm)) (< sm 'zzzzz)) 
+     (if (and (primitive? (eval sm)) (>= (term sm) "s") (< (term sm) "t")) ; >= kpst
        (begin 
           (print "  -> " (term sm) "          \r")
           (set 'func (eval (sym (append "test-" (string sm)))) )
@@ -2634,7 +2634,14 @@ true
       (share mvar 123.456)
       (= (share mvar) 123.456)
       (share mvar "hello")
-      (= (share mvar) "hello")))
+      (= (share mvar) "hello")
+      ; check sizes > pagesize
+	  (share mvar (dup "X" 10000))
+      (= 10000 (length (share mvar)))
+      ; force deletion of temporary file
+      (not (share mvar nil))
+      (unless (= ostype "Win32") (share nil mvar))
+))
 
 
 (define (win32-test-share)

@@ -7,8 +7,9 @@
 <style type="text/css" media="screen">
 <!--
 body, h4, p {
-    font-family: Lucida Sans, Helvetica, sans-serif;
-    line-height: 120%;
+	font-family: Lucida Sans, Helvetica, sans-serif;
+	line-height: 120%;
+	max-width: 1000px;
 	}
 
 h1, h2, h3 {
@@ -74,7 +75,7 @@ tt {
 <br/>
 <blockquote>
 <center><h2>Automatic Memory Management in newLISP</h2></center>
-<center><font size="-1">Lutz Mueller, 2004-2011. Last edit 2010-10-27 rev 26<br/>
+<center><font size="-1">Lutz Mueller, 2004-2011. Last edit 2011-09-18<br/>
 </font></center>
 
 <center><blockquote><blockquote><i>
@@ -196,6 +197,10 @@ objects returned by reference from other built-in functions. This has substantia
 reduced the need for copying and deleting memory objects and increased the speed of 
 some built-in functions. Now only parameters into user-defined functions and return
 values passed out of user-defined functions are ORO managed.</p>
+
+<p>Since version 10.3.2, newLISP checks the result stack before copying LISP cells.
+This has reduced the amount of cells copied by about 83% and has significantly 
+increased the speed of many operations on bigger lists.</p>
 
 <h3>Memory and datatypes in newLISP</h3>
 
@@ -359,7 +364,7 @@ results to be used and/or copied by calling functions.</p>
 (sum-of-squares 3 4) =&gt; 25
 </pre></blockquote>
 
-<p><tt>sum-of-squares</tt> is a user-define <em>lambda-function</em> calling to <em>built-in</em> 
+<p><tt>sum-of-squares</tt> is a user-defined <em>lambda-function</em> calling to <em>built-in</em> 
 functions <tt>+</tt> and <tt>*</tt>.</p>
 
 <p>The following trace shows the relevant steps when defining the <tt>sum-of-squares</tt> function 
@@ -425,9 +430,12 @@ John Wiley &amp; Sons <br/>
 developed for LISP. Other schemes like copying or generational algorithms where developed 
 for other languages like Smalltalk and later also used in LISP.</font>
 <br/><br/>
-&sup2; <font size="-1">This chapter was added in October 2008.</font>
+&sup2; <font size="-1">This chapter was added in October 2008 and extended August 2011.</font>
 <br/><br/>
-&sup3; <font size="-1">This is a shortened rendition of expression evaluation not including handling of default functors and implicit indexing.</font>
+&sup3; <font size="-1">This is a shortened rendition of expression evaluation 
+not including handling of default functors and implicit indexing.
+For more information on expression evaluation see: <a href="http://www.newlisp.org/ExpressionEvaluation.html">Expression evaluation, Implicit Indexing, Contexts and Default Functors in the newLISP Scripting Language</a>.
+</font>
 <br/><br/>
 <center><font size="-1">Copyright &copy; 2004-2011, Lutz Mueller 
 <a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>

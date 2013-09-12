@@ -4,7 +4,7 @@
 ;; @version 1.41 bug fixes for gs:listen and gs:check-event
 ;; @version 1.42 new table UI
 ;; @version 1.43 bug fix in new table UI action parameters
-;; @version 1.44 manuals in menu only on MAC OSX, other platforms would block
+;; @version 1.44 fixes in newlisp-edit.lsp
 ;; @author LM, August 2008, 2009, 2010, 2011
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -232,8 +232,7 @@
 ;; report 'nil' for the text field. A handler should therefore always check text
 ;; for string contents before trying to apply the 'base64-dec' function on it.
 ;; <br><br>
-;; <h2>Coding considerations</h2>
-;; <b>mapping or applying 'gs:xxx' functions</b><br><br>
+;; <h2>Mapping or applying 'gs:xxx' functions</h2>
 ;; Like any newLISP functions, 'gs:xxx' functions can be mapped or applied to lists of 
 ;; parameters using the newLISP 'map' and 'apply' functions. When doing this, make sure to 
 ;; map or apply the quoted <tt>'gs:xxx symbol</tt>, so the <tt>gs:xx</tt> functions 
@@ -540,6 +539,11 @@
 ;; Every graphics object (line, shape, text, or image) carries a group tag. Objects are deleted
 ;; using 'gs:delete-tag' and will disappear immediately from the canvas. Using 'gs:move-tag'
 ;; lines, shapes, text and images can be moved to a different position.
+;;
+;; All positions given in <tt>int x</tt> and <tt>int y</tt> must be given as integers. Values
+;; will not be converted automatically as is the case with newLISP's built-in functions. To
+;; guarantee integer type, values can be casted e.g.: 
+;; <pre>(gs:draw-circle 'MyCircle (int x) (int y) (int r))</pre>
 ;; <pre>
 ;;    (gs:color-tag <sym-tag> <list-rgb> [<boolean-repaint>])
 ;;    (gs:delete-tag <sym-tag>[<boolean-repaint>])
@@ -3499,7 +3503,7 @@ true
 
 ;; @syntax (gs:table-set-row-number <sym-id> <bool-row-number>)
 ;; @param <sym-id> The name of the table.
-;; @param <bool-row-number> 'true' if rowns should carry a row number; default 'nil'.
+;; @param <bool-row-number> 'true' if rows should carry a row number; default 'nil'.
 ;;
 ;; Show or hide the row number headers. The default is hiding row numbers.
 

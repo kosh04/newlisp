@@ -8,7 +8,8 @@
 ;; @version 1.9 fixes for 64-bit in <,>,>=,<=,factor didn't sign extend 32->64
 ;; @version 2.0 more fixes for 64-bit, allocated space for handles was to small
 ;; @version 2.1 changed deprecated <tt>name</tt> to <tt>term</tt>
-;; @author Lutz Mueller, 2007-2010
+;; @version 2.2 out-comment 64-bit lib on Mac OSX, newLISP is shipped as 32-bit
+;; @author Lutz Mueller, 2007-2011
 ;; <h3>The GNU MP Bignum Library</h3>
 ;; This modules interfaces to libgmp which can be obtained from @link http://gmplib.org/ http://gmplib.org/ .
 ;;
@@ -135,7 +136,7 @@
 (define gmp-divzero-error "Division by zero in GMP module")
 
 (set 'files '(
-	"/usr/local/lib/libgmp.dylib" ; Mac OSX 64-bit
+;	"/usr/local/lib/libgmp.dylib" ; Mac OSX for 64-bit newLISP
     "/usr/lib/libgmp.dylib" ;Mac OSX
     "/usr/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX

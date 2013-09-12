@@ -77,7 +77,7 @@
 (define (flap) (apply amb M))
 (define (flop) (apply amb P))
 
-(while (gs:check-event 10) ; timeout is small, because no events are exspected
+(while (gs:check-event 10) ; timeout is small, because no events are expected
 	(dolist (L CIRCLE) 
 		(set 'tx (L 1))
 		(set 'ty (L 2))

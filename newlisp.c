@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10302;
+int version = 10303;
 
 char copyright[]=
-"\nnewLISP v.10.3.2 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.3 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.2 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.3 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.2 on %s IPv4/6%s\n\n";
+"newLISP v.10.3.3 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.2 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.3 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.2 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.3.3 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
@@ -164,6 +164,7 @@ long MAX_CELL_COUNT = 0x10000000;
 #else
 long MAX_CELL_COUNT = 0x800000000000000LL;
 #endif
+long blockCount = 0;
 
 CELL * firstFreeCell = NULL;
 
@@ -724,8 +725,9 @@ for(idx = 1; idx < argc; idx++)
 	if(strncmp(argv[idx], "-l", 2) == 0 || strncmp(argv[idx], "-L", 2) == 0)
 		{
 		logTraffic = (strncmp(argv[idx], "-L", 2) == 0) ? LOG_MORE : LOG_LESS;
-		if(realpath(getArg(argv, argc, &idx), logFile) == NULL) /* log file must exist */
-			fatalError(ERR_IO_ERROR, 0, 0);
+		if(realpath(getArg(argv, argc, &idx), logFile) == NULL)
+            close(openFile(logFile, "w", 0));
+
 		continue;
 		}
 
@@ -1063,7 +1065,7 @@ if(!isTTY && (*command == '\n' || *command == '\r' || *command == 0)) return;
 if(!batchMode) 
 	{
 	if(logTraffic == LOG_MORE) 
-		writeLog(command, 0);
+		writeLog(command, TRUE);
 	if(strncmp(command, "GET /", 5) == 0) 
 		executeHTTPrequest(command + 5, HTTP_GET);
 	else if(strncmp(command, "HEAD /", 6) == 0)
@@ -1109,7 +1111,7 @@ if(cmdStream != NULL && batchMode)
 			if(logTraffic) 
 				{
 				writeLog(cmdStream->buffer, 0);
-				writeLog(buff, 0);
+				/* writeLog(buff, 0); */
 				}
 			makeStreamFromString(&stream, cmdStream->buffer);
 			evaluateStream(&stream, outDevice, 0);
@@ -1124,7 +1126,7 @@ if(cmdStream != NULL && batchMode)
 	return;
 	}
 
-if(logTraffic) writeLog(command, TRUE);
+if(logTraffic == LOG_LESS) writeLog(command, TRUE);
 prettyPrintLength = 0;
 
 makeStreamFromString(&stream, command);
@@ -1188,6 +1190,7 @@ while(result)
 			varPrintf(outDevice, "\n");
 			if(logTraffic == LOG_MORE)
 				{
+				writeLog("-> ", 0);
 				printCell(eval, TRUE, OUT_LOG);
 				writeLog("", TRUE);
 				}
@@ -1353,7 +1356,7 @@ switch(cell->type)
 	{
 	case CELL_NIL:
 	case CELL_TRUE:
-	/* case CELL_INT: only used with COMPARE_TYPE_MASK */
+	/* case CELL_INT: only used with COMPARE_TYPE_MASK in compareCells() */
 	case CELL_LONG:
 	case CELL_INT64:
 	case CELL_FLOAT:
@@ -1810,7 +1813,7 @@ contextSave = currentContext;
 currentContext = newContext;
 
 /* save environment and get parameters */
-GET_ARGS:
+while (TRUE)
   {
   if(local->type == CELL_SYMBOL)
   	symbol = (SYMBOL *)local->contents;
@@ -1826,11 +1829,11 @@ GET_ARGS:
 				if(arg == nilCell)
 					arg = evaluateExpression(cell->next);
 				}
-			else goto GOT_ARGS;
+			else break;
 			}
-		else goto GOT_ARGS;
+		else break;
 		}
-  else goto GOT_ARGS;
+  else break;
 
   if(isProtected(symbol->flags))
     return(errorProcExt(ERR_SYMBOL_PROTECTED, local));
@@ -1842,9 +1845,6 @@ GET_ARGS:
   arg = arg->next;
   localCount++;
   }
-goto GET_ARGS;
-
-GOT_ARGS:
 
 /* put unassigned args in $args */
 pushEnvironment(argsSymbol->contents);
@@ -2076,10 +2076,10 @@ UINT len;
 
 /* avoids cellCopy if cell on resultStack */
 if(cell == (CELL *)*(resultStackIdx))
-	{
-	if(cell != nilCell && cell != trueCell)
-		return(popResult());
-	}
+    {
+    if(cell != nilCell && cell != trueCell)
+        return(popResult());
+    }
 
 if(firstFreeCell == NULL) allocBlock();
 newCell = firstFreeCell;
@@ -2165,18 +2165,20 @@ while(cell != nilCell)
 	else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
 		freeMemory( (void *)cell->contents);
 
-	next = cell->next;
 	
 	/* free cell */
 	if(cell != trueCell && cell != nilCell) 
 		{
+		next = cell->next;
 		cell->type = CELL_FREE;
 		cell->next = firstFreeCell;
 		firstFreeCell = cell;
 		--cellCount;
+		cell = next;
+		continue;
 		}
-	
-	cell = next;
+
+	cell = cell->next;
 	}
 }
 
@@ -2215,6 +2217,7 @@ for(i = 0; i < MAX_BLOCK; i++)
 (cellBlock + MAX_BLOCK - 1)->next = NULL;
 (cellBlock + MAX_BLOCK)->next = NULL;
 firstFreeCell = cellBlock;
+++ blockCount;
 }
 
 
@@ -2263,6 +2266,7 @@ while(blockPtr != NULL)
 		cellBlock = prevCellBlock;
 		blockPtr = blockPtr->next;
 		freeMemory(lastBlockPtr->next);
+        --blockCount;
 		lastBlockPtr->next = blockPtr;
 		}
 	else 
@@ -2903,12 +2907,10 @@ snprintf(str, 40, "...%-40s", ((char *)((stream->ptr - stream->buffer) > 40 ? st
 errorProcExt2(ERR_MISSING_PAR, stuffString(str));
 }
 
-
 CELL * errorProcAll(int errorNumber, CELL * expr, int deleteFlag)
 {
 if(!traceFlag) fatalError(errorNumber, expr, deleteFlag);
 printErrorMessage(errorNumber, expr, deleteFlag);
-openTrace();
 return(nilCell);
 }
 
@@ -2950,6 +2952,7 @@ CELL * lambdaFunc;
 UINT * stackIdx = lambdaStackIdx;
 SYMBOL * context;
 int i;
+
 
 if(errorNumber == EXCEPTION_THROW)
 	errorNumber = ERR_THROW_WO_CATCH;
@@ -2999,7 +3002,8 @@ while(stackIdx > lambdaStack)
 if(!(traceFlag & TRACE_SIGINT)) evalFunc = NULL; 
 parStackCounter = prettyPrintPars = 0;
 
-if(evalCatchFlag && !(traceFlag & TRACE_SIGINT)) return;
+if(evalCatchFlag && !((traceFlag & TRACE_SIGINT) 
+		|| (traceFlag & TRACE_IN_DEBUG))) return;
 
 if(errorEvent == nilSymbol)
 	{
@@ -3623,7 +3627,7 @@ else if(cell->type == CELL_FLOAT)
 	else if(*(double *)&cell->aux < -2147483648.0) *number = 0x80000000;
 	else *number = *(double *)&cell->aux;
 	}
-#else
+#else /* NEWLISP64 */
 if(cell->type == CELL_LONG)
     *number = cell->contents;
 else if(cell->type == CELL_FLOAT)
@@ -3724,7 +3728,7 @@ else if(cell->type == CELL_FLOAT)
 	else if(*(double *)&cell->aux < -2147483648.0) *number = 0x80000000;
 	else *number = *(double *)&cell->aux;
 	}
-#else
+#else /* NEWLISP64 */
 if(cell->type == CELL_LONG)
     *number = cell->contents;
 else if(cell->type == CELL_FLOAT)
@@ -6464,9 +6468,10 @@ CELL * p_reset(CELL * params)
 if(params != nilCell)
 	{
 	if(!getFlag(params)) 
-	/* only for experimental purose not documented
-	   returns all free cell blocks to the OS */
-		freeCellBlocks();
+        {
+		freeCellBlocks(); 
+        return(stuffInteger(blockCount)); /* 10.3.3 */
+        }
 #ifndef LIBRARY
 #ifndef WIN_32
 	else

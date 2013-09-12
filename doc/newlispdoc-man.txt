@@ -8,7 +8,7 @@ NAME
 SYNOPSIS
        newlispdoc [-s] [-d] lisp-file1 [lisp-file2 ...]
 
-       newlispdoc [-url] urls-file
+       newlispdoc [-s] [-d] [-url] urls-file
 
 DESCRIPTION
        newlispdoc is a commandline utility written in newLISP to generate HTML
@@ -70,5 +70,5 @@ SEE ALSO
 
 
 
-version 3.0                      February 2011                   newlispdoc(1)
+version 3.1                        July 2011                     newlispdoc(1)
 

@@ -761,7 +761,9 @@ if(fType != 0)
 
 varPrintf((UINT)&fmtStream, fmt);
 
-return(makeStringCell(fmtStream.buffer, fmtStream.position));
+cell = stuffStringN(fmtStream.buffer, fmtStream.position);
+closeStrStream(&fmtStream);
+return(cell);
 }
 
 void openStrStream(STREAM * stream, size_t buffSize, int reopenFlag)
@@ -1262,10 +1264,8 @@ while (params != nilCell)
     params = params->next;
 	}
 prettyPrintFlags &= ~PRETTYPRINT_STRING;
-/* cell = stuffString(strStream.buffer); */
 
-cell = makeStringCell(strStream.buffer, strStream.position);
-strStream.buffer = NULL; /* prevent freeing memory */
+cell = stuffStringN(strStream.buffer, strStream.position);
 
 closeStrStream(&strStream);
 return(cell);

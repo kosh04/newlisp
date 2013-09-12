@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2011 July 12<sup>th</sup><br/>
+</h1>Version 2011 September 20<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.3
 </center>
 
@@ -130,11 +130,11 @@ newLISP is a registered trademark of Lutz Mueller.
 <li><a href="#toc-4">4. Local variables</a>
   <ul>
   <li>Locals in looping functions</li>
-  <li>Locals in 'let' and 'local'</li>
+  <li>Locals in <tt>let</tt> and <tt>local</tt></li>
   <li>Unused parameters as locals</li>
   <li>Default variable values</li>
-  <li>'args' as local substitute</li>
-  <li>Named parameters and 'bind'</li>
+  <li><tt>args</tt> as local substitute</li>
+  <li>Named parameters and <tt>bind</tt></li>
   </ul></li>
 <li><a href="#toc-5">5. Walking through lists</a>
   <ul>
@@ -145,8 +145,8 @@ newLISP is a registered trademark of Lutz Mueller.
   </ul></li>
 <li><a href="#toc-6">6. Modifying and searching lists</a>
   <ul>
-  <li>'push' and 'pop'</li>
-  <li>'extend'</li>
+  <li><tt>push</tt> and <tt>pop</tt></li>
+  <li>Extend using <tt>extend</tt></li>
   <li>Accessing lists</li>
   <li>Selecting more elements</li>
   <li>Filtering and differencing lists</li>
@@ -164,9 +164,9 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Blocks</li>
   <li>Branching</li>
   <li>Fuzzy flow</li>
-  <li>Flow with 'catch' and 'throw'</li>
+  <li>Flow with <tt>catch</tt> and <tt>throw</tt></li>
   <li>Leave loops with a break condition</li>
-  <li>Change flow with 'and' or 'or'</li>
+  <li>Change flow with <tt>and</tt> or <tt>or</tt></li>
   </ul></li>
 <li><a href="#toc-8">8. Error handling</a>
   <ul>
@@ -209,14 +209,14 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Closed transaction</li>
   <li>Multi-cast communications</li>
   </ul></li>
-<li><a href="#toc-14">14. Non-blocking comm</a>
+<li><a href="#toc-14">14. Non-blocking communications</a>
   <ul>
-  <li>Using 'net-select'</li>
-  <li>Using 'net-peek'</li>
+  <li>Using <tt>net-select</tt></li>
+  <li>Using <tt>net-peek</tt></li>
   </ul></li>
 <li><a href="#toc-15">15. Controlling other applications</a>
   <ul>
-  <li>Using 'exec'</li>
+  <li>Using <tt>exec</tt></li>
   <li>STD I/O pipes</li>
   <li>Communicate via TCP/IP</li>
   <li>Communicate via named FIFO</li>
@@ -259,14 +259,14 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Start a state-full server</li>
   <li>Stateless server with inetd</li>
   <li>Test the server with telnet</li>
-  <li>Test with netcat on UNIX</li>
+  <li>Test with netcat on Unix</li>
   <li>Test from the command line</li>
   <li>Test HTTP with a browser</li>
   <li>Evaluating remotely</li>
-  <li>Setting up the 'net-eval' parameter structure</li>
+  <li>Setting up the <tt>net-eval</tt> parameter structure</li>
   <li>Transferring files</li>
   <li>Loading and saving data</li>
-  <li>Local domain UNIX sockets</li>
+  <li>Local domain Unix sockets</li>
   </ul></li>
 <li><a href="#toc-22">22. HTTPD web server only mode</a>
   <ul>
@@ -278,7 +278,7 @@ newLISP is a registered trademark of Lutz Mueller.
 <li><a href="#toc-23">23. Extending newLISP</a>
   <ul>
   <li>A shared library in C</li>
-  <li>Compile on UNIX</li>
+  <li>Compile on Unix</li>
   <li>Compile a DLL on Win32</li>
   <li>Importing data structures</li>
   <li>Memory management</li>
@@ -286,6 +286,12 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Passing parameters</li>
   <li>Extracting return values</li>
   <li>Writing library wrappers</li>
+  <li>Registering callbacks in external libraries</li>
+  </ul></li>
+<li><a href="#toc-24">24. newLISP as a shared library</a>
+  <ul>
+  <li>Evaluating code in the shared library</li>
+  <li>Registering callbacks</li>
   </ul></li>
 </ul>
 <br/><br/>
@@ -308,7 +314,7 @@ newLISP is a registered trademark of Lutz Mueller.
 
 <h3>Command line options</h3>
 
-<p>On Linux/UNIX, put the following in the first line of the script/program file:</p>
+<p>On Linux/Unix, put the following in the first line of the script/program file:</p>
 
 <pre>
 #!/usr/bin/newlisp
@@ -658,7 +664,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 
 <p>All looping functions like <tt>doargs</tt>, <tt>dolist</tt>, <tt>dostring</tt>, <tt>dotimes</tt>, <tt>dotree</tt> and <tt>for</tt> use local variables. During loop execution, the variable takes different values. But after leaving the looping function, the variable regains its old value. <tt>let</tt>, <tt>define</tt>, and <tt>lambda</tt> expressions are another method for making variables local:</p>
 
-<h3>Locals in 'let' and 'local'</h3>
+<h3>Locals in <tt>let</tt> and <tt>local</tt></h3>
 
 <p><tt>let</tt> is the usual way in newLISP to declare symbols as local to a block.</p>
 
@@ -723,7 +729,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
     (foo 3 4)  →  (3 4)
 </pre>
 
-<h3>'args' as local substitute</h3>
+<h3><tt>args</tt> as local substitute</h3>
 
 <p>Using the <tt>args</tt> function no parameter symbols need to be used at all and <tt>args</tt> returns a list of all parameters passed but not taken by declared parameters:</p>
 
@@ -751,7 +757,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 (foo 3 4)   → 7
 </pre>
 
-<h3>Named parameters and 'bind'</h3>
+<h3>Named parameters and <tt>bind</tt></h3>
 
 <p><tt>bind</tt> can also be used together with <tt>local</tt> and <tt>args</tt> to write functions with named parameters:</p>
 
@@ -937,7 +943,7 @@ len:10 width:20 height:40
 (-3 2 S) → "bc")
 </pre>
 
-<h3>'push' and 'pop'</h3>
+<h3><tt>push</tt> and <tt>pop</tt></h3>
 
 <p>To add to a list use <tt>push</tt>, to eliminate an element from a list use <tt>pop</tt>. Both functions are destructive, changing the contents of a list:</p>
 
@@ -976,7 +982,7 @@ L → (a b (c x d (e f) g) h i))
 (pop L V) → 'x
 </pre>
 
-<h3>'extend'</h3>
+<h3>Extend using <tt>extend</tt></h3>
 
 <p>Using <tt>extend</tt> lists can be appended destructively.
 Like <tt>push</tt> and <tt>pop</tt>, <tt>extend</tt> modifies the list in the first
@@ -1511,7 +1517,7 @@ E → (x y z)
 
 <p>One of the alternative expressions <tt>exp-1</tt> to <tt>exp-n</tt> is evaluated with a probability of <tt>p = 1/n</tt> and the result is returned from the amb expression.</p>
 
-<h3>Flow with 'catch' and 'throw'</h3>
+<h3>Flow with <tt>catch</tt> and <tt>throw</tt></h3>
 
 <p>Any loop or other expression block can be enclosed in a catch expression. The moment a throw expression is evaluated, the whole catch expression returns the value of the throw expression.</p>
 
@@ -1550,7 +1556,7 @@ E → (x y z)
  c
 </pre>
 
-<h3>Change flow with 'and' or 'or'</h3>
+<h3>Change flow with <tt>and</tt> or <tt>or</tt></h3>
 
 <p>Similar to programming in the Prolog language, the logical <tt>and</tt> and <tt>or</tt> can be used to control program flow depending on the outcome of expressions logically connected:</p>
 
@@ -1672,7 +1678,7 @@ called from user defined function double
 (sys-error 0)         →  (0 "Unknown error: 0")
 </pre>
 
-<p>Numbers returned may be different on different UNIX platforms. Consult the file <tt>/usr/include/sys/errno.h</tt> on your platform.</p>
+<p>Numbers returned may be different on different Unix platforms. Consult the file <tt>/usr/include/sys/errno.h</tt> on your platform.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-9"></a>
@@ -1882,16 +1888,20 @@ function factory can be used for a string stream:</p>
 <p>The <tt>replace</tt> function, together with a regular expression pattern, can be used to scan text. The pattern in this case describes the tokens scanned for. As each token is found, it is pushed on a list. The work is done in the replacement expression part of <tt>replace</tt>. This example saves all files linked on a web page:</p>
 
 <pre>
+#!/usr/bin/newlisp
+
 ; tokenize using replace with regular expressions
+; names are of the form &lt;a href="example.lsp"&gt;example.lsp&lt;/a&gt;
    
-(set 'page (get-url "http://newlisp.digidep.net/"))
-   
-(replace {href="(http://.*lsp)"} page (first (push $1 links)) 0)
-   
-(dolist (link links)
-   (set 'file (last (parse link "/")))
-   (write-file file (get-url link))
-   (println "-&gt;" file))
+(set 'page (get-url "http://newlisp.digidep.net/scripts/"))
+(replace {&gt;(.*lsp)&lt;} page (first (push $1 links)) 0) ; old technique
+;(set 'links (find-all {&gt;(.*lsp)&lt;} page $1)) ; new technique
+  
+(dolist (fname links)
+   (write-file fname (get-url (append "http://newlisp.digidep.net/scripts/" fname)))
+   (println "-&gt;" fname))
+
+(exit)
 </pre>
 
 <p>Curly braces (<tt>{</tt>,<tt>}</tt>) are used in the regular expression pattern to avoid having to escape the quotes (<tt>"</tt>) or other characters that have special meanings in regular expressions.</p>
@@ -1899,12 +1909,7 @@ function factory can be used for a string stream:</p>
 <p>The following alternative technique is even shorter. The <tt>find-all</tt> function puts all matching strings into a list:</p>
 
 <pre>
-(set 'links (find-all {href="(http://.*lsp)"} page))
-   
-(dolist (link links)
-   (set 'file (last (parse link "/")))
-   (write-file file (get-url link))
-   (println "-&gt;" file))
+(set 'links (find-all {&gt;(.*lsp)&lt;} page $1)) ; new technique
 </pre>
 
 <p>In an additional expression <tt>find-all</tt> can be directed to do additional work with the sub expressions found:</p>
@@ -2003,13 +2008,14 @@ str &rarr; "ABCD"
 
 <table  summary='table'>
 <tr align='left'><th> function </th><th> description </th></tr>
+<tr><td> <tt>extend</tt></td><td>Extend a string with another string.</td></tr>
+<tr><td> <tt>push pop</tt></td><td> Insert or extract one or more characters at a specific position.</td></tr>
 <tr><td> <tt>replace</tt></td><td> Replace all occurrences of a string or string pattern with a string.</td></tr>
 <tr><td> <tt>setf</tt></td><td> Replace a character in a string with one or more characters.</td></tr>
-<tr><td> <tt>push pop</tt></td><td> Insert or extract one or more characters at a specific position.</td></tr>
 </table>
 <p><tt>replace</tt> can also be used to remove all occurrences of string or string pattern when specifying an empty string <tt>""</tt> as replacement.</p>
 
-<p>When indexing strings with either <tt>nth</tt> or implicit indexing, the string is addressed at character rather than byte boundaries to work correctly on UTF-8 enabled versions of newLISP.</p>
+<p>When indexing strings with either <tt>nth</tt> or implicit indexing, the string is addressed at <em>character</em> rather than <em>byte</em> boundaries to work correctly on UTF-8 enabled versions of newLISP. A UTF-8 character can contain more than one byte.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-11"></a>
@@ -2240,9 +2246,9 @@ str &rarr; "ABCD"
 
 <br/><center>&sect;</center><br/>
 <a name="toc-14"></a>
-<h2>14. Non-blocking comm</h2>
+<h2>14. Non-blocking communications</h2>
 
-<h3>Using 'net-select'</h3>
+<h3>Using <tt>net-select</tt></h3>
 
 <p>In all previous patterns the client blocks when in receive. The net-select call can be used to unblock communications:</p>
 
@@ -2256,7 +2262,7 @@ str &rarr; "ABCD"
 
 <p><tt>connection</tt> can be a single number for a connection socket or a list of numbers to wait on various sockets.</p>
 
-<h3>Using 'net-peek'</h3>
+<h3>Using <tt>net-peek</tt></h3>
 
 <p><tt>net-peek</tt> returns the number of characters pending to read.</p>
 
@@ -2270,7 +2276,7 @@ str &rarr; "ABCD"
 <a name="toc-15"></a>
 <h2>15. Controlling other applications</h2>
 
-<h3>Using 'exec'</h3>
+<h3>Using <tt>exec</tt></h3>
 
 <p>This method is only suited for short exchanges, executing one command and receiving the output.</p>
 
@@ -2799,7 +2805,7 @@ Persons →  (
 <p>When all keys are symbols, as is in <tt>address</tt>, <tt>country</tt> 
 and <tt>city</tt>, simple and nested associations in newLISP have the same 
 format as newLISP <tt>FOOP</tt> (Functional Object Oriented Programming) objects. 
-See the users manual chapter "18. Functional-object oriented programming" for details.</p>
+See the users manual chapter "18. Functional object-oriented programming" for details.</p>
 
 <h3>Updating nested associations</h3>
 
@@ -2845,7 +2851,7 @@ See the users manual chapter "18. Functional-object oriented programming" for de
 
 <p>The functions <tt>read-file</tt>, <tt>write-file</tt>, <tt>append-file</tt> and <tt>delete-file</tt> can also be used to access with files on remote nodes when using URLs in file specifications. In a similar way the functions <tt>load</tt> and <tt>save</tt> can be used to load and save code from and to remote nodes.</p>
 
-<p>newLISP uses existing HTTP protocols and newLISP command line behavior to implement this functionality. This means that programs can be debugged and tested using standard UNIX applications like terminal, telnet or a web browser. This also enables easy integration of other tools and programs into distributed applications built with newLISP. For example the UNIX utility <tt>netcat</tt> (<tt>nc</tt>) could be used to evaluate expressions remotely or a web browser could be used to retrieve webpages from nodes running a newLISP server.</p>
+<p>newLISP uses existing HTTP protocols and newLISP command line behavior to implement this functionality. This means that programs can be debugged and tested using standard Unix applications like terminal, telnet or a web browser. This also enables easy integration of other tools and programs into distributed applications built with newLISP. For example the Unix utility <tt>netcat</tt> (<tt>nc</tt>) could be used to evaluate expressions remotely or a web browser could be used to retrieve webpages from nodes running a newLISP server.</p>
 
 <h3>Setting up in server mode</h3>
 
@@ -2863,7 +2869,7 @@ newlisp myprog.lsp -c -d 4711 &amp;
 newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;
 </pre>
 
-<p>newLISP is now listening on port 4711, the &amp; (ampersand) sign tells newLISP to run in the background (UNIX only). The <tt>-c</tt> switch suppresses command line prompts. newLISP now behaves like a newLISP console without prompts listening on port 4711 for command line like input. Any other available port could have been chosen. Note that on UNIX, ports below 1024 need administrator access rights.</p>
+<p>newLISP is now listening on port 4711, the &amp; (ampersand) sign tells newLISP to run in the background (Unix only). The <tt>-c</tt> switch suppresses command line prompts. newLISP now behaves like a newLISP console without prompts listening on port 4711 for command line like input. Any other available port could have been chosen. Note that on Unix, ports below 1024 need administrator access rights.</p>
 
 <p>The second example also pre-loads code. The third example also specifies a working directory using the <tt>-w</tt> option. If no working directory is specified using <tt>-w</tt>, the startup directory is assumed to be the working directory.</p>
 
@@ -2871,11 +2877,11 @@ newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;
 
 <h3>Stateless server with inetd</h3>
 
-<p>On UNIX the <tt>inetd</tt> or <tt>xindetd</tt> facility can be used to start a stateless server. In this case the TCP/IP net connections are managed by a special UNIX utility with the ability to handle multiple requests at the same time. For each connection made by a client the <tt>inetd</tt> or <tt>xinetd</tt> utility will start a fresh newLISP process. After the connection is closed the newLISP process will shut down.</p>
+<p>On Unix the <tt>inetd</tt> or <tt>xindetd</tt> facility can be used to start a stateless server. In this case the TCP/IP net connections are managed by a special Unix utility with the ability to handle multiple requests at the same time. For each connection made by a client the <tt>inetd</tt> or <tt>xinetd</tt> utility will start a fresh newLISP process. After the connection is closed the newLISP process will shut down.</p>
 
 <p>When nodes are not required to keep state, this is the preferred method for a newLISP server node, for handling multiple connections at the same time.</p>
 
-<p>The <tt>inetd</tt> or <tt>xinetd</tt> process needs to be configured using configuration files found in the <tt>/etc</tt> directory of most UNIX installations.</p>
+<p>The <tt>inetd</tt> or <tt>xinetd</tt> process needs to be configured using configuration files found in the <tt>/etc</tt> directory of most Unix installations.</p>
 
 <p>For both the <tt>inetd</tt> and <tt>xinetd</tt> configurations add the following line to the <tt>/etc/services</tt> file:</p>
 
@@ -2901,7 +2907,7 @@ net-eval  stream  tcp  nowait  newlisp  /usr/bin/newlisp -c -w /usr/home/newlisp
 
 <p>The last line also specified a working directory and a user <tt>newlisp</tt> instead of the <tt>root</tt> user. This is a more secure mode limiting newLISP server node access to a specific user account with restricted permissions.</p>
 
-<p>On some UNIX system a modern flavor of <tt>inetd</tt>: the <tt>xinetd</tt> facility can be used. Add the following configuration to a file <tt>/etc/xinet.d/net-eval</tt>:</p>
+<p>On some Unix system a modern flavor of <tt>inetd</tt>: the <tt>xinetd</tt> facility can be used. Add the following configuration to a file <tt>/etc/xinet.d/net-eval</tt>:</p>
 
 <pre>
 service net-eval
@@ -2917,13 +2923,13 @@ service net-eval
 
 <p>Note that a variety of parameter combinations are possible to restrict access from different places or limit access to certain users. Consult the man-pages for <tt>inetd</tt> and <tt>xinetd</tt> for details.</p>
 
-<p>After configuring <tt>inetd</tt> or <tt>xinetd</tt> either process must be restarted to re-read the configuration files. This can be accomplished by sending the UNIX <tt>HUP</tt> signal to either the <tt>inetd</tt> or <tt>xinetd</tt> process using the UNIX <tt>kill</tt> or UNIX <tt>nohup</tt> utility.</p>
+<p>After configuring <tt>inetd</tt> or <tt>xinetd</tt> either process must be restarted to re-read the configuration files. This can be accomplished by sending the Unix <tt>HUP</tt> signal to either the <tt>inetd</tt> or <tt>xinetd</tt> process using the Unix <tt>kill</tt> or Unix <tt>nohup</tt> utility.</p>
 
 <p>On Mac OS X the <tt>launchd</tt> facility can be used in a similar fashion. The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt> in the <tt>util/</tt> directory. This file can be used to launch newlisp server during OS boot time as a persistent server.</p>
 
 <h3>Test the server with telnet</h3>
 
-<p>A newLISP server node can be tested using the UNIX <tt>telnet</tt> utility:</p>
+<p>A newLISP server node can be tested using the Unix <tt>telnet</tt> utility:</p>
 
 <pre>
 telnet localhost 4711
@@ -2937,10 +2943,10 @@ telnet 192.168.1.100 4711
 <tt>[/cmd]</tt> tags, each tag on a separate line. Both the opening and closing 
 tags should be on separate lines. Although newLISP has a second, new
 multi-line mode for the interactive shell since version 10.3.0 without tags, 
-when using <tt>netcat</tt> or other UNIX utilities, multi-line expressions still have 
+when using <tt>netcat</tt> or other Unix utilities, multi-line expressions still have 
 to be enclosed in <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags.</p>
 
-<h3>Test with netcat on UNIX</h3>
+<h3>Test with netcat on Unix</h3>
 
 <pre>
 echo '(symbols) (exit)' | nc localhost 4711
@@ -3011,7 +3017,7 @@ http://localhost:4711//usr/share/newlisp/doc/newlisp_manual.html
 result: (7 11 15 19 23)
 </pre>
 
-<p>When running UNIX and using an <tt>inetd</tt> or <tt>xinetd</tt> configured newLISP server, the servers and programs can be run on just one CPU, replacing all IP numbers with <tt>"localhost"</tt> or the same local IP number. The <tt>indetd</tt> or <tt>xinetd</tt> daemon will then start 5 independent newLISP processes. On Win32 5 state-full newLISP servers could be started on different port numbers to accomplish the same.</p>
+<p>When running Unix and using an <tt>inetd</tt> or <tt>xinetd</tt> configured newLISP server, the servers and programs can be run on just one CPU, replacing all IP numbers with <tt>"localhost"</tt> or the same local IP number. The <tt>indetd</tt> or <tt>xinetd</tt> daemon will then start 5 independent newLISP processes. On Win32 5 state-full newLISP servers could be started on different port numbers to accomplish the same.</p>
 
 <p>Instead of collecting all results at once on the return of <tt>net-eval</tt>, a callback function can be used to receive and process results as they become available:</p>
 
@@ -3042,7 +3048,7 @@ result: (7 11 15 19 23)
 ("192.168.1.104" 4711 23)
 </pre>
 
-<p>For testing on just one CPU, replace addresses with <tt>"localhost"</tt>; the UNIX <tt>inetd</tt> or <tt>xinetd</tt> daemon will start a separate process for each connection made and all listening on port <tt>4711</tt>. When using a state-full server on the same Win32 CPU specify a different port number for each server.</p>
+<p>For testing on just one CPU, replace addresses with <tt>"localhost"</tt>; the Unix <tt>inetd</tt> or <tt>xinetd</tt> daemon will start a separate process for each connection made and all listening on port <tt>4711</tt>. When using a state-full server on the same Win32 CPU specify a different port number for each server.</p>
 
 <h3>Setting up the 'net-eval' parameter structure</h3>
 
@@ -3127,7 +3133,7 @@ result: (7 11 15 19 23)
 
 <h3>Transferring files</h3>
 
-<p>Files can be read from or written to remote nodes with the same functions used to read and write files to a local file system. This functionality is currently only available on UNIX systems when talking to newLISP servers. As functions are based on standard <tt>GET</tt> and <tt>PUT</tt> HTTP protocols they can also be used communicating with web servers. Note that few Apache web-server installations have enabled the <tt>PUT</tt> protocol by default.</p>
+<p>Files can be read from or written to remote nodes with the same functions used to read and write files to a local file system. This functionality is currently only available on Unix systems when talking to newLISP servers. As functions are based on standard <tt>GET</tt> and <tt>PUT</tt> HTTP protocols they can also be used communicating with web servers. Note that few Apache web-server installations have enabled the <tt>PUT</tt> protocol by default.</p>
 
 <p>The functions <tt>read-file</tt>, <tt>write-file</tt> and <tt>append-file</tt> can all take URLs in their filename specifications for reading from and writing to remote nodes running a newLISP server or a web-server:</p>
 
@@ -3169,7 +3175,7 @@ result: (7 11 15 19 23)
 
 <p>Although the <tt>load</tt> and <tt>save</tt> functions internally use <tt>get-url</tt> and <tt>put-url</tt> to perform its works they behave exactly as when used on a local file system, but instead of a file path URLs are specified. Both function will timeout after 60 seconds if a connection could not be established. When finer control is necessary use the functions <tt>get-url</tt> and <tt>put-url</tt> together with <tt>eval-string</tt> and <tt>source</tt> to realize a similar result as when using the <tt>load</tt> and <tt>save</tt> in HTTP mode.</p>
 
-<h3>Local domain UNIX sockets</h3>
+<h3>Local domain Unix sockets</h3>
 
 <p>newLISP supports named local domain sockets in newLISP server mode and using the built-in functions <tt>net-eval</tt>, <tt>net-listen</tt>, <tt>net-connect</tt> together with the functions <tt>net-accept</tt>, <tt>net-receive</tt>, <tt>net-select</tt> and <tt>net-send</tt>.</p>
 
@@ -3233,7 +3239,7 @@ newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;
 
 <p>On http://www.newlisp.org various CGI examples can be found. In the download directory at http://www.newlisp.org/downloads two more complex applications can be found: <tt>newlisp-ide</tt> is a web based IDE and <tt>newlisp-wiki</tt> is a content management system which also runs the [http://www.newlisp.org www.newlisp.org] website.</p>
 
-<p>CGI program files must have the extension <tt>.cgi</tt> and have executable permission on UNIX. </p>
+<p>CGI program files must have the extension <tt>.cgi</tt> and have executable permission on Unix. </p>
 
 <p>The following is a minimum CGI program:</p>
 
@@ -3286,9 +3292,9 @@ at: http://www.newlisp.org/modules/.</p>
 <a name="toc-23"></a>
 <h2>23. Extending newLISP</h2>
 
-<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/UNIX (ending in .so).</p>
+<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so).</p>
 
-<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/UNIX platforms. We will compile a DLL and a Linux/UNIX shared library from the following 'C' program.</p>
+<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/Unix platforms. We will compile a DLL and a Linux/Unix shared library from the following 'C' program.</p>
 
 <h3>A shared library in C</h3>
 
@@ -3317,9 +3323,9 @@ char * foo2(char * ptr, int number)
 
 <p>Both functions foo1 and foo2 print their arguments, but while foo1 returns the number multiplied 10 times, foo2 returns the uppercase of a string to show how to return strings from 'C' functions.</p>
 
-<h3>Compile on UNIX</h3>
+<h3>Compile on Unix</h3>
 
-<p>On Mac OS X and Linux/UNIX we can compile and link <tt>testlib.so</tt> in one step:</p>
+<p>On Mac OS X and Linux/Unix we can compile and link <tt>testlib.so</tt> in one step:</p>
 
 <pre>
 gcc testlib.c -shared -o testlib.so
@@ -3331,7 +3337,7 @@ gcc testlib.c -shared -o testlib.so
 gcc testlib.c -bundle -o testlib.dylib
 </pre>
 
-<p>The library <tt>testlib.so</tt> will be built with Linux/UNIX default <tt>cdecl</tt> conventions. Importing the library is very similar on both Linux and Win32 platforms, but on Win32 the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
+<p>The library <tt>testlib.so</tt> will be built with Linux/Unix default <tt>cdecl</tt> conventions. Importing the library is very similar on both Linux and Win32 platforms, but on Win32 the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
 
 <pre>
 &gt; (import "/home/newlisp/testlib.so" "foo1")
@@ -3643,6 +3649,172 @@ double * wrapperFoo(int argc, ...)
  
 /* eof */
 </pre>
+
+<h3>Registering callbacks in external libraries</h3>
+
+<p>Many shared libraries allow registering callback functions to
+call back into the controlling program. The function <tt>callback</tt>
+is used in newLISP to extract the function address from a user-defined
+newLISP function and pass it to the external library via a registering
+function:</p>
+
+<pre>
+(define (keyboard key x y)
+    (if (= (&amp; key 0xFF) 27) (exit)) ; exit program with ESC
+    (println "key:" (&amp; key 0xFF) " x:" x  " y:" y))
+
+(glutKeyboardFunc (callback 1 'keyboard))
+</pre>
+
+<p>The example is a snippet from the file <tt>opengl-demo.lsp</tt> in
+the <tt>newlisp-x.x.x/examples/</tt> directory of the source distribution.
+A file <tt>win32demo.lsp</tt> can be found in the same directory demonstrating 
+callbacks on the Windows platform.</p>
+
+<br/><center>&sect;</center><br/>
+
+<a name="toc-24"></a>
+<h2>24. newLISP as a shared library</h2>
+
+<p>On all platforms, newLISP can be compiled as a shared library. On Win32, the library
+is called <tt>newlisp.dll</tt>, on Mac OS X <tt>newlisp.dylib</tt> and on Linux and
+BSDs, the library is called <tt>newlisp.so</tt>. Makefiles are included in the source 
+distribution for most platforms. Only on Win32, the installer comes with a precompiled 
+<tt>newlisp.dll</tt> and will install it in the <tt>WINDOWS\system32\</tt> directory 
+(since v.10.3.3) and in the <tt>Program Files/newlisp/</tt> directory.</p>
+
+<h3>Evaluating code in the shared library</h3>
+
+<p>The first example shows how to import <tt>newlispEvalStr</tt> from newLISP 
+itself as the caller:</p>
+
+<pre>
+(import "/usr/lib/newlisp.so" "newlispEvalStr")
+(get-string (newlispEvalStr "(+ 3 4)")) &rarr;  "7\n"
+</pre>
+
+<p>When calling the library function <tt>newlispEvalStr</tt>, output normally 
+directed to the console (e.g. return values or print statements) is returned 
+in the form of an integer string pointer. The output can be accessed by passing 
+this pointer to the <tt>get-string</tt> function. To silence the output from 
+return values, use the <tt>silent</tt> function. All Results, even if they are 
+numbers, are always returned as strings and a trailing linefeed as in interactive 
+console mode. Use the <tt>int</tt> or <tt>float</tt> functions to convert the
+strings to other data types.</p>
+
+<p>When passing multi-line source to newlispEvalStr, that source should be 
+bracketed by <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags, each on a different line:</p>
+
+<pre>
+(set 'code [text][cmd]
+...
+...
+...
+[/cmd][/text])
+</pre>
+
+<p>The second example shows how to import <tt>newlispEvalStr</tt> into a
+C-program:</p>
+
+<pre>
+/* libdemo.c - demo for importing newlisp.so
+ * 
+ * compile using: 
+ *    gcc -ldl libdemo.c -o libdemo
+ *
+ * use:
+ *
+ *    ./libdemo '(+ 3 4)'
+ *    ./libdemo '(symbols)'
+ *
+ */
+#include &lt;stdio.h&gt;
+#include &lt;dlfcn.h&gt;
+ 
+int main(int argc, char * argv[])
+{
+void * hLibrary;
+char * result;
+char * (*func)(char *);
+char * error;
+ 
+if((hLibrary = dlopen("/usr/lib/newlisp.so",
+                       RTLD_GLOBAL | RTLD_LAZY)) == 0)
+    {
+    printf("cannot import library\n");
+    exit(-1);
+    }
+ 
+func = dlsym(hLibrary, "newlispEvalStr");
+if((error = dlerror()) != NULL)
+    {
+    printf("error: %s\n", error);
+    exit(-1);
+    }
+ 
+printf("%s\n", (*func)(argv[1]));
+ 
+return(0);
+}
+
+/* eof */
+</pre>
+
+<p>This program will accept quoted newLISP expressions and print the evaluated results.</p>
+
+<h3>Registering callbacks</h3>
+
+<p>Like many other share libraries, callbacks can be registerd in newLISP library.
+The function <tt>newlispCallback</tt> must be imported and is used for registering
+callback functions. The example shows newLISP itself exporting newLISP library and
+registering a callback <tt>callme</tt>:</p>
+
+<pre>
+#!/usr/bin/newlisp
+
+; path-name of the library depending on platform
+(set 'LIBRARY (if (= ostype "Win32") "newlisp.dll" "newlisp.dylib"))
+
+; import functions from the newLISP shared library
+(import LIBRARY "newlispEvalStr")
+(import LIBRARY "newlispCallback")
+
+; set calltype platform specific
+(set 'CALLTYPE (if (= ostype "Win32") "stdcall" "cdecl"))
+
+; the callback function
+(define (callme p1 p2 p3 result)
+    (println "p1 =&gt; " p1 " p2 =&gt; " p2 " p3 =&gt; " p3)
+    result)
+
+; register the callback with newLISP library
+(newlispCallback "callme" (callback 0 'callme) CALLTYPE)
+
+; the callback returns a string
+(println (get-string (newlispEvalStr
+    {(get-string (callme 123 456 789 "hello world"))})))
+
+; the callback returns a number
+(println (get-string (newlispEvalStr
+    {(callme 123 456 789 99999)})))
+</pre>
+
+<p>Depending on the type of the return value, different code is used. The program
+shows the folllowing output:</p>
+
+<pre>
+p1 =&gt; 123 p2 =&gt; 456 p3 =&gt; 789
+"hello world"
+
+p1 =&gt; 123 p2 =&gt; 456 p3 =&gt; 789
+99999
+</pre>
+
+<p>Note that Win32  and many Unix flavors will look for <tt>newlisp.dll</tt> 
+in the system library path, but Mac OS X will look for <tt>newlisp.dylib</tt> 
+first in the current directory, if the full file path is not specified. The 
+program above can also be found as <tt>callback</tt> in the source distribution 
+in the <tt>newlisp-x.x.x/examples</tt> directory.</p>
 
 
 <br/><center>&sect;</center><br/><hr/><br/>

@@ -4,7 +4,8 @@
 ;; @version 0.4 - multiple indices with <tt>nth</tt> redone to be compatible with future versions
 ;; @version 0.5 - doc changes
 ;; @version 0.6 - fixed bug in error handler
-;; @author Lutz Mueller, 2005-2010
+;; @version 0.61 - fixed doc typo
+;; @author Lutz Mueller, 2005-2011
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:
@@ -34,7 +35,7 @@
 
 ;; @syntax (XMLRPC:system.listMethods <str-url>)                    
 ;; @param <str-url> The URL of the XML-RPC server
-;; @return A list or methods supported.
+;; @return A list of methods supported.
 ;; The server at <url> returns a list of methods supported.
 
 ;; @syntax (XMLRPC:system.methodHelp <str-url> <str-method-name>)        

@@ -1,0 +1,23 @@
+#!/usr/bin/newlisp
+
+; demo use spawn and sync for
+; aysnchronous HTTP get-url requests
+
+(set 'start (time-of-day))
+
+; callback routine when page is finished
+(define (page-ready pid) 
+	(println "pid:" pid) 
+    (println "received: " (length page) " bytes"))
+
+; start fetching page, will return immediately
+(spawn 'page (get-url "http://yahoo.com")) 
+
+; specify call back, wait and do something else
+(until (true? (sync 50 page-ready) )
+	(println  (- (time-of-day) start) " ms"))
+
+; all done
+(exit)
+
+

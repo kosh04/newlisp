@@ -57,7 +57,7 @@ char footerStr[32] = " s|tep n|ext c|ont q|uit > ";
 void openTrace(void)	
 	{
 	if(traceFlag) return;
-	traceFlag = TRUE;
+	traceFlag = TRACE_TRUE;
 	currentFunc = nilSymbol;
 	debugStackIdx = 0;
 	debugStack = (UINT *)allocMemory(MAX_CPU_STACK * 2 * sizeof(UINT));
@@ -76,6 +76,7 @@ CELL * p_debug(CELL * params)
 CELL * result;
 
 openTrace();
+traceFlag |= TRACE_IN_DEBUG;
 result = copyCell(evaluateExpression(params));
 closeTrace();
 
@@ -88,7 +89,10 @@ CELL * p_trace(CELL * params)
 if(params != nilCell)
 	{
 	if(getFlag(params))
+		{
 		openTrace();
+		traceFlag |= TRACE_IN_DEBUG;
+		}
 	else
 		closeTrace();
 	}

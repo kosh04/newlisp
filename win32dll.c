@@ -96,8 +96,6 @@ return(1);
 
 int EXPORT debugConsole() {
 
-int result;
-
    IOchannel = stdin;
 
    if(!AllocConsole())
@@ -142,6 +140,47 @@ LPSTR EXPORT dllEvalStr(LPSTR cmd)
 return(newlispEvalStr(cmd));
 }
 
+
+/* callbacks from newlisp library into caller 
+
+currently only tested with newLISP as caller:
+
+(import "newlisp.dylib" "newlispEvalStr")
+(import "newlisp.dylib" "newlispCallback")
+(define (callme p1 p2 p3) (println "p1 => " p1 " p2 => " p2 " p3 => " p3) "hello world")
+(newlispCallback "callme" (callback 0 'callme) "cdecl")
+(get-string (newlispEvalStr {(get-string (callme 123 456 789))})) ; for string return
+;(get-string (newlispEvalStr {(callme 123 456 789)})) ; for number return
+
+*/
+
+long EXPORT newlispCallback(char * funcName, long funcAddr, char * callType)
+{
+CELL * pCell;
+SYMBOL * symbol;
+
+if(!dllInitialized) initializeMain();
+
+if(callType != NULL && strcmp(callType, "cdecl") ==  0)
+	pCell = getCell(CELL_IMPORT_CDECL);
+else
+	pCell = getCell(CELL_IMPORT_DLL);
+
+symbol = translateCreateSymbol(funcName, pCell->type, currentContext, TRUE);
+
+if(isProtected(symbol->flags))
+    {
+	errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol));
+    return(-1);
+    }
+
+deleteList((CELL *)symbol->contents);
+symbol->contents = (UINT)pCell;
+pCell->contents = (UINT)funcAddr;
+pCell->aux = (UINT)symbol->name;
+
+return(funcAddr);
+}
 
 
 /* ------------ called from Windows when unloading DLL ------------------ */

@@ -1,4 +1,4 @@
-.TH newlispdoc 1 "February 2011" "version 3.0" "Commandline Parameters"
+.TH newlispdoc 1 "July 2011" "version 3.1" "Commandline Parameters"
 .SH NAME
 .B newlispdoc
 \- generate documentation from newLISP source comments
@@ -7,7 +7,7 @@
 [\-s] [\-d] lisp\-file1 [lisp\-file2 ...]
 
 .B newlispdoc
-[\s] [\-url] urls-file
+[\-s] [\-d] [\-url] urls-file
 .SH DESCRIPTION
 newlispdoc is a commandline utility written in newLISP to generate HTML documentation from comments written in newLISP source files. Consult /usr/share/doc/newlisp/newLISPdoc.html for a detailed description on how to write comments usable for newlispdoc. The newlispdoc command should be executed from inside the directory where the newLISP source files can be found. The generated documetation files will have .html added to the name of the source file. An index.html page is generated, which is listing for each file links to all the documented functions. If the current directory contains the file newlispdoc.css, it will be used for formatting HTML output. For a sample see util/newlispdoc.css in the source distribution.
 .SH OPTIONS

@@ -100,8 +100,17 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 			cell = cell->next = makeCell(CELL_QUOTE, (UINT)argCell);
 		arg = arg->next;
 		}
-	cell = copyCell(evaluateExpression(expr));
-	while(resultStackIdx > resultIdxSave) deleteList(popResult());
+
+	cell = evaluateExpression(expr);
+	/* don't use optimized copyCell()
+	if(cell->type == CELL_STRING)
+		cell = stuffStringN((char *)cell->contents, cell->aux - 1);
+	else 
+    */
+		cell = copyCell(cell);
+	while(resultStackIdx > resultIdxSave)
+        	deleteList(popResult());
+
 	if(res == NULL)
 		results->contents = (UINT)cell;
 	else

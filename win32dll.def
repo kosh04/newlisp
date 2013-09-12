@@ -5,6 +5,7 @@ EXPORTS
     dllName
     debugConsole
     newlispEvalStr
+    newlispCallback
     dllEvalStr
     WEP
 

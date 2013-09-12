@@ -1,5 +1,3 @@
-#!/usr/bin/newlisp
-
 ;; @module json.lsp
 ;; @description JSON to S-expression parser
 ;; @author L.M. March 2010, Jan 2011, Ted Walther 2011

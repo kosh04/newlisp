@@ -428,8 +428,16 @@ if(setjmp(errorJump))
 
 args = stuffIntegerList(8, p1, p2, p3, p4, p5, p6, p7, p8);
 executeSymbol(callback[n].sym, (CELL *)args->contents, &cell);
-result = cell->contents;
-deleteList(cell);
+
+#ifndef NEWLISP64
+if(cell->type == CELL_INT64)
+	result = *(INT64 *)&cell->aux;
+else 
+#endif
+	result = (long)cell->contents;
+
+pushResult(cell);
+
 args->contents = (UINT)nilCell;
 deleteList(args);
 
@@ -437,7 +445,6 @@ FINISH_CALLBACK:
 memcpy(errorJump, errorJumpSave, sizeof(errorJump));
 return(result);
 }
-
 
 CELL * p_callback(CELL * params)
 {

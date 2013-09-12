@@ -117,6 +117,10 @@ Dmitri Cherniak from http://en.feautec.pp.ru/
 Cyril Slobin from http://wagner.pp.ru/~slobin/
   contributed a new newlisp.vim syntax-highlighing file for the vim editor.
 
+Kazimir Majorinc from http://kazimirmajorinc.blogspot.com/
+  has contributed many ideas and has helped to make newLISP known through his
+  thoughtful blog posts.
+
 Jeff Ober from http://www.artfulcode.net/
   many of his ideas and comments have improved newLISP. On his blog a variety 
   of interesting and useful code examples and modules can be found.
@@ -125,9 +129,9 @@ Ted Walther from http://reactor-core.org/~djw/
   helped to improve the build process.
 
 Joh from http://johu02.spaces.live.com/default.aspx
-  did  thorough pass through the manual correcting many erros. His website  
-  helps and his Japanese translation of the reference manual help to make
-  newLISP popular in Japan.
+  did a  thorough pass through the manual correcting many erros. His website  
+  and his Japanese translations of the reference manual and other documentation
+  help to make newLISP popular in Japan.
   
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel

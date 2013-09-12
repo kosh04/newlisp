@@ -16,8 +16,8 @@
 (println "\nsend out \"pid\" and receive it back uppercased with child pid appended:\n")
 
 (define (child-process , pid pppid msg)
-		(setq ppid (sys-info -4))
-		(setq pid (sys-info -3))
+		(setq ppid (sys-info -4)) ; parent pid
+		(setq pid (sys-info -3))  ; this child pid
 		(while true
 			(until (receive ppid msg) )
 			(until (send ppid (upper-case (string msg "-" pid)))) )

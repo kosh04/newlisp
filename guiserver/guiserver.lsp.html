@@ -17,7 +17,7 @@
 <b>Version: </b>1.41 bug fixes for gs:listen and gs:check-event<br/>
 <b>Version: </b>1.42 new table UI<br/>
 <b>Version: </b>1.43 bug fix in new table UI action parameters<br/>
-<b>Version: </b>1.44 manuals in menu only on MAC OSX, other platforms would block<br/>
+<b>Version: </b>1.44 fixes in newlisp-edit.lsp<br/>
 <b>Author: </b>LM, August 2008, 2009, 2010, 2011<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -243,8 +243,7 @@
  report <tt>nil</tt> for the text field. A handler should therefore always check text
  for string contents before trying to apply the <tt>base64-dec</tt> function on it.
  <br><br>
- <h2>Coding considerations</h2>
- <b>mapping or applying <tt>gs:xxx</tt> functions</b><br><br>
+ <h2>Mapping or applying <tt>gs:xxx</tt> functions</h2>
  Like any newLISP functions, <tt>gs:xxx</tt> functions can be mapped or applied to lists of 
  parameters using the newLISP <tt>map</tt> and <tt>apply</tt> functions. When doing this, make sure to 
  map or apply the quoted <tt>'gs:xxx symbol</tt>, so the <tt>gs:xx</tt> functions 
@@ -551,6 +550,11 @@
  Every graphics object (line, shape, text, or image) carries a group tag. Objects are deleted
  using <tt>gs:delete-tag</tt> and will disappear immediately from the canvas. Using <tt>gs:move-tag</tt>
  lines, shapes, text and images can be moved to a different position.
+<br/><br/>
+ All positions given in <tt>int x</tt> and <tt>int y</tt> must be given as integers. Values
+ will not be converted automatically as is the case wioth newLISP's built-in functions. To
+ guarantee integer type, values can be casted e.g.: 
+ <pre>(gs:draw-circle 'MyCircle (int x) (int y) (int r))</pre>
  <pre>
     (gs:color-tag <em>sym-tag</em> <em>list-rgb</em> [<em>boolean-repaint</em>])
     (gs:delete-tag <em>sym-tag</em>[<em>boolean-repaint</em>])

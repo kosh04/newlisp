@@ -966,8 +966,8 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
    Subset HTTP/1.0 compliant.
 */
 
-/* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.3.2"
+/* #define DEBUGHTTP  */
+#define SERVER_SOFTWARE "newLISP/10.3.3"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1279,7 +1279,7 @@ ssize_t bytes, readsize;
 size_t offset = 0, transferred = 0;
 
 #ifdef DEBUGHTTP
-printf("# Payload size:%ld\r\n", size);
+printf("# Payload size:%ld\r\n", (long)size);
 #endif
 
 while(size > 0)
@@ -1295,7 +1295,7 @@ while(size > 0)
 #endif
 
 #ifdef DEBUGHTTP
-	printf("Payload bytes:%ld:%s:\r\n", bytes, buff + offset);
+	printf("Payload bytes:%ld:%s:\r\n", (long)bytes, buff + offset);
 #endif
 
 	if(bytes <= 0)

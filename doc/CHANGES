@@ -5967,7 +5967,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Fisher Chi-2 derived probabilities in bayes-query are not normalized
      any  more.
 
-10.3.1 
+10.3.1  development release May 17th, 2011
      Documentation changes
 
      When a list reference changes while being indexed an error is thrown.
@@ -6016,7 +6016,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Did not clear EOF error in 'read-line'.
 
-10.3.2
+10.3.2 stable maintenance release July 20th, 2011
      New 'debugConsole' in newlisp.dll can be imported and called for
      re-opening std I/O to CONOUT$ and CONIN$.
 
@@ -6050,3 +6050,40 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Fixed and error message in gs:save-sequence
 
+10.3.3 stable maintenance release September 20th, 2011
+     Manual updates.
+
+     On MS Windows newlisp.dll now lives in windows/system32 or whatever
+     the main 32bit DLL directory is on the specific Windows platform,
+     chosen by the $SYSDIR variable in the NSIS installer.
+
+     Fixed broken memory sharing for date sizes > 4084 bytes.
+     This affected 'spawn' and 'share' for memory transfers > 4084 bytes.
+     Also inlined stream writing for this fucntion again for better 
+     memory cleanup.
+
+     Share file in tmp is now deleted when unmapping under UNIX. Unmapping is
+     not available in Windows but in all OS a (share mymem nil) will
+     always delete any existing tmp file for this share.
+
+     When in trace/debug mode and an error occurs in a function call
+     inside a 'catch' statement, an error message will now be printed,
+     Processing will continue as before with the offending function
+     returning either 0 or nil depending on the nature of the function.
+     This allows to inspect the current state of the program.
+
+     2 new example programs in newlisp-10.3.3/examples/ :
+     Script 'async' show how to do asynchronous web page retrieval.
+     Script 'query' shows how to retrieve 20 pages in parallel spawned
+     child processes. 
+
+     Fixed return value from callback funtions when 64-bit integers
+     are returned.
+
+     From newLISP library a new function "newlispCallback" can be imported
+     to register callback functions (see manual for details)
+
+     -l -L now always create a logfile if it doesn't exist. Evaluation
+     results prepended with "-> ". [cmd],[/cmd] are not logged
+
+     Save memory in 'string' and 'format'. 

@@ -12,6 +12,7 @@
 ;; @version 2.5 - changed sqlite3_bind_blob to sqlite3_bind_text in function bind-parameter
 ;; @version 2.61 - added function  <tt>sql3:colnames</tt>.
 ;; @version 2.7 - changed deprecated <tt>name</tt> to <tt>term</tt>, <tt>inc</tt> to <tt>++</tt>
+;; @version 2.71 - minor doc changes
 ;; @author Lutz Mueller 2004-2010, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
@@ -180,7 +181,7 @@
 ;; @param <str-sql> The SQL statement.
 ;; @param <sql-args> Parameters for the SQL statement's host variables
 ;;
-;; Executes the SQL statement in <str-sql>. For 'select' statements an array 
+;; Executes the SQL statement in <str-sql>. For 'select' statements a table
 ;; of the result set is returned or '()' for the empty set. For other statements
 ;; 'true' is returned for a  successful outcome. On failure 'nil' is returened 
 ;; and 'sql3:error' can be used to retrieve the error text.

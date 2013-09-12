@@ -2604,7 +2604,13 @@ true
       (share mvar 123,456)
       (= (share mvar) 123,456)
       (share mvar "hello")
-      (= (share mvar) "hello")))
+      (= (share mvar) "hello")
+      ; check sizes > pagesize
+	  (share mvar (dup "X" 10000))
+      (= 10000 (length (share mvar)))
+      ; force deletion of temporary file
+      (not (share mvar nil))
+))
 
 (define (win32-test-share)
     (write-file "sharetest.lsp"

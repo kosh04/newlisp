@@ -1,0 +1,35 @@
+#!/usr/bin/newlisp
+
+; --------------------------------- roundtrip test
+(println "\n10 round trips to 10 child processes with 80,000 bytes in each package")
+
+(define (child-process , pid pppid msg)
+		(setq ppid (sys-info -4)) ; parent pid
+		(setq pid (sys-info -3))  ; this child pid
+		(while true
+			(until (receive ppid msg) )
+			(until (send ppid msg ) ))
+)
+
+(dotimes (i 10)
+	(spawn 'r (child-process)))
+
+(println "\nPIDs of spawned childs:\n" (sync)) (println)
+
+(set 'start (time-of-day))
+(dotimes (i 10)
+	(dolist (ch (sync))
+        (set 'pkg (dup (pack "lf" (random 0 1)) 10000))
+		(until (send ch pkg) ) ; send out message
+		(until (receive ch msg))  ; get response
+		(unless (= msg pkg) ; check
+			(setq error-msg (append " >>>> ERROR in round trip test: " msg )))
+		(print  ch " ") )
+	(println)
+)
+
+(println "time per round trip: " (div (- (time-of-day) start) 100) " ms")
+
+(abort) (sleep 100) (println)
+(exit)
+

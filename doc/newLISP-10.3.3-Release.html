@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.3.3 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #505050;
+	line-height: 140%;
+	}
+
+
+li {
+	margin-bottom: 15px;
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.3.3 Release Notes 
+<font color="red" size="-1">rev 2011-9-21</font></h1>
+
+<p>Version 10.3.3 is a maintenance release with bug fixes and a change in
+in the Win32 installation.</p>
+
+<p>For the original 10.3.0 release notes see <a href="http://newlisp.org/downloads/previous-release-notes/newLISP-10.3-Release.html">here</a>.</p>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>Fixed broken memory sharing for data sizes greater than 4084 bytes. 
+This affected the built-in functions <tt>spawn</tt> and <tt>share</tt> for 
+memory transfers greater than 4084 bytes.</li>
+<li>When in <tt>debug</tt> or <tt>trace</tt> mode, error messages caysed by
+the debugged source are now printed to the console. Debugging is not interruped
+and can continue. As previously, the return value of the failing function will 
+be <tt>0</tt> or <tt>nil</tt> depending on the function causing the exception.</li>
+<li>Return values from library callbacks not work correctly under some circumstances.
+This did not affect the example programs <tt>opengl-demo.lsp</tt> and 
+<tt>win32-demo.lsp</tt>.</li>
+</ul>
+<h3>Other addtions and changes</h3>
+<ul>
+<li>On MS Windows <tt>newlisp.dll</tt> is now installed in windows/system32 or what
+the main 32-bit DLL directory may be on a specific Windows platform.</li>
+<li>From newLISP library a new function <tt>newlispCallback</tt> can be 
+imported to register callback functions called from the library back into the
+controlling parent.</li>
+<li>Improved handling of <tt>-l</tt> and <tt>-L</tt> log file options. The log file
+will always be crated, if it does not exist, and the output format has been improved.</li>
+<li>Much better memory and speed efficiency in <tt>string</tt> and <tt>format</tt> 
+functions when formatting large amounts of data.</li>
+</ul>
+<h3>Compatibility</h3>
+<p>This version if fully compatible with the previous version.</p>
+<br/>
+<center>&part;</center>
+
+</body>
+</html>

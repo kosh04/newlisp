@@ -8,8 +8,9 @@
 
 <!--
 body, h4, p {
-    font-family: Lucida Sans, Helvetica, sans-serif;
-    line-height: 120%;
+	font-family: Lucida Sans, Helvetica, sans-serif;
+	line-height: 120%;
+	max-width: 1000px;
 	}
 
 h1, h2, h3 {
@@ -337,11 +338,11 @@ function evaluateLambda(lambda-func, args)
 
 
 <blockquote><pre>
-[ ]                             ; cell of type: EXPRESSION
+[ ]                          ; cell of type: EXPRESSION
   \
- [MAIN:set]  &rarr; [']  &rarr; [123]     ; three cells of type: PRIMITIVE, QUOTE, INTEGER
+ [MAIN:set]  &rarr; [']  &rarr; [123]  ; three cells of type: PRIMITIVE, QUOTE, INTEGER
                  \
-               [MAIN:var]       ; cell of type: SYMBOL
+               [MAIN:var]    ; cell of type: SYMBOL
 </pre></blockquote>
 
 <p>The above list diagram shows the five Lisp cells, which are created. List and quote cells are envelope cells containing a list or a quoted expression.</p>

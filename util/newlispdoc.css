@@ -9,6 +9,7 @@ span.arw {
 body 	{
 	font-family: Verdana, Lucida Sans, Helvetica,  sans-serif;
 	line-height: 100%;
+	max-width: 1000px;
  	}
 
 p 	{

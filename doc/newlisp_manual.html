@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.2 Manual and Reference</title>
+   <title>newLISP v.10.3.3 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.2</h2>
+<h2>User Manual and Reference v.10.3.3<font size=-1></font></h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -196,11 +196,11 @@ newLISP is a registered trademark of Lutz Mueller.
   </ul>
 </li>
 
-<li><a href="#shared-lib">Shared library module for Unix</a></li>
-<li><a href="#dll">DLL module for Win32 versions</a></li>
+<li><a href="#shared-lib">Extending newLISP with shared libraries</a></li>
+<li><a href="#newlisp-lib">newLISP as a shared library</a></li>
 <li><a href="#expressions">Evaluating newLISP expressions</a>
   <ul>
-  <li><a href="#multiline">Intercactive multiline expressions</a></li>
+  <li><a href="#multiline">Interactive multiline expressions</a></li>
   <li><a href="#int_float">Integer, floating point data and operators</a></li>
   <li><a href="#eval_rules">Evaluation rules and data types</a></li>
   </ul>
@@ -504,7 +504,7 @@ commandline switch will be changed to <tt>-4</tt> for starting up in IPv4
 mode.</p>
 
 <p><a href="#date-parse">date-parse</a> is a new writing for the previously
-named <tt>parse-date</tt> fucntion. The old writing is deprecated but will
+named <tt>parse-date</tt> function. The old writing is deprecated but will
 still work for some time in future versions. In the VIM editor, the old writing is
 highlighted as obsolete.</p> 
 
@@ -573,8 +573,8 @@ the editor the program could be run using a load statement:</p>
 <p>The program <tt>foo.lsp</tt> is now run. This mode using '<tt>!</tt>' can
 also be used from the newLISP-GS IDE.</p>
 
-<p>When using a UNIX teminal or command shell, tab-expansion for built-in newLISP
-fucntions can be used:</p>
+<p>When using a Unix teminal or command shell, tab-expansion for built-in newLISP
+functions can be used:</p>
 
 <pre>
 <b>> </b>(pri
@@ -985,7 +985,7 @@ recognized, and a correctly formatted <tt>Content-Type:</tt> header is sent back
 <p>To serve CGI, HTTP server mode needs a <tt>/tmp</tt> directory on Unix-like
 platforms or a <tt>C:\tmp</tt> directory on Win32. newLISP can process GET, PUT,
 POST and DELETE requests and create custom response headers. CGI files must have
-the extension <tt>.cgi</tt> and have executable permission on UNIX. More information 
+the extension <tt>.cgi</tt> and have executable permission on Unix. More information 
 about CGI processing for newLISP server modes can be found in the document
 <a href="http://www.newlisp.org/CodePatterns.html">Code Patterns in newLISP</a>
 </p>
@@ -1256,85 +1256,25 @@ newLISP-GS.</p>
 <br/>
 
 <a name="shared-lib"></a>
-<h2>6. Shared library module for Unix</h2>
+<h2>6. Extending newLISP with shared libraries</h2>
+<p>Many shared libraries on Unix and Win32 systems can be used to
+extend newLISP's functionality. Examples are libraries for writing graphical
+user interfaces, libraries for encryption or decryption and libraries for 
+accessing databases.</p>
 
-<p>newLISP can be compiled as a Unix shared library called <tt>newlisp.so</tt> on Linux 
-and BSDs. A newLISP shared library can be used like any other Unix shared library.</p>
+<p>The function <a href="#import">import</a> is used to import functions from 
+external libraries. The function <a href="#callback">callback</a> is used to 
+register callback functions in external libraries. 
+Other functions like <a href="#pack">pack</a>,
+<a href="#unpack">unpack</a>, <a href="#get-string">get-string</a>,
+<a href="#get-int">get-int</a> and <a href="#get-long">get-long</a> exist
+to facilitate formatting input and output to and from imported library functions.</p>
 
-<p>To use <tt>newlisp.so</tt> or <tt>newlisp.dylib</tt>, 
-import the function <tt>newlispEvalStr</tt>. Like 
-<a href="#eval-string">eval-string</a>, this function 
-takes a string containing a newLISP expression and 
-stores the result in a string address. The result can 
-be converted using <a href="#get-string">get-string</a>. 
-The returned string is formatted like output from a 
-command-line session. It contains terminating line-feed 
-characters, but without the prompt strings.
-</p>
-
-<p>The first example shows how <tt>newlisp.so</tt> is imported from newLISP itself.
-</p>
-
-
-<pre>
-(import "/usr/lib/newlisp.so" "newlispEvalStr")
-(get-string (newlispEvalStr "(+ 3 4)"))&nbsp;&nbsp;<span class='arw'>&rarr;</span> "7\n"
-</pre>		
-
-<p>The second example shows how to import <tt>newlisp.so</tt> into a program written in C:</p>
-
-<pre>
-/* libdemo.c - demo for importing newlisp.so
- * 
- * compile using: 
- *    gcc -ldl libdemo.c -o libdemo
- *
- * use:
- *
- *    ./libdemo '(+ 3 4)'
- *    ./libdemo '(symbols)'
- *
- */
-#include &lt;stdio.h&gt;
-#include &lt;dlfcn.h&gt;
- 
-int main(int argc, char * argv[])
-{
-void * hLibrary;
-char * result;
-char * (*func)(char *);
-char * error;
- 
-if((hLibrary = dlopen("/usr/lib/newlisp.so",
-                       RTLD_GLOBAL | RTLD_LAZY)) == 0)
-    {
-    printf("cannot import library\n");
-    exit(-1);
-    }
- 
-func = dlsym(hLibrary, "newlispEvalStr");
-if((error = dlerror()) != NULL)
-    {
-    printf("error: %s\n", error);
-    exit(-1);
-    }
- 
-printf("%s\n", (*func)(argv[1]));
- 
-return(0);
-}
-
-/* eof */
-</pre>		
-
-<p>This program will accept quoted newLISP expressions and print the evaluated results.</p>
-
-<p>When calling <tt>newlisp.so</tt>'s  function <tt>newlispEvalStr</tt>, 
-output normally directed to the console (e.g., return values or 
-<a href="#print">print</a> statements) is returned in the form of an 
-integer string pointer. The output can be accessed by passing this 
-pointer to the <tt>get-string</tt> function. To silence the output 
-from return values, use the <a href="#silent">silent</a> function.</p>
+<p>See also the chapter 
+<a href="http://www.newlisp.org/downloads/CodePatterns.html#toc-23">
+23. Extending newLISP</a> in the
+<a href="http://www.newlisp.org/downloads/CodePatterns.html">
+Code Patterns in newLISP</a> document.</p>
 
 <br/>
 <center>
@@ -1342,34 +1282,48 @@ from return values, use the <a href="#silent">silent</a> function.</p>
 </center>
 <br/>
 
-<a name="dll"></a>
-<h2>7. DLL module for Win32 versions</h2>
+<a name="newlisp-lib"></a>
+<h2>7. newLISP as a shared library</h2>
 
-<p>On the Win32 platforms, newLISP can be compiled as a DLL (Dynamic Link Library). 
-In this way, newLISP functions can be made available to other programs 
-(e.g., MS Excel, Visual Basic, Borland Delphi, or even newLISP itself).</p>
+<p>newLISP can be compiled as a shared library. On Linux, BSDs and other Unix flavors
+the library is called <tt>newlisp.so</tt>. On Windows it is called <tt>newlisp.dll</tt>
+and <tt>newlisp.dylib</tt> on Mac OS X. A newLISP shared library is used like 
+any other shared library.</p>
 
-<p>To access the functionality of the DLL, use <tt>newlispEvalStr</tt>, which takes 
-a string containing a valid newLISP expression and returns a string of the result:
-</p>
+<p>The main function to import is <tt>newlispEvalStr</tt>.
+Like <a href="#eval-string">eval-string</a>, this function 
+takes a string containing a newLISP expression and 
+stores the result in a string address. The result can 
+be retrieved using <a href="#get-string">get-string</a>. 
+The returned string is formatted like output from a 
+command-line session. It contains terminating line-feed 
+characters, but but not the prompt string.</p>
+
+<p>When calling <tt>newlispEvalStr</tt>, 
+output normally directed to the console (e.g. return values or 
+<a href="#print">print</a> statements) is returned in the form of an 
+integer string pointer. The output can be accessed by passing this 
+pointer to the <tt>get-string</tt> function. To silence the output 
+from return values, use the <a href="#silent">silent</a> function.</p>
+
+<p>When passing multi-line source to <tt>newlispEvalStr</tt>, that
+source should be bracketed by <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags,
+each on a different line:</p>
 
 <pre>
-(import "newlisp.dll" "newlispEvalStr")
-(get-string (newlispEvalStr "(+ 3 4)"))  <span class='arw'>&rarr;</span> "7"
-</pre>		
+(set 'code [text][cmd]
+...
+...
+...
+[/cmd][/text])
+</pre>
 
-<p>
-The above example shows the loading of a DLL using newLISP. 
-The <a href="#get-string">get-string</a> function is necessary 
-to access the string being returned. Other applications running 
-on Win32 allow the returned data type to be declared when importing the function.
-</p>
-
-<p>When using newLISP as a library module, output normally directed to the 
-console &mdash; like <a href="#print">print</a> statements or 
-return values &mdash; will be returned in a string pointed to 
-by the call to <tt>newlispEvalStr</tt>. To silence the output 
-from return values, use the <a href="#silent">silent</a> directive.</p>
+<p>Since v.10.3.3 callbacks can also be registered using <tt>newlispCallback</tt>.
+For more information read the chapter 
+<a href="http://www.newlisp.org/downloads/CodePatterns.html#toc-24">
+24. newLISP compiled as a shared library</a> in the 
+<a href="http://www.newlisp.org/downloads/CodePatterns.html">
+Code Patterns in newLISP</a> document.</p>
 
 <br/>
 <center>
@@ -2196,7 +2150,7 @@ that character can be replaced by a multi-chracacter string.</p>
 <p>Most of the primitives in newLISP are nondestructive (no <em>side effects</em>) 
 and leave existing objects untouched, although they may create new ones. There 
 are a few destructive functions, however, that <em>do</em> change the contents of a 
-variable, list, array, or string.</p>
+variable, list, array, or string:</p>
 
 <table  width="98%" summary="destructive functions">
 <tr align="left"><th>function</th><th>description</th></tr>
@@ -3480,7 +3434,7 @@ in the <tt>data</tt> symbol of that namespace (context).</p>
 <br/>
 
 <a name="foop"></a>
-<h2>18. Functional-object oriented programming</h2>
+<h2>18. Functional object-oriented programming</h2>
 
 <p>Functional-object oriented programming (FOOP) is based on the following 
 five principles:</p>
@@ -3844,6 +3798,12 @@ network when running on the same computer. <tt>net-eval</tt> does all the housek
 required to connect to remote nodes, transfer functions to execute, and
 collect the results. <tt>net-eval</tt> can also use a call-back function to
 further structure consolidation of incoming results from remote nodes.</p>
+
+<p>The functions <a href="#read-file">read-file</a>, <a href="#write-file">write-file</a>,  
+<a href="#append-file">append-file</a> and <a href="#delete-file">delete-file</a> all can 
+take URLs instead of path-file names. Server side newLISP running in demon mode or an other 
+HTTP server like Apache, receive standard HTTP requests and translate them into the 
+corresponding actions on files.</p>
 
 <br/>
 <center>
@@ -7366,7 +7326,7 @@ creation flags as defined for the Windows <tt>CreateProcessA</tt> function
 to control various parameters of process creation. The inclusion of this
 parameter &ndash; which also can be <tt>0</tt> &ndash; forces a different 
 creation of the process without a command shell window. This parameter is 
-ignored on UNIX.</p>
+ignored on Unix.</p>
 
 <pre>
 ; on MS Windows
@@ -10624,22 +10584,16 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 
 
 <pre>
-;; set code
-(set 'bindata (pack "ccccccccccc" 
+(set 'foo-code (pack "ccccccccccc" 
     0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D 0xC3))
-
-;; get function template
 (set 'foo print)
+(cpymem (pack "ld" (if (= ostype "Win32") 265 264)) (first (dump foo)) 4)
+(cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
+(set 'foo-name "foo")
+(cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)
 
-;; change type to library import and OS calling conventions
-;(cpymem (pack "ld" 265) (first (dump foo)) 4) ; Win32 stdcall
-(cpymem (pack "ld" 264) (first (dump foo)) 4)  ; Linux cdecl
+(foo 3 4)  <span class='arw'>&rarr;</span>  7
 
-;; set code pointer
-(cpymem (pack "ld" (address bindata)) (+ (first (dump foo)) 12) 4)
-
-;; execute
-(foo 3 4) <span class='arw'>&rarr;</span> 7
 </pre>
 
 
@@ -10842,7 +10796,7 @@ is specified, an empty string <tt>""</tt> is returned.
 (date (date-value))      <span class='arw'>&rarr;</span> "Sat May 20 11:37:15 2006" 
 (date (date-value) 300)  <span class='arw'>&rarr;</span> "Sat May 20 16:37:19 2006"  ; 5 hours offset
 (date 0)                 <span class='arw'>&rarr;</span> "Wed Dec 31 16:00:00 1969"
-(date 0 (now 0 -2))      <span class='arw'>&rarr;</span> "Thu Jan  1 00:00:00 1970"  ; UNIX epoch
+(date 0 (now 0 -2))      <span class='arw'>&rarr;</span> "Thu Jan  1 00:00:00 1970"  ; Unix epoch
 </pre>
 
 <p>The way the date and time are presented in a string 
@@ -11066,10 +11020,12 @@ function in <em>func</em>. <tt>debug</tt> is a shortcut for executing
 (debug (my-func a b c))
 </pre>
 
+<p>When in <tt>debug</tt> or <a HREF="#trace">trace</a> mode, error messages
+will be printed. The function causing the exception will return either
+<tt>0</tt> or <tt>nil</tt> and processing will continue. This way, variables 
+and the current state of the program can still be inspected while debugging.</p>
 
-<p>
-	See also the <a HREF="#trace">trace</a> function.
-</p>
+<p>See also the <a HREF="#trace">trace</a> function.</p>
 
 <br/><br/>
 
@@ -11357,14 +11313,12 @@ special syntax forms with non-standard evaluation patterns of arguments.
 Functions created using <tt>define-macro</tt> can be combined with template 
 expansion using <a href="#expand">expand</a> or <a href="#letex">letex</a>.</p>
 
-<p>Defines the new macro <em>sym-name</em>, with optional arguments <em>sym-param-1</em> &mdash;. 
+<p>Defines the new fexpr <em>sym-name</em>, with optional arguments <em>sym-param-1</em>. 
 <tt>define-macro</tt> is equivalent to assigning a lambda-macro expression to a symbol. 
-When a macro-defined function is called, arguments are assigned to the variables 
-in <em>sym-param-1</em>&mdash; without evaluating the arguments first. 
-Then the <em>body</em> expressions are evaluated.  When evaluating the 
-<tt>define-macro</tt> function, the lambda-macro expression is returned.
+When a <tt>define-macro</tt> function is called, unevaluated arguments are assigned to 
+the variables in <em>sym-param-1 ...</em>. Then the <em>body</em> expressions are evaluated.  
+When evaluating the <tt>define-macro</tt> function, the lambda-macro expression is returned.
 </p>
-	
 
 <!-- example -->
 
@@ -11377,22 +11331,15 @@ x                <span class='arw'>&rarr;</span> 123
 </pre>
 
 
-<p>Macros in newLISP are similar to <tt>define</tt> functions, 
-but they do <em>not</em> evaluate their arguments. 
-New functions can be created to behave like built-in functions
-that delay the evaluation of certain arguments. 
-Because macros can access the arguments inside a parameter list, 
-they can be used to create flow-control functions 
-like those already built-in to newLISP.
-</p>
-<p>
-All parameters defined are optional. 
-When a macro is called without arguments, 
-those parameters assume the value <tt>nil</tt>. 
-If those parameters have a default value 
-specified in <em>exp-default</em>,
-they assume that default value.
-</p>
+<p>New functions can be created to behave like built-in functions
+that delay the evaluation of certain arguments.  Because fexprs can 
+access the arguments inside a parameter list, they can be used to 
+create flow-control functions like those already built-in to newLISP.</p>
+
+<p>All parameters defined are optional.  When a macro is called without 
+arguments, those parameters assume the value <tt>nil</tt>. 
+If those parameters have a default value specified in <em>exp-default</em>,
+they assume that default value.</p>
 	
 
 <pre>
@@ -11419,9 +11366,9 @@ current environment.</p>
 </pre>
 
 
-<p>Note that in macros, the danger exists of passing a parameter 
-with the same variable name as used in the macro definition. 
-In this case, the macro internal variable would end up 
+<p>Note that in <em>fexprs</em>, the danger exists of passing a parameter 
+with the same variable name as used in the <tt>define-macro</tt> definition. 
+In this case, the <em>fexpr's</em> internal variable would end up 
 receiving <tt>nil</tt> instead of the intended value:</p>
 
 
@@ -11439,18 +11386,18 @@ x                <span class='arw'>&rarr;</span> nil
 
 <p>There are several methods that can be used 
 to avoid this problem, known as <em>variable capture</em>,
-by writing <em>hygienic</em> macros:</p>
+by writing <em>hygienic</em> <tt>define-macro</tt>s:</p>
 
 <ul>
 <li>
-Put the macro into its own lexically closed namespace context. 
+Put the definition into its own lexically closed namespace context. 
 If the function has the same name as the context, it can be 
 called by using the context name alone.  A function with this 
 characteristic is called a <a href="#default_function">
 <em>default function</em></a>. This is the preferred method in 
-newLISP to write macros (<i>fexpr</i>s).
+newLISP to write <tt>define-macro</tt>s.
 </li>
-
+<br/>
 <li>Use <a href="#args">args</a> to access arguments passed by the 
 function.</li>
 </ul>
@@ -11458,7 +11405,7 @@ function.</li>
 <!-- example -->
 
 <pre>
-;; a macro as a lexically isolated function
+;; a define-macro as a lexically isolated function
 ;; avoiding variable capture in passed parameters
 
 (context 'my-setq)
@@ -11472,7 +11419,7 @@ function.</li>
 
 
 <p>
-	The macro in the example is lexically isolated, 
+	The definition in the example is lexically isolated, 
 	and no variable capture can occur. 
 	Instead of the macro being called using <tt>(my-setq:my-setq &hellip;)</tt>, 
 	it can be called with just <tt>(my-setq &hellip;)</tt> 
@@ -14303,7 +14250,7 @@ of <tt>d</tt>.
 ; 64 bit numbers on Windows
 (format "%I64X" 123456789012345678)  <span class='arw'>&rarr;</span> "1B69B4BA630F34E"
 
-; 64 bit numbers on UNIX (except TRU64)
+; 64 bit numbers on Unix (except TRU64)
 (format "%llX" 123456789012345678)   <span class='arw'>&rarr;</span> "1B69B4BA630F34E"
                                 
 (format "%c" 65)  <span class='arw'>&rarr;</span> "A"
@@ -14762,15 +14709,20 @@ char * foo(void)
 <!-- example -->
 
 <pre>
-(set 'buff "ABC\000\000\000")  <span class='arw'>&rarr;</span> "ABC\000\000\000"
+(set 'buff "ABC\000\000\000DEF")  <span class='arw'>&rarr;</span> "ABC\000\000\000DEF"
 
-(length buff)  <span class='arw'>&rarr;</span> 6
+(length buff)  <span class='arw'>&rarr;</span> 9
 
 (get-string buff)  <span class='arw'>&rarr;</span> "ABC"
 
 (length (get-string buff))  <span class='arw'>&rarr;</span> 3
-</pre>
 
+; get a string from offset into a buffer
+(get-string (+ (address buff) 6)) <span class='arw'>&rarr;</span> "DEF"
+
+; use unpack to get the whole buffer
+(unpack "s9" buff)  <span class='arw'>&rarr;</span> ("ABC\000\000\000DEF")
+</pre>
 
 <p>
 	See also the <a HREF="#get-char">get-char</a>, 
@@ -15988,11 +15940,25 @@ around the initializers can be omitted:
 <span class='arw'>&rarr;</span> (1 (a b c) "hello")
 </pre>
 
-
 <p>Before the expression <tt>'(x y z)</tt> gets evaluated, <tt>x, y</tt> and <tt>z</tt>
 are literally replaced with the initializers from the <tt>letex</tt> initializer list.
 The final expression which gets evaluated is <tt>'(1 2 3)</tt>.
 </p>
+
+<p>In the second example a function <tt>make-adder</tt> is defined
+for making adder functions:</p>
+
+<pre>
+(define (make-adder n)
+    (letex (c n) (lambda (x) (+ x c))))
+
+(define add3 (make-adder 3)) <span class='arw'>&rarr;</span> (lambda (x) (+ x 3))
+
+(add3 10) <span class='arw'>&rarr;</span> 13
+</pre>
+
+<p><tt>letex</tt> evaluates <tt>n</tt> to the constant <tt>3</tt> and replaces <tt>c</tt>
+with it in the lambda expression.</p>
 
 <br/><br/>
 
@@ -17061,7 +17027,7 @@ the service description string is printed. If no description is available,
 an empty string "" is output. For closed ports the function outputs 
 numbers in the shell window staying on the same line.</p>
 
-<p>On UNIX <tt>net-connnect</tt> may return with <tt>nil</tt> before
+<p>On Unix <tt>net-connnect</tt> may return with <tt>nil</tt> before
 the timeout expires, when the port is not available. On Win32 
 <tt>net-connect</tt> will always wait for the timout to expire before
 failing with <tt>nil</tt>.</p>
@@ -17817,7 +17783,7 @@ and can be specifed as an empty string. Only the <em>int-port</em> is
 relevant and will be bound to the raw socket returned.</p>
 
 <p>To use the divert option in <tt>net-listen</tt>, newLISP must run in
-super-user mode. This option is only available on UNIX like platforms.</p>
+super-user mode. This option is only available on Unix like platforms.</p>
 
 <p>The divert socket will receive all raw packets diverted 
 to the divert port. Packets may also be written back to a divert socket, 
@@ -17847,7 +17813,7 @@ packet:</p>
 )
 </pre>
 
-<p>For more information see the UNIX man pages for <em>divert</em>
+<p>For more information see the Unix man pages for <em>divert</em>
 and the <em>ipfw</em> (BSDs) or <em>ipchains</em> (Linux) configuration 
 utilities.</p>
 
@@ -17920,7 +17886,7 @@ a <em>raw sockets</em> interface. The packet in <em>str-packet</em> must
 start with an IP (Internet Protocol) header followed by either
 a TCP, UDP or ICMP header and optional data. newLISP must be run with
 super user privileges, and this function is only available on Mac OS X,
-Linux and other UNIX operating systems and only for IPv4.
+Linux and other Unix operating systems and only for IPv4.
 Currently <tt>net-packet</tt> is IPv4 only and has been tested on
 MAC OS X, Linux and OpenBSD.</p> 
 
@@ -19527,11 +19493,6 @@ The following characters are used in <em>str-format</em>:
 </table><br/>
 
 <p>
-Note that newLISP only supports 32-bit, signed integers 
-and treats <tt>lu</tt> and <tt>ld</tt> the same way internally.
-</p>
-
-<p>
 <tt>pack</tt> will convert all floats into integers 
 when passed to <tt>b</tt>, <tt>c</tt>, <tt>d</tt>, <tt>ld</tt>,
 or <tt>lu</tt> formats.
@@ -20596,27 +20557,6 @@ pList                <span class='arw'>&rarr;</span> (a b c)
 
 (pop pList '(2 2 0))  <span class='arw'>&rarr;</span> x
 
-;; push on strings
-
-(set 'str "abcdefg")
-
-(push "hijk" str -1)  <span class='arw'>&rarr;</span> "abcdefghijk"
-str                   <span class='arw'>&rarr;</span> "abcdefghijk"
-
-(push "123" str)  <span class='arw'>&rarr;</span> "123abcdefghijk"
-
-(push "4" str 3)  <span class='arw'>&rarr;</span> "1234abcdefghijk"
-
-;; push on a string reference
-
-(set 'lst '("abc" "xyz"))
-
-(push 9 (lst 0)) <span class='arw'>&rarr;</span> "xabc"
-
-lst <span class='arw'>&rarr;</span> ("xabc" "xyz")
-
-
-
 ; push on un-initialized symbol
 aVar  <span class='arw'>&rarr;</span> nil 
 
@@ -20627,7 +20567,6 @@ aVar  <span class='arw'>&rarr;</span> (999)
 
 
 <p><tt>push</tt> and pop can be combined to model a queue:</p>
-
 
 <pre>
 ; pop and push a as a queue
@@ -20640,11 +20579,38 @@ Q <span class='arw'>&rarr;</span>  (c d e f g)
 </pre>
 
 
-<p>Because <tt>push</tt> returns a reference to the list it modified <tt>pop</tt>
-can work on it directly.</p>
-                                       
-<p>
-See also the <a HREF="#pop">pop</a> function, which is the inverse operation to <tt>push</tt>.
+<p>Because <tt>push</tt> returns a reference to the modified list,
+<tt>pop</tt> can work on it directly.</p>
+
+<p>In the third syntax <tt>push</tt> can be used to change strings. When
+<em>int-index</em> is used, it refers to character positions rather than 
+byte positions. UTF-8 characters may be multi-byte characters.</p>
+
+<pre>
+;; push on strings
+
+(set 'str "abcdefg")
+
+(push "hijk" str -1)  <span class='arw'>&rarr;</span> "abcdefghijk"
+str                   <span class='arw'>&rarr;</span> "abcdefghijk"
+
+(push "123" str)  <span class='arw'>&rarr;</span> "123abcdefghijk"
+(push "4" str 3)  <span class='arw'>&rarr;</span> "1234abcdefghijk"
+
+(set 'str "\u03b1\u03b2\u03b3")  <span class='arw'>&rarr;</span>  "αβγ"
+
+(push "*" str 1)  <span class='arw'>&rarr;</span>  "α*βγ"
+
+;; push on a string reference
+
+(set 'lst '("abc" "xyz"))
+
+(push x (lst 0)) <span class='arw'>&rarr;</span> "xabc"
+
+lst <span class='arw'>&rarr;</span> ("xabc" "xyz")
+</pre>
+
+<p>See also the <a HREF="#pop">pop</a> function, which is the inverse operation to <tt>push</tt>.
 </p>
 
 <br/><br/>
@@ -21441,6 +21407,11 @@ by the <a href="#load">load</a> or <a href="#eval-string">eval-string</a> functi
 
 <p>After registering the macro <tt>square</tt> newLISP will expand each
 occurrence of a <tt>(square ...)</tt> to a <tt>(pow ... 2)</tt> expression.</p>
+
+<p>Note, that variables in the macro definition must be upper-case. The macro 
+registering function uses a syntax form of <tt>expand</tt> working only on 
+upper-case variables.
+</p>
 
 <p>For a more detailed description see the documentation for <tt>macro.lsp</tt>.
 </p>
@@ -22967,7 +22938,7 @@ the message could be sent successfully then <tt>true</tt> is returned.</p>
 
 
 <pre>
-; child process dispatching message
+; child process dispatching message to parent
 
 (set 'ppid (sys-info -4)) ; get parent pid
 
@@ -22979,7 +22950,7 @@ the message could be sent successfully then <tt>true</tt> is returned.</p>
 
 
 <pre>
-; parent process receiving message
+; parent process receiving message from child
 
 (receive child-pid msg) <span class='arw'>&rarr;</span> true
 msg                     <span class='arw'>&rarr;</span> "hello"
@@ -23724,7 +23695,7 @@ it may have to be created.</p>
 (share mem)               <span class='arw'>&rarr;</span> (+ 1 2 3 4)
 
 ; expressions received can be evaluated (since v.10.1.0)
-(eval (share mmem))       <span class='arw'>&rarr;</span> 10 
+(eval (share mem))        <span class='arw'>&rarr;</span> 10 
 
 (share nil mem)   <span class='arw'>&rarr;</span> true  ; unmap only on Unix
 </pre>
@@ -24787,10 +24758,15 @@ if called with no parameters, or <tt>true</tt> if given with a timeout.</p>
     (println "process: " pid " has returned"))
 
 ; call the report function, when a child returns
-(sync 10000 report)
+(sync 10000 report) ; wait for 10 seconds max
 
 ; return a list of pending child processes
 (sync)         <span class='arw'>&rarr;</span> (245 246 247 248)
+
+; wait and do something else
+(until (true? (sync 10 report) )
+    (println (time-of-day)))
+
 </pre>
 
 
@@ -27019,17 +26995,18 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <tr><td>array index out of bounds</td><td>52</td></tr>
 <tr><td>string index out of bounds</td><td>53</td></tr>
 <tr><td>nesting level too deep</td><td>54</td></tr>
-<tr><td>invalid syntax</td><td>55</td></tr>
-<tr><td>user error</td><td>56</td></tr>
-<tr><td>user reset -</td><td>57</td></tr>
-<tr><td>received SIGINT -</td><td>58</td></tr>
-<tr><td>function is not reentrant</td><td>59</td></tr>
-<tr><td>local symbol is protected</td><td>60</td></tr>
-<tr><td>no reference found</td><td>61</td></tr>
-<tr><td>list is empty</td><td>62</td></tr>
-<tr><td>I/O error</td><td>63</td></tr>
-<tr><td>working directory not found</td><td>64</td></tr>
-<tr><td>invalid PID</td><td>65</td></tr>
+<tr><td>list reference changed</td><td>55</td></tr>
+<tr><td>invalid syntax</td><td>56</td></tr>
+<tr><td>user error</td><td>57</td></tr>
+<tr><td>user reset -</td><td>58</td></tr>
+<tr><td>received SIGINT -</td><td>59</td></tr>
+<tr><td>function is not reentrant</td><td>60</td></tr>
+<tr><td>local symbol is protected</td><td>61</td></tr>
+<tr><td>no reference found</td><td>62</td></tr>
+<tr><td>list is empty</td><td>63</td></tr>
+<tr><td>I/O error</td><td>64</td></tr>
+<tr><td>working directory not found</td><td>65</td></tr>
+<tr><td>invalid PID</td><td>66</td></tr>
 </table><br/>
 
 <br/><br/><br/>

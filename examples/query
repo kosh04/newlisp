@@ -1,0 +1,129 @@
+#!/usr/bin/newlisp
+; #!/home/public/cgi-bin/newlisp
+
+; Retrieves a page with 20 links via Google containing 
+; the search word, then spawns 20 child processes, each
+; retrieving one page from a link. All pages are then 
+; HTML-cleaned, tokenized and words are counted using
+; bayes-train.
+
+; USAGE: query <search-word>
+
+; or rename to query.cgi and run on a web server
+; using the following query.html:
+
+; <html> 
+; <head><title>Query</title></head> 
+; <body><font size="5"> 
+; <form name="query" action="query.cgi" method="POST"> 
+; <font size="3">Input your query:</font>&nbsp;<input type="text" name="query" size="48"> 
+; &nbsp;<input type="submit" value="Submit" name="submit"> 
+; </form> 
+; </font></body></html> 
+
+(set 'cgi-mode nil)
+;(set 'cgi-mode true) ; run as CGI get question from query.html
+
+(when cgi-mode 
+    (load "cgi.lsp")
+    (print "Content-Type: text/html\n\n"))
+
+;; globals and constants in this namespace
+(set 'LINK_REGEX {<h3 class="r"><a href="(http://[^> ]+)"})
+(set 'START_TIME 0)
+(set 'SITES '())
+(set 'CONTENT "")
+(constant 'BRK (if cgi-mode "<br>" ""))
+
+(define (url-decode str)
+  (replace "%([0-9A-F][0-9A-F])" str (char (int $1 0 16)) 1))
+
+(define (url-encode str)  
+  (replace {([^a-zA-Z0-9])} str (format "%%%2X" (char $1)) 0))
+
+(define (clean-html text)
+	(replace "<script.*?</script>" text "" 4)
+	(replace "<style.*?</style>" text "" 4)
+	(replace "<head.*?</head>" text "" 4)
+	(replace "<[^>]*>" text "" 0)
+	(replace "." text " . ")
+	(replace "," text " , ")
+	(replace "!" text " ! ")
+	(replace "?" text " ? ")
+	(replace "\n" text " ")
+	(replace "\r" text "")
+	(replace "\t" text " ")
+	(replace " +" text " " 4)
+	; this should be a list of all ISO 8859-1 Symbols
+	; see http://www.w3schools.com/tags/ref_entities.asp
+	; HTML entities should be replaced with UTF-8
+	(replace "&nbsp;" text " ")
+	(replace "&mdash;" text " - ")
+	(replace "&ndash;" text " - ")
+	(replace "&quot;" text "'")
+	(replace "&amp;" text "&")
+	;(replace "&lrm;" text (char 8206))
+	;(replace {\&#(\d+);} text (char (int $1)) 0)
+)
+
+(if cgi-mode
+    (set 'question (CGI:get "query"))
+    (set 'question (last (parse (main-args -1) "/"))) ; default is 'query'
+)
+        
+
+(set 'page (get-url 
+	(string "http://www.google.com/search?q=" (url-encode question)
+			"&num=22&ie=UTF-8&oe=UTF-8")))
+
+(set 'links (find-all LINK_REGEX page $1))
+
+(when cgi-mode
+    (println "<html><head>")
+    (println {<META http-equiv="Content-Type" CONTENT="text/html; charset=utf-8" />})
+    (println "</head><body>"))
+
+(println "query term: " (url-decode question) BRK)
+(set 'START_TIME (time-of-day))
+(dolist (lnk (0 20 links))
+	(set 'pid (spawn 'page (get-url lnk 4000)))
+	(push (list pid lnk) SITES -1))
+
+(define (page-ready-event pid)
+	(println (inc cnt) " pid:" pid " " (- (time-of-day) START_TIME) " ms " 
+		(lookup pid SITES) BRK)
+	(push (lower-case (clean-html page)) CONTENT -1)	
+	(inc xferred (length page))
+)
+
+(println "waiting: ..." BRK)
+(unless (sync 10000  page-ready-event)
+	(println BRK "timeout" BRK))
+
+(println "bytes transferred: " xferred BRK)
+(println "total time: " (- (time-of-day) START_TIME) " ms" BRK)
+
+(catch (load "Lex") 'result)
+(println "training: " (time (bayes-train (find-all {[a-zA-Z]+} CONTENT) 'Lex)) " ms" BRK)
+(println "accumulated total words processed: " (Lex:total 0) BRK)
+(println BRK)
+
+; sort by frequency and print in four columns
+(set 'items (sort (Lex) (fn (x y) (> (x 1 0) (y 1 0)))))
+(set 'items (transpose (explode items (ceil (div (length items) 4)))))
+
+(when cgi-mode (println "<pre>"))
+(dolist (line items)
+    (dolist (item line)
+        (if (and item (< (length (item 0)) 19)) 
+            (print (format "%-18s %5d, " (item 0) (item 1 0)))
+            (print (format "%-18s      , " " ")))) ; nil
+    (println))
+		
+(when cgi-mode
+    (println "</pre>")
+    (println "</body></html>"))
+
+(save "Lex" 'Lex)
+(exit)
+

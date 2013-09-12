@@ -1879,9 +1879,11 @@ if(params != nilCell)
 	if(isNil(cell))
 		{
 		getInteger(params->next, (UINT *)&address);
+		checkDeleteShareFile(address);
 		if(munmap(address, pagesize) == -1)
 			return(nilCell);
-		else return(trueCell);
+		else
+			return(trueCell);
 		}
 #endif
 	getIntegerExt(cell, (UINT *)&address, FALSE);
@@ -2042,6 +2044,7 @@ switch(*address & RAW_TYPE_MASK)
 return(cell);
 }
 
+
 /* Takes anyhting and passes as string or file which has to
    be compiled back into expression when reading
 
@@ -2050,9 +2053,11 @@ return(cell);
 
 CELL * readWriteSharedExpression(UINT * address, CELL * params)
 {
-size_t size;
+ssize_t size;
+STREAM strStream = {0, NULL, NULL, 0, 0};
 CELL * cell;
 char * buffer = NULL;
+/* int errNo; */
 
 /* read */
 if(params == nilCell)
@@ -2075,13 +2080,18 @@ if(params == nilCell)
 	}
 
 /* write */
-buffer = cellToString(params, &size, TRUE);
-*(address + 1) = size;
+cell = params;
+openStrStream(&strStream, MAX_STRING, 0);
+prettyPrintFlags |= PRETTYPRINT_STRING;
+printCell(cell , TRUE, (UINT)&strStream);
+prettyPrintFlags &= ~PRETTYPRINT_STRING;
 
-if(size < pagesize - 3 * sizeof(long))
+*(address + 1) = strStream.position;
+
+if(strStream.position < pagesize - 3 * sizeof(long))
 	{
-	memcpy((char *)(address + 2), buffer, size);
-	*((char *)address + 2 * sizeof(long) + size) = 0;
+	memcpy((char *)(address + 2), strStream.buffer, strStream.position);
+	*((char *)address + 2 * sizeof(long) + strStream.position) = 0;
 	}
 else
 	{
@@ -2094,11 +2104,12 @@ else
 	strncpy((char *)(address + 2), "/temp/nls-", 11);
 	getUUID((char *)(address + 2) + 10, 0);
 #endif
-	writeFile((char *)(address + 2), buffer, size, "w");
+	writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
 	}
+closeStrStream(&strStream);
 
 *address = (CELL_STRING | SHARED_MEMORY_EVAL);
-return(params);
+return(cell);
 }
 
 void checkDeleteShareFile(UINT * address)
