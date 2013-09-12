@@ -109,6 +109,9 @@ extern STREAM errorStream;
 int parentPid = 0;
 /* share, message */
 CELL * readWriteShared(UINT * address, CELL * params);
+CELL * readWriteSocket(int socket, CELL * params);
+CELL * readWriteSharedExpression(UINT * adress, CELL * params);
+
 void checkDeleteShareFile(UINT * address);
 
 CELL * p_isFile(CELL * params) /* includes dev,socket,dir,file etc. */
@@ -1248,37 +1251,38 @@ return(stuffInteger(forkResult));
    message - share data with chold and parent
 */
 
+/* run with or without semaphores */
 
+void * parentPad = NULL;    /* written by parent for this process */
+void * thisPad = NULL;      /* written by this process for the parent */
+int thisSocket = 0;
+fd_set myFdSet;             /* set of all child sockets */
 
-void * parentPad = NULL; /* written by parent for this process */
-void * thisPad = NULL;   /* written by this process for the parent */
 
 #ifdef HAVE_FORK
 #ifndef OS2
 
 typedef struct 
 	{
-	void * address;
-	void * parent;
-	void * child;
-	int pid;
-	SYMBOL * symbolPtr;
+	void * result_addr; /* written by child */
+	SYMBOL * symbolPtr; /* smbol for result */
+	int pid;            /* childs pid */
+    int socket; 
 	void * next;	
 	} SPAWN_LIST;
 
 SPAWN_LIST * mySpawnList = NULL;
 
-void addSpawnedChild(void * addr, void * parent, void * child, int pid, SYMBOL * sPtr)
+void addSpawnedChild(void * addr, SYMBOL * sPtr, int pid, int socket)
 {
 SPAWN_LIST * spawnList;
 
 spawnList = (SPAWN_LIST  *)allocMemory(sizeof(SPAWN_LIST));
 
-spawnList->address = addr;
-spawnList->parent = parent;
-spawnList->child = child;
-spawnList->pid = pid;
+spawnList->result_addr = addr;
 spawnList->symbolPtr = sPtr;
+spawnList->pid = pid;
+spawnList->socket = socket;
 spawnList->next = NULL;
 
 if(mySpawnList == NULL)
@@ -1304,7 +1308,7 @@ while(spawnList != NULL)
 return(spawnList);
 }
 
-void purgeSpawnList(void)
+void purgeSpawnList(int sockFlag)
 {
 SPAWN_LIST * spawnList;
 
@@ -1312,6 +1316,9 @@ SPAWN_LIST * spawnList;
 while(mySpawnList != NULL)
 	{
 	spawnList = mySpawnList->next;
+    /* close sockets */
+    if(sockFlag)
+        close(spawnList->socket);
 	free(mySpawnList);
 	mySpawnList = spawnList;
 	}
@@ -1321,13 +1328,16 @@ while(mySpawnList != NULL)
 
 #define PROCESS_SPAWN_RESULT 0
 #define PROCESS_SPAWN_ABORT 1
+#define PROCESS_SPAWN_ABNORMAL_END 2
+#define ABEND "ERR: abnormal process end"
 
-void processSpawnList(int pid, int mode)
+void processSpawnList(int pid, int mode, int result)
 {
 SPAWN_LIST * pidSpawn;
 SPAWN_LIST * previousSpawn;
 CELL * cell;
 SYMBOL * sPtr;
+char str[32];
 
 pidSpawn = previousSpawn = mySpawnList;
 
@@ -1342,21 +1352,28 @@ while(pidSpawn)
 
 		if(mode == PROCESS_SPAWN_RESULT)
 			{
-			cell = readWriteShared(pidSpawn->address, nilCell);
-			checkDeleteShareFile(pidSpawn->address);
+			cell = readWriteShared(pidSpawn->result_addr, nilCell);
 			sPtr = pidSpawn->symbolPtr;
 			deleteList((CELL *)sPtr->contents);
 			sPtr->contents = (UINT)cell;
 			}
-		else /* PROCESS_SPAWN_ABORT */
+		else if(mode == PROCESS_SPAWN_ABORT)
 			{
+            close(pidSpawn->socket);
 			kill(pidSpawn->pid, 9);
 			waitpid(pidSpawn->pid, (int *)0, 0);
 			}
-
-		munmap(pidSpawn->address, pagesize);
-		munmap(pidSpawn->parent, pagesize);
-		munmap(pidSpawn->child, pagesize);
+        else /* PROCESS_SPAWN_ABNORMAL_END */
+            {
+			sPtr = pidSpawn->symbolPtr;
+			deleteList((CELL *)sPtr->contents);
+            snprintf(str, 32, "%s %d", ABEND, result);
+			sPtr->contents = (UINT)stuffString(str);
+            }
+            
+		checkDeleteShareFile(pidSpawn->result_addr);
+        /* unmap shared result memory */
+		munmap(pidSpawn->result_addr, pagesize);
         free((char *)pidSpawn);
         break;
         }
@@ -1379,12 +1396,11 @@ while(pidSpawn)
 */
 CELL * p_spawn(CELL * params)
 {
-int forkResult;
+int forkPid;
 int pid;
 void * address; /* share memory area for result */
-void * parent;  /* receive messages from parent here */
-void * child;   /* write message for parent here */
 SYMBOL * symPtr;
+int sockets[2];
 
 /* make signals processable by waitpid() in p_sync() */
 signal(SIGCHLD, SIG_DFL);
@@ -1392,48 +1408,52 @@ signal(SIGCHLD, SIG_DFL);
 if((address = mmap( 0, pagesize, 
 	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
 		return(nilCell);
-if((parent = mmap( 0, pagesize, 
-	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
-		return(nilCell);
-if((child = mmap( 0, pagesize, 
-	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
-		return(nilCell);
 
 memset(address, 0, sizeof(long));
-memset(parent, 0, sizeof(long));
-memset(child, 0, sizeof(long));
+
 pid = getpid();
+if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == -1) 
+    {
+    purgeSpawnList(TRUE);
+    errorProc(ERR_CANNOT_OPEN_SOCKETPAIR); 
+    }
+
+/* add the parent socket to myFdSet */ 
+if(mySpawnList == NULL)
+    FD_ZERO(&myFdSet);
+FD_SET(sockets[0], &myFdSet);
 
 params = getSymbol(params, &symPtr);
 if(isProtected(symPtr->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symPtr)));
+deleteList((CELL *)symPtr->contents);
+symPtr->contents = (UINT)nilCell;
 
-if((forkResult = fork()) == -1)
+if((forkPid = fork()) == -1)
 	{
 	munmap(address, pagesize);
-	munmap(parent, pagesize);
-	munmap(child, pagesize);
     return(nilCell);
 	}
 
-if(forkResult == 0)
+if(forkPid == 0) /* the child process */
     {
 	/* seed random generator for message fail delay */
 	srandom(getpid()); 
-	/* get parentPid, parentPad and thisPad */
+	/* get parent pid */
 	parentPid = pid;
-	parentPad = parent; /* to be read by this child */
-	thisPad = child;    /* to be written for parent by this child */
+    close(sockets[0]);
+    thisSocket = sockets[1];
 	/* purge inherited spawnlist */
-	purgeSpawnList();
+	purgeSpawnList(FALSE);
 	/* evaluate and write result to shared memory */
 	readWriteShared(address, params);
     exit(0);
     }
 
-addSpawnedChild(address, parent, child, forkResult, symPtr);
+close(sockets[1]);
+addSpawnedChild(address, symPtr, forkPid, sockets[0]);
 
-return(stuffInteger(forkResult));
+return(stuffInteger(forkPid));
 }
 
 /* wait for spawned processes to finish for the timeout specified:
@@ -1472,7 +1492,6 @@ if(params == nilCell)
 
 deleteList(resultList);
 
-
 params = getInteger(params, &timeout);
 if(params == nilCell || isNil((CELL *)((SYMBOL *)params->contents)->contents))
 	signal(SIGCHLD, SIG_DFL);
@@ -1485,10 +1504,14 @@ while(mySpawnList != NULL)
 	{
 	gettimeofday(&tp, NULL);
 	if(timediff_ms(tp, tv) > timeout) return(nilCell);
-	pid = waitpid(-1, &result, WNOHANG);
+    /* wait for any child process to finish */
+	pid = waitpid(-1, &result, WNOHANG); 
 	if(pid) 
 		{
-		processSpawnList(pid, PROCESS_SPAWN_RESULT);
+        if(!WIFEXITED(result))
+		    processSpawnList(pid, PROCESS_SPAWN_ABNORMAL_END, result);
+        else
+		    processSpawnList(pid, PROCESS_SPAWN_RESULT, 0);
 		if(inletFlag)
 			{
 			resultIdxSave = resultStackIdx;
@@ -1523,12 +1546,12 @@ UINT pid;
 if(params != nilCell)
 	{
 	getInteger(params, &pid);
-	processSpawnList(pid, PROCESS_SPAWN_ABORT);
+	processSpawnList(pid, PROCESS_SPAWN_ABORT, 0);
 	}
 else /* abort all */
 	{
 	while(mySpawnList != NULL) 
-		processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT);
+		processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT, 0);
 	/* put initial behaviour back */
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
 	setupSignalHandler(SIGCHLD, sigchld_handler);
@@ -1540,82 +1563,131 @@ else /* abort all */
 return(trueCell);
 }
 
+#define SELECT_READ_READY 0
+#define SELECT_WRITE_READY 1
+
+CELL * getSelectReadyList(int mode)
+{
+CELL * pidList = getCell(CELL_EXPRESSION);
+SPAWN_LIST * child;
+int ready = 0;
+struct timeval tv;
+fd_set thisFdSet;
+
+tv.tv_sec = 0;
+tv.tv_usec = 892 + random() / 10000000;
+
+#if defined(SUNOS) || defined(LINUX)
+memcpy(&thisFdSet, &myFdSet, sizeof(fd_set));
+#else
+FD_COPY(&myFdSet, &thisFdSet);
+#endif
+
+if(mode == SELECT_READ_READY)
+    ready = select(FD_SETSIZE, &thisFdSet, NULL, NULL, &tv);
+else /* SELECT_WRITE_READY */
+    ready = select(FD_SETSIZE, NULL, &thisFdSet, NULL, &tv);
+
+if(ready == 0) return(pidList);
+
+if(ready < 0) 
+    {
+    printf("select failed\n");
+    return(pidList);
+    }
+
+child = mySpawnList;
+while (child != NULL)
+    {
+    if(FD_ISSET(child->socket, &thisFdSet))
+         addList(pidList, stuffInteger(child->pid)); 
+    child = child->next;
+    }
+
+return(pidList);
+}
+     
 
 CELL * p_send(CELL * params)
 {
 UINT pid;
-UINT * address;
+CELL * result = nilCell;
 SPAWN_LIST * child = NULL;
+int socket;
+
+/* return list of writable child pids */
+if(params == nilCell) 
+    return(getSelectReadyList(SELECT_WRITE_READY));
 
 params = getInteger(params, &pid);
 
-/* write from either the parent or a child */
-if(pid == parentPid)
-	address = thisPad;
-else 
+if(pid == parentPid) /* write to parent */
+    {
+    socket = thisSocket;
+    }
+else  /* write to child */
 	{
 	if((child = getSpawnedChild(pid)) == NULL)
 		errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
-	address = child->parent;
+    socket = child->socket;
 	}
 
-/* don't write if not read yet */
-if(*address ) 
-	{
-	/* 50 to 250  micro seconds delay */
-	myNanoSleep(50000 + (random() / 10000)); 
-	return(nilCell); 
-	}
+if(params == nilCell)
+    errorProc(ERR_MISSING_ARGUMENT);
 
-deleteList(readWriteShared(address, params));
+result = readWriteSocket(socket, params);
 
-return(trueCell);
+return(result);
 }
-
 
 
 CELL * p_receive(CELL * params)
 {
 UINT pid;
-UINT * address;
-SPAWN_LIST * child = NULL;
 CELL * cell;
-SYMBOL * sPtr;
+SPAWN_LIST * child = NULL;
+SYMBOL * sPtr = NULL;
+int socket;
+
+/* return list of readable child pids */
+if(params == nilCell) 
+    return(getSelectReadyList(SELECT_READ_READY));
 
 params = getInteger(params, &pid);
-params = getEvalDefault(params, &cell);
-if(!symbolCheck)
-	return(errorProc(ERR_IS_NOT_REFERENCED));
-if(isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-if(symbolCheck->contents != (UINT)cell)
-	return(errorProc(ERR_IS_NOT_REFERENCED));
 
-sPtr = symbolCheck;
+if(params != nilCell)
+    {
+    params = getEvalDefault(params, &cell);
+    if(!symbolCheck)
+	    return(errorProc(ERR_IS_NOT_REFERENCED));
+    if(isProtected(symbolCheck->flags))
+	    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    if(symbolCheck->contents != (UINT)cell)
+	    return(errorProc(ERR_IS_NOT_REFERENCED));
+    sPtr = symbolCheck;
+    }
 
-/* read from either the parent or a child */
-if(params == nilCell) 
+if(params == nilCell) /* read from parent */
 	{
 	if(pid == parentPid)
-		address = parentPad;
-	else 
+        {
+        socket = thisSocket;
+        }
+	else  /* read from child */
 		{
 		if((child = getSpawnedChild(pid)) == NULL)
 			errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
-		address = child->child;
+        socket = child->socket;
 		}
-	if(*address == 0) 
-		{
-		/* 50 to 250  micro seconds delay */
-		myNanoSleep(50000 + (random() / 10000)); 
-		return(nilCell);
-		}
-	cell = readWriteShared(address, params);
-	/* delete potential nls-file! */
-	if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
-		checkDeleteShareFile(address);
-	/* don't let read twice the same */ 
-	*address = 0; 
+
+	cell = readWriteSocket(socket, params);
+    if(cell == nilCell)
+        return(nilCell);
+
+    /* if no msg variable is given make message the return value */
+    if(sPtr == NULL)
+        return(cell);
+
 	deleteList((CELL *)sPtr->contents);
 	sPtr->contents = (UINT)cell;
 	pushResultFlag = FALSE;
@@ -1623,7 +1695,94 @@ if(params == nilCell)
 
 return(trueCell);
 }
-#endif /* OS 2 */
+
+/* evaluate expression in params and write to socket,
+   part of a socket pair. Similar to readWriteShare()
+   but uses sockets instead od shared memory */
+   
+CELL * readWriteSocket(int socket, CELL * params)
+{
+char * buffer;
+CELL * cell;
+STREAM strStream = {0, NULL, NULL, 0, 0};
+UINT length;
+ssize_t size, bytesReceived;
+struct timeval tv;
+fd_set fdset;
+int ready;
+
+tv.tv_sec = 0;
+tv.tv_usec = 892 + random()/10000000;
+
+FD_ZERO(&fdset);
+FD_SET(socket, &fdset);
+
+if(params != nilCell) /* send message, write */
+    {
+    /* ready = select(socket, NULL, &fdset, NULL, &tv); */
+    ready = select(FD_SETSIZE, NULL, &fdset, NULL, &tv); 
+    /* ready = FD_ISSET(socket, &fdset) */
+    if(ready == 1)
+        {
+        cell = evaluateExpression(params);
+        if(cell->type == CELL_EXPRESSION)
+            size = 128;
+        else
+            size = 32;
+        openStrStream(&strStream, size, 0);
+        prettyPrintFlags |= PRETTYPRINT_STRING;
+        printCell(cell , TRUE, (UINT)&strStream);
+        prettyPrintFlags &= ~PRETTYPRINT_STRING;
+        length = strStream.position;
+        if(send(socket, &length, sizeof(UINT), 0) ==  sizeof(UINT))
+            {
+            size = send(socket, strStream.buffer, strStream.position, 0);
+            if(size == strStream.position)
+                {
+                closeStrStream(&strStream);
+                return(trueCell);
+                }
+            /* caller should check errno using (sys-error) */
+            closeStrStream(&strStream);
+            return(nilCell);
+            }
+        }
+    else
+        {
+        /* timeout, socket not ready */
+        return(nilCell);
+        }
+    }
+/* receive message, read */
+/* ready = select(socket, &fdset, NULL, NULL, &tv); */
+ready = select(FD_SETSIZE, &fdset, NULL, NULL, &tv);
+/* ready = FD_ISSET(socket, &fdset) */
+if(ready == 1)
+    {
+    if((size = recv(socket, &length, sizeof(UINT), 0)) == sizeof(UINT))
+        {
+        buffer = callocMemory(length + 1);
+        bytesReceived = 0;
+        while(bytesReceived < length)
+            {
+            size = recv(socket, buffer + bytesReceived, length - bytesReceived, 0);
+            if(size == -1)
+                {
+                free(buffer);
+                return(nilCell);
+                }
+            bytesReceived += size; 
+            }
+        cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
+        free(buffer);
+        return(cell);
+        }
+    }
+
+return(nilCell);
+}
+
+#endif /* not OS 2 */
 
 #endif /* HAVE_FORK */
 
@@ -1745,7 +1904,10 @@ if(params == nilCell)
 
 params = getInteger(params, (UINT *)&sem);
 if(params == nilCell)
-	return(stuffInteger((UINT)semaphore(sem, 0, SEM_STATUS)));
+    {
+    result = semaphore(sem, 0, SEM_STATUS);
+	goto SEMAPHORE_END;
+    }
 
 getInteger(params, (UINT *)&value);
 	{
@@ -1757,6 +1919,7 @@ SEMAPHORE_END:
 if(result == -1) return(nilCell);
 return(stuffInteger((UINT)result));
 }
+
 
 int semaphore(UINT sem_id, int value, int type)
 {
@@ -1781,26 +1944,20 @@ if(type != SEM_CREATE)
 			{
 			/* remove semaphore */
 #ifdef SPARC
+    #ifndef NEWLISP64
+            if(semctl(sem_id, 0, IPC_RMID, &semun_val) == -1) /* SPARC 32 */
+    #else 
+            if(semctl(sem_id, 0, IPC_RMID, 0) == -1) /* SPARC 64 */
+    #endif
 
-#ifdef TRU64
-                        if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
-#else
-#ifndef NEWLISP64
-                        if(semctl(sem_id, 0, IPC_RMID, &semun_val) == -1)
-#else
-                        if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
-#endif
-#endif /* SPARC */
-
-#else
-
-#ifdef MAC_OSX
-                        if(semctl(sem_id, 0, IPC_RMID, semu) == -1)
-#else
-                        if(semctl(sem_id, 0, IPC_RMID, 0) == -1)
-#endif
-#endif
-                                return(-1);
+#else /* not SPARC */
+    #ifdef MAC_OSX
+            if(semctl(sem_id, 0, IPC_RMID, semu) == -1) /* MAC_OSX */
+    #else
+            if(semctl(sem_id, 0, IPC_RMID, 0) == -1) /* LINUX, BSD, TRU64 */
+    #endif /* not MAC_OSX */
+#endif /* not SPARC */
+                return(-1);
 			return(0);
 			}
 
@@ -1816,40 +1973,34 @@ if(type != SEM_CREATE)
 	else
 		/* return semaphore value */
 #ifdef MAC_OSX
-                return(semctl(sem_id, 0, GETVAL, semu));
+        return(semctl(sem_id, 0, GETVAL, semu));
 #else
-                return(semctl(sem_id, 0, GETVAL, 0));
+        return(semctl(sem_id, 0, GETVAL, 0));
 #endif
 	}
 
 /* create semaphore */
 sem_id = semget(IPC_PRIVATE, 1, 0666 );
+
 #ifdef SPARC
-
-#ifdef TRU64
-if(semctl(sem_id, 0, SETVAL, 0) == -1)
-#else
-#ifndef NEWLISP64
-if(semctl(sem_id, 0, SETVAL, &semun_val) == -1)
-#else
-if(semctl(sem_id, 0, SETVAL, 0) == -1)
-#endif
-#endif
-
-#else
-
-#ifdef MAC_OSX
-if(semctl(sem_id, 0, SETVAL, semu) == -1)
-#else
-if(semctl(sem_id, 0, SETVAL, 0) == -1)
-#endif
-
-#endif
+  #ifndef NEWLISP64
+if(semctl(sem_id, 0, SETVAL, &semun_val) == -1) /* SPARC 32 */
+  #else
+if(semctl(sem_id, 0, SETVAL, 0) == -1) /* SPARC 64 */
+  #endif
+#else /* not SPARC */
+ #ifdef MAC_OSX
+if(semctl(sem_id, 0, SETVAL, semu) == -1) /* MAC_OSX */
+ #else
+if(semctl(sem_id, 0, SETVAL, 0) == -1) /* LINUX, BSD, TRU64 */
+ #endif /* not MAC_OSX */
+#endif /* not SPARC */
 	return(-1);
+
 return(sem_id);
 }
 
-#endif  /* Mac OS X, Linux, UNIX */
+#endif  /* Mac OS X, Linux, UNIX - not WIN_32 */
 
 #ifdef WIN_32
 UINT winSharedMemory(int size);
@@ -1876,7 +2027,7 @@ if(params != nilCell)
 	{
 	cell = evaluateExpression(params);
 #ifndef WIN_32
-	if(isNil(cell))
+	if(isNil(cell)) /* release shared address */
 		{
 		getInteger(params->next, (UINT *)&address);
 		checkDeleteShareFile(address);
@@ -1919,8 +2070,12 @@ return(stuffInteger(handle));
 }
 #endif /* no OS2 */
 
-CELL * readWriteSharedExpression(UINT * adress, CELL * params);
-
+/* evaluate the expression in params ans the write the result
+   to shared memory. If size > pagesize use files tmp files
+   for transfer. For atomic datatypes are xlation into message
+   id ptimized for speed (but doesn't bring much in overall
+   performance, should perhaps be taken out and only use
+   readWriteSharedExpression() */
 CELL * readWriteShared(UINT * address, CELL * params)
 {
 CELL * cell;
@@ -2045,7 +2200,7 @@ return(cell);
 }
 
 
-/* Takes anyhting and passes as string or file which has to
+/* Takes anything and passes as string or file which has to
    be compiled back into expression when reading
 
    returns a new cell object on read, old on write

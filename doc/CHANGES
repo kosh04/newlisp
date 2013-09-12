@@ -6087,3 +6087,41 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      results prepended with "-> ". [cmd],[/cmd] are not logged
 
      Save memory in 'string' and 'format'. 
+
+10.3.4
+     Reworked 'send'/'receive' message API is multiple times faster and has
+     more consistent performance on different platforms. Better on BSDs
+     than on Linux. The channel for each child is now a dual read/write
+     message queue. In previous version only one message could be written
+     to the queue with send, now mutiple message can be send on the same
+     channel and retrieved on the receiving side with multiple 'receive'
+     until returning 'nil'.
+
+     In the new syntax of 'receive' the <message> parameter is optional:
+
+        (receive <pid>) ; returns the message or nil
+        (receive <pid> <message>) ; returns true or nil
+
+     Both 'send' and 'receive' now have syntax to return a list of all
+     ready child channels using either (send) to get a list of child
+     pid's ready to receive data or (receive) to get a list od child
+     pid's ready to be read. This greatly speeds up asyncrounous
+     messaging, where multiple child processes, but not all, have sent 
+     messages. Previously:
+
+        (dolist (p (sync)) (until (receive p msg))) ; (sync) -> child pids
+
+     Now using only a ready subset, 'receive' can be used non-blocking
+     and only a subset of all child pids is iterated through:
+
+        (dolist (p (receive)) (receive p msg))
+
+     Now, when a 'spawn'ed child process ends abormally the variable in the
+     spawn command will contain an error message and a result number,
+     e.g. '9' from a kill signal sent by an external process.
+
+     Fixed longstanding bug for list-mode 'net-select'. Now returns
+     socket numbers in the ready list not 0's.
+
+     Documention for the messaging API has been updated in the reference
+     manual and code patterns documents.

@@ -2711,7 +2711,7 @@
 (println (format "%10.1f ms" total-time))
 ; compensate for rounding error
 (inc total-time (mul 0.5 (length primes)))
-(println (format ">>>>> Performance ratio:%5.2f (1.0 on Mac OSX, 1.83 GHz Core 2 Duo, newLISP 10.2.8)"
+(println (format ">>>>> Performance ratio:%5.2f (1.0 on Mac OSX, 1.83 GHz Core 2 Duo, newLISP v10.2.8)"
     (round (div total-time (mul 10 (length primes)) multiplier) -2)))
 (dolist (msg failed-messages)
 	(println msg))

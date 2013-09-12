@@ -101,11 +101,11 @@ Michael and Melissa Michaels, http://www.neglook.com
 
 Bob Bae (aka frontera000, http://sparebandwidth.blogspot.com/)
   bringing many ideas to the advancement of newLISP and actively advocating for
-  newLISP on his and other peoples blogs
+  newLISP on his and other peoples blogs.
 
 Jeremy Dunn
   introduced the idea of default args for several operators i.e. (> x) => (> x 0)
-  and for (>> x) => (>> x 1), (div x) => (div 1 x) ... and suggestions
+  and for (>> x) => (>> x 1), (div x) => (div 1 x) ... and suggestions.
 
 Michael Sabin
   contributed UTF-16 capable file and directory routines for the Win32 versions.
@@ -145,10 +145,10 @@ Jorge Acereda and Peter O'Gorman
   (functionality/code? now part of OX X since 10.3)
 
 Daniel Stenberg
-  from the cURL project newLISP adapted the base64 encoding and decoding routines
+  from the cURL project, newLISP adapted the base64 encoding and decoding routines
 
 Thomas Niemannn
-  wrote a red-black binary tree algorithm used in newLISP with modifications
+  wrote a red-black binary tree algorithm used in newLISP with modifications.
 
 Sourceforge.net
   Has helped newLISP and many other Open Source projects to get more visibility,
@@ -160,7 +160,7 @@ Richard M. Stallman
   strongest force in the open source movement from which newLISP has benefitted.
 
 
-My apologies to anybody, who was forgotten on this list (let me know).
+My apologies to anybody, who has been forgotten on this list (let me know).
 
                                   +++
 

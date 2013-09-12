@@ -11,9 +11,46 @@
 	(exit)
 )
 
+(sleep 1000)
+
+; --------------------------------- status update
+(set 'N 100)
+(set 'k 10)
+
+(println k " child processes transmit " 100 " random status numbers")
+
+(define (child-process N)
+    (set 'ppid (sys-info -4)) ; get parent pid
+    (set 'cpid (sys-info -3)) ; get this pid
+    (dotimes (i N)
+        (until (send ppid (random) ))
+    )
+)
+
+; parent starts k  child processes, listens and displays
+
+(dotimes (i k) (spawn 'result (child-process N)))
+
+(set 'start (time-of-day));
+(set 'cnt 0)
+(while (< cnt (* k N))
+    (dolist (cpid (receive)) ; iterate thru child pids
+        (receive cpid msg) (inc cnt)
+    )
+)
+
+(abort) ; cancel child-processes
+
+(set 'ms (div (- (time-of-day) start) (* k N )))
+(println ">>>>> time per simple message: " (mul ms 1000) " micro seconds")
+
 ; --------------------------------- roundtrip test
-(println "\n10 round trips to 10 child processes")
-(println "\nsend out \"pid\" and receive it back uppercased with child pid appended:\n")
+(set 'N 10)
+(set 'k 10)
+
+(println)
+(println N " round trips to " k " child processes")
+(println "send out and receive it back uppercased with child pid appended")
 
 (define (child-process , pid pppid msg)
 		(setq ppid (sys-info -4)) ; parent pid
@@ -23,59 +60,66 @@
 			(until (send ppid (upper-case (string msg "-" pid)))) )
 )
 
-(dotimes (i 10)
+(dotimes (i k)
 	(spawn 'r (child-process)))
 
-(println (sync)) (println)
-
 (set 'start (time-of-day))
-(dotimes (i 10)
+(dotimes (i N)
 	(dolist (ch (sync))
 		(until (send ch "pid") ) ; send out message
 		(until (receive ch msg))  ; get response
 		(unless (= msg (string "PID-" ch)) ; check
 			(setq error-msg (append " >>>> ERROR in round trip test: " msg )))
-		(print  msg " ") )
-	(println)
+    )
 )
 
-(println "time per round trip: " (div (- (time-of-day) start) 100) " ms")
+(set 'ms (div (- (time-of-day) start) (* k N )))
+(println ">>>>> time per round trip : " (mul ms 1000) " micros seconds")
 
-(abort) (sleep 100) (println)
+(abort) (sleep 100)
 
 ; --------------------------------- proxy test
-
+(set 'N 100)
+(println)
 ; proxy messageing A -> parent -> B
 
 ; sender child process of the message
 (set 'A (spawn 'result 
 	(begin
-		(dotimes (i 5)
+		(dotimes (i N)
 			(set 'ppid (sys-info -4))
-			(set 'pid (sys-info -3))
+            /* the following statement in msg will be evaluated in the proxy */
 			(set 'msg '(until (send B (string "greetings from " A))))
 			(until (send ppid msg)))
-		(sleep 300) ; give B a chance
 		(until (send ppid '(begin
-				(println "\nparent exiting ...\n")
-				(set 'finished true))))
+			(println "parent exiting ...\n")
+			(set 'finished true))))
 )))
 
 ; receiver child process of the message
 (set 'B (spawn 'result 
 	(begin
 		(set 'ppid (sys-info -4))
-		(set 'pid (sys-info -3))
 		(while true
 			(until (receive ppid msg))
-			(println pid " received " msg))
+			(unless (= msg (string "greetings from " A))
+                (println ">>> ERROR in proxy message: " msg))
+        )
+    (println)
 )))
 
 ; parent functioning as a proxy evaluating messages	or any other code
 (println "A:" A "-> parent-proxy:" (sys-info -3) " -> B:" B "\n")
 
+(sleep 200)
+
+(set 'start (time-of-day))
 ; listen to messages from A
 (until finished (if (receive A msg) (eval msg)))
+
+(set 'ms (div (- (time-of-day) start) N))
+(println ">>>>> time per proxy trip: " (mul ms 1000) " micro seconds")
+(println)
 
 (sleep 300)
 (abort)

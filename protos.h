@@ -605,6 +605,7 @@ void printSymbol(SYMBOL * sPtr, UINT device);
 void printSymbolName(UINT device, SYMBOL * sPtr);
 void printSymbolNameExt(UINT device, SYMBOL * sPtr);
 void protectDefaultSymbol(char * name);
+void purgeSpawnList(int flag);
 void recoverEnvironment(UINT * idx);
 void recoverIteratorIndex(CELL * cellIdx);
 void recoverObjectStack(UINT * idx);

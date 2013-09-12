@@ -1,7 +1,7 @@
 #!/usr/bin/newlisp
 
 (println)
-(println "Testing UDP communicatiobs woth spawned processes")
+(println "Testing UDP communicatiobs with spawned processes")
 
 ; benchmark net work functions with spawned processes
 
@@ -25,7 +25,7 @@
 	(begin
 		(sleep 300)
 		(for (i 1 N)
-			(sleep 0.1) ; increase if losing to much
+			(sleep 0.2) ; increase if losing to much
 			(net-send-udp "localhost" 12345 (string i))
 		)
 	(exit)

@@ -2625,16 +2625,18 @@ true
           (win32-test-share)
           (unix-test-share))
       (set 'mvar (share))
-      (not (share mvar nil))
-      (= (share mvar) nil)
+      (not (share mvar nil)) 
+      (= (share mvar) nil)   ; nil 
       (share mvar true)
-      (= (share mvar) true)
+      (= (share mvar) true)  ; true
       (share mvar 123)
-      (= (share mvar) 123)
+      (= (share mvar) 123)   ; integer
       (share mvar 123.456)
-      (= (share mvar) 123.456)
+      (= (share mvar) 123.456)  ; float
       (share mvar "hello")
-      (= (share mvar) "hello")
+      (= (share mvar) "hello")  ; string
+      (share mvar '(a b c d e f))
+      (= (share mvar) '(a b c d e f)) ; list
       ; check sizes > pagesize
 	  (share mvar (dup "X" 10000))
       (= 10000 (length (share mvar)))
@@ -3078,17 +3080,23 @@ true
 
 (define (test-spawn)
 	(and 
-		(set 'px (spawn 'x (+ 1 2 3 4)))
-		(set 'py (spawn 'y (+ 5 6 7 8)))
+        (set 'pw (spawn 'w (list 'a 'b 'c 'd 'e 'f))) ; list
+		(set 'px (spawn 'x (+ 1 2 3 4))) ; integer
+		(set 'py (spawn 'y (add 1.23 4.56))) ; float
+        (set 'pz (spawn 'z (upper-case "hello world"))) ;string
 		(if (!= ostype "Win32")
 			(begin
+				(find pw (sync))
 				(find px (sync))
-        		(find py (sync)))
+        		(find py (sync))
+        		(find pz (sync)))
 			true)
         (true? (sync 1000))
 		(empty? (sync))
+        (= w '(a b c d e f))
 		(= x 10)
-		(= y 26)
+		(< (abs (sub y 5.79)) 0.0000000001)
+        (= z "HELLO WORLD")
 ))
 
 (define (test-sync) true)

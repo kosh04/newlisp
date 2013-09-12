@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.3 Manual and Reference</title>
+   <title>newLISP v.10.3.4 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.3<font size=-1></font></h2>
+<h2>User Manual and Reference v.10.3.4</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -18456,15 +18456,18 @@ and continue accepting and servicing connections:
 <pre>
 (set 'listen-list '(1001 1002))
 
+; accept-connection, read-connection and write-connection
+; are userdefined functions
+
 (while (not (net-error))
     (dolist (conn (net-select listen-list "r" 1000))
-    (accept-connection conn))  ; build and accept-list
+    (accept-connection conn))  ; build an accept-list
 
     (dolist (conn (net-select accept-list "r" 1000))
-    (read-connection conn))    ; read on conn socket
+    (read-connection conn))    ; read on connected sockets
 
     (dolist (conn (net-select accept-list "w" 1000))
-    (write-connection conn)))  ; write on conn socket
+    (write-connection conn)))  ; write on connected sockets
 </pre>
 
 
@@ -21446,15 +21449,15 @@ If <tt>real-path</tt> fails (e.g., because of a nonexistent path),
 
 <a name="receive"></a>
 <h2><span class="function">receive</span>&nbsp;<a href="#destructive">!</a></h2>
-<h4>syntax: (receive <em>int-pid</em> <em>sym-message</em>)</h4>
+<h4>syntax: (receive <em>int-pid</em> <em>sym-message</em>)<br/>
+syntax: (receive)</h4>
 
-<p>The function is used for message exchange between child processes
-launched with <a href="#spawn">spawn</a> and their parent process. The
-message received replaces the contents in <em>sym-message.</em></p>
+<p>In the first syntax, the function is used for message exchange between 
+child processes launched with <a href="#spawn">spawn</a> and their parent 
+process. The message received replaces the contents in <em>sym-message.</em></p>
 
-<p>The function returns <tt>nil</tt> if no message is pending to be read.</p>
-
-<p>The <tt>receive</tt> function is not available on Win32.</p>
+<p>The function reads one message from the receiver queue of <em>int-pid</em>
+for each invocation. When the queue is empty, <tt>nil</tt> is returned.</p>
 
 <!-- example -->
 
@@ -21463,10 +21466,39 @@ message received replaces the contents in <em>sym-message.</em></p>
 (send spid "hello")  <span class='arw'>&rarr;</span> true
 
 ; receiving process
-(receive rpid msg)   <span class='arw'>&rarr;</span> true
+(receive pid msg)    <span class='arw'>&rarr;</span> true
 msg                  <span class='arw'>&rarr;</span> "hello"
 </pre>
 
+<p>To make <tt>receive</tt> blocking and wait for arriving messages,
+use the following form:</p>
+
+<pre>
+; wait until a message can be read
+(until (receive pid msg))
+</pre>
+
+<p>The function will loop until a message can be read from the queue.</p>
+
+<p>In the second syntax, the function returns a list of all child processes
+with pending messages for the parent process:</p>
+
+<!-- example -->
+<pre>
+; read pending messages from child processes
+(dolist (pid (receive))
+    (receive pid msg)
+    (println "received message: " msg " from:" pid)
+)
+</pre>
+
+<p>The list of child process IDs returned by <tt>(receive)</tt> only
+contains PIDs of processes which have unread messages in their 
+send queues. The <tt>(receive pid msg)</tt> statement now can
+be issued non-blocking, because it always is guarenteed to find
+a pending message in a child's message queue.</p>
+
+<p>The <tt>receive</tt> function is not available on Win32.</p>
 
 <p>For a more detailed discussion of this function and examples, see the
 <a href="#send">send</a> function.</p>
@@ -22905,36 +22937,47 @@ as well as the examples and modules distributed with newLISP.</p>
 
 <a name="send"></a>
 <h2><span class="function">send</span></h2>
-<h4>syntax: (send <em>int-pid</em> <em>exp</em>)</h4>
+<h4>syntax: (send <em>int-pid</em> <em>exp</em>)<br/>
+syntax: (send)</h4>
 
 <p>The <tt>send</tt> function enables communication between
 parent and child processes started with <a href="#spawn">spawn</a>.
-Parent processes can send an receive messages to and from
-their child processes. A proxy technique &ndash; shown further
-down &ndash; is  employed to communicate between process
+Parent processes can send and receive messages to and from
+their child processes and child processes can send and receive
+messages to and from their parent process. A proxy technique &ndash; shown further
+down &ndash; is  employed to communicate between child process
 peers. <tt>send</tt> and <a href="#receive">receive</a> do not require 
-locks or semaphores.</p>
+locks or semaphores. They work on dual send and receive message queues.
+</p>
 
 <p>Processes started using <a href="#fork">fork</a> or 
 <a href="#process">process</a> can not use <tt>send</tt> and <tt>receive</tt>
-message functions, but should use <a href="#share">share</a> instead.</p>
+message functions. Instead they should use either <a href="#share">share</a> 
+with <a href="#semaphore">semaphore</a> or <a href="#pipe">pipe</a> to 
+communicate.</p>
 
 <p>The <tt>send</tt> function is not available on Win32.</p>
 
-<p>The content of a message may be any newLISP expression: atomic
-expressions like boolean constants, numbers or strings, or any
-list expression in valid newLISP syntax. The size of data is unlimited.
-For sizes less then the shared memory pagesize, transfer is fastest and 
-handled by a shared memory interface. For data sizes exceeding the page 
-size, files are used internally as the medium of transfer.</p>
+<p>In the first syntax <tt>send</tt> is used to send a message 
+from a parent to a child process or a child to a parent process.</p>
+
+<p>The second syntax is only used by parent processes to get a list
+of all child processes ready to accept message from the parent in their 
+receive queues. If a child's receive queue is full, it will not be part of
+the list returned by the <tt>(send)</tt> statement.</p>
+
+<p>The content of a message may be any newLISP expression either
+atomic or list expressions: boolean constants <tt>nil</tt> and <tt>true</tt>,
+integers, floating point numbers or strings, or any list expression 
+in valid newLISP syntax. The size of a message is unlimited.</p>
+
 
 <p>The <em>exp</em> parameter specifies the data to be sent
 to the recipient in <em>int-pid</em>. The recipient can be either a
 spawned child process of the current process or the parent
-process. If a previous message to the same <em>int-pid</em> has not 
-been read yet by the targeted recipient, 
-then <tt>nil</tt> will be returned trying to send a new message. If
-the message could be sent successfully then <tt>true</tt> is returned.</p>
+process. If a message queue is full, it can be read from the receiving
+end, but a <tt>send</tt> issued on the other side of the queue will
+fail and return <tt>nil</tt>.</p>
 
 
 <pre>
@@ -22945,9 +22988,7 @@ the message could be sent successfully then <tt>true</tt> is returned.</p>
 (send ppid "hello") ; send message
 </pre>
 
-
 <p>The targeted recipient of the message is the parent process:</p>
-
 
 <pre>
 ; parent process receiving message from child
@@ -22957,46 +22998,49 @@ msg                     <span class='arw'>&rarr;</span> "hello"
 </pre>
 
 
-<p>A second message sent by the child process would fail 
-by returning <tt>nil</tt> if sent before the first was retrieved. 
-Trying to pick up the message before it was delivered would fail too 
-and return <tt>nil</tt>.</p>
+<p>When the <tt>send</tt> queue is full, <tt>send</tt> will return
+<tt>nil</tt> until enough message content is read on the receiving side
+of the queue and the queue is ready to accept new messages from 
+<tt>send</tt> statements.</p>
 
 <p>Using the <a href="#until">until</a> looping function, the
-message statement can be repeated until it returns a value
-not <tt>nil</tt>. This way, the non-blocking message
-function can be made blocking until it succeeds:</p>
-
+message statements can be repeated until they return a value
+not <tt>nil</tt>. This way, non-blocking <tt>send</tt> and <tt>receive</tt> 
+can be made blocking until they succeed:</p>
 
 <pre>
 ; blocking sender
-(until (send pid msg)) ; returns true afer delivery
+(until (send pid msg)) ; true after message is queued up
 
 ; blocking receiver
-(until (receive pid msg)) ; returns true after pickup
+(until (receive pid msg)) ; true after message could be read
 </pre>
 
 <p>The sender statement blocks until the message could be deposited
-in the recipients mailbox.</p>
+in the recipients queue.</p>
 
-<p>The <tt>receive</tt> statement blocks until a new message could be read.</p>
+<p>The <tt>receive</tt> statement blocks until a new message can
+be fetched from the queue.</p>
 
 <p>As the <tt>until</tt> statements in this example lack body expressions,
-the last value of the evaluated conditional expression is returned.</p>
+the last value of the evaluated conditional expression is the return
+value of the <tt>until</tt> loop.</p>
 
-<h3>Listening for messages and retrying send</h3>
+<h3>Blocking message exchange</h3>
 
 <p>The following code shows how a recipient can listen for incoming
 messages, and in turn how a sender can retry to deposit a message
-into a mailbox not picked up yet by the recipient. The example shows 
-5 child processes constantly delivering status data to a parent 
-process which will display the data:</p>
+into a queue. The example shows 5 child processes constantly delivering 
+status data to a parent process which will display the data.
+After three data sets have been read, the parent will abort all
+child processes and exit:</p>
 
 <!-- example -->
 
 <pre>
-; child process transmits random numbers
+#!/usr/bin/newlisp
 
+; child process transmits random numbers
 (define (child-process)
     (set 'ppid (sys-info -4)) ; get parent pid
     (while true
@@ -23004,18 +23048,16 @@ process which will display the data:</p>
 )
 
 ; parent starts 5  child processes, listens and displays
-
 (dotimes (i 5) (spawn 'result (child-process)))
 
 (for (i 1 3)
-    (dolist (cpid (sync)) ; iterate thru child pids
-		(until (receive cpid msg))
+    (dolist (cpid (sync)) ; iterate thru pending child PIDs
+        (until (receive cpid msg))
         (print "pid:" cpid "-&gt;" (format "%-2d  " msg)))
     (println)
 )
 
 (abort) ; cancel child-processes
-
 (exit)
 </pre>
 
@@ -23027,79 +23069,79 @@ pid:53181->59  pid:53180->12  pid:53179->20  pid:53178->77  pid:53177->47
 pid:53181->6   pid:53180->56  pid:53179->96  pid:53178->78  pid:53177->18
 </b></pre>
 
-<p>Message exchange is synchronous in above code. The sender blocks until a message
-can be deposited in an empty mailbox. For an asynchronous message transfer example
-see the <a href="http://www.newlisp.org/CodePatterns.html">Code Patterns</a>
-document.</p>
+<p>The <tt>(sync)</tt> expression returns a list of all child PIDs,
+and <tt>(until (receive cpid msg))</tt> is used to force a wait
+until status messages are recived for each of the child processes.</p>
 
 <p>A timeout mechanism could be part of an <tt>until</tt> or <tt>while</tt>
 loop to stop waiting after certain time has expired.</p>
 
 <p>The examples show messages flowing from a child processes to
 a parent process, in the same fashion messages could flow
-into the other direction from parent to child processes.</p>
+into the other direction from parent to child processes. In that
+case the parent process would use <tt>(send)</tt> to obtain a
+list of child processes with place in their message queues.</p>
 
 <h3>Messages containing code for evaluation</h3>
 
 <p>The most powerful feature of the message functions is the ability
-to send code pieces, which are evaluated by the recipient. Because
-messages can contain any expression, they can be transmitted and 
-evaluated by the recipient using <a href="#eval">eval</a>.</p>
+to send any newLISP expression, which then can be evaluated by the recipient. 
+The recipient uses <a href="#eval">eval</a> to evaluate the received
+expression. Symbols contained in the expression are evaluated in the
+receivers environment.</p>
 
 <p>The following example shows how a parent process acts like a message 
-proxy receiving messages from a child process routing them to another 
-child process. In effect this implements messages between peer child 
-processes. The implementation relies on the fact
-that the recipient can evaluate expressions contained in messages
-received. These expressions can in turn be statements:</p>
+proxy. The parent receives messages from a child process A and routes them 
+to a second child process with ID B. In effect this implements messages 
+between child process peers. The implementation relies on the fact that 
+the recipient can evaluate expressions contained in messages received.
+These expressions can be any valid newLISP statements:</p>
 
 <!-- example -->
-
 <pre>
-; sender process of the message
-(set 'pidA (spawn 'result
-    (begin 
+#!/usr/bin/newlisp
+
+; sender child process of the message
+(set 'A (spawn 'result 
+    (begin
         (dotimes (i 3)
             (set 'ppid (sys-info -4))
-            (set 'pid (sys-info -3))
-            (set 'msg '(until (send pidB (string "greetings from " pidA))))
-            (until (send ppid msg))) ; send expression in msg
-        ; make parent exit until loop
-        (until (send ppid '(set 'finished true)))
-)))
+            /* the statement in msg will be evaluated in the proxy */
+            (set 'msg '(until (send B (string "greetings from " A))))
+            (until (send ppid msg)))
+        (until (send ppid '(begin 
+            (sleep 100) ; make sure all else is printed
+            (println "parent exiting ...\n")
+            (set 'finished true))))))) 
 
-; final message recipient
-(set 'pidB (spawn 'result
+; receiver child process of the message
+(set 'B (spawn 'result 
     (begin
         (set 'ppid (sys-info -4))
-        (set 'pid (sys-info -3))
         (while true
             (until (receive ppid msg))
-            (println pid " received " msg))
-)))
+            (println msg)
+            (unless (= msg (string "greetings from " A))
+                (println "ERROR in proxy message: " msg))))))
 
-; receive and evaluate messages from pidA
-(until finished (if (receive pidA msg) (eval msg)))
+(until finished (if (receive A msg) (eval msg))) ; proxy loop
 
-(abort) (sleep 100)
+(abort)
 (exit)
 </pre>
 
-
-<p>Child process <tt>pidA</tt> sends three messages to <tt>pidB</tt>.
-As this cannot be done directly <tt>pidA</tt>  sends <tt>message</tt>
+<p>Child process <tt>A</tt> sends three messages to <tt>B</tt>.
+As this cannot be done directly <tt>A</tt>  sends <tt>send</tt>
 statements to the parent for evaluation. The statement:</p>
 
-
 <pre>
-(until (send pidB (string "greetings from " pidA)))
+(until (send pidB (string "greetings from " A)))
 </pre>
 
-
 <p>will be evaluated in the environment of the parent process. Even so the 
-variable <tt>pidA</tt> and <tt>pidB</tt> are bound to <tt>nil</tt> in 
-the sender process <tt>pidA</tt>, in the parent process they will be
-bound to the correct pid numbers.</p>
+variables <tt>A</tt> and <tt>B</tt> are bound to <tt>nil</tt> in 
+the sender process <tt>A</tt>, in the parent process they will be
+bound to the correct process ID numbers.</p>
 
 <p>After sending the three messages, the statement:</p>
 
@@ -23107,9 +23149,12 @@ bound to the correct pid numbers.</p>
 (set 'finished true)
 </pre>
 
-
-<p>is sent to the parent process and once evaluated, it will cause the <tt>until</tt>
+<p>is sent to the parent process. Once evaluated, it will cause the <tt>until</tt>
 loop to finish.</p>
+
+<p>For more details on <tt>send</tt> and <tt>receive</tt> and more examples 
+see the <a href="http://www.newlisp.org/CodePatterns.html">Code Patterns</a>
+document.</p>
 
 <br/><br/>
 

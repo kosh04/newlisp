@@ -319,9 +319,6 @@ UINT sock;
 getInteger(params, &sock); 
 deleteInetSession((int)sock);
 
-if(!getFlag(params->next))
-	shutdown(sock, SHUT_RDWR);
-
 if(close((int)sock) == SOCKET_ERROR)
     return(netError(ERR_INET_NOT_VALID_SOCKET));
 
@@ -478,18 +475,33 @@ return(sock);
 #endif
 
 
-int unblockSocket(int sock)
+int blockSocket(int sock)
 {
 #ifdef WIN_32
 unsigned long arg = 0;
 return(ioctlsocket(sock, FIONBIO, &arg));
 #else /* UNIX */
-long arg;
+int arg;
 arg = fcntl(sock, F_GETFL, NULL);
 arg &= (~O_NONBLOCK);
 return(fcntl(sock, F_SETFL, arg));
 #endif
 }
+
+#ifdef UNBLOCK
+int unblockSocket(int sock)
+{
+#ifdef WIN_32
+unsigned long arg = 1;
+return(ioctlsocket(sock, FIONBIO, &arg));
+#else /* Unix */
+int arg;
+arg = fcntl(sock, F_GETFL, NULL);
+arg &= (~O_NONBLOCK);
+return(fcntl(sock, F_SETFL, arg));
+#endif
+}
+#endif
 
 /* create internet socket
    if prot = NULL then topt is timeout in ms, else topt is ttl (time to live)
@@ -500,7 +512,7 @@ struct addrinfo hints, *res, *res0;
 char portStr[10];
 int sock, opt;
 #ifdef WIN_32
-unsigned long arg;
+unsigned long arg = 1;
 #else
 int arg, value;
 socklen_t socklen = sizeof(sock);
@@ -520,14 +532,14 @@ if(prot == NULL) /* topt is timeout in millisecs */
 #ifdef WIN_32
 	if(ioctlsocket(sock, FIONBIO, &arg) != 0)
 		{
-		errorIdx = ERR_INET_CANNOT_NOBLOCK;
+		errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
 		return(SOCKET_ERROR);
 		}
 #else /* UNIX */
 	arg = fcntl(sock, F_GETFL, NULL);
 	if(fcntl(sock, F_SETFL, arg | O_NONBLOCK) < 0)
 		{
-		errorIdx = ERR_INET_CANNOT_NOBLOCK;
+		errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
 		return(SOCKET_ERROR);
 		}
 #endif
@@ -607,8 +619,13 @@ if(result != 0)
 	goto CONNECT_FAILED;
 	}
 
+if(blockSocket(sock) != 0)
+    {
+    errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+    goto CONNECT_FAILED;
+    }
+    
 freeaddrinfo(res0);
-unblockSocket(sock);
 errorIdx = 0;
 return(sock);
 
@@ -915,7 +932,7 @@ else
         writeStreamChar(&netStream, chr); 
          if(++bytesReceived < length) continue;
         if(strncmp(waitFor,  netStream.ptr - length, length) == 0)
-             {
+            {
             found = 1;
             break;
             }        
@@ -1352,16 +1369,17 @@ typedef struct
 /* checks a socket for readability/writeability  */
 CELL * p_netSelect(CELL * params)
 {
-long value;
 INT64 wait;
 char * mode;
 struct timeval timeOut;
 fd_set socketSet;
-SOCKLIST * sockPtr;
-SOCKLIST * sockList = NULL;
 CELL * cell;
-CELL * list = NULL;
+CELL * list;
+CELL * sockListHead = NULL;
+CELL * sockListPtr;
 struct timeval* tmvPtr;
+UINT socket;
+int setSize = 0;
 
 errorIdx = 0;
 
@@ -1369,30 +1387,18 @@ FD_ZERO(&socketSet);
 
 cell = evaluateExpression(params);
 if(isNumber(cell->type))
-    getIntegerExt(cell, (UINT*)&value, FALSE);
+    getIntegerExt(cell, (UINT*)&socket, FALSE);
 else if(isList(cell->type))
     {
     cell = (CELL*)cell->contents;
-    if(cell == nilCell) return(getCell(CELL_EXPRESSION));
-	if(!isNumber(cell->type))
-		return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
-    sockList = sockPtr = allocMemory(sizeof(SOCKLIST));
-    sockPtr->sock = cell->contents;
-    sockPtr->next = NULL;
-    FD_SET(sockPtr->sock, &socketSet);
-    value = 1;
-    while((cell = cell->next) != nilCell)
+    sockListHead = cell;
+    while(cell != nilCell)
         {
-		if(!isNumber(cell->type))
-			return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
-        sockPtr->next = allocMemory(sizeof(SOCKLIST));
-        sockPtr = sockPtr->next;
-        sockPtr->sock = cell->contents;        
-        sockPtr->next = NULL;
-        if(value == FD_SETSIZE)
+        cell = getIntegerExt(cell, (UINT*)&socket, FALSE);
+        if(setSize == FD_SETSIZE)
             return(netError(ERR_INET_TOO_MUCH_SOCKETS));
-        else value++;
-        FD_SET(sockPtr->sock, &socketSet);
+        else setSize++;
+        FD_SET((int)socket, &socketSet);
         }
     }
 else return(errorProcExt(ERR_LIST_OR_NUMBER_EXPECTED, params));
@@ -1404,59 +1410,47 @@ tmvPtr = (wait == -1) ? NULL : &timeOut;
 timeOut.tv_sec = wait/1000000;
 timeOut.tv_usec = wait - timeOut.tv_sec * 1000000;
 
-if(sockList == NULL)
-    {
-    FD_SET((int)value, &socketSet);
-    value = 1;
-    }
+if(sockListHead == NULL)
+    FD_SET((int)socket, &socketSet);
 
 /* printf("%d %d %d\n", timeOut.tv_sec, timeOut.tv_usec, sizeof(timeOut.tv_sec));  */
 
 if(*mode == 'r')
-    value = select(FD_SETSIZE, &socketSet, NULL, NULL, tmvPtr);
+    setSize = select(FD_SETSIZE, &socketSet, NULL, NULL, tmvPtr);
 else if(*mode == 'w')
-    value = select(FD_SETSIZE, NULL, &socketSet, NULL, tmvPtr);
+    setSize = select(FD_SETSIZE, NULL, &socketSet, NULL, tmvPtr);
 else if(*mode == 'e')
-    value = select(FD_SETSIZE, NULL, NULL, &socketSet, tmvPtr);
+    setSize = select(FD_SETSIZE, NULL, NULL, &socketSet, tmvPtr);
 
-if(value >= 0)
+if(setSize >= 0)
     {
-    if((sockPtr = sockList) == NULL)
+    if(sockListHead == NULL)
         {
-        if(value == 0) return(nilCell);
+        if(setSize == 0) return(nilCell);
         else return(trueCell);
         }    
 
-    cell = getCell(CELL_EXPRESSION);
-    while(sockPtr != NULL)
+    list = getCell(CELL_EXPRESSION);
+    if(setSize == 0) return(list);
+
+    sockListPtr = sockListHead;
+    while(sockListPtr != nilCell)
         {
-        if(FD_ISSET(sockPtr->sock, &socketSet))
+        sockListPtr = getIntegerExt(sockListPtr, &socket, FALSE);
+        printf("testing %lu\n", socket);
+        if(FD_ISSET(socket, &socketSet))
             {
-            if(list == NULL)
-                {
-                list = cell;
-                cell->contents = (UINT)stuffInteger(sockPtr->sock);
-                cell = (CELL *)cell->contents;
-                }
-            else
-                {
-                cell->next = stuffInteger(sockPtr->sock);
-                cell = cell->next;
-                }
+            addList(list, stuffInteger(socket));
+            printf("adding %lu\n", socket);
             }
-        sockPtr = sockPtr->next;
-        free(sockList);
-        sockList = sockPtr;
         }
 
-    if(list == NULL) return(cell);
-    else return(list);
+    return(list);
     }
 
 netError(ERR_INET_SELECT_FAILED);
 
-if(sockList == NULL) return(nilCell);
-return(getCell(CELL_EXPRESSION));
+return(nilCell);
 }
 
 extern char logFile[];
@@ -1874,7 +1868,7 @@ char * netErrorMsg[] =
     "Select failed",
     "Peek failed",
     "Not a valid socket",
-	"Cannot unblock socket",
+	"Cannot block or unblock socket",
     "Operation timed out",
 /* for nl-web.c */
     "HTTP bad formed URL",

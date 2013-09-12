@@ -355,7 +355,6 @@ for(i = 1; i <= n; i++)
 		sum = 0.0;
 		for(s = 1; s <= m; s++)
 			sum += A[i][s] * B[s][j];
-
 		C[i][j] = sum;
 		}
 	}

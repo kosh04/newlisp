@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.3.4 Development Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	max-width: 925px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #505050;
+	line-height: 140%;
+	}
+
+
+li {
+	margin-bottom: 15px;
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.3.4 Development Release<font color="red" size="-1">rev 2011-10-05</font></h1>
+
+<p>Version 10.3.4 is a development release with a reworked message interface.</p>
+
+<h3>Addtions and changes</h3>
+<ul>
+<li>A reworked <tt>send</tt>, <tt>receive</tt> message API is multiple times faster 
+and has consistent performance on different OS platforms. The channel for each 
+child is now a dual read/write message queue using Unix, local domain sockets
+internally. In previous version only one message could be written with <tt>send</tt>. 
+Now mutiple message can be placed into a message queue on the same channel and retrieved 
+on the receiving side with multiple <tt>receive</tt> statements until returning 
+<tt>nil</tt>, when the queue is empty. On the sending side <tt>send</tt> will return
+<tt>nil</tt>, when the queue is full.<br/><br/>
+New syntax forms for <tt>send </tt> and <tt>receive</tt> let the parent process 
+filter child PIDs to target only those child processes, which are either ready to 
+receive or target those from which messages can be be read. The <tt>(send)</tt> form 
+allows the parent process to filter all those child PIDs, which are ready to receive 
+messages sent by the parent. The <tt>(receive)</tt> form returns a list of child 
+PIDs ready with messages in their sending queues to be read by the parent process.
+<br/><br/></li>
+</ul>
+<h3>Bug fixes</h3>
+<ul>
+<li>A longstanding bug for ithe list-mode of <tt>net-select</tt> has been
+fixed. Now, <tt>net-select</tt> <u>does</u> return socket numbers in the ready 
+list not 0's (zeros).</li>
+</ul>
+<h3>Compatibility</h3>
+<p>This version if fully compatible with the previous stable release version 10.3.3.</p>
+<br/>
+<center>&part;</center>
+
+</body>
+</html>

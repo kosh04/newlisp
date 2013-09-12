@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2011 September 20<sup>th</sup><br/>
+</h1>Version 2011 Ocober 5<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.3
 </center>
 
@@ -239,9 +239,9 @@ newLISP is a registered trademark of Lutz Mueller.
   </ul></li>
 <li><a href="#toc-19">19. Message exchange</a>
   <ul>
+  <li>Blocking message sending and receiving</li>
   <li>Blocking message exchange</li>
-  <li>Synchronous messages</li>
-  <li>Asynchronous messages</li>
+  <li>Non blocking message exchange</li>
   <li>Message timeouts</li>
   <li>Evaluating messages</li>
   <li>Acting as a proxy</li>
@@ -2568,46 +2568,55 @@ plist))
 <a name="toc-19"></a>
 <h2>19. Message exchange</h2>
 
-<p>Parent and child processes started with <tt>spawn</tt> can exchange messages. Messages flow either from the parent to child processes or from child processes to the parent. By means of evaluating messages in the parent process, the parent process can be used as a proxy routing message between peer child processes.</p>
+<p>Parent and child processes started with <tt>spawn</tt> can exchange messages. 
+Messages flow either from the parent to child processes or from child processes 
+to the parent. By means of evaluating messages in the parent process, the parent 
+process can be used as a proxy routing messages between child peers.</p>
 
-<p>The message calls itself are non-blocking returning <tt>nil</tt> on failure. They can be made blocking using loops.</p>
+<p>Internally newLISP uses UNIX local domain sockets for dual message queues
+between parent and child processes. When the receiving side of a queue is empty 
+a <tt>receive</tt> call wil return <tt>nil</tt>. Likewise when a queue is full,
+a <tt>send</tt> call will return <tt>nil</tt>. The looping function <tt>until</tt> 
+can be used to make <tt>send</tt> and <tt>receive</tt> statements blocking.</p>
 
-<h3>Blocking message exchange</h3>
+<h3>Blocking message sending and receiving</h3>
 
 <pre>
      ; blocking sender
-     (until (send pid msg)) ; returns true after delivery
+     (until (send pid msg))     ; true when a msg queued up
  
      ; blocking receiver
-     (until (receive pid msg))     ; returns true after pickup
+     (until (receive pid msg))  ; true after a msg is read
 </pre>
 
-<h3>Synchronous messages</h3>
+<h3>Blocking messages exchange</h3>
 
-<p>The parent process loops through a list of child process ids and looks for message notifications. In the following example message calls are blocking and synchronous.</p>
+<p>The parent process loops through all child process IDs and uses the
+<tt>(until (receive cpid msg))</tt> form of <tt>receive</tt> to wait
+for pending messages. <tt>(sync)</tt> returns a list of all child PIDs
+from processes launched by <tt>spawn</tt>.</p>
 
 <pre>
+#!/usr/bin/newlisp 
+
 ; child process transmits random numbers
- 
 (define (child-process)
     (set 'ppid (sys-info -4)) ; get parent pid
     (while true
         (until (send ppid (rand 100))))
 )
- 
+
 ; parent starts 5  child processes, listens and displays
- 
 (dotimes (i 5) (spawn 'result (child-process)))
- 
+
 (for (i 1 3)
-    (dolist (cpid (sync)) ; iterate thru child pids
-    (until (receive cpid msg))
-    (print "pid:" cpid "-&gt;" (format "%-2d  " msg)))
+    (dolist (cpid (sync)) ; iterate thru pending child PIDs
+        (until (receive cpid msg))
+        (print "pid:" cpid "-&gt;>" (format "%-2d  " msg)))
     (println)
 )
- 
+
 (abort) ; cancel child-processes
- 
 (exit)
 </pre>
 
@@ -2619,11 +2628,18 @@ pid:53181-&gt;59  pid:53180-&gt;12  pid:53179-&gt;20  pid:53178-&gt;77  pid:5317
 pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:53177-&gt;18
 </pre>
 
-<h3>Asynchronous messages</h3>
+<h3>Non blocking message exchange</h3>
 
-<p>Neither the sending child process nor the receiving parent process block. Each sends and receives messages as fast as possible.</p>
+<p>Neither the sending child process nor the receiving parent process block. 
+Each sends and receives messages as fast as possible. There is no guarantee
+that all messages will be delivered. It depends on the size of the sending
+queue and the speed of pick-up of messages by the parent process. If the
+sending queue for a child process is full, the <tt>(send ppid (rand 100))</tt> 
+call will fail and return <tt>nil</tt>.</p>
 
-<pre> 
+<pre>
+#!/usr/bin/newlisp
+
 ; child process transmits random numbers non-blocking
 ; not all calls succeed
 (set 'start (time-of-day))
@@ -2631,7 +2647,7 @@ pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:5317
 (define (child-process)
     (set 'ppid (sys-info -4)) ; get parent pid
     (while true
-        (until (send ppid (rand 100))))
+        (send ppid (rand 100)))
 )
  
 ; parent starts 5  child processes, listens and displays
@@ -2641,8 +2657,8 @@ pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:5317
  
 (until finished
     (if (= (inc counter) N) (set 'finished true))
-    (dolist (cpid (sync)) ; iterate thru child pids
-    (receive cpid msg)
+    (dolist (cpid (receive)) ; iterate thru ready child pids
+        (receive cpid msg)
     (if msg (print "pid:" cpid "-&gt;" (format "%-2d  \r" msg))))
 )
  
@@ -2665,60 +2681,73 @@ pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:5317
 )
 ; use it
     
-(receive-timeout pid 1000)  ; returns the message or throws error
+(receive-timeout pid 1000)  ; return message or throw error after 1 second
 </pre>
 
 <p>In this example blocking will occur for 1000 ms. Many methods exist to implement timeout behavior.</p>
 
 <h3>Evaluating messages</h3>
 
-<p>Messages sent can contain expressions which can be evaluated in the recipient's environment. This way variables can be set, and messages routed to other processes. The following example implements a message router:</p>
+<p>Messages sent can contain expressions which can be evaluated in the recipient's environment. 
+This way variables can be set in the evaluater's environment, and messages can be routed to other 
+processes. The following example implements a message router:</p>
 
 <pre>
- ; sender process of the message
-(set 'pidA (spawn 'result
+#!/usr/bin/newlisp
+
+; sender child process of the message
+(set 'A (spawn 'result 
     (begin
         (dotimes (i 3)
-        (set 'ppid (sys-info -4))
-        (set 'pid (sys-info -3))
-        (set 'msg '(until (send pidB (string "greetings from " pidA))))
-        (until (send ppid msg))) ; send expression in msg
-        ; make parent exit until loop
-        (until (send ppid '(set 'finished true)))
-)))
- 
-; final message recipient
-(set 'pidB (spawn 'result
+            (set 'ppid (sys-info -4))
+            /* the following statement in msg will be evaluated in the proxy */
+            (set 'msg '(until (send B (string "greetings from " A))))
+            (until (send ppid msg)))
+        (until (send ppid '(begin 
+            (sleep 200) ; make sure all else is printed
+            (println "parent exiting ...\n")
+            (set 'finished true))))))) 
+
+; receiver child process of the message
+(set 'B (spawn 'result 
     (begin
         (set 'ppid (sys-info -4))
-        (set 'pid (sys-info -3))
         (while true
             (until (receive ppid msg))
-    (println pid " received " msg))
-)))
- 
-; receive and evaluate messages from pidA
-(until finished (if (receive pidA msg) (eval msg)))
- 
-(abort) (sleep 300)
+            (println msg)
+            (unless (= msg (string "greetings from " A))
+                (println "ERROR in proxy message: " msg))))))
+
+(until finished (if (receive A msg) (eval msg))) ; proxy loop
+
+(abort)
 (exit)
 </pre>
 
 <h3>Acting as a proxy</h3>
 
-<p>The expression:</p>
+<p>In the last example program the expression:</p>
 
 <pre>
-(until (send pidB (string "greetings from " pidA)))
+; content of message to be evaluated by proxy
+(until (send B (string "greetings from " A)))
 </pre>
 
-<p>does get sent from pidA to the parent, where it is evaluated, causing a message to be sent to pidB. The parent process acts as a proxy agent for process with pidA.</p>
+<p>A proramming statement sent from child process ID A to the parent, 
+where it is evaluated, causing a message to be sent to child process B. 
+The parent process acts as a proxy agent for the child process A.</p>
 
 <pre>
+; the set statement is evaluated in the proxy
 (until (send ppid '(set 'finished true)))
 </pre>
 
-<p>The expression <tt>(set 'finished true)</tt> is sent to the parent where it gets evaluated and causes the parent's <tt>until</tt> loop to finish.</p>
+<p>The expression <tt>(set 'finished true)</tt> is sent to the parent where it gets 
+evaluated and causes the parent's <tt>until</tt> loop to finish.</p>
+
+<p>The <tt>sleep</tt> statement in the A process ensures that the 
+<tt>"parent exiting ..."</tt> message does not appear
+before all receved messages are reported by process identified with B.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-20"></a>

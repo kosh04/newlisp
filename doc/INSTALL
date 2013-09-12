@@ -1,4 +1,4 @@
-BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2011-08-16)
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2011-10-04
 -------------------------------------------------------------------
 
 CONTENTS
@@ -38,7 +38,7 @@ After downloading double-click on the Mac OS X disk image file:
 
     newlisp-xxxx-ppc.dmg     # for older PPC type Macs
 or
-    newlisp-xxxx-intel.dmg
+    newlisp-xxxx-intel.dmg   # since at least end of 2007
     
 This installs an applications icon in the Mac OS X Applications folder.
 On Mac OS X a UTF-8 capable version is installed by default. On both,
@@ -122,7 +122,7 @@ benchmark are performed.
 (6) COMMENTS FOR COMPILING AND LINKING
 --------------------------------------
 
-If skipping the ./configure step and just doing ./make, the
+If skipping the ./configure step and just doing make, the
 configure script will be called automatically if no makefile_build
 can be found, or else the existing makefile_build will be used.
 

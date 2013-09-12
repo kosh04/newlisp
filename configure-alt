@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.3.3
+VERSION=10.3.4
 
 rm -f config.h makefile_build makefile_install
 
@@ -467,7 +467,7 @@ install:
 	-install -m 644 doc/manual_frame.html \$(docdir)/manual_frame.html
 	-install -m 644 doc/CodePatterns.html \$(docdir)/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html \$(docdir)/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.3.3-Release.html \$(docdir)/newLISP-10.3.3-Release.html
+	-install -m 644 doc/newLISP-10.3.4-Release.html \$(docdir)/newLISP-10.3.4-Release.html
 	-install -m 644 doc/newlisp.1 \$(man1dir)/newlisp.1
 	-install -m 644 doc/newlispdoc.1 \$(man1dir)/newlispdoc.1
 	-install -m 644 modules/canvas.lsp \$(pkgdatadir)/modules/canvas.lsp

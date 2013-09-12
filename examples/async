@@ -11,10 +11,10 @@
     (println "received: " (length page) " bytes"))
 
 ; start fetching page, will return immediately
-(spawn 'page (get-url "http://yahoo.com")) 
+(spawn 'page (get-url "http://www.yahoo.com")) 
 
 ; specify call back, wait and do something else
-(until (true? (sync 50 page-ready) )
+(until (true? (sync 100 page-ready) )
 	(println  (- (time-of-day) start) " ms"))
 
 ; all done

@@ -452,7 +452,8 @@ This is for 64bit large file support (LFS),
 #define ERR_IO_ERROR 64
 #define ERR_WORKING_DIR 65
 #define ERR_INVALID_PID 66
-#define MAX_ERROR_NUMBER 66
+#define ERR_CANNOT_OPEN_SOCKETPAIR 67
+#define MAX_ERROR_NUMBER 67
 #define UNKNOWN_ERROR "Unknown error"
 
 /* network error handling */
@@ -472,7 +473,7 @@ This is for 64bit large file support (LFS),
 #define ERR_INET_SELECT_FAILED 14
 #define ERR_INET_PEEK_FAILED 15
 #define ERR_INET_NOT_VALID_SOCKET 16
-#define ERR_INET_CANNOT_NOBLOCK 17
+#define ERR_INET_CANNOT_CHANGE_SOCK_BLOCK 17
 #define ERR_INET_TIMEOUT 18
 /* used in nl-web.c */
 #define ERROR_BAD_URL 19

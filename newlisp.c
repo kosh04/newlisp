@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10303;
+int version = 10304;
 
 char copyright[]=
-"\nnewLISP v.10.3.3 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.4 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.3 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.4 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.3 on %s IPv4/6%s\n\n";
+"newLISP v.10.3.4 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.3 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.4 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.3 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.3.4 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
@@ -2896,6 +2896,10 @@ char * errorMessage[] =
 	"I/O error",					/* 64 */
 	"no working directory found",	/* 65 */
 	"invalid PID",					/* 66 */
+	"cannot open socket pair",		/* 67 */
+	"cannot open socket pair",		/* 67 */
+	"cannot sendd message",		    /* 68 */
+    "cannot receive message",       /* 69 */
 	NULL
 	};
 
@@ -6458,6 +6462,12 @@ if(demonMode)
 
 if(params != nilCell) getInteger(params, &result);
 else result = 0;
+
+#ifndef WIN_32
+/* release spawn resources */
+purgeSpawnList(TRUE);
+#endif
+
 exit(result);
 return(trueCell);
 }

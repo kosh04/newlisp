@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.3.3
-INT_VERSION = 10303
+VERSION = 10.3.4
+INT_VERSION = 10304
 
 default: makefile_build
 	make -f makefile_build

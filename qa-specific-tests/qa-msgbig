@@ -17,18 +17,23 @@
 (println "\nPIDs of spawned childs:\n" (sync)) (println)
 
 (set 'start (time-of-day))
-(dotimes (i 10)
+(dotimes (i 2)
 	(dolist (ch (sync))
-        (set 'pkg (dup (pack "lf" (random 0 1)) 10000))
+        /* cannot be binary */
+        (set 'pkg (base64-enc (dup (pack "lf" (random 0 1)) 20000)))
 		(until (send ch pkg) ) ; send out message
 		(until (receive ch msg))  ; get response
 		(unless (= msg pkg) ; check
-			(setq error-msg (append " >>>> ERROR in round trip test: " msg )))
+			(setq error-msg (string " >>>> ERROR in round trip test: " ch)))
 		(print  ch " ") )
 	(println)
 )
 
 (println "time per round trip: " (div (- (time-of-day) start) 100) " ms")
+
+(if error-msg 
+	(println ">>>>> PROBLEM " error-msg)
+	(println ">>>>> Message API with big content tested SUCCESSFUL"))
 
 (abort) (sleep 100) (println)
 (exit)
