@@ -136,14 +136,14 @@ void wait_until_read_ready(int sock)
 struct timeval tm;
 
 while(wait_ready(sock, 1000, 0) <= 0)
-	{
-  	if(socketTimeout)
-		{
-		gettimeofday(&tm, NULL);
-		if(timediff_ms(tm, socketStart) > socketTimeout)
-		longjmp(socketTimeoutJump, 1);
-		}
-	}
+    {
+    if(socketTimeout)
+        {
+        gettimeofday(&tm, NULL);
+        if(timediff_ms(tm, socketStart) > socketTimeout)
+        longjmp(socketTimeoutJump, 1);
+        }
+    }
 }
 
 size_t recvsize_tm(char * buffer, size_t size, int sock, int flag)
@@ -164,7 +164,7 @@ while(size)
   resultSize += sizeRead;
   size -= sizeRead;
   if(flag && transferEvent != nilSymbol)
-		executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
+        executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
   wait_until_read_ready(sock);
   }
 
@@ -228,19 +228,19 @@ size_t sizein, sizeout;
 getStringSize(params, &inPtr, &sizein, TRUE);
 
 if(type == BASE64_ENC)
-	{
-	if(sizein == 0)
-		return(stuffString("===="));
-	if((sizeout = Curl_base64_encode(inPtr, sizein, &outPtr)) == 0)
-		return(stuffString(""));
-	}
+    {
+    if(sizein == 0)
+        return(stuffString("===="));
+    if((sizeout = Curl_base64_encode(inPtr, sizein, &outPtr)) == 0)
+        return(stuffString(""));
+    }
 else    /* BASE64_DEC */
-	{
-	outPtr = allocMemory((sizein * 3) / 4 + 9);
-	sizeout = Curl_base64_decode(inPtr, outPtr);
-	*(outPtr + sizeout) = 0;
-	}
-	
+    {
+    outPtr = allocMemory((sizein * 3) / 4 + 9);
+    sizeout = Curl_base64_decode(inPtr, outPtr);
+    *(outPtr + sizeout) = 0;
+    }
+    
 /*
 strCell = getCell(CELL_STRING);
 strCell->contents = (UINT)outPtr;
@@ -256,15 +256,15 @@ int transfer(int sock, char * buff, int len)
 int bytesSend = 0, n;
 
 while(bytesSend < len)
-	{
- 	if((n = sendall(sock, buff + bytesSend, 
-				(len - bytesSend) > BUFFSIZE ? BUFFSIZE : len - bytesSend) )
-		== SOCKET_ERROR)
-		return(SOCKET_ERROR);
-	bytesSend += n;
-	if(transferEvent != nilSymbol)
-		executeSymbol(transferEvent, stuffInteger(bytesSend), NULL);
-	}
+    {
+    if((n = sendall(sock, buff + bytesSend, 
+                (len - bytesSend) > BUFFSIZE ? BUFFSIZE : len - bytesSend) )
+        == SOCKET_ERROR)
+        return(SOCKET_ERROR);
+    bytesSend += n;
+    if(transferEvent != nilSymbol)
+        executeSymbol(transferEvent, stuffInteger(bytesSend), NULL);
+    }
 
 return(bytesSend);
 }
@@ -300,54 +300,54 @@ errorIdx = 0;
 /* get parameters */
 
 if(url == NULL)
-	params = getString(params, &url);
+    params = getString(params, &url);
 
 if(type == HTTP_PUT || type == HTTP_PUT_APPEND || type == HTTP_POST)
-	params = getStringSize(params, &putPostStr, &size, TRUE);
+    params = getStringSize(params, &putPostStr, &size, TRUE);
 
 
 if(my_strnicmp(url, "file://", 7) == 0)
-	{
-	if(type == HTTP_GET)
-		{
-		if((size = readFile(url, &buffPtr)) == -1)
-			return(webError(ERROR_FILE_OP));
-		return(makeStringCell(buffPtr, size));
-		}
-	if(type == HTTP_PUT)
-		{
-		if(writeFile(url, putPostStr, size, "w") == -1)
-			return(webError(ERROR_FILE_OP));
-		snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
-		return(stuffString(errorTxt));
-		}
-	if(type == HTTP_DELETE)
-		{
-		url = getLocalPath(url);
-		return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
-		}
+    {
+    if(type == HTTP_GET)
+        {
+        if((size = readFile(url, &buffPtr)) == -1)
+            return(webError(ERROR_FILE_OP));
+        return(makeStringCell(buffPtr, size));
+        }
+    if(type == HTTP_PUT)
+        {
+        if(writeFile(url, putPostStr, size, "w") == -1)
+            return(webError(ERROR_FILE_OP));
+        snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
+        return(stuffString(errorTxt));
+        }
+    if(type == HTTP_DELETE)
+        {
+        url = getLocalPath(url);
+        return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
+        }
 
-	return(webError(ERROR_BAD_URL));
-	}
+    return(webError(ERROR_BAD_URL));
+    }
 
 
 if(type == HTTP_POST)
     {
     if(params->type != CELL_NIL)
-		params = getString(params, &contentType);
+        params = getString(params, &contentType);
     else 
-		contentType = "application/x-www-form-urlencoded";
+        contentType = "application/x-www-form-urlencoded";
     }
 
 result = evaluateExpression(params);
 params = params->next;
 
 if(isNumber(result->type))
-	{
+    {
     getIntegerExt(result, (UINT*)&socketTimeout, FALSE);
-	/* set connection timeout to total-timeout specified by user */
-	timeout = socketTimeout;
-	}
+    /* set connection timeout to total-timeout specified by user */
+    timeout = socketTimeout;
+    }
 
 else if(isString(result->type))
     {
@@ -357,12 +357,12 @@ else if(isString(result->type))
     if(my_strnicmp(option, "list", 4) == 0)
       listFlag = TRUE;
     /* "debug" or "header debug" or "list-debug" options
-       print all outgoing informatiopn on the console */	
-	if(my_strnicmp(option, "debug", 5) == 0)
+       print all outgoing informatiopn on the console */    
+    if(my_strnicmp(option, "debug", 5) == 0)
       debugFlag = TRUE;
-	if(my_strnicmp(option + 7, "debug", 5) == 0) /* header debug */
+    if(my_strnicmp(option + 7, "debug", 5) == 0) /* header debug */
       debugFlag = TRUE;
-	if(my_strnicmp(option + 5, "debug", 5) == 0) /* list-debug */
+    if(my_strnicmp(option + 5, "debug", 5) == 0) /* list-debug */
       debugFlag = TRUE;
     if(params != nilCell)
         params = getInteger(params, (UINT*)&socketTimeout);
@@ -384,22 +384,22 @@ path = alloca(maxlen + 1);
 
 /* parse URL for parameters */
 if(parseUrl(url, protocol, host, &port, path, maxlen) == FALSE)
-	return(webError(ERROR_BAD_URL));
+    return(webError(ERROR_BAD_URL));
 
 /* printf("protocol: %s host:%s port %d path:%s\n", protocol, host, port, path); */
 
 proxyUrl = getenv("HTTP_PROXY");
 
 if(proxyUrl == NULL)
-	{
-	strncpy(pHost, host, maxlen);
-	pPort = port;
-	}
+    {
+    strncpy(pHost, host, maxlen);
+    pPort = port;
+    }
 else
-	{
-	if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, maxlen) == FALSE)
-		return(webError(ERROR_BAD_URL));
-	}
+    {
+    if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, maxlen) == FALSE)
+        return(webError(ERROR_BAD_URL));
+    }
 
 /* start timer */
 gettimeofday(&socketStart, NULL);
@@ -410,17 +410,17 @@ if(sock)
 
 
 if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, timeout)) == SOCKET_ERROR)
-	return(webError(errorIdx));
+    return(webError(errorIdx));
 
 if(type == HTTP_GET)
-	if(headRequest == TRUE) type = HTTP_HEAD;
+    if(headRequest == TRUE) type = HTTP_HEAD;
 method = requestMethod[type];
 
 /* send header */
 if(proxyUrl != NULL)
-	sendf(sock, debugFlag, "%s %s://%s:%d/%s HTTP/1.1\r\n", method, protocol, host, port, path);
+    sendf(sock, debugFlag, "%s %s://%s:%d/%s HTTP/1.1\r\n", method, protocol, host, port, path);
 else
-	sendf(sock, debugFlag, "%s /%s HTTP/1.1\r\n", method, path);
+    sendf(sock, debugFlag, "%s /%s HTTP/1.1\r\n", method, path);
 
 /* obligatory host spec */
 sendf(sock, debugFlag, "Host: %s\r\n", host);
@@ -429,34 +429,34 @@ sendf(sock, debugFlag, "Host: %s\r\n", host);
 if (customHeader != NULL)
     sendf(sock, debugFlag, "%s", customHeader);
 else
-	{
-	sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
-	}
+    {
+    sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
+    }
 
 sendf(sock, debugFlag, "Connection: close\r\n");
 
 /* expanded header for PUT, POST and body */
 if(type == HTTP_PUT || type == HTTP_PUT_APPEND)
-	{
-	if(type == HTTP_PUT_APPEND) sendf(sock, debugFlag, "Pragma: append\r\n");
-	if(customHeader == NULL)
-		sendf(sock, debugFlag, "Content-type: text/html\r\nContent-length: %d\r\n\r\n", size);
-	else
-		sendf(sock, debugFlag, "Content-length: %d\r\n\r\n", size);
+    {
+    if(type == HTTP_PUT_APPEND) sendf(sock, debugFlag, "Pragma: append\r\n");
+    if(customHeader == NULL)
+        sendf(sock, debugFlag, "Content-type: text/html\r\nContent-length: %d\r\n\r\n", size);
+    else
+        sendf(sock, debugFlag, "Content-length: %d\r\n\r\n", size);
 
-	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
-		return(webError(ERROR_TRANSFER));
-	if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
-	}
+    if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
+        return(webError(ERROR_TRANSFER));
+    if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
+    }
 else if(type == HTTP_POST)
-	{
-	sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
-	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
-		return(webError(ERROR_TRANSFER));
-	if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
-	}
+    {
+    sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
+    if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
+        return(webError(ERROR_TRANSFER));
+    if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
+    }
 else /* HTTP_GET, HTTP_DELETE */
-	sendf(sock, debugFlag, "\r\n");
+    sendf(sock, debugFlag, "\r\n");
 
 if(setjmp(socketTimeoutJump) != 0)
     {
@@ -484,30 +484,30 @@ while(isspace((int)*buffPtr)) ++buffPtr;
 statusCode = atoi(buffPtr);
 /* printf("statusCode:%d\n", statusCode); */
 switch (statusCode) 
-	{
-	case 0:
-	case 100:
-		/* drain and continue */
-		while (ch = recvc_tm(sock), ch != EOF && ch != '\n') {;}
-		goto READ_RESPONSE;
-	case 200:
-	case 201:
-	case 202:
-	case 203:
-	case 204:
-	case 205:
-	case 206:
-	case 300:
-	case 301:
-	case 302:
-	case 303:
-	case 307:
-		break;
-	default:
-		if(strlen(buff) > 127) buff[127] = 0;
-		snprintf(errorTxt, 127, "ERR: server code %d: %s", atoi(buffPtr), buff);
-		break;
-	}
+    {
+    case 0:
+    case 100:
+        /* drain and continue */
+        while (ch = recvc_tm(sock), ch != EOF && ch != '\n') {;}
+        goto READ_RESPONSE;
+    case 200:
+    case 201:
+    case 202:
+    case 203:
+    case 204:
+    case 205:
+    case 206:
+    case 300:
+    case 301:
+    case 302:
+    case 303:
+    case 307:
+        break;
+    default:
+        if(strlen(buff) > 127) buff[127] = 0;
+        snprintf(errorTxt, 127, "ERR: server code %d: %s", atoi(buffPtr), buff);
+        break;
+    }
 
 /* Retrieve HTTP headers. */
 memset(buff, 0, BUFFSIZE);
@@ -518,143 +518,143 @@ if(listFlag || headRequest)
 
 /* Retrieve header */
 while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
-	{
-	if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-		return(webError(ERROR_HEADER));
+    {
+    if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
+        return(webError(ERROR_HEADER));
 
 /* printf("==>%s<==\n", buff); */
 
-	if(listFlag || headRequest) appendCellString(headerCell, buff, strlen(buff));
+    if(listFlag || headRequest) appendCellString(headerCell, buff, strlen(buff));
 
-	if(my_strnicmp(buff, "content-length:", 15) == 0)
-		{
-		fSize = parseValue(buff + 15);
-		haveContentLength = TRUE;
-		}
-	/* 302 contradicts standard for redirection but is common practice */
-	if(my_strnicmp(buff, "location:", 9) == 0 && 
-				(statusCode == 301 || statusCode == 302 || statusCode == 303))
-		{
-		buffPtr = buff + 9;
-		while(isspace((int)*buffPtr)) ++buffPtr;
-		if(*buffPtr == '/')
-			strncpy(path, buffPtr + 1, maxlen);
-		else /* its a url or path */
-			{
-			if(parseUrl(buffPtr, protocol, host, &port, path, maxlen) == FALSE)
-			    /* path only */
-			    parsePath(buffPtr, path, buffPtr - buff);
+    if(my_strnicmp(buff, "content-length:", 15) == 0)
+        {
+        fSize = parseValue(buff + 15);
+        haveContentLength = TRUE;
+        }
+    /* 302 contradicts standard for redirection but is common practice */
+    if(my_strnicmp(buff, "location:", 9) == 0 && 
+                (statusCode == 301 || statusCode == 302 || statusCode == 303))
+        {
+        buffPtr = buff + 9;
+        while(isspace((int)*buffPtr)) ++buffPtr;
+        if(*buffPtr == '/')
+            strncpy(path, buffPtr + 1, maxlen);
+        else /* its a url or path */
+            {
+            if(parseUrl(buffPtr, protocol, host, &port, path, maxlen) == FALSE)
+                /* path only */
+                parsePath(buffPtr, path, buffPtr - buff);
 
-			if(proxyUrl == NULL)
-				{
-				strncpy(pHost, host, maxlen);
-				pPort = port;
-				}
-			}
+            if(proxyUrl == NULL)
+                {
+                strncpy(pHost, host, maxlen);
+                pPort = port;
+                }
+            }
 
-		if(headerCell) deleteList(headerCell);	
-		goto CONNECT_TO_HOST;
-		}
+        if(headerCell) deleteList(headerCell);  
+        goto CONNECT_TO_HOST;
+        }
 
-	if(my_strnicmp(buff, "Transfer-Encoding:", 18) == 0 
-		&& searchBuffer(buff, strlen(buff), "chunked", 7, 0) != 0xFFFFFFFF)
-		chunked = TRUE;
-	}
-	
+    if(my_strnicmp(buff, "Transfer-Encoding:", 18) == 0 
+        && searchBuffer(buff, strlen(buff), "chunked", 7, 0) != 0xFFFFFFFF)
+        chunked = TRUE;
+    }
+    
 if(headRequest)
     return(headerCell);
 
 if((haveContentLength == TRUE && fSize == 0) || statusCode == 204)
-	{
-	return(webError(ERROR_DOCUMENT_EMPTY));
-	resultPtr = NULL;
-	}
+    {
+    return(webError(ERROR_DOCUMENT_EMPTY));
+    resultPtr = NULL;
+    }
 /* Retrieve HTTP body. */
 else if(chunked == TRUE)
-	{
-	resultPtr = NULL;
-	if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-		return(webError(ERROR_DOCUMENT_EMPTY));
-	while((size = strtoul(buff, NULL, 16)) > 0)
-		{
-		if(resultSize == 0)
-			resultPtr = allocMemory(size + 1);
-		else 
-			resultPtr = reallocMemory(resultPtr, resultSize + size + 1);
-		if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
-			{
-			free(resultPtr);
-			return(webError(ERROR_CHUNKED_FORMAT));
-			}
- 		resultSize += size;
-		recvs_tm(buff, BUFFSIZE, sock); /* empty line */
-		recvs_tm(buff, BUFFSIZE, sock); /*  chunck size  */
-		}
-	}
+    {
+    resultPtr = NULL;
+    if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
+        return(webError(ERROR_DOCUMENT_EMPTY));
+    while((size = strtoul(buff, NULL, 16)) > 0)
+        {
+        if(resultSize == 0)
+            resultPtr = allocMemory(size + 1);
+        else 
+            resultPtr = reallocMemory(resultPtr, resultSize + size + 1);
+        if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
+            {
+            free(resultPtr);
+            return(webError(ERROR_CHUNKED_FORMAT));
+            }
+        resultSize += size;
+        recvs_tm(buff, BUFFSIZE, sock); /* empty line */
+        recvs_tm(buff, BUFFSIZE, sock); /*  chunck size  */
+        }
+    }
 
 else if(haveContentLength == TRUE)
-	{
-	resultPtr = allocMemory(fSize + 1);
-	if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
-		{
-		free(resultPtr);
-		return(webError(ERROR_DOCUMENT_EMPTY));
-		}
-	}
-	
+    {
+    resultPtr = allocMemory(fSize + 1);
+    if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
+        {
+        free(resultPtr);
+        return(webError(ERROR_DOCUMENT_EMPTY));
+        }
+    }
+    
 else /* no content length given, relies on host closing the connection */
-	{
-	resultPtr = allocMemory(BUFFSIZE + 1);
-	resultSize = 0;
-	size = BUFFSIZE;
-	while ((sizeRead = recvsize_tm(buff, BUFFSIZE, sock, FALSE)) > 0)
-		{
-		if((resultSize + sizeRead) > size)
-			{
-			size = resultSize + BUFFSIZE;
-			resultPtr = reallocMemory(resultPtr, size + 1);
-			}
-		memcpy(resultPtr + resultSize, buff, sizeRead);
-		resultSize += sizeRead;
-		if(transferEvent != nilSymbol)
-			executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
-		}
-	}
+    {
+    resultPtr = allocMemory(BUFFSIZE + 1);
+    resultSize = 0;
+    size = BUFFSIZE;
+    while ((sizeRead = recvsize_tm(buff, BUFFSIZE, sock, FALSE)) > 0)
+        {
+        if((resultSize + sizeRead) > size)
+            {
+            size = resultSize + BUFFSIZE;
+            resultPtr = reallocMemory(resultPtr, size + 1);
+            }
+        memcpy(resultPtr + resultSize, buff, sizeRead);
+        resultSize += sizeRead;
+        if(transferEvent != nilSymbol)
+            executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
+        }
+    }
 
 
 if(resultPtr == NULL)
-	{
-	if(statusCode < 400)
-		result = stuffString("");
-	else
-		result = stuffString(errorTxt);
-	}
+    {
+    if(statusCode < 400)
+        result = stuffString("");
+    else
+        result = stuffString(errorTxt);
+    }
 else
-	{
-	*(resultPtr + resultSize) = 0;
-	result = getCell(CELL_STRING);
-	if(statusCode >= 400)
-		{
-		maxlen = strlen(errorTxt);
-		buffPtr = allocMemory(maxlen + resultSize + 1);
-		memcpy(buffPtr, errorTxt, maxlen);
-		memcpy(buffPtr + maxlen, resultPtr, resultSize);
-		free(resultPtr);
-		resultPtr = buffPtr;
-		resultSize += maxlen;
-		}		
-	result->contents = (UINT)resultPtr;
-	result->aux = resultSize + 1;
-	}
+    {
+    *(resultPtr + resultSize) = 0;
+    result = getCell(CELL_STRING);
+    if(statusCode >= 400)
+        {
+        maxlen = strlen(errorTxt);
+        buffPtr = allocMemory(maxlen + resultSize + 1);
+        memcpy(buffPtr, errorTxt, maxlen);
+        memcpy(buffPtr + maxlen, resultPtr, resultSize);
+        free(resultPtr);
+        resultPtr = buffPtr;
+        resultSize += maxlen;
+        }       
+    result->contents = (UINT)resultPtr;
+    result->aux = resultSize + 1;
+    }
 
 close(sock);
 
 if(listFlag)
-	{
-	cell = makeCell(CELL_EXPRESSION, (UINT)headerCell);
-	headerCell->next = result;
-	return(cell);
-	}
+    {
+    cell = makeCell(CELL_EXPRESSION, (UINT)headerCell);
+    headerCell->next = result;
+    return(cell);
+    }
 
 return(result);
 }
@@ -670,75 +670,75 @@ int len;
 /* trim trailing whitespace like '/r/n' from url */
 len = strlen(url);
 while(*(url + len) <= ' ' && len > 0)
-	{
-	*(url + len) = 0;
-	len--;
-	}
+    {
+    *(url + len) = 0;
+    len--;
+    }
 
 *port = 80;
 
 if(my_strnicmp(url, "http://", 7) == 0)
     {
     strncpy(protocol,"http", MAX_PROTOCOL );
-	if( (ADDR_FAMILY == AF_INET6) && (*(url + 7) == '[') )
-		strncpy(host, url+8, maxlen);
-	else
-    	strncpy(host, url+7, maxlen);
+    if( (ADDR_FAMILY == AF_INET6) && (*(url + 7) == '[') )
+        strncpy(host, url+8, maxlen);
+    else
+        strncpy(host, url+7, maxlen);
     }
 else if( my_strnicmp(url, "https://", 8) == 0)
     {
     strncpy(protocol, "https", MAX_PROTOCOL);
-	if( (ADDR_FAMILY == AF_INET6) && (*(url + 8) == '[') )
-		strncpy(host, url+9, maxlen);
-	else
-    	strncpy(host, url+8, maxlen);
+    if( (ADDR_FAMILY == AF_INET6) && (*(url + 8) == '[') )
+        strncpy(host, url+9, maxlen);
+    else
+        strncpy(host, url+8, maxlen);
     }
 else 
     return(FALSE);
 
 if(ADDR_FAMILY == AF_INET6)
-	bracketPtr = strchr(host, ']');
+    bracketPtr = strchr(host, ']');
 else
-	colonPtr = strchr(host, ':');
+    colonPtr = strchr(host, ':');
 
 slashPtr = strchr(host, '/');
 
 if(ADDR_FAMILY == AF_INET6)
-	{
-	if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
-		{
-		*bracketPtr = '\0';
-		if(*(bracketPtr + 1) == ':')
-			*port = atoi(bracketPtr + 2);
-		}
-	else
-		{
-		colonPtr = strchr(host, ':');
-		if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
-			{
-			*colonPtr++ = '\0';
-			*port = atoi(colonPtr);
-			}
-		}
-	}
+    {
+    if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
+        {
+        *bracketPtr = '\0';
+        if(*(bracketPtr + 1) == ':')
+            *port = atoi(bracketPtr + 2);
+        }
+    else
+        {
+        colonPtr = strchr(host, ':');
+        if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
+            {
+            *colonPtr++ = '\0';
+            *port = atoi(colonPtr);
+            }
+        }
+    }
 else
-	{	
-	if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
-		{
-		*colonPtr++ = '\0';
-		*port = atoi(colonPtr);
-		}
-	}
+    {   
+    if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
+        {
+        *colonPtr++ = '\0';
+        *port = atoi(colonPtr);
+        }
+    }
 
 if(path == NULL) return(TRUE);
 
 if (slashPtr != NULL) 
-	{
-	*slashPtr++ = '\0';
-	strncpy(path, slashPtr, maxlen);
-	} 
+    {
+    *slashPtr++ = '\0';
+    strncpy(path, slashPtr, maxlen);
+    } 
 else
-	strncpy(path, "", maxlen);
+    strncpy(path, "", maxlen);
 
 /* printf("protocol:%s host:%s port:%d path:%s\n", protocol, host, *port, path); */
 
@@ -752,11 +752,11 @@ int len;
 /* trim trailing whitespace like '/r/n' from url */
 len = strlen(url);
 while(*(url + len) <= ' ' && len > 0)
-	{
-	*(url + len) = 0;
-	len--;
-	}
-	
+    {
+    *(url + len) = 0;
+    len--;
+    }
+    
 /* trim leading whitespace */
 while(*url <= ' ') url++;
 strncpy(path, url, maxlen);
@@ -967,7 +967,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.3.4"
+#define SERVER_SOFTWARE "newLISP/10.3.5"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -984,16 +984,16 @@ char status[128];
 
 memset(status, 0, 128);
 if(strncmp(content, "Status:", 7) == 0)
-	{
-	/* get content after */
-	while(*(content + pos) >= 32) pos++;
-	memcpy(status, content + 7, pos - 7); 
-	content = content + pos;
-	if(size) size -= pos;
-	while(*content == '\r' || *content == '\n') { content++; size--; }
-	}
+    {
+    /* get content after */
+    while(*(content + pos) >= 32) pos++;
+    memcpy(status, content + 7, pos - 7); 
+    content = content + pos;
+    if(size) size -= pos;
+    while(*content == '\r' || *content == '\n') { content++; size--; }
+    }
 else
-	strncpy(status, "200 OK", 6);
+    strncpy(status, "200 OK", 6);
 
 varPrintf(OUT_CONSOLE, "HTTP/1.0 %s\r\n", status);
 varPrintf(OUT_CONSOLE, "Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
@@ -1004,12 +1004,12 @@ printf("Server: newLISP v.%d (%s)\r\n", version, OSTYPE);
 #endif
 
 if(media != NULL)
-	{
-	varPrintf(OUT_CONSOLE, "Content-length: %d\r\nContent-type: %s\r\n\r\n", size, media);
+    {
+    varPrintf(OUT_CONSOLE, "Content-length: %d\r\nContent-type: %s\r\n\r\n", size, media);
 #ifdef DEBUGHTTP
-	printf("Content-length: %d\r\nContent-type: %s\r\n\r\n", (int)size, media);
+    printf("Content-length: %d\r\nContent-type: %s\r\n\r\n", (int)size, media);
 #endif
-	}
+    }
 #ifndef WIN_32
 /* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
@@ -1018,12 +1018,12 @@ fclose(IOchannel);
 IOchannel = NULL;
 #else /* it is WIN_32 */
 if(IOchannel != NULL && IOchannelIsSocketStream)
-	{
-	sendall(getSocket(IOchannel), content, size);
-	close(getSocket(IOchannel));
-	}
+    {
+    sendall(getSocket(IOchannel), content, size);
+    close(getSocket(IOchannel));
+    }
 else 
-	varPrintf(OUT_CONSOLE, "%s", content);
+    varPrintf(OUT_CONSOLE, "%s", content);
 return;
 #endif
 #ifdef DEBUGHTTP
@@ -1058,7 +1058,7 @@ int len;
 char * fileMode = "w";
 
 if(chdir(startupDir) < 0)
-	fatalError(ERR_IO_ERROR, 0, 0);
+    fatalError(ERR_IO_ERROR, 0, 0);
 query = sptr = request;
 
 setenv("DOCUMENT_ROOT", startupDir, 1);
@@ -1074,10 +1074,10 @@ while(*sptr > ' ') ++sptr;
 *sptr = 0;
 while(*query != 0 && *query != '?') ++query;
 if(*query == '?')
-	{
-	*query = 0;
-	query++;
-	}
+    {
+    *query = 0;
+    query++;
+    }
 
 setenv("QUERY_STRING", query, 1);
 
@@ -1090,115 +1090,115 @@ request = decoded;
 sptr = request + strlen(request);
 while(*sptr != '/' && sptr != request) --sptr;
 if(*sptr == '/') 
-	{
-	*sptr = 0;
-	sptr++;
-	if(chdir(request))
-		{
-		sendHTTPmessage(404, ERROR_404, request);
-		return(TRUE);
-		}
-	request = sptr;
-	}
+    {
+    *sptr = 0;
+    sptr++;
+    if(chdir(request))
+        {
+        sendHTTPmessage(404, ERROR_404, request);
+        return(TRUE);
+        }
+    request = sptr;
+    }
 
 if((len = strlen(request)) == 0)
-	{
-	if(isFile(DEFAULT_PAGE_2) == 0)	
-		request = DEFAULT_PAGE_2;
-	else
-		request = DEFAULT_PAGE_1;
-	len = strlen(request);
-	}
+    {
+    if(isFile(DEFAULT_PAGE_2) == 0) 
+        request = DEFAULT_PAGE_2;
+    else
+        request = DEFAULT_PAGE_1;
+    len = strlen(request);
+    }
 
 size = readHeader(buff, &pragmaFlag);
 switch(type)
-	{
-	case HTTP_GET:
-	case HTTP_HEAD:
-		if(endsWith(request, CGI_EXTENSION))
-			handleHTTPcgi(request, query, strlen(query));
-		else
-			{
-			mediaType = getMediaType(request);
+    {
+    case HTTP_GET:
+    case HTTP_HEAD:
+        if(endsWith(request, CGI_EXTENSION))
+            handleHTTPcgi(request, query, strlen(query));
+        else
+            {
+            mediaType = getMediaType(request);
 
-			if(type == HTTP_HEAD)
-				{
+            if(type == HTTP_HEAD)
+                {
 #ifndef WIN_32
-				snprintf(buff, MAX_BUFF - 1, 
-					"Content-length: %lld\r\nContent-type: %s\r\n\r\n", 
-					(long long int)fileSize(request), mediaType);
+                snprintf(buff, MAX_BUFF - 1, 
+                    "Content-length: %lld\r\nContent-type: %s\r\n\r\n", 
+                    (long long int)fileSize(request), mediaType);
 #else
-				snprintf(buff, MAX_BUFF - 1, 
-					"Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
-					(long)fileSize(request), mediaType);
+                snprintf(buff, MAX_BUFF - 1, 
+                    "Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
+                    (long)fileSize(request), mediaType);
 #endif
-				sendHTTPpage(buff, strlen(buff), NULL);
-				}
-			else
-				{
-				if((size = readFile(request, &content)) == -1)
-					sendHTTPmessage(404, ERROR_404, request);
-				else
-					sendHTTPpage(content, size, mediaType);
-				if(content) free(content);
-				}
-			}
-		break;
+                sendHTTPpage(buff, strlen(buff), NULL);
+                }
+            else
+                {
+                if((size = readFile(request, &content)) == -1)
+                    sendHTTPmessage(404, ERROR_404, request);
+                else
+                    sendHTTPpage(content, size, mediaType);
+                if(content) free(content);
+                }
+            }
+        break;
 
-	case HTTP_DELETE:
-		if(unlink(request) != 0)	
-			sendHTTPmessage(500, "Could not delete", request);
-		else
-			sendHTTPpage("File deleted", 12, MEDIA_TEXT);
-		break;
+    case HTTP_DELETE:
+        if(unlink(request) != 0)    
+            sendHTTPmessage(500, "Could not delete", request);
+        else
+            sendHTTPpage("File deleted", 12, MEDIA_TEXT);
+        break;
 
-	case HTTP_POST:
-		if(!size)
-			{
-			sendHTTPmessage(411, ERROR_411, request);
-			break;
-			}
+    case HTTP_POST:
+        if(!size)
+            {
+            sendHTTPmessage(411, ERROR_411, request);
+            break;
+            }
 
-		query = callocMemory(size + 1);
+        query = callocMemory(size + 1);
 
-		if(readPayLoad(size, query, 0, request) == -1)
-			{
-			free(query);
-			break;
-			}
+        if(readPayLoad(size, query, 0, request) == -1)
+            {
+            free(query);
+            break;
+            }
 
-		handleHTTPcgi(request, query, size);
-		free(query); 
-		break;
+        handleHTTPcgi(request, query, size);
+        free(query); 
+        break;
 
-	case HTTP_PUT:
-		if(pragmaFlag) fileMode = "a";
+    case HTTP_PUT:
+        if(pragmaFlag) fileMode = "a";
 
-		if(!size)
-			{
-			sendHTTPmessage(411, ERROR_411, request);
-			break;
-			}
+        if(!size)
+            {
+            sendHTTPmessage(411, ERROR_411, request);
+            break;
+            }
 
-		if( (outFile = openFile(request, fileMode, NULL)) == (int)-1)
-			{
-			sendHTTPmessage(500, "Cannot create file", request);
-			break;
-			}
+        if( (outFile = openFile(request, fileMode, NULL)) == (int)-1)
+            {
+            sendHTTPmessage(500, "Cannot create file", request);
+            break;
+            }
 
-		transferred = readPayLoad(size, buff, outFile, request);
-		close(outFile);
+        transferred = readPayLoad(size, buff, outFile, request);
+        close(outFile);
 
-		if(transferred != -1)
-			{
-			snprintf(buff, 255, "%d bytes transferred for %s\r\n", (int)transferred, request);
-			sendHTTPpage(buff, strlen(buff), MEDIA_TEXT);
-			}
-		break;
+        if(transferred != -1)
+            {
+            snprintf(buff, 255, "%d bytes transferred for %s\r\n", (int)transferred, request);
+            sendHTTPpage(buff, strlen(buff), MEDIA_TEXT);
+            }
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
 if(chdir(startupDir) < 0) fatalError(ERR_IO_ERROR, 0, 0);
 if(result != NULL) deleteList(result);
@@ -1240,33 +1240,33 @@ setenv("HTTP_USER_AGENT", "", 1);
 setenv("HTTP_COOKIE", "", 1);
 
 while(fgets(buff, MAX_LINE - 1, IOchannel) != NULL)
-	{
-	if(strcmp(buff, "\r\n") == 0 || strcmp(buff, "\n") == 0) break;
+    {
+    if(strcmp(buff, "\r\n") == 0 || strcmp(buff, "\n") == 0) break;
 
-	/* trim trailing white space */
-	offset = strlen(buff) - 1;
-	while(offset > 0 && *(buff + offset) <= ' ') 
-		*(buff + offset--) = 0;	
+    /* trim trailing white space */
+    offset = strlen(buff) - 1;
+    while(offset > 0 && *(buff + offset) <= ' ') 
+        *(buff + offset--) = 0; 
 
-	if(my_strnicmp(buff, "content-length:", 15) == 0)
-		{
-		size = parseValue(buff + 15);
-		snprintf(numStr, 16, "%lu", (long unsigned int)size);
-		setenv("CONTENT_LENGTH", numStr, 1);
-		}
-	if(my_strnicmp(buff, "pragma: append", 14) == 0)
-		*pragmaFlag = TRUE;
+    if(my_strnicmp(buff, "content-length:", 15) == 0)
+        {
+        size = parseValue(buff + 15);
+        snprintf(numStr, 16, "%lu", (long unsigned int)size);
+        setenv("CONTENT_LENGTH", numStr, 1);
+        }
+    if(my_strnicmp(buff, "pragma: append", 14) == 0)
+        *pragmaFlag = TRUE;
 
-	/* trim leading white space */
-	if(my_strnicmp(buff, "content-type:", 13) == 0)
-		setenv("CONTENT_TYPE", trim(buff + 13), 1);
-	if(my_strnicmp(buff, "Host:", 5) == 0)
-		setenv("HTTP_HOST", trim(buff + 5), 1);
-	if(my_strnicmp(buff, "User-Agent:", 11) == 0)
-		setenv("HTTP_USER_AGENT", trim(buff + 11), 1);
-	if(my_strnicmp(buff, "Cookie:", 7) == 0)
-		setenv("HTTP_COOKIE", trim(buff + 7), 1);
-	}
+    /* trim leading white space */
+    if(my_strnicmp(buff, "content-type:", 13) == 0)
+        setenv("CONTENT_TYPE", trim(buff + 13), 1);
+    if(my_strnicmp(buff, "Host:", 5) == 0)
+        setenv("HTTP_HOST", trim(buff + 5), 1);
+    if(my_strnicmp(buff, "User-Agent:", 11) == 0)
+        setenv("HTTP_USER_AGENT", trim(buff + 11), 1);
+    if(my_strnicmp(buff, "Cookie:", 7) == 0)
+        setenv("HTTP_COOKIE", trim(buff + 7), 1);
+    }
 
 
 return(size);
@@ -1283,41 +1283,41 @@ printf("# Payload size:%ld\r\n", (long)size);
 #endif
 
 while(size > 0)
-	{
-	readsize = (size > MAX_BUFF) ? MAX_BUFF : size;
+    {
+    readsize = (size > MAX_BUFF) ? MAX_BUFF : size;
 #ifndef WIN_32
-	bytes = read(fileno(IOchannel), buff + offset, readsize); 
+    bytes = read(fileno(IOchannel), buff + offset, readsize); 
 #else /* it is WIN_32 */
-	if(IOchannel != NULL && IOchannelIsSocketStream)
-		bytes = recv(getSocket(IOchannel), buff + offset, readsize, NO_FLAGS_SET);
-	else
-		bytes = read(fileno(IOchannel), buff + offset, readsize);
+    if(IOchannel != NULL && IOchannelIsSocketStream)
+        bytes = recv(getSocket(IOchannel), buff + offset, readsize, NO_FLAGS_SET);
+    else
+        bytes = read(fileno(IOchannel), buff + offset, readsize);
 #endif
 
 #ifdef DEBUGHTTP
-	printf("Payload bytes:%ld:%s:\r\n", (long)bytes, buff + offset);
+    printf("Payload bytes:%ld:%s:\r\n", (long)bytes, buff + offset);
 #endif
 
-	if(bytes <= 0)
-		{
-		sendHTTPmessage(500, "Problem reading data", request);
-		return(-1);
-		}
+    if(bytes <= 0)
+        {
+        sendHTTPmessage(500, "Problem reading data", request);
+        return(-1);
+        }
 
-	if(outFile)
-		{
-		if(write(outFile, buff + offset, bytes) != bytes)
-			{
-			sendHTTPmessage(500, "Cannot create file", request);
-			return(-1);
-			}
-		}
-	else
-		offset += bytes;
+    if(outFile)
+        {
+        if(write(outFile, buff + offset, bytes) != bytes)
+            {
+            sendHTTPmessage(500, "Cannot create file", request);
+            return(-1);
+            }
+        }
+    else
+        offset += bytes;
 
-	transferred += bytes;
-	size -= bytes;
-	}	
+    transferred += bytes;
+    size -= bytes;
+    }   
 #ifndef WIN_32
 fflush(NULL); 
 #endif
@@ -1346,10 +1346,10 @@ printf("# CGI request:%s:%s:\r\n", request, query);
 #endif
 
 if(isFile(request) != 0)
-	{
-	sendHTTPmessage(404, ERROR_404, request);
-	return;
-	}
+    {
+    sendHTTPmessage(404, ERROR_404, request);
+    return;
+    }
 
 if(isFile("/tmp") != 0)
     {
@@ -1372,23 +1372,23 @@ snprintf(command, size - 1, "./\"%s\" > %s", request, tempfile);
 #endif
 
 if((handle = popen(command, "w")) == NULL)
-	{
-	sendHTTPmessage(500, "failed creating pipe", request);
-	return;
-	}
+    {
+    sendHTTPmessage(500, "failed creating pipe", request);
+    return;
+    }
 
 if((size = fwrite(query, 1, querySize, handle)) < 0)
-	fatalError(ERR_IO_ERROR, 0, 0);
+    fatalError(ERR_IO_ERROR, 0, 0);
 
 fflush(handle);
 pclose(handle);
 
 size = readFile(tempfile, &content);
-if(size == -1)	
-	sendHTTPmessage(500, "cannot read output of", request);
+if(size == -1)  
+    sendHTTPmessage(500, "cannot read output of", request);
 else
-	sendHTTPpage(content, size, NULL);
-	
+    sendHTTPpage(content, size, NULL);
+    
 #ifdef DEBUGHTTP
 printf("# Temporary file: %s\n", tempfile);
 #else
@@ -1396,7 +1396,7 @@ unlink(tempfile);
 #endif
 
 if(content) free(content);
-}	
+}   
 
 
 int endsWith(char * str, char * ext)
@@ -1411,28 +1411,28 @@ return(strncmp(str + size - len, ext, len) == 0);
 
 
 typedef struct
-	{
-	char * extension;
-	char * type;
-	} MEDIA_TYPE;
-	
+    {
+    char * extension;
+    char * type;
+    } MEDIA_TYPE;
+    
 MEDIA_TYPE mediaType[] = {
-	{".jpg", "image/jpeg"},
-	{".png", "image/png"},
-	{".gif", "image/gif"},
-	{".css", "text/css"},
-	{".js", "application/javascript"},
-	{".pdf", "application/pdf"},
-	{".mp3", "audio/mpeg"},
-	{".mov", "video/quicktime"},
-	{".mpg", "video/mpeg"},
-	{".html","text/html"},
-	{".htm", "text/html"},
-	{".mpg", "video/mpeg"},
-	{".avi", "video/x-msvideo"},
-	{".wav", "audio/x-wav"},
-	{".zip", "application/zip"},
-	{ NULL, NULL},
+    {".jpg", "image/jpeg"},
+    {".png", "image/png"},
+    {".gif", "image/gif"},
+    {".css", "text/css"},
+    {".js", "application/javascript"},
+    {".pdf", "application/pdf"},
+    {".mp3", "audio/mpeg"},
+    {".mov", "video/quicktime"},
+    {".mpg", "video/mpeg"},
+    {".html","text/html"},
+    {".htm", "text/html"},
+    {".mpg", "video/mpeg"},
+    {".avi", "video/x-msvideo"},
+    {".wav", "audio/x-wav"},
+    {".zip", "application/zip"},
+    { NULL, NULL},
 };
 
 char * getMediaType(char * request)
@@ -1440,11 +1440,11 @@ char * getMediaType(char * request)
 int i;
 
 for(i = 0; mediaType[i].extension != NULL; i++)
-	{
-	if(endsWith(request, mediaType[i].extension))
-		return(mediaType[i].type);
-	}
-	
+    {
+    if(endsWith(request, mediaType[i].extension))
+        return(mediaType[i].type);
+    }
+    
 return(MEDIA_TEXT);
 }
 
@@ -1456,17 +1456,17 @@ unsigned long ascii = 0;
 char *end = NULL;
 
 while(*src)
-	{
-	if(*src == '%')
-		{
-		memcpy(code, ++src, 2);
-		ascii = strtoul(code, &end, 16);
-		*dest++ = (char)ascii;
-		src += 2;
-		}
-	else
-		*dest++ = *src++;
-	}
+    {
+    if(*src == '%')
+        {
+        memcpy(code, ++src, 2);
+        ascii = strtoul(code, &end, 16);
+        *dest++ = (char)ascii;
+        src += 2;
+        }
+    else
+        *dest++ = *src++;
+    }
 *dest = 0;
 }
 

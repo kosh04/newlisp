@@ -6,7 +6,7 @@
 (println "Testing/benchmarking  pipes with forked processes")
 
 (set 'start (time-of-day))
-(set 'N 10000)
+(set 'N 1000)
 
 (define (count-down-proc x channel)
   (while (!= x 0)

@@ -53,22 +53,22 @@ FARPROC initProc;
 params = getString(params, &libName);
 params = getString(params, &funcName);
 if(params != nilCell)
-	getString(params, &options);
+    getString(params, &options);
 
 /* hLibrary = NULL; */
 
 if( (UINT)(hLibrary = LoadLibrary(libName)) < 32)
-	return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString(libName)));
+    return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString(libName)));
 
 if(options != NULL && strcmp(options, "cdecl") ==  0)
-	pCell = getCell(CELL_IMPORT_CDECL);
+    pCell = getCell(CELL_IMPORT_CDECL);
 else
-	pCell = getCell(CELL_IMPORT_DLL);
+    pCell = getCell(CELL_IMPORT_DLL);
 
 symbol = translateCreateSymbol(funcName, pCell->type, currentContext, TRUE);
 if(isProtected(symbol->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
-	
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
+    
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 pCell->contents = (UINT)GetProcAddress(hLibrary, (LPCSTR)funcName);
@@ -79,7 +79,7 @@ initProc = GetProcAddress(hLibrary, (LPCSTR)"dllName");
 if(initProc != 0) (*initProc)(libName);
 
 if(pCell->contents == 0) 
-	return(errorProcExt2(ERR_IMPORT_FUNC_NOT_FOUND, stuffString(funcName)));
+    return(errorProcExt2(ERR_IMPORT_FUNC_NOT_FOUND, stuffString(funcName)));
 
 return(copyCell(pCell));
 }
@@ -106,11 +106,11 @@ params = getString(params, &libName);
 params = getString(params, &funcName);
 #ifdef CYGWIN
 if(params != nilCell)
-	{
-	getString(params, &options);
-	if(strcmp(options, "stdcall") ==  0)
-		type = CELL_IMPORT_CDECL;
-	}
+    {
+    getString(params, &options);
+    if(strcmp(options, "stdcall") ==  0)
+        type = CELL_IMPORT_CDECL;
+    }
 #endif
 
 hLibrary = 0;                
@@ -120,20 +120,20 @@ if((hLibrary = dlopen(libName, RTLD_LAZY)) == 0)
 #else
 if((hLibrary = dlopen(libName, RTLD_GLOBAL|RTLD_LAZY)) == 0)
 #endif
-	return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString((char *)dlerror())));
+    return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString((char *)dlerror())));
 
 pCell = getCell(type);
 symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
 if(isProtected(symbol->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
-	
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol)));
+    
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 
 pCell->contents = (UINT)dlsym(hLibrary, funcName);
 
 if((error = (char *)dlerror()) != NULL)
-	return(errorProcExt2(ERR_IMPORT_FUNC_NOT_FOUND, stuffString(error)));
+    return(errorProcExt2(ERR_IMPORT_FUNC_NOT_FOUND, stuffString(error)));
 
 pCell->aux = (UINT)symbol->name;
 
@@ -150,37 +150,37 @@ int count;
 
 count = 0;
 while(params->type != CELL_NIL && count < 14)
-	{
-	arg = evaluateExpression(params);
-	switch(arg->type)
-		{
-		case CELL_LONG:
-		case CELL_STRING:
-		case CELL_PRIMITIVE:
-			args[count++] = arg->contents;
-			break;
+    {
+    arg = evaluateExpression(params);
+    switch(arg->type)
+        {
+        case CELL_LONG:
+        case CELL_STRING:
+        case CELL_PRIMITIVE:
+            args[count++] = arg->contents;
+            break;
 #ifndef NEWLISP64
-		/* change 64-bit to 32-bit */
-		case CELL_INT64: 
-			args[count++] = *(INT64 *)&arg->aux;
-			break;
+        /* change 64-bit to 32-bit */
+        case CELL_INT64: 
+            args[count++] = *(INT64 *)&arg->aux;
+            break;
 #endif
-		case CELL_FLOAT:
+        case CELL_FLOAT:
 #ifndef NEWLISP64
-			args[count++] = arg->aux;
+            args[count++] = arg->aux;
 #endif
-			args[count++] = arg->contents;
-			break;
-		default:
-			args[count++] = (UINT)arg;
-			break;
-		}
-	params = (CELL *)params->next;
-	}
+            args[count++] = arg->contents;
+            break;
+        default:
+            args[count++] = (UINT)arg;
+            break;
+        }
+    params = (CELL *)params->next;
+    }
 
 #if defined(WIN_32) || defined(CYGWIN)
 if(pCell->type == CELL_IMPORT_DLL)
-	return(stuffInteger(stdcallFunction(pCell->contents, args, count)));
+    return(stuffInteger(stdcallFunction(pCell->contents, args, count)));
 else
 #endif
 return(stuffInteger(cdeclFunction(pCell->contents, args, count)));
@@ -194,67 +194,67 @@ UINT (*function)();
 function = (UINT (*)())fAddress;
 
 switch(count)
-	{
-	case 0:
+    {
+    case 0:
             return (*function)();
 
-	case 1:
+    case 1:
             return  (*function)(args[0]);
 
-	case 2:
+    case 2:
             return  (*function)(args[0], args[1]);
 
-	case 3:
-			/* printf("args[0] %llx, args[1] %llx, args[2] %llx, args[1]-args[2] %llx\n ",
-					args[0], args[1], args[2], args[1] - args[2]); */
+    case 3:
+            /* printf("args[0] %llx, args[1] %llx, args[2] %llx, args[1]-args[2] %llx\n ",
+                    args[0], args[1], args[2], args[1] - args[2]); */
 
             return  (*function)(args[0], args[1], args[2]);
-	case 4:
+    case 4:
 
             return  (*function)(args[0], args[1], args[2], args[3]);
 
-	case 5:
+    case 5:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4]);
-	case 6:
+                     args[4]);
+    case 6:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5]);
-	case 7:
+                     args[4], args[5]);
+    case 7:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6]);
-	case 8:
+                     args[4], args[5], args[6]);
+    case 8:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7]);
+                     args[4], args[5], args[6], args[7]);
 
-	case 9:
+    case 9:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7], args[8]);
+                     args[4], args[5], args[6], args[7], args[8]);
 
-	case 10:
+    case 10:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7], args[8], args[9]);
-	case 11:
+                     args[4], args[5], args[6], args[7], args[8], args[9]);
+    case 11:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10]);
-	case 12:
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10]);
+    case 12:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11]);
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11]);
 
-	case 13:
+    case 13:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11],
-				args[12]);
-	case 14:
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11],
+                args[12]);
+    case 14:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11],
-				args[12], args[13]);
-	default:
-	    break;
-	}
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11],
+                args[12], args[13]);
+    default:
+        break;
+    }
 
 return(0);
 }
@@ -268,64 +268,64 @@ UINT _stdcall (*function)();
 function = (UINT _stdcall (*)())fAddress;
 
 switch(count)
-	{
-	case 0:
+    {
+    case 0:
             return (*function)();
 
-	case 1:
+    case 1:
             return  (*function)(args[0]);
 
-	case 2:
+    case 2:
             return  (*function)(args[0], args[1]);
 
-	case 3:
+    case 3:
             return  (*function)(args[0], args[1], args[2]);
 
-	case 4:
+    case 4:
             return  (*function)(args[0], args[1], args[2], args[3]);
 
-	case 5:
+    case 5:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4]);
-	case 6:
+                     args[4]);
+    case 6:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5]);
-	case 7:
+                     args[4], args[5]);
+    case 7:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6]);
-	case 8:
+                     args[4], args[5], args[6]);
+    case 8:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7]);
+                     args[4], args[5], args[6], args[7]);
 
-	case 9:
+    case 9:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7], args[8]);
+                     args[4], args[5], args[6], args[7], args[8]);
 
-	case 10:
+    case 10:
             return  (*function)(args[0], args[1], args[2], args[3],
-				     args[4], args[5], args[6], args[7], args[8], args[9]);
-	case 11:
+                     args[4], args[5], args[6], args[7], args[8], args[9]);
+    case 11:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10]);
-	case 12:
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10]);
+    case 12:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11]);
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11]);
 
-	case 13:
+    case 13:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11],
-				args[12]);
-	case 14:
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11],
+                args[12]);
+    case 14:
             return  (*function)(args[0], args[1], args[2], args[3],
-				args[4], args[5], args[6], args[7],
-				args[8], args[9], args[10], args[11],
-				args[12], args[13]);
-	default:
-	    break;
-	}
+                args[4], args[5], args[6], args[7],
+                args[8], args[9], args[10], args[11],
+                args[12], args[13]);
+    default:
+        break;
+    }
 
 return(0);
 }
@@ -353,60 +353,60 @@ return(stuffInteger(number));
 long template(long n, long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8);
 
 long callback0(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(0, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(0, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback1(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(1, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(1, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback2(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(2, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(2, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback3(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(3, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(3, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback4(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(4, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(4, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback5(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(5, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(5, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback6(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(6, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(6, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback7(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(7, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(7, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback8(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(8, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(8, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback9(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(9, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(9, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback10(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(10, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(10, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback11(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(11, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(11, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback12(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(12, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(12, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback13(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(13, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(13, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback14(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(14, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(14, p1, p2, p3, p4, p5, p6, p7, p8);}
 long callback15(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
-	{return template(15, p1, p2, p3, p4, p5, p6, p7, p8);}
+    {return template(15, p1, p2, p3, p4, p5, p6, p7, p8);}
 
 typedef struct {
-	SYMBOL * sym;
-	UINT func;
-	} LIBCALLBACK;
+    SYMBOL * sym;
+    UINT func;
+    } LIBCALLBACK;
 
 LIBCALLBACK callback[] = {
-	{ NULL, (UINT)callback0 },
-	{ NULL, (UINT)callback1 },
-	{ NULL, (UINT)callback2 },
-	{ NULL, (UINT)callback3 },
-	{ NULL, (UINT)callback4 },
-	{ NULL, (UINT)callback5 },
-	{ NULL, (UINT)callback6 },
-	{ NULL, (UINT)callback7 },
-	{ NULL, (UINT)callback8 },
-	{ NULL, (UINT)callback9 },
-	{ NULL, (UINT)callback10 },
-	{ NULL, (UINT)callback11 },
-	{ NULL, (UINT)callback12 },
-	{ NULL, (UINT)callback13 },
-	{ NULL, (UINT)callback14 },
-	{ NULL, (UINT)callback15 },
+    { NULL, (UINT)callback0 },
+    { NULL, (UINT)callback1 },
+    { NULL, (UINT)callback2 },
+    { NULL, (UINT)callback3 },
+    { NULL, (UINT)callback4 },
+    { NULL, (UINT)callback5 },
+    { NULL, (UINT)callback6 },
+    { NULL, (UINT)callback7 },
+    { NULL, (UINT)callback8 },
+    { NULL, (UINT)callback9 },
+    { NULL, (UINT)callback10 },
+    { NULL, (UINT)callback11 },
+    { NULL, (UINT)callback12 },
+    { NULL, (UINT)callback13 },
+    { NULL, (UINT)callback14 },
+    { NULL, (UINT)callback15 },
 };
 
 
@@ -419,22 +419,22 @@ jmp_buf errorJumpSave;
 
 memcpy(errorJumpSave, errorJump, sizeof(errorJump));
 if(setjmp(errorJump))
-	{
-	reset();
-	initStacks();
-	result = -1;
-	goto FINISH_CALLBACK;
-	}
+    {
+    reset();
+    initStacks();
+    result = -1;
+    goto FINISH_CALLBACK;
+    }
 
 args = stuffIntegerList(8, p1, p2, p3, p4, p5, p6, p7, p8);
 executeSymbol(callback[n].sym, (CELL *)args->contents, &cell);
 
 #ifndef NEWLISP64
 if(cell->type == CELL_INT64)
-	result = *(INT64 *)&cell->aux;
+    result = *(INT64 *)&cell->aux;
 else 
 #endif
-	result = (long)cell->contents;
+    result = (long)cell->contents;
 
 pushResult(cell);
 

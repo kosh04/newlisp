@@ -25,7 +25,7 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <wspiapi.h>
+#include <ws2spi.h>
 #define fdopen win32_fdopen
 #define SHUT_RDWR 2
 #define gethostbyname2(A, B) gethostbyname(A)
@@ -46,9 +46,7 @@
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h>
 #ifndef OS2
-#ifndef CYGWIN
-#include <netinet/icmp6.h>
-#endif
+#include <netinet/icmp6.h> 
 #endif
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -60,6 +58,8 @@
 #endif /* end UNIX */
 
 #ifdef CYGWIN
+#include <netinet/icmp6.h> /* not on Cygwin, get from other OS */
+
 #define ICMP_ECHO 8
 
 struct icmp
@@ -118,7 +118,7 @@ struct icmp
 typedef struct
     {
     int socket;
-	int family;
+    int family;
     void * next;
     } INET_SESSION;
 
@@ -156,28 +156,28 @@ struct sockaddr_in * address;
 
 if(defaultIn != NULL) free(defaultIn);
 defaultInLen = (ADDR_FAMILY == AF_INET6) ? 
-	sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 
 defaultIn = allocMemory(defaultInLen);
 
 if(ADDR_FAMILY == AF_INET6)
-	{
-	address6 = (struct sockaddr_in6 *)defaultIn;
-	address6->sin6_addr = in6addr_any;
-	defaultInAddr = &address6->sin6_addr;
-	address6->sin6_family = AF_INET6;
-	ICMP_TYPE = IPPROTO_ICMPV6;
-	opsys |= 0x200;
-	}
+    {
+    address6 = (struct sockaddr_in6 *)defaultIn;
+    address6->sin6_addr = in6addr_any;
+    defaultInAddr = &address6->sin6_addr;
+    address6->sin6_family = AF_INET6;
+    ICMP_TYPE = IPPROTO_ICMPV6;
+    opsys |= 0x200;
+    }
 else
-	{
-	address = (struct sockaddr_in *)defaultIn;
-	address->sin_addr.s_addr = INADDR_ANY;
-	defaultInAddr = &address->sin_addr;
-	address->sin_family = AF_INET;
-	ICMP_TYPE = IPPROTO_ICMP;
-	opsys &= ~0x200;
-	}
+    {
+    address = (struct sockaddr_in *)defaultIn;
+    address->sin_addr.s_addr = INADDR_ANY;
+    defaultInAddr = &address->sin_addr;
+    address->sin_family = AF_INET;
+    ICMP_TYPE = IPPROTO_ICMP;
+    opsys &= ~0x200;
+    }
 
 }
 
@@ -245,7 +245,7 @@ session = netSessions;
 while(session)
     {
     if(session->socket == sock)
-		return(TRUE);
+        return(TRUE);
     session = session->next;
     }
 
@@ -261,8 +261,8 @@ session = netSessions;
 
 while(session)
     {
-	if(session->socket == sock)
-		return(session->family);
+    if(session->socket == sock)
+        return(session->family);
     session = session->next;
     }
 
@@ -282,9 +282,9 @@ struct sockaddr_in6 * saddr6 = (struct sockaddr_in6 *)addr;
 struct sockaddr_in * saddr =(struct sockaddr_in *)addr;
 
 if(addr->sa_family == AF_INET6)
-	inet_ntop(AF_INET6, &saddr6->sin6_addr, host, len); 
+    inet_ntop(AF_INET6, &saddr6->sin6_addr, host, len); 
 else
-	strncpy(host, inet_ntoa(saddr->sin_addr), len);
+    strncpy(host, inet_ntoa(saddr->sin_addr), len);
 return(TRUE);
 }
 #endif
@@ -340,7 +340,7 @@ while(session)
     {
     sPtr = session;
     session = session->next;
-	addList(sList, stuffInteger(sPtr->socket));
+    addList(sList, stuffInteger(sPtr->socket));
     }
 
 return(sList);
@@ -399,42 +399,42 @@ int type;
 params = getString(params, &remoteHostName); 
 #ifndef WIN_32
 if(params == nilCell)
-	{
-	if((sock = netConnectLocal(remoteHostName)) == SOCKET_ERROR)
-		return(netError(errorIdx));
-	else	
-		return(stuffInteger((UINT)sock));
-	}
+    {
+    if((sock = netConnectLocal(remoteHostName)) == SOCKET_ERROR)
+        return(netError(errorIdx));
+    else    
+        return(stuffInteger((UINT)sock));
+    }
 
 #endif
 
 params = getInteger(params, &portNo);
 type = SOCK_STREAM;
 if(params != nilCell)
-	{
-	cell = evaluateExpression(params);
-	if(cell->type == CELL_STRING)
-		{
-		protocol = (char *)cell->contents;
-    	*protocol = toupper(*protocol);
-    	type = SOCK_DGRAM;
-    	if(*protocol == 'M') /* get ttl */
-        	{
-        	if(params->next != nilCell)
-				/* topt is ttl in this case */
-            	getInteger(params->next, &topt);
-			else topt = 3;
-        	}
-    	}
-	else if(isNumber(cell->type))
-		/* topt is ms timeout */
-		getIntegerExt(cell, &topt, FALSE);
-	else
-		return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, cell));		
-	}
+    {
+    cell = evaluateExpression(params);
+    if(cell->type == CELL_STRING)
+        {
+        protocol = (char *)cell->contents;
+        *protocol = toupper(*protocol);
+        type = SOCK_DGRAM;
+        if(*protocol == 'M') /* get ttl */
+            {
+            if(params->next != nilCell)
+                /* topt is ttl in this case */
+                getInteger(params->next, &topt);
+            else topt = 3;
+            }
+        }
+    else if(isNumber(cell->type))
+        /* topt is ms timeout */
+        getIntegerExt(cell, &topt, FALSE);
+    else
+        return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, cell));      
+    }
 
 if((sock = netConnect(remoteHostName, 
-		(int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
+        (int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
     return(netError(errorIdx));
 
 createInetSession(sock, ADDR_FAMILY);
@@ -452,20 +452,20 @@ int sock;
 struct sockaddr_un remote_sun;
 
 if((sock = socket(AF_UNIX, SOCK_STREAM, 0)) == SOCKET_ERROR)
-	{
-	errorIdx = ERR_INET_OPEN_SOCKET;
-	return(SOCKET_ERROR);
-	}
-	
+    {
+    errorIdx = ERR_INET_OPEN_SOCKET;
+    return(SOCKET_ERROR);
+    }
+    
 remote_sun.sun_family = AF_UNIX;
 strncpy(remote_sun.sun_path, path, sizeof(remote_sun.sun_path) - 1);
 remote_sun.sun_path[sizeof (remote_sun.sun_path) - 1] = '\0';
 if (connect(sock, (struct sockaddr *)&remote_sun, SUN_LEN(&remote_sun)) == -1) 
-	{
-	close(sock);
-	errorIdx = ERR_INET_CONNECT_FAILED;
-	return(SOCKET_ERROR);
-	}
+    {
+    close(sock);
+    errorIdx = ERR_INET_CONNECT_FAILED;
+    return(SOCKET_ERROR);
+    }
 
 createInetSession(sock, AF_UNIX);
 
@@ -522,48 +522,48 @@ int sinlen;
 
 /* create socket */
 if((sock = socket(ADDR_FAMILY, type, 0)) == INVALID_SOCKET)
-	{
-	errorIdx = ERR_INET_OPEN_SOCKET;
-	return(SOCKET_ERROR);
-	}
+    {
+    errorIdx = ERR_INET_OPEN_SOCKET;
+    return(SOCKET_ERROR);
+    }
 
 if(prot == NULL) /* topt is timeout in millisecs */
-	{
+    {
 #ifdef WIN_32
-	if(ioctlsocket(sock, FIONBIO, &arg) != 0)
-		{
-		errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
-		return(SOCKET_ERROR);
-		}
+    if(ioctlsocket(sock, FIONBIO, &arg) != 0)
+        {
+        errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+        return(SOCKET_ERROR);
+        }
 #else /* UNIX */
-	arg = fcntl(sock, F_GETFL, NULL);
-	if(fcntl(sock, F_SETFL, arg | O_NONBLOCK) < 0)
-		{
-		errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
-		return(SOCKET_ERROR);
-		}
+    arg = fcntl(sock, F_GETFL, NULL);
+    if(fcntl(sock, F_SETFL, arg | O_NONBLOCK) < 0)
+        {
+        errorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
+        return(SOCKET_ERROR);
+        }
 #endif
-	}
+    }
 else if(*prot == 'M' || *prot == 'B') 
-	{
-	sinlen = (ADDR_FAMILY == AF_INET6) ? sizeof(struct in6_addr) : sizeof(struct in_addr);
+    {
+    sinlen = (ADDR_FAMILY == AF_INET6) ? sizeof(struct in6_addr) : sizeof(struct in_addr);
 
-	if(*prot == 'M')
-		{
-		setsockopt(sock, 0, IP_MULTICAST_IF, (const void *)defaultInAddr, sinlen);
-		opt = topt; /* ttl time to live */
-		setsockopt(sock, 0, IP_MULTICAST_TTL, (const void *)&opt, sizeof(opt));
-		}
+    if(*prot == 'M')
+        {
+        setsockopt(sock, 0, IP_MULTICAST_IF, (const void *)defaultInAddr, sinlen);
+        opt = topt; /* ttl time to live */
+        setsockopt(sock, 0, IP_MULTICAST_TTL, (const void *)&opt, sizeof(opt));
+        }
 
-	if(*prot == 'B')
-		{
-		opt = 1;
-		setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&opt, sizeof(opt));
-		}
-	}
+    if(*prot == 'B')
+        {
+        opt = 1;
+        setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&opt, sizeof(opt));
+        }
+    }
 
 if(type == SOCK_DGRAM && *remoteHostName == 0)
-	return(sock);
+    return(sock);
 
 memset(&hints, 0, sizeof(hints));
 hints.ai_family = (ADDR_FAMILY == AF_INET6) ? PF_INET6 : PF_INET;
@@ -571,53 +571,53 @@ hints.ai_socktype = SOCK_STREAM;
 snprintf(portStr, 10, "%d", portNo);
 
 if(getaddrinfo(remoteHostName, portStr, &hints, &res0) != 0)
-	{
-	errorIdx = ERR_INET_HOST_UNKNOWN;
-	return(SOCKET_ERROR);
-	}
+    {
+    errorIdx = ERR_INET_HOST_UNKNOWN;
+    return(SOCKET_ERROR);
+    }
 
 for(res = res0; res; res = res->ai_next)
-	{
-	result = connect(sock, res->ai_addr, res->ai_addrlen);
-	if(result < 0)
-		{
+    {
+    result = connect(sock, res->ai_addr, res->ai_addrlen);
+    if(result < 0)
+        {
 #ifdef WIN_32
-		if(WSAGetLastError() == WSAEWOULDBLOCK)
+        if(WSAGetLastError() == WSAEWOULDBLOCK)
 #else
-		if(errno == EINPROGRESS) 
+        if(errno == EINPROGRESS) 
 #endif
-			{
-			if((result = wait_ready(sock, topt * 1000, READY_WRITE)) <= 0)
-				{
-				errorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
-				goto CONNECT_FAILED;
-				}
+            {
+            if((result = wait_ready(sock, topt * 1000, READY_WRITE)) <= 0)
+                {
+                errorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
+                goto CONNECT_FAILED;
+                }
 #ifndef WIN_32 
-			getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)&value, &socklen); 
-			if (value) 
-				{ 
-				errorIdx =  ERR_INET_CONNECT_FAILED;
-				goto CONNECT_FAILED;
-				} 
+            getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)&value, &socklen); 
+            if (value) 
+                { 
+                errorIdx =  ERR_INET_CONNECT_FAILED;
+                goto CONNECT_FAILED;
+                } 
 #endif
-			result = 0;
-			break;
-			}
-		else
-			{
-			errorIdx =  ERR_INET_CONNECT_FAILED;
-			goto CONNECT_FAILED;
-			}
-		break;
-		}
-	else break; /* result == 0 */
-	}
+            result = 0;
+            break;
+            }
+        else
+            {
+            errorIdx =  ERR_INET_CONNECT_FAILED;
+            goto CONNECT_FAILED;
+            }
+        break;
+        }
+    else break; /* result == 0 */
+    }
 
 if(result != 0)
-	{
-	errorIdx = ERR_INET_CONNECT_FAILED;
-	goto CONNECT_FAILED;
-	}
+    {
+    errorIdx = ERR_INET_CONNECT_FAILED;
+    goto CONNECT_FAILED;
+    }
 
 if(blockSocket(sock) != 0)
     {
@@ -645,19 +645,19 @@ struct addrinfo hints, *res;
 int error;
 
 if(ifAddr != NULL && *ifAddr != '\0')
-	{
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = (ADDR_FAMILY == AF_INET6) ? PF_INET6 : PF_INET;
-	hints.ai_socktype = stype;
+    {
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = (ADDR_FAMILY == AF_INET6) ? PF_INET6 : PF_INET;
+    hints.ai_socktype = stype;
 
-	if((error = getaddrinfo(ifAddr, NULL, &hints, &res)) != 0)
-		return(error);
+    if((error = getaddrinfo(ifAddr, NULL, &hints, &res)) != 0)
+        return(error);
 
-	memcpy(address, res->ai_addr, res->ai_addrlen);
+    memcpy(address, res->ai_addr, res->ai_addrlen);
 
-	freeaddrinfo(res);
-	return(0);
-	}
+    freeaddrinfo(res);
+    return(0);
+    }
 
 memcpy(address, defaultIn, defaultInLen);
 return(0);
@@ -672,14 +672,14 @@ char IPaddress[STRADDR_LEN];
 errorIdx = 0;
 
 if(params != nilCell)
-	{
-	params = getString(params, &ifAddr);
-	if(getHostAddr((struct sockaddr *)defaultIn, 0, ifAddr) != 0)
-		return(netError(ERR_INET_HOST_UNKNOWN));
-	}
+    {
+    params = getString(params, &ifAddr);
+    if(getHostAddr((struct sockaddr *)defaultIn, 0, ifAddr) != 0)
+        return(netError(ERR_INET_HOST_UNKNOWN));
+    }
 
 getnameinfo((struct sockaddr *)defaultIn, defaultInLen, 
-	IPaddress, STRADDR_LEN, NULL, 0, NI_NUMERICHOST);
+    IPaddress, STRADDR_LEN, NULL, 0, NI_NUMERICHOST);
 return(stuffString(IPaddress));
 }
 
@@ -689,22 +689,22 @@ CELL * p_netIpv(CELL * params)
 UINT protocol = (ADDR_FAMILY == AF_INET6) ? 6 : 4;
 
 if(params != nilCell)
-	{
-	getInteger(params, &protocol);
-	if(protocol != 4 && protocol != 6)
-		return(errorProc(ERR_INVALID_PARAMETER));
-	if(protocol == 6) 
-		{
-		ADDR_FAMILY = AF_INET6;
-		opsys |= 512;
-		}
-	else 
-		{
-		ADDR_FAMILY = AF_INET;
-		opsys &= ~512;
-		}
-	initDefaultInAddr();
-	}
+    {
+    getInteger(params, &protocol);
+    if(protocol != 4 && protocol != 6)
+        return(errorProc(ERR_INVALID_PARAMETER));
+    if(protocol == 6) 
+        {
+        ADDR_FAMILY = AF_INET6;
+        opsys |= 512;
+        }
+    else 
+        {
+        ADDR_FAMILY = AF_INET;
+        opsys &= ~512;
+        }
+    initDefaultInAddr();
+    }
 
 return(stuffInteger(protocol));
 }
@@ -740,20 +740,20 @@ family = getSocketFamily(listenSock);
 
 #ifndef WIN_32
 if(family == AF_UNIX)
-	{
-	dest_slen = sizeof(struct sockaddr_un);
-	sock = accept(listenSock, (struct sockaddr *) &dest_sun,  &dest_slen);
-	}
+    {
+    dest_slen = sizeof(struct sockaddr_un);
+    sock = accept(listenSock, (struct sockaddr *) &dest_sun,  &dest_slen);
+    }
 else
 #endif
-	{
-	dest_slen = (ADDR_FAMILY == AF_INET6) ? 
-		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    {
+    dest_slen = (ADDR_FAMILY == AF_INET6) ? 
+        sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 
-	dest_sin = alloca(dest_slen);
+    dest_sin = alloca(dest_slen);
 
-	sock = accept(listenSock, dest_sin, (void *)&dest_slen);
-	}
+    sock = accept(listenSock, dest_sin, (void *)&dest_slen);
+    }
 
 if(sock != INVALID_SOCKET) 
     {
@@ -778,25 +778,25 @@ struct sockaddr * address_sin;
 
 family = getSocketFamily(sock);
 address_sin_len = (family == AF_INET6) ? 
-		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+        sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 address_sin = alloca(address_sin_len);
 
 *IPaddress = 0;
 
 if(family == AF_UNIX)
-	{
-	strncpy(IPaddress, "local", 6);
-	return(0);
-	}
+    {
+    strncpy(IPaddress, "local", 6);
+    return(0);
+    }
 
 if(peerLocalFlag == LOCAL_INFO) 
-	{
+    {
     if(getsockname(sock, address_sin, (void *)&address_sin_len) == SOCKET_ERROR)
-		return(SOCKET_ERROR);
-	}
+        return(SOCKET_ERROR);
+    }
 else 
     if(getpeername(sock, address_sin, (void *)&address_sin_len) == SOCKET_ERROR)
-		return(SOCKET_ERROR);
+        return(SOCKET_ERROR);
  
 /* return address and port, IP number, address family taken fron address_sin  */
 ipstrFromSockAddr((struct sockaddr *)address_sin, IPaddress, STRADDR_LEN);
@@ -848,9 +848,9 @@ params = getString(params, &hostString);
 forceByName = getFlag(params);
 
 if( ((ADDR_FAMILY == AF_INET6) && strstr(hostString, ":") && !forceByName) 
-	||
-	((ADDR_FAMILY == AF_INET) && isDigit((unsigned char)*hostString) && !forceByName) )
-	flags = NI_NAMEREQD;
+    ||
+    ((ADDR_FAMILY == AF_INET) && isDigit((unsigned char)*hostString) && !forceByName) )
+    flags = NI_NAMEREQD;
 
 memset(&hints, 0, sizeof(hints));
 
@@ -859,13 +859,13 @@ hints.ai_socktype = SOCK_STREAM;
 /* hints.ai_flags = AI_ADDRCONFIG | AI_CANONNAME; */
 
 if(getaddrinfo(hostString, NULL, &hints, &res) != 0)
-	return(netError(ERR_INET_HOST_UNKNOWN));
+    return(netError(ERR_INET_HOST_UNKNOWN));
 
 if(getnameinfo(res->ai_addr, res->ai_addrlen, hbuf, sizeof(hbuf), NULL, 0, flags) != 0)
-	{
-	freeaddrinfo(res);
-	return(netError(ERR_INET_HOST_UNKNOWN));
-	}
+    {
+    freeaddrinfo(res);
+    return(netError(ERR_INET_HOST_UNKNOWN));
+    }
 
 freeaddrinfo(res);
 return(stuffString(hbuf));
@@ -886,9 +886,9 @@ params = getInteger(params, &sock);
 params = getEvalDefault(params, &cell);
 
 if(!symbolCheck)
-	return(errorProcExt(ERR_SYMBOL_EXPECTED, cell));
+    return(errorProcExt(ERR_SYMBOL_EXPECTED, cell));
 if(symbolCheck->contents != (UINT)cell)
-	return(errorProc(ERR_IS_NOT_REFERENCED));
+    return(errorProc(ERR_IS_NOT_REFERENCED));
 
 readSymbol = symbolCheck;
 params = getInteger(params, (UINT *)&readSize);
@@ -987,7 +987,7 @@ buffer = (char *)allocMemory(readSize + 1);
 
 family = getSocketFamily(sock);
 remote_sin_len = (family == AF_INET6) ? 
-	sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 remote = alloca(remote_sin_len);
 memset(remote, 0, remote_sin_len);
 
@@ -997,7 +997,7 @@ bytesReceived = recvfrom(sock, buffer, readSize, 0,
 if(bytesReceived == SOCKET_ERROR) 
     {
     freeMemory(buffer);
-	deleteInetSession(sock);
+    deleteInetSession(sock);
     close(sock); 
     return(netError(ERR_INET_READ)); 
     }
@@ -1014,10 +1014,10 @@ cell->next = stuffString(IPaddress);
 freeMemory(buffer);
 
 if(closeFlag) 
-	{
-	deleteInetSession(sock);
-	close(sock);
-	}
+    {
+    deleteInetSession(sock);
+    close(sock);
+    }
 
 errorIdx = 0;
 return(result);
@@ -1051,8 +1051,8 @@ if(wait > 0)
         if((elapsed = wait_ready(sock, wait, READY_READ)) <= 0)
                 {
                 close(sock);
-				if(elapsed == 0) return(netError(ERR_INET_TIMEOUT));
-				else netError(ERR_INET_SELECT_FAILED);
+                if(elapsed == 0) return(netError(ERR_INET_TIMEOUT));
+                else netError(ERR_INET_SELECT_FAILED);
                 }
         }
 
@@ -1085,10 +1085,10 @@ params = getInteger(params, &sock);
 params = getStringSize(params, &buffer, &size, TRUE);
 
 if(params->type != CELL_NIL) 
-	{
-	getInteger(params, (UINT *)&size2); 
-	if(size2 < size) size = size2;
-	}
+    {
+    getInteger(params, (UINT *)&size2); 
+    if(size2 < size) size = size2;
+    }
 
 if((bytesSent = sendall((int)sock, buffer, size))  == SOCKET_ERROR) 
     { 
@@ -1123,24 +1123,24 @@ params = getInteger(params, &remotePort);
 params = getStringSize(params, &buffer, &size, TRUE);
 
 destination_len = (ADDR_FAMILY == AF_INET6) ? 
-		sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+        sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 destination = alloca(destination_len);
 
 if(*remoteHost != 0) /* 10.0.1 */
-	{
-	if(getHostAddr(destination, 0, remoteHost) != 0)
+    {
+    if(getHostAddr(destination, 0, remoteHost) != 0)
         return(netError(ERR_INET_HOST_UNKNOWN));
-	setSockaddrPort(destination, remotePort);
-	}
+    setSockaddrPort(destination, remotePort);
+    }
 
 if(type == SEND_TO_UDP) /* for 'net-send-udp' */
-	{
+    {
     if((sock = socket(ADDR_FAMILY, SOCK_DGRAM, 0)) == INVALID_SOCKET)
         return(netError(ERR_INET_OPEN_SOCKET));
 
      if(getFlag(params))
-		setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&one, sizeof(one));
-	}
+        setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&one, sizeof(one));
+    }
 else /* SEND_TO_SOCK , socket may or may not be UDP, for 'net-send-to' */
     {
     params = getInteger(params, &sock);
@@ -1150,10 +1150,10 @@ else /* SEND_TO_SOCK , socket may or may not be UDP, for 'net-send-to' */
 /* for socket opened with ip-address in (net-connect host port "udp") 
    in this case issue (net-send-to "" port message socket) 10.0.1 */
 if(*remoteHost == 0) 
-	bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET, NULL, 0);
+    bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET, NULL, 0);
 else
-	bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET,
-		(struct sockaddr *)destination, destination_len);
+    bytesSent = sendto((int)sock, buffer, size, NO_FLAGS_SET,
+        (struct sockaddr *)destination, destination_len);
 
 if(type == SEND_TO_UDP) close((int)sock);
 
@@ -1195,12 +1195,12 @@ params = params->next;
 
 #ifndef WIN_32
 if(cell->type == CELL_STRING)
-	{
-	if((sock = netListenLocal((char *)cell->contents)) == SOCKET_ERROR)
-		return(netError(errorIdx));
-	else
-		return(stuffInteger((UINT)sock));
-	}
+    {
+    if((sock = netListenLocal((char *)cell->contents)) == SOCKET_ERROR)
+        return(netError(errorIdx));
+    else
+        return(stuffInteger((UINT)sock));
+    }
 #endif
 
 getIntegerExt(cell, &portNo, FALSE); 
@@ -1212,7 +1212,7 @@ if(params != nilCell)
     if(params != nilCell)
         {
         params = getString(params, &option);
-    	*option = toupper(*option);
+        *option = toupper(*option);
         if(*option == 'U')
             type = SOCK_DGRAM;
 #ifndef WIN_32
@@ -1233,7 +1233,7 @@ if(params != nilCell)
     
 
 if((sock = netListenOrDatagram((int)portNo, type, ifAddr, mcAddr, sockopt)) 
-		== SOCKET_ERROR)
+        == SOCKET_ERROR)
     return(nilCell);
 
 return(stuffInteger(sock));
@@ -1256,18 +1256,18 @@ if(bind(sock, (struct sockaddr *)&local_sun, sizeof(struct sockaddr_un)) == -1)
 #else
 if(bind(sock, (struct sockaddr *)&local_sun, SUN_LEN(&local_sun)) != 0)
 #endif
-	{
-	close(sock);
-	errorIdx = ERR_INET_CANNOT_BIND;
-	return(SOCKET_ERROR);
-	}
+    {
+    close(sock);
+    errorIdx = ERR_INET_CANNOT_BIND;
+    return(SOCKET_ERROR);
+    }
 
 if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)
-	{
-	close(sock);
-	errorIdx = ERR_INET_LISTEN_FAILED;
-	return(SOCKET_ERROR);
-	}
+    {
+    close(sock);
+    errorIdx = ERR_INET_LISTEN_FAILED;
+    return(SOCKET_ERROR);
+    }
 
 createInetSession(sock, AF_UNIX);
 
@@ -1291,7 +1291,7 @@ if((sock = socket(ADDR_FAMILY, stype, option)) == INVALID_SOCKET)
     }
 
 local_len = (ADDR_FAMILY == AF_INET6) ?
-	sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 local = alloca(local_len);
 memset(local, 0, local_len);
 
@@ -1313,24 +1313,24 @@ if(mcAddr != NULL)
     {
     memset(&mcast, 0, sizeof(mcast));
     mcast.imr_multiaddr.s_addr = inet_addr(mcAddr);
-	if(ADDR_FAMILY == AF_INET)
-		mcast.imr_interface.s_addr = INADDR_ANY;    
+    if(ADDR_FAMILY == AF_INET)
+        mcast.imr_interface.s_addr = INADDR_ANY;    
 /* not handled/debugged
     else
-    	mcast.imr_interface.s_addr = IN6ADDR_ANY_INIT;
+        mcast.imr_interface.s_addr = IN6ADDR_ANY_INIT;
 */
     setsockopt(sock, 0, IP_ADD_MEMBERSHIP, (const void *)&mcast, sizeof(mcast));
     }
 
 if(stype == SOCK_STREAM)
-	{
-	if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)  
-		{ 
-		close(sock); 
-		errorIdx = ERR_INET_LISTEN_FAILED;
-		return(SOCKET_ERROR);
-		} 
-	}
+    {
+    if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)  
+        { 
+        close(sock); 
+        errorIdx = ERR_INET_LISTEN_FAILED;
+        return(SOCKET_ERROR);
+        } 
+    }
 
 createInetSession(sock, ADDR_FAMILY); 
 
@@ -1469,7 +1469,7 @@ handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
 
 if(write(handle, text, strlen(text)) < 0) return;
 if(newLine) 
-	if(write(handle, &LINE_FEED, strlen(LINE_FEED)) < 0) return;
+    if(write(handle, &LINE_FEED, strlen(LINE_FEED)) < 0) return;
 close(handle);
 }
 
@@ -1484,36 +1484,36 @@ time_t t;
 text[79] = 0;
 
 if(!reconnect)
-	{
+    {
 
 
 #ifndef WIN_32
-	if(port != 0)
-		sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
-	else
-		sock = netListenLocal(domain);
+    if(port != 0)
+        sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
+    else
+        sock = netListenLocal(domain);
 #else
-	sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
+    sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
 #endif
 
-	if(sock == SOCKET_ERROR) return(NULL);
-	else {
-		snprintf(text, 79, "newLISP v.%d listening on %s", version, domain);
-		writeLog(text, TRUE);
-		}
-	}
+    if(sock == SOCKET_ERROR) return(NULL);
+    else {
+        snprintf(text, 79, "newLISP v.%d listening on %s", version, domain);
+        writeLog(text, TRUE);
+        }
+    }
 else
-	{
-	deleteInetSession(connection);
-	close(connection); 
-	}
+    {
+    deleteInetSession(connection);
+    close(connection); 
+    }
 
 if((connection = netAccept(sock)) == SOCKET_ERROR)
-	return NULL;
+    return NULL;
 
 /* avoid registering socket twice */
 if(!isSessionSocket(connection))
-	createInetSession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX);
+    createInetSession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX);
 
 /* print log */
 getIpPortFromSocket(connection, PEER_INFO, name);
@@ -1532,15 +1532,15 @@ return(fdopen(connection, "r+"));
 CELL * netEvalError(int errNo);
 
 typedef struct
-	{
-	char * host;
-	int port;
-	int sock;
-	int timeOut;
-	STREAM * netStream;
-	CELL * result;
-	void * next;
-	} NETEVAL;
+    {
+    char * host;
+    int port;
+    int sock;
+    int timeOut;
+    STREAM * netStream;
+    CELL * result;
+    void * next;
+    } NETEVAL;
 
 void freeSessions(NETEVAL * base);
 
@@ -1571,22 +1571,22 @@ UINT * resultStackIdxSave;
 
 list  = evaluateExpression(params);
 if(list->type == CELL_STRING)
-	{
-	host = (char *)list->contents;
-	params = getIntegerExt(params->next, &port, TRUE);
-	/* params = getStringSize(params, &prog, &size, TRUE); */
-	/* convert to strong if required (since 10.1.1) */
-	prog = cellToString(evaluateExpression(params), &size, FALSE);
-	params = params->next;
-	list = nilCell;
-	singleSession = TRUE;
-	goto SINGLE_SESSION;
-	}
+    {
+    host = (char *)list->contents;
+    params = getIntegerExt(params->next, &port, TRUE);
+    /* params = getStringSize(params, &prog, &size, TRUE); */
+    /* convert to strong if required (since 10.1.1) */
+    prog = cellToString(evaluateExpression(params), &size, FALSE);
+    params = params->next;
+    list = nilCell;
+    singleSession = TRUE;
+    goto SINGLE_SESSION;
+    }
 else if(list->type == CELL_EXPRESSION)
-	{
-	list = (CELL*)list->contents;
-	params = params->next;
-	}
+    {
+    list = (CELL*)list->contents;
+    params = params->next;
+    }
 else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, params));
 
 CREATE_SESSION:
@@ -1597,11 +1597,11 @@ cell = (CELL *)list->contents;
 /* get node parameters, since 8.9.8 evaluated */
 memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
 if((errNo = setjmp(errorJump)) != 0)
-	{
-	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-	freeSessions(base);
-	longjmp(errorJump, errNo);
-	}
+    {
+    memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+    freeSessions(base);
+    longjmp(errorJump, errNo);
+    }
 cell = getStringSize(cell, &host, &size, TRUE);
 cell = getInteger(cell, &port);
 prog = cellToString(evaluateExpression(cell), &size, FALSE);
@@ -1625,19 +1625,19 @@ else
 
 #ifndef WIN_32
 if(port != 0)
-	sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
+    sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
 else
-	sock = netConnectLocal(host);
+    sock = netConnectLocal(host);
 #else
 sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
 #endif
 
 if(sock == SOCKET_ERROR)
-		{
-		session->result = netEvalError(errorIdx);
-		goto CONTINUE_CREATE_SESSION;
-		}
-	
+        {
+        session->result = netEvalError(errorIdx);
+        goto CONTINUE_CREATE_SESSION;
+        }
+    
 session->host = host;
 session->port = port;
 session->sock = sock;
@@ -1665,9 +1665,9 @@ if(list != nilCell) goto CREATE_SESSION;
    waiting for the result to come back */
 session = base;
 if(params != nilCell)
-	params = getInteger(params, (UINT *)&timeOut);
+    params = getInteger(params, (UINT *)&timeOut);
 if(params != nilCell)
-	netEvalIdle = params;
+    netEvalIdle = params;
    
 /* printf("timeout %d idle-loop %X\n", timeOut, netEvalIdle); */
  
@@ -1686,14 +1686,14 @@ while(count)
 
     if(netEvalIdle) 
         {
-		cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
+        cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
 
         pushResult(cell);
         if(!evaluateExpressionSafe(cell, &errNo))
-			{
-			freeSessions(base);
-			longjmp(errorJump, errNo);
-			}
+            {
+            freeSessions(base);
+            longjmp(errorJump, errNo);
+            }
         }
 
     bytes = -1; errNo = 0;
@@ -1702,12 +1702,12 @@ while(count)
         {
         memset(buffer, 0, MAX_BUFF);
         bytes = recv(session->sock, buffer, MAX_BUFF, NO_FLAGS_SET);
- 		/* if(bytes >= 0) printf("bytes:%ld=>%s<=\n", bytes, buffer); */
+        /* if(bytes >= 0) printf("bytes:%ld=>%s<=\n", bytes, buffer); */
         if(bytes) 
-			{
-			errNo = (memcmp(buffer, "\nERR: ", 6) == 0);
-			writeStreamStr(netStream, buffer, bytes);
-			}
+            {
+            errNo = (memcmp(buffer, "\nERR: ", 6) == 0);
+            writeStreamStr(netStream, buffer, bytes);
+            }
         }
     if(ready < 0 || bytes == 0 || errNo || elapsed >= timeOut)
         {
@@ -1724,13 +1724,13 @@ while(count)
                 freeSessions(base);
                 longjmp(errorJump, errNo);
                 }
-			result = sysEvalString(netStream->buffer, currentContext, nilCell, READ_EXPR_SYNC);
+            result = sysEvalString(netStream->buffer, currentContext, nilCell, READ_EXPR_SYNC);
             memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
             }
 
         if(netEvalIdle)
             {
-			session->result = cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(session->host));
+            session->result = cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(session->host));
 
             cell = (CELL *)cell->contents;
             cell->next = stuffInteger(session->port);
@@ -1748,16 +1748,16 @@ while(count)
             
         if(netEvalIdle)
             {
-			list = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
-			cell = makeCell(CELL_QUOTE, (UINT)session->result);
+            list = makeCell(CELL_EXPRESSION, (UINT)copyCell(netEvalIdle));
+            cell = makeCell(CELL_QUOTE, (UINT)session->result);
 
             ((CELL*)list->contents)->next = cell;
             pushResult(list);
-        	if(!evaluateExpressionSafe(list, &errNo))
-				{
-				freeSessions(base);
-				longjmp(errorJump, errNo);
-				}
+            if(!evaluateExpressionSafe(list, &errNo))
+                {
+                freeSessions(base);
+                longjmp(errorJump, errNo);
+                }
             }
 
         count--;
@@ -1783,14 +1783,14 @@ while(base != NULL)
         {
         if(result == NULL)
             {
-			if(singleSession)
-				result = base->result;
-			else
-				{
-				result = makeCell(CELL_EXPRESSION, (UINT)base->result);
-            	cell = base->result;
-            	}
-			}
+            if(singleSession)
+                result = base->result;
+            else
+                {
+                result = makeCell(CELL_EXPRESSION, (UINT)base->result);
+                cell = base->result;
+                }
+            }
         else
             {
             cell->next = base->result;
@@ -1803,7 +1803,7 @@ while(base != NULL)
     }
 
 if(elapsed > timeOut) 
-	errorIdx = ERR_INET_TIMEOUT;
+    errorIdx = ERR_INET_TIMEOUT;
 else errorIdx = 0;
 if(netEvalIdle == NULL) return(result);
 return(trueCell);
@@ -1838,11 +1838,11 @@ int bytesSend = 0;
 int n;
 
 while(bytesSend < len)
-	{
- 	if((n = send(sock, buffer + bytesSend, len - bytesSend, NO_FLAGS_SET)) == SOCKET_ERROR)
-		return(SOCKET_ERROR);
-	bytesSend += n;
-	}
+    {
+    if((n = send(sock, buffer + bytesSend, len - bytesSend, NO_FLAGS_SET)) == SOCKET_ERROR)
+        return(SOCKET_ERROR);
+    bytesSend += n;
+    }
 
 return(bytesSend);
 }
@@ -1868,7 +1868,7 @@ char * netErrorMsg[] =
     "Select failed",
     "Peek failed",
     "Not a valid socket",
-	"Cannot block or unblock socket",
+    "Cannot block or unblock socket",
     "Operation timed out",
 /* for nl-web.c */
     "HTTP bad formed URL",
@@ -1901,9 +1901,9 @@ char str[40];
 UINT numError = errorIdx;
 
 if(params != nilCell)
-	getInteger(params, &numError);
+    getInteger(params, &numError);
 else
-	if(numError == 0) return(nilCell);
+    if(numError == 0) return(nilCell);
 
 result = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(numError));
 
@@ -1930,20 +1930,20 @@ UINT count = 0;
 
 params = getEvalDefault(params, &address);
 if(address->type == CELL_EXPRESSION)
-	{
-	address = (CELL *)address->contents;
-	listmode = 1;
-	}
+    {
+    address = (CELL *)address->contents;
+    listmode = 1;
+    }
 else if(address->type != CELL_STRING)
   return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, address));
 
 if(params != nilCell)  
-	{
-	params = getInteger(params, &maxwait);
-	if(params != nilCell)
-		params = getInteger(params, &count);
-	flag = getFlag(params);
-	}
+    {
+    params = getInteger(params, &maxwait);
+    if(params != nilCell)
+        params = getInteger(params, &count);
+    flag = getFlag(params);
+    }
 
 return(ping(address, (int)maxwait, (int)listmode, (int)count, (int)flag));
 }
@@ -1992,180 +1992,180 @@ if ((s = socket(ADDR_FAMILY, SOCK_RAW, ICMP_TYPE)) < 0)
     return(netError(ERR_INET_OPEN_SOCKET));
    
 sockaddr_len = (ADDR_FAMILY == AF_INET6) ? 
-	sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+    sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 
 whereto = alloca(sockaddr_len);
 from = alloca(sockaddr_len);
 
 if(ADDR_FAMILY == AF_INET6)
-	{
-	ICMP6_FILTER_SETPASSALL (&filter);
-	setsockopt (s, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof (filter));
-	}
+    {
+    ICMP6_FILTER_SETPASSALL (&filter);
+    setsockopt (s, IPPROTO_ICMPV6, ICMP6_FILTER, &filter, sizeof (filter));
+    }
 
 gettimeofday(&tv, NULL );
 
 /* for each list-IP */
 while(address != nilCell)
-	{
-	mySleep(1);
-	if(address->type != CELL_STRING)
-		{
-		shutdown(s, SHUT_RDWR);
-		return(errorProcExt(ERR_STRING_EXPECTED, address));
-		}
-
-	host = (char *)address->contents;
-	len = address->aux - 1;
-
-	if(ADDR_FAMILY == AF_INET) /* IPv4 */
-		{
-		if(strncmp(host + len - 2, ".*", 2) == 0)
-			{
-			startIp = 1;
-			endIp = 254;
-			len--;
-			}
-		else
-			{
-			startIp = endIp = 0;
-			ptr = host + len - 1;
-			while(isdigit((int)*ptr)) --ptr;
-			if(*ptr == '-')
-				{
-				endIp = atoi(ptr + 1);
-				--ptr;
-				while(isdigit((int)*ptr)) --ptr;
-				if(*ptr == '.')
-					{
-					startIp = atoi(ptr + 1);
-					len = ptr - host + 1;
-					}
-				else endIp = startIp = 0;
-				if(endIp < startIp) endIp = startIp;	
-				if(endIp > 254) endIp = 254;
-				}
-			}
-		}
-
-	/* ping ip range */
-	for(ipNo = startIp; ipNo <= endIp; ipNo++)
+    {
+    mySleep(1);
+    if(address->type != CELL_STRING)
         {
-		if(startIp)
-			{
-        	if(hostaddr == NULL) hostaddr = alloca(len + 4);
-        	memcpy(hostaddr, host, len);
-        	snprintf(hostaddr + len, 4, "%d", ipNo);
-			}
-    	else
-       		hostaddr = host;
+        shutdown(s, SHUT_RDWR);
+        return(errorProcExt(ERR_STRING_EXPECTED, address));
+        }
 
-		/* target host address info */
-		/* printf("->%s\n", hostaddr); */
+    host = (char *)address->contents;
+    len = address->aux - 1;
 
-		memset((char *)whereto, 0, sockaddr_len);
-#ifdef	MAC_OSX
-		if(getHostAddr(whereto, SOCK_DGRAM, hostaddr) != 0)
+    if(ADDR_FAMILY == AF_INET) /* IPv4 */
+        {
+        if(strncmp(host + len - 2, ".*", 2) == 0)
+            {
+            startIp = 1;
+            endIp = 254;
+            len--;
+            }
+        else
+            {
+            startIp = endIp = 0;
+            ptr = host + len - 1;
+            while(isdigit((int)*ptr)) --ptr;
+            if(*ptr == '-')
+                {
+                endIp = atoi(ptr + 1);
+                --ptr;
+                while(isdigit((int)*ptr)) --ptr;
+                if(*ptr == '.')
+                    {
+                    startIp = atoi(ptr + 1);
+                    len = ptr - host + 1;
+                    }
+                else endIp = startIp = 0;
+                if(endIp < startIp) endIp = startIp;    
+                if(endIp > 254) endIp = 254;
+                }
+            }
+        }
+
+    /* ping ip range */
+    for(ipNo = startIp; ipNo <= endIp; ipNo++)
+        {
+        if(startIp)
+            {
+            if(hostaddr == NULL) hostaddr = alloca(len + 4);
+            memcpy(hostaddr, host, len);
+            snprintf(hostaddr + len, 4, "%d", ipNo);
+            }
+        else
+            hostaddr = host;
+
+        /* target host address info */
+        /* printf("->%s\n", hostaddr); */
+
+        memset((char *)whereto, 0, sockaddr_len);
+#ifdef  MAC_OSX
+        if(getHostAddr(whereto, SOCK_DGRAM, hostaddr) != 0)
 #else
-		if(getHostAddr(whereto, SOCK_RAW, hostaddr) != 0)
+        if(getHostAddr(whereto, SOCK_RAW, hostaddr) != 0)
 #endif
-			{
-			shutdown(s, SHUT_RDWR);
-			return(netError(ERR_INET_HOST_UNKNOWN));
-			}
+            {
+            shutdown(s, SHUT_RDWR);
+            return(netError(ERR_INET_HOST_UNKNOWN));
+            }
 
-		if(ADDR_FAMILY == AF_INET6)
-			setSockaddrPort(whereto, htons(IPPROTO_ICMPV6));
-		else if((broadcast = (strncmp(host + len - 4, ".255", 4) == 0)))
-			setsockopt(s, SOL_SOCKET, SO_BROADCAST, (void *) &sockopt, sizeof(sockopt));
-			
-		/* ping setup ICMP packet */
-		if(ADDR_FAMILY == AF_INET6)
-			{
-			memset(icp6, 0, PLEN);
-			icp6->icmp6_type = ICMP6_ECHO_REQUEST;
-			icp6->icmp6_id = getpid() & 0xFFFF; 
-			gettimeofday((struct timeval *)&icp6->icmp6_data8[4], NULL);
-			}
-		else
-			{
-			memset(icp, 0, PLEN);
-			icp->icmp_type = ICMP_ECHO;
-			icp->icmp_id = getpid() & 0xFFFF; 
-			gettimeofday((struct timeval *)&icp[1], NULL);
-			icp->icmp_cksum = in_cksum((unsigned short *) icp, PLEN );
-			}
+        if(ADDR_FAMILY == AF_INET6)
+            setSockaddrPort(whereto, htons(IPPROTO_ICMPV6));
+        else if((broadcast = (strncmp(host + len - 4, ".255", 4) == 0)))
+            setsockopt(s, SOL_SOCKET, SO_BROADCAST, (void *) &sockopt, sizeof(sockopt));
+            
+        /* ping setup ICMP packet */
+        if(ADDR_FAMILY == AF_INET6)
+            {
+            memset(icp6, 0, PLEN);
+            icp6->icmp6_type = ICMP6_ECHO_REQUEST;
+            icp6->icmp6_id = getpid() & 0xFFFF; 
+            gettimeofday((struct timeval *)&icp6->icmp6_data8[4], NULL);
+            }
+        else
+            {
+            memset(icp, 0, PLEN);
+            icp->icmp_type = ICMP_ECHO;
+            icp->icmp_id = getpid() & 0xFFFF; 
+            gettimeofday((struct timeval *)&icp[1], NULL);
+            icp->icmp_cksum = in_cksum((unsigned short *) icp, PLEN );
+            }
 
-		while(wait_ready(s, 10000, READY_WRITE) <= 0)
-			{
-        	gettimeofday(&tp, NULL);
-        	if((timeout = (timediff_ms(tp, tv) > maxwait))) break;
-        	continue;
-			}
-		
-		/* ping */	
-		size = sendto(s, packet, PLEN, 0,(struct sockaddr *)whereto, sockaddr_len);
-		if(size != PLEN)
-			{
-			if(flag)
-				{
-				snprintf(buff, 64, "%s", strerror(errno));
-				ipstrFromSockAddr((struct sockaddr *)whereto, IPaddress, STRADDR_LEN);
-				link = addResult(&result, link, 
-					makePair(stuffString(IPaddress), stuffString(buff)));
-				}
-   			if( !(listmode || startIp) ) break;
-			continue;
-			}
+        while(wait_ready(s, 10000, READY_WRITE) <= 0)
+            {
+            gettimeofday(&tp, NULL);
+            if((timeout = (timediff_ms(tp, tv) > maxwait))) break;
+            continue;
+            }
+        
+        /* ping */  
+        size = sendto(s, packet, PLEN, 0,(struct sockaddr *)whereto, sockaddr_len);
+        if(size != PLEN)
+            {
+            if(flag)
+                {
+                snprintf(buff, 64, "%s", strerror(errno));
+                ipstrFromSockAddr((struct sockaddr *)whereto, IPaddress, STRADDR_LEN);
+                link = addResult(&result, link, 
+                    makePair(stuffString(IPaddress), stuffString(buff)));
+                }
+            if( !(listmode || startIp) ) break;
+            continue;
+            }
 
-		sendCount++;
-		}
-	if(!listmode) break;
-	address = address->next;
-	}
+        sendCount++;
+        }
+    if(!listmode) break;
+    address = address->next;
+    }
 
 /* wait for response(s) */
 if(maxCount == 0) maxCount = sendCount;
 while(sendCount) 
-	{
+    {
 
     if(wait_ready(s, 1000, READY_READ) <= 0)
         {
         gettimeofday(&tp, NULL);
-       	if((timeout = (timediff_ms(tp, tv) > maxwait))) break;
+        if((timeout = (timediff_ms(tp, tv) > maxwait))) break;
         continue;
         }    
 
     memset(packet, 0, PLEN);
-	memset(from, 0, sockaddr_len);
+    memset(from, 0, sockaddr_len);
     if ( (len = recvfrom(s, packet, PLEN, 0, (struct sockaddr *)from, 
-						(socklen_t *)&sockaddr_len)) < 0)
+                        (socklen_t *)&sockaddr_len)) < 0)
         continue;
     
     ip = (struct ip *) packet;
-	gettimeofday(&tp, NULL);
+    gettimeofday(&tp, NULL);
 
-	if(ADDR_FAMILY == AF_INET6)
-		{
-    	icp6 = (struct icmp6_hdr *)packet;
-		if(icp6->icmp6_type != ICMP6_ECHO_REPLY) continue;
-    	if(icp6->icmp6_id != (getpid() & 0xFFFF)) continue; 
-		tdiff = timediff64_us(tp, *(struct timeval *)&icp6->icmp6_data8[4]);
-		}
-	else
-		{
-    	icp = (struct icmp *)(packet + (ip->ip_hl << 2));
-    	if(icp->icmp_id != (getpid() & 0xFFFF)) continue; 
-		tdiff = timediff64_us(tp, *(struct timeval *)&icp[1]);
-		}
+    if(ADDR_FAMILY == AF_INET6)
+        {
+        icp6 = (struct icmp6_hdr *)packet;
+        if(icp6->icmp6_type != ICMP6_ECHO_REPLY) continue;
+        if(icp6->icmp6_id != (getpid() & 0xFFFF)) continue; 
+        tdiff = timediff64_us(tp, *(struct timeval *)&icp6->icmp6_data8[4]);
+        }
+    else
+        {
+        icp = (struct icmp *)(packet + (ip->ip_hl << 2));
+        if(icp->icmp_id != (getpid() & 0xFFFF)) continue; 
+        tdiff = timediff64_us(tp, *(struct timeval *)&icp[1]);
+        }
 
-	ipstrFromSockAddr((struct sockaddr *)from, IPaddress, STRADDR_LEN);
-	link = addResult(&result, link, 
-			makePair(stuffString(IPaddress), stuffInteger(tdiff)));
+    ipstrFromSockAddr((struct sockaddr *)from, IPaddress, STRADDR_LEN);
+    link = addResult(&result, link, 
+            makePair(stuffString(IPaddress), stuffInteger(tdiff)));
 
     if(++receiveCount == maxCount) break;
     if( !(broadcast || listmode || startIp) ) break;
-	} 
+    } 
 
 shutdown(s, SHUT_RDWR); 
 
@@ -2178,9 +2178,9 @@ return(result == NULL ? getCell(CELL_EXPRESSION) : result);
 CELL * addResult(CELL * * result, CELL * cell, CELL * new)
 {
 if(*result == NULL)
-	*result = makeCell(CELL_EXPRESSION, (UINT)new);
+    *result = makeCell(CELL_EXPRESSION, (UINT)new);
 else
-	cell->next = new;	
+    cell->next = new;   
 
 return(new);
 }
@@ -2253,13 +2253,13 @@ else
 
 /* for checksum calculation in TCP packets */
 struct pseudohdr
-	{
-	struct in_addr source_addr;
-	struct in_addr dest_addr;
-	unsigned char dummy;
-	unsigned char protocol;
-	unsigned short len;
-	};
+    {
+    struct in_addr source_addr;
+    struct in_addr dest_addr;
+    unsigned char dummy;
+    unsigned char protocol;
+    unsigned short len;
+    };
 
 
 #ifndef WIN_32
@@ -2299,36 +2299,36 @@ params = getStringSize(params, &packet, &size, TRUE);
    can have a value of 0,1,2,3
 */
 if(params != nilCell)
-	getInteger(params, &configFlags);
+    getInteger(params, &configFlags);
 
 iph = (struct ip *)packet;
 
 if(iph->ip_sum == 0)
-	iph->ip_sum = in_cksum((unsigned short *)iph, sizeof(struct ip));
+    iph->ip_sum = in_cksum((unsigned short *)iph, sizeof(struct ip));
 
 switch(iph->ip_p)
   {
   case IPPROTO_TCP:
-	tcph = (struct tcphdr *)(packet + sizeof(struct ip));
-	dport = tcph->th_dport;
-	if(tcph->th_sum == 0) 
-		tcph->th_sum = pseudo_chks(iph, packet, (char *) tcph, tcph->th_off * 4);
-	break;
+    tcph = (struct tcphdr *)(packet + sizeof(struct ip));
+    dport = tcph->th_dport;
+    if(tcph->th_sum == 0) 
+        tcph->th_sum = pseudo_chks(iph, packet, (char *) tcph, tcph->th_off * 4);
+    break;
   case IPPROTO_UDP:
-	udph = (struct udphdr *)(packet + sizeof(struct ip));
-	dport = udph->uh_dport;
-	if(udph->uh_sum == 0)
-		udph->uh_sum = pseudo_chks(iph, packet, (char *) udph, sizeof(struct udphdr));
-	break;
+    udph = (struct udphdr *)(packet + sizeof(struct ip));
+    dport = udph->uh_dport;
+    if(udph->uh_sum == 0)
+        udph->uh_sum = pseudo_chks(iph, packet, (char *) udph, sizeof(struct udphdr));
+    break;
   case IPPROTO_ICMP:
-	icmph = (struct icmp *)(packet + sizeof(struct ip));
-	dport = 0;
-	if(icmph->icmp_cksum == 0)
-	icmph->icmp_cksum = in_cksum((unsigned short *)icmph, 
-			ntohs(iph->ip_len) - iph->ip_hl * 4);
-	break;
+    icmph = (struct icmp *)(packet + sizeof(struct ip));
+    dport = 0;
+    if(icmph->icmp_cksum == 0)
+    icmph->icmp_cksum = in_cksum((unsigned short *)icmph, 
+            ntohs(iph->ip_len) - iph->ip_hl * 4);
+    break;
   default:
-	return(nilCell);
+    return(nilCell);
   }
 
 if(configFlags & 0x1) iph->ip_len = ntohs(iph->ip_len);
@@ -2346,14 +2346,14 @@ if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, (char *)&one, sizeof(one)) < 0)
     return(netError(ERR_INET_OPEN_SOCKET));
 
 if((bytesSent = sendto(sock, packet, size, NO_FLAGS_SET, 
-		(struct sockaddr *)&dest_sin, sizeof(dest_sin))) != size)
-	return(nilCell);
+        (struct sockaddr *)&dest_sin, sizeof(dest_sin))) != size)
+    return(nilCell);
 
 return(stuffInteger(bytesSent));
 }
 
 unsigned short pseudo_chks(
-		struct ip * iph, char * packet, char * header, int data_offset)
+        struct ip * iph, char * packet, char * header, int data_offset)
 {
 /* packet was give with ip_len in net-work byte order */
 unsigned short checksum;
@@ -2361,8 +2361,8 @@ int segment_len = ntohs(iph->ip_len) - iph->ip_hl * 4;
 int data_len = segment_len - data_offset;
 struct pseudohdr * pseudoh = alloca(sizeof(struct pseudohdr) + segment_len);
 
-pseudoh->source_addr = iph->ip_src;	
-pseudoh->dest_addr = iph->ip_dst;	
+pseudoh->source_addr = iph->ip_src; 
+pseudoh->dest_addr = iph->ip_dst;   
 pseudoh->dummy = 0;
 pseudoh->protocol = iph->ip_p;
 pseudoh->len = htons(segment_len);
@@ -2370,14 +2370,14 @@ pseudoh->len = htons(segment_len);
 data_len = segment_len - data_offset;
 memcpy((char *)pseudoh + sizeof(struct pseudohdr), header, data_offset);
 memcpy((char *)pseudoh + sizeof(struct pseudohdr) + data_offset,
-	packet + iph->ip_hl * 4 + data_offset, data_len);
+    packet + iph->ip_hl * 4 + data_offset, data_len);
 
 checksum = in_cksum((unsigned short *)pseudoh, sizeof(struct pseudohdr) + segment_len);
 #ifdef DEBUG
-	printf("segment_len:%d\n", segment_len);
-	printf("data_offset:%d\n", data_offset);
-	printf("data_len:%d\n", data_len);
-	printf("checksum:%x\n", ntohs(checksum));
+    printf("segment_len:%d\n", segment_len);
+    printf("data_offset:%d\n", data_offset);
+    printf("data_len:%d\n", data_len);
+    printf("checksum:%x\n", ntohs(checksum));
 #endif
 return(checksum);
 }

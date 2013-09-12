@@ -22,8 +22,8 @@
 #include "protos.h"
 
 #define str2cmp(s1,s2) \
-	(( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
-	 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )
+    (( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
+     ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )
                          
 
 extern CELL * cellMemory;
@@ -36,7 +36,7 @@ void deleteContextSymbols(CELL * cell, int checkReferences);
 CELL dumpSymbol(char * name);
 void collectSymbols(SYMBOL * sPtr, CELL * symbolList);
 void collectSymbolAssocs(SYMBOL * sPtr, CELL * assocList);
-static SYMBOL * root;	/* root symbol derived from context */
+static SYMBOL * root;   /* root symbol derived from context */
 
 /* --------- return a list of all symbols in a context -------------- */
 
@@ -49,12 +49,12 @@ CELL * symbolList;
 symbolList = getCell(CELL_EXPRESSION);
 
 if(params->type == CELL_NIL) 
-	context = currentContext;
+    context = currentContext;
 else
-	getContext(params, &context);
+    getContext(params, &context);
 
 if(context) /* check in case we are in debug mode */
-	collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
+    collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
 return(symbolList);
 }
 
@@ -64,21 +64,21 @@ void collectSymbols(SYMBOL * sPtr, CELL * symbolList)
 CELL * cell;
 
 if(sPtr != NIL_SYM && sPtr != NULL)
-	{
-	collectSymbols(sPtr->left, symbolList);
-	if(symbolList->contents == (UINT)nilCell)
-		{
-		symbolList->contents = (UINT)stuffSymbol(sPtr);
-		symbolList->aux = symbolList->contents;
-		}
-	else 
-		{
-		cell = (CELL *)symbolList->aux;
-		cell->next = stuffSymbol(sPtr);
-		symbolList->aux = (UINT)cell->next;
-		}
-	collectSymbols(sPtr->right, symbolList);
-	}
+    {
+    collectSymbols(sPtr->left, symbolList);
+    if(symbolList->contents == (UINT)nilCell)
+        {
+        symbolList->contents = (UINT)stuffSymbol(sPtr);
+        symbolList->aux = symbolList->contents;
+        }
+    else 
+        {
+        cell = (CELL *)symbolList->aux;
+        cell->next = stuffSymbol(sPtr);
+        symbolList->aux = (UINT)cell->next;
+        }
+    collectSymbols(sPtr->right, symbolList);
+    }
 }
 
 
@@ -98,21 +98,21 @@ void collectSymbolAssocs(SYMBOL * sPtr, CELL * assocList)
 CELL * cell;
 
 if(sPtr != NIL_SYM && sPtr != NULL)
-	{
-	collectSymbolAssocs(sPtr->left, assocList);
-	if(*sPtr->name == '_')
-		{
-		cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(sPtr->name + 1));
-		((CELL *)cell->contents)->next = copyCell((CELL *)sPtr->contents);
+    {
+    collectSymbolAssocs(sPtr->left, assocList);
+    if(*sPtr->name == '_')
+        {
+        cell = makeCell(CELL_EXPRESSION, (UINT)stuffString(sPtr->name + 1));
+        ((CELL *)cell->contents)->next = copyCell((CELL *)sPtr->contents);
 
-		if(assocList->contents == (UINT)nilCell)
-			assocList->contents = (UINT)cell;
-		else 
-			((CELL *)assocList->aux)->next = cell;
-		assocList->aux = (UINT)cell;
-		}
-	collectSymbolAssocs(sPtr->right, assocList);
-	}
+        if(assocList->contents == (UINT)nilCell)
+            assocList->contents = (UINT)cell;
+        else 
+            ((CELL *)assocList->aux)->next = cell;
+        assocList->aux = (UINT)cell;
+        }
+    collectSymbolAssocs(sPtr->right, assocList);
+    }
 }
 
 
@@ -131,9 +131,9 @@ char * token;
 token = alloca(cell->aux + 1);
 *token = '_';
 memcpy(token + 1, (char *)cell->contents, cell->aux);
-	
+    
 if(flag)
-		return(translateCreateSymbol(token, CELL_NIL, context, TRUE));
+        return(translateCreateSymbol(token, CELL_NIL, context, TRUE));
 
 root = (SYMBOL *)((CELL *)context->contents)->aux;
 return(findInsertSymbol(token, LOOKUP_ONLY));
@@ -151,7 +151,7 @@ return(findInsertSymbol(token, LOOKUP_ONLY));
 
 
 SYMBOL * translateCreateSymbol
-	(char * token, int type, SYMBOL * context, int forceFlag)
+    (char * token, int type, SYMBOL * context, int forceFlag)
 {
 SYMBOL * sPtr;
 CELL * cell = NULL;
@@ -161,60 +161,60 @@ cell = (CELL *)context->contents;
 root = (SYMBOL *)cell->aux;
 
 if(forceFlag)
-	sPtr = findInsertSymbol(token, FORCE_CREATION);
+    sPtr = findInsertSymbol(token, FORCE_CREATION);
 else /* try to inherit from MAIN, if not here create in current context */
-	{
-	sPtr = findInsertSymbol(token, LOOKUP_ONLY);
-	if(sPtr == NULL)
-		{
-		if(context != mainContext)
-			{
-			root = (SYMBOL *)((CELL *)mainContext->contents)->aux;
-			sPtr = findInsertSymbol(token, LOOKUP_ONLY);
-			/* since 7.2.7 only inherit primitives and other globals */
-			if(sPtr != NULL && !(sPtr->flags & SYMBOL_GLOBAL))
-				{
-				if(symbolType(sPtr) != CELL_CONTEXT
-				    || (SYMBOL *)((CELL*)sPtr->contents)->contents != sPtr)
-					sPtr = NULL;
-				}
-			root = (SYMBOL *)cell->aux;
-			}
-		if(sPtr == NULL)
-			sPtr = findInsertSymbol(token, FORCE_CREATION);
-		}
-	}
+    {
+    sPtr = findInsertSymbol(token, LOOKUP_ONLY);
+    if(sPtr == NULL)
+        {
+        if(context != mainContext)
+            {
+            root = (SYMBOL *)((CELL *)mainContext->contents)->aux;
+            sPtr = findInsertSymbol(token, LOOKUP_ONLY);
+            /* since 7.2.7 only inherit primitives and other globals */
+            if(sPtr != NULL && !(sPtr->flags & SYMBOL_GLOBAL))
+                {
+                if(symbolType(sPtr) != CELL_CONTEXT
+                    || (SYMBOL *)((CELL*)sPtr->contents)->contents != sPtr)
+                    sPtr = NULL;
+                }
+            root = (SYMBOL *)cell->aux;
+            }
+        if(sPtr == NULL)
+            sPtr = findInsertSymbol(token, FORCE_CREATION);
+        }
+    }
 
 
 /* the symbol existed already, return */
 if(sPtr->contents != 0) 
-	return(sPtr);
+    return(sPtr);
 
 /* root might have changed, after symbol insertion */
 cell->aux = (UINT)root;
-	
+    
 /* a new symbol has been allocated by findInsertSymbol() */
 if(type != CELL_PRIMITIVE)
-	{
-	len = strlen(token);
-	sPtr->name = (char *)allocMemory(len + 1);
-	memcpy(sPtr->name, token, len + 1);
- 	cell = copyCell(nilCell); 
-	sPtr->contents = (UINT)cell;
-	/* make a new context symbol */
-	if(type == CELL_CONTEXT && context == mainContext)
-		{
-		cell->type = CELL_CONTEXT;
-		cell->contents = (UINT)sPtr;
-		cell->aux = 0;
-		sPtr->flags |= (SYMBOL_PROTECTED | SYMBOL_GLOBAL);
-		}
-	}
+    {
+    len = strlen(token);
+    sPtr->name = (char *)allocMemory(len + 1);
+    memcpy(sPtr->name, token, len + 1);
+    cell = copyCell(nilCell); 
+    sPtr->contents = (UINT)cell;
+    /* make a new context symbol */
+    if(type == CELL_CONTEXT && context == mainContext)
+        {
+        cell->type = CELL_CONTEXT;
+        cell->contents = (UINT)sPtr;
+        cell->aux = 0;
+        sPtr->flags |= (SYMBOL_PROTECTED | SYMBOL_GLOBAL);
+        }
+    }
 else
-	{
-	sPtr->name = token;
-	sPtr->contents = (UINT)nilCell;
-	}
+    {
+    sPtr->name = token;
+    sPtr->contents = (UINT)nilCell;
+    }
 
 sPtr->context = context;
 return(sPtr);
@@ -233,14 +233,14 @@ getString(params, &name);
 sPtr = findInsertSymbol(name, LOOKUP_ONLY);
 
 if(sPtr == NULL)
-	return(nilCell);
+    return(nilCell);
 
 varPrintf(OUT_DEVICE, "name=%s color=%s parent=%s left=%s right=%s\n", 
-	sPtr->name,
-	(sPtr->color == RED) ? "red" : "black",
-	(sPtr->parent) ? sPtr->parent->name : "ROOT",
-	sPtr->left->name,
-	sPtr->right->name);
+    sPtr->name,
+    (sPtr->color == RED) ? "red" : "black",
+    (sPtr->parent) ? sPtr->parent->name : "ROOT",
+    sPtr->left->name,
+    sPtr->right->name);
 
 return(trueCell);
 }
@@ -261,23 +261,23 @@ int checkReferences = TRUE;
 
 cell = evaluateExpression(params);
 if(cell->type != CELL_SYMBOL)
-	return(errorProcExt(ERR_SYMBOL_EXPECTED, params));
+    return(errorProcExt(ERR_SYMBOL_EXPECTED, params));
 sPtr = (SYMBOL*)cell->contents;
 
 if(sPtr == mainContext) return(nilCell);
 
 if(symbolType(sPtr) == CELL_CONTEXT)
-	{
-	ctx = (CELL*)sPtr->contents;
-	if(ctx->contents == (UINT)sPtr)
-		{
-		sPtr->flags &= ~SYMBOL_PROTECTED;
-		cell = ctx;
-		}
-	}
+    {
+    ctx = (CELL*)sPtr->contents;
+    if(ctx->contents == (UINT)sPtr)
+        {
+        sPtr->flags &= ~SYMBOL_PROTECTED;
+        cell = ctx;
+        }
+    }
 
 if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
-	return(nilCell);
+    return(nilCell);
 
 /* nil as extra parameter deletes without reference checking.
    true as extra parameter deletes only if no references are found,
@@ -287,36 +287,36 @@ if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
 params = params->next;
 /* extra parameter is specified as nil */
 if(params != nilCell && !getFlag(params))
-	checkReferences = FALSE;
+    checkReferences = FALSE;
 /* extra parameter is specified as true */
 else if(getFlag(params))
-	{
-	if(cell->type == CELL_CONTEXT)
-		{
-		if(externalReferences(sPtr, FALSE) > 0)
-			{
-			sPtr->flags |= SYMBOL_PROTECTED;
-			return(nilCell);
-			}
-		checkReferences = FALSE;
-		}
-	else
-		{
-		if(references(sPtr, FALSE) > 1)
-			return(nilCell);
-		checkReferences = FALSE;
-		}
-	}
+    {
+    if(cell->type == CELL_CONTEXT)
+        {
+        if(externalReferences(sPtr, FALSE) > 0)
+            {
+            sPtr->flags |= SYMBOL_PROTECTED;
+            return(nilCell);
+            }
+        checkReferences = FALSE;
+        }
+    else
+        {
+        if(references(sPtr, FALSE) > 1)
+            return(nilCell);
+        checkReferences = FALSE;
+        }
+    }
 
 if(cell->type == CELL_CONTEXT)
-	{
-	deleteContextSymbols(cell, checkReferences);
-	cell->type = CELL_SYMBOL; /* demote */
-	deleteList((CELL *)sPtr->contents);
-	sPtr->contents = (UINT)copyCell(nilCell);
-	}
+    {
+    deleteContextSymbols(cell, checkReferences);
+    cell->type = CELL_SYMBOL; /* demote */
+    deleteList((CELL *)sPtr->contents);
+    sPtr->contents = (UINT)copyCell(nilCell);
+    }
 else 
-	deleteFreeSymbol(sPtr, checkReferences);
+    deleteFreeSymbol(sPtr, checkReferences);
 
 return(trueCell);
 }
@@ -331,18 +331,18 @@ CELL * nextSymbol;
 context = (SYMBOL *)cell->contents;
 
 if(checkReferences)
-	externalReferences(context, TRUE);
+    externalReferences(context, TRUE);
 
 symbolList = getCell(CELL_EXPRESSION);
 collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
 
 nextSymbol = (CELL *)symbolList->contents;
 while(nextSymbol != nilCell)
-	{
-	deleteFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
-	nextSymbol = nextSymbol->next;
-	}
-	
+    {
+    deleteFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
+    nextSymbol = nextSymbol->next;
+    }
+    
 deleteList(symbolList);
 }
 
@@ -355,7 +355,7 @@ context = sPtr->context;
 root = (SYMBOL *)((CELL *)context->contents)->aux;
 
 if(!deleteSymbol(sPtr->name))
-	return;
+    return;
 
 ((CELL *)context->contents)->aux = (UINT)root; /* root may have changed */
 
@@ -375,14 +375,14 @@ UINT * idx = envStackIdx;
 /* make sure symbol is not used as local in call hierachy 
    and symbol is legal */
 while(idx > envStack)
-	{
-	if(symbol == (SYMBOL *)*(--idx))
-		errorProcExt2(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
-	--idx;
-	}
+    {
+    if(symbol == (SYMBOL *)*(--idx))
+        errorProcExt2(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
+    --idx;
+    }
 
 if(!isLegalSymbol(symbol->name))
-		errorProcExt2(ERR_INVALID_PARAMETER, stuffString(symbol->name));
+        errorProcExt2(ERR_INVALID_PARAMETER, stuffString(symbol->name));
 
 
 contextCell = makeCell(CELL_CONTEXT, (UINT)symbol);
@@ -402,24 +402,24 @@ int i, count;
 blockPtr = cellMemory;
 count = 0;
 while(blockPtr != NULL)
-	{
-	for(i = 0; i < MAX_BLOCK; i++)
-		{
-		if( blockPtr->contents == (UINT)sPtr &&
-			(*(UINT *)blockPtr == CELL_SYMBOL ||  *(UINT *)blockPtr == CELL_CONTEXT))
-			{
-			count++;
-			if(replaceFlag)
-				{
-				blockPtr->type = CELL_SYMBOL;
-				blockPtr->aux = (UINT)nilCell;	
-				blockPtr->contents = (UINT)nilSymbol;
-				}
-			}
-		blockPtr++;
-		}
-	blockPtr = blockPtr->next;
-	}
+    {
+    for(i = 0; i < MAX_BLOCK; i++)
+        {
+        if( blockPtr->contents == (UINT)sPtr &&
+            (*(UINT *)blockPtr == CELL_SYMBOL ||  *(UINT *)blockPtr == CELL_CONTEXT))
+            {
+            count++;
+            if(replaceFlag)
+                {
+                blockPtr->type = CELL_SYMBOL;
+                blockPtr->aux = (UINT)nilCell;  
+                blockPtr->contents = (UINT)nilSymbol;
+                }
+            }
+        blockPtr++;
+        }
+    blockPtr = blockPtr->next;
+    }
 
 return(count);
 }
@@ -432,23 +432,23 @@ SYMBOL * sPtr;
 
 blockPtr = cellMemory;
 while(blockPtr != NULL)
-	{
-	for(i = 0; i < MAX_BLOCK; i++)
-		{
-		if(blockPtr->type == CELL_SYMBOL)
-			{
-			sPtr = (SYMBOL *)blockPtr->contents;
-			if(sPtr->context == contextPtr)		
-				{
-				count++;
-				if(replaceFlag) 
-					blockPtr->contents = (UINT)nilSymbol;
-				}
-			}
-		blockPtr++;
-		}
-	blockPtr = blockPtr->next;
-	}
+    {
+    for(i = 0; i < MAX_BLOCK; i++)
+        {
+        if(blockPtr->type == CELL_SYMBOL)
+            {
+            sPtr = (SYMBOL *)blockPtr->contents;
+            if(sPtr->context == contextPtr)     
+                {
+                count++;
+                if(replaceFlag) 
+                    blockPtr->contents = (UINT)nilSymbol;
+                }
+            }
+        blockPtr++;
+        }
+    blockPtr = blockPtr->next;
+    }
 
 return(count);
 }
@@ -460,9 +460,9 @@ SYMBOL * sPtr;
 
 params = evaluateExpression(params);
 if(params->type == CELL_SYMBOL || params->type == CELL_CONTEXT)
-	sPtr = (SYMBOL *)params->contents;
+    sPtr = (SYMBOL *)params->contents;
 else
-	return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
+    return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
 
 return(stuffString(sPtr->name));
 }
@@ -502,18 +502,18 @@ return(makeCell(CELL_CONTEXT, (UINT)sPtr->context));
 #define BLACK 0
 #define RED 1
 
-#define NIL_SYM &sentinel	/* all leafs are sentinels */
+#define NIL_SYM &sentinel   /* all leafs are sentinels */
 
 SYMBOL sentinel = {
-	0, 		/* pretty print */
-	BLACK,		/* color */
-	"NIL",		/* name */
-	0,		/* contents */
-	NULL,		/* context */
-	NULL,		/* parent */
-	NIL_SYM,	/* left */
- 	NIL_SYM 	/* right */
-	};
+    0,      /* pretty print */
+    BLACK,      /* color */
+    "NIL",      /* name */
+    0,      /* contents */
+    NULL,       /* context */
+    NULL,       /* parent */
+    NIL_SYM,    /* left */
+    NIL_SYM     /* right */
+    };
 
 void rotateLeft(SYMBOL* x);
 void rotateRight(SYMBOL * x);
@@ -553,13 +553,13 @@ current = (root == NULL) ? NIL_SYM : root;
 parent = 0;
 
 while (current != NIL_SYM)
-	{
-	if( ((c = str2cmp(key, current->name)) == 0) && ((c = strcmp(key, current->name)) == 0) )
+    {
+    if( ((c = str2cmp(key, current->name)) == 0) && ((c = strcmp(key, current->name)) == 0) )
             return(current);
 
-	parent = current;
-	current = (c < 0) ? current->left : current->right;
-	}
+    parent = current;
+    current = (c < 0) ? current->left : current->right;
+    }
 
 /* if forceCreation not specified just return */
 if(forceCreation == LOOKUP_ONLY) return(NULL);
@@ -574,18 +574,18 @@ x->color = RED;
 
 /* insert node in tree */
 if(parent)
-	{
-	if( (c = str2cmp(key, parent->name)) < 0)
-		parent->left = x;
-	else if(c > 0)
-		parent->right = x;
-	else if(strcmp(key, parent->name) < 0)
-		parent->left = x;
-	else
-		parent->right = x;
-	}
+    {
+    if( (c = str2cmp(key, parent->name)) < 0)
+        parent->left = x;
+    else if(c > 0)
+        parent->right = x;
+    else if(strcmp(key, parent->name) < 0)
+        parent->left = x;
+    else
+        parent->right = x;
+    }
 else
-	root =x;
+    root =x;
 
 insertFixup(x);
 
@@ -611,72 +611,72 @@ int color, c;
 z = (root == NULL) ? NIL_SYM : root;
 
 while(z != NIL_SYM)
-	{
-	if( ((c = str2cmp(key, z->name)) == 0) && ((c = strcmp(key, z->name)) == 0) )
-		break;
-	else
-		z = (c < 0) ? z->left : z->right;
-	}
+    {
+    if( ((c = str2cmp(key, z->name)) == 0) && ((c = strcmp(key, z->name)) == 0) )
+        break;
+    else
+        z = (c < 0) ? z->left : z->right;
+    }
 
 if (z == NIL_SYM) return(0); /* key to delete not found */
 
 
 if (z->left == NIL_SYM || z->right == NIL_SYM)
-	{
-	/* y has a NIL_SYM node as a child */
-	y = z;
-	}
+    {
+    /* y has a NIL_SYM node as a child */
+    y = z;
+    }
 else 
-	{
-	/* find tree successor with a NIL_SYM node as a child */
-	y = z->right;
-	while (y->left != NIL_SYM) y = y->left;
-	}
+    {
+    /* find tree successor with a NIL_SYM node as a child */
+    y = z->right;
+    while (y->left != NIL_SYM) y = y->left;
+    }
 
 /* x is y's only child */
 if (y->left != NIL_SYM)
-	x = y->left;
+    x = y->left;
 else
-	x = y->right;
+    x = y->right;
 
 /* remove y from the parent chain */
 x->parent = y->parent;
 if (y->parent)
-	{
-	if (y == y->parent->left)
-		y->parent->left = x;
+    {
+    if (y == y->parent->left)
+        y->parent->left = x;
         else
             y->parent->right = x;
-	}
+    }
 else
-	root = x;
+    root = x;
 
 
 color = y->color;
 if (y != z)
-	{
-	/* swap y and z */
-	y->left = z->left;
-	y->right = z->right;
-	y->parent = z->parent;
+    {
+    /* swap y and z */
+    y->left = z->left;
+    y->right = z->right;
+    y->parent = z->parent;
 
-	if(z->parent)
-		{
-		if(z->parent->left == z)
-			z->parent->left = y;
-		else
-			z->parent->right = y;
-		}
-	else root = y;
+    if(z->parent)
+        {
+        if(z->parent->left == z)
+            z->parent->left = y;
+        else
+            z->parent->right = y;
+        }
+    else root = y;
 
-	y->right->parent = y;
-	y->left->parent = y;
+    y->right->parent = y;
+    y->left->parent = y;
 
-	y->color = z->color;
-	}
+    y->color = z->color;
+    }
 
 if (color == BLACK)
-	deleteFixup (x);
+    deleteFixup (x);
 
 --symbolCount;
 return TRUE;
@@ -695,27 +695,27 @@ y = x->right;
 /* establish x->right link */
 x->right = y->left;
 if (y->left != NIL_SYM) 
-	y->left->parent = x;
+    y->left->parent = x;
 
 /* establish y->parent link */
 if(y != NIL_SYM) 
-	y->parent = x->parent;
+    y->parent = x->parent;
 
 if (x->parent)
-	{
-	if (x == x->parent->left)
-      	x->parent->left = y;
+    {
+    if (x == x->parent->left)
+        x->parent->left = y;
       else
-      	x->parent->right = y;
-	} 
+        x->parent->right = y;
+    } 
 else 
-	root = y;
+    root = y;
 
 
 /* link x and y */
 y->left = x;
 if (x != NIL_SYM) 
-	x->parent = y;
+    x->parent = y;
 }
 
 
@@ -728,26 +728,26 @@ y = x->left;
 /* establish x->left link */
 x->left = y->right;
 if (y->right != NIL_SYM)
-	y->right->parent = x;
+    y->right->parent = x;
 
 /* establish y->parent link */
 if (y != NIL_SYM) 
-	y->parent = x->parent;
+    y->parent = x->parent;
 
 if (x->parent) 
-	{
+    {
       if (x == x->parent->right)
             x->parent->right = y;
       else
             x->parent->left = y;
-	}
+    }
 else
-	root = y;
+    root = y;
 
 /* link x and y */
 y->right = x;
 if (x != NIL_SYM) 
-	x->parent = y;
+    x->parent = y;
 }
 
 
@@ -757,62 +757,62 @@ SYMBOL * y;
 
 /* check Red-Black properties */
 while (x != root && x->parent->color == RED)
-	{
-	/* we have a violation */
-	if (x->parent == x->parent->parent->left)
-		{
+    {
+    /* we have a violation */
+    if (x->parent == x->parent->parent->left)
+        {
         y = x->parent->parent->right;
         if (y->color == RED) 
-			{
-			/* uncle is RED */
-			x->parent->color = BLACK;
-			y->color = BLACK;
-			x->parent->parent->color = RED;
-			x = x->parent->parent;
-			} 
-		else 
-			{
-           	/* uncle is BLACK */
-           	if (x == x->parent->right)
-				{
-           		/* make x a left child */
-           		x = x->parent;
-           		rotateLeft(x);
-				}
+            {
+            /* uncle is RED */
+            x->parent->color = BLACK;
+            y->color = BLACK;
+            x->parent->parent->color = RED;
+            x = x->parent->parent;
+            } 
+        else 
+            {
+            /* uncle is BLACK */
+            if (x == x->parent->right)
+                {
+                /* make x a left child */
+                x = x->parent;
+                rotateLeft(x);
+                }
 
-			/* recolor and rotate */
-			x->parent->color = BLACK;
-			x->parent->parent->color = RED;
-			rotateRight(x->parent->parent);
+            /* recolor and rotate */
+            x->parent->color = BLACK;
+            x->parent->parent->color = RED;
+            rotateRight(x->parent->parent);
            }
-		} 
-	else 
-		{
+        } 
+    else 
+        {
 
-		/* mirror image of above code */
-		y = x->parent->parent->left;
-		if (y->color == RED) 
-			{
-			/* uncle is RED */
-			x->parent->color = BLACK;
-			y->color = BLACK;
-			x->parent->parent->color = RED;
-			x = x->parent->parent;
-			} 
-		else 
-			{
-			/* uncle is BLACK */
-			if (x == x->parent->left) 
-				{
-				x = x->parent;
-				rotateRight(x);
-				}
-			x->parent->color = BLACK;
-			x->parent->parent->color = RED;
-			rotateLeft(x->parent->parent);
-			}
-		}
-	}
+        /* mirror image of above code */
+        y = x->parent->parent->left;
+        if (y->color == RED) 
+            {
+            /* uncle is RED */
+            x->parent->color = BLACK;
+            y->color = BLACK;
+            x->parent->parent->color = RED;
+            x = x->parent->parent;
+            } 
+        else 
+            {
+            /* uncle is BLACK */
+            if (x == x->parent->left) 
+                {
+                x = x->parent;
+                rotateRight(x);
+                }
+            x->parent->color = BLACK;
+            x->parent->parent->color = RED;
+            rotateLeft(x->parent->parent);
+            }
+        }
+    }
 
 root->color = BLACK;
 }
@@ -823,70 +823,70 @@ void deleteFixup(SYMBOL *x)
 SYMBOL * w;
 
 while (x != root && x->color == BLACK)
-	{
-	if (x == x->parent->left)
-		{
+    {
+    if (x == x->parent->left)
+        {
             w = x->parent->right;
             if (w->color == RED)
-			{
-			w->color = BLACK;
-			x->parent->color = RED;
-			rotateLeft (x->parent);
-			w = x->parent->right;
-			}
+            {
+            w->color = BLACK;
+            x->parent->color = RED;
+            rotateLeft (x->parent);
+            w = x->parent->right;
+            }
             if (w->left->color == BLACK && w->right->color == BLACK)
-			{
-			w->color = RED;
-			x = x->parent;
-			} 
-		else 
-			{
-			if (w->right->color == BLACK)
-				{
-				w->left->color = BLACK;
-				w->color = RED;
-				rotateRight (w);
-				w = x->parent->right;
-				}
-			w->color = x->parent->color;
-			x->parent->color = BLACK;
-			w->right->color = BLACK;
-			rotateLeft (x->parent);
-			x = root;
-			}
-		} 
-	else 
-		{
+            {
+            w->color = RED;
+            x = x->parent;
+            } 
+        else 
+            {
+            if (w->right->color == BLACK)
+                {
+                w->left->color = BLACK;
+                w->color = RED;
+                rotateRight (w);
+                w = x->parent->right;
+                }
+            w->color = x->parent->color;
+            x->parent->color = BLACK;
+            w->right->color = BLACK;
+            rotateLeft (x->parent);
+            x = root;
+            }
+        } 
+    else 
+        {
             w = x->parent->left;
             if (w->color == RED)
-			{
-			w->color = BLACK;
-			x->parent->color = RED;
-			rotateRight (x->parent);
-			w = x->parent->left;
-			}
+            {
+            w->color = BLACK;
+            x->parent->color = RED;
+            rotateRight (x->parent);
+            w = x->parent->left;
+            }
             if (w->right->color == BLACK && w->left->color == BLACK)
-			{
-			w->color = RED;
-			x = x->parent;
-			} 
-		else 
-			{
-			if (w->left->color == BLACK)
-				{
-				w->right->color = BLACK;
-				w->color = RED;
-				rotateLeft (w);
-				w = x->parent->left;
-				}
-			w->color = x->parent->color;
-			x->parent->color = BLACK;
-			w->left->color = BLACK;
-			rotateRight (x->parent);
-			x = root;
-			}
-		}
-	}
+            {
+            w->color = RED;
+            x = x->parent;
+            } 
+        else 
+            {
+            if (w->left->color == BLACK)
+                {
+                w->right->color = BLACK;
+                w->color = RED;
+                rotateLeft (w);
+                w = x->parent->left;
+                }
+            w->color = x->parent->color;
+            x->parent->color = BLACK;
+            w->left->color = BLACK;
+            rotateRight (x->parent);
+            x = root;
+            }
+        }
+    }
 
 x->color = BLACK;
 }

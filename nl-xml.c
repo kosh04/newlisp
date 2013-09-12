@@ -57,10 +57,10 @@ UINT optionsFlag;
 
 
 typedef struct
-	{
-	char * name;
-	void * next;
-	} TAG_STACK;
+    {
+    char * name;
+    void * next;
+    } TAG_STACK;
 
 TAG_STACK * tagStack = NULL;
 
@@ -72,12 +72,12 @@ CELL * setupTypeTagCells(void)
 int i;
 
 if(xmlTags == NULL)
-	{
-	xmlTags = getCell(CELL_EXPRESSION);
-	for(i = 0; i < 4; i++)
-		typeCell[i] = stuffString(typeNames[i]);
-	}
-	
+    {
+    xmlTags = getCell(CELL_EXPRESSION);
+    for(i = 0; i < 4; i++)
+        typeCell[i] = stuffString(typeNames[i]);
+    }
+    
 /* link cells in a list */
 xmlTags->contents = (UINT)typeCell[0];
 for(i = 0; i < 3; i++)
@@ -94,14 +94,14 @@ if(params == nilCell)
     return(copyCell(setupTypeTagCells()));
 
 if(xmlTags != NULL)
-	deleteList(xmlTags);
+    deleteList(xmlTags);
 
 xmlTags = getCell(CELL_EXPRESSION);
-	
+    
 for(i = 0; i < 4; i++)
     {
-	typeCell[i] = copyCell(evaluateExpression(params));
-	params = params->next;
+    typeCell[i] = copyCell(evaluateExpression(params));
+    params = params->next;
     }
 
 return(copyCell(setupTypeTagCells()));
@@ -112,27 +112,27 @@ CELL * p_XMLparse(CELL * params)
 CELL * result;
 
 if(xmlCallback != NULL)
-	errorProc(ERR_NOT_REENTRANT);
+    errorProc(ERR_NOT_REENTRANT);
 
 params = getString(params, &source);
 if(params != nilCell)
-	{
+    {
     params = getInteger(params, &optionsFlag);
-	if(params != nilCell)
-		{
-		XMLcontext = getCreateContext(params, TRUE);
-		if(XMLcontext == NULL)
-			return(errorProc(ERR_SYMBOL_OR_CONTEXT_EXPECTED));
-		if(params->next != nilCell)
-			xmlCallback = params->next;	
-		else
-			xmlCallback = NULL;
-		}
-	else
-		XMLcontext = currentContext;
-	}
+    if(params != nilCell)
+        {
+        XMLcontext = getCreateContext(params, TRUE);
+        if(XMLcontext == NULL)
+            return(errorProc(ERR_SYMBOL_OR_CONTEXT_EXPECTED));
+        if(params->next != nilCell)
+            xmlCallback = params->next; 
+        else
+            xmlCallback = NULL;
+        }
+    else
+        XMLcontext = currentContext;
+    }
 else 
-	optionsFlag = OPTION_NO_OPTION;
+    optionsFlag = OPTION_NO_OPTION;
 
 setupTypeTagCells();
 
@@ -146,9 +146,9 @@ deleteTagStack();
 xmlCallback = NULL;
 
 if(xmlError != NULL)
-	return nilCell;
+    return nilCell;
 else
-	return result;
+    return result;
 }
 
 
@@ -158,7 +158,7 @@ CELL * errorCell;
 CELL * cell;
 
 if(xmlError == NULL)
-	return(nilCell);
+    return(nilCell);
 
 cell = stuffString(xmlError);
 errorCell = makeCell(CELL_EXPRESSION, (UINT)cell);
@@ -173,12 +173,12 @@ void deleteTagStack(void)
 TAG_STACK * oldTagStack;
 
 while(tagStack != NULL)
-	{
-	oldTagStack = tagStack;
-	freeMemory(tagStack->name);
-	tagStack = tagStack->next;
-	freeMemory(oldTagStack);
-	}
+    {
+    oldTagStack = tagStack;
+    freeMemory(tagStack->name);
+    tagStack = tagStack->next;
+    freeMemory(oldTagStack);
+    }
 }
 
 
@@ -192,61 +192,61 @@ int tagPos;
 lastNode = node = getCell(CELL_EXPRESSION);
 
 while(!xmlError && !closingFlag)
-	{
-	if((tagPos = find("<", source)) == -1) break;
-	if(tagPos > 0)
-		{
-		if( (tagStack != NULL) || (node->contents != (UINT)nilCell))
-			{
-			if((optionsFlag & OPTION_NO_WHITESPACE) && isWhiteSpaceStringN(source, tagPos))
-                		{;}
-			else lastNode = appendNode(lastNode, makeTextNode(XML_TEXT, stuffStringN(source, tagPos)));
-			}
-		source = source + tagPos;
-		}
+    {
+    if((tagPos = find("<", source)) == -1) break;
+    if(tagPos > 0)
+        {
+        if( (tagStack != NULL) || (node->contents != (UINT)nilCell))
+            {
+            if((optionsFlag & OPTION_NO_WHITESPACE) && isWhiteSpaceStringN(source, tagPos))
+                        {;}
+            else lastNode = appendNode(lastNode, makeTextNode(XML_TEXT, stuffStringN(source, tagPos)));
+            }
+        source = source + tagPos;
+        }
 
-	if(strncmp(source, "<!DOCTYPE", 9) == 0)
-		{
-		parseDTD();
-		continue;
-		}
+    if(strncmp(source, "<!DOCTYPE", 9) == 0)
+        {
+        parseDTD();
+        continue;
+        }
 
-	if(*source == '<' && *(source + 1) == '?')
-		{
-		parseProcessingInstruction();
-		continue;
-		}
+    if(*source == '<' && *(source + 1) == '?')
+        {
+        parseProcessingInstruction();
+        continue;
+        }
 
-	if(memcmp(source, "<!--", 4) == 0)
-		{
-		if(optionsFlag & OPTION_NO_COMMENTS)
-			parseTag("-->");
-		else
-			lastNode = appendNode(lastNode, parseTag("-->"));
-		continue;
-		}
-	if(memcmp(source, "<![CDATA[", 9) == 0)
-		{
-		lastNode = appendNode(lastNode, parseTag("]]>"));
-		continue;
-		}
+    if(memcmp(source, "<!--", 4) == 0)
+        {
+        if(optionsFlag & OPTION_NO_COMMENTS)
+            parseTag("-->");
+        else
+            lastNode = appendNode(lastNode, parseTag("-->"));
+        continue;
+        }
+    if(memcmp(source, "<![CDATA[", 9) == 0)
+        {
+        lastNode = appendNode(lastNode, parseTag("]]>"));
+        continue;
+        }
 
-	if(*source == '<' && *(source + 1) == '/')
-		{
-		closingFlag = TRUE;
-		parseClosing();
-		continue;
-		}
+    if(*source == '<' && *(source + 1) == '/')
+        {
+        closingFlag = TRUE;
+        parseClosing();
+        continue;
+        }
 
-	lastNode = appendNode(lastNode, parseTag(">"));
-	}
+    lastNode = appendNode(lastNode, parseTag(">"));
+    }
 
 
 if(xmlError != NULL)
-	{
-	deleteList(node);
-	return nilCell;
-	}
+    {
+    deleteList(node);
+    return nilCell;
+    }
 
 return node;
 }
@@ -259,29 +259,29 @@ int closePos = 0;
 char * closeTagStr;
 
 if((closeTag = find(">", source)) == -1)
-	{
-	xmlError = "error in DTD: expected '>'";
-	return;
-	}
+    {
+    xmlError = "error in DTD: expected '>'";
+    return;
+    }
 
 squareTag = find("[", source);
 if(squareTag != -1 && squareTag < closeTag)
-	closeTagStr = "]>";
+    closeTagStr = "]>";
 else
-	closeTagStr = ">";
+    closeTagStr = ">";
 
 while(!xmlError)
-	{
-	if((closePos = find(closeTagStr, source)) == -1)
-		{
-		snprintf(xmlMsg, 63, "expected: %s", closeTagStr);
-		xmlError = xmlMsg;
-		return;
-		}
-	if(*(source + closePos - 1) != ']')
-		break;
-	source = source + closePos + strlen(closeTagStr);
-	}
+    {
+    if((closePos = find(closeTagStr, source)) == -1)
+        {
+        snprintf(xmlMsg, 63, "expected: %s", closeTagStr);
+        xmlError = xmlMsg;
+        return;
+        }
+    if(*(source + closePos - 1) != ']')
+        break;
+    source = source + closePos + strlen(closeTagStr);
+    }
 
 source = source + closePos + strlen(closeTagStr);
 return;
@@ -293,10 +293,10 @@ void parseProcessingInstruction(void)
 int closeTag;
 
 if((closeTag = find("?>", source)) == -1)
-	{
-	xmlError = "expecting closing tag sequence '?>'";
-	return;
-	}
+    {
+    xmlError = "expecting closing tag sequence '?>'";
+    return;
+    }
 
 source = source + closeTag + 2;
 }
@@ -309,23 +309,23 @@ char * tagName;
 TAG_STACK * oldTagStack;
 
 if((closeTag = find(">", source)) == -1)
-	{
-	xmlError = "missing closing >";
-	return;
-	}
+    {
+    xmlError = "missing closing >";
+    return;
+    }
 
 if(tagStack == NULL)
-	{
-	xmlError = "closing tag has no opening";
-	return;
-	}
+    {
+    xmlError = "closing tag has no opening";
+    return;
+    }
 
 tagName = tagStack->name;
 if(strncmp(source + 2, tagName, strlen(tagName)) != 0)
-	{
-	xmlError = "closing tag doesn't match";
-	return;
-	}
+    {
+    xmlError = "closing tag doesn't match";
+    return;
+    }
 
 /* pop tagStack */
 freeMemory(tagName);
@@ -350,50 +350,50 @@ tagStart = source;
 cell = NULL;
 closeTag = find(closeTagStr, source);
 if(*(source + closeTag - 1) == '/')
-	{
-	if(memcmp(closeTagStr,"]]>",3) != 0)
-		{
-		--closeTag;
-		closeTagStr = "/>";
-		}
-	}
+    {
+    if(memcmp(closeTagStr,"]]>",3) != 0)
+        {
+        --closeTag;
+        closeTagStr = "/>";
+        }
+    }
 
 if(closeTag == -1)
-	{
-	snprintf(xmlMsg, 63, "expected closing tag: %s", closeTagStr);
-	xmlError = xmlMsg;
-	return nilCell;
-	}
+    {
+    snprintf(xmlMsg, 63, "expected closing tag: %s", closeTagStr);
+    xmlError = xmlMsg;
+    return nilCell;
+    }
 
 if(memcmp(source, "<!--", 4) == 0)
-	{
-	if(optionsFlag & OPTION_NO_COMMENTS)
-		cell = nilCell;
-	else
-		{
-		cell = stuffStringN(source + 4, closeTag - 4);
-		cell = makeTextNode(XML_COMMENT, cell);
-		}
-	}
+    {
+    if(optionsFlag & OPTION_NO_COMMENTS)
+        cell = nilCell;
+    else
+        {
+        cell = stuffStringN(source + 4, closeTag - 4);
+        cell = makeTextNode(XML_COMMENT, cell);
+        }
+    }
 
 if(memcmp(source, "<![CDATA[", 9) == 0)
-	{
-	cell = stuffStringN(source + 9, closeTag - 9);
-	cell = makeTextNode(XML_CDATA, cell);
-	}
+    {
+    cell = stuffStringN(source + 9, closeTag - 9);
+    cell = makeTextNode(XML_CDATA, cell);
+    }
 
 if(*source == '<' && *(source + 1) == '/')
-	{
-	xmlError = "closing node has no opening";
-	return nilCell;
-	}
+    {
+    xmlError = "closing node has no opening";
+    return nilCell;
+    }
 
 newSrc = source + closeTag + strlen(closeTagStr);
 
 if(cell == NULL)
-	cell = parseNormalTag(source + closeTag, newSrc);
+    cell = parseNormalTag(source + closeTag, newSrc);
 else
-	source = newSrc;
+    source = newSrc;
 
 /* call back with closed tag expression found
    and opening start and end of source of this
@@ -401,7 +401,7 @@ else
 */
 
 if(xmlCallback) 
-	performXmlCallback(cell, tagStart);
+    performXmlCallback(cell, tagStart);
 
 return(cell);
 }
@@ -423,10 +423,10 @@ next->next = stuffInteger((UINT)(source - tagStart));
 ((CELL*)list->contents)->next = cell;
 pushResult(list);
 if(!evaluateExpressionSafe(list, &errNo))
-	{
-	deleteTagStack();
-	longjmp(errorJump, errNo);
-	}
+    {
+    deleteTagStack();
+    longjmp(errorJump, errNo);
+    }
 }
 
 
@@ -449,27 +449,27 @@ while((unsigned char)*source > ' ' && source < endSrc) ++source, ++tagLen; /* fi
 
 attributes = parseAttributes(endSrc);
 if(optionsFlag & OPTION_SXML_ATTRIBUTES)
-	{
-	childs = (CELL*)attributes->contents;
-	if(! (childs == nilCell && (optionsFlag & OPTION_NO_EMPTY_ATTRIBUTES)))
-		{
-		attributes->contents = (UINT)stuffSymbol(atSymbol);
-		((CELL*)(attributes->contents))->next = childs;
-		}
-	}
+    {
+    childs = (CELL*)attributes->contents;
+    if(! (childs == nilCell && (optionsFlag & OPTION_NO_EMPTY_ATTRIBUTES)))
+        {
+        attributes->contents = (UINT)stuffSymbol(atSymbol);
+        ((CELL*)(attributes->contents))->next = childs;
+        }
+    }
 
 if(xmlError) 
-	return nilCell;
+    return nilCell;
 
 if(*source == '/' && *(source + 1) == '>')
-	{
-	source = newSrc;
-	if(optionsFlag & OPTION_TAGS_TO_SYMBOLS)
-		tagCell = makeTagSymbolCell(tagStart, tagLen);
-	else
-		tagCell = stuffStringN(tagStart, tagLen);
-	return makeElementNode(tagCell, attributes, getCell(CELL_EXPRESSION));
-	}
+    {
+    source = newSrc;
+    if(optionsFlag & OPTION_TAGS_TO_SYMBOLS)
+        tagCell = makeTagSymbolCell(tagStart, tagLen);
+    else
+        tagCell = stuffStringN(tagStart, tagLen);
+    return makeElementNode(tagCell, attributes, getCell(CELL_EXPRESSION));
+    }
 
 /* push tag on tagstack */
 tag = (TAG_STACK*)allocMemory(sizeof(TAG_STACK));
@@ -518,53 +518,53 @@ attributes = getCell(CELL_EXPRESSION);
 lastAtt = NULL;
 
 while(!xmlError && source < endSrc)
-	{
-	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
-	namePos = source;
-	nameLen = 0;
-	while((unsigned char)*source > ' ' && *source != '=' && source < endSrc) source++, nameLen++; /* get end */
-	if(nameLen == 0) break;
-	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
-	if(*source != '=')
-		{
-		xmlError = "expected '=' in attributes";
-		deleteList(attributes);
-		return nilCell;
-		}
-	else source++;
-	while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip spaces */
-	if(*source != '\"' && *source != '\'')
-		{
-		xmlError = "attribute values must be delimited by \" or \' ";
-		deleteList(attributes);
-		return nilCell;
-		}
-	quoteChar = *source;
-	source++;
-	valPos = source;
-	valLen = 0;
-	while(*source != quoteChar && source < endSrc) source++, valLen++;
-	if(*source != quoteChar) valLen = -1;
-	else source++;
-	if(nameLen == 0 || valLen == -1)
-		{
-		xmlError = "incorrect attribute";
-		deleteList(attributes);
-		return nilCell;
-		}
-	att = getCell(CELL_EXPRESSION);
-	if(optionsFlag & OPTION_TAGS_TO_SYMBOLS)
-        	cell = makeTagSymbolCell(namePos, nameLen);
-	else
-		cell = stuffStringN(namePos, nameLen);
-	cell->next = stuffStringN(valPos, valLen);
-	att->contents = (UINT)cell;
-	if(lastAtt == NULL)
-		attributes->contents = (UINT)att;
-	else 
-		lastAtt->next = att;
-	lastAtt = att;
-	}
+    {
+    while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
+    namePos = source;
+    nameLen = 0;
+    while((unsigned char)*source > ' ' && *source != '=' && source < endSrc) source++, nameLen++; /* get end */
+    if(nameLen == 0) break;
+    while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
+    if(*source != '=')
+        {
+        xmlError = "expected '=' in attributes";
+        deleteList(attributes);
+        return nilCell;
+        }
+    else source++;
+    while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip spaces */
+    if(*source != '\"' && *source != '\'')
+        {
+        xmlError = "attribute values must be delimited by \" or \' ";
+        deleteList(attributes);
+        return nilCell;
+        }
+    quoteChar = *source;
+    source++;
+    valPos = source;
+    valLen = 0;
+    while(*source != quoteChar && source < endSrc) source++, valLen++;
+    if(*source != quoteChar) valLen = -1;
+    else source++;
+    if(nameLen == 0 || valLen == -1)
+        {
+        xmlError = "incorrect attribute";
+        deleteList(attributes);
+        return nilCell;
+        }
+    att = getCell(CELL_EXPRESSION);
+    if(optionsFlag & OPTION_TAGS_TO_SYMBOLS)
+            cell = makeTagSymbolCell(namePos, nameLen);
+    else
+        cell = stuffStringN(namePos, nameLen);
+    cell->next = stuffStringN(valPos, valLen);
+    att->contents = (UINT)cell;
+    if(lastAtt == NULL)
+        attributes->contents = (UINT)att;
+    else 
+        lastAtt->next = att;
+    lastAtt = att;
+    }
 
 return attributes;
 }
@@ -573,9 +573,9 @@ return attributes;
 CELL * appendNode(CELL * node, CELL * newNode)
 {
 if(node->contents == (UINT)nilCell)
-	node->contents = (UINT)newNode;
+    node->contents = (UINT)newNode;
 else
-	node->next = newNode;
+    node->next = newNode;
 
 return newNode;
 }
@@ -634,7 +634,7 @@ else
 
 return newNode;
 }
-	
+    
 
 int find(char * key, char * source)
 {
@@ -645,7 +645,7 @@ if(ptr == NULL) return -1;
 
 return(ptr - source);
 }
-	
+    
 
 int isWhiteSpaceStringN(char * source, int tagPos)
 {

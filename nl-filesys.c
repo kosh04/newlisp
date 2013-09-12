@@ -108,7 +108,7 @@ extern STREAM errorStream;
 /* used in fork and spawn */
 int parentPid = 0;
 /* share, message */
-CELL * readWriteShared(UINT * address, CELL * params);
+CELL * readWriteShared(UINT * address, CELL * params, int flag);
 CELL * readWriteSocket(int socket, CELL * params);
 CELL * readWriteSharedExpression(UINT * adress, CELL * params);
 
@@ -134,7 +134,7 @@ int result;
 len = strlen(fileName);
 slash = *(fileName + len - 1);
 if(slash == '\\' || slash == '/')
-	*(fileName + len - 1) = 0;
+    *(fileName + len - 1) = 0;
 
 #ifdef USE_WIN_UTF16PATH
 result = stat_utf16(fileName, &fileInfo);
@@ -142,7 +142,7 @@ result = stat_utf16(fileName, &fileInfo);
 result = stat(fileName, &fileInfo);
 #endif
 if(slash == '\\' || slash == '/')
-	*(fileName + len - 1) = slash;
+    *(fileName + len - 1) = slash;
 return(result);
 #else /* not WIN32 */
 return(stat(fileName, &fileInfo));
@@ -168,7 +168,7 @@ size_t len;
 len = strlen(fileName);
 slash = *(fileName + len - 1);
 if(slash == '\\' || slash == '/')
-	*(fileName + len - 1) = 0;
+    *(fileName + len - 1) = 0;
 #endif
 
 #ifdef USE_WIN_UTF16PATH
@@ -176,19 +176,19 @@ if(stat_utf16(fileName, &fileInfo) != 0)
 #else
 if(stat(fileName, &fileInfo) != 0)
 #endif
-	{
+    {
 #ifdef WIN32
-	*(fileName + len - 1) = slash;
+    *(fileName + len - 1) = slash;
 #endif
-	return(0);
-	}
+    return(0);
+    }
 
 #ifdef WIN32
 *(fileName + len - 1) = slash;
 #endif
 
 if(S_ISDIR(fileInfo.st_mode))
-	return(1);
+    return(1);
 return(0);
 }
 
@@ -204,10 +204,10 @@ params = getString(params, &fileName);
 params = getString(params, &accessMode);
 
 if(params != nilCell)
-	getString(params, &option);
-	
+    getString(params, &option);
+    
 if( (handle = openFile(fileName, accessMode, option)) == (int)-1)
-	return(nilCell);
+    return(nilCell);
 return(stuffInteger((UINT)handle));
 }
 
@@ -249,53 +249,53 @@ SYMBOL * readSptr;
 params = getInteger(params, &handle);
 params = getEvalDefault(params, &strCell);
 if(!symbolCheck)
-	return(errorProc(ERR_IS_NOT_REFERENCED));
+    return(errorProc(ERR_IS_NOT_REFERENCED));
 if(isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 if(symbolCheck->contents != (UINT)strCell)
-	return(errorProc(ERR_IS_NOT_REFERENCED));
+    return(errorProc(ERR_IS_NOT_REFERENCED));
 
 readSptr = symbolCheck;
 params = getInteger(params, (UINT *)&size);
 
 if(params == nilCell)
-	{
-	openStrStream(&stream, size, 0);
-	found = 1;
-	if((bytesRead = read(handle, stream.buffer, size)) == -1)
-		{
-		closeStrStream(&stream); 
-		return(nilCell);
-		}
-	}
+    {
+    openStrStream(&stream, size, 0);
+    found = 1;
+    if((bytesRead = read(handle, stream.buffer, size)) == -1)
+        {
+        closeStrStream(&stream); 
+        return(nilCell);
+        }
+    }
 else
-	{
-	getString(params, &waitFor);
-	openStrStream(&stream, MAX_LINE, 0);
-	length = strlen(waitFor);
-	while(bytesRead < size)
-		{
-		if(read(handle, &chr, 1) <= 0)
-			break;
+    {
+    getString(params, &waitFor);
+    openStrStream(&stream, MAX_LINE, 0);
+    length = strlen(waitFor);
+    while(bytesRead < size)
+        {
+        if(read(handle, &chr, 1) <= 0)
+            break;
 
-		writeStreamChar(&stream, chr); 
- 		if(++bytesRead < length) continue;
-		if(strcmp(waitFor,  stream.ptr - length) == 0)
- 			{
-			found = 1;
-			break;
-			}		
-		}			
-	}
+        writeStreamChar(&stream, chr); 
+        if(++bytesRead < length) continue;
+        if(strcmp(waitFor,  stream.ptr - length) == 0)
+            {
+            found = 1;
+            break;
+            }       
+        }           
+    }
 
 deleteList(strCell);
 
 if(bytesRead == 0) 
-	{ 
-	readSptr->contents = (UINT)copyCell(nilCell);
-	closeStrStream(&stream); 
-	return(nilCell);
-	} 
+    { 
+    readSptr->contents = (UINT)copyCell(nilCell);
+    closeStrStream(&stream); 
+    return(nilCell);
+    } 
 
 stream.buffer = reallocMemory(stream.buffer, bytesRead + 1);
 readSptr->contents = (UINT)makeStringCell(stream.buffer, bytesRead);
@@ -314,15 +314,15 @@ CELL * result;
 
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, CONNECT_TIMEOUT);
-	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
-		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-	return(result);
-	}
+    {
+    result = getPutPostDeleteUrl(fileName, params, HTTP_GET, CONNECT_TIMEOUT);
+    if(memcmp((char *)result->contents, "ERR:", 4) == 0)
+        return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
+    return(result);
+    }
 
 if((size = readFile(fileName, &buffer)) == -1)
-	return(nilCell);
+    return(nilCell);
 
 return(makeStringCell(buffer, size));
 }
@@ -341,22 +341,22 @@ if(stat_utf16(fileName, &fileInfo) != 0)
 #else
 if(stat(fileName, &fileInfo) != 0)
 #endif
-	return(-1);
+    return(-1);
 
 size = fileInfo.st_size;
 
 if( (handle = openFile(fileName, "r", NULL)) == (int)-1)
-	return(-1);
+    return(-1);
 
 *buffer = callocMemory(size+1);
 
 if(read(handle, *buffer, size) == -1)
-	{
-	freeMemory(*buffer);
+    {
+    freeMemory(*buffer);
         close(handle);
-	*buffer = NULL;
-	return(-1);
-	}
+    *buffer = NULL;
+    return(-1);
+    }
 
 close(handle);
 
@@ -376,14 +376,14 @@ params = getInteger(params, &handle);
 count = 0;
 
 while(params != nilCell)
-	{
-	params = getInteger(params, &data);
-	chr = (unsigned char)data;
-	if(write((int)handle, (void *)&chr, 1) == -1)
-		return(nilCell);
-	++count;
-	}
-	
+    {
+    params = getInteger(params, &data);
+    chr = (unsigned char)data;
+    if(write((int)handle, (void *)&chr, 1) == -1)
+        return(nilCell);
+    ++count;
+    }
+    
 return(stuffInteger(count));
 }
 
@@ -415,10 +415,10 @@ int writeFile(char * fileName, char * buffer, size_t size, char * type)
 int handle;
 
 if( (handle = openFile(fileName, type, NULL)) == (int)-1)
-	return(-1);
+    return(-1);
 
 if(write(handle, buffer, size) == (int)-1)
-	return(-1);
+    return(-1);
 
 close(handle);
 return(0);
@@ -434,18 +434,18 @@ CELL * result;
 params = getString(params, &fileName);
 
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	{
-	result = getPutPostDeleteUrl(fileName, params, 
-				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, CONNECT_TIMEOUT);
-	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
-		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-	return(result);
-	}
+    {
+    result = getPutPostDeleteUrl(fileName, params, 
+                (*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, CONNECT_TIMEOUT);
+    if(memcmp((char *)result->contents, "ERR:", 4) == 0)
+        return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
+    return(result);
+    }
 
 getStringSize(params, &buffer, &size, TRUE);
 
 if(writeFile(fileName, buffer, size, type) == (int)-1)
-	return(nilCell);
+    return(nilCell);
 
 return(stuffInteger(size));
 }
@@ -472,52 +472,52 @@ char * buffer;
 size_t size, userSize;
 
 if(params == nilCell)
-	{
-	varPrintf(OUT_DEVICE, "%s", readLineStream.buffer);
-	if(lineFeed) varPrintf(OUT_DEVICE, LINE_FEED);
-	size = readLineStream.ptr - readLineStream.buffer;
-	goto RETURN_WRITE_BUFFER;
-	}
+    {
+    varPrintf(OUT_DEVICE, "%s", readLineStream.buffer);
+    if(lineFeed) varPrintf(OUT_DEVICE, LINE_FEED);
+    size = readLineStream.ptr - readLineStream.buffer;
+    goto RETURN_WRITE_BUFFER;
+    }
 
 params = getEvalDefault(params, &device);
 symbolRef = symbolCheck;
 
 if(params == nilCell)
-	{
-	buffer = readLineStream.buffer;
-	size = readLineStream.ptr - readLineStream.buffer;
-	}
+    {
+    buffer = readLineStream.buffer;
+    size = readLineStream.ptr - readLineStream.buffer;
+    }
 else
-	params = getStringSize(params, &buffer, &size, TRUE);
+    params = getStringSize(params, &buffer, &size, TRUE);
 
 if(!lineFeed)
-	{
-	if(params != nilCell)
-		{
-		getInteger(params, (UINT *)&userSize);
-		size = (userSize > size) ? size : userSize;
-		}
-	}
+    {
+    if(params != nilCell)
+        {
+        getInteger(params, (UINT *)&userSize);
+        size = (userSize > size) ? size : userSize;
+        }
+    }
 
 if(isNumber(device->type))
-	{
-	getIntegerExt(device, &handle, FALSE);
-	if(write((int)handle, buffer, size) == -1) return(nilCell);
-	if(lineFeed)
-		if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
-	}
+    {
+    getIntegerExt(device, &handle, FALSE);
+    if(write((int)handle, buffer, size) == -1) return(nilCell);
+    if(lineFeed)
+        if(write((int)handle, LINE_FEED, strlen(LINE_FEED)) == -1) return(nilCell);
+    }
 
 else if(device->type == CELL_STRING)
-	{
-	if(symbolRef && isProtected(symbolRef->flags))
-   		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
+    {
+    if(symbolRef && isProtected(symbolRef->flags))
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
 
-	appendCellString(device, buffer, size);
-	if(lineFeed)
-		appendCellString(device, LINE_FEED, strlen(LINE_FEED));
-	}
+    appendCellString(device, buffer, size);
+    if(lineFeed)
+        appendCellString(device, LINE_FEED, strlen(LINE_FEED));
+    }
 else
-	return(errorProcExt(ERR_INVALID_PARAMETER, device));
+    return(errorProcExt(ERR_INVALID_PARAMETER, device));
 
 
 RETURN_WRITE_BUFFER:
@@ -539,32 +539,32 @@ off_t newPosition;
 params = getInteger(params, &handle);
 
 if(params == nilCell)
-	{
-	if(handle == 0)
-		newPosition = ftell(stdout);
-	else if( (newPosition = lseek(handle, 0, SEEK_CUR)) == -1)
-		return(nilCell);
-	}
+    {
+    if(handle == 0)
+        newPosition = ftell(stdout);
+    else if( (newPosition = lseek(handle, 0, SEEK_CUR)) == -1)
+        return(nilCell);
+    }
 else
-	{
+    {
 #ifdef LFS
-	getInteger64(params, &paramPosition);
+    getInteger64(params, &paramPosition);
 #else
-	getInteger(params, (UINT *)&paramPosition);
+    getInteger(params, (UINT *)&paramPosition);
 #endif
 
-	newPosition = paramPosition;
-	if(newPosition == -1)
-		{
-		if( (newPosition = lseek((int)handle, 0, SEEK_END)) == -1)
-			return(nilCell);
-		}
-	else
-		{
- 		if( lseek((int)handle, newPosition, SEEK_SET) == -1)
-			return(nilCell);
-		}
-	}
+    newPosition = paramPosition;
+    if(newPosition == -1)
+        {
+        if( (newPosition = lseek((int)handle, 0, SEEK_END)) == -1)
+            return(nilCell);
+        }
+    else
+        {
+        if( lseek((int)handle, newPosition, SEEK_SET) == -1)
+            return(nilCell);
+        }
+    }
 
 paramPosition = newPosition;
 #ifdef LFS
@@ -586,15 +586,15 @@ do {
 errno = 0;
 #endif
 while((chr = fgetc(inStream)) != EOF)
-	{
-	if(chr == '\n') break;
-	if(chr == '\r')
-		{
-		chr = fgetc(inStream);
-		if(chr == '\n' || chr == EOF) break;
-		}
-	writeStreamChar(stream, chr);
-	}
+    {
+    if(chr == '\n') break;
+    if(chr == '\r')
+        {
+        chr = fgetc(inStream);
+        if(chr == '\n' || chr == EOF) break;
+        }
+    writeStreamChar(stream, chr);
+    }
 #ifdef TRU64
 } while (errno == EINTR);
 #endif
@@ -614,33 +614,33 @@ int bytesRead;
 
 
 if(params != nilCell)
-	getInteger(params, &handle);
+    getInteger(params, &handle);
 else 
-	handle = printDevice;
+    handle = printDevice;
 
 if(handle == 0) 
-	{
-	if((line = readStreamLine(&readLineStream, IOchannel)) == NULL)
-		return(nilCell);
+    {
+    if((line = readStreamLine(&readLineStream, IOchannel)) == NULL)
+        return(nilCell);
 
-	return(stuffString(line));
-	}
+    return(stuffString(line));
+    }
 
 openStrStream(&readLineStream, MAX_STRING, 1);
 while(TRUE)
-	{
-	if((bytesRead = read((int)handle, &chr, 1)) <= 0) break;
-	if(chr == '\n') break;
-	if(chr == '\r')
-		{
-		if(read((int)handle, &chr, 1) < 0) break;
-		if(chr == '\n') break;
-		}
-	writeStreamChar(&readLineStream, chr);
-	}
+    {
+    if((bytesRead = read((int)handle, &chr, 1)) <= 0) break;
+    if(chr == '\n') break;
+    if(chr == '\r')
+        {
+        if(read((int)handle, &chr, 1) < 0) break;
+        if(chr == '\n') break;
+        }
+    writeStreamChar(&readLineStream, chr);
+    }
 
 if(bytesRead <= 0 && readLineStream.position == 0)
-	return(nilCell);
+    return(nilCell);
 
 return(stuffString(readLineStream.buffer));;
 }
@@ -655,11 +655,11 @@ return(stuffString(readLineStream.buffer));
 char * getLocalPath(char * fileName)
 {
 if(my_strnicmp(fileName, "file://", 7) == 0)
-	fileName = fileName + 7;
+    fileName = fileName + 7;
 
 #ifdef WIN_32
 if(*fileName == '/' && *(fileName + 2) == ':')
-	fileName = fileName + 1;
+    fileName = fileName + 1;
 #endif
 
 return(fileName);
@@ -674,11 +674,11 @@ fileName = getLocalPath(fileName);
 
 #ifndef WIN_32
 if(option != NULL && *option == 'n')
-	blocking = O_NONBLOCK;
+    blocking = O_NONBLOCK;
 #endif
 
 if(*accessMode == 'r')
-	return(open(fileName, O_RDONLY | O_BINARY | blocking, 0));
+    return(open(fileName, O_RDONLY | O_BINARY | blocking, 0));
 
 else if(*accessMode == 'w')
 #ifdef WIN_32
@@ -689,7 +689,7 @@ else if(*accessMode == 'w')
 #endif
 
 else if(*accessMode == 'u')
-	return(open(fileName, O_RDWR | O_BINARY, 0));
+    return(open(fileName, O_RDWR | O_BINARY, 0));
 
 else if(*accessMode == 'a')
        {
@@ -718,18 +718,18 @@ params = getString(params, &fromName);
 getString(params, &toName);
 
 if((fromHandle = openFile(fromName, "read", NULL)) < 0)
-	return(nilCell);
+    return(nilCell);
 
 if((toHandle = openFile(toName,"write", NULL)) < 0)
-	return(nilCell);
+    return(nilCell);
 
 copyBuffer = allocMemory(MAX_FILE_BUFFER);
 do
-	{
-	bytesRead = read(fromHandle, copyBuffer, MAX_FILE_BUFFER);
-	if(write(toHandle, copyBuffer, (int)bytesRead) < 0) 
-		fatalError(ERR_IO_ERROR, 0, 0);
-	} while (bytesRead == MAX_FILE_BUFFER);
+    {
+    bytesRead = read(fromHandle, copyBuffer, MAX_FILE_BUFFER);
+    if(write(toHandle, copyBuffer, (int)bytesRead) < 0) 
+        fatalError(ERR_IO_ERROR, 0, 0);
+    } while (bytesRead == MAX_FILE_BUFFER);
 
 free(copyBuffer);
 
@@ -758,10 +758,10 @@ CELL * result;
 
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
-	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, CONNECT_TIMEOUT);
-	return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
-	}
+    {
+    result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, CONNECT_TIMEOUT);
+    return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
+    }
 
 fileName = getLocalPath(fileName);
 return(unlink(fileName) == 0 ? trueCell : nilCell);
@@ -776,12 +776,12 @@ UINT inMode;
 
 params = getString(params, &dirString);
 if(params != nilCell)
-	{
-	getInteger(params, &inMode);
-	mode = inMode;
-	}
+    {
+    getInteger(params, &inMode);
+    mode = inMode;
+    }
 else
-	mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
+    mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
 
 #ifdef WIN_32 
 return(mkdir(dirString) == 0 ? trueCell : nilCell);
@@ -819,15 +819,15 @@ DIR * dir;
 struct dirent * dEnt;
 
 if(params != nilCell)
-	{
-	params = getString(params, &dirPath);
-	if(params != nilCell)
-		{
-		params = getString(params, &pattern);
-		if(params != nilCell)
-			getInteger(params, &options);
-		}
-	}
+    {
+    params = getString(params, &dirPath);
+    if(params != nilCell)
+        {
+        params = getString(params, &pattern);
+        if(params != nilCell)
+            getInteger(params, &options);
+        }
+    }
 else dirPath = ".";
 
 dirList = getCell(CELL_EXPRESSION);
@@ -836,18 +836,18 @@ dir = opendir(dirPath);
 if(dir == NULL) return(nilCell);
 
 while((dEnt = readdir(dir)) != NULL)
-	{
+    {
 #ifdef USE_WIN_UTF16PATH
-	fileName = utf16_to_utf8(dEnt->d_name);
+    fileName = utf16_to_utf8(dEnt->d_name);
 #else
-	fileName = dEnt->d_name;
+    fileName = dEnt->d_name;
 #endif
-	if(!pattern || searchBufferRegex(fileName, 0, pattern, strlen(fileName), options, NULL) != -1)
-		addList(dirList, stuffString(fileName));
+    if(!pattern || searchBufferRegex(fileName, 0, pattern, strlen(fileName), options, NULL) != -1)
+        addList(dirList, stuffString(fileName));
 #ifdef USE_WIN_UTF16PATH
-	free(fileName);
+    free(fileName);
 #endif
-	}
+    }
 
 closedir(dir);
 return(dirList);
@@ -862,11 +862,11 @@ char  path[PATH_MAX];
 char * dir;
 
 if(params != nilCell)
-	getString(params, &dir);
+    getString(params, &dir);
 else dir = DOT_PATH;
 
 if(realpath(dir, path) == NULL)
-	return(nilCell);
+    return(nilCell);
 
 return(stuffString(path));
 }
@@ -889,25 +889,25 @@ result = stat(pathName, &fileInfo);
 
 #else /* Unix */
 if(getFlag(params->next))
-	result = stat(pathName, &fileInfo);
+    result = stat(pathName, &fileInfo);
 else
-	result = lstat(pathName, &fileInfo);
+    result = lstat(pathName, &fileInfo);
 #endif
 
 if(result != 0)
-	return(nilCell);
+    return(nilCell);
 
 list = stuffIntegerList(
-	8,
-	(UINT)fileInfo.st_size,
-	(UINT)fileInfo.st_mode,
-	(UINT)fileInfo.st_rdev,
-	(UINT)fileInfo.st_uid,
-	(UINT)fileInfo.st_gid,
-	(UINT)fileInfo.st_atime,
-	(UINT)fileInfo.st_mtime,
-	(UINT)fileInfo.st_ctime
-	);
+    8,
+    (UINT)fileInfo.st_size,
+    (UINT)fileInfo.st_mode,
+    (UINT)fileInfo.st_rdev,
+    (UINT)fileInfo.st_uid,
+    (UINT)fileInfo.st_gid,
+    (UINT)fileInfo.st_atime,
+    (UINT)fileInfo.st_mtime,
+    (UINT)fileInfo.st_ctime
+    );
 
 #ifndef NEWLISP64
 #ifdef LFS
@@ -921,11 +921,11 @@ list = stuffIntegerList(
 #endif /* NEWLISP64 */
 
 if(params != nilCell)
-	{
-	pushResult(list);
-	return(copyCell(implicitIndexList(list, params)));
-	}
-	
+    {
+    pushResult(list);
+    return(copyCell(implicitIndexList(list, params)));
+    }
+    
 return(list);
 }
 
@@ -974,12 +974,12 @@ si.cb = sizeof(STARTUPINFO);
 
 params = getString(params, &command);
 if(params != nilCell)
-	getInteger(params, &creation_flags);
+    getInteger(params, &creation_flags);
 else
-	return(stuffInteger((UINT)system(command)));
+    return(stuffInteger((UINT)system(command)));
 
 result = CreateProcessA(NULL, command, NULL, NULL, 0, (DWORD)creation_flags, NULL, NULL, 
-		(LPSTARTUPINFO)&si, (LPPROCESS_INFORMATION)&pi); 
+        (LPSTARTUPINFO)&si, (LPPROCESS_INFORMATION)&pi); 
 
 
 if(!result) return(nilCell);
@@ -1003,25 +1003,25 @@ size_t size;
 
 params = getString(params, &command);
 if(params == nilCell)
-	{
-	if((handle = popen(command , "r")) == NULL)
-		return(nilCell);
+    {
+    if((handle = popen(command , "r")) == NULL)
+        return(nilCell);
 
-	lineList = getCell(CELL_EXPRESSION);
-	while((line = readStreamLine(&readLineStream, handle)) != NULL)
-		addList(lineList, stuffString(line));
+    lineList = getCell(CELL_EXPRESSION);
+    while((line = readStreamLine(&readLineStream, handle)) != NULL)
+        addList(lineList, stuffString(line));
 
-	pclose(handle);
-	return(lineList);
-	}
+    pclose(handle);
+    return(lineList);
+    }
     
 getStringSize(params, &data, &size, TRUE);
 
 if((handle = popen(command, "w")) == NULL)
-	return(nilCell);
+    return(nilCell);
 
 if(fwrite(data, 1, (size_t)size, handle) < strlen(data))
-	return(nilCell);
+    return(nilCell);
 
 pclose(handle);
 return(trueCell);
@@ -1038,26 +1038,26 @@ int argc = 0;
 char brkChr;
 
 while(*ptr != 0)
-	{
-	while(*ptr == ' ') ++ptr;
-	if(*ptr == 0) break;
-	if(*ptr == '\'' || *ptr == '"')
-		{
-		brkChr = *ptr;
-		argv[argc++] = ++ptr;
-		while(*ptr != brkChr && *ptr != 0) ++ptr;
-		if(*ptr == 0) break;
-		*ptr++ = 0;	
-		continue;
-		}
-	else
-		{
-		argv[argc++] = ptr++;
-		while(*ptr != ' ' && *ptr != 0) ptr++;
-		if(*ptr == 0) break;
-		*ptr++ = 0;
-		}
-	}
+    {
+    while(*ptr == ' ') ++ptr;
+    if(*ptr == 0) break;
+    if(*ptr == '\'' || *ptr == '"')
+        {
+        brkChr = *ptr;
+        argv[argc++] = ++ptr;
+        while(*ptr != brkChr && *ptr != 0) ++ptr;
+        if(*ptr == 0) break;
+        *ptr++ = 0; 
+        continue;
+        }
+    else
+        {
+        argv[argc++] = ptr++;
+        while(*ptr != ' ' && *ptr != 0) ptr++;
+        if(*ptr == 0) break;
+        *ptr++ = 0;
+        }
+    }
 
 argv[argc] = 0;
 return(argc);
@@ -1075,7 +1075,7 @@ CELL * p_pipe(CELL * params)
 UINT hin, hout;
 
 if(!winPipe(&hin, &hout))    /* see file win32-util.c */
-	return(nilCell);
+    return(nilCell);
 
 return(stuffIntegerList(2, hin, hout));
 }
@@ -1091,12 +1091,12 @@ UINT inpipe = 0, outpipe = 0, option = 1;
 
 params = getStringSize(params, &command, &size, TRUE);
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT *)&inpipe);
-	params = getInteger(params, (UINT *)&outpipe);
-	if(params != nilCell)
-		getInteger(params, (UINT *)&option);
-	}
+    {
+    params = getInteger(params, (UINT *)&inpipe);
+    params = getInteger(params, (UINT *)&outpipe);
+    if(params != nilCell)
+        getInteger(params, (UINT *)&option);
+    }
 else return(plainProcess(command, size));
 
 result = winPipedProcess(command, (int)inpipe, (int)outpipe, (int)option);
@@ -1135,7 +1135,7 @@ getInteger(params, &pid);
 /* GetProcessId(handle) */
 
 if(TerminateProcess((HANDLE)pid, 0) == 0)
-	return(nilCell);
+    return(nilCell);
 
 return(trueCell);
 }
@@ -1147,7 +1147,7 @@ CELL * p_pipe(CELL * params)
 {
 int handles[2];
 if(pipe(handles) != 0)
-	return(nilCell);
+    return(nilCell);
 
 return(stuffIntegerList(2, (UINT)handles[0], (UINT)handles[1]));
 }
@@ -1167,23 +1167,23 @@ cmd = callocMemory(size + 1);
 memcpy(cmd, command, size + 1);
 
 #ifdef DEBUG_INIT_ARGV
-	int i;
-	init_argv(cmd, argv);
-	for(i = 0; i < 15; i++)
-		{
-		if(argv[i] == NULL) break;
-		printf("->%s<-\n", argv[i]);
-		}
-	return(trueCell);
+    int i;
+    init_argv(cmd, argv);
+    for(i = 0; i < 15; i++)
+        {
+        if(argv[i] == NULL) break;
+        printf("->%s<-\n", argv[i]);
+        }
+    return(trueCell);
 #endif
 
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT *)&inpipe);
-	params = getInteger(params, (UINT *)&outpipe);
-	if(params != nilCell)
-		getInteger(params, (UINT *)&errpipe);
-	}
+    {
+    params = getInteger(params, (UINT *)&inpipe);
+    params = getInteger(params, (UINT *)&outpipe);
+    if(params != nilCell)
+        getInteger(params, (UINT *)&errpipe);
+    }
 
 if((forkResult = fork()) == -1)
     return(nilCell);
@@ -1205,16 +1205,16 @@ if(forkResult == 0)
         close((int)outpipe);
         }
     if(errpipe)
-    	{
-    	close(STDERR_FILENO);
-    	if(dup2((int)errpipe, STDERR_FILENO) == -1) exit(0);
-    	close((int)errpipe);
-    	}
-	
-	init_argv(cmd, argv);
+        {
+        close(STDERR_FILENO);
+        if(dup2((int)errpipe, STDERR_FILENO) == -1) exit(0);
+        close((int)errpipe);
+        }
+    
+    init_argv(cmd, argv);
 
- 	execve(argv[0], argv, environ);
-	exit(0);
+    execve(argv[0], argv, environ);
+    exit(0);
     }
 
 freeMemory(cmd);
@@ -1231,7 +1231,7 @@ if((forkResult = fork()) == -1)
     return(nilCell);
 if(forkResult == 0)
     {
-	parentPid = ppid;
+    parentPid = ppid;
     evaluateExpression(params);
     exit(0);
     }
@@ -1263,13 +1263,13 @@ fd_set myFdSet;             /* set of all child sockets */
 #ifndef OS2
 
 typedef struct 
-	{
-	void * result_addr; /* written by child */
-	SYMBOL * symbolPtr; /* smbol for result */
-	int pid;            /* childs pid */
+    {
+    void * result_addr; /* written by child */
+    SYMBOL * symbolPtr; /* smbol for result */
+    int pid;            /* childs pid */
     int socket; 
-	void * next;	
-	} SPAWN_LIST;
+    void * next;    
+    } SPAWN_LIST;
 
 SPAWN_LIST * mySpawnList = NULL;
 
@@ -1300,10 +1300,10 @@ SPAWN_LIST * getSpawnedChild(int pid)
 SPAWN_LIST * spawnList = mySpawnList;
 
 while(spawnList != NULL)
-	{
-	if(spawnList->pid == pid) break;
-	spawnList = spawnList->next;
-	}
+    {
+    if(spawnList->pid == pid) break;
+    spawnList = spawnList->next;
+    }
 
 return(spawnList);
 }
@@ -1313,15 +1313,15 @@ void purgeSpawnList(int sockFlag)
 SPAWN_LIST * spawnList;
 
 /* pop and delete entries */
+
 while(mySpawnList != NULL)
-	{
-	spawnList = mySpawnList->next;
-    /* close sockets */
+    {
     if(sockFlag)
-        close(spawnList->socket);
-	free(mySpawnList);
-	mySpawnList = spawnList;
-	}
+        close(mySpawnList->socket);
+    spawnList = mySpawnList->next;
+    free(mySpawnList);
+    mySpawnList = spawnList;
+    }
 }
 
 /* lookup pid get result from shared memory and delete entry */
@@ -1350,30 +1350,30 @@ while(pidSpawn)
         else
             previousSpawn->next = pidSpawn->next;
 
-		if(mode == PROCESS_SPAWN_RESULT)
-			{
-			cell = readWriteShared(pidSpawn->result_addr, nilCell);
-			sPtr = pidSpawn->symbolPtr;
-			deleteList((CELL *)sPtr->contents);
-			sPtr->contents = (UINT)cell;
-			}
-		else if(mode == PROCESS_SPAWN_ABORT)
-			{
+        if(mode == PROCESS_SPAWN_RESULT)
+            {
+            cell = readWriteShared(pidSpawn->result_addr, nilCell, 0);
+            sPtr = pidSpawn->symbolPtr;
+            deleteList((CELL *)sPtr->contents);
+            sPtr->contents = (UINT)cell;
+            }
+        else if(mode == PROCESS_SPAWN_ABORT)
+            {
             close(pidSpawn->socket);
-			kill(pidSpawn->pid, 9);
-			waitpid(pidSpawn->pid, (int *)0, 0);
-			}
+            kill(pidSpawn->pid, 9);
+            waitpid(pidSpawn->pid, (int *)0, 0);
+            }
         else /* PROCESS_SPAWN_ABNORMAL_END */
             {
-			sPtr = pidSpawn->symbolPtr;
-			deleteList((CELL *)sPtr->contents);
+            sPtr = pidSpawn->symbolPtr;
+            deleteList((CELL *)sPtr->contents);
             snprintf(str, 32, "%s %d", ABEND, result);
-			sPtr->contents = (UINT)stuffString(str);
+            sPtr->contents = (UINT)stuffString(str);
             }
             
-		checkDeleteShareFile(pidSpawn->result_addr);
+        checkDeleteShareFile(pidSpawn->result_addr);
         /* unmap shared result memory */
-		munmap(pidSpawn->result_addr, pagesize);
+        munmap(pidSpawn->result_addr, pagesize);
         free((char *)pidSpawn);
         break;
         }
@@ -1400,57 +1400,62 @@ int forkPid;
 int pid;
 void * address; /* share memory area for result */
 SYMBOL * symPtr;
-int sockets[2];
+int sockets[2] = {0, 0};
 
 /* make signals processable by waitpid() in p_sync() */
 signal(SIGCHLD, SIG_DFL);
 
 if((address = mmap( 0, pagesize, 
-	PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
-		return(nilCell);
+    PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
+        return(nilCell);
 
 memset(address, 0, sizeof(long));
 
-pid = getpid();
-if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == -1) 
-    {
-    purgeSpawnList(TRUE);
-    errorProc(ERR_CANNOT_OPEN_SOCKETPAIR); 
-    }
-
-/* add the parent socket to myFdSet */ 
-if(mySpawnList == NULL)
-    FD_ZERO(&myFdSet);
-FD_SET(sockets[0], &myFdSet);
-
 params = getSymbol(params, &symPtr);
 if(isProtected(symPtr->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symPtr)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symPtr)));
 deleteList((CELL *)symPtr->contents);
 symPtr->contents = (UINT)nilCell;
 
+pid = getpid();
+
+/* socketpair for send/receive API is optional */
+if(getFlag(params->next))
+    {
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == -1) 
+        {
+        purgeSpawnList(TRUE);
+        errorProc(ERR_CANNOT_OPEN_SOCKETPAIR); 
+        }
+
+    /* add the parent socket to myFdSet */ 
+    if(mySpawnList == NULL)
+        FD_ZERO(&myFdSet);
+    FD_SET(sockets[0], &myFdSet);
+    }
+
 if((forkPid = fork()) == -1)
-	{
-	munmap(address, pagesize);
+    {
+    munmap(address, pagesize);
     return(nilCell);
-	}
+    }
 
 if(forkPid == 0) /* the child process */
     {
-	/* seed random generator for message fail delay */
-	srandom(getpid()); 
-	/* get parent pid */
-	parentPid = pid;
-    close(sockets[0]);
+    /* seed random generator for message fail delay */
+    srandom(getpid()); 
+    /* get parent pid */
+    parentPid = pid;
+    if(sockets[0]) close(sockets[0]);
     thisSocket = sockets[1];
-	/* purge inherited spawnlist */
-	purgeSpawnList(FALSE);
-	/* evaluate and write result to shared memory */
-	readWriteShared(address, params);
+    /* purge inherited spawnlist */
+    purgeSpawnList(FALSE);
+    /* evaluate and write result to shared memory */
+    readWriteShared(address, params, TRUE);
     exit(0);
     }
 
-close(sockets[1]);
+if(sockets[1]) close(sockets[1]);
 addSpawnedChild(address, symPtr, forkPid, sockets[0]);
 
 return(stuffInteger(forkPid));
@@ -1477,51 +1482,51 @@ UINT * resultIdxSave;
 CELL * cell;
 
 if(mySpawnList == NULL)
-	return(resultList); /* nothing pending */
+    return(resultList); /* nothing pending */
 
 if(params == nilCell)
-	{
-	spawnList = mySpawnList;
-	while(spawnList != NULL)
-		{
-		addList(resultList, stuffInteger(spawnList->pid));
-		spawnList = spawnList->next;
-		}
-	return(resultList);
-	}
+    {
+    spawnList = mySpawnList;
+    while(spawnList != NULL)
+        {
+        addList(resultList, stuffInteger(spawnList->pid));
+        spawnList = spawnList->next;
+        }
+    return(resultList);
+    }
 
 deleteList(resultList);
 
 params = getInteger(params, &timeout);
 if(params == nilCell || isNil((CELL *)((SYMBOL *)params->contents)->contents))
-	signal(SIGCHLD, SIG_DFL);
+    signal(SIGCHLD, SIG_DFL);
 else
-	inletFlag = TRUE;
-	
+    inletFlag = TRUE;
+    
 gettimeofday(&tv, NULL);
 
 while(mySpawnList != NULL)
-	{
-	gettimeofday(&tp, NULL);
-	if(timediff_ms(tp, tv) > timeout) return(nilCell);
+    {
+    gettimeofday(&tp, NULL);
+    if(timediff_ms(tp, tv) > timeout) return(nilCell);
     /* wait for any child process to finish */
-	pid = waitpid(-1, &result, WNOHANG); 
-	if(pid) 
-		{
+    pid = waitpid(-1, &result, WNOHANG); 
+    if(pid) 
+        {
         if(!WIFEXITED(result))
-		    processSpawnList(pid, PROCESS_SPAWN_ABNORMAL_END, result);
+            processSpawnList(pid, PROCESS_SPAWN_ABNORMAL_END, result);
         else
-		    processSpawnList(pid, PROCESS_SPAWN_RESULT, 0);
-		if(inletFlag)
-			{
-			resultIdxSave = resultStackIdx;
-			pushResult(cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(params)));
-			((CELL *)cell->contents)->next = stuffInteger((UINT)pid);
-			evaluateExpression(cell);
-			cleanupResults(resultIdxSave);
-			}
-		}
-	}
+            processSpawnList(pid, PROCESS_SPAWN_RESULT, 0);
+        if(inletFlag)
+            {
+            resultIdxSave = resultStackIdx;
+            pushResult(cell = makeCell(CELL_EXPRESSION, (UINT)copyCell(params)));
+            ((CELL *)cell->contents)->next = stuffInteger((UINT)pid);
+            evaluateExpression(cell);
+            cleanupResults(resultIdxSave);
+            }
+        }
+    }
 
 /* put initial behaviour back */
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
@@ -1544,21 +1549,21 @@ CELL * p_abort(CELL * params)
 UINT pid;
  
 if(params != nilCell)
-	{
-	getInteger(params, &pid);
-	processSpawnList(pid, PROCESS_SPAWN_ABORT, 0);
-	}
+    {
+    getInteger(params, &pid);
+    processSpawnList(pid, PROCESS_SPAWN_ABORT, 0);
+    }
 else /* abort all */
-	{
-	while(mySpawnList != NULL) 
-		processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT, 0);
-	/* put initial behaviour back */
+    {
+    while(mySpawnList != NULL) 
+        processSpawnList(mySpawnList->pid, PROCESS_SPAWN_ABORT, 0);
+    /* put initial behaviour back */
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX) 
-	setupSignalHandler(SIGCHLD, sigchld_handler);
+   setupSignalHandler(SIGCHLD, sigchld_handler);
 #else
-	setupSignalHandler(SIGCHLD, signal_handler);
+    setupSignalHandler(SIGCHLD, signal_handler);
 #endif
-	}
+}
 
 return(trueCell);
 }
@@ -1626,11 +1631,14 @@ if(pid == parentPid) /* write to parent */
     socket = thisSocket;
     }
 else  /* write to child */
-	{
-	if((child = getSpawnedChild(pid)) == NULL)
-		errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
+    {
+    if((child = getSpawnedChild(pid)) == NULL)
+        errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
     socket = child->socket;
-	}
+    }
+
+if(!socket)
+    errorProc(ERR_NO_SOCKET);
 
 if(params == nilCell)
     errorProc(ERR_MISSING_ARGUMENT);
@@ -1659,28 +1667,31 @@ if(params != nilCell)
     {
     params = getEvalDefault(params, &cell);
     if(!symbolCheck)
-	    return(errorProc(ERR_IS_NOT_REFERENCED));
+        return(errorProc(ERR_IS_NOT_REFERENCED));
     if(isProtected(symbolCheck->flags))
-	    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
     if(symbolCheck->contents != (UINT)cell)
-	    return(errorProc(ERR_IS_NOT_REFERENCED));
+        return(errorProc(ERR_IS_NOT_REFERENCED));
     sPtr = symbolCheck;
     }
 
 if(params == nilCell) /* read from parent */
-	{
-	if(pid == parentPid)
+    {
+    if(pid == parentPid)
         {
         socket = thisSocket;
         }
-	else  /* read from child */
-		{
-		if((child = getSpawnedChild(pid)) == NULL)
-			errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
+    else  /* read from child */
+        {
+        if((child = getSpawnedChild(pid)) == NULL)
+            errorProcExt2(ERR_INVALID_PID, stuffInteger(pid));
         socket = child->socket;
-		}
+        }
 
-	cell = readWriteSocket(socket, params);
+    if(!socket)
+        errorProc(ERR_NO_SOCKET);
+
+    cell = readWriteSocket(socket, params);
     if(cell == nilCell)
         return(nilCell);
 
@@ -1688,10 +1699,10 @@ if(params == nilCell) /* read from parent */
     if(sPtr == NULL)
         return(cell);
 
-	deleteList((CELL *)sPtr->contents);
-	sPtr->contents = (UINT)cell;
-	pushResultFlag = FALSE;
-	}
+    deleteList((CELL *)sPtr->contents);
+    sPtr->contents = (UINT)cell;
+    pushResultFlag = FALSE;
+    }
 
 return(trueCell);
 }
@@ -1795,13 +1806,13 @@ UINT pid;
 UINT sig;
 
 params = getInteger(params, &pid);
-if(params != nilCell)	
-	getInteger(params, &sig);
+if(params != nilCell)   
+    getInteger(params, &sig);
 else
-	sig = 9;
+    sig = 9;
 
 if(kill(pid, sig) != 0)
-	return(nilCell);
+    return(nilCell);
 
 return(trueCell);
 }
@@ -1818,15 +1829,15 @@ signal(SIGCHLD, SIG_DFL);
 
 params = getInteger(params, (UINT *)&pid);
 if(params != nilCell)
-	{
-	params = evaluateExpression(params);
-	if(isNil(params))
-		options = WNOHANG;
-	else
-		getIntegerExt(params, (UINT *)&options, FALSE);
-	}
+    {
+    params = evaluateExpression(params);
+    if(isNil(params))
+        options = WNOHANG;
+    else
+        getIntegerExt(params, (UINT *)&options, FALSE);
+    }
 else
-	options = 0;
+    options = 0;
 
 retval = waitpid((int)pid, &result , (int)options);
 
@@ -1851,37 +1862,37 @@ UINT sem_id;
 long value;
 
 if(params != nilCell)
-	{
-	params = getInteger(params, &sem_id);
-	if(params != nilCell)
-		{
-		getInteger(params,(UINT *)&value);
-		if(value == 0)
-			{
-			if(!winDeleteSemaphore(sem_id)) 
-				return(nilCell);
-			return(trueCell);
-			}
+    {
+    params = getInteger(params, &sem_id);
+    if(params != nilCell)
+        {
+        getInteger(params,(UINT *)&value);
+        if(value == 0)
+            {
+            if(!winDeleteSemaphore(sem_id)) 
+                return(nilCell);
+            return(trueCell);
+            }
 
-		/* wait or signal */
-		if(value < 0)
-			{
-			if(winWaitSemaphore(sem_id)) return(trueCell);
-			return(nilCell);
-			}
-		if(value > 0)
-			{
-			if(winSignalSemaphore(sem_id, value)) return(trueCell);
-			return(nilCell);	
-			}
-		}
+        /* wait or signal */
+        if(value < 0)
+            {
+            if(winWaitSemaphore(sem_id)) return(trueCell);
+            return(nilCell);
+            }
+        if(value > 0)
+            {
+            if(winSignalSemaphore(sem_id, value)) return(trueCell);
+            return(nilCell);    
+            }
+        }
 
-	else
-		{
-		/* return semaphore value, not on Win32 ? */
-		return(nilCell);
-		}
-	}
+    else
+        {
+        /* return semaphore value, not on Win32 ? */
+        return(nilCell);
+        }
+    }
 
 /* create semaphore */
 if((sem_id = winCreateSemaphore()) == 0) return(nilCell);
@@ -1897,23 +1908,23 @@ CELL * p_semaphore(CELL * params)
 long sem, value, result;
 
 if(params == nilCell)
-	{
-	result = semaphore(0, 0, SEM_CREATE);
-	goto SEMAPHORE_END;
-	}
+    {
+    result = semaphore(0, 0, SEM_CREATE);
+    goto SEMAPHORE_END;
+    }
 
 params = getInteger(params, (UINT *)&sem);
 if(params == nilCell)
     {
     result = semaphore(sem, 0, SEM_STATUS);
-	goto SEMAPHORE_END;
+    goto SEMAPHORE_END;
     }
 
 getInteger(params, (UINT *)&value);
-	{
-	result = semaphore(sem, value, SEM_SIGNAL);
-	if(result != -1) return(trueCell);
-	}
+    {
+    result = semaphore(sem, value, SEM_SIGNAL);
+    if(result != -1) return(trueCell);
+    }
 
 SEMAPHORE_END:
 if(result == -1) return(nilCell);
@@ -1937,12 +1948,12 @@ semu.val = 0;
 #endif
 
 if(type != SEM_CREATE)
-	{
-	if(type == SEM_SIGNAL)
-		{
-		if(value == 0)
-			{
-			/* remove semaphore */
+    {
+    if(type == SEM_SIGNAL)
+        {
+        if(value == 0)
+            {
+            /* remove semaphore */
 #ifdef SPARC
     #ifndef NEWLISP64
             if(semctl(sem_id, 0, IPC_RMID, &semun_val) == -1) /* SPARC 32 */
@@ -1958,26 +1969,26 @@ if(type != SEM_CREATE)
     #endif /* not MAC_OSX */
 #endif /* not SPARC */
                 return(-1);
-			return(0);
-			}
+            return(0);
+            }
 
-		/* wait or signal */
-		sem_b.sem_num = 0;
-		sem_b.sem_op = value;
-		sem_b.sem_flg = 0; 
-		if(semop(sem_id, &sem_b, 1) == -1)
-			return(-1);
-		return(0);
-		}
+        /* wait or signal */
+        sem_b.sem_num = 0;
+        sem_b.sem_op = value;
+        sem_b.sem_flg = 0; 
+        if(semop(sem_id, &sem_b, 1) == -1)
+            return(-1);
+        return(0);
+        }
 
-	else
-		/* return semaphore value */
+    else
+        /* return semaphore value */
 #ifdef MAC_OSX
         return(semctl(sem_id, 0, GETVAL, semu));
 #else
         return(semctl(sem_id, 0, GETVAL, 0));
 #endif
-	}
+    }
 
 /* create semaphore */
 sem_id = semget(IPC_PRIVATE, 1, 0666 );
@@ -1995,7 +2006,7 @@ if(semctl(sem_id, 0, SETVAL, semu) == -1) /* MAC_OSX */
 if(semctl(sem_id, 0, SETVAL, 0) == -1) /* LINUX, BSD, TRU64 */
  #endif /* not MAC_OSX */
 #endif /* not SPARC */
-	return(-1);
+    return(-1);
 
 return(sem_id);
 }
@@ -2024,33 +2035,33 @@ UINT handle;
 
 /* read write  or release (UNIX) shared memory */
 if(params != nilCell) 
-	{
-	cell = evaluateExpression(params);
+    {
+    cell = evaluateExpression(params);
 #ifndef WIN_32
-	if(isNil(cell)) /* release shared address */
-		{
-		getInteger(params->next, (UINT *)&address);
-		checkDeleteShareFile(address);
-		if(munmap(address, pagesize) == -1)
-			return(nilCell);
-		else
-			return(trueCell);
-		}
+    if(isNil(cell)) /* release shared address */
+        {
+        getInteger(params->next, (UINT *)&address);
+        checkDeleteShareFile(address);
+        if(munmap(address, pagesize) == -1)
+            return(nilCell);
+        else
+            return(trueCell);
+        }
 #endif
-	getIntegerExt(cell, (UINT *)&address, FALSE);
-	params = params->next;
+    getIntegerExt(cell, (UINT *)&address, FALSE);
+    params = params->next;
 #ifdef WIN_32
-	if((address = winMapView((UINT)address, pagesize)) == NULL)
-		return(nilCell);
+    if((address = winMapView((UINT)address, pagesize)) == NULL)
+        return(nilCell);
 #endif
-	return(readWriteShared(address, params));
-	}
+    return(readWriteShared(address, params, 0));
+    }
 
 /* get shared memory UNIX */
 #ifndef WIN_32
 if((address = (UINT*)mmap(
-	0, pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
-		return(nilCell);
+    0, pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
+        return(nilCell);
 
 memset((char *)address, 0, pagesize);
 return(stuffInteger((UINT)address));
@@ -2059,10 +2070,10 @@ return(stuffInteger((UINT)address));
 #else 
 
 if((handle = winSharedMemory(pagesize)) == 0)
-	return(nilCell);
+    return(nilCell);
 
 if((address = winMapView(handle, pagesize)) == NULL)
-	return(nilCell);
+    return(nilCell);
 
 memset((char *)address, 0, pagesize);
 return(stuffInteger(handle));
@@ -2076,125 +2087,132 @@ return(stuffInteger(handle));
    id ptimized for speed (but doesn't bring much in overall
    performance, should perhaps be taken out and only use
    readWriteSharedExpression() */
-CELL * readWriteShared(UINT * address, CELL * params)
+CELL * readWriteShared(UINT * address, CELL * params, int flag)
 {
 CELL * cell;
 size_t size;
 char * str;
+int errNo;
 
 /* write to shared memory */
 if(params != nilCell) 
-	{
-	cell = evaluateExpression(params);
+    {
+    if(flag)
+        {
+        if((cell = evaluateExpressionSafe(params, &errNo)) == NULL)
+            cell = stuffString(errorStream.buffer);
+        }
+    else 
+        cell = evaluateExpression(params);
 
-	/* if a previous share mem file is still present, delete it
+    /* if a previous share mem file is still present, delete it
        when *address == 0 when called from Cilk then file is
        deleted p_message(). Here only used from p_share() */
-	if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
-		checkDeleteShareFile(address);
+    if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
+        checkDeleteShareFile(address);
 
-	/* write list types */
-	if((cell->type & COMPARE_TYPE_MASK) > (CELL_STRING & COMPARE_TYPE_MASK))
-		return(copyCell(readWriteSharedExpression(address, cell)));
+    /* write list types */
+    if((cell->type & COMPARE_TYPE_MASK) > (CELL_STRING & COMPARE_TYPE_MASK))
+        return(copyCell(readWriteSharedExpression(address, cell)));
 
-	switch(cell->type)
-		{
-		case CELL_NIL:
-			*address = cell->type;
+    switch(cell->type)
+        {
+        case CELL_NIL:
+            *address = cell->type;
 #ifdef WIN_32
-			UnmapViewOfFile(address);
+            UnmapViewOfFile(address);
 #endif
-	        return(nilCell);
-		case CELL_TRUE:
-			*address = cell->type;
+            return(nilCell);
+        case CELL_TRUE:
+            *address = cell->type;
 #ifdef WIN_32
-			UnmapViewOfFile(address);
+            UnmapViewOfFile(address);
 #endif
-			return(trueCell);
-		case CELL_LONG:
-			*(address + 1) = sizeof(long);
-			*(address + 2) = cell->contents;
-			break;
+            return(trueCell);
+        case CELL_LONG:
+            *(address + 1) = sizeof(long);
+            *(address + 2) = cell->contents;
+            break;
 #ifndef NEWLISP64
-		case CELL_INT64:
-			*(address + 1) = sizeof(INT64);
-			memcpy(address + 2, (void *)&cell->aux, sizeof(INT64));
-			break;
-		case CELL_FLOAT:
-			*(address + 1) = sizeof(double);
-			*(address + 2) = cell->aux;
-			*(address + 3) = cell->contents;
-			break;
+        case CELL_INT64:
+            *(address + 1) = sizeof(INT64);
+            memcpy(address + 2, (void *)&cell->aux, sizeof(INT64));
+            break;
+        case CELL_FLOAT:
+            *(address + 1) = sizeof(double);
+            *(address + 2) = cell->aux;
+            *(address + 3) = cell->contents;
+            break;
 #else /* NEWLISP64 */
-		case CELL_FLOAT:
-			*(address + 1) = sizeof(double);
-			*(address + 2) = cell->contents;
-			break;
+        case CELL_FLOAT:
+            *(address + 1) = sizeof(double);
+            *(address + 2) = cell->contents;
+            break;
 #endif /* NEWLISP64 */
-		case CELL_STRING:
-			getStringSize(cell, &str, &size, FALSE);
-			if(size > (pagesize - 3 * sizeof(long)))
-				return(copyCell(readWriteSharedExpression(address, cell)));
+        case CELL_STRING:
+            getStringSize(cell, &str, &size, FALSE);
+            if(size > (pagesize - 3 * sizeof(long)))
+                return(copyCell(readWriteSharedExpression(address, cell)));
 
-			*(address + 1) = size;
-			memcpy((char *)(address + 2), str, size);
-			*((char *)address + 2 * sizeof(long) + size) = 0;
-			break;
-		default:
-			return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
-		}
+            *(address + 1) = size;
+            memcpy((char *)(address + 2), str, size);
+            *((char *)address + 2 * sizeof(long) + size) = 0;
+            break;
+        default:
+            return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
+        }
 
-	*address = cell->type;
+    *address = cell->type;
 #ifdef WIN_32
-	UnmapViewOfFile(address);
+    UnmapViewOfFile(address);
 #endif
-	return(copyCell(cell));
-	}
+    return(copyCell(cell));
+    }
 
 /* read shared memory */
 switch(*address & RAW_TYPE_MASK)
-	{
-	case CELL_NIL:
+    {
+    case CELL_NIL:
 #ifdef WIN_32 
-		UnmapViewOfFile(address);
+        UnmapViewOfFile(address);
 #endif
-		return(nilCell);
-	case CELL_TRUE:
+        return(nilCell);
+    case CELL_TRUE:
 #ifdef WIN_32 
-		UnmapViewOfFile(address);
+        UnmapViewOfFile(address);
 #endif
-		return(trueCell);	
-	case CELL_LONG:
-		cell = stuffInteger(*(address + 2));
-		break;
+        return(trueCell);   
+    case CELL_LONG:
+        cell = stuffInteger(*(address + 2));
+        break;
 #ifndef NEWLISP64
-	case CELL_INT64:
-		cell = stuffInteger64(*(INT64 *)(address + 2));
-		break;
+    case CELL_INT64:
+        cell = stuffInteger64(*(INT64 *)(address + 2));
+        break;
 #endif
-	case CELL_FLOAT:
+    case CELL_FLOAT:
 #ifndef NEWLISP64
-		cell = getCell(CELL_FLOAT);
-		cell->aux = *(address + 2);
-		cell->contents = *(address + 3);
+        cell = getCell(CELL_FLOAT);
+        cell->aux = *(address + 2);
+        cell->contents = *(address + 3);
 #else
-		cell = getCell(CELL_FLOAT);
-		cell->contents = *(address + 2);
+        cell = getCell(CELL_FLOAT);
+        cell->contents = *(address + 2);
 #endif
-		break;
-	case CELL_STRING:
-		if(*address & SHARED_MEMORY_EVAL)
-			return(readWriteSharedExpression(address, nilCell));
-		size = *(address + 1);
-		cell = makeStringCell(allocMemory(size + 1), size);
-		memcpy((char *)cell->contents, (char*)(address + 2), cell->aux);
-		break;
-	default:
-		return(nilCell);
-	}
+        break;
+    case CELL_STRING:
+        if(*address & SHARED_MEMORY_EVAL)
+            return(readWriteSharedExpression(address, nilCell));
+        size = *(address + 1);
+        cell = makeStringCell(allocMemory(size + 1), size);
+        memcpy((char *)cell->contents, (char*)(address + 2), cell->aux);
+        break;
+    default:
+        return(nilCell);
+    }
 
 #ifdef WIN_32
-		UnmapViewOfFile(address);
+        UnmapViewOfFile(address);
 #endif
 return(cell);
 }
@@ -2216,23 +2234,23 @@ char * buffer = NULL;
 
 /* read */
 if(params == nilCell)
-	{
-	size = *(address + 1);
-	if(size < (pagesize - 3 * sizeof(long) ))
-		{	
-		cell = sysEvalString((char *)(address + 2), 
-				currentContext, nilCell, READ_EXPR_SYNC);
-		}
-	else 
-		{
-		if((size = readFile((char *)(address + 2), &buffer)) != -1)
-			cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
-		else cell = nilCell;
-		}
+    {
+    size = *(address + 1);
+    if(size < (pagesize - 3 * sizeof(long) ))
+        {   
+        cell = sysEvalString((char *)(address + 2), 
+                currentContext, nilCell, READ_EXPR_SYNC);
+        }
+    else 
+        {
+        if((size = readFile((char *)(address + 2), &buffer)) != -1)
+            cell = sysEvalString(buffer, currentContext, nilCell, READ_EXPR_SYNC);
+        else cell = nilCell;
+        }
 
-	if(buffer != NULL) free(buffer); 
-	return(cell);
-	}
+    if(buffer != NULL) free(buffer); 
+    return(cell);
+    }
 
 /* write */
 cell = params;
@@ -2244,23 +2262,23 @@ prettyPrintFlags &= ~PRETTYPRINT_STRING;
 *(address + 1) = strStream.position;
 
 if(strStream.position < pagesize - 3 * sizeof(long))
-	{
-	memcpy((char *)(address + 2), strStream.buffer, strStream.position);
-	*((char *)address + 2 * sizeof(long) + strStream.position) = 0;
-	}
+    {
+    memcpy((char *)(address + 2), strStream.buffer, strStream.position);
+    *((char *)address + 2 * sizeof(long) + strStream.position) = 0;
+    }
 else
-	{
-	checkDeleteShareFile(address);
-	memset((char *)(address + 2), 0, pagesize - 2 * sizeof(long));
+    {
+    checkDeleteShareFile(address);
+    memset((char *)(address + 2), 0, pagesize - 2 * sizeof(long));
 #ifndef WIN_32
-	strncpy((char *)(address + 2), "/tmp/nls-", 10);
-	getUUID((char *)(address + 2) + 9, 0);
+    strncpy((char *)(address + 2), "/tmp/nls-", 10);
+    getUUID((char *)(address + 2) + 9, 0);
 #else
-	strncpy((char *)(address + 2), "/temp/nls-", 11);
-	getUUID((char *)(address + 2) + 10, 0);
+    strncpy((char *)(address + 2), "/temp/nls-", 11);
+    getUUID((char *)(address + 2) + 10, 0);
 #endif
-	writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
-	}
+    writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
+    }
 closeStrStream(&strStream);
 
 *address = (CELL_STRING | SHARED_MEMORY_EVAL);
@@ -2269,15 +2287,15 @@ return(cell);
 
 void checkDeleteShareFile(UINT * address)
 {
-if( 	(*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
+if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
 #ifndef WIN_32
-	 	(strncmp((char *)(address + 2), "/tmp/nls-", 9) == 0) &&
-		(strlen((char *)(address + 2)) == 45) )
+        (strncmp((char *)(address + 2), "/tmp/nls-", 9) == 0) &&
+        (strlen((char *)(address + 2)) == 45) )
 #else
-	 	(strncmp((char *)(address + 2), "/temp/nls-", 10) == 0) &&
-		(strlen((char *)(address + 2)) == 46) )
+        (strncmp((char *)(address + 2), "/temp/nls-", 10) == 0) &&
+        (strlen((char *)(address + 2)) == 46) )
 #endif
-	unlink((char *)(address + 2)); 
+    unlink((char *)(address + 2)); 
 }
 
 /* ------------------------------ time and date functions -------------------- */
@@ -2287,24 +2305,24 @@ CELL * p_systemInfo(CELL * params)
 CELL * cell;
 
 cell = stuffIntegerList(
-	10,
-	cellCount,
-	MAX_CELL_COUNT,
-	symbolCount,
-	(UINT)recursionCount,
-	(UINT)(envStackIdx - envStack)/sizeof(UINT),
-	(UINT)MAX_CPU_STACK,
-	(UINT)parentPid,
-	(UINT)getpid(),
-	(UINT)version,
-	(UINT)opsys
-	);
+    10,
+    cellCount,
+    MAX_CELL_COUNT,
+    symbolCount,
+    (UINT)recursionCount,
+    (UINT)(envStackIdx - envStack)/sizeof(UINT),
+    (UINT)MAX_CPU_STACK,
+    (UINT)parentPid,
+    (UINT)getpid(),
+    (UINT)version,
+    (UINT)opsys
+    );
 
-if(params != nilCell)	
-	{
-	pushResult(cell);
-	return(copyCell(implicitIndexList(cell, params)));
-	}
+if(params != nilCell)   
+    {
+    pushResult(cell);
+    return(copyCell(implicitIndexList(cell, params)));
+    }
 
 return(cell);
 }
@@ -2316,12 +2334,12 @@ CELL * cell;
 UINT errnum = errno;
 
 if(params != nilCell)
-	{
-	getInteger(params, &errnum);
-	if(errnum == 0) errno = 0;
-	}
+    {
+    getInteger(params, &errnum);
+    if(errnum == 0) errno = 0;
+    }
 else 
-	if(!errnum) return(nilCell);
+    if(!errnum) return(nilCell);
 
 cell = makeCell(CELL_EXPRESSION, (UINT)stuffInteger(errnum));
 ((CELL *)cell->contents)->next = stuffString(strerror(errnum));
@@ -2355,50 +2373,50 @@ char * timeString;
 #endif
 
 if(params == nilCell)
-	{
-	gettimeofday(&tv, NULL);
-	t = tv.tv_sec;
-	}
+    {
+    gettimeofday(&tv, NULL);
+    t = tv.tv_sec;
+    }
 else
-	{
-	params = getInteger(params, (UINT *)&tme);
-	t = tme;
-	
-	if(params != nilCell)
-		{
-		params = getInteger(params, (UINT *)&offset);
-	        t += (int)offset * 60;
-		}
-		
-	if(params != nilCell)
-		{
-		params = getString(params, &fmt);
-		ltm = localtime(&t);
+    {
+    params = getInteger(params, (UINT *)&tme);
+    t = tme;
+    
+    if(params != nilCell)
+        {
+        params = getInteger(params, (UINT *)&offset);
+            t += (int)offset * 60;
+        }
+        
+    if(params != nilCell)
+        {
+        params = getString(params, &fmt);
+        ltm = localtime(&t);
 #ifdef SUPPORT_UTF8
-	/* some Linux do UTF-8 but don't have wcsftime() or it is buggy */
+    /* some Linux do UTF-8 but don't have wcsftime() or it is buggy */
 #ifdef WCSFTIME
-		size = utf8_wlen(fmt);
-		ufmt = alloca(UTF8_MAX_BYTES * (size + 1));
-		utf8_wstr(ufmt, fmt, size);
+        size = utf8_wlen(fmt);
+        ufmt = alloca(UTF8_MAX_BYTES * (size + 1));
+        utf8_wstr(ufmt, fmt, size);
 
-		timeString = alloca(UTF8_MAX_BYTES * 128);
-		size = wcsftime((wchar_t *)timeString, 127, (wchar_t *)ufmt, ltm);
-		utf8str = alloca(size * UTF8_MAX_BYTES + 1);
-		size =  wstr_utf8(utf8str, timeString, size * UTF8_MAX_BYTES);
-		return(stuffString(utf8str));
+        timeString = alloca(UTF8_MAX_BYTES * 128);
+        size = wcsftime((wchar_t *)timeString, 127, (wchar_t *)ufmt, ltm);
+        utf8str = alloca(size * UTF8_MAX_BYTES + 1);
+        size =  wstr_utf8(utf8str, timeString, size * UTF8_MAX_BYTES);
+        return(stuffString(utf8str));
 #else
-		utf8str = alloca(128);
-		strftime(utf8str, 127, fmt, ltm);
-		return(stuffString(utf8str));
+        utf8str = alloca(128);
+        strftime(utf8str, 127, fmt, ltm);
+        return(stuffString(utf8str));
 #endif /* WCSFTIME */
 
 #else
-		timeString = alloca(128);
-		strftime(timeString, 127, fmt, ltm);
-		return(stuffString(timeString));
+        timeString = alloca(128);
+        strftime(timeString, 127, fmt, ltm);
+        return(stuffString(timeString));
 #endif
-		}
-	}
+        }
+    }
 
 ct = ctime(&t);
 if(ct == NULL) return(nilCell);
@@ -2417,7 +2435,7 @@ gettimeofday(&tv, NULL);
 ttm = localtime((time_t *)&tv.tv_sec);
 
 return (ttm->tm_hour * 3600000000LL + 
-       ttm->tm_min * 60000000 + ttm->tm_sec * 1000000 + 
+       ttm->tm_min * 60000000LL + ttm->tm_sec * 1000000 + 
        tv.tv_usec);
 }
 
@@ -2432,11 +2450,11 @@ return(microSecTime()/1000);
 */
 int timediff_ms(struct timeval out, struct timeval in )
 {
-	if( (out.tv_usec -= in.tv_usec) < 0 )   {
-		out.tv_sec--;
-		out.tv_usec += 1000000;
-	}
-	out.tv_sec -= in.tv_sec;
+    if( (out.tv_usec -= in.tv_usec) < 0 )   {
+        out.tv_sec--;
+        out.tv_usec += 1000000;
+    }
+    out.tv_sec -= in.tv_sec;
 
 return(out.tv_sec*1000 + (out.tv_usec/1000));
 }
@@ -2448,11 +2466,11 @@ UINT64 timediff64_us(struct timeval out, struct timeval in )
 {
 UINT64 usec;
 
-	if( (out.tv_usec -= in.tv_usec) < 0 )   {
-		out.tv_sec--;
-		out.tv_usec += 1000000;
-	}
-	out.tv_sec -= in.tv_sec;
+    if( (out.tv_usec -= in.tv_usec) < 0 )   {
+        out.tv_sec--;
+        out.tv_usec += 1000000;
+    }
+    out.tv_sec -= in.tv_sec;
 
 usec = (UINT64)1000000 * out.tv_sec + out.tv_usec;
 return(usec);
@@ -2473,15 +2491,15 @@ memset (&ttm, 0, sizeof (ttm));
 ttm.tm_mday = 1;
 
 if(strptime(dateStr, formatStr, &ttm) == NULL)
-	return(nilCell);
+    return(nilCell);
 
 dateValue = calcDateValue(
-		ttm.tm_year + 1900,
-		ttm.tm_mon + 1,
-		ttm.tm_mday,
-		ttm.tm_hour,
-		ttm.tm_min,
-		ttm.tm_sec);
+        ttm.tm_year + 1900,
+        ttm.tm_mon + 1,
+        ttm.tm_mday,
+        ttm.tm_hour,
+        ttm.tm_min,
+        ttm.tm_sec);
 
 return(stuffInteger(dateValue));
 }
@@ -2540,11 +2558,11 @@ CELL * cell;
 gettimeofday(&tv, NULL); /* get secs and microsecs */
 
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT*)&offset);
-	offset *= 60;
+    {
+    params = getInteger(params, (UINT*)&offset);
+    offset *= 60;
         tv.tv_sec += offset;
-	}
+    }
 
 #ifndef WIN_32
 ltm = localtime((time_t *)&tv.tv_sec);
@@ -2594,15 +2612,15 @@ cell = stuffIntegerList(
 
 #if defined(WIN_32)
      timeZone.Bias,
-     timeZone.DaylightBias	
+     timeZone.DaylightBias  
 #endif
     );
 
-if(params != nilCell)	
-	{
-	pushResult(cell);
-	return(copyCell(implicitIndexList(cell, params)));
-	}
+if(params != nilCell)   
+    {
+    pushResult(cell);
+    return(copyCell(implicitIndexList(cell, params)));
+    }
 
 return(cell);
 }
@@ -2629,11 +2647,11 @@ cell = stuffIntegerList(
     ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday)
 );
 
-if(params != nilCell)	
-	{
-	pushResult(cell);
-	return(copyCell(implicitIndexList(cell, params)));
-	}
+if(params != nilCell)   
+    {
+    pushResult(cell);
+    return(copyCell(implicitIndexList(cell, params)));
+    }
 
 return(cell);
 }
@@ -2646,10 +2664,10 @@ ssize_t year, month, day, hour, min, sec;
 time_t dateValue;
 
 if(params->type == CELL_NIL)
-	{
-	gettimeofday(&tv, NULL);
-	return(stuffInteger(tv.tv_sec));
-	}
+    {
+    gettimeofday(&tv, NULL);
+    return(stuffInteger(tv.tv_sec));
+    }
 
 params = getInteger(params, (UINT *)&year);
 params = getInteger(params, (UINT *)&month);
@@ -2662,7 +2680,7 @@ if(params != nilCell)
         {
         params = getInteger(params, (UINT *)&hour);
         params = getInteger(params, (UINT *)&min);
-		getInteger(params, (UINT *)&sec);
+        getInteger(params, (UINT *)&sec);
         }
 
 dateValue = calcDateValue(year, month, day, hour, min, sec);
@@ -2757,26 +2775,26 @@ char * varValue;
 
 /* no parameters returns whole environment */
 if(params == nilCell) 
-	return(environment());
+    return(environment());
 
 /* one parameter get environment for one variable */
 params = getString(params, &varName);
 if(params == nilCell) 
-	{
-	if( (varValue = getenv(varName)) == NULL)
-		return(nilCell);
-	return(stuffString(varValue));
-	}
+    {
+    if( (varValue = getenv(varName)) == NULL)
+        return(nilCell);
+    return(stuffString(varValue));
+    }
 
 /* two parameters sets environment for one variable */
 getString(params, &varValue);
 #ifndef MY_SETENV
 if(*varValue == 0)
-	unsetenv(varName);
+    unsetenv(varName);
 else
 #endif
-	if(setenv(varName, varValue, 1) != 0)
-		return(nilCell);
+    if(setenv(varName, varValue, 1) != 0)
+        return(nilCell);
 
 return(trueCell);
 }
@@ -2815,31 +2833,31 @@ return(envList);
 env = environ;
 
 while(*env)
-	{
-	if((ptr = strstr(*env, "=")) != NULL)
-	    {
-	    pair = getCell(CELL_EXPRESSION);
-	    addList(pair, stuffStringN(*env, ptr - *env));
-	    addList(pair, stuffString(ptr + 1));
-	    }
+    {
+    if((ptr = strstr(*env, "=")) != NULL)
+        {
+        pair = getCell(CELL_EXPRESSION);
+        addList(pair, stuffStringN(*env, ptr - *env));
+        addList(pair, stuffString(ptr + 1));
+        }
     else 
-		{
-		env++;
-		continue;
-		}
+        {
+        env++;
+        continue;
+        }
     
-	if(lastEntry == NULL)
-		{
-		lastEntry = pair;
-		envList->contents = (UINT)lastEntry;
-		}
-	else
-		{
-		lastEntry->next = pair;
-		lastEntry = lastEntry->next;
-		}
-	env++;
-	}
+    if(lastEntry == NULL)
+        {
+        lastEntry = pair;
+        envList->contents = (UINT)lastEntry;
+        }
+    else
+        {
+        lastEntry->next = pair;
+        lastEntry = lastEntry->next;
+        }
+    env++;
+    }
 
 return(envList);
 }
@@ -2892,7 +2910,7 @@ int result;
 getInteger(params, &handle);
 
 if(ioctl((int)handle, FIONREAD, &result) < 0)
-	return(nilCell);
+    return(nilCell);
 
 return(stuffInteger((UINT)result));
 } 
@@ -2908,27 +2926,27 @@ ssize_t size = MAX_STRING;
 ssize_t pSize;
 
 while(TRUE)
-	{
-	*buffer = allocMemory(size + 2);
-	pSize = vsnprintf(*buffer, size + 1, format, argptr);
+    {
+    *buffer = allocMemory(size + 2);
+    pSize = vsnprintf(*buffer, size + 1, format, argptr);
 
 #if defined(TRU64)
-	if(pSize < 0)
-		{
-		freeMemory(*buffer);
-		size = size + size / 2;
-		continue;
-		}
+    if(pSize < 0)
+        {
+        freeMemory(*buffer);
+        size = size + size / 2;
+        continue;
+        }
 #else
-	if(pSize > size)
-		{
-		freeMemory(*buffer);
-		size = pSize;    
-		continue;
-		}
+    if(pSize > size)
+        {
+        freeMemory(*buffer);
+        size = pSize;    
+        continue;
+        }
 #endif
-	break;
-	}
+    break;
+    }
 
 return((int)pSize);
 }
@@ -2941,14 +2959,14 @@ return((int)pSize);
 #define UINT32 unsigned int
 
 typedef struct 
-	{
-	UINT32          time_low;
-	UINT16          time_mid;
-	UINT16          time_hi_and_version;
-	unsigned char   clock_seq_hi_and_reserved;
-	unsigned char   clock_seq_low;
-	unsigned char 	node[6];
-	} UUID;
+    {
+    UINT32          time_low;
+    UINT16          time_mid;
+    UINT16          time_hi_and_version;
+    unsigned char   clock_seq_hi_and_reserved;
+    unsigned char   clock_seq_low;
+    unsigned char   node[6];
+    } UUID;
 
 UINT16 clock_seq = 0;
 INT64 last_time = 0;
@@ -2977,50 +2995,50 @@ if(timestamp == last_time) timestamp++;
 #endif
 
 if(last_time == 0)
-	srandom((timestamp & 0xFFFFFFFF) + getpid());
+    srandom((timestamp & 0xFFFFFFFF) + getpid());
 
 last_time = timestamp;
 
 
 if(clock_seq == 0) clock_seq = random();
 if(node != NULL && (memcmp(last_node, node, 6) != 0))
-	{
-	clock_seq = random();
-	memcpy(last_node, node, 6);
-	}
+    {
+    clock_seq = random();
+    memcpy(last_node, node, 6);
+    }
 
 if(node == NULL)
-	{
-	nodeID[0] = random(); 
-	nodeID[1] = random();
-	nodeID[2] = random();
-	uuid_version = 4;
-	memcpy(uuid.node, (void *)nodeID, 6);
-	}
+    {
+    nodeID[0] = random(); 
+    nodeID[1] = random();
+    nodeID[2] = random();
+    uuid_version = 4;
+    memcpy(uuid.node, (void *)nodeID, 6);
+    }
 else
-	{
-	uuid_version = 1;
-	/* least sign bit of first byte must be 0 on MACs
+    {
+    uuid_version = 1;
+    /* least sign bit of first byte must be 0 on MACs
        and 1 on artifical generated node IDs */
-	memcpy(uuid.node, node, 6);
-	}
+    memcpy(uuid.node, node, 6);
+    }
 
 if(uuid_version == 4) 
-	{
-	clock_seq = random();
-	uuid.time_low = random();
+    {
+    clock_seq = random();
+    uuid.time_low = random();
 #ifdef WIN_32
-	uuid.time_low |= (random() << 16);
+    uuid.time_low |= (random() << 16);
 #endif
-	uuid.time_mid = random();
-	uuid.time_hi_and_version = random();
-	}
+    uuid.time_mid = random();
+    uuid.time_hi_and_version = random();
+    }
 else
-	{
-	uuid.time_low = (unsigned long)(timestamp & 0xFFFFFFFF);
-	uuid.time_mid = (unsigned short)((timestamp >> 32) & 0xFFFF);
-	uuid.time_hi_and_version = (unsigned short)(timestamp >> 48) ;
-	}
+    {
+    uuid.time_low = (unsigned long)(timestamp & 0xFFFFFFFF);
+    uuid.time_mid = (unsigned short)((timestamp >> 32) & 0xFFFF);
+    uuid.time_hi_and_version = (unsigned short)(timestamp >> 48) ;
+    }
 
 uuid.time_hi_and_version &= 0x0FFF;
 uuid.time_hi_and_version |= (uuid_version << 12);
@@ -3029,10 +3047,10 @@ uuid.clock_seq_hi_and_reserved = (clock_seq & 0x3F00) >> 8;
 uuid.clock_seq_hi_and_reserved |= 0x80;
 
 snprintf(str, 37, "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", 
-	uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
-	uuid.clock_seq_hi_and_reserved, uuid.clock_seq_low,
-	uuid.node[0], uuid.node[1], uuid.node[2], 
-	uuid.node[3], uuid.node[4], uuid.node[5]);
+    uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
+    uuid.clock_seq_hi_and_reserved, uuid.clock_seq_low,
+    uuid.node[0], uuid.node[1], uuid.node[2], 
+    uuid.node[3], uuid.node[4], uuid.node[5]);
 
 return(str);
 }
@@ -3044,11 +3062,11 @@ size_t size;
 char str[38];
 
 if(params != nilCell)
-	{
-	getStringSize(params, &nodeMAC, &size, TRUE);
-	if(size < 6) nodeMAC = NULL;
-	}
-	
+    {
+    getStringSize(params, &nodeMAC, &size, TRUE);
+    if(size < 6) nodeMAC = NULL;
+    }
+    
 return(stuffString(getUUID(str, nodeMAC)));
 }
 
@@ -3059,19 +3077,19 @@ SYMBOL * sPtr = NULL;
 CELL * cell;
 
 if(params->type == CELL_SYMBOL)
-	{
-	sPtr = (SYMBOL *)params->contents;
-	cell = (CELL *)sPtr->contents;
-	if(cell->type == CELL_CONTEXT)
-		sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
-			(SYMBOL*)cell->contents, TRUE);
-	}
+    {
+    sPtr = (SYMBOL *)params->contents;
+    cell = (CELL *)sPtr->contents;
+    if(cell->type == CELL_CONTEXT)
+        sPtr = translateCreateSymbol( ((SYMBOL*)cell->contents)->name, CELL_NIL,
+            (SYMBOL*)cell->contents, TRUE);
+    }
 else if(params->type == CELL_DYN_SYMBOL)
-	sPtr = getDynamicSymbol(params);
+    sPtr = getDynamicSymbol(params);
 else errorProcExt(ERR_SYMBOL_EXPECTED, params);
 
 if(isProtected(sPtr->flags))
-	errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr));
+    errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr));
 
 symbolCheck = sPtr;
 

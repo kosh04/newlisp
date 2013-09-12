@@ -1,8 +1,10 @@
 #!/usr/bin/newlisp
 
 ; v.1.0 - adapted to new manual HTML formatting 2009-08-04
-; - nls- newLISP shell, put this script with executable permissions into
-; the executable path on UNIX.
+; v.1.1 - better regex string for syntax filtering 2011-11-01
+;         now formats dolist, dotimes ... etc. correctly
+;
+; - nls - newLISP shell combines interactive OS and LISP shell
 ;
 ; Use the prompt as if a Bash shell. Commands not starting with an opening
 ; parenthesis or space are interpreted as UNIX shell cmomands, commands
@@ -10,9 +12,13 @@
 ; commands.
 
 (define (help func-name)
+  (when (= func-name "help") (set 'func-name ""))
   (if (find func-name "|+*-") (push "\\" func-name))
-  (set 'html-text (join (find-all (format {(syntax: \(%s.*?\))} func-name)    
-    (read-file "/usr/share/doc/newlisp/newlisp_manual.html")) "\n"))
+  (set 'helpfile (read-file (if (= ostype "Win32")
+    (string (env "NEWLISPDIR") "/newlisp_manual.html") 
+    "/usr/share/doc/newlisp/newlisp_manual.html")))
+  (set 'html-text (join 
+    (find-all (format {(syntax: \(%s.*?)(<br/>|</h4>)} func-name ) helpfile $1) "\n"))
   (replace "<.*?>" html-text "" 0)
   (replace "&lt;" html-text "<")
   (replace "&gt;" html-text ">")
@@ -28,7 +34,9 @@
   (if 
     ; get syntax help
     (starts-with s "\\?|help" 0)
-    (help (last (parse s " ")))
+    (if (= ostype "Win32")
+        (help (last (parse (chop s 2) " ")))
+        (help (last (parse s " "))))
 
     ; restart newLISP
     (starts-with s "reset")
@@ -42,34 +50,34 @@
     ; previous directory cd -
     (starts-with s "cd -")
     (begin
-      (set 'new-dir prev-dir)
-      (set 'prev-dir (real-path))
-      (string " " (true? (change-dir new-dir))))
+        (set 'new-dir prev-dir)
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir new-dir))))
 	
     ; pushd
     (starts-with s "pushd")
     (begin
-      (set 'prev-dir (real-path))
-      (push prev-dir dir-stack)
-      (string " " (true? (change-dir (last (parse s " "))))))
+        (set 'prev-dir (real-path))
+        (push prev-dir dir-stack)
+        (string " " (true? (change-dir (last (parse s " "))))))
 
     ; popd
     (starts-with s "popd")
     (begin
-      (set 'prev-dir (real-path))
-      (string " " (true? (change-dir (pop dir-stack)))))
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir (pop dir-stack)))))
 
     ; go to home directory
     (= s "cd")
     (begin
-      (set 'prev-dir (real-path))
-      (string " " (true? (change-dir (env "HOME")))))
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir (env "HOME")))))
 
     ; change directory cd
     (starts-with s "cd") 
     (begin
-      (set 'prev-dir (real-path))
-      (string " " (true? (change-dir (last (parse s " "))))))
+        (set 'prev-dir (real-path))
+        (string " " (true? (change-dir (last (parse s " "))))))
 
     ; else handle as a shell command, start newLISP expressions
     ; with either a space or a parenthesis

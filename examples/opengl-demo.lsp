@@ -55,7 +55,7 @@
   (find ostype '("Win32", "Cygwin"))
   (begin
     (set 'GL_LIB "opengl32.dll")
-    (set 'GLUT_LIB "glut32.dll"))
+    (set 'GLUT_LIB "/c/Windows/System32/glut32.dll"))
   (= ostype "Linux") ;; not tested
   (begin
     (set 'GL_LIB "libGL.so")

@@ -453,7 +453,9 @@ This is for 64bit large file support (LFS),
 #define ERR_WORKING_DIR 65
 #define ERR_INVALID_PID 66
 #define ERR_CANNOT_OPEN_SOCKETPAIR 67
-#define MAX_ERROR_NUMBER 67
+#define ERR_CANNOT_FORK_PROCESS 68
+#define ERR_NO_SOCKET 69
+#define MAX_ERROR_NUMBER 69
 #define UNKNOWN_ERROR "Unknown error"
 
 /* network error handling */

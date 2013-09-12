@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.4 Manual and Reference</title>
+   <title>newLISP v.10.3.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.4</h2>
+<h2>User Manual and Reference v.10.3.5</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -224,13 +224,14 @@ newLISP is a registered trademark of Lutz Mueller.
 </ul>
 </li>
 
-<li><a href="#scoping">Dynamic and lexical scoping</a></li>
 <li><a href="#return">Early return from functions, loops, blocks</a>
   <ul>
   <li><a href="#flow_catch_throw">Using <tt>catch</tt> and <tt>throw</tt></a></li>
   <li><a href="#flow_and_or">Using <tt>and</tt> and <tt>or</tt></a></li>
   </ul>
 </li>
+
+<li><a href="#scoping">Dynamic and lexical scoping</a></li>
 
 <li><a href="#contexts">Contexts</a>
   <ul>
@@ -2297,91 +2298,8 @@ aList <span class='arw'>&rarr;</span> (a b c d e f)
 </center>
 <br/>
 
-<a name="scoping"></a>
-<h2>14. Dynamic and lexical scoping</h2>
-
-<p>newLISP uses dynamic scoping <em>inside</em> contexts. A context is a lexically 
-closed namespace. In this way, parts of a newLISP program can live in different 
-namespaces taking advantage of <em>lexical scoping</em>.</p>
-
-<p>
-When the parameter symbols of a lambda expression are bound to its arguments, 
-the old bindings are pushed onto a stack. newLISP automatically restores the 
-original variable bindings when leaving the lambda function. </p>
-<p>
-The following example illustrates the <em>dynamic scoping</em> mechanism. 
-The text in bold is the output from newLISP:</p>
-
-<pre>
-&gt; (set 'x 1)
-<b>1</b>
-&gt; (define (f) x)
-<b>(lambda () x)</b>
-&gt; (f)
-<b>1</b>
-&gt; (define (g x) (f))
-<b>(lambda (x) (f))</b>
-&gt; (g 0)
-<b>0</b>
-&gt; (f)
-<b>1</b> 
-&gt; _
-</pre>	
-
-<p>The variable <tt>x</tt> is first set to <tt>1</tt>. But when <tt>(g 0)</tt> 
-is called, <tt>x</tt> is bound to <tt>0</tt> and <tt>x</tt> is reported 
-by <tt>(f)</tt> as <tt>0</tt> during execution of <tt>(g 0)</tt>. After 
-execution of <tt>(g 0)</tt>, the call to <tt>(f)</tt> will report <tt>x</tt> as <tt>1</tt> again.</p>
-
-<p>This is different from the <em>lexical scoping</em> mechanisms found in 
-languages like C or Java, where the binding of local parameters occurs inside 
-the function only. In lexically scoped languages like C, <tt>(f)</tt> would 
-always print the global bindings of the symbol <tt>x</tt> with <tt>1</tt>.
-</p>
-
-<p>Be aware that passing quoted symbols to a user-defined function causes a 
-name clash if the same variable name is used as a function parameter:</p>
-
-<pre>
-(define (inc-symbol x y) (inc (eval x) y))
-(set 'y 200)
-(inc-symbol 'y 123)  <span class='arw'>&rarr;</span> 246
-y                    <span class='arw'>&rarr;</span> 200  ; y is still 200
-</pre>		
-<p>
-Because the global <tt>y</tt> shares the same symbol as the function's second parameter, 
-<tt>inc-symbol</tt> returns 246 (123 + 123), leaving the global <tt>y</tt> unaffected. 
-Dynamic scoping's <em>variable capture</em> can be a disadvantage when passing symbol 
-references to user-defined functions. newLISP offers several methods to avoid variable
-capture.</p>
-
-<ul>
-<li>The function <a href="#args">args</a> can be used when passing symbols.</li>
-<li>One or more user-defined functions can be placed in their own namespace called 
-a <a href="#contexts">context</a>. A symbol name clash cannot occur when accessing 
-symbols and calling functions from <em>outside</em> of the defining context.</li>
-</ul>
-
-<p>
-Contexts should be used to group related functions when creating interfaces 
-or function libraries. This surrounds the functions with a lexical "fence", 
-thus avoiding variable name clashes with the calling functions.
-</p>
-<p>
-	newLISP uses contexts for different forms of lexical scoping. See the 
-	chapters <a href="#contexts">Contexts</a> and 
-	<a href="#context_objects">Programming with contexts</a>, as well as 
-	the section <a href="#default_function">default functors</a> for more information.
-</p>
-
-<br/>
-<center>
-<span class="divider">(&nbsp;<font color="#7ba9d4">&sect;</font>&nbsp;)</span>
-</center>
-<br/>
-
 <a name="return"></a>
-<h2>15. Early return from functions, loops, and blocks</h2>
+<h2>14. Early return from functions, loops, and blocks</h2>
 
 <p>What follows are methods of interrupting the control flow inside both 
 loops and the <a href="#begin">begin</a> expression.</p>
@@ -2495,8 +2413,91 @@ that returns a value which is <em>not</em> <tt>nil</tt> or <tt>()</tt>.
 <center>
 <span class="divider">(&nbsp;<font color="#7ba9d4">&sect;</font>&nbsp;)</span>
 </center>
+<br/>
+
+<a name="scoping"></a>
+<h2>15. Dynamic and lexical scoping</h2>
+
+<p>newLISP uses dynamic scoping <em>inside</em> contexts. A context is a lexically 
+closed namespace. In this way, parts of a newLISP program can live in different 
+namespaces taking advantage of <em>lexical scoping</em>.</p>
+
+<p>
+When the parameter symbols of a lambda expression are bound to its arguments, 
+the old bindings are pushed onto a stack. newLISP automatically restores the 
+original variable bindings when leaving the lambda function. </p>
+<p>
+The following example illustrates the <em>dynamic scoping</em> mechanism. 
+The text in bold is the output from newLISP:</p>
+
+<pre>
+&gt; (set 'x 1)
+<b>1</b>
+&gt; (define (f) x)
+<b>(lambda () x)</b>
+&gt; (f)
+<b>1</b>
+&gt; (define (g x) (f))
+<b>(lambda (x) (f))</b>
+&gt; (g 0)
+<b>0</b>
+&gt; (f)
+<b>1</b> 
+&gt; _
+</pre>	
+
+<p>The variable <tt>x</tt> is first set to <tt>1</tt>. But when <tt>(g 0)</tt> 
+is called, <tt>x</tt> is bound to <tt>0</tt> and <tt>x</tt> is reported 
+by <tt>(f)</tt> as <tt>0</tt> during execution of <tt>(g 0)</tt>. After 
+execution of <tt>(g 0)</tt>, the call to <tt>(f)</tt> will report <tt>x</tt> as <tt>1</tt> again.</p>
+
+<p>This is different from the <em>lexical scoping</em> mechanisms found in 
+languages like C or Java, where the binding of local parameters occurs inside 
+the function only. In lexically scoped languages like C, <tt>(f)</tt> would 
+always print the global bindings of the symbol <tt>x</tt> with <tt>1</tt>.
+</p>
+
+<p>Be aware that passing quoted symbols to a user-defined function causes a 
+name clash if the same variable name is used as a function parameter:</p>
+
+<pre>
+(define (inc-symbol x y) (inc (eval x) y))
+(set 'y 200)
+(inc-symbol 'y 123)  <span class='arw'>&rarr;</span> 246
+y                    <span class='arw'>&rarr;</span> 200  ; y is still 200
+</pre>		
+<p>
+Because the global <tt>y</tt> shares the same symbol as the function's second parameter, 
+<tt>inc-symbol</tt> returns 246 (123 + 123), leaving the global <tt>y</tt> unaffected. 
+Dynamic scoping's <em>variable capture</em> can be a disadvantage when passing symbol 
+references to user-defined functions. newLISP offers several methods to avoid variable
+capture.</p>
+
+<ul>
+<li>The function <a href="#args">args</a> can be used when passing symbols.</li>
+<li>One or more user-defined functions can be placed in their own namespace called 
+a <a href="#contexts">context</a>. A symbol name clash cannot occur when accessing 
+symbols and calling functions from <em>outside</em> of the defining context.</li>
+</ul>
+
+<p>
+Contexts should be used to group related functions when creating interfaces 
+or function libraries. This surrounds the functions with a lexical "fence", 
+thus avoiding variable name clashes with the calling functions.
+</p>
+<p>
+	newLISP uses contexts for different forms of lexical scoping. See the 
+	chapters <a href="#contexts">Contexts</a> and 
+	<a href="#context_objects">Programming with contexts</a>, as well as 
+	the section <a href="#default_function">default functors</a> for more information.
+</p>
 
 <br/>
+<center>
+<span class="divider">(&nbsp;<font color="#7ba9d4">&sect;</font>&nbsp;)</span>
+</center>
+<br/>
+
 <a name="contexts"></a>
 <h2>16. Contexts</h2>
 
@@ -7819,7 +7820,7 @@ must have been started using <a href="#spawn">spawn</a>. For processes
 started using <a href="#fork">fork</a>, use <a href="#destroy">destroy</a>
 instead.</p>
 
-<p>On Win32 <tt>abort</tt> has no function and will always return <tt>true</tt>.</p>
+<p>The function <tt>abort</tt> is not available on Win32.</p>
 
 
 <!-- example -->
@@ -23048,7 +23049,9 @@ child processes and exit:</p>
 )
 
 ; parent starts 5  child processes, listens and displays
-(dotimes (i 5) (spawn 'result (child-process)))
+; the true flag is specified to enable send/receive
+
+(dotimes (i 5) (spawn 'result (child-process) true))
 
 (for (i 1 3)
     (dolist (cpid (sync)) ; iterate thru pending child PIDs
@@ -23112,7 +23115,7 @@ These expressions can be any valid newLISP statements:</p>
         (until (send ppid '(begin 
             (sleep 100) ; make sure all else is printed
             (println "parent exiting ...\n")
-            (set 'finished true))))))) 
+            (set 'finished true))))) true)) 
 
 ; receiver child process of the message
 (set 'B (spawn 'result 
@@ -23122,7 +23125,7 @@ These expressions can be any valid newLISP statements:</p>
             (until (receive ppid msg))
             (println msg)
             (unless (= msg (string "greetings from " A))
-                (println "ERROR in proxy message: " msg))))))
+                (println "ERROR in proxy message: " msg)))) true))
 
 (until finished (if (receive A msg) (eval msg))) ; proxy loop
 
@@ -23718,7 +23721,7 @@ but not between independent processes.</p>
 <p>Since v.10.1.0 size of share objects can exceed the shared memory pagesize
 of the operating system. For objects bigger than the pagesize, newLISP internally
 uses files for sharing. This requires a <tt>/tmp</tt> directory on Unix-like
-operating system and a <tt>temp</tt> in the root of the current disk drive
+operating system and a <tt>temp</tt> directory in the root of the current disk drive
 on Win32 systems. On  Unix-like systems this directory is present, on Win32
 it may have to be created.</p>
 
@@ -24195,7 +24198,7 @@ syntax: (source <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <a name="spawn"></a>
 <h2><span class="function">spawn</span></h2>
-<h4>syntax: (spawn <em>sym</em> <em>exp</em>)</h4>
+<h4>syntax: (spawn <em>sym</em> <em>exp</em> [true])</h4>
 
 <p>Launches the evaluation of <em>exp</em> as a child process and immediately
 returns. The symbol in <em>sym</em> is quoted and receives the result of the 
@@ -24205,9 +24208,11 @@ If newLISP is running on a multi-core CPU, the underlying operating system
 will distribute spawned processes onto different cores, thereby evaluating 
 expressions in parallel and speeding up overall processing.</p>
 
-<p>Note that on  Win32, <tt>spawn</tt> cannot launch child processes and will work
-just like a <a href="#set">set</a> assigning the evaluation result of <em>exp</em> to
-<em>sym</em>.</p>
+<p>The optional <tt>true</tt> parameter must be set if <a href="#send">send</a>
+or <a href="#receive">receive</a> is used to communicated with the child
+process spawned.</p>
+
+<p>The function <tt>spawn</tt> is not available on Win32.</p>
 
 <p>After successfully starting a child process,  the <tt>spawn</tt> expression
 returns the process id of the forked process. The following examples shows
@@ -24787,8 +24792,7 @@ either a lambda expression or a symbol which defines a function.</p>
 <p>Without any parameter, <tt>sync</tt> returns a list of pending child process
 PIDs (process identifiers), for which results have not been processed yet.</p>
 
-<p>On Win32, <tt>sync</tt> has no function and returns an empty list <tt>()</tt>
-if called with no parameters, or <tt>true</tt> if given with a timeout.</p>
+<p>The function <tt>sync</tt> is not available on Win32.</p>
 
 <!-- example -->
 
@@ -25880,19 +25884,18 @@ not to be grouped with <a href="#begin">begin</a>:</p>
 
 <h2><span class="function">unpack</span></h2> 
 
-<h4>syntax: (unpack <em>str-format</em> <em>str-addr-packed</em>)</h4> 
+<h4>syntax: (unpack <em>str-format</em> <em>str-addr-packed</em>)<br/>
+syntax: (unpack <em>str-format</em> <em>num-addr-packed</em>)</h4> 
 
-<p>
-	Unpacks a binary structure 
-	in <em>str-addr-packed</em> 
-	into newLISP variables 
-	using the format in <em>str-format</em>.
-	<tt>unpack</tt> is the reverse operation of <tt>pack</tt>.
-	Note that <em>str-addr-packed</em> 
-	may also be an integer representing a memory address.
-	This facilitates the unpacking of structures 
-	returned from imported, shared library functions.
-</p>
+<p>Unpacks a binary structure in <em>str-addr-packed</em> or pointed to 
+by <em>num-addr-packed</em> into newLISP variables using the format in 
+<em>str-format</em>. <tt>unpack</tt> is the reverse operation of <tt>pack</tt>.
+Using <em>num-addr-packed</em> facilitates the unpacking of structures 
+returned from imported, shared library functions.</p>
+
+<p>If the number specified in <em>num-addr-packed</em> is not a valid memory 
+address, a system bus error or segfault can occur and crash newLISP or leave 
+it in an unstable state.</p>
 
 <p>
 	The following characters may define a format:
@@ -27052,6 +27055,8 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <tr><td>I/O error</td><td>64</td></tr>
 <tr><td>working directory not found</td><td>65</td></tr>
 <tr><td>invalid PID</td><td>66</td></tr>
+<tr><td>cannot open socket pair</td><td>67</td></tr>
+<tr><td>cannot fork process</td><td>68</td></tr>
 </table><br/>
 
 <br/><br/><br/>

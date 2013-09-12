@@ -289,10 +289,10 @@ PRIMITIVE primitive[] =
 	{"wait-pid",	p_waitpid,	0},
 #endif
 #ifndef OS2
+#ifndef WIN_32
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
 	{"abort",		p_abort,	0},
-#ifndef WIN_32
 	{"send",		p_send,		0},
 	{"receive",		p_receive,	0},
 #endif

@@ -29,7 +29,7 @@
 
 ; parent starts k  child processes, listens and displays
 
-(dotimes (i k) (spawn 'result (child-process N)))
+(dotimes (i k) (spawn 'result (child-process N) true))
 
 (set 'start (time-of-day));
 (set 'cnt 0)
@@ -61,7 +61,7 @@
 )
 
 (dotimes (i k)
-	(spawn 'r (child-process)))
+	(spawn 'r (child-process) true))
 
 (set 'start (time-of-day))
 (dotimes (i N)
@@ -94,7 +94,7 @@
 		(until (send ppid '(begin
 			(println "parent exiting ...\n")
 			(set 'finished true))))
-)))
+    ) true))
 
 ; receiver child process of the message
 (set 'B (spawn 'result 
@@ -105,8 +105,8 @@
 			(unless (= msg (string "greetings from " A))
                 (println ">>> ERROR in proxy message: " msg))
         )
-    (println)
-)))
+        (println)
+    ) true))
 
 ; parent functioning as a proxy evaluating messages	or any other code
 (println "A:" A "-> parent-proxy:" (sys-info -3) " -> B:" B "\n")

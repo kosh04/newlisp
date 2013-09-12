@@ -45,29 +45,29 @@ int result;
 long fin, fout; 
 
 if(inpipe == -1 && outpipe == -1)
-	{
-	memset(&si, 0, sizeof(si));
-	si.cb = sizeof(si);
-	si.wShowWindow = option; 
-	memset(&process, 0, sizeof(process));
-	}
+    {
+    memset(&si, 0, sizeof(si));
+    si.cb = sizeof(si);
+    si.wShowWindow = option; 
+    memset(&process, 0, sizeof(process));
+    }
 else
-	{
-	/* GetStartupInfo(&si);  */
-	si.cb = sizeof(si);
-	si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-	si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
+    {
+    /* GetStartupInfo(&si);  */
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
 
-	fin = _get_osfhandle(inpipe);
-	fout = _get_osfhandle(outpipe);
+    fin = _get_osfhandle(inpipe);
+    fout = _get_osfhandle(outpipe);
 
-	si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
-	si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
-	si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
-	}
+    si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
+    si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    }
 
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
-	return(0); 
+    return(0); 
 
 return((UINT)process.hProcess);
 }
@@ -83,7 +83,7 @@ sa.bInheritHandle = TRUE;
 sa.lpSecurityDescriptor = NULL;
 
 if(!CreatePipe(&pipe_r, &pipe_w, &sa, 0))
-	return(0);
+    return(0);
 
 *inpipe = _open_osfhandle((long) pipe_r, 0);
 *outpipe = _open_osfhandle((long) pipe_w, 0);
@@ -116,7 +116,7 @@ DWORD dwWaitResult;
 dwWaitResult = WaitForSingleObject((HANDLE)hSemaphore, INFINITE);
 
 if(dwWaitResult == WAIT_FAILED)
-	return(FALSE);
+    return(FALSE);
 
 return(TRUE);
 }
@@ -189,22 +189,22 @@ if(params != nilCell)
   params = getCreateSymbol(params, &timerEvent, "$timer");
 
   if(params != nilCell)
-	{
-	getFloat(params, &seconds);
-	timerDuration = 1000 * seconds;
-	if(timerDuration > 0)
-		{
-		start = milliSecTime();
-		_beginthread(timerFunc, 0, 0);
-		seconds = timerDuration/1000.0;
-		}
-	}
+    {
+    getFloat(params, &seconds);
+    timerDuration = 1000 * seconds;
+    if(timerDuration > 0)
+        {
+        start = milliSecTime();
+        _beginthread(timerFunc, 0, 0);
+        seconds = timerDuration/1000.0;
+        }
+    }
   else
     {
     /* return the elapsed time */
     seconds = ((now = milliSecTime()) < start ? 
-			86400000 - start + now :
-			now - start)/1000.0;  
+            86400000 - start + now :
+            now - start)/1000.0;  
     }
   return(stuffFloat(&seconds));    
   }
@@ -222,11 +222,11 @@ if(timerDuration == 0) return;
 /* take care of midnight rollover */
 if((rollover = start + timerDuration - 86400000) > 0)
     {
-	while(milliSecTime() > start) mySleep(10); /* wait for rollover */
-	while(milliSecTime() < rollover) mySleep(10);
-	}
+    while(milliSecTime() > start) mySleep(10); /* wait for rollover */
+    while(milliSecTime() < rollover) mySleep(10);
+    }
 else
-	while( milliSecTime() < (start + timerDuration) ) mySleep(10);
+    while( milliSecTime() < (start + timerDuration) ) mySleep(10);
 
 if(recursionCount)
   traceFlag |= TRACE_TIMER;
@@ -237,42 +237,5 @@ else /* if idle */
 
 extern STREAM errorStream;
 
-/* dummies for Cilk API */
-
-CELL * p_spawn(CELL * params)
-{
-SYMBOL * sPtr;
-CELL * cell;
-int errNo;
-
-params = getSymbol(params, &sPtr);
-if(isProtected(sPtr->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(sPtr)));
-
-cell = evaluateExpressionSafe(params, &errNo);
-if(cell == NULL)
-	cell = stuffString(errorStream.buffer);
-else cell = copyCell(cell);
-
-deleteList((CELL *)sPtr->contents);
-pushResultFlag = FALSE;
-sPtr->contents = (UINT)cell;
-
-return(cell);
-}
-
-
-CELL * p_sync(CELL * params)
-{
-if(params == nilCell)
-	return(getCell(CELL_EXPRESSION));
-
-return(trueCell);
-}
-
-CELL * p_abort(CELL * params)
-{
-return(trueCell);
-}
 
 /* eof */

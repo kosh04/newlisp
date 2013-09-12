@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.3.4
-INT_VERSION = 10304
+VERSION = 10.3.5
+INT_VERSION = 10305
 
 default: makefile_build
 	make -f makefile_build
@@ -46,7 +46,8 @@ help:
 	@echo
 	@echo "  make clean           # remove all *.o and .tar files etc. USE BETWEEN FLAVORS!"
 	@echo "  make check           # run qa-dot, qa-net, qa-xml etc. test scripts"
-	@echo "  make test            # same as 'make check'"
+	@echo "  make test            # same as 'make check' but less output"
+	@echo "  make testall         # run an extended test suite with less output"
 	@echo "  make version         # replace version number in several files after changing in Makefile"
 	@echo "  make bench           # benchmark relative to 32-bit Mac OS 10.5 on MacMini 1.83Ghz"
 	@echo

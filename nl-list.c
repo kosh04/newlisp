@@ -54,18 +54,18 @@ params = getEvalDefault(params->next, &cell);
 argsPtr = cell = copyCell(cell);
 
 if(!isList(cell->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, cell));
+    return(errorProcExt(ERR_LIST_EXPECTED, cell));
 
 /* get rest of argument lists */
 while (params != nilCell)
-	{
-	params = getEvalDefault(params, &results);
-	cell->next = copyCell(results);
-	cell = cell->next;
+    {
+    params = getEvalDefault(params, &results);
+    cell->next = copyCell(results);
+    cell = cell->next;
 
-	if(!isList(cell->type))
-            return(errorProcExt(ERR_LIST_EXPECTED, results));
-	}
+    if(!isList(cell->type))
+        return(errorProcExt(ERR_LIST_EXPECTED, results));
+    }
 
 results = getCell(CELL_EXPRESSION);
 res = NULL;
@@ -86,40 +86,40 @@ pushResult(results);
 resultIdxSave = resultStackIdx;
 
 while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
-	{
-	arg = argsPtr;
-	while(arg != nilCell)              /* for all args */
-		{
-		argCell = (CELL *)arg->contents; /* pop out first */
-		if(argCell == nilCell) break;
-		arg->contents = (UINT)argCell->next;
-		argCell->next = nilCell; /* unlink */
-		if(isSelfEval(argCell->type))
-			cell = cell->next = argCell;
-		else
-			cell = cell->next = makeCell(CELL_QUOTE, (UINT)argCell);
-		arg = arg->next;
-		}
+    {
+    arg = argsPtr;
+    while(arg != nilCell)              /* for all args */
+        {
+        argCell = (CELL *)arg->contents; /* pop out first */
+        if(argCell == nilCell) break;
+        arg->contents = (UINT)argCell->next;
+        argCell->next = nilCell; /* unlink */
+        if(isSelfEval(argCell->type))
+            cell = cell->next = argCell;
+        else
+            cell = cell->next = makeCell(CELL_QUOTE, (UINT)argCell);
+        arg = arg->next;
+        }
 
-	cell = evaluateExpression(expr);
-	/* don't use optimized copyCell()
-	if(cell->type == CELL_STRING)
-		cell = stuffStringN((char *)cell->contents, cell->aux - 1);
-	else 
+    cell = evaluateExpression(expr);
+    /* don't use optimized copyCell()
+    if(cell->type == CELL_STRING)
+        cell = stuffStringN((char *)cell->contents, cell->aux - 1);
+    else 
     */
-		cell = copyCell(cell);
-	while(resultStackIdx > resultIdxSave)
-        	deleteList(popResult());
+        cell = copyCell(cell);
+    while(resultStackIdx > resultIdxSave)
+            deleteList(popResult());
 
-	if(res == NULL)
-		results->contents = (UINT)cell;
-	else
-		res->next = cell;
-	res = cell;
-	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1; 
-	cell = (CELL *)expr->contents;
-	deleteList(cell->next);
-	}
+    if(res == NULL)
+        results->contents = (UINT)cell;
+    else
+        res->next = cell;
+    res = cell;
+    if(cellIdx->type == CELL_LONG) cellIdx->contents += 1; 
+    cell = (CELL *)expr->contents;
+    deleteList(cell->next);
+    }
 
 cell->next = nilCell; /* decouple */
 recoverIteratorIndex(cellIdx);
@@ -141,56 +141,56 @@ CELL * * lastChunk = NULL;
 int flag = FALSE;
 
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT*)&len);
-	flag = getFlag(params);
-	}
+    {
+    params = getInteger(params, (UINT*)&len);
+    flag = getFlag(params);
+    }
 
 result = getCell(CELL_EXPRESSION);
 
 if(len <= 0) return(result);
 
 while(list != nilCell)
-	{
-	if(result->contents == (UINT)nilCell)
-		{
-		cell = getCell(CELL_EXPRESSION);
-		lastChunk = (CELL * *)&result->contents;
-		result->contents = (UINT)cell;
-		cell->contents = (UINT)copyCell(list);
-		last = (CELL*)cell->contents;
-		}
-	else
-		{
-		if(count < len)
-			{
-			last->next = copyCell(list);
-			last = last->next;
-			count++;
-			}
-		else
-			{
-			cell->next = getCell(CELL_EXPRESSION);
-			lastChunk = (CELL * *)&cell->next;
-			cell = cell->next;
-			cell->contents = (UINT)copyCell(list);
-			last = (CELL*)cell->contents;
-			count = 1;
-			}
-		
-		}
-	list = list->next;
-	}
-	
+    {
+    if(result->contents == (UINT)nilCell)
+        {
+        cell = getCell(CELL_EXPRESSION);
+        lastChunk = (CELL * *)&result->contents;
+        result->contents = (UINT)cell;
+        cell->contents = (UINT)copyCell(list);
+        last = (CELL*)cell->contents;
+        }
+    else
+        {
+        if(count < len)
+            {
+            last->next = copyCell(list);
+            last = last->next;
+            count++;
+            }
+        else
+            {
+            cell->next = getCell(CELL_EXPRESSION);
+            lastChunk = (CELL * *)&cell->next;
+            cell = cell->next;
+            cell->contents = (UINT)copyCell(list);
+            last = (CELL*)cell->contents;
+            count = 1;
+            }
+        
+        }
+    list = list->next;
+    }
+    
 if(flag && count < len)
-	{
-	if(lastChunk)
-		{
-		deleteList(*lastChunk);
-		*lastChunk = nilCell;
-		}
-	}
-	
+    {
+    if(lastChunk)
+        {
+        deleteList(*lastChunk);
+        *lastChunk = nilCell;
+        }
+    }
+    
 return(result);
 }
 
@@ -207,9 +207,9 @@ CELL * setInterDiff(CELL * params, int mode);
 CELL * p_intersect(CELL * params)
 {
 if(params->next == nilCell)
-	return(setInterDiff(params, SET_UNIQUE));
+    return(setInterDiff(params, SET_UNIQUE));
 else
-	return(setInterDiff(params, SET_INTER));
+    return(setInterDiff(params, SET_INTER));
 }
 
 CELL * p_difference(CELL * params)
@@ -240,26 +240,26 @@ int cmp, flag = FALSE;
 
 params = getListHead(params, &listA);
 if(listA == nilCell)
-	return(getCell(CELL_EXPRESSION));
+    return(getCell(CELL_EXPRESSION));
 
 if(mode != SET_UNIQUE)
-	{
-	params = getListHead(params, &listB);
-	listMode = getFlag(params);
+    {
+    params = getListHead(params, &listB);
+    listMode = getFlag(params);
 
     if(listA == listB)
-      	{
-       	flag = TRUE;
-       	listA = copyList(listB);
-       	}
+        {
+        flag = TRUE;
+        listA = copyList(listB);
+        }
 
-	if(listB == nilCell) 
-		{
-		if(mode == SET_INTER)
-			return(getCell(CELL_EXPRESSION));
-		listB = NULL;
-		}
-	}
+    if(listB == nilCell) 
+        {
+        if(mode == SET_INTER)
+            return(getCell(CELL_EXPRESSION));
+        listB = NULL;
+        }
+    }
 
 vectorA = listToSortedVector(listA, &lengthA, NULL, TRUE);
 
@@ -294,7 +294,7 @@ while(i < lengthA)
                 continue;
                 }
             if(cmp < 0) break;
-			if(j < (lengthB - 1)) ++j;
+            if(j < (lengthB - 1)) ++j;
             else break;
 
             continue;
@@ -363,7 +363,7 @@ CELL * linkMatches(CELL * * matchList, CELL * matchPtr, CELL * elmnt)
 {
 if(*matchList == NULL)
     {
-	*matchList = makeCell(CELL_EXPRESSION, (UINT)elmnt);
+    *matchList = makeCell(CELL_EXPRESSION, (UINT)elmnt);
     matchPtr = (CELL *)(*matchList)->contents;
     }
 else
@@ -372,7 +372,7 @@ else
     }
 
 while(matchPtr->next != nilCell)
-	matchPtr = matchPtr->next;
+    matchPtr = matchPtr->next;
 
 return(matchPtr);
 }
@@ -388,114 +388,114 @@ CELL * stars = NULL;
 
 MATCH_LIST:
 switch(pattern->type)
-	{
-	case CELL_NIL:
-	/* end of pattern and list */
-	if(list->type == CELL_NIL) 
-		{
-		if(starList) deleteList(starList);
-		return(matchList);
-		}
+    {
+    case CELL_NIL:
+    /* end of pattern and list */
+    if(list->type == CELL_NIL) 
+        {
+        if(starList) deleteList(starList);
+        return(matchList);
+        }
         
-	goto NO_MATCH_RETURN;
+    goto NO_MATCH_RETURN;
 
-	case CELL_QUOTE:
-	case CELL_EXPRESSION:
-	case CELL_MACRO:
-	case CELL_LAMBDA:
-		/* compare subexpressions */
-		if(list->type == pattern->type)
-			{
-			if((match = patternMatchL((CELL*)pattern->contents, (CELL*)list->contents, flag)) != nilCell)
-				{
-				if(match != NULL)
-					{
-					if(flag)
-						matches = linkMatches(&matchList, matches, match);
-					else
-						{
-						matches = linkMatches(&matchList, matches, (CELL*)match->contents);
-						match->contents = (UINT)nilCell;
-						deleteList(match);
-						}
-					}
-				pattern = pattern->next;
-				list = list->next;
-				goto MATCH_LIST;
-				}
-			}
+    case CELL_QUOTE:
+    case CELL_EXPRESSION:
+    case CELL_MACRO:
+    case CELL_LAMBDA:
+        /* compare subexpressions */
+        if(list->type == pattern->type)
+            {
+            if((match = patternMatchL((CELL*)pattern->contents, (CELL*)list->contents, flag)) != nilCell)
+                {
+                if(match != NULL)
+                    {
+                    if(flag)
+                        matches = linkMatches(&matchList, matches, match);
+                    else
+                        {
+                        matches = linkMatches(&matchList, matches, (CELL*)match->contents);
+                        match->contents = (UINT)nilCell;
+                        deleteList(match);
+                        }
+                    }
+                pattern = pattern->next;
+                list = list->next;
+                goto MATCH_LIST;
+                }
+            }
 
-		goto NO_MATCH_RETURN;
+        goto NO_MATCH_RETURN;
 
-	case CELL_SYMBOL:
-		if(pattern->contents == (UINT)questionSymbol)	/* '?' */
-			{
-			if(list == nilCell) goto NO_MATCH_RETURN;
-			if(!flag) matches = linkMatches(&matchList, matches, copyCell(list));
-			break;
-			}
+    case CELL_SYMBOL:
+        if(pattern->contents == (UINT)questionSymbol)   /* '?' */
+            {
+            if(list == nilCell) goto NO_MATCH_RETURN;
+            if(!flag) matches = linkMatches(&matchList, matches, copyCell(list));
+            break;
+            }
 
-		if(pattern->contents == (UINT)starSymbol ||
-		   pattern->contents == (UINT)plusSymbol)	/* '*'  and '+' */
-			{
-			if(starList == NULL) 
-				{
-				starList = getCell(CELL_EXPRESSION);
-				}
+        if(pattern->contents == (UINT)starSymbol ||
+           pattern->contents == (UINT)plusSymbol)   /* '*'  and '+' */
+            {
+            if(starList == NULL) 
+                {
+                starList = getCell(CELL_EXPRESSION);
+                }
 
-			if(stars == NULL && pattern->contents == (UINT)plusSymbol)
-				goto WILD_CARD_GREP;
-			
-			if(pattern->next == nilCell)
-				{
-				if(stars == NULL)
-					starList->contents = (UINT)copyList(list);
-				else 
-					stars->next = copyList(list);
+            if(stars == NULL && pattern->contents == (UINT)plusSymbol)
+                goto WILD_CARD_GREP;
+            
+            if(pattern->next == nilCell)
+                {
+                if(stars == NULL)
+                    starList->contents = (UINT)copyList(list);
+                else 
+                    stars->next = copyList(list);
 
-				linkMatches(&matchList, matches, starList);
-				return(matchList);
-				}
+                linkMatches(&matchList, matches, starList);
+                return(matchList);
+                }
 
-			if((match = patternMatchL(pattern->next, list, flag)) != nilCell)
-				{
-				matches = linkMatches(&matchList, matches, starList);
-				if(match != NULL)
-					{
-					matches->next = (CELL*)match->contents;
-					match->contents = (UINT)nilCell;
-					deleteList(match);
-					}
-				return(matchList);
-				}
+            if((match = patternMatchL(pattern->next, list, flag)) != nilCell)
+                {
+                matches = linkMatches(&matchList, matches, starList);
+                if(match != NULL)
+                    {
+                    matches->next = (CELL*)match->contents;
+                    match->contents = (UINT)nilCell;
+                    deleteList(match);
+                    }
+                return(matchList);
+                }
 
-			if(list->next == nilCell)
-			goto NO_MATCH_RETURN;
+            if(list->next == nilCell)
+            goto NO_MATCH_RETURN;
 
 WILD_CARD_GREP:
-			if(pattern->contents == (UINT)plusSymbol)
-				if(list == nilCell) goto NO_MATCH_RETURN;
+            if(pattern->contents == (UINT)plusSymbol)
+                if(list == nilCell) goto NO_MATCH_RETURN;
 
-			if(stars == NULL)
-				{
-				starList->contents = (UINT)copyCell(list);
-				stars = (CELL*)starList->contents;
-				}
-			else 
-				{
-				stars->next = copyCell(list);
-				stars = stars->next;
-				}
+            if(stars == NULL)
+                {
+                starList->contents = (UINT)copyCell(list);
+                stars = (CELL*)starList->contents;
+                }
+            else 
+                {
+                stars->next = copyCell(list);
+                stars = stars->next;
+                }
 
-			list = list->next;
-			goto MATCH_LIST;
-			}
-	default:
-		if(compareCells(pattern, list) != 0)
-		goto NO_MATCH_RETURN;
+            list = list->next;
+            goto MATCH_LIST;
+            }
+    default:
+        if(compareCells(pattern, list) != 0)
+        goto NO_MATCH_RETURN;
 
-		break;	
-	}
+        break;  
+    }
 
 if(flag) matches = linkMatches(&matchList, matches, copyCell(list));
 
@@ -519,31 +519,31 @@ int listMode;
 
 key = evaluateExpression(params);
 if((listMode = isList(key->type)))
-	key = (CELL *)key->contents;
+    key = (CELL *)key->contents;
 
 if(key == nilCell) key = copyCell(nilCell);
 
 getEvalDefault(params->next, &list);
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_EXPECTED, list));
 
 list = (CELL *)list->contents;
 
 while(key != nilCell)
-	{
-	while(list != nilCell)
-		{
-		if(isList(list->type))
-			{
-			if(compareCells(key, (CELL *)list->contents) == 0)
-				break;
-			}
-		list = list->next;
-		}
+    {
+    while(list != nilCell)
+        {
+        if(isList(list->type))
+            {
+            if(compareCells(key, (CELL *)list->contents) == 0)
+                break;
+            }
+        list = list->next;
+        }
 
-	if(!listMode || (key = key->next) == nilCell) break;
-	list = ((CELL *)list->contents)->next;
-	}
+    if(!listMode || (key = key->next) == nilCell) break;
+    list = ((CELL *)list->contents)->next;
+    }
 
 if(list == nilCell) return(nilCell);
 
@@ -563,7 +563,7 @@ SYMBOL * symbolRef;
 
 key = evaluateExpression(params);
 if((listMode = isList(key->type)))
-	key = (CELL *)key->contents;
+    key = (CELL *)key->contents;
 
 if(key == nilCell) key = copyCell(nilCell);
 
@@ -571,29 +571,29 @@ params = getEvalDefault(params->next, &list);
 symbolRef = symbolCheck;
 
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_EXPECTED, list));
 
 list = (CELL *)list->contents;
 
 if(params != nilCell)
-	deflt = getInteger(params, (UINT *)&index);
+    deflt = getInteger(params, (UINT *)&index);
 else index = -1;
 
 while(key != nilCell)
-	{
-	while(list != nilCell)
-		{
-		if(isList(list->type))
-			if(compareCells(key, (CELL *)list->contents) == 0) break;
-		list = list->next;
-		}
+    {
+    while(list != nilCell)
+        {
+        if(isList(list->type))
+            if(compareCells(key, (CELL *)list->contents) == 0) break;
+        list = list->next;
+        }
 
-	if(!listMode || (key = key->next) == nilCell) break;
-	list = ((CELL *)list->contents)->next;
-	}
+    if(!listMode || (key = key->next) == nilCell) break;
+    list = ((CELL *)list->contents)->next;
+    }
 
 if(list == nilCell)
-	return(copyCell(evaluateExpression(deflt)));	
+    return(copyCell(evaluateExpression(deflt)));    
 
 list = (CELL*)list->contents;
 
@@ -633,23 +633,23 @@ CELL * cell;
 CELL * old;
 
 while(params != nilCell)
-	{
-	if(params->type != CELL_EXPRESSION)
-		return(errorProcExt(ERR_LIST_EXPECTED, params));
+    {
+    if(params->type != CELL_EXPRESSION)
+        return(errorProcExt(ERR_LIST_EXPECTED, params));
 
-	cell = (CELL *)params->contents;
-	lref = getSymbolCheckProtected(cell);
-	old = (CELL *)lref->contents;
-	if(evalFlag)
-		lref->contents = (UINT)copyCell(evaluateExpression(cell->next));
-	else
-		lref->contents = (UINT)copyCell(cell->next);
-	deleteList(old);
-	params = params->next;
-	}
+    cell = (CELL *)params->contents;
+    lref = getSymbolCheckProtected(cell);
+    old = (CELL *)lref->contents;
+    if(evalFlag)
+        lref->contents = (UINT)copyCell(evaluateExpression(cell->next));
+    else
+        lref->contents = (UINT)copyCell(cell->next);
+    deleteList(old);
+    params = params->next;
+    }
 
 if(lref == NULL)
-	return(nilCell);
+    return(nilCell);
 
 return((CELL *)lref->contents);
 }
@@ -675,14 +675,14 @@ getListHead(params, &list);
 result = getCell(CELL_EXPRESSION);
 
 if(items == nilCell)
-	return(result);
-	
+    return(result);
+    
 if(items == list)
-	{
-	flag = TRUE;
-	items = copyList(list);
-	}
-	
+    {
+    flag = TRUE;
+    items = copyList(list);
+    }
+    
 vectorItems = listToSortedVector(items, &lengthItems, NULL, TRUE);
 vectorList = listToSortedVector(list, &lengthList, NULL, TRUE);
 
@@ -690,32 +690,32 @@ counts = (ssize_t *)callocMemory(lengthItems * sizeof(ssize_t));
 
 if(vectorList)
 while(i < lengthList)
-	{
-	cmp = compareCells(vectorList[i], vectorItems[j]);
-	if(cmp == 0)
-		{
-		idx = (ssize_t)vectorItems[j]->next;
-		counts[idx] += 1;
-		++i;
-		continue;
-		}
-	if(cmp < 0)
-		{
-		++i;
-		continue;
-		}
-	if(j < (lengthItems - 1)) j++;
-	else i++;
-	}
+    {
+    cmp = compareCells(vectorList[i], vectorItems[j]);
+    if(cmp == 0)
+        {
+        idx = (ssize_t)vectorItems[j]->next;
+        counts[idx] += 1;
+        ++i;
+        continue;
+        }
+    if(cmp < 0)
+        {
+        ++i;
+        continue;
+        }
+    if(j < (lengthItems - 1)) j++;
+    else i++;
+    }
 
 
 cell = stuffInteger(counts[0]);
 result->contents = (UINT)cell;
 for(i = 1; i < lengthItems; i++)
-	{
-	cell->next = stuffInteger(counts[i]);
-	cell = cell->next;
-	}
+    {
+    cell->next = stuffInteger(counts[i]);
+    cell = cell->next;
+    }
 freeMemory(counts);
 
 cell = resortVectorToList(vectorItems, lengthItems);
@@ -735,12 +735,12 @@ return(result);
 void freeTnode(void * node) {};
 
 typedef struct 
-	{
-	UINT type;
-	UINT next;
-	UINT aux;
-	UINT contents;
-	} COUNTCELL;
+    {
+    UINT type;
+    UINT next;
+    UINT aux;
+    UINT contents;
+    } COUNTCELL;
 
 CELL * p_count(CELL * params)
 {
@@ -762,56 +762,56 @@ getListHead(params, &list);
 result = getCell(CELL_EXPRESSION);
 
 if(items == nilCell)
-	return(result);
-	
+    return(result);
+    
 if(items == list)
-	{
-	flag = TRUE;
-	items = copyList(list);
-	}
-	
+    {
+    flag = TRUE;
+    items = copyList(list);
+    }
+    
 lengthItems = listlen(items);
 counts = (CELL * *)callocMemory(lengthItems * sizeof(CELL *));
 
 cell = items;
 for(i = 0; i < lengthItems; i++)
-	{
-	counts[i] = copyCell(cell); 
-	counts[i]->next = NULL;
-	key = tsearch(counts[i], &root, (int (*)(const void *, const void *))compareCells);
-	if(key == NULL)
-	    {
-	    freeMemory(counts);
-		errorProc(ERR_NOT_ENOUGH_MEMORY);
-		}
-	cell = cell->next;
-	}
+    {
+    counts[i] = copyCell(cell); 
+    counts[i]->next = NULL;
+    key = tsearch(counts[i], &root, (int (*)(const void *, const void *))compareCells);
+    if(key == NULL)
+        {
+        freeMemory(counts);
+        errorProc(ERR_NOT_ENOUGH_MEMORY);
+        }
+    cell = cell->next;
+    }
 
 cell = list;
 while(cell != nilCell)
-	{
-	key = tfind(cell, &root, (int (*)(const void *, const void *))compareCells);
-	if(key != NULL)
-		{ 
-		count = (COUNTCELL *)*(CELL * *)key;
-		count->next++;
-		}
-	cell = cell->next;
-	}
+    {
+    key = tfind(cell, &root, (int (*)(const void *, const void *))compareCells);
+    if(key != NULL)
+        { 
+        count = (COUNTCELL *)*(CELL * *)key;
+        count->next++;
+        }
+    cell = cell->next;
+    }
 
 cell = stuffInteger((UINT)counts[0]->next);
 result->contents = (UINT)cell;
 for(i = 1; i < lengthItems; i++)
-	{
-	cell->next = stuffInteger((UINT)counts[i]->next);
-	cell = cell->next;
-	}
+    {
+    cell->next = stuffInteger((UINT)counts[i]->next);
+    cell = cell->next;
+    }
 
 for(i = 0; i < lengthItems; i++)
-	{
-	counts[i]->next = nilCell;
-	deleteList(counts[i]);
-	}
+    {
+    counts[i]->next = nilCell;
+    deleteList(counts[i]);
+    }
 
 freeMemory(counts);
 if(flag) deleteList(items);
@@ -834,46 +834,46 @@ int listMode;
 
 key = evaluateExpression(params);
 if((listMode = isList(key->type)))
-	key = (CELL *)key->contents;
+    key = (CELL *)key->contents;
 
 if(key == nilCell) key = copyCell(nilCell);
 
 getEvalDefault(params->next, &list);
 
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_EXPECTED, list));
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 list->aux = (UINT)nilCell; /* undo last element optimization */
 original = list;
 list = (CELL *)list->contents;
 
 while(key != nilCell)
-	{
-	while(list != nilCell)
-		{
-		if(isList(list->type))
-			if(compareCells(key, (CELL *)list->contents) == 0) break;
-		previous = list;
-		list = list->next;
-		}
+    {
+    while(list != nilCell)
+        {
+        if(isList(list->type))
+            if(compareCells(key, (CELL *)list->contents) == 0) break;
+        previous = list;
+        list = list->next;
+        }
 
-	if(!listMode || (key = key->next) == nilCell) break;
-	previous = (CELL *)list->contents;
-	list = ((CELL *)list->contents)->next;
-	}
+    if(!listMode || (key = key->next) == nilCell) break;
+    previous = (CELL *)list->contents;
+    list = ((CELL *)list->contents)->next;
+    }
 
 if(list == nilCell) return(nilCell); /* key not found */
 
 if(previous == NULL)
-	original->contents = (UINT)list->next;
+    original->contents = (UINT)list->next;
 else
-	previous->next = list->next;
+    previous->next = list->next;
 
 /* unlink */
 list->next = nilCell;
-return(list);	
+return(list);   
 }
 
 void binsort(CELL * * x, ssize_t n, CELL * pCell)
@@ -890,92 +890,92 @@ y = allocMemory(n * sizeof(CELL *));
 
 m = 1;
 while(m < n)
-	{
-	for(i = 0; i < n; i += 2*m)
-		{
-		k = i; l = i + m;
-		if(l >= n)
-			{
-			kf = lf = n;
-			l = lf + 1;
-			}
-		else 
-			{
-			kf = k + m - 1;
-			lf = l + m - 1;
-			}
+    {
+    for(i = 0; i < n; i += 2*m)
+        {
+        k = i; l = i + m;
+        if(l >= n)
+            {
+            kf = lf = n;
+            l = lf + 1;
+            }
+        else 
+            {
+            kf = k + m - 1;
+            lf = l + m - 1;
+            }
 
-		if(lf >= n) lf = n - 1;
+        if(lf >= n) lf = n - 1;
 
-		for(j = i; j <= lf; j++)
-			{
-			if(k > kf)
-				{
-				y[j] = x[l++]; 
-				continue;
-				}
-			if(l > lf)
-				{
-				y[j] = x[k++]; 
-				continue;
-				}
-				
-			if(pCell == NULL)
-				{
-				if(compareCells((CELL*)x[k], (CELL*)x[l]) <= 0)
-					y[j] = x[k++];
-				else
-					y[j] = x[l++];
-				continue;
-				}
-			if(pCell == (CELL*)0xFFFFFFFF)
-				{
-			    if(((CELL*)x[k])->next <= ((CELL*)x[l])->next)
-					y[j] = x[k++];
-				else
-					y[j] = x[l++];
-				continue;
-				}
+        for(j = i; j <= lf; j++)
+            {
+            if(k > kf)
+                {
+                y[j] = x[l++]; 
+                continue;
+                }
+            if(l > lf)
+                {
+                y[j] = x[k++]; 
+                continue;
+                }
+                
+            if(pCell == NULL)
+                {
+                if(compareCells((CELL*)x[k], (CELL*)x[l]) <= 0)
+                    y[j] = x[k++];
+                else
+                    y[j] = x[l++];
+                continue;
+                }
+            if(pCell == (CELL*)0xFFFFFFFF)
+                {
+                if(((CELL*)x[k])->next <= ((CELL*)x[l])->next)
+                    y[j] = x[k++];
+                else
+                    y[j] = x[l++];
+                continue;
+                }
 
-			resultIndexSave = resultStackIdx;
-			expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
+            resultIndexSave = resultStackIdx;
+            expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
 
-			cell = (CELL *)expr->contents;
-			cell->next = makeCell(CELL_QUOTE, (UINT)copyCell((CELL*)x[k]));
-			cell = cell->next;
+            cell = (CELL *)expr->contents;
+            cell->next = makeCell(CELL_QUOTE, (UINT)copyCell((CELL*)x[k]));
+            cell = cell->next;
 
-			cell->next = makeCell(CELL_QUOTE, (UINT)copyCell((CELL*)x[l]));
-			
-			/* do result stack cleanup, and free memory under
-			   error conditions */
-			memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
-			if((errNo = setjmp(errorJump)) != 0)
-				{
-				memcpy(errorJump, errorJumpSave, (sizeof(jmp_buf)));
-				deleteList(expr);
-				cleanupResults(resultIndexSave);
-				free(x); /* allocates by parent routine */
-				free(y);
-				longjmp(errorJump, errNo);
-				}										
+            cell->next = makeCell(CELL_QUOTE, (UINT)copyCell((CELL*)x[l]));
+            
+            /* do result stack cleanup, and free memory under
+               error conditions */
+            memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+            if((errNo = setjmp(errorJump)) != 0)
+                {
+                memcpy(errorJump, errorJumpSave, (sizeof(jmp_buf)));
+                deleteList(expr);
+                cleanupResults(resultIndexSave);
+                free(x); /* allocates by parent routine */
+                free(y);
+                longjmp(errorJump, errNo);
+                }                                       
 
-			cell = evaluateExpression(expr);
+            cell = evaluateExpression(expr);
 
-			memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-			if(!isNil(cell) && !isEmpty(cell))
-				y[j] = x[k++];
-			else
-				y[j] = x[l++];
+            memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+            if(!isNil(cell) && !isEmpty(cell))
+                y[j] = x[k++];
+            else
+                y[j] = x[l++];
 
-			deleteList(expr);
-			cleanupResults(resultIndexSave);
-			}
-		}
+            deleteList(expr);
+            cleanupResults(resultIndexSave);
+            }
+        }
 
-	for(i = 0; i < n; i++) x[i] = y[i]; 
-	m = m * 2;
-	}
-	
+    for(i = 0; i < n; i++) x[i] = y[i]; 
+    m = m * 2;
+    }
+    
 free(y);
 }
 
@@ -995,43 +995,43 @@ getEvalDefault(params, &cell);
 refSymbol = symbolCheck;
 
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 if(isList(cell->type))
-	{
-	if(cell->contents == (UINT)nilCell)
-		return(getCell(CELL_EXPRESSION));
-	
-	cell->aux = (UINT)nilCell; /* undo last element optimization */
+    {
+    if(cell->contents == (UINT)nilCell)
+        return(getCell(CELL_EXPRESSION));
+    
+    cell->aux = (UINT)nilCell; /* undo last element optimization */
 
-	vector = listToSortedVector((CELL *)cell->contents, &length, list->next, 0);
+    vector = listToSortedVector((CELL *)cell->contents, &length, list->next, 0);
 
-	/* relink cells */
-	list = vector[0];
-	--length;
-	i = 1;
-	while(length--)
-		{
-		list->next = vector[i];
-		list = list->next;
-		i++;
-		}
-	list->next = nilCell;
+    /* relink cells */
+    list = vector[0];
+    --length;
+    i = 1;
+    while(length--)
+        {
+        list->next = vector[i];
+        list = list->next;
+        i++;
+        }
+    list->next = nilCell;
 
-	cell->contents = (UINT)vector[0];
-	freeMemory(vector);
-	}
+    cell->contents = (UINT)vector[0];
+    freeMemory(vector);
+    }
 else if(isArray(cell->type))
-	{
-	vector = (CELL **)cell->contents;
-	length = (cell->aux - 1) / sizeof(UINT);
-	if(list->next == nilCell)
-		binsort(vector, length, NULL);
-	else
-		binsort(vector, length, list->next);
-	}
+    {
+    vector = (CELL **)cell->contents;
+    length = (cell->aux - 1) / sizeof(UINT);
+    if(list->next == nilCell)
+        binsort(vector, length, NULL);
+    else
+        binsort(vector, length, list->next);
+    }
 else
-	return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, list));
 
 symbolCheck = refSymbol;
 pushResultFlag = FALSE;
@@ -1050,17 +1050,17 @@ if((*length = listlen(list)) == 0) return(NULL);
 /* build vector */
 vector = allocMemory(*length * sizeof(CELL *));
 for(i = 0; i < *length; i++)
-	{
-	vector[i] = prev = list;
-	list = list->next;
-	if(indexFlag) prev->next = (void *)i;
-	}
+    {
+    vector[i] = prev = list;
+    list = list->next;
+    if(indexFlag) prev->next = (void *)i;
+    }
 
 if(func != nilCell && func != NULL)
     {
-	func = evaluateExpression(func);
+    func = evaluateExpression(func);
     if(func->type == CELL_SYMBOL) 
-    	func = (CELL*)((SYMBOL *)func->contents)->contents;
+        func = (CELL*)((SYMBOL *)func->contents)->contents;
     binsort(vector, *length, func);
     } 
 else
@@ -1078,10 +1078,10 @@ ssize_t i;
 binsort(vector, length, (CELL*)0xFFFFFFFF);
 list  = vector[0];
 for(i = 1; i < length; i++)
-	{
-	list->next = vector[i];
-	list = list->next;
-	}
+    {
+    list->next = vector[i];
+    list = list->next;
+    }
 list->next = nilCell;
 list = vector[0];
 free(vector);
@@ -1101,46 +1101,46 @@ int evalFlag;
 cell = evaluateExpression(params);
 
 if(isNumber(cell->type))
-	{
-	getIntegerExt(cell, (UINT *)&index, FALSE);
-	params = params->next;
-	evalFlag = TRUE;
-	}
+    {
+    getIntegerExt(cell, (UINT *)&index, FALSE);
+    params = params->next;
+    evalFlag = TRUE;
+    }
 else if(isList(cell->type))
-	{
-	params = (CELL*)cell->contents;
-	params = getIntegerExt(params, (UINT *)&index, FALSE);
-	evalFlag = FALSE;
-	}
+    {
+    params = (CELL*)cell->contents;
+    params = getIntegerExt(params, (UINT *)&index, FALSE);
+    evalFlag = FALSE;
+    }
 else return(errorProcExt(ERR_LIST_INDEX_INVALID, params));
 
 while(isList(list->type))
-	{
-	/* 10.3.1 catch changes in the list to be indexed 
+    {
+    /* 10.3.1 catch changes in the list to be indexed 
        caused by circular reference in index expression 
        e.g (lst (set 'lst foo)) , when foo is a vector 
     */
-	if(list->type == 255)
-		return(errorProc(ERR_LIST_REFERENCE_CHANGED));
+    if(list->type == 255)
+        return(errorProc(ERR_LIST_REFERENCE_CHANGED));
 
-	/* last element optimization */
-	if(index == -1 && list->aux != (UINT)nilCell) 
-		list = (CELL *)list->aux;
-	else
-		{
-		list = (CELL *)list->contents;
-		if(index < 0) 
-			index = convertNegativeOffset(index, list);
+    /* last element optimization */
+    if(index == -1 && list->aux != (UINT)nilCell) 
+        list = (CELL *)list->aux;
+    else
+        {
+        list = (CELL *)list->contents;
+        if(index < 0) 
+            index = convertNegativeOffset(index, list);
 
-		while(index--)	list = list->next;
+        while(index--)  list = list->next;
 
-		if(list == nilCell) 
-			errorProc(ERR_LIST_INDEX_INVALID);
-		}
+        if(list == nilCell) 
+            errorProc(ERR_LIST_INDEX_INVALID);
+        }
 
-	if(params == nilCell || !isList(list->type))  break;
-	params = getIntegerExt(params, (UINT *)&index, evalFlag);
-	}
+    if(params == nilCell || !isList(list->type))  break;
+    params = getIntegerExt(params, (UINT *)&index, evalFlag);
+    }
 
 return(list);
 }
@@ -1155,45 +1155,45 @@ CELL * cell;
 int intFlag;
 
 if((intFlag = (((CELL*)params->next)->next == nilCell)))
-	{
-	params = getInteger64(params, &fromInt64);
-	getInteger64(params, &toInt64);
-	stepCnt = (fromInt64 > toInt64) ? fromInt64 - toInt64 : toInt64 - fromInt64;
-	cell = stuffInteger64(fromInt64);
-	}
+    {
+    params = getInteger64(params, &fromInt64);
+    getInteger64(params, &toInt64);
+    stepCnt = (fromInt64 > toInt64) ? fromInt64 - toInt64 : toInt64 - fromInt64;
+    cell = stuffInteger64(fromInt64);
+    }
 else
-	{	
-	params = getFloat(params, &fromFlt);
-	params = getFloat(params, &toFlt);
-	getFloat(params, &step);
+    {   
+    params = getFloat(params, &fromFlt);
+    params = getFloat(params, &toFlt);
+    getFloat(params, &step);
 
-	if(isnan(fromFlt) || isnan(toFlt) || isnan(step))
-		return(errorProc(ERR_INVALID_PARAMETER_NAN));
+    if(isnan(fromFlt) || isnan(toFlt) || isnan(step))
+        return(errorProc(ERR_INVALID_PARAMETER_NAN));
 
-	step = (step < 0) ? -step : step;
-	step = (fromFlt > toFlt) ? -step : step;
-	cntFlt = (fromFlt < toFlt) ? (toFlt - fromFlt)/step : (fromFlt - toFlt)/step;
-	stepCnt = (cntFlt > 0.0) ? floor(cntFlt + 0.0000000001) : floor(-cntFlt + 0.0000000001);
-	cell = stuffFloat(&fromFlt);
-	}
+    step = (step < 0) ? -step : step;
+    step = (fromFlt > toFlt) ? -step : step;
+    cntFlt = (fromFlt < toFlt) ? (toFlt - fromFlt)/step : (fromFlt - toFlt)/step;
+    stepCnt = (cntFlt > 0.0) ? floor(cntFlt + 0.0000000001) : floor(-cntFlt + 0.0000000001);
+    cell = stuffFloat(&fromFlt);
+    }
 sequence = makeCell(CELL_EXPRESSION, (UINT)cell);
 
 for(i = 1; i <= stepCnt; i++)
-	{
-	if(intFlag)
-		{
-		if(fromInt64 > toInt64)
-			cell->next = stuffInteger(fromInt64 - i);
-		else
-			cell->next = stuffInteger(fromInt64 + i);
-		}
-	else
-		{
-		interval = fromFlt + i * step;
-		cell->next = stuffFloat(&interval);
-		}
-	cell = cell->next;
-	}
+    {
+    if(intFlag)
+        {
+        if(fromInt64 > toInt64)
+            cell->next = stuffInteger(fromInt64 - i);
+        else
+            cell->next = stuffInteger(fromInt64 + i);
+        }
+    else
+        {
+        interval = fromFlt + i * step;
+        cell->next = stuffFloat(&interval);
+        }
+    cell = cell->next;
+    }
 
 return(sequence);
 }
@@ -1249,7 +1249,7 @@ pCell = evaluateExpression(params);
 getEvalDefault(params->next, &args);
 
 if(!isList(args->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
 args = (CELL *)args->contents;
 
 result = NULL;
@@ -1258,70 +1258,70 @@ resultIndexSave = resultStackIdx;
 
 memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
 if((errNo = setjmp(errorJump)) != 0)
-	{
-	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-	if(resultList) deleteList(resultList);
-	longjmp(errorJump, errNo);
-	}
+    {
+    memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+    if(resultList) deleteList(resultList);
+    longjmp(errorJump, errNo);
+    }
 
 while(args != nilCell)
-	{
-	expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
-	cell = (CELL *)expr->contents;
-	cell->next = makeCell(CELL_QUOTE, (UINT)copyCell(args));
+    {
+    expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
+    cell = (CELL *)expr->contents;
+    cell->next = makeCell(CELL_QUOTE, (UINT)copyCell(args));
 
-	pushResult(expr);
+    pushResult(expr);
 
-	cell = evaluateExpression(expr);
+    cell = evaluateExpression(expr);
 
-	trueFlag = !isNil(cell) && !isEmpty(cell);
+    trueFlag = !isNil(cell) && !isEmpty(cell);
 
-	cleanupResults(resultIndexSave);
+    cleanupResults(resultIndexSave);
 
-	if(mode == FILTER_EXISTS && trueFlag)    
-		{
-		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-		return(copyCell(args));
-		}
+    if(mode == FILTER_EXISTS && trueFlag)    
+        {
+        memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+        return(copyCell(args));
+        }
 
-	else if (mode == FILTER_FOR_ALL)
-		{
-		if(trueFlag) goto CONTINUE_FOR_ALL;
-		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-		return(nilCell);
-		}
+    else if (mode == FILTER_FOR_ALL)
+        {
+        if(trueFlag) goto CONTINUE_FOR_ALL;
+        memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+        return(nilCell);
+        }
 
-	if((trueFlag && mode != FILTER_CLEAN) || (!trueFlag && mode == FILTER_CLEAN))
-		{
-		if(result == NULL)
-			{
-			resultList = makeCell(CELL_EXPRESSION, (mode == FILTER_INDEX) ? 
+    if((trueFlag && mode != FILTER_CLEAN) || (!trueFlag && mode == FILTER_CLEAN))
+        {
+        if(result == NULL)
+            {
+            resultList = makeCell(CELL_EXPRESSION, (mode == FILTER_INDEX) ? 
                         (UINT)stuffInteger((UINT)count): (UINT)copyCell(args));
-			result = (CELL*)resultList->contents;
-			}
-		else
-			{
-			result->next = (mode == FILTER_INDEX) ?
-						stuffInteger(count): copyCell(args);
-			result = result->next;
-			}
-		}
+            result = (CELL*)resultList->contents;
+            }
+        else
+            {
+            result->next = (mode == FILTER_INDEX) ?
+                        stuffInteger(count): copyCell(args);
+            result = result->next;
+            }
+        }
 
-	CONTINUE_FOR_ALL:
-	args = args->next;
-	count++;
-	}
+    CONTINUE_FOR_ALL:
+    args = args->next;
+    count++;
+    }
 
 memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
 if(mode == FILTER_EXISTS)
-	return(nilCell);
+    return(nilCell);
 
 if(mode == FILTER_FOR_ALL)
-	return(trueCell);
+    return(trueCell);
 
 if(resultList == NULL)
-	return(getCell(CELL_EXPRESSION));
+    return(getCell(CELL_EXPRESSION));
 
 return(resultList);
 }
@@ -1329,9 +1329,9 @@ return(resultList);
 
 #define MAX_REF_STACK 256
 typedef struct {
-	size_t * base;
-	size_t idx;
-	} REFSTACK;
+    size_t * base;
+    size_t idx;
+    } REFSTACK;
 
 #define pushRef(A) (refStack->base[refStack->idx++] = (UINT)(A))
 #define popRef() (--refStack->idx)
@@ -1347,11 +1347,11 @@ next = stuffInteger(refStack->base[0]);
 vector = makeCell(CELL_EXPRESSION, (UINT)next);
 
 for(i = 1; i < refStack->idx; i++)
-	{
-	next->next = stuffInteger(refStack->base[i]);
-	next = next->next;
-	}	
-	
+    {
+    next->next = stuffInteger(refStack->base[i]);
+    next = next->next;
+    }   
+    
 return(vector);
 }
 
@@ -1362,57 +1362,57 @@ return(vector);
 #define REF_CONTENTS 1
 
 void ref(CELL * keyCell, CELL * list, CELL * funcCell, CELL * * head, 
-						CELL * * next, REFSTACK * refStack, int mode)
+                        CELL * * next, REFSTACK * refStack, int mode)
 {
 size_t idx = 0;
 UINT * resultIdxSave = resultStackIdx;
 CELL * item;
 
 while(list != nilCell)
-	{
-	if(compareFunc(keyCell, list, funcCell) == 0)
-		{
-		if(refStack->base)
-			{
-			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
-			else errorProc(ERR_NESTING_TOO_DEEP);
-			item = makeIndexVector(refStack);
-			popRef();
-			}		
-		else
-			{
-			if(mode == REF_SINGLE)
-				item = list;
-			else
-				item = copyCell(list);
-			}
+    {
+    if(compareFunc(keyCell, list, funcCell) == 0)
+        {
+        if(refStack->base)
+            {
+            if(refStack->idx < MAX_REF_STACK) pushRef(idx);
+            else errorProc(ERR_NESTING_TOO_DEEP);
+            item = makeIndexVector(refStack);
+            popRef();
+            }       
+        else
+            {
+            if(mode == REF_SINGLE)
+                item = list;
+            else
+                item = copyCell(list);
+            }
 
-		if(*next == NULL)
-			*next = *head = item;
-		else
-			{
-			(*next)->next = item;
-			*next = (*next)->next;
-			}	
+        if(*next == NULL)
+            *next = *head = item;
+        else
+            {
+            (*next)->next = item;
+            *next = (*next)->next;
+            }   
 
-		if(mode == REF_SINGLE) return;
-		}
+        if(mode == REF_SINGLE) return;
+        }
 
-	if(isList(list->type))
-		{
-		if(refStack->base)
-			{
-			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
-			else errorProc(ERR_NESTING_TOO_DEEP);
-			}
-		ref(keyCell, (CELL*)list->contents, funcCell, head, next, refStack, mode);
-		if(refStack->base) popRef();
-		}
+    if(isList(list->type))
+        {
+        if(refStack->base)
+            {
+            if(refStack->idx < MAX_REF_STACK) pushRef(idx);
+            else errorProc(ERR_NESTING_TOO_DEEP);
+            }
+        ref(keyCell, (CELL*)list->contents, funcCell, head, next, refStack, mode);
+        if(refStack->base) popRef();
+        }
 
-	idx++;
-	cleanupResults(resultIdxSave);
-	list = list->next;
-	}
+    idx++;
+    cleanupResults(resultIdxSave);
+    list = list->next;
+    }
 }
 
 
@@ -1432,32 +1432,32 @@ params = getEvalDefault(params->next, &list);
 symbolRef = symbolCheck;
 
 if(params != nilCell)
-	{
-	funcCell = evaluateExpression(params);
-	flag = getFlag(params->next);
-	}
+    {
+    funcCell = evaluateExpression(params);
+    flag = getFlag(params->next);
+    }
 
 if(!flag)
-	refStack.base = alloca((MAX_REF_STACK + 2) * sizeof(size_t));
+    refStack.base = alloca((MAX_REF_STACK + 2) * sizeof(size_t));
 
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_EXPECTED, list));
 
 ref(keyCell, (CELL *)list->contents, funcCell, &head, &next, &refStack, mode);
 
 if(mode == REF_SINGLE) 
-	{
-	if(head == NULL) return(nilCell);
-	if(flag) 
-		{
-		symbolCheck = symbolRef;
-		pushResultFlag = FALSE;
-		}
-	return(head);
-	}
+    {
+    if(head == NULL) return(nilCell);
+    if(flag) 
+        {
+        symbolCheck = symbolRef;
+        pushResultFlag = FALSE;
+        }
+    return(head);
+    }
 
 list = getCell(CELL_EXPRESSION);
-	
+    
 list->contents = (UINT)((head == NULL) ? nilCell : head);
 
 return(list);
@@ -1483,22 +1483,22 @@ CELL * result;
 UINT * resultIdxSave = resultStackIdx;
 
 while(list != nilCell)
-	{
-	if(compareFunc(key, list, func) == 0)
-		{
-		*count += 1;
-		updateCell(list, new);
-		if(mode == SETREF_SINGLE) return(list);
-		}
-	else if(isList(list->type))
-		{
-		result = modRef(key, (CELL *)list->contents, func, new, mode, count);
-		if(result != nilCell) return(result);
-		}
+    {
+    if(compareFunc(key, list, func) == 0)
+        {
+        *count += 1;
+        updateCell(list, new);
+        if(mode == SETREF_SINGLE) return(list);
+        }
+    else if(isList(list->type))
+        {
+        result = modRef(key, (CELL *)list->contents, func, new, mode, count);
+        if(result != nilCell) return(result);
+        }
 
-	cleanupResults(resultIdxSave);
-	list = list->next;
-	}
+    cleanupResults(resultIdxSave);
+    list = list->next;
+    }
 
 return(nilCell);
 }
@@ -1510,7 +1510,6 @@ CELL * key;
 CELL * list;
 CELL * new = NULL;
 CELL * funcCell = NULL;
-CELL * result;
 SYMBOL * refSymbol;
 int count = 0;
 
@@ -1518,18 +1517,18 @@ key = evaluateExpression(params);
 new = getEvalDefault(params->next, &list);
 refSymbol = symbolCheck;
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, list));
+    return(errorProcExt(ERR_LIST_EXPECTED, list));
 
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-	
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    
 if(new->next != nilCell)
-	funcCell = evaluateExpression(new->next);
+    funcCell = evaluateExpression(new->next);
 
-result = modRef(key, (CELL *)list->contents, funcCell, new, mode, &count);
+modRef(key, (CELL *)list->contents, funcCell, new, mode, &count);
 
 if(count == 0)
-	return(nilCell);
+    return(nilCell);
 
 symbolCheck = refSymbol;
 pushResultFlag = FALSE;
@@ -1557,7 +1556,7 @@ void updateCell(CELL * cell, CELL * val)
 CELL * new;
 
 /* deprecate 10.1.6/ then eliminate usage of sysSymbol[0
-	and $it does not need a copy anymore 
+    and $it does not need a copy anymore 
     TAKE OUT AFTER 10.2.00 
 deleteList((CELL*)sysSymbol[0]->contents);
 itSymbol->contents = (UINT)copyCell(cell);
@@ -1567,32 +1566,32 @@ sysSymbol[0]->contents = itSymbol->contents;
 itSymbol->contents = (UINT)cell;
 
 if(val != nilCell)
-	{
-	new = copyCell(evaluateExpression(val)); 
+    {
+    new = copyCell(evaluateExpression(val)); 
 
-	/* delete contents of original cell */
-	if(isEnvelope(cell->type))
-		{
-		if(cell->type == CELL_ARRAY)
-			deleteArray(cell);
-		else
-			deleteList((CELL *)cell->contents);
-		}
-	else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
-		freeMemory( (void *)cell->contents);
+    /* delete contents of original cell */
+    if(isEnvelope(cell->type))
+        {
+        if(cell->type == CELL_ARRAY)
+            deleteArray(cell);
+        else
+            deleteList((CELL *)cell->contents);
+        }
+    else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
+        freeMemory( (void *)cell->contents);
 
-	cell->type = new->type;
-	cell->aux = new->aux;
-	cell->contents = new->contents;
+    cell->type = new->type;
+    cell->aux = new->aux;
+    cell->contents = new->contents;
 
-	/* free the cell  */
-	new->type = CELL_FREE;
-	new->aux = 0;
-	new->contents = 0;
-	new->next = firstFreeCell;
-	firstFreeCell = new;
-	--cellCount;
-	}
+    /* free the cell  */
+    new->type = CELL_FREE;
+    new->aux = 0;
+    new->contents = 0;
+    new->next = firstFreeCell;
+    firstFreeCell = new;
+    --cellCount;
+    }
 
 itSymbol->contents = (UINT)nilCell;
 }
@@ -1600,25 +1599,25 @@ itSymbol->contents = (UINT)nilCell;
 void flat(CELL * list, CELL * result, CELL * * next)
 {
 while(list != nilCell)
-	{
-	if(isList(list->type))
-		flat((CELL*)list->contents, result, next);
-	else
-		{
-		if(*next == NULL)
-			{
-			*next = copyCell(list);
-			result->contents = (UINT)*next;
-			}
-		else
-			{
-			(*next)->next = copyCell(list);
-			*next = (*next)->next;
-			}	
-		}
+    {
+    if(isList(list->type))
+        flat((CELL*)list->contents, result, next);
+    else
+        {
+        if(*next == NULL)
+            {
+            *next = copyCell(list);
+            result->contents = (UINT)*next;
+            }
+        else
+            {
+            (*next)->next = copyCell(list);
+            *next = (*next)->next;
+            }   
+        }
 
-	list = list->next;
-	}
+    list = list->next;
+    }
 }
 
 
@@ -1655,28 +1654,28 @@ CELL * next = NULL;
 SYMBOL * sPtr;
 
 while(params != nilCell && p < 17)
-	{
-	list = evaluateExpression(params);
-	if(isNumber(list->type))
-		{
-		getIntegerExt(list, (UINT*)&index[p], FALSE);
-		if(index[p] < 1) 
-			return(errorProcExt(ERR_WRONG_DIMENSIONS, list));
-		else p++;
-		}
+    {
+    list = evaluateExpression(params);
+    if(isNumber(list->type))
+        {
+        getIntegerExt(list, (UINT*)&index[p], FALSE);
+        if(index[p] < 1) 
+            return(errorProcExt(ERR_WRONG_DIMENSIONS, list));
+        else p++;
+        }
     else if(list->type == CELL_CONTEXT)
-	    {
-	    sPtr = translateCreateSymbol( ((SYMBOL*)list->contents)->name, CELL_NIL,
-		    (SYMBOL*)list->contents, TRUE);
-	    list = (CELL *)sPtr->contents;
-	    }
-	else if(isList(list->type)) break;
-	else return(errorProcExt(ERR_NUMBER_EXPECTED, list));
-	params = params->next;
-	}
+        {
+        sPtr = translateCreateSymbol( ((SYMBOL*)list->contents)->name, CELL_NIL,
+            (SYMBOL*)list->contents, TRUE);
+        list = (CELL *)sPtr->contents;
+        }
+    else if(isList(list->type)) break;
+    else return(errorProcExt(ERR_NUMBER_EXPECTED, list));
+    params = params->next;
+    }
 
 if(p == 0)
-	return(errorProc(ERR_MISSING_ARGUMENT));
+    return(errorProc(ERR_MISSING_ARGUMENT));
 
 index[p] = 0;
 if(!isList(list->type)) list = nilCell;
@@ -1684,9 +1683,9 @@ if(!isList(list->type)) list = nilCell;
 array = makeArray(index, 0);
 
 if(list != nilCell) 
-	array = initArray(array, list, &next);
+    array = initArray(array, list, &next);
 
-return(array);	
+return(array);  
 }
 
 
@@ -1705,14 +1704,14 @@ addr = (CELL * *)array->contents;
 
 p++;
 if(index[p] > 0)
-	{
-	list = makeArray(index, p);
-	while(size--) *(addr++) = copyCell(list);
-	deleteList(list); 
-	return(array);
-	}
+    {
+    list = makeArray(index, p);
+    while(size--) *(addr++) = copyCell(list);
+    deleteList(list); 
+    return(array);
+    }
 else
-	while(size--) *(addr++) = copyCell(nilCell);
+    while(size--) *(addr++) = copyCell(nilCell);
 
 return(array);
 }
@@ -1727,28 +1726,28 @@ size = (array->aux - 1) / sizeof(UINT);
 addr = (CELL * *)array->contents;
 
 while(size--)
-	{
-	if((*addr)->type == CELL_ARRAY)
-		{
-		*(addr) = initArray(*addr, list, next);
-		addr++;
-		continue;
-		}
+    {
+    if((*addr)->type == CELL_ARRAY)
+        {
+        *(addr) = initArray(*addr, list, next);
+        addr++;
+        continue;
+        }
 
-	if(*next == NULL || *next == nilCell)
-		{
-		deleteList(*addr);
-		*(addr++) = copyCell((CELL *)list->contents);
-		*next = (CELL*)list->contents;
-		*next = (*next)->next;
-		}
-	else	
-		{
-		deleteList(*addr);
-		*(addr++) = copyCell(*next);
-		*next = (*next)->next;
-		}
-	}
+    if(*next == NULL || *next == nilCell)
+        {
+        deleteList(*addr);
+        *(addr++) = copyCell((CELL *)list->contents);
+        *next = (CELL*)list->contents;
+        *next = (*next)->next;
+        }
+    else    
+        {
+        deleteList(*addr);
+        *(addr++) = copyCell(*next);
+        *next = (*next)->next;
+        }
+    }
 
 return(array);
 }
@@ -1760,7 +1759,7 @@ CELL * array;
 getEvalDefault(params, &array);
 
 if(array->type != CELL_ARRAY)
-	return(errorProcExt(ERR_ARRAY_EXPECTED, params));
+    return(errorProcExt(ERR_ARRAY_EXPECTED, params));
 
 return(arrayList(array));
 }
@@ -1777,24 +1776,24 @@ addr = (CELL * *)array->contents;
 size = (array->aux - 1) / sizeof(UINT);
 
 while(size--)
-	{
-	cell = *(addr++);
-	if(cell->type == CELL_ARRAY)
-		new = arrayList(cell);
-	else
-		new = copyCell(cell);
-	if(list == NULL)
-		{
-		array = list = makeCell(CELL_EXPRESSION, (UINT)new);
-		list = new;
-		}
-	else
-		{
-		list->next = new;
-		list = new;
-		}
-	}
-		
+    {
+    cell = *(addr++);
+    if(cell->type == CELL_ARRAY)
+        new = arrayList(cell);
+    else
+        new = copyCell(cell);
+    if(list == NULL)
+        {
+        array = list = makeCell(CELL_EXPRESSION, (UINT)new);
+        list = new;
+        }
+    else
+        {
+        list->next = new;
+        list = new;
+        }
+    }
+        
 return(array);
 }
 
@@ -1813,7 +1812,7 @@ n = (array->aux - 1) / sizeof(CELL *);
 
 cell = *addr;
 if(cell->type != CELL_ARRAY)
-	return(errorProcExt(ERR_WRONG_DIMENSIONS, array));
+    return(errorProcExt(ERR_WRONG_DIMENSIONS, array));
 m = (cell->aux - 1) / sizeof(CELL *);
 
 newArray = getCell(CELL_ARRAY);
@@ -1822,29 +1821,29 @@ newAddr = (CELL * *)callocMemory(newArray->aux);
 newArray->contents = (UINT)newAddr;
 
 for(j = 0; j < m; j++)
-	{
-	/* create new row vector */
-	cell = getCell(CELL_ARRAY);
-	cell->aux = n * sizeof(CELL *) + 1;
-	newRow = (CELL * *)callocMemory(cell->aux);
-	cell->contents = (UINT)newRow;
-	*(newAddr + j) = cell;
-	for( i = 0; i < n; i++)
-		{
-		cell = *(addr + i);
-		if(cell->type != CELL_ARRAY)
-			*(newRow + i) = copyCell(cell); 
-		else
-			{
-			row = (CELL * *)cell->contents;
-			if( (cell->aux - 1) / sizeof(CELL *) < (j + 1))
-				*(newRow + i) = nilCell;
-			else
-				*(newRow + i) = copyCell(*(row + j));
-			}
-		}
-	} 	
-		
+    {
+    /* create new row vector */
+    cell = getCell(CELL_ARRAY);
+    cell->aux = n * sizeof(CELL *) + 1;
+    newRow = (CELL * *)callocMemory(cell->aux);
+    cell->contents = (UINT)newRow;
+    *(newAddr + j) = cell;
+    for( i = 0; i < n; i++)
+        {
+        cell = *(addr + i);
+        if(cell->type != CELL_ARRAY)
+            *(newRow + i) = copyCell(cell); 
+        else
+            {
+            row = (CELL * *)cell->contents;
+            if( (cell->aux - 1) / sizeof(CELL *) < (j + 1))
+                *(newRow + i) = nilCell;
+            else
+                *(newRow + i) = copyCell(*(row + j));
+            }
+        }
+    }   
+        
 return(newArray);
 }
 
@@ -1859,19 +1858,19 @@ CELL * * addr;
 size = (array->aux - 1) / sizeof(CELL *);
 if(offset < 0) offset = offset + size;
 if(offset >= size || offset < 0) 
-		return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(offset)));
+        return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(offset)));
 
 if(length < 0)
-	{
-	length = size - offset + length;
-	if(length < 0) length = 0;
-	}
+    {
+    length = size - offset + length;
+    if(length < 0) length = 0;
+    }
 
 if(length == MAX_LONG && length > (size - offset))
-	length = size - offset;
+    length = size - offset;
 
 if(length == 0 || length > (size - offset))
-	return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(length)));
+    return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(length)));
 
 addr = (CELL * *)array->contents;
 newArray = getCell(CELL_ARRAY);
@@ -1879,8 +1878,8 @@ newArray->aux = length * sizeof(CELL *) + 1;
 newAddr = (CELL * *)callocMemory(newArray->aux);
 newArray->contents = (UINT)newAddr;
 
-for(i = 0; i < length; i++)	
-	*(newAddr + i) = copyCell(*(addr + offset + i));
+for(i = 0; i < length; i++) 
+    *(newAddr + i) = copyCell(*(addr + offset + i));
 
 return(newArray);
 }
@@ -1900,8 +1899,8 @@ size = (array->aux - 1) / sizeof(UINT);
 orgAddr = (CELL * *)array->contents;
 
 while(size--)
-	*(newAddr++) = copyCell(*(orgAddr++));
-	
+    *(newAddr++) = copyCell(*(orgAddr++));
+    
 return((UINT*)addr);
 }
 
@@ -1916,41 +1915,41 @@ CELL * * newAddr;
 int  deleteFlag = 0; 
 
 if(params == nilCell)
-	return(copyCell(array));
+    return(copyCell(array));
 
 START_APPEND_ARRAYS:
 size = (array->aux - 1) / sizeof(CELL *);
 addr = (CELL * *)array->contents;
 cell = evaluateExpression(params);
 if(cell->type != CELL_ARRAY)
-	return(errorProcExt(ERR_ARRAY_EXPECTED, params));
+    return(errorProcExt(ERR_ARRAY_EXPECTED, params));
 sizeCell = (cell->aux - 1) / sizeof(CELL *);
 
 newAddr = allocMemory(array->aux + cell->aux -1);
 
 for(i = 0; i < size; i++)
-	*(newAddr + i) = copyCell(*(addr + i));
+    *(newAddr + i) = copyCell(*(addr + i));
 
 addr = (CELL * *)cell->contents;
 
 for(i = 0; i < sizeCell; i++)
-	*(newAddr + size + i) = copyCell(*(addr + i));
+    *(newAddr + size + i) = copyCell(*(addr + i));
 
 cell = getCell(CELL_ARRAY);
 cell->aux = (size + sizeCell) * sizeof(CELL *) + 1;
 cell->contents = (UINT)newAddr;
 
 if( (params = params->next) != nilCell)
-	{
-	if(deleteFlag)
-		deleteList(array);
-	deleteFlag = 1;
-	array = cell;
-	goto START_APPEND_ARRAYS;
-	}
+    {
+    if(deleteFlag)
+        deleteList(array);
+    deleteFlag = 1;
+    array = cell;
+    goto START_APPEND_ARRAYS;
+    }
 
 if(deleteFlag)
-	deleteList(array);
+    deleteList(array);
 
 return(cell);
 }
@@ -1965,7 +1964,7 @@ ssize_t size;
 mem = addr = (CELL * *)array->contents;
 size = (array->aux - 1) / sizeof(UINT);
 while(size--)
-	deleteList(*(addr++));
+    deleteList(*(addr++));
 
 freeMemory((char *)mem);
 }
@@ -1986,11 +1985,11 @@ void printArrayDimensions(CELL * array, UINT device)
 CELL * * addr;
 
 while(array->type == CELL_ARRAY)
-	{
-	varPrintf(device, "%d ", (array->aux - 1)/sizeof(CELL *));
-	addr = (CELL **)array->contents;
-	array = *addr;
-	}
+    {
+    varPrintf(device, "%d ", (array->aux - 1)/sizeof(CELL *));
+    addr = (CELL **)array->contents;
+    array = *addr;
+    }
 }
 
 
@@ -2003,30 +2002,30 @@ int evalFlag;
 
 list = evaluateExpression(params);
 if(isNumber(list->type))
-	{
-	getIntegerExt(list, (UINT *)&index, FALSE);
-	params = params->next;
-	evalFlag = TRUE;
-	}
+    {
+    getIntegerExt(list, (UINT *)&index, FALSE);
+    params = params->next;
+    evalFlag = TRUE;
+    }
 else if(isList(list->type))
-	{
-	params = (CELL*)list->contents;
-	params = getIntegerExt(params, (UINT *)&index, FALSE);
-	evalFlag = FALSE;
-	}
+    {
+    params = (CELL*)list->contents;
+    params = getIntegerExt(params, (UINT *)&index, FALSE);
+    evalFlag = FALSE;
+    }
 else return(errorProcExt(ERR_ARRAY_INDEX_OUTOF_BOUNDS, params));
 
 while(cell->type == CELL_ARRAY)
-	{
-	addr = (CELL * *)cell->contents;
-	size = (cell->aux - 1) / sizeof(UINT);
-	if(index < 0) index = index + size;
-	if(index >= size || index < 0) 
-		return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(index)));
-	cell = *(addr + index);
-	if(params == nilCell || cell->type != CELL_ARRAY) break;
-	params = getIntegerExt(params, (UINT *)&index, evalFlag);
-	}
+    {
+    addr = (CELL * *)cell->contents;
+    size = (cell->aux - 1) / sizeof(UINT);
+    if(index < 0) index = index + size;
+    if(index >= size || index < 0) 
+        return(errorProcExt2(ERR_ARRAY_INDEX_OUTOF_BOUNDS, stuffInteger(index)));
+    cell = *(addr + index);
+    if(params == nilCell || cell->type != CELL_ARRAY) break;
+    params = getIntegerExt(params, (UINT *)&index, evalFlag);
+    }
 
 return(cell);
 }
@@ -2049,10 +2048,10 @@ if(leftS > rightS) return(1);
 
 result = 0;
 while(leftS && result == 0)
-	{
-	result = compareCells(*(leftAddr++), *(rightAddr++));
-	leftS--; 
-	}
+    {
+    result = compareCells(*(leftAddr++), *(rightAddr++));
+    leftS--; 
+    }
 
 return(result);
 }
@@ -2064,7 +2063,7 @@ CELL * cell;
 CELL * expr;
 
 if(func == NULL) 
-	return(compareCells(left, right));
+    return(compareCells(left, right));
 
 expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(func));
 

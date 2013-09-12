@@ -40,7 +40,7 @@ return(index);
 size_t adjustCount(ssize_t count, ssize_t length)
 {
 if(length <= 1 || count == 0 || length == count)
-	return(0);
+    return(0);
 
 if(count > 0)
     count = count % length;
@@ -68,34 +68,34 @@ key = evaluateExpression(params);
 params = getEvalDefault(params->next, &list);
 
 if(params != nilCell)
-	getInteger(params, (UINT *)&options);
+    getInteger(params, (UINT *)&options);
 
 if(isList(list->type))
-	list = (CELL *)list->contents;
+    list = (CELL *)list->contents;
 else if (list->type == CELL_STRING)
-	{
-	if(key->type != CELL_STRING)
-		return(errorProcExt(ERR_STRING_EXPECTED, key));
-	if(options == -1)
-		{
-		ptr = strstr((char *)list->contents, (char *) key->contents);
-		if(ptr) return(stuffString(ptr));
-		}	
-	else
-		{
-		pos = searchBufferRegex((char*)list->contents, 0, (char *)key->contents, list->aux - 1, options, 0);
-		if(pos != -1) return(stuffString((char *)list->contents + pos));
-		}
-	return(nilCell);
-	}
+    {
+    if(key->type != CELL_STRING)
+        return(errorProcExt(ERR_STRING_EXPECTED, key));
+    if(options == -1)
+        {
+        ptr = strstr((char *)list->contents, (char *) key->contents);
+        if(ptr) return(stuffString(ptr));
+        }   
+    else
+        {
+        pos = searchBufferRegex((char*)list->contents, 0, (char *)key->contents, list->aux - 1, options, 0);
+        if(pos != -1) return(stuffString((char *)list->contents + pos));
+        }
+    return(nilCell);
+    }
 else 
-	return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, params->next));
+    return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, params->next));
 
 while(list != nilCell)
-	{
-	if(compareCells(key, list) == 0) break;
-	list = list->next;
-	}
+    {
+    if(compareCells(key, list) == 0) break;
+    list = list->next;
+    }
 
 if(list == nilCell) return(nilCell);
 return(makeCell(CELL_EXPRESSION, (UINT)copyList(list)));
@@ -109,43 +109,43 @@ SYMBOL * symbol;
 params = evaluateExpression(params);
 length = 0;
 switch(params->type)
-	{
-	case CELL_LONG:
-		length = sizeof(UINT); break;
+    {
+    case CELL_LONG:
+        length = sizeof(UINT); break;
 #ifndef NEWLISP64
-	case CELL_INT64:
-		length = sizeof(INT64); break;
+    case CELL_INT64:
+        length = sizeof(INT64); break;
 #endif
-	case CELL_FLOAT:
-		length = sizeof(double); break;
-	case CELL_STRING:
-		length = params->aux - 1; break;
-	case CELL_CONTEXT:
-		symbol = translateCreateSymbol( ((SYMBOL*)params->contents)->name, CELL_NIL,
-			(SYMBOL*)params->contents, TRUE);
-		params = (CELL *)symbol->contents;
-		if(params->type == CELL_STRING)
-			length = params->aux - 1;
-		else if(isList(params->type))
-			length = listlen((CELL *)params->contents);
-		break;
-	case CELL_SYMBOL:
-		symbol = (SYMBOL *)params->contents;
-		length = strlen(symbol->name);
-		break;
-	case CELL_DYN_SYMBOL:
-		length = strlen((char *)params->contents);
-		break;
-	case CELL_EXPRESSION:
-	case CELL_LAMBDA:
-	case CELL_MACRO:
-	        length = listlen((CELL *)params->contents);
-		break;
-	case CELL_ARRAY:
-		length = (params->aux - 1) / sizeof(UINT);
-	default:
-		break;
-	}
+    case CELL_FLOAT:
+        length = sizeof(double); break;
+    case CELL_STRING:
+        length = params->aux - 1; break;
+    case CELL_CONTEXT:
+        symbol = translateCreateSymbol( ((SYMBOL*)params->contents)->name, CELL_NIL,
+            (SYMBOL*)params->contents, TRUE);
+        params = (CELL *)symbol->contents;
+        if(params->type == CELL_STRING)
+            length = params->aux - 1;
+        else if(isList(params->type))
+            length = listlen((CELL *)params->contents);
+        break;
+    case CELL_SYMBOL:
+        symbol = (SYMBOL *)params->contents;
+        length = strlen(symbol->name);
+        break;
+    case CELL_DYN_SYMBOL:
+        length = strlen((char *)params->contents);
+        break;
+    case CELL_EXPRESSION:
+    case CELL_LAMBDA:
+    case CELL_MACRO:
+            length = listlen((CELL *)params->contents);
+        break;
+    case CELL_ARRAY:
+        length = (params->aux - 1) / sizeof(UINT);
+    default:
+        break;
+    }
 return(stuffInteger(length));
 }
 
@@ -163,18 +163,18 @@ while(params != nilCell)
     if(!isList(cell->type))
         {
         if(copy == NULL)
-			{
-			if(cell->type == CELL_STRING)
-            	return(appendString(cell, params, NULL, 0, FALSE, TRUE));
-			else if(cell->type == CELL_ARRAY)
-            	return(appendArray(cell, params));
-			return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, cell));
-			}
-		
+            {
+            if(cell->type == CELL_STRING)
+                return(appendString(cell, params, NULL, 0, FALSE, TRUE));
+            else if(cell->type == CELL_ARRAY)
+                return(appendArray(cell, params));
+            return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, cell));
+            }
+        
         return(errorProcExt(ERR_LIST_EXPECTED, cell));
         }
 
-	if(list == NULL)
+    if(list == NULL)
         list = getCell(cell->type);
 
     copy = copyList((CELL *)cell->contents);
@@ -188,7 +188,7 @@ while(params != nilCell)
     }
 
 if(list == NULL)
-	return(getCell(CELL_EXPRESSION));
+    return(getCell(CELL_EXPRESSION));
 
 return(list);
 }
@@ -204,22 +204,22 @@ size_t len;
 openStrStream(&stream, MAX_LINE, 0);
 writeStreamStr(&stream, (char *)cell->contents, cell->aux - 1);
 while(list != nilCell)
-	{
-	if(joint == NULL)
-		{
-		list = getStringSize(list, &sPtr, &len, evalFlag);		
-		writeStreamStr(&stream, sPtr, len);
-		}
-	else
-		{
-		list = getStringSize(list, &sPtr, &len, FALSE);
-		if(jointLen) writeStreamStr(&stream, joint, jointLen);
-		writeStreamStr(&stream, sPtr, len);
-		}
-	}
+    {
+    if(joint == NULL)
+        {
+        list = getStringSize(list, &sPtr, &len, evalFlag);      
+        writeStreamStr(&stream, sPtr, len);
+        }
+    else
+        {
+        list = getStringSize(list, &sPtr, &len, FALSE);
+        if(jointLen) writeStreamStr(&stream, joint, jointLen);
+        writeStreamStr(&stream, sPtr, len);
+        }
+    }
 
 if(trailJoint)
-	writeStreamStr(&stream, joint, jointLen);
+    writeStreamStr(&stream, joint, jointLen);
 
 result = stuffStringN(stream.buffer, stream.position);
 
@@ -240,57 +240,57 @@ size_t size;
 
 params = getEvalDefault(params, &target);
 if((symbolRef = symbolCheck))
-	{
-	if(isProtected(symbolRef->flags))
-		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
-	if(isNil((CELL *)symbolRef->contents))
-		{
+    {
+    if(isProtected(symbolRef->flags))
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
+    if(isNil((CELL *)symbolRef->contents))
+        {
         deleteList((CELL*)symbolRef->contents);
-		head = evaluateExpression(params);
-		if(isList(head->type) || head->type == CELL_STRING)
-			target = copyCell(head);
+        head = evaluateExpression(params);
+        if(isList(head->type) || head->type == CELL_STRING)
+            target = copyCell(head);
         symbolRef->contents = (UINT)target;
-		params = params->next;
-	    }
-	}
+        params = params->next;
+        }
+    }
 
 if(isList(target->type))
-	{
-	tail = (CELL *)target->aux;
-	target->aux = (UINT)nilCell;
-	if(tail == nilCell)
-		{
-		tail = (CELL *)target->contents;
-		while(tail->next != nilCell)
-			tail = tail->next;
-		}
+    {
+    tail = (CELL *)target->aux;
+    target->aux = (UINT)nilCell;
+    if(tail == nilCell)
+        {
+        tail = (CELL *)target->contents;
+        while(tail->next != nilCell)
+            tail = tail->next;
+        }
 
-	while(params != nilCell)
-		{	
-		params = getListHead(params, &head);
-		if(head == nilCell) continue;
-		if(target->contents == (UINT)nilCell)
-			{
-			target->contents = (UINT)copyList(head);
-			tail = lastCellCopied;
-			}
-		else
-			{
-			tail->next = copyList(head);
-			target->aux = (UINT)lastCellCopied;
-			tail = (CELL *)target->aux;
-			}
-		}
-		
-	}	
+    while(params != nilCell)
+        {   
+        params = getListHead(params, &head);
+        if(head == nilCell) continue;
+        if(target->contents == (UINT)nilCell)
+            {
+            target->contents = (UINT)copyList(head);
+            tail = lastCellCopied;
+            }
+        else
+            {
+            tail->next = copyList(head);
+            target->aux = (UINT)lastCellCopied;
+            tail = (CELL *)target->aux;
+            }
+        }
+        
+    }   
 else if(target->type == CELL_STRING)
-	{
-	while(params != nilCell)
-		{
-		params = getStringSize(params, &pStr, &size, TRUE);
-		appendCellString(target, pStr, size);
-		}
-	}
+    {
+    while(params != nilCell)
+        {
+        params = getStringSize(params, &pStr, &size, TRUE);
+        appendCellString(target, pStr, size);
+        }
+    }
 else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, target));
 
 symbolCheck = symbolRef;
@@ -312,28 +312,28 @@ char * ptr;
 next = getEvalDefault(params, &params);
 
 if(next != nilCell)
-	getInteger(next, (UINT *)&number);
+    getInteger(next, (UINT *)&number);
 
 if(params->type == CELL_STRING)
-	{
+    {
 #ifndef SUPPORT_UTF8
-	length = params->aux - 1;
-	if(number > length) number = length;
-	length = length - number;
-	return stuffStringN((char *)params->contents, length);
+    length = params->aux - 1;
+    if(number > length) number = length;
+    length = length - number;
+    return stuffStringN((char *)params->contents, length);
 #else
-	length = utf8_wlen((char *)params->contents);
-	if(number > length) number = length;
-	length = length - number;
-	ptr = (char *)params->contents;
-	while(length--)
-		ptr += utf8_1st_len(ptr);
-	return stuffStringN((char *)params->contents, ptr - (char *)params->contents);
+    length = utf8_wlen((char *)params->contents);
+    if(number > length) number = length;
+    length = length - number;
+    ptr = (char *)params->contents;
+    while(length--)
+        ptr += utf8_1st_len(ptr);
+    return stuffStringN((char *)params->contents, ptr - (char *)params->contents);
 #endif
-	}
+    }
 
 if(!isList(params->type))
-    return(errorProc(ERR_LIST_OR_STRING_EXPECTED));	
+    return(errorProc(ERR_LIST_OR_STRING_EXPECTED)); 
 
 length = listlen((CELL *)params->contents);
 if(number > length) number = length;
@@ -356,20 +356,20 @@ params = copyCell(params); /* indices */
 pushResult(params);
 
 if(isList(list->type)) 
-	implicitIndexFunc = implicitIndexList;
+    implicitIndexFunc = implicitIndexList;
 else if(list->type == CELL_ARRAY) 
-	implicitIndexFunc = implicitIndexArray;
+    implicitIndexFunc = implicitIndexArray;
 else if(list->type == CELL_STRING)
-	{
-	list = implicitIndexString(list, params);
-	if((symbolCheck = symbolRef))
-		{
-		pushResult(list);
-		pushResultFlag = FALSE;
-		}
-	return(list);
-	}
-		
+    {
+    list = implicitIndexString(list, params);
+    if((symbolCheck = symbolRef))
+        {
+        pushResult(list);
+        pushResultFlag = FALSE;
+        }
+    return(list);
+    }
+        
 else return(errorProcExt(ERR_LIST_EXPECTED, list));
 
 cell = (*implicitIndexFunc)(list, params);
@@ -397,120 +397,120 @@ params = getEvalDefault(params->next, &list);
 listOrg = list;
 
 if((symbolRef = symbolCheck))
-	{
-	if(isProtected(symbolCheck->flags))
-		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-	if(isNil((CELL *)symbolCheck->contents))
-		{
+    {
+    if(isProtected(symbolCheck->flags))
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    if(isNil((CELL *)symbolCheck->contents))
+        {
         deleteList((CELL*)symbolCheck->contents);
-		listOrg = makeCell(CELL_EXPRESSION, (UINT)copyCell(newCell));
+        listOrg = makeCell(CELL_EXPRESSION, (UINT)copyCell(newCell));
         symbolCheck->contents = (UINT)listOrg;
         goto PUSH_RETURN;
-	    }
-	}                                   
+        }
+    }                                   
 
 if(!isList(list->type))
-	{
-	if(list->type == CELL_STRING)
-		{
-		pushOnString(newCell, list, params);
-		goto PUSH_RETURN;
-		}	
-	else
-		return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, list));
-	}
+    {
+    if(list->type == CELL_STRING)
+        {
+        pushOnString(newCell, list, params);
+        goto PUSH_RETURN;
+        }   
+    else
+        return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, list));
+    }
 
 if(params == nilCell) 
-	index = 0;
+    index = 0;
 else 
-	{
-	cell = (CELL*)params->next;
-	params = evaluateExpression(params);
-	if(isList(params->type))
-		{
-		evalFlag = FALSE;
-		params = getIntegerExt((CELL*)params->contents, (UINT*)&index, FALSE);
-		}
-	else 
-		{
-		evalFlag = TRUE;
-		getIntegerExt(params, (UINT*)&index, FALSE);
-		params = cell;
-		}
-	}
+    {
+    cell = (CELL*)params->next;
+    params = evaluateExpression(params);
+    if(isList(params->type))
+        {
+        evalFlag = FALSE;
+        params = getIntegerExt((CELL*)params->contents, (UINT*)&index, FALSE);
+        }
+    else 
+        {
+        evalFlag = TRUE;
+        getIntegerExt(params, (UINT*)&index, FALSE);
+        params = cell;
+        }
+    }
 
 if(index == -1) 
-	{
-	if(params == nilCell)
-		{
-		newCell = copyCell(newCell);
-		cell = (CELL*)list->aux;	
-		list->aux = (UINT)newCell;
-		if(cell != nilCell && cell != trueCell)
-			cell->next = newCell;
-		else if(list->contents == (UINT)nilCell)
-			list->contents = (UINT)newCell;
-		else
-			{
-			cell = (CELL *)list->contents;
-			while(cell->next != nilCell)
-				cell = cell->next;
-			cell->next = newCell;
-			}
-		goto PUSH_RETURN;
-		}
-	}
-	
+    {
+    if(params == nilCell)
+        {
+        newCell = copyCell(newCell);
+        cell = (CELL*)list->aux;    
+        list->aux = (UINT)newCell;
+        if(cell != nilCell && cell != trueCell)
+            cell->next = newCell;
+        else if(list->contents == (UINT)nilCell)
+            list->contents = (UINT)newCell;
+        else
+            {
+            cell = (CELL *)list->contents;
+            while(cell->next != nilCell)
+                cell = cell->next;
+            cell->next = newCell;
+            }
+        goto PUSH_RETURN;
+        }
+    }
+    
 list->aux = (UINT)nilCell; /* undo last element optimization */
 
 while(isList(list->type))
-	{
-	cell = list;
-	list = (CELL *)list->contents;
+    {
+    cell = list;
+    list = (CELL *)list->contents;
 
-	if(index < 0) 
-		{
-		index = listlen(list) + index;
-		if(index == -1) 
-			{
-			index = 0;
-			insert = INSERT_BEFORE;
-			}
-		else if(index >= 0) insert = INSERT_AFTER;
-		else errorProc(ERR_LIST_INDEX_INVALID);
-		}
-	else insert = INSERT_BEFORE;
+    if(index < 0) 
+        {
+        index = listlen(list) + index;
+        if(index == -1) 
+            {
+            index = 0;
+            insert = INSERT_BEFORE;
+            }
+        else if(index >= 0) insert = INSERT_AFTER;
+        else errorProc(ERR_LIST_INDEX_INVALID);
+        }
+    else insert = INSERT_BEFORE;
 
-	while(index--) 
-		{
-		if(list == nilCell)
-			{
-			if(index >= 0) errorProc(ERR_LIST_INDEX_INVALID);
-			insert = INSERT_END;
-			break;
-			}
-		cell = list;
-		list = list->next;
-		}
+    while(index--) 
+        {
+        if(list == nilCell)
+            {
+            if(index >= 0) errorProc(ERR_LIST_INDEX_INVALID);
+            insert = INSERT_END;
+            break;
+            }
+        cell = list;
+        list = list->next;
+        }
 
-	if(params == nilCell || !isList(list->type))  break;
-	params = getIntegerExt(params, (UINT*)&index, evalFlag);
-	}
+    if(params == nilCell || !isList(list->type))  break;
+    params = getIntegerExt(params, (UINT*)&index, evalFlag);
+    }
 
 newCell = copyCell(newCell);
 if(insert == INSERT_BEFORE || list == nilCell)
-	{
-	if(list == (CELL*)cell->contents)
-		{
-		cell->contents = (UINT)newCell;
-		newCell->next = list;
-		}
-	else
-		{
-		cell->next = newCell;
-		newCell->next = list;
-		}
-	}
+    {
+    if(list == (CELL*)cell->contents)
+        {
+        cell->contents = (UINT)newCell;
+        newCell->next = list;
+        }
+    else
+        {
+        cell->next = newCell;
+        newCell->next = list;
+        }
+    }
 
 else if(insert == INSERT_AFTER || insert == INSERT_END)
     {
@@ -535,58 +535,58 @@ int evalFlag = FALSE;
 
 params = getEvalDefault(params, &list);
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 if(!isList(list->type))
-	{
-	if(list->type == CELL_STRING)
-		return(popString(list, params));
-	else
-		return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, list));
-	}
+    {
+    if(list->type == CELL_STRING)
+        return(popString(list, params));
+    else
+        return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, list));
+    }
 
 /* leave last element optimization if popping first for queues */
 if(params == nilCell)
-	{
-	cell = (CELL *)list->contents;
-	list->contents = (UINT)cell->next;
-	if(cell->next == nilCell) /* check if only one element in list */
-		list->aux = (UINT)nilCell; /* undo last element optimization */
-	cell->next = nilCell;
-	return(cell);
-	}
+    {
+    cell = (CELL *)list->contents;
+    list->contents = (UINT)cell->next;
+    if(cell->next == nilCell) /* check if only one element in list */
+        list->aux = (UINT)nilCell; /* undo last element optimization */
+    cell->next = nilCell;
+    return(cell);
+    }
 else
-	{
-	list->aux = (UINT)nilCell; /* undo last element optimization */
-	cell = (CELL*)params->next;
-	params = evaluateExpression(params);
-	if(isList(params->type))
-		{
-		evalFlag = FALSE;
-		params = getIntegerExt((CELL*)params->contents, (UINT*)&index, FALSE);
-		}
-	else 
-		{
-		evalFlag = TRUE;
-		getIntegerExt(params, (UINT*)&index, FALSE);
-		params = cell;
-		}
-	}
+    {
+    list->aux = (UINT)nilCell; /* undo last element optimization */
+    cell = (CELL*)params->next;
+    params = evaluateExpression(params);
+    if(isList(params->type))
+        {
+        evalFlag = FALSE;
+        params = getIntegerExt((CELL*)params->contents, (UINT*)&index, FALSE);
+        }
+    else 
+        {
+        evalFlag = TRUE;
+        getIntegerExt(params, (UINT*)&index, FALSE);
+        params = cell;
+        }
+    }
 
 while(isList(list->type))
     {
     cell = list;
     list = (CELL *)list->contents;
 
-   	if(index < 0) index = convertNegativeOffset(index, list);
+    if(index < 0) index = convertNegativeOffset(index, list);
 
-   	while(index--) 
-       	{
-		cell = list;
-       	list = list->next;
-       	}
-	if(list == nilCell) 
-		errorProc(ERR_LIST_INDEX_INVALID);
+    while(index--) 
+        {
+        cell = list;
+        list = list->next;
+        }
+    if(list == nilCell) 
+        errorProc(ERR_LIST_INDEX_INVALID);
 
     if(params == nilCell || !isList(list->type))  break;
     params = getIntegerExt(params, (UINT*)&index, evalFlag);
@@ -620,29 +620,29 @@ size = str->aux - 1;
 #endif
 
 if(str->aux < 2)
-	return(stuffString(""));
+    return(stuffString(""));
 
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT*)&index);
-	if(params != nilCell) 
-		{
-		getInteger(params, (UINT*)&len);
-		if(len < 1) len = 0;
-		}
-	}
+    {
+    params = getInteger(params, (UINT*)&index);
+    if(params != nilCell) 
+        {
+        getInteger(params, (UINT*)&len);
+        if(len < 1) len = 0;
+        }
+    }
 
 index = adjustNegativeIndex(index, size);
 if((index + len) > size)
-	len = size - index;
-	
+    len = size - index;
+    
 #ifdef SUPPORT_UTF8
 newPtr = ptr;
 while(index--) /* recalculate index in bytes */
-	newPtr += utf8_1st_len(newPtr);
+    newPtr += utf8_1st_len(newPtr);
 index = newPtr - ptr;
 while(len--) /* recalculate len in bytes */
-	newPtr += utf8_1st_len(newPtr);
+    newPtr += utf8_1st_len(newPtr);
 len = (newPtr - ptr) - index;
 #endif
 
@@ -663,7 +663,6 @@ CELL * pushOnString(CELL * newStr, CELL * str, CELL * idx)
 ssize_t index = 0;
 char * ptr;
 char * newPtr;
-int minusFlag;
 int len;
 #ifdef SUPPORT_UTF8
 char * sptr;
@@ -674,15 +673,13 @@ if(idx != nilCell) getInteger(idx, (UINT*)&index);
 ptr = (char *)str->contents;
 
 if(newStr->type != CELL_STRING)
-	return(errorProcExt(ERR_STRING_EXPECTED, newStr));
+    return(errorProcExt(ERR_STRING_EXPECTED, newStr));
 
 if(index == -1)
-	{
-	appendCellString(str, (char *)newStr->contents, newStr->aux - 1);
-	return(newStr);
-	}
-
-minusFlag = (index < 0);
+    {
+    appendCellString(str, (char *)newStr->contents, newStr->aux - 1);
+    return(newStr);
+    }
 
 #ifndef SUPPORT_UTF8
 len = str->aux - 1;
@@ -703,7 +700,7 @@ memcpy(newPtr + index + newStr->aux - 1, ptr + index, str->aux - index);
 #else
 sptr = ptr;
 while(index--) /* skip characters to split point) */
-	sptr = utf8_wchar(sptr, &wChar);
+    sptr = utf8_wchar(sptr, &wChar);
 memcpy(newPtr, ptr, sptr - ptr);
 memcpy(newPtr + (sptr - ptr), (char*)newStr->contents, newStr->aux - 1);
 memcpy(newPtr + (sptr - ptr) + newStr->aux - 1, sptr, str->aux - (sptr - ptr)  );
@@ -736,95 +733,95 @@ size_t len;
 params = getEvalDefault(params, &head);
 cell = evaluateExpression(params);
 if(isList(cell->type))
-	{
-	evalFlag = FALSE;
-	cell = params = (CELL *)cell->contents;
-	}
+    {
+    evalFlag = FALSE;
+    cell = params = (CELL *)cell->contents;
+    }
 
 if(head->type == CELL_STRING)
-	{
-	if((n = listlen(params)) == 0) return(stuffString(""));
-	
-	str = (char *)head->contents;
+    {
+    if((n = listlen(params)) == 0) return(stuffString(""));
+    
+    str = (char *)head->contents;
 #ifndef SUPPORT_UTF8
-	newStr = (char *)allocMemory(n + 1);
-	idx = 0;
-	while(params->type != CELL_NIL)
-		{
-		if(idx == 0)
-			{
-			getIntegerExt(cell, (UINT *)&index, FALSE);
-			params = params->next;
-			}
-		else
-			params = getIntegerExt(params, (UINT *)&index, evalFlag);
-		index = adjustNegativeIndex(index, head->aux -1);
-		*(newStr + idx++) = *(str + index);
-		}
-	*(newStr + n) = 0;
+    newStr = (char *)allocMemory(n + 1);
+    idx = 0;
+    while(params->type != CELL_NIL)
+        {
+        if(idx == 0)
+            {
+            getIntegerExt(cell, (UINT *)&index, FALSE);
+            params = params->next;
+            }
+        else
+            params = getIntegerExt(params, (UINT *)&index, evalFlag);
+        index = adjustNegativeIndex(index, head->aux -1);
+        *(newStr + idx++) = *(str + index);
+        }
+    *(newStr + n) = 0;
 #else
-	wstr = allocMemory(head->aux * sizeof(int));
-	len = utf8_wstr(wstr, str, head->aux - 1);
-	wnewStr = allocMemory((n + 1) * sizeof(int));
-	idx = 0;
-	while(params->type != CELL_NIL)
-		{
-		if(idx == 0)
-			{
-			getIntegerExt(cell, (UINT *)&index, FALSE);
-			params = params->next;
-			}
-		else
-			params = getIntegerExt(params, (UINT *)&index, evalFlag);
-		index = adjustNegativeIndex(index, len);
-		*(wnewStr + idx++) = *(wstr + index);
-		}
-	*(wnewStr + n) = 0;
-	newStr = allocMemory(UTF8_MAX_BYTES * n + 1);
-	n = wstr_utf8(newStr, wnewStr, UTF8_MAX_BYTES * n);
-	newStr = reallocMemory(newStr, n + 1);
-	free(wstr); free(wnewStr);
+    wstr = allocMemory(head->aux * sizeof(int));
+    len = utf8_wstr(wstr, str, head->aux - 1);
+    wnewStr = allocMemory((n + 1) * sizeof(int));
+    idx = 0;
+    while(params->type != CELL_NIL)
+        {
+        if(idx == 0)
+            {
+            getIntegerExt(cell, (UINT *)&index, FALSE);
+            params = params->next;
+            }
+        else
+            params = getIntegerExt(params, (UINT *)&index, evalFlag);
+        index = adjustNegativeIndex(index, len);
+        *(wnewStr + idx++) = *(wstr + index);
+        }
+    *(wnewStr + n) = 0;
+    newStr = allocMemory(UTF8_MAX_BYTES * n + 1);
+    n = wstr_utf8(newStr, wnewStr, UTF8_MAX_BYTES * n);
+    newStr = reallocMemory(newStr, n + 1);
+    free(wstr); free(wnewStr);
 #endif
-	result = getCell(CELL_STRING);
-	result->aux = n + 1;
-	result->contents = (UINT)newStr;	
-	return(result);
-	}
+    result = getCell(CELL_STRING);
+    result->aux = n + 1;
+    result->contents = (UINT)newStr;    
+    return(result);
+    }
 
 if(!isList(head->type))
-	return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, head));
+    return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, head));
 head = (CELL *)head->contents;
 list = head;
 n = 0;
 while(params->type != CELL_NIL)
-	{
-	if(n++ == 0)
-		{
-		getIntegerExt(cell, (UINT *)&index, FALSE);
-		params = params->next;
-		}
-	else
-		params = getIntegerExt(params, (UINT *)&index, evalFlag);
-	if(index < 0) index = convertNegativeOffset(index, head);
-	if(index < idx) list = head, idx = 0;
-	while(idx < index  && list != nilCell) list = list->next, idx++; 
-	if(list == nilCell) 
-		errorProc(ERR_LIST_INDEX_INVALID);
-	if(result == NULL)
-		{
-		result = getCell(CELL_EXPRESSION);
-		cell = copyCell(list);
-		result->contents = (UINT)cell;
-		}
-	else
-		{
-		cell->next = copyCell(list);
-		cell = cell->next;
-		}
-	}
+    {
+    if(n++ == 0)
+        {
+        getIntegerExt(cell, (UINT *)&index, FALSE);
+        params = params->next;
+        }
+    else
+        params = getIntegerExt(params, (UINT *)&index, evalFlag);
+    if(index < 0) index = convertNegativeOffset(index, head);
+    if(index < idx) list = head, idx = 0;
+    while(idx < index  && list != nilCell) list = list->next, idx++; 
+    if(list == nilCell) 
+        errorProc(ERR_LIST_INDEX_INVALID);
+    if(result == NULL)
+        {
+        result = getCell(CELL_EXPRESSION);
+        cell = copyCell(list);
+        result->contents = (UINT)cell;
+        }
+    else
+        {
+        cell->next = copyCell(list);
+        cell = cell->next;
+        }
+    }
 
 return((result == NULL) ? getCell(CELL_EXPRESSION) : result);
-}	
+}   
 
 
 CELL * p_slice(CELL * params)
@@ -836,16 +833,16 @@ ssize_t length;
 params = getEvalDefault(params, &cell);
 params = getInteger(params, (UINT *)&offset);
 if(params != nilCell)
-	getInteger(params, (UINT *)&length);
+    getInteger(params, (UINT *)&length);
 else
-	length = MAX_LONG;
+    length = MAX_LONG;
 
 if(isList(cell->type))
-	return(sublist((CELL *)cell->contents, offset, length));
+    return(sublist((CELL *)cell->contents, offset, length));
 else if(cell->type == CELL_STRING)
-	return(substring((char *)cell->contents, cell->aux - 1, offset, length));
+    return(substring((char *)cell->contents, cell->aux - 1, offset, length));
 else if(cell->type == CELL_ARRAY)
-	return(subarray(cell, offset, length));
+    return(subarray(cell, offset, length));
 
 return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, params));
 }
@@ -857,19 +854,19 @@ CELL * subList;
 CELL * cell;
 
 if(offset < 0) 
-	offset = convertNegativeOffset(offset, list);
+    offset = convertNegativeOffset(offset, list);
 
 if(length < 0)
-	{
-	length = listlen(list) - offset + length;
-	if(length < 0) length = 0;
-	}
+    {
+    length = listlen(list) - offset + length;
+    if(length < 0) length = 0;
+    }
 
 subList = getCell(CELL_EXPRESSION);
 if(length == 0) return(subList);
 
 while(offset-- && list != nilCell)
-	list = list->next;
+    list = list->next;
 
 if(list == nilCell) return(subList);
 
@@ -877,12 +874,12 @@ cell = copyCell(list);
 subList->contents = (UINT)cell;
 --length;
 while(length--) 
-	{
-	list = list->next;
-	if(list == nilCell) break;
-	cell->next = copyCell(list);
-	cell = cell->next;
-	}
+    {
+    list = list->next;
+    if(list == nilCell) break;
+    cell->next = copyCell(list);
+    cell = cell->next;
+    }
 
 return(subList);
 }
@@ -902,40 +899,40 @@ char * right;
 cell = params;
 getEvalDefault(params, &list);
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 if(isList(list->type))
-	{
-	list->aux = (UINT)nilCell; /* undo last element optimization */
+    {
+    list->aux = (UINT)nilCell; /* undo last element optimization */
 
-	previous = cell = (CELL*)list->contents;
-	next = cell->next;
-	cell->next = nilCell;
-	while(cell!= nilCell)
-		{
-		previous = cell;
-		cell = next;
-		next = cell->next;
-		if(cell != nilCell) cell->next = previous;
-		}
-	list->contents = (UINT)previous;
-	}
+    previous = cell = (CELL*)list->contents;
+    next = cell->next;
+    cell->next = nilCell;
+    while(cell!= nilCell)
+        {
+        previous = cell;
+        cell = next;
+        next = cell->next;
+        if(cell != nilCell) cell->next = previous;
+        }
+    list->contents = (UINT)previous;
+    }
 
 else if(list->type == CELL_STRING)
-	{
-	str = (char *)list->contents;
-	len = list->aux - 1;
-	left = str;
-	right = left + len - 1;
-	while(left < right)
-		{
-		tmp = *left;
-		*left = *right;
-		*right = tmp;
-		left++;
-		right--;
-		}
-	}
+    {
+    str = (char *)list->contents;
+    len = list->aux - 1;
+    left = str;
+    right = left + len - 1;
+    while(left < right)
+        {
+        tmp = *left;
+        *left = *right;
+        *right = tmp;
+        left++;
+        right--;
+        }
+    }
 else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
 
 pushResultFlag = FALSE;
@@ -952,16 +949,16 @@ int trailJoint = 0;
 
 params = getListHead(params, &list);
 if(list == nilCell)
-	return(stuffString(""));
+    return(stuffString(""));
 
 if(list->type != CELL_STRING)
-	return(errorProcExt(ERR_STRING_EXPECTED, list));
+    return(errorProcExt(ERR_STRING_EXPECTED, list));
 
 if(params != nilCell)
-	{
-	params = getStringSize(params, &joint, &jointLen, TRUE);
-	trailJoint = getFlag(params);
-	}
+    {
+    params = getStringSize(params, &joint, &jointLen, TRUE);
+    trailJoint = getFlag(params);
+    }
 
 return(appendString(list, list->next, joint, jointLen, trailJoint, FALSE));
 }
@@ -984,76 +981,76 @@ keyCell = evaluateExpression(params);
 params = getEvalDefault(params->next, &next);
 
 if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
-	{
-	key = (char *)keyCell->contents;
-	str = (char *)next->contents;
-	size = next->aux - 1;
+    {
+    key = (char *)keyCell->contents;
+    str = (char *)next->contents;
+    size = next->aux - 1;
 
-	if(params != nilCell)
-		{
-		if(params->next != nilCell)
-			getInteger(params->next, (UINT*)&offset);
-		if(offset > size) offset = size;
-		params = evaluateExpression(params);
-		if(!isNil(params))
-			getIntegerExt(params, (UINT *)&options, FALSE);
-		}
+    if(params != nilCell)
+        {
+        if(params->next != nilCell)
+            getInteger(params->next, (UINT*)&offset);
+        if(offset > size) offset = size;
+        params = evaluateExpression(params);
+        if(!isNil(params))
+            getIntegerExt(params, (UINT *)&options, FALSE);
+        }
 
-	if(options == -1)
-		found = searchBuffer(str + offset, size - offset, key, keyCell->aux - 1, TRUE);
-	else
+    if(options == -1)
+        found = searchBuffer(str + offset, size - offset, key, keyCell->aux - 1, TRUE);
+    else
         found = searchBufferRegex(str, (int)offset, key, (int)size, options, NULL) - offset;
-	if(found < 0) return(nilCell);
-	}
+    if(found < 0) return(nilCell);
+    }
 else
-	{
+    {
     /* list mode with optional functor */
 
-	if(!isList(next->type)) return(nilCell);
-	next = (CELL *)next->contents;
-	found = 0;
+    if(!isList(next->type)) return(nilCell);
+    next = (CELL *)next->contents;
+    found = 0;
 
-	if(params != nilCell)
-		funcCell = evaluateExpression(params);
-	else funcCell = NULL;
+    if(params != nilCell)
+        funcCell = evaluateExpression(params);
+    else funcCell = NULL;
 
-   	/* do regex when first arg is string and option# is present */
-   	if(funcCell && isNumber(funcCell->type) && keyCell->type == CELL_STRING)
-       	{
-       	getIntegerExt(funcCell, (UINT*)&options, FALSE);
-       	key = (char *)keyCell->contents;
-       	while(next != nilCell)
-           	{
-           	if(next->type == CELL_STRING)
-               	{
-               	if(searchBufferRegex((char *)next->contents, 0, 
-						key, next->aux - 1 , options, NULL) != -1) break;
-               	}
-           	found++;
-           	next = next->next;
-           	}
-       	if(next == nilCell) return(nilCell);
-		else return(stuffInteger(found));
-       	}
+    /* do regex when first arg is string and option# is present */
+    if(funcCell && isNumber(funcCell->type) && keyCell->type == CELL_STRING)
+        {
+        getIntegerExt(funcCell, (UINT*)&options, FALSE);
+        key = (char *)keyCell->contents;
+        while(next != nilCell)
+            {
+            if(next->type == CELL_STRING)
+                {
+                if(searchBufferRegex((char *)next->contents, 0, 
+                        key, next->aux - 1 , options, NULL) != -1) break;
+                }
+            found++;
+            next = next->next;
+            }
+        if(next == nilCell) return(nilCell);
+        else return(stuffInteger(found));
+        }
 
-	resultIdxSave = resultStackIdx;
+    resultIdxSave = resultStackIdx;
     while(next != nilCell)
-		{
-		if(compareFunc(keyCell, next, funcCell) == 0)
-			{
-			if(funcCell)
-				{
-				deleteList((CELL*)sysSymbol[0]->contents);
-				sysSymbol[0]->contents = (UINT)copyCell(next);
-				}
-			break;
-			}
-		found++;
-		next = next->next;
-		cleanupResults(resultIdxSave);
-		}
-	if(next == nilCell) return(nilCell);
-	}
+        {
+        if(compareFunc(keyCell, next, funcCell) == 0)
+            {
+            if(funcCell)
+                {
+                deleteList((CELL*)sysSymbol[0]->contents);
+                sysSymbol[0]->contents = (UINT)copyCell(next);
+                }
+            break;
+            }
+        found++;
+        next = next->next;
+        cleanupResults(resultIdxSave);
+        }
+    if(next == nilCell) return(nilCell);
+    }
 
 return(stuffInteger(found + offset));
 }
@@ -1077,62 +1074,62 @@ int offset = 0;
 
 exprCell = params;
 if((params = params->next) != nilCell)
-	getInteger(params, (UINT *)&options);
+    getInteger(params, (UINT *)&options);
 
 resultIdxSave = resultStackIdx;
-	
+    
 if(exprCell != nilCell)
-	{
-	memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
-	if((errNo = setjmp(errorJump)) != 0)
-		{
-		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-		if(result != nilCell) deleteList(result);
-		longjmp(errorJump, errNo);
-		}	
-	}
+    {
+    memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+    if((errNo = setjmp(errorJump)) != 0)
+        {
+        memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+        if(result != nilCell) deleteList(result);
+        longjmp(errorJump, errNo);
+        }   
+    }
 
 while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &len)) 
        != -1)
-	{
-	if(exprCell != nilCell)
-		{
-		itSymbol->contents = sysSymbol[0]->contents;
-		exprRes = evaluateExpression(exprCell);
-		exprRes = copyCell(exprRes);
-		}
-	else
-		exprRes = stuffStringN(str + findPos, len);
+    {
+    if(exprCell != nilCell)
+        {
+        itSymbol->contents = sysSymbol[0]->contents;
+        exprRes = evaluateExpression(exprCell);
+        exprRes = copyCell(exprRes);
+        }
+    else
+        exprRes = stuffStringN(str + findPos, len);
 
-	if(lastPos == findPos)
-		{
-		++findPos;
-		pushResult(exprRes);
- 		goto FINDALL_CONTINUE;
-		}	
+    if(lastPos == findPos)
+        {
+        ++findPos;
+        pushResult(exprRes);
+        goto FINDALL_CONTINUE;
+        }   
 
-	lastPos = findPos;
+    lastPos = findPos;
 
-	if(result == nilCell)
-		{
-		cell = exprRes;
-		result = makeCell(CELL_EXPRESSION, (UINT)cell);
-		}
-	else
-		{
-		cell->next = exprRes;
-		cell = cell->next;
-		}
+    if(result == nilCell)
+        {
+        cell = exprRes;
+        result = makeCell(CELL_EXPRESSION, (UINT)cell);
+        }
+    else
+        {
+        cell->next = exprRes;
+        cell = cell->next;
+        }
 
-	FINDALL_CONTINUE:
-	offset = (findPos + len);
-	cleanupResults(resultIdxSave);
-	}
+    FINDALL_CONTINUE:
+    offset = (findPos + len);
+    cleanupResults(resultIdxSave);
+    }
 
 itSymbol->contents = (UINT)nilCell;
 
 if(exprCell != nilCell)
-	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+    memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
 return(result);
 }
@@ -1152,55 +1149,55 @@ funcCell = evaluateExpression(exprCell->next);
 resultIdxSave = resultStackIdx;
 
 if(funcCell == nilCell && !isList(pattern->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, pattern));
-	
+    return(errorProcExt(ERR_LIST_EXPECTED, pattern));
+    
 result = getCell(CELL_EXPRESSION);
 
 memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
 if((errNo = setjmp(errorJump)) != 0)
-	{
-	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-	deleteList(result);
-	longjmp(errorJump, errNo);
-	}
+    {
+    memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+    deleteList(result);
+    longjmp(errorJump, errNo);
+    }
 
 while(list != nilCell)
-	{
-	if(funcCell == nilCell)
-		{
-		/* match only takes lists*/
-		if(!isList(list->type))
-			goto CONTINUE_NEXT;
+    {
+    if(funcCell == nilCell)
+        {
+        /* match only takes lists*/
+        if(!isList(list->type))
+            goto CONTINUE_NEXT;
 
-		match = patternMatchL((CELL *)pattern->contents, (CELL *)list->contents, TRUE);
+        match = patternMatchL((CELL *)pattern->contents, (CELL *)list->contents, TRUE);
 
-		if(match == NULL || match == nilCell)
-			goto CONTINUE_NEXT;
+        if(match == NULL || match == nilCell)
+            goto CONTINUE_NEXT;
 
-		deleteList(match);
-		}
-	else
-		{
-		cleanupResults(resultIdxSave);
-		if(compareFunc(pattern, list, funcCell) != 0)
-			goto CONTINUE_NEXT;
-		}
+        deleteList(match);
+        }
+    else
+        {
+        cleanupResults(resultIdxSave);
+        if(compareFunc(pattern, list, funcCell) != 0)
+            goto CONTINUE_NEXT;
+        }
 
-	/* take out sysSymbol in future, should only be used in regex */
-	deleteList((CELL*)sysSymbol[0]->contents);
-	sysSymbol[0]->contents = (UINT)copyCell(list);
-	itSymbol->contents = (UINT)list;
+    /* take out sysSymbol in future, should only be used in regex */
+    deleteList((CELL*)sysSymbol[0]->contents);
+    sysSymbol[0]->contents = (UINT)copyCell(list);
+    itSymbol->contents = (UINT)list;
 
-	if(exprCell != nilCell)
-		exprRes = evaluateExpression(exprCell);
-	else 
-		exprRes = list;
+    if(exprCell != nilCell)
+        exprRes = evaluateExpression(exprCell);
+    else 
+        exprRes = list;
 
-	addList(result, copyCell(exprRes));
+    addList(result, copyCell(exprRes));
 
-	CONTINUE_NEXT:	
-	list = list->next;
-	}
+    CONTINUE_NEXT:  
+    list = list->next;
+    }
 
 memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
@@ -1218,11 +1215,11 @@ key = evaluateExpression(params);
 params = getEvalDefault(params->next, &space);
 
 if(key->type == CELL_STRING && space->type == CELL_STRING)
-	return(findAllString((char *)key->contents, 
-			(char *)space->contents,  (size_t) space->aux - 1, params));
+    return(findAllString((char *)key->contents, 
+            (char *)space->contents,  (size_t) space->aux - 1, params));
 
 if(!isList(space->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, space));
+    return(errorProcExt(ERR_LIST_EXPECTED, space));
 
 return(findAllList(key, (CELL *)space->contents, params));
 }
@@ -1245,13 +1242,13 @@ CELL * ref;
 ref = evaluateExpression(params);
 
 if(ref == nilCell || ref == trueCell)
-	errorProcExt(ERR_IS_NOT_REFERENCED, ref);
+    errorProcExt(ERR_IS_NOT_REFERENCED, ref);
 
 if(symbolCheck != NULL)
-	{
-	if(isProtected(symbolCheck->flags))
-		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-	}
+    {
+    if(isProtected(symbolCheck->flags))
+        return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    }
 
 return(ref);
 }
@@ -1281,39 +1278,39 @@ ssize_t n, len;
 
 expr = evaluateExpression(params);
 if((params = params->next) != nilCell)
-	getInteger(params, (UINT *)&n);
+    getInteger(params, (UINT *)&n);
 else n = 2;
 
 if(n < 0) n = 0;
 
 if(expr->type == CELL_STRING && !getFlag(params->next) )
-	{
-	len = expr->aux - 1;
-	list = getCell(CELL_STRING);
-	str = allocMemory(len * n + 1);
-	list->contents = (UINT)str;
-	list->aux = (len * n + 1);
-	*(str + len * n) = 0;
-	while(n--) 
-		{
-		memcpy(str, (char *)expr->contents, len);
-		str += len;
-		}
-	return(list);
-	}
+    {
+    len = expr->aux - 1;
+    list = getCell(CELL_STRING);
+    str = allocMemory(len * n + 1);
+    list->contents = (UINT)str;
+    list->aux = (len * n + 1);
+    *(str + len * n) = 0;
+    while(n--) 
+        {
+        memcpy(str, (char *)expr->contents, len);
+        str += len;
+        }
+    return(list);
+    }
 
 list = getCell(CELL_EXPRESSION);
 if(n-- > 0) 
-	{
-	list->contents = (UINT)copyCell(expr);
+    {
+    list->contents = (UINT)copyCell(expr);
 
-	params = (CELL *)list->contents;
-	while(n--)
-		{
-		params->next = copyCell(expr);
-		params = params->next;
-		}
-	}
+    params = (CELL *)list->contents;
+    while(n--)
+        {
+        params->next = copyCell(expr);
+        params = params->next;
+        }
+    }
 
 return(list);
 }
@@ -1356,56 +1353,56 @@ else
     }
 
 if(cell->next != nilCell)
-	{
-	cell = evaluateExpression(cell->next);
-	getIntegerExt(cell, (UINT*)&options, FALSE);
-	}
+    {
+    cell = evaluateExpression(cell->next);
+    getIntegerExt(cell, (UINT*)&options, FALSE);
+    }
 
 klen = strlen(key);
 slen = strlen(string);
 
 if(type == STARTS_WITH)
-	{
-	if(options == -1) 
-		{
-		if(strncmp(string, key, (size_t)klen) == 0)
-			return(trueCell);
-		}
-	else  
-		{
+    {
+    if(options == -1) 
+        {
+        if(strncmp(string, key, (size_t)klen) == 0)
+            return(trueCell);
+        }
+    else  
+        {
         if(searchBufferRegex(string, 0, key, slen, options, 0) == 0)
-			return(trueCell);
-		}
-	return(nilCell);
-	}
+            return(trueCell);
+        }
+    return(nilCell);
+    }
 
 
 if((options == -1) && (klen > slen)) return(nilCell);
 
 if(options == -1) 
-	{
-	if(strncmp(string + slen - klen, key, klen) == 0)
-		return(trueCell);
-	}
+    {
+    if(strncmp(string + slen - klen, key, klen) == 0)
+        return(trueCell);
+    }
 else
-	{
-	/* append $ to the pattern for anchoring at the end */
-	keydollar = malloc(klen + 4);
-	*keydollar = '(';
-	memcpy(keydollar + 1, key, klen);
-	memcpy(keydollar + 1 + klen, ")$", 2);
-	*(keydollar + klen + 3) = 0;
-	klen = klen + 3;
-    if((pos = searchBufferRegex(string, 0, keydollar, slen, options, &klen)) != -1)	
-		{
-		if(pos + klen == slen)
-			{
-			free(keydollar);
-			return(trueCell);
-			}
-		}
-	free(keydollar);
-	}
+    {
+    /* append $ to the pattern for anchoring at the end */
+    keydollar = malloc(klen + 4);
+    *keydollar = '(';
+    memcpy(keydollar + 1, key, klen);
+    memcpy(keydollar + 1 + klen, ")$", 2);
+    *(keydollar + klen + 3) = 0;
+    klen = klen + 3;
+    if((pos = searchBufferRegex(string, 0, keydollar, slen, options, &klen)) != -1) 
+        {
+        if(pos + klen == slen)
+            {
+            free(keydollar);
+            return(trueCell);
+            }
+        }
+    free(keydollar);
+    }
 
 return(nilCell);
 }
@@ -1436,122 +1433,122 @@ params = getEvalDefault(params->next, &cell);
 newList = cell;
 refSymbol = symbolCheck;
 if(symbolCheck && (isProtected(symbolCheck->flags) || isBuiltin(symbolCheck->flags)))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 cnt = 0;
 resultIdxSave = resultStackIdx;
 if(isList(cell->type))
-	{
-	cell->aux = (UINT)nilCell; /* undo last element optimization */
+    {
+    cell->aux = (UINT)nilCell; /* undo last element optimization */
 
-	list = (CELL *)cell->contents;
+    list = (CELL *)cell->contents;
 
-	if(params != nilCell)
-		{
-		repCell = params;
-		if(params->next != nilCell)
-			funcCell = evaluateExpression(params->next);
-		}
-	else
-		repCell = NULL;
+    if(params != nilCell)
+        {
+        repCell = params;
+        if(params->next != nilCell)
+            funcCell = evaluateExpression(params->next);
+        }
+    else
+        repCell = NULL;
 
 COMPARE_START:
-	if(compareFunc(keyCell, list, funcCell) == 0)
-		{
-		if(repCell != NULL)
-			{
-			/* perhaps take out usage of sysSymbol[0] 
+    if(compareFunc(keyCell, list, funcCell) == 0)
+        {
+        if(repCell != NULL)
+            {
+            /* perhaps take out usage of sysSymbol[0] 
                should only be used for regex replacements 
-			   then $it doesn't need to be a copy */
-			deleteList((CELL*)sysSymbol[0]->contents);
-			itSymbol->contents = (UINT)copyCell(list);
-			sysSymbol[0]->contents = itSymbol->contents;
-			cell->contents = (UINT)copyCell(evaluateExpression(repCell));
-			cell = (CELL*)cell->contents;
-			cell->next = list->next;
-			}
-		else /* remove mode */
-			cell->contents = (UINT)list->next;
+               then $it doesn't need to be a copy */
+            deleteList((CELL*)sysSymbol[0]->contents);
+            itSymbol->contents = (UINT)copyCell(list);
+            sysSymbol[0]->contents = itSymbol->contents;
+            cell->contents = (UINT)copyCell(evaluateExpression(repCell));
+            cell = (CELL*)cell->contents;
+            cell->next = list->next;
+            }
+        else /* remove mode */
+            cell->contents = (UINT)list->next;
 
-		list->next = nilCell; /* decouple */
-		deleteList(list);
-		cnt++;
+        list->next = nilCell; /* decouple */
+        deleteList(list);
+        cnt++;
 
-		if(repCell != NULL)
-			list = cell;
-		else /* remove mode */
-			{
-			list = (CELL*)cell->contents;
-			if(list != nilCell)
-				goto COMPARE_START;
-			}		
-		}
-	
-	while(list->next != nilCell)
-		{
-		if(compareFunc(keyCell, list->next, funcCell) == 0)
-			{
-			cell = list->next;	/* cell = old elmnt */
-			if(repCell != NULL)
-				{
-				/* perhaps take out usage of sysSymbo[0]
-               	should only be used for regex replacements */
-				deleteList((CELL*)sysSymbol[0]->contents);
-				itSymbol->contents = (UINT)copyCell(cell);
-				sysSymbol[0]->contents = itSymbol->contents;
-				list->next = copyCell(evaluateExpression(repCell));
-				list = list->next;
-				}
-			list->next = cell->next;
-			cell->next = nilCell;
-			deleteList(cell);
-			cnt++;
-			}		
-		else	
-			list = list->next;
+        if(repCell != NULL)
+            list = cell;
+        else /* remove mode */
+            {
+            list = (CELL*)cell->contents;
+            if(list != nilCell)
+                goto COMPARE_START;
+            }       
+        }
+    
+    while(list->next != nilCell)
+        {
+        if(compareFunc(keyCell, list->next, funcCell) == 0)
+            {
+            cell = list->next;  /* cell = old elmnt */
+            if(repCell != NULL)
+                {
+                /* perhaps take out usage of sysSymbo[0]
+                should only be used for regex replacements */
+                deleteList((CELL*)sysSymbol[0]->contents);
+                itSymbol->contents = (UINT)copyCell(cell);
+                sysSymbol[0]->contents = itSymbol->contents;
+                list->next = copyCell(evaluateExpression(repCell));
+                list = list->next;
+                }
+            list->next = cell->next;
+            cell->next = nilCell;
+            deleteList(cell);
+            cnt++;
+            }       
+        else    
+            list = list->next;
 
-		cleanupResults(resultIdxSave);
-		}
+        cleanupResults(resultIdxSave);
+        }
 
-	deleteList((CELL*)sysSymbol[0]->contents);	
-	/* sysSymbol[0] should not be used here, introduce $count ? */
-	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
-	itSymbol->contents = (UINT)nilCell;
-	symbolCheck = refSymbol;
-	pushResultFlag = FALSE;
-	return(newList);
-	}
+    deleteList((CELL*)sysSymbol[0]->contents);  
+    /* sysSymbol[0] should not be used here, introduce $count ? */
+    sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
+    itSymbol->contents = (UINT)nilCell;
+    symbolCheck = refSymbol;
+    pushResultFlag = FALSE;
+    return(newList);
+    }
 
 if(cell->type == CELL_STRING)
-	{
-	if(keyCell->type != CELL_STRING)
-		return(errorProc(ERR_STRING_EXPECTED));
-	keyStr = (char *)keyCell->contents;
-	buff = (char *)cell->contents;
-	repCell = params;
+    {
+    if(keyCell->type != CELL_STRING)
+        return(errorProc(ERR_STRING_EXPECTED));
+    keyStr = (char *)keyCell->contents;
+    buff = (char *)cell->contents;
+    repCell = params;
 
-	if(repCell == nilCell)
-		return(errorProc(ERR_MISSING_ARGUMENT));
-			
-	options = -1;
-	if(repCell->next != nilCell)
+    if(repCell == nilCell)
+        return(errorProc(ERR_MISSING_ARGUMENT));
+            
+    options = -1;
+    if(repCell->next != nilCell)
             getInteger(repCell->next, (UINT*)&options);
 
-	newBuff = replaceString(keyStr, keyCell->aux - 1, 
-	                       buff, (size_t)cell->aux -1, repCell, &cnt, options, &newLen);
-	if(newBuff != NULL)
-	    {
-	    freeMemory(buff);
-	    cell->contents = (UINT)newBuff;
-	    cell->aux = newLen + 1;
-	    }
+    newBuff = replaceString(keyStr, keyCell->aux - 1, 
+                           buff, (size_t)cell->aux -1, repCell, &cnt, options, &newLen);
+    if(newBuff != NULL)
+        {
+        freeMemory(buff);
+        cell->contents = (UINT)newBuff;
+        cell->aux = newLen + 1;
+        }
 
-	deleteList((CELL*)sysSymbol[0]->contents);	
-	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
-	symbolCheck = refSymbol;
-	pushResultFlag = FALSE;
-	return(cell);
-	}
+    deleteList((CELL*)sysSymbol[0]->contents);  
+    sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
+    symbolCheck = refSymbol;
+    pushResultFlag = FALSE;
+    return(cell);
+    }
 
 return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
 }
@@ -1574,53 +1571,53 @@ else count = 1;
 
 getEvalDefault(params, &list);
 if(symbolCheck && isProtected(symbolCheck->flags))
-	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+    return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
 if(list->type == CELL_STRING)
-	{	
-	length = list->aux - 1;
-	if((count = adjustCount(count, length)) == 0) 
-		{
-		pushResultFlag = FALSE;
-		return(list);
-		}
-	cell = copyCell(list);	
-	memcpy((char*)cell->contents, (char *)(list->contents + length - count), count);
-	memcpy((char*)(cell->contents + count), (char *)list->contents, length - count);
-	memcpy((char*)list->contents, (char*)cell->contents, length);
-	deleteList(cell);
-	pushResultFlag = FALSE;
-	return(list);
-	}	
+    {   
+    length = list->aux - 1;
+    if((count = adjustCount(count, length)) == 0) 
+        {
+        pushResultFlag = FALSE;
+        return(list);
+        }
+    cell = copyCell(list);  
+    memcpy((char*)cell->contents, (char *)(list->contents + length - count), count);
+    memcpy((char*)(cell->contents + count), (char *)list->contents, length - count);
+    memcpy((char*)list->contents, (char*)cell->contents, length);
+    deleteList(cell);
+    pushResultFlag = FALSE;
+    return(list);
+    }   
 
 if(!isList(list->type))
-	return(errorProcExt(ERR_LIST_EXPECTED, cell));
+    return(errorProcExt(ERR_LIST_EXPECTED, cell));
 
 list->aux = (UINT)nilCell; /* undo last element optimization */
 
 cell = (CELL *)list->contents;
 length = 0;
 while(cell != nilCell)
-	{
-	++length;
-	last = cell;
-	cell = cell->next;
-	}
+    {
+    ++length;
+    last = cell;
+    cell = cell->next;
+    }
 
 if((count = adjustCount(count, length))== 0) 
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-	
+    {
+    pushResultFlag = FALSE;
+    return(list);
+    }
+    
 index = length - count;
 
 previous = cell = (CELL *)list->contents;
 while(index--) 
-	{
-	previous = cell;
-	cell = cell->next;
-	}
+    {
+    previous = cell;
+    cell = cell->next;
+    }
 
 previous->next = nilCell;
 last->next = (CELL *)list->contents;

@@ -52,13 +52,13 @@ initDefaultInAddr();
 
 initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)
-	{
-	strncpy(name, initFile, MAX_LINE);
-	loadFile(name, 0, 0, mainContext);
-	}
+    {
+    strncpy(name, initFile, MAX_LINE);
+    loadFile(name, 0, 0, mainContext);
+    }
 
 if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
-	loadFile("newlisp.so", *(UINT*)linkOffset, 1, mainContext);
+    loadFile("newlisp.so", *(UINT*)linkOffset, 1, mainContext);
 
 libInitialized = 1;
 reset();
@@ -76,20 +76,20 @@ char * newlispEvalStr(char * cmd)
 if(!libInitialized) initializeMain();
 
 if(setjmp(errorJump)) 
-	{
-	setupAllSignals(); 
+    {
+    setupAllSignals(); 
 
-	reset();
-	initStacks();
+    reset();
+    initStacks();
 
-	if(errorReg) 
-		{
-		executeSymbol(errorEvent, NULL, NULL);
-		return(libStrStream.buffer);
-		}
-	else
-	return(errorStream.buffer);
-	}
+    if(errorReg) 
+        {
+        executeSymbol(errorEvent, NULL, NULL);
+        return(libStrStream.buffer);
+        }
+    else
+    return(errorStream.buffer);
+    }
 
 openStrStream(&libStrStream, MAX_STRING, 1);
 executeCommandLine(cmd, (UINT)&libStrStream, NULL);
@@ -122,15 +122,15 @@ SYMBOL * symbol;
 if(!libInitialized) initializeMain();
 
 if(callType != NULL && strcmp(callType, "stdcall") ==  0)
-	pCell = getCell(CELL_IMPORT_DLL);
+    pCell = getCell(CELL_IMPORT_DLL);
 else
-	pCell = getCell(CELL_IMPORT_CDECL);
+    pCell = getCell(CELL_IMPORT_CDECL);
 
 symbol = translateCreateSymbol(funcName, pCell->type, currentContext, TRUE);
 
 if(isProtected(symbol->flags))
     {
-	errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol));
+    errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbol));
     return(-1);
     }
 

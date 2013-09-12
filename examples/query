@@ -1,5 +1,4 @@
 #!/usr/bin/newlisp
-; #!/home/public/cgi-bin/newlisp
 
 ; Retrieves a page with 20 links via Google containing 
 ; the search word, then spawns 20 child processes, each
@@ -14,9 +13,9 @@
 
 ; <html> 
 ; <head><title>Query</title></head> 
-; <body><font size="5"> 
+; <body><font face="Verdana">
 ; <form name="query" action="query.cgi" method="POST"> 
-; <font size="3">Input your query:</font>&nbsp;<input type="text" name="query" size="48"> 
+; Input your query:&nbsp;<input type="text" name="query" size="48"> 
 ; &nbsp;<input type="submit" value="Submit" name="submit"> 
 ; </form> 
 ; </font></body></html> 
@@ -45,7 +44,7 @@
 	(replace "<script.*?</script>" text "" 4)
 	(replace "<style.*?</style>" text "" 4)
 	(replace "<head.*?</head>" text "" 4)
-	(replace "<[^>]*>" text "" 0)
+	(replace "<[^>]*>" text " " 0)
 	(replace "." text " . ")
 	(replace "," text " , ")
 	(replace "!" text " ! ")
@@ -79,9 +78,9 @@
 (set 'links (find-all LINK_REGEX page $1))
 
 (when cgi-mode
-    (println "<html><head>")
+    (println {<html><font face="Verdana"><head>})
     (println {<META http-equiv="Content-Type" CONTENT="text/html; charset=utf-8" />})
-    (println "</head><body>"))
+    (println {</head><body>}))
 
 (println "query term: " (url-decode question) BRK)
 (set 'START_TIME (time-of-day))
@@ -96,16 +95,16 @@
 	(inc xferred (length page))
 )
 
-(println "waiting: ..." BRK)
+(println "waiting: ..." BRK BRK)
 (unless (sync 10000  page-ready-event)
 	(println BRK "timeout" BRK))
 
-(println "bytes transferred: " xferred BRK)
+(println BRK "bytes transferred: " xferred BRK)
 (println "total time: " (- (time-of-day) START_TIME) " ms" BRK)
 
 (catch (load "Lex") 'result)
 (println "training: " (time (bayes-train (find-all {[a-zA-Z]+} CONTENT) 'Lex)) " ms" BRK)
-(println "accumulated total words processed: " (Lex:total 0) BRK)
+(println "total words processed: " (Lex:total 0) BRK)
 (println BRK)
 
 ; sort by frequency and print in four columns
@@ -122,8 +121,9 @@
 		
 (when cgi-mode
     (println "</pre>")
-    (println "</body></html>"))
+    (println "</body></font></html>"))
 
-(save "Lex" 'Lex)
+; if accumulating results over various queries
+;(save "Lex" 'Lex)
 (exit)
 

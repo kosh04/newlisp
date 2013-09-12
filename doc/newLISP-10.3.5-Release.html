@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title>newLISP  v.10.3.4 Development Release Notes </title>
+<title>newLISP  v.10.3.5 Development Release Notes </title>
 
 <style type="text/css" media="screen">
 
@@ -43,11 +43,12 @@ li {
 </head>
 
 <body>
-<h1>newLISP<font size=-2>&#174;</font> v.10.3.4 Development Release<font color="red" size="-1">rev 2011-10-05</font></h1>
+<h1>newLISP<font size=-2>&#174;</font> v.10.3.5 Development Release&nbsp;<font color="red" size="-1">rev 2011-11-08</font></h1>
 
-<p>Version 10.3.4 is a development release with a reworked message interface.</p>
+<p>Versions 10.3.4 and 10.3.5 are a development releases with a reworked <tt>spawn</tt>,
+and message <tt>send</tt> and <tt>receive</tt> functions.</p>
 
-<h3>Addtions and changes</h3>
+<h3>Additions and changes</h3>
 <ul>
 <li>A reworked <tt>send</tt>, <tt>receive</tt> message API is multiple times faster 
 and has consistent performance on different OS platforms. The channel for each 
@@ -63,16 +64,36 @@ receive or target those from which messages can be be read. The <tt>(send)</tt> 
 allows the parent process to filter all those child PIDs, which are ready to receive 
 messages sent by the parent. The <tt>(receive)</tt> form returns a list of child 
 PIDs ready with messages in their sending queues to be read by the parent process.
-<br/><br/></li>
+(10.3.4)</li>
+<li>The creation of a communications channel between and parent process and 
+<tt>spawn</tt>ed child processes for usage with <tt>send</tt> and <tt>receive</tt>, 
+is now optional:<br/>
+<pre>
+    (spawn <em>sym-variable</em> <em>child-process</em> [true])
+</pre>
+If the <tt>send</tt> or <tt>receive</tt> is used with <em>child-process</em> spawned, the
+optional flag must be set to <tt>true</tt> (10.3.5).</li>
+<li>The dummy versions of <tt>spawn</tt>, <tt>sync</tt> and <tt>abort</tt> in the 
+MS Windows version have been taken out (10.3.5).</li>
+<li>The library file <tt>newlisp.dll</tt> is now installed in its old location
+in the main <tt>newlisp</tt> program directory. No administrator rights are necessary
+for installing in that location. This library is only required for third party
+applications, not for newLISP itself.</li>
 </ul>
 <h3>Bug fixes</h3>
 <ul>
 <li>A longstanding bug for ithe list-mode of <tt>net-select</tt> has been
 fixed. Now, <tt>net-select</tt> <u>does</u> return socket numbers in the ready 
-list not 0's (zeros).</li>
+list not 0's (zeros) (10.3.4).</li>
+<li>The link feature using <tt>newlisp-x.x.x/util/link.lsp</tt> did no work linking 
+with 64-bit versions of newLISP.</li>
 </ul>
 <h3>Compatibility</h3>
-<p>This version if fully compatible with the previous stable release version 10.3.3.</p>
+<p>Previous versions using <tt>spawn</tt> together with message functions
+<tt>send</tt> and <tt>receive</tt> should now include the <tt>true</tt> flag
+in <tt>spawn</tt> calls to enable communications channel between parent and
+child processes. In all other areas, this version if fully compatible with the 
+previous stable release version 10.3.3.</p>
 <br/>
 <center>&part;</center>
 

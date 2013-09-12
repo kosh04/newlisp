@@ -43,10 +43,10 @@ int open_utf16(const char* a, int b, int c);
 int my_strnicmp(char * s1, char * s2, ssize_t size)
 {
 while(toupper(*s1) == toupper(*s2))
-	{
-	if(--size <= 0) return(0);
-	s1++, s2++;
-	}
+    {
+    if(--size <= 0) return(0);
+    s1++, s2++;
+    }
 return(toupper(*s1) - toupper(*s2));
 }
 
@@ -54,27 +54,27 @@ return(toupper(*s1) - toupper(*s2));
 CELL * substring(char * string, ssize_t slen, ssize_t offset, ssize_t len)
 {
 if(offset < 0)
-	{
-	offset = slen + offset;
+    {
+    offset = slen + offset;
 /* before 10.1.11
-	if(offset < 0) offset = 0;
+    if(offset < 0) offset = 0;
 */
-	if(offset < 0)
-		return(errorProc(ERR_STRING_INDEX_INVALID));
-	}
+    if(offset < 0)
+        return(errorProc(ERR_STRING_INDEX_INVALID));
+    }
 else
-	offset = (offset > slen) ? slen : offset;
-	
+    offset = (offset > slen) ? slen : offset;
+    
 if(len < 0) 
-	{
-	len = slen - offset + len;
-	if(len < 0) len = 0;
-	}
+    {
+    len = slen - offset + len;
+    if(len < 0) len = 0;
+    }
 
 if(len == MAX_LONG) 
-	len = slen - offset;
+    len = slen - offset;
 else
-	len = ((offset + len) > slen) ? (slen - offset) : len;
+    len = ((offset + len) > slen) ? (slen - offset) : len;
 
 return(stuffStringN(string + offset, len));
 }
@@ -110,22 +110,22 @@ if(len == 0) return(nilCell);
 
 options = -1;
 if(params != nilCell)
-	{
-	next = params->next;
-	params = evaluateExpression(params);
-	if(isNumber(params->type))
-		getIntegerExt(params, (UINT *)&options, FALSE); 
-	else
-		{
-		flag = (params->type != CELL_NIL);
-		if(next != nilCell)
-			getInteger(next, (UINT *)&options);
-		}
-	}
+    {
+    next = params->next;
+    params = evaluateExpression(params);
+    if(isNumber(params->type))
+        getIntegerExt(params, (UINT *)&options, FALSE); 
+    else
+        {
+        flag = (params->type != CELL_NIL);
+        if(next != nilCell)
+            getInteger(next, (UINT *)&options);
+        }
+    }
 
 buffer = (char *)allocMemory(SEARCH_SIZE + 1);
 if((filePosition = lseek((int)fileHandle, 0, SEEK_CUR)) == -1) 
-	return(nilCell);
+    return(nilCell);
 
 foundPosition = 0;
 
@@ -140,10 +140,10 @@ do
         position = searchBufferRegex(buffer, 0, searchString, (int)bytesRead , options, (int *)&len);
     if(position != -1)
         {
-		if(flag)
-        	foundPosition = filePosition + position + len;
-		else
-        	foundPosition = filePosition + position;
+        if(flag)
+            foundPosition = filePosition + position + len;
+        else
+            foundPosition = filePosition + position;
         break;
         }
 
@@ -179,12 +179,12 @@ ptr = (char*)cell->contents;
 
 params = evaluateExpression(params);
 if(!isNumber(params->type))
-	errorProcExt(ERR_STRING_INDEX_INVALID, params);
+    errorProcExt(ERR_STRING_INDEX_INVALID, params);
 getIntegerExt(params, (UINT *)&index, FALSE);
 
 stringCell = cell;
 if(cell->aux == 1 && (index == 0 || index == -1)) 
-	return(copyCell(cell));
+    return(copyCell(cell));
 
 #ifndef SUPPORT_UTF8
 index = adjustNegativeIndex(index, cell->aux - 1);
@@ -195,10 +195,10 @@ return(stuffStringN(str, 1));
 #else
 index = adjustNegativeIndex(index, utf8_wlen(ptr));
 for(i = 0; i < index; i++)
-	{
-	p = utf8_1st_len(ptr);
-	ptr += p;
-	}
+    {
+    p = utf8_1st_len(ptr);
+    ptr += p;
+    }
 stringIndexPtr = ptr;
 return(stuffStringN(ptr, utf8_1st_len(ptr)));
 #endif
@@ -256,91 +256,91 @@ char buff[2];
 
 
 if(params == nilCell)
-	return(errorProc(ERR_MISSING_ARGUMENT));
+    return(errorProc(ERR_MISSING_ARGUMENT));
 
 params = getEvalDefault(params, &datCell);
 
 
 switch(datCell->type)
-	{
-	case CELL_STRING:
-		string = (char *)datCell->contents;
+    {
+    case CELL_STRING:
+        string = (char *)datCell->contents;
 
 #ifndef SUPPORT_UTF8
-		len = (size_t)datCell->aux - 1;
-		if(len == 0) return(nilCell);
+        len = (size_t)datCell->aux - 1;
+        if(len == 0) return(nilCell);
 #else
-		len = utf8_wlen(string);
-		if(len == 0)
-			{
-			if(datCell->aux - 1 == 0)
-				return(nilCell);
-			else
-				return(stuffInteger(0));
-			}
+        len = utf8_wlen(string);
+        if(len == 0)
+            {
+            if(datCell->aux - 1 == 0)
+                return(nilCell);
+            else
+                return(stuffInteger(0));
+            }
 #endif
 
-		if(params != nilCell)
-			getInteger(params, (UINT*)&offset);
-		else offset = 0;
+        if(params != nilCell)
+            getInteger(params, (UINT*)&offset);
+        else offset = 0;
 
-		offset = adjustNegativeIndex(offset, len);
+        offset = adjustNegativeIndex(offset, len);
 
 #ifndef SUPPORT_UTF8
-		return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));
+        return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));
 
-	case CELL_LONG:
-		buff[0] = (int)datCell->contents;
-		break;
+    case CELL_LONG:
+        buff[0] = (int)datCell->contents;
+        break;
 #ifndef NEWLISP64
-	case CELL_INT64:
-		num = *(INT64 *)&datCell->aux;
-		buff[0] = num;
-		break;
-	case CELL_FLOAT:
-		num = *(double*)&datCell->aux;
-		buff[0] = num;
+    case CELL_INT64:
+        num = *(INT64 *)&datCell->aux;
+        buff[0] = num;
+        break;
+    case CELL_FLOAT:
+        num = *(double*)&datCell->aux;
+        buff[0] = num;
 #else /* NEWLISP64 */
-	case CELL_FLOAT:
-		num = *(double*)&datCell->contents;
-		buff[0] = num;
+    case CELL_FLOAT:
+        num = *(double*)&datCell->contents;
+        buff[0] = num;
 #endif /* NEWLISP64 */
-		break;
+        break;
 
 
 #else /* SUPPORT_UTF8 */
-		while(offset--) string += utf8_1st_len(string);
-		utf8_wchar(string, &num);	
-		return(stuffInteger(num));
+        while(offset--) string += utf8_1st_len(string);
+        utf8_wchar(string, &num);   
+        return(stuffInteger(num));
 
 #ifndef NEWLISP64
-	case CELL_FLOAT:
-	case CELL_LONG:
-	case CELL_INT64:
-		string = allocMemory(UTF8_MAX_BYTES + 1);	
-		if(datCell->type == CELL_FLOAT)
-			num = *(double*)&datCell->aux;
-		else if(datCell->type == CELL_INT64)
-			num = *(INT64 *)&datCell->aux;
-		else
-			num = datCell->contents;
+    case CELL_FLOAT:
+    case CELL_LONG:
+    case CELL_INT64:
+        string = allocMemory(UTF8_MAX_BYTES + 1);   
+        if(datCell->type == CELL_FLOAT)
+            num = *(double*)&datCell->aux;
+        else if(datCell->type == CELL_INT64)
+            num = *(INT64 *)&datCell->aux;
+        else
+            num = datCell->contents;
 #else /* NEWLISP64 */
-	case CELL_FLOAT:
-	case CELL_LONG:
-		string = allocMemory(UTF8_MAX_BYTES + 1);	
-		if(datCell->type == CELL_FLOAT)
-			num = *(double*)&datCell->contents;
-		else
-			num = (int)datCell->contents;
+    case CELL_FLOAT:
+    case CELL_LONG:
+        string = allocMemory(UTF8_MAX_BYTES + 1);   
+        if(datCell->type == CELL_FLOAT)
+            num = *(double*)&datCell->contents;
+        else
+            num = (int)datCell->contents;
 #endif /* NEWLISP 64 */
-		len = wchar_utf8(num, string);		
-		datCell = stuffStringN(string, len);
-		free(string);
-		return(datCell);
+        len = wchar_utf8(num, string);      
+        datCell = stuffStringN(string, len);
+        free(string);
+        return(datCell);
 #endif /* SUPPORT_UTF8 */
-	default:
-		buff[0] = 0;
-	}
+    default:
+        buff[0] = 0;
+    }
 
 return(stuffStringN(buff, 1));
 }
@@ -360,22 +360,22 @@ int clen, i;
 
 params = getEvalDefault(params, &cell);
 if(isList(cell->type))
-	return(explodeList((CELL*)cell->contents, params));
+    return(explodeList((CELL*)cell->contents, params));
 
 if(cell->type == CELL_STRING)
-	{
-	string = (char *)cell->contents;
-	size = cell->aux - 1;
-	}
+    {
+    string = (char *)cell->contents;
+    size = cell->aux - 1;
+    }
 else
-	return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
+    return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
 
 if(params != nilCell)
-	{
-	params = getInteger(params, (UINT *)&len);
-	flag = getFlag(params);
-	if(!flag && len > size) len = size;
-	}
+    {
+    params = getInteger(params, (UINT *)&len);
+    flag = getFlag(params);
+    if(!flag && len > size) len = size;
+    }
 
 result = cell = getCell(CELL_EXPRESSION);
 if(size == 0 || len <= 0) return(result);
@@ -388,16 +388,16 @@ cell = (CELL *)cell->contents;
 string += len;
 
 while((size -= len) > 0)
-	{
-	if(flag && size < len) break;
-	cell->next = stuffStringN(string, (size >= len) ? len : size);
+    {
+    if(flag && size < len) break;
+    cell->next = stuffStringN(string, (size >= len) ? len : size);
         cell = cell->next;
-	string += len;
-	}
+    string += len;
+    }
 #else
 size = utf8_wlen(string);
 for(i = 0, clen = 0; i < len; i++)
-	clen += utf8_1st_len(string + clen);
+    clen += utf8_1st_len(string + clen);
 
 if(flag && size < len) return(result);
 
@@ -405,14 +405,14 @@ cell->contents = (UINT)stuffStringN(string, clen);
 cell = (CELL *)cell->contents;
 string += clen;
 while((size -= len) > 0)
-	{
-	if(flag && size < len) break;
-	for(i = 0, clen = 0; i < len; i++)
-		clen += utf8_1st_len(string + clen);
-	cell->next = stuffStringN(string, clen);
-	cell = cell->next;
-	string += clen;
-	}
+    {
+    if(flag && size < len) break;
+    for(i = 0, clen = 0; i < len; i++)
+        clen += utf8_1st_len(string + clen);
+    cell->next = stuffStringN(string, clen);
+    cell = cell->next;
+    string += clen;
+    }
 #endif
 
 return(result);
@@ -506,9 +506,9 @@ PARSE_FORMAT:
 /* get % */
 while(*fmt != '%' && *fmt != 0) fmt++;
 if(*fmt == 0) 
-	{
+    {
     *type = 0;
-	return(fmt);
+    return(fmt);
     }
 fmt++;
 
@@ -523,7 +523,7 @@ if(*fmt == '%')
 
 /* force + before numbers */
 if(*fmt == '+') 
-  	fmt++;
+    fmt++;
 else
     {
     /* left align numbers or strings */
@@ -545,7 +545,7 @@ if(*fmt == '.')
     while(isdigit((int)*fmt) && *fmt !=0) fmt++;
     if(*fmt == 0) return(NULL);
 
-	if(*fmt == 'f' || *fmt == 'g' || *fmt =='G' || *fmt == 'e' || *fmt == 'E')
+    if(*fmt == 'f' || *fmt == 'g' || *fmt =='G' || *fmt == 'e' || *fmt == 'E')
         {
         *type = CELL_FLOAT;
         return(++fmt);
@@ -576,10 +576,10 @@ if(*fmt == 'd' || *fmt == 'u' || *fmt == 'x' || *fmt == 'X' || *fmt == 'c' || *f
 #ifndef NEWLISP64
     *type = CELL_INT64;
 #else
-	*type = CELL_LONG;
+    *type = CELL_LONG;
 #endif
 #else
-	*type = CELL_LONG;
+    *type = CELL_LONG;
 #endif
     return(++fmt);
     }
@@ -594,7 +594,7 @@ if(*fmt == 's')
 #ifndef WIN_32
 #ifdef TRU64 /* supporting ld, li, lu, lx, lX formats */
 if(*fmt == 'l' &&  
-		(*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
+        (*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
     {
 #ifndef NEWLISP64
     *type = CELL_INT64;
@@ -605,19 +605,19 @@ if(*fmt == 'l' &&
     }
 #else /* all other UNIX suporting lld, llu, llx, llX formats */
 if(*fmt == 'l' && *(fmt + 1) == 'l' && 
-		(*(fmt + 2) == 'd' || *(fmt + 2) == 'u' || *(fmt + 2) =='x' || *(fmt + 2) == 'X'))
+        (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' || *(fmt + 2) =='x' || *(fmt + 2) == 'X'))
     {
 #ifndef NEWLISP64
     *type = CELL_INT64;
 #else
-	*type = CELL_LONG;
+    *type = CELL_LONG;
 #endif
     return(fmt+3);
     }
 #endif
 #else /* MinGW uses MS conventions */
 if(memcmp(fmt, "I64", 3) == 0 &&
-		(*(fmt + 3) == 'd' || *(fmt + 3) == 'u' || *(fmt + 3) =='x' || *(fmt + 3) == 'X'))
+        (*(fmt + 3) == 'd' || *(fmt + 3) == 'u' || *(fmt + 3) =='x' || *(fmt + 3) == 'X'))
     {
     *type = CELL_INT64;
     return(fmt+4);
@@ -665,99 +665,99 @@ openStrStream(&fmtStream, MAX_STRING, 0);
 
 while(params->type != CELL_NIL)
     {
-	/* printf("entry>%s<\n", fmt); */
+    /* printf("entry>%s<\n", fmt); */
     nextfmt = getFormatType(fmt, &fType);
-	/* printf("exit>%s<\n", nextfmt); */
+    /* printf("exit>%s<\n", nextfmt); */
 
     if(nextfmt == NULL)
-		{
-		closeStrStream(&fmtStream);
+        {
+        closeStrStream(&fmtStream);
         return(errorProcExt2(ERR_FORMAT_STRING, stuffString(format)));
-		}
+        }
 
-	if(evalFlag) 
-		cell = evaluateExpression(params);
-	else
-		cell = params;
+    if(evalFlag) 
+        cell = evaluateExpression(params);
+    else
+        cell = params;
 
-	if(cell->type == CELL_EXPRESSION && fmt == format)
-		{
-		params = (CELL *)cell->contents;
-		evalFlag = FALSE;
-		cell = params;
-		}
+    if(cell->type == CELL_EXPRESSION && fmt == format)
+        {
+        params = (CELL *)cell->contents;
+        evalFlag = FALSE;
+        cell = params;
+        }
 
     if(fType == 0)
-		{
-		closeStrStream(&fmtStream);
+        {
+        closeStrStream(&fmtStream);
         return(errorProcExt(ERR_FORMAT_NUM_ARGS, params));
-		}
+        }
 
-	saveChar = *nextfmt;
-	*nextfmt = 0;
+    saveChar = *nextfmt;
+    *nextfmt = 0;
 
     if(fType == CELL_LONG)
         {
         if(isNumber(cell->type))
-			cell = getIntegerExt(cell, &intNum, FALSE);
-		else goto FORMAT_DATA_ERROR;
+            cell = getIntegerExt(cell, &intNum, FALSE);
+        else goto FORMAT_DATA_ERROR;
 
-		varPrintf((UINT)&fmtStream, fmt, intNum);
-		goto NEXT_FORMAT;
-		}
+        varPrintf((UINT)&fmtStream, fmt, intNum);
+        goto NEXT_FORMAT;
+        }
 #ifndef NEWLISP64
     if(fType == CELL_INT64)
         {
         if(isNumber(cell->type))
-			cell = getInteger64(cell, &bigNum);
-		else goto FORMAT_DATA_ERROR;
+            cell = getInteger64(cell, &bigNum);
+        else goto FORMAT_DATA_ERROR;
 
-		varPrintf((UINT)&fmtStream, fmt, bigNum);
-		goto NEXT_FORMAT;
-		}
+        varPrintf((UINT)&fmtStream, fmt, bigNum);
+        goto NEXT_FORMAT;
+        }
 #endif
     if(fType == CELL_FLOAT)
-		{
-		if(cell->type == CELL_FLOAT)
+        {
+        if(cell->type == CELL_FLOAT)
 #ifndef NEWLISP64
-			floatNum = *(double *)&cell->aux;
-		else if(cell->type == CELL_INT64)
-			floatNum = *(INT64 *)&cell->aux;
+            floatNum = *(double *)&cell->aux;
+        else if(cell->type == CELL_INT64)
+            floatNum = *(INT64 *)&cell->aux;
 #else
-			floatNum = *(double *)&cell->contents;
+            floatNum = *(double *)&cell->contents;
 #endif
-		else if(cell->type == CELL_LONG)
-			floatNum = (long)cell->contents;
-		else goto FORMAT_DATA_ERROR;
+        else if(cell->type == CELL_LONG)
+            floatNum = (long)cell->contents;
+        else goto FORMAT_DATA_ERROR;
 
-		varPrintf((UINT)&fmtStream, fmt, floatNum);
-		goto NEXT_FORMAT;
-		}
+        varPrintf((UINT)&fmtStream, fmt, floatNum);
+        goto NEXT_FORMAT;
+        }
 
     if(fType != cell->type)
-		goto FORMAT_DATA_ERROR;
+        goto FORMAT_DATA_ERROR;
 
-	/* printf("stream>%s< with >%s<\n", (char *)cell->contents, fmt); */
-	varPrintf((UINT)&fmtStream, fmt, cell->contents);
+    /* printf("stream>%s< with >%s<\n", (char *)cell->contents, fmt); */
+    varPrintf((UINT)&fmtStream, fmt, cell->contents);
 
-	NEXT_FORMAT:
-	*nextfmt = saveChar;
-	fmt = nextfmt;
+    NEXT_FORMAT:
+    *nextfmt = saveChar;
+    fmt = nextfmt;
     params = params->next;
-	continue;
+    continue;
 
-	FORMAT_DATA_ERROR:
-	*nextfmt = saveChar;
-	closeStrStream(&fmtStream);
+    FORMAT_DATA_ERROR:
+    *nextfmt = saveChar;
+    closeStrStream(&fmtStream);
     return(errorProcExt(ERR_FORMAT_DATA_TYPE, params));
     }
 
 getFormatType(fmt, &fType);
 if(fType != 0)
-	{
-	closeStrStream(&fmtStream);
+    {
+    closeStrStream(&fmtStream);
     errorProcExt2(ERR_FORMAT_NUM_ARGS, stuffString(format));
-	}
+    }
 
 varPrintf((UINT)&fmtStream, fmt);
 
@@ -769,23 +769,23 @@ return(cell);
 void openStrStream(STREAM * stream, size_t buffSize, int reopenFlag)
 {
 if(stream->buffer != NULL && reopenFlag)
-	freeMemory(stream->buffer);
+    freeMemory(stream->buffer);
 stream->buffer = stream->ptr = callocMemory(buffSize + 1);
-stream->size = buffSize;	
+stream->size = buffSize;    
 stream->position = stream->handle = 0;
 }
 
 void closeStrStream(STREAM * stream)
 {
 if(stream->buffer != NULL)
-	freeMemory(stream->buffer);
+    freeMemory(stream->buffer);
 stream->buffer = stream->ptr = NULL;
 stream->size = stream->position = 0;
 if(stream->handle != 0)
-	{
-	close((int)stream->handle);
-	stream->handle = 0;
-	}
+    {
+    close((int)stream->handle);
+    stream->handle = 0;
+    }
 }
 
 char * cellToString(CELL * cell, size_t * size, int quoteFlag)
@@ -793,10 +793,10 @@ char * cellToString(CELL * cell, size_t * size, int quoteFlag)
 static STREAM strStream = {0, NULL, NULL, 0, 0};
 
 if(cell->type == CELL_STRING)
-	{
-	*size = cell->aux -1;
-	return((char *)cell->contents);
-	}
+    {
+    *size = cell->aux -1;
+    return((char *)cell->contents);
+    }
 
 openStrStream(&strStream, MAX_STRING, TRUE);
 prettyPrintFlags |= PRETTYPRINT_STRING;
@@ -806,17 +806,17 @@ prettyPrintFlags &= ~PRETTYPRINT_STRING;
 
 return(strStream.buffer);
 }
-	
+    
 
 void writeStreamChar(STREAM * stream, char chr)
 {
 if(stream->position == stream->size)
-	{
-	stream->size += stream->size / 2;
-	stream->buffer = reallocMemory(stream->buffer, stream->size + 1);
-	memset(stream->buffer + stream->position, 0, stream->size - stream->position + 1);
-	stream->ptr = stream->buffer + stream->position;
-	}
+    {
+    stream->size += stream->size / 2;
+    stream->buffer = reallocMemory(stream->buffer, stream->size + 1);
+    memset(stream->buffer + stream->position, 0, stream->size - stream->position + 1);
+    stream->ptr = stream->buffer + stream->position;
+    }
 *(stream->ptr++) = chr;
 stream->position++;
 }
@@ -830,14 +830,14 @@ if(length == 0) length = strlen(buff);
 newPosition = stream->position + length;
 
 if(newPosition >=  stream->size)
-	{
-	while(newPosition >= stream->size)
-		stream->size += stream->size / 2;
-	stream->buffer = reallocMemory(stream->buffer, stream->size + 1);
-	memset(stream->buffer + stream->position, 0, stream->size - stream->position + 1);
-	stream->ptr = stream->buffer + stream->position;
-	}
-	
+    {
+    while(newPosition >= stream->size)
+        stream->size += stream->size / 2;
+    stream->buffer = reallocMemory(stream->buffer, stream->size + 1);
+    memset(stream->buffer + stream->position, 0, stream->size - stream->position + 1);
+    stream->ptr = stream->buffer + stream->position;
+    }
+    
 memcpy(stream->ptr, buff, length);
 stream->ptr += length;
 stream->position = newPosition;
@@ -860,17 +860,17 @@ openStrStream(&outStream, MAX_STRING, 0);
 while(findPos == -1)
     {
     if((searchLen = strlen(stream->ptr)) < llen)
-		break;
+        break;
     findPos = searchBuffer(stream->ptr, searchLen, limit, llen, TRUE);
     if(findPos != -1)
         {
         if(findPos > 0) 
-			writeStreamStr(&outStream, stream->ptr, findPos);
+            writeStreamStr(&outStream, stream->ptr, findPos);
         stream->ptr += findPos + llen;
         result = allocMemory(outStream.position + 1);
-		memcpy(result, outStream.buffer, outStream.position);
-		*size = outStream.position;
-		*(result + outStream.position) = 0; 
+        memcpy(result, outStream.buffer, outStream.position);
+        *size = outStream.position;
+        *(result + outStream.position) = 0; 
         closeStrStream(&outStream);
         return(result);
         }
@@ -926,21 +926,21 @@ return(len);
 int makeStreamFromFile(STREAM * stream, char * fileName, size_t size, size_t offset)
 {
 if((stream->handle = openFile(fileName, "r", NULL)) == -1)
-	return(0);
+    return(0);
 
 stream->ptr = stream->buffer = (char *)callocMemory(size + 1);
 if(offset != 0)
-	lseek((int)stream->handle, offset, SEEK_SET);
+    lseek((int)stream->handle, offset, SEEK_SET);
 
 stream->position = offset;
 stream->size = size;
 
 /* load first buffer */
 if(read(stream->handle, stream->buffer, size) <= 0)
-	{
-	closeStrStream(stream);
-	return(0);
-	}
+    {
+    closeStrStream(stream);
+    return(0);
+    }
 
 return(TRUE);
 }
@@ -951,25 +951,25 @@ ssize_t searchBuffer(char * buffer,  size_t length, char * string, size_t size, 
 size_t position = 0;
 
 if(caseFlag == FALSE)
-	{
-	while(position < length)
-		{
-		if(toupper(*buffer) == toupper(*string))
-			if(my_strnicmp(buffer, string, size) == 0) break;
-		position++;
-		buffer++;
-		}
-	}
+    {
+    while(position < length)
+        {
+        if(toupper(*buffer) == toupper(*string))
+            if(my_strnicmp(buffer, string, size) == 0) break;
+        position++;
+        buffer++;
+        }
+    }
 else /* case sensitive */
-	{
-	while(position < length)
-		{
-		if(*buffer == *string)
-			if(memcmp(buffer, string, size) == 0) break;
-		position++;
-		buffer++;
-		}
-	}
+    {
+    while(position < length)
+        {
+        if(*buffer == *string)
+            if(memcmp(buffer, string, size) == 0) break;
+        position++;
+        buffer++;
+        }
+    }
 
 if(position == length) return(-1);
 return(position);
@@ -987,82 +987,82 @@ int starLen, len;
 start = string; starLen = len = 0;
 MATCH:
 switch(*pattern)
-	{
-	case '\\':
-		++pattern;
-		if(*pattern != *string) return(nilCell);
-		break;
-	case 0:
-		if(*string != 0) return(nilCell);
-		return(stuffStringN(start, len));
-	case '?':
-		if(*string == 0) return(nilCell);
-		break;
-	case '#':
-		if(*string == 0) return(nilCell);
-		if(!isDigit((unsigned char)*string)) return(nilCell);
-		break;
+    {
+    case '\\':
+        ++pattern;
+        if(*pattern != *string) return(nilCell);
+        break;
+    case 0:
+        if(*string != 0) return(nilCell);
+        return(stuffStringN(start, len));
+    case '?':
+        if(*string == 0) return(nilCell);
+        break;
+    case '#':
+        if(*string == 0) return(nilCell);
+        if(!isDigit((unsigned char)*string)) return(nilCell);
+        break;
 
-	case '+':	
-		if(*(pattern + 1) == 0)
-			{
-			if(*string == 0)
-				plus = stuffString("");
-			else if(*(string + 1) == 0)
-				plus = stuffStringN(string, 1);
-			else return(nilCell);
+    case '+':   
+        if(*(pattern + 1) == 0)
+            {
+            if(*string == 0)
+                plus = stuffString("");
+            else if(*(string + 1) == 0)
+                plus = stuffStringN(string, 1);
+            else return(nilCell);
 
-			if(len == 0) return(plus);
-			cell = stuffStringN(start, len);
-			cell->next = plus;
-			return(cell);
-			}
-			
-		if((match = patternMatchS(pattern+1, string)) != nilCell)
-			plus = stuffString("");
-		else if((match = patternMatchS(pattern+1, string+1)) != nilCell)
-			plus = stuffStringN(string, 1);
-		else return(nilCell);
-			
-		if(len == 0) cell = plus;
-		else
-			{
-			cell = stuffStringN(start, len);
-			cell->next = plus;
-			}
-		plus->next = match;
-		return(cell);
+            if(len == 0) return(plus);
+            cell = stuffStringN(start, len);
+            cell->next = plus;
+            return(cell);
+            }
+            
+        if((match = patternMatchS(pattern+1, string)) != nilCell)
+            plus = stuffString("");
+        else if((match = patternMatchS(pattern+1, string+1)) != nilCell)
+            plus = stuffStringN(string, 1);
+        else return(nilCell);
+            
+        if(len == 0) cell = plus;
+        else
+            {
+            cell = stuffStringN(start, len);
+            cell->next = plus;
+            }
+        plus->next = match;
+        return(cell);
 
-	case '*':
-		if(*(pattern + 1) == 0)
-			{
-			if(len == 0) return(stuffString(string));
-			cell = stuffStringN(start, len);
-			cell->next = stuffString(string);
-			return(cell);
-			}
+    case '*':
+        if(*(pattern + 1) == 0)
+            {
+            if(len == 0) return(stuffString(string));
+            cell = stuffStringN(start, len);
+            cell->next = stuffString(string);
+            return(cell);
+            }
 
-		if((match = patternMatchS(pattern+1, string)) != nilCell)
-			{
-			star = stuffStringN(start+len, starLen);
-			if(len == 0) cell = star;
-			else
-				{
-				cell = stuffStringN(start, len);
-				cell->next = star;
-				}
-			star->next = match;
-			return(cell);
-			}
+        if((match = patternMatchS(pattern+1, string)) != nilCell)
+            {
+            star = stuffStringN(start+len, starLen);
+            if(len == 0) cell = star;
+            else
+                {
+                cell = stuffStringN(start, len);
+                cell->next = star;
+                }
+            star->next = match;
+            return(cell);
+            }
 
-		if(*string != 0) ++string, ++starLen;
-		else return(nilCell);
-		goto MATCH;
+        if(*string != 0) ++string, ++starLen;
+        else return(nilCell);
+        goto MATCH;
 
-	default:
-		if(*pattern != *string) return(nilCell);
-		break;
-	}
+    default:
+        if(*pattern != *string) return(nilCell);
+        break;
+    }
 ++pattern;
 ++string;
 ++len;
@@ -1082,36 +1082,36 @@ INT64 result;
 deflt = getEvalDefault(params, &cell);
 
 if(cell->type == CELL_STRING)
-	intString = (char *)cell->contents;
+    intString = (char *)cell->contents;
 else if(isNumber(cell->type))
-	{
-	getInteger64(cell, &num);
-	return(stuffInteger64(num));
-	}
+    {
+    getInteger64(cell, &num);
+    return(stuffInteger64(num));
+    }
 else 
-	return(copyCell(evaluateExpression(deflt)));
+    return(copyCell(evaluateExpression(deflt)));
 
 while(isspace((int)*intString)) intString++;
 if(deflt->next != nilCell)
-	getInteger(deflt->next, (UINT *)&base);
+    getInteger(deflt->next, (UINT *)&base);
 else base = 0;
 
 if(base == 16)
-	{
-	if(!isxdigit((unsigned char)*intString))
-    	{
-    	if(*intString != '-' && *intString != '+')
-			goto INT_DEFAULT;
-    	if(!isxdigit((unsigned char)*(intString+1)))
-			goto INT_DEFAULT;
-    	}
-	}
+    {
+    if(!isxdigit((unsigned char)*intString))
+        {
+        if(*intString != '-' && *intString != '+')
+            goto INT_DEFAULT;
+        if(!isxdigit((unsigned char)*(intString+1)))
+            goto INT_DEFAULT;
+        }
+    }
 else if(!isDigit((unsigned char)*intString))
     {
     if(*intString != '-' && *intString != '+')
-		goto INT_DEFAULT;
+        goto INT_DEFAULT;
     if(!isDigit((unsigned char)*(intString+1)))
-		goto INT_DEFAULT;
+        goto INT_DEFAULT;
     }
 
 
@@ -1120,7 +1120,7 @@ result = strtoul(intString, NULL, base);
 #else 
 result = strtoull(intString,(char **)0, base); 
 #endif 
-	
+    
 return(stuffInteger64(result)); 
 INT_DEFAULT:
 return(copyCell(evaluateExpression(deflt)));
@@ -1136,23 +1136,23 @@ deflt = params->next;
 params = evaluateExpression(params);
 
 if(params->type == CELL_STRING)
-	fltString = (char *)params->contents;
+    fltString = (char *)params->contents;
 else if(isNumber(params->type))
-	{
-	getFloat(params, &value);
-	return(stuffFloat(&value));
-	}
+    {
+    getFloat(params, &value);
+    return(stuffFloat(&value));
+    }
 else
-	return(copyCell(evaluateExpression(deflt)));
+    return(copyCell(evaluateExpression(deflt)));
 
 while(isspace((int)*fltString)) fltString++;
 if(!isDigit((unsigned char)*fltString))
-	{
-	if(*fltString != '-' && *fltString != '+' && *fltString != lc_decimal_point)
-		return(copyCell(evaluateExpression(deflt)));
-	if(!isDigit((unsigned char)*(fltString+1)))
-		return(copyCell(evaluateExpression(deflt)));
-	}
+    {
+    if(*fltString != '-' && *fltString != '+' && *fltString != lc_decimal_point)
+        return(copyCell(evaluateExpression(deflt)));
+    if(!isDigit((unsigned char)*(fltString+1)))
+        return(copyCell(evaluateExpression(deflt)));
+    }
 
 value = atof(fltString);
 return( stuffFloat(&value) );
@@ -1173,13 +1173,13 @@ char * fmt = "%I64d";
 
 cell = evaluateExpression(params);
 switch(cell->type)
-	{
-	case CELL_LONG:
-		snprintf(number, 30, "%ld", cell->contents);
-		token = number;
-		break;
+    {
+    case CELL_LONG:
+        snprintf(number, 30, "%ld", cell->contents);
+        token = number;
+        break;
 #ifndef NEWLISP64
-	case CELL_INT64:
+    case CELL_INT64:
 #ifdef TRU64
         snprintf(number, 30, "%ld", *(INT64 *)&cell->aux); 
 #else
@@ -1191,43 +1191,43 @@ switch(cell->type)
 #endif /* WIN_32 */
 
 #endif /* TRU64 */
-		token = number;
-		break;
+        token = number;
+        break;
 #endif /* NEWLISP64 */
-	case CELL_FLOAT:
+    case CELL_FLOAT:
 #ifndef NEWLISP64
-		snprintf(number, 30, "%1.10g",*(double *)&cell->aux);
+        snprintf(number, 30, "%1.10g",*(double *)&cell->aux);
 #else
-		snprintf(number, 30, "%1.10g",*(double *)&cell->contents);
+        snprintf(number, 30, "%1.10g",*(double *)&cell->contents);
 #endif
-		token = number;
-		break;
-	case CELL_STRING:
-		token = (char*)cell->contents;
-		break;
-	case CELL_SYMBOL:
-		sPtr = (SYMBOL*)cell->contents;
-		token = sPtr->name;
-		break;
-	default:
-		return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, params));
-	}
+        token = number;
+        break;
+    case CELL_STRING:
+        token = (char*)cell->contents;
+        break;
+    case CELL_SYMBOL:
+        sPtr = (SYMBOL*)cell->contents;
+        token = sPtr->name;
+        break;
+    default:
+        return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, params));
+    }
 
 if((params = params->next) == nilCell)
-	context = currentContext;
+    context = currentContext;
 else if((context = getCreateContext(params, TRUE)) == NULL)
-	return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
+    return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
 
 if(params->next != nilCell)
-	{
-	cell = evaluateExpression(params->next);
-	if(isNil(cell))
-		{
-		sPtr = lookupSymbol(token, context);
-		if(sPtr == NULL) return(nilCell);
-		return(stuffSymbol(sPtr));
-		}
-	}
+    {
+    cell = evaluateExpression(params->next);
+    if(isNil(cell))
+        {
+        sPtr = lookupSymbol(token, context);
+        if(sPtr == NULL) return(nilCell);
+        return(stuffSymbol(sPtr));
+        }
+    }
 
 sPtr = translateCreateSymbol(token, CELL_NIL, context, TRUE);
 return(stuffSymbol(sPtr));
@@ -1255,14 +1255,14 @@ STREAM strStream = {0, NULL, NULL, 0, 0};
 openStrStream(&strStream, MAX_STRING, 0);
 prettyPrintFlags |= PRETTYPRINT_STRING;
 while (params != nilCell)
-	{
-	cell = evaluateExpression(params);
-	if(cell->type == CELL_STRING) /* speed optimization for strings */
-	    writeStreamStr(&strStream, (char *)cell->contents, 0);
-	else
-	    printCell(cell , FALSE, (UINT)&strStream);                                                    
+    {
+    cell = evaluateExpression(params);
+    if(cell->type == CELL_STRING) /* speed optimization for strings */
+        writeStreamStr(&strStream, (char *)cell->contents, 0);
+    else
+        printCell(cell , FALSE, (UINT)&strStream);                                                    
     params = params->next;
-	}
+    }
 prettyPrintFlags &= ~PRETTYPRINT_STRING;
 
 cell = stuffStringN(strStream.buffer, strStream.position);
@@ -1278,30 +1278,30 @@ UINT num;
 
 
 if(params == nilCell)
-	{
-	errorProc(ERR_MISSING_ARGUMENT);
-	return(0);
-	}
+    {
+    errorProc(ERR_MISSING_ARGUMENT);
+    return(0);
+    }
 
 getEvalDefault(params, &params);
 
 #ifndef NEWLISP64
 if(params->type == CELL_INT64)
-	{
-	num = *(INT64 *)&params->aux;
-	return(num);
-	}
+    {
+    num = *(INT64 *)&params->aux;
+    return(num);
+    }
 else if(params->type == CELL_FLOAT)
-	{
-	num = *(INT64 *)&params->aux;
-	return(num);
-	}
+    {
+    num = *(INT64 *)&params->aux;
+    return(num);
+    }
 #else
 if(params->type == CELL_FLOAT)
-	{
-	num = *(double *)&params->contents;
-	return(num);
-	}
+    {
+    num = *(double *)&params->contents;
+    return(num);
+    }
 #endif
 
 return(params->contents);
@@ -1341,7 +1341,7 @@ return(stuffFloat((double*)getAddress(params)));
 CELL * p_address(CELL * params)
 {
 if(params == nilCell)
-	return(errorProc(ERR_MISSING_ARGUMENT));
+    return(errorProc(ERR_MISSING_ARGUMENT));
 
 getEvalDefault(params, &params);
 
@@ -1354,8 +1354,8 @@ switch(params->type)
     case CELL_FLOAT:
         return(stuffInteger((UINT)&params->aux));
 #else
-	case CELL_FLOAT:
-		return(stuffInteger((UINT)&params->contents));
+    case CELL_FLOAT:
+        return(stuffInteger((UINT)&params->contents));
 #endif
     default:
         break;
@@ -1400,7 +1400,7 @@ slen = strlen(separator);
 if(re == NULL)
     {
     while(*src != 0)
-	{
+    {
         if(*src == *separator)
             {
             if(strncmp(src, separator, slen) == 0)
@@ -1411,8 +1411,8 @@ if(re == NULL)
                 return(stuffStringN(start, len));
                 }
             }
-	src++;
-	len++;
+    src++;
+    len++;
         }
     *source = src;
     if(len == 0) return(NULL);
@@ -1483,27 +1483,27 @@ if(separator == NULL)
 
 result = cell = getCell(CELL_EXPRESSION);
 while(string != NULL)
-	{
-	if(separator != NULL)
-		{
-		if((newCell = cellTokenString(&string, &srclen, separator, re)) == NULL)
-			break;
-		}
-	else
-		{
-		if(getToken(&stream, token, &tklen) == TKN_EMPTY) break;
-		newCell = stuffString(token);
-		}
+    {
+    if(separator != NULL)
+        {
+        if((newCell = cellTokenString(&string, &srclen, separator, re)) == NULL)
+            break;
+        }
+    else
+        {
+        if(getToken(&stream, token, &tklen) == TKN_EMPTY) break;
+        newCell = stuffString(token);
+        }
 
-	if(cell == result)
-		result->contents = (UINT)newCell;
-	else 
-		cell->next = newCell;
+    if(cell == result)
+        result->contents = (UINT)newCell;
+    else 
+        cell->next = newCell;
 
-	cell = newCell;
+    cell = newCell;
         if(string == NULL) 
             newCell->next = stuffString("");
-	}
+    }
 
 return(result);
 }
@@ -1561,7 +1561,7 @@ params = getString(params, &format);
 source = format;
 length = 0;
 while((source = parsePackFormat(source, &len, &type)) != NULL)
-	length += len;
+    length += len;
 
 if(length == 0) return(stuffString(""));
 pPtr = packed = allocMemory(length);
@@ -1569,126 +1569,126 @@ source = format;
 length = 0;
 
 while((source = parsePackFormat(source, &len, &type)) != NULL)
-	{
-	if(type == PACK_NULL)
-		{
-		memset(pPtr, 0, len);
-		pPtr += len;
-		length += len;
-		continue;
-		}
-		
-	else if(type == PACK_LITTLE_ENDIAN || type == PACK_BIG_ENDIAN)
-		{
-		endianSwitch = ((type == PACK_BIG_ENDIAN) != bigEndian);
-		continue;
-		}
+    {
+    if(type == PACK_NULL)
+        {
+        memset(pPtr, 0, len);
+        pPtr += len;
+        length += len;
+        continue;
+        }
+        
+    else if(type == PACK_LITTLE_ENDIAN || type == PACK_BIG_ENDIAN)
+        {
+        endianSwitch = ((type == PACK_BIG_ENDIAN) != bigEndian);
+        continue;
+        }
 
-	if(params->type == CELL_NIL) break;
-	if(listFlag)
-		cell = params;
-	else
-		cell = evaluateExpression(params);
-	/* accept data in a list, (will recurse into it but never come out) */
-	if(isList(cell->type))
-		{
-		cell = (CELL *)cell->contents;
-		params = cell;
-		listFlag = 1;
-		}
+    if(params->type == CELL_NIL) break;
+    if(listFlag)
+        cell = params;
+    else
+        cell = evaluateExpression(params);
+    /* accept data in a list, (will recurse into it but never come out) */
+    if(isList(cell->type))
+        {
+        cell = (CELL *)cell->contents;
+        params = cell;
+        listFlag = 1;
+        }
 #ifndef NEWLISP64
-	if(cell->type == CELL_FLOAT || cell->type == CELL_INT64)
-		uint64V = *(INT64 *)&cell->aux;
-	else /* CELL_LONG and CELL_STRING */
-		uint64V = cell->contents;
+    if(cell->type == CELL_FLOAT || cell->type == CELL_INT64)
+        uint64V = *(INT64 *)&cell->aux;
+    else /* CELL_LONG and CELL_STRING */
+        uint64V = cell->contents;
 #else
-	uint64V = cell->contents;
+    uint64V = cell->contents;
 #endif
 
-	if(type < PACK_FLOAT && cell->type == CELL_FLOAT)
-		uint64V = *(double *)&cell->aux;
-	
-	switch(type)
-		{
-		case PACK_NONE:
-			break;
+    if(type < PACK_FLOAT && cell->type == CELL_FLOAT)
+        uint64V = *(double *)&cell->aux;
+    
+    switch(type)
+        {
+        case PACK_NONE:
+            break;
 
-		case PACK_BYTE:
-			byteV = (char)uint64V;
-			memcpy(pPtr, &byteV, 1);
-			break;
+        case PACK_BYTE:
+            byteV = (char)uint64V;
+            memcpy(pPtr, &byteV, 1);
+            break;
 
-		case PACK_CHAR:
-			chrV = (char)uint64V;
-			memcpy(pPtr, &chrV, 1);
-			break;
+        case PACK_CHAR:
+            chrV = (char)uint64V;
+            memcpy(pPtr, &chrV, 1);
+            break;
 
-		case PACK_INT:
-			shortV = (short int)uint64V;
-			memcpy(pPtr, &shortV, 2);
-			if(endianSwitch) swapEndian(pPtr, 2);
-			break;
+        case PACK_INT:
+            shortV = (short int)uint64V;
+            memcpy(pPtr, &shortV, 2);
+            if(endianSwitch) swapEndian(pPtr, 2);
+            break;
 
-		case PACK_UNSIGNED_INT:
-			uint16V = (unsigned short int)uint64V;
-			memcpy(pPtr, &uint16V, 2);
-			if(endianSwitch) swapEndian(pPtr, 2);
-			break;
+        case PACK_UNSIGNED_INT:
+            uint16V = (unsigned short int)uint64V;
+            memcpy(pPtr, &uint16V, 2);
+            if(endianSwitch) swapEndian(pPtr, 2);
+            break;
 
-		case PACK_LONG:
-		case PACK_UNSIGNED_LONG:
-			uint32V = (unsigned int)uint64V;
-			memcpy(pPtr, &uint32V, 4);
-			if(endianSwitch) swapEndian(pPtr, 4);
-			break;
+        case PACK_LONG:
+        case PACK_UNSIGNED_LONG:
+            uint32V = (unsigned int)uint64V;
+            memcpy(pPtr, &uint32V, 4);
+            if(endianSwitch) swapEndian(pPtr, 4);
+            break;
 
-		case PACK_LONG_LONG:
-		case PACK_UNSIGNED_LONG_LONG:
-			memcpy(pPtr, &uint64V, 8);
-			if(endianSwitch) swapEndian(pPtr, 8);
-			break;
+        case PACK_LONG_LONG:
+        case PACK_UNSIGNED_LONG_LONG:
+            memcpy(pPtr, &uint64V, 8);
+            if(endianSwitch) swapEndian(pPtr, 8);
+            break;
 
-		case PACK_FLOAT:
-		case PACK_DOUBLE:
-			if(cell->type == CELL_FLOAT)
-				doubleV = *(double *)&uint64V;
-			else doubleV = (double)uint64V;
-			if(type == PACK_FLOAT)
-				{
-				floatV = doubleV;
-				memcpy(pPtr, &floatV, 4);
-				if(endianSwitch) swapEndian(pPtr, 4);
-				}
-			else
-				{
-				memcpy(pPtr, &doubleV, 8);
-				if(endianSwitch) swapEndian(pPtr, 8);
-				}
-			break;
-			
-		case PACK_STRING:
-			if(cell->type == CELL_STRING)
-				{
-				ln = cell->aux - 1;
-				if(len <= ln)
-					memcpy(pPtr, (void *)cell->contents, len);
-				else
-					{
-					memcpy(pPtr, (void*)cell->contents, ln);
-					memset(pPtr + ln, 0, len - ln);
-					}
-				}
-			else memset(pPtr,  0, len);
-			break;
+        case PACK_FLOAT:
+        case PACK_DOUBLE:
+            if(cell->type == CELL_FLOAT)
+                doubleV = *(double *)&uint64V;
+            else doubleV = (double)uint64V;
+            if(type == PACK_FLOAT)
+                {
+                floatV = doubleV;
+                memcpy(pPtr, &floatV, 4);
+                if(endianSwitch) swapEndian(pPtr, 4);
+                }
+            else
+                {
+                memcpy(pPtr, &doubleV, 8);
+                if(endianSwitch) swapEndian(pPtr, 8);
+                }
+            break;
+            
+        case PACK_STRING:
+            if(cell->type == CELL_STRING)
+                {
+                ln = cell->aux - 1;
+                if(len <= ln)
+                    memcpy(pPtr, (void *)cell->contents, len);
+                else
+                    {
+                    memcpy(pPtr, (void*)cell->contents, ln);
+                    memset(pPtr + ln, 0, len - ln);
+                    }
+                }
+            else memset(pPtr,  0, len);
+            break;
 
-		default:
-			break;
-		}
+        default:
+            break;
+        }
 
-	pPtr += len;
-	params = params->next;
-	length += len;
-	}
+    pPtr += len;
+    params = params->next;
+    length += len;
+    }
 
 cell = stuffStringN(packed, length);
 free(packed);
@@ -1704,88 +1704,88 @@ while(*format == ' ') format++;
 if(*format == 0) return(NULL);
 
 switch(*format)
-	{
-	case '<':
-		*type = PACK_LITTLE_ENDIAN;
-		format++;
-		break;
-	        
-	case '>':
-		*type = PACK_BIG_ENDIAN;
-		format++;
-		break;
+    {
+    case '<':
+        *type = PACK_LITTLE_ENDIAN;
+        format++;
+        break;
+            
+    case '>':
+        *type = PACK_BIG_ENDIAN;
+        format++;
+        break;
                 
-	case 'b':
-		*length = 1;	
-		*type = PACK_BYTE;
-		format++;
-		break;
+    case 'b':
+        *length = 1;    
+        *type = PACK_BYTE;
+        format++;
+        break;
 
-	case 'c':
-		*length = 1;	
-		*type = PACK_CHAR;
-		format++;
-		break;
-	case 's':
-	case 'n':
-		*type = (*format == 's') ? PACK_STRING : PACK_NULL;
-		format++;
-		if(isdigit((int)*format) )
-			{
-			*length = atol(format);
-			while(isdigit((int)*format)) format++;
-			}
-		else *length = 1;
-		
-		break;
-	case 'd':
-	case 'u':
-		*type = (*format == 'd') ? PACK_INT : PACK_UNSIGNED_INT;
-		*length = 2;
-		format++;
-		break;
-	case 'l':
-		if(*(format + 1) == 'd' || *(format + 1) == 'u')
-			{
-			*length = 4;
-			*type = (*(format + 1) == 'd') ? PACK_LONG : PACK_UNSIGNED_LONG;
-			format += 2;
-			}
-		else if(*(format + 1) == 'f')
-			{
-			*length = 8;
-			*type = PACK_DOUBLE;
-			format += 2;
-			}
-		else 
-			{
-			*type = PACK_NONE;
-			format++;
-			}
-		break;
-	case 'L':
-		if(*(format + 1) == 'd' || *(format + 1) == 'u')
-			{
-			*length = 8;
-			*type = (*(format + 1) == 'd') ? PACK_LONG_LONG : PACK_UNSIGNED_LONG_LONG;
-			format += 2;
-			}
-		else 
-			{
-			*type = PACK_NONE;
-			format++;
-			}
-		break;
-	case 'f':
-		*length = 4;
-		*type = PACK_FLOAT;
-		format++;
-		break;
-	default:
-		*type = PACK_NONE;
-		format++;
-		break;
-	}
+    case 'c':
+        *length = 1;    
+        *type = PACK_CHAR;
+        format++;
+        break;
+    case 's':
+    case 'n':
+        *type = (*format == 's') ? PACK_STRING : PACK_NULL;
+        format++;
+        if(isdigit((int)*format) )
+            {
+            *length = atol(format);
+            while(isdigit((int)*format)) format++;
+            }
+        else *length = 1;
+        
+        break;
+    case 'd':
+    case 'u':
+        *type = (*format == 'd') ? PACK_INT : PACK_UNSIGNED_INT;
+        *length = 2;
+        format++;
+        break;
+    case 'l':
+        if(*(format + 1) == 'd' || *(format + 1) == 'u')
+            {
+            *length = 4;
+            *type = (*(format + 1) == 'd') ? PACK_LONG : PACK_UNSIGNED_LONG;
+            format += 2;
+            }
+        else if(*(format + 1) == 'f')
+            {
+            *length = 8;
+            *type = PACK_DOUBLE;
+            format += 2;
+            }
+        else 
+            {
+            *type = PACK_NONE;
+            format++;
+            }
+        break;
+    case 'L':
+        if(*(format + 1) == 'd' || *(format + 1) == 'u')
+            {
+            *length = 8;
+            *type = (*(format + 1) == 'd') ? PACK_LONG_LONG : PACK_UNSIGNED_LONG_LONG;
+            format += 2;
+            }
+        else 
+            {
+            *type = PACK_NONE;
+            format++;
+            }
+        break;
+    case 'f':
+        *length = 4;
+        *type = PACK_FLOAT;
+        format++;
+        break;
+    default:
+        *type = PACK_NONE;
+        format++;
+        break;
+    }
 
 return(format);
 }
@@ -1833,109 +1833,109 @@ result = getCell(CELL_EXPRESSION);
 next = NULL;
 
 while( (source = parsePackFormat(source, &len, &type))!= NULL)
-	{
-	if(length + len > maxlen) break;
+    {
+    if(length + len > maxlen) break;
 
-	if(type == PACK_LITTLE_ENDIAN || type == PACK_BIG_ENDIAN)
-		{
-		endianSwitch = ((type == PACK_BIG_ENDIAN) != bigEndian);
-		continue;
-		}
+    if(type == PACK_LITTLE_ENDIAN || type == PACK_BIG_ENDIAN)
+        {
+        endianSwitch = ((type == PACK_BIG_ENDIAN) != bigEndian);
+        continue;
+        }
                 
-	switch(type)
-		{		
-		case PACK_NULL:
-			pPtr += len;
-			length += len;
-			continue;
-	
-		case PACK_BYTE:
-			memcpy(&byteV, pPtr, 1);
-			cell = makeCell(CELL_LONG, byteV);
-			break;
+    switch(type)
+        {       
+        case PACK_NULL:
+            pPtr += len;
+            length += len;
+            continue;
+    
+        case PACK_BYTE:
+            memcpy(&byteV, pPtr, 1);
+            cell = makeCell(CELL_LONG, byteV);
+            break;
 
-		case PACK_CHAR:
-			memcpy(&chrV, pPtr, 1);
-			cell = makeCell(CELL_LONG, chrV);
-			break;
+        case PACK_CHAR:
+            memcpy(&chrV, pPtr, 1);
+            cell = makeCell(CELL_LONG, chrV);
+            break;
 
-		case PACK_INT:
-			memcpy(&shortV, pPtr, 2);
-		        if(endianSwitch) swapEndian((char*)&shortV, 2);
-			cell = makeCell(CELL_LONG, shortV);
-			break;
+        case PACK_INT:
+            memcpy(&shortV, pPtr, 2);
+                if(endianSwitch) swapEndian((char*)&shortV, 2);
+            cell = makeCell(CELL_LONG, shortV);
+            break;
 
-		case PACK_UNSIGNED_INT:
-			memcpy(&uint16V, pPtr, 2);
-		        if(endianSwitch) swapEndian((char*)&uint16V, 2);
-			cell = makeCell(CELL_LONG, uint16V);
-			break;
+        case PACK_UNSIGNED_INT:
+            memcpy(&uint16V, pPtr, 2);
+                if(endianSwitch) swapEndian((char*)&uint16V, 2);
+            cell = makeCell(CELL_LONG, uint16V);
+            break;
 
-		case PACK_LONG:
-			memcpy(&int32V, pPtr, 4);
-			if(endianSwitch) swapEndian((char *)&int32V, 4);
+        case PACK_LONG:
+            memcpy(&int32V, pPtr, 4);
+            if(endianSwitch) swapEndian((char *)&int32V, 4);
 #ifndef NEWLISP64
-			cell = getCell(CELL_INT64);
-			*(INT64 *)&cell->aux = int32V;
+            cell = getCell(CELL_INT64);
+            *(INT64 *)&cell->aux = int32V;
 #else
-			cell = getCell(CELL_LONG);
-			*(long *)&cell->contents = int32V;
+            cell = getCell(CELL_LONG);
+            *(long *)&cell->contents = int32V;
 #endif
-			break;
+            break;
 
-		case PACK_UNSIGNED_LONG:
-			memcpy(&uint32V, pPtr, 4);
-			if(endianSwitch) swapEndian((char*)&uint32V, 4);
+        case PACK_UNSIGNED_LONG:
+            memcpy(&uint32V, pPtr, 4);
+            if(endianSwitch) swapEndian((char*)&uint32V, 4);
 #ifndef NEWLISP64
-			cell = getCell(CELL_INT64);
-			*(INT64 *)&cell->aux = uint32V;
+            cell = getCell(CELL_INT64);
+            *(INT64 *)&cell->aux = uint32V;
 #else
-			cell = makeCell(CELL_LONG, uint32V);
+            cell = makeCell(CELL_LONG, uint32V);
 #endif
-			break;
+            break;
 
-		case PACK_LONG_LONG:
-		case PACK_UNSIGNED_LONG_LONG:
-			memcpy(&uint64V, pPtr, 8);
-		        if(endianSwitch) swapEndian((char*)&uint64V, 8);
+        case PACK_LONG_LONG:
+        case PACK_UNSIGNED_LONG_LONG:
+            memcpy(&uint64V, pPtr, 8);
+                if(endianSwitch) swapEndian((char*)&uint64V, 8);
 #ifndef NEWLISP64
-			cell = getCell(CELL_INT64);
-			memcpy(&cell->aux, &uint64V, 8);
+            cell = getCell(CELL_INT64);
+            memcpy(&cell->aux, &uint64V, 8);
 #else
-			cell = makeCell(CELL_LONG, uint64V);
+            cell = makeCell(CELL_LONG, uint64V);
 #endif
-			break;
+            break;
 
-		case PACK_FLOAT:
-			memcpy(&floatV, pPtr, 4);
-		        if(endianSwitch) swapEndian((char*)&floatV, 4);
-			doubleV = floatV;
-			cell = stuffFloat(&doubleV);
-			break;
+        case PACK_FLOAT:
+            memcpy(&floatV, pPtr, 4);
+                if(endianSwitch) swapEndian((char*)&floatV, 4);
+            doubleV = floatV;
+            cell = stuffFloat(&doubleV);
+            break;
 
-		case PACK_DOUBLE:
-			memcpy(&doubleV, pPtr, 8);
-			if(endianSwitch) swapEndian((char*)&doubleV, 8);
-			cell = stuffFloat(&doubleV);
-			break;
-			
-		case PACK_STRING:
-			cell = stuffStringN(pPtr, len);
-			break;
+        case PACK_DOUBLE:
+            memcpy(&doubleV, pPtr, 8);
+            if(endianSwitch) swapEndian((char*)&doubleV, 8);
+            cell = stuffFloat(&doubleV);
+            break;
+            
+        case PACK_STRING:
+            cell = stuffStringN(pPtr, len);
+            break;
 
-		default:
-			cell = getCell(CELL_NIL);
-			break;
-		}
+        default:
+            cell = getCell(CELL_NIL);
+            break;
+        }
 
-	pPtr += len; length += len;
-	if(next == NULL)
-		result->contents = (UINT)cell;
-	else	
-		next->next = cell;
-	
-	next = cell;
-	}
+    pPtr += len; length += len;
+    if(next == NULL)
+        result->contents = (UINT)cell;
+    else    
+        next->next = cell;
+    
+    next = cell;
+    }
 
 return(result);
 }
@@ -1968,29 +1968,29 @@ len = utf8_wstr(wstr, str, len);
 #endif
 
 if(len == 0)
-	return(stuffString(str));
+    return(stuffString(str));
 
-if(params == nilCell)	
-	lchr = rchr = 32;
+if(params == nilCell)   
+    lchr = rchr = 32;
 else 
-	{
-	params = getString(params, &trimChr);
+    {
+    params = getString(params, &trimChr);
 #ifndef SUPPORT_UTF8
-	lchr = *trimChr;
+    lchr = *trimChr;
 #else
-	utf8_wchar(trimChr, &lchr);
+    utf8_wchar(trimChr, &lchr);
 #endif
-	if(params != nilCell)
-		{
-		getString(params, &trimChr);
+    if(params != nilCell)
+        {
+        getString(params, &trimChr);
 #ifndef SUPPORT_UTF8
-		rchr = *trimChr;
+        rchr = *trimChr;
 #else
-		utf8_wchar(trimChr, &rchr);
+        utf8_wchar(trimChr, &rchr);
 #endif
-		}		
-	else rchr = lchr;
-	}
+        }       
+    else rchr = lchr;
+    }
 
 left = right = 0;
 #ifndef SUPPORT_UTF8
@@ -2000,7 +2000,7 @@ while(*wstr == lchr) wstr++, left++;
 #endif
 
 if(left == len)
-	return(stuffString(""));
+    return(stuffString(""));
 
 #ifndef SUPPORT_UTF8
 str = ptr + len - 1;
@@ -2056,11 +2056,11 @@ params = getString(params, &pattern);
 params = getStringSize(params, &string, &size, TRUE);
 
 if(params != nilCell)
-	{
+    {
     params = getInteger(params, (UINT *)&options);
-	if(params != nilCell)
-		getInteger(params, &offset);
-	}
+    if(params != nilCell)
+        getInteger(params, &offset);
+    }
 
 /* Compile the regular expression in the first argument */
 re = pcreCachedCompile(pattern, (int)options);
@@ -2082,7 +2082,7 @@ if (rc == -1)
 
 /* error in pcre_exec() */
 if (rc < 0) 
-	regexError("error", rc, "when executing");
+    regexError("error", rc, "when executing");
 
 /* Match succeded */
 
@@ -2101,7 +2101,7 @@ for(idx = 0; idx < rc; idx++)
         cell->contents = (UINT)strCell;
         cell = (CELL *)cell->contents;
         }
-    else	
+    else    
         {
         cell->next = strCell;
         cell = cell->next;
@@ -2164,7 +2164,7 @@ if (rc == -1)
 
 /* error in pcre_exec() */
 if (rc < 0) 
-	regexError("error", rc, "when executing");
+    regexError("error", rc, "when executing");
 
 
 for(idx = 0; idx < rc; idx++)
@@ -2267,10 +2267,10 @@ while(offset <= buffLen)
     if(options == -1)
         findPos = searchBuffer(buff + offset, buffLen - offset, keyStr, keyLen, TRUE);
     else
-		{
+        {
         findPos = searchBufferRegex(buff, (int)offset, keyStr, (int)buffLen, options, &keyLen);
-		itSymbol->contents = sysSymbol[0]->contents;
-		}
+        itSymbol->contents = sysSymbol[0]->contents;
+        }
 
     if(findPos == -1) break;
     
@@ -2289,11 +2289,11 @@ while(offset <= buffLen)
 
     resultStackIdxSave = resultStackIdx; 
 
-	if((cell = evaluateExpressionSafe(exprCell, &errNo)) == NULL)
-		{
-		freeRegex(start_rx);
-		longjmp(errorJump, errNo);
-		}	
+    if((cell = evaluateExpressionSafe(exprCell, &errNo)) == NULL)
+        {
+        freeRegex(start_rx);
+        longjmp(errorJump, errNo);
+        }   
 
     end_rx->length = keyLen;           /* length of pattern found */
     if(cell->type == CELL_STRING)
@@ -2320,7 +2320,7 @@ while(offset <= buffLen)
     offset += bias;
 
     if(options != -1)
-	if(options & REPLACE_ONCE) break; 
+    if(options & REPLACE_ONCE) break; 
     }
 
 if(count == 0) return(NULL);
@@ -2369,13 +2369,13 @@ void freeRegex(REGEX * regex)
 REGEX * oldRegex;
 
 while(regex != NULL)
-	{
+    {
     if(regex->repStr != NULL)
-		freeMemory(regex->repStr);
+        freeMemory(regex->repStr);
     oldRegex = regex;
-	regex = regex->next;
-	free(oldRegex);
-	}
+    regex = regex->next;
+    free(oldRegex);
+    }
 }
 
 /* eof */

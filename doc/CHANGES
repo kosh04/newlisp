@@ -6125,3 +6125,31 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Documention for the messaging API has been updated in the reference
      manual and code patterns documents.
+
+10.3.5
+     'invert' over-allocated memory
+
+     Fixed a crash bug in purgeSpawnList()
+   
+     icmp6.h include for cygwin in nl-sock.c (thanks KOSH)
+
+     The creation of a communications channel between and parent process
+     and 'spawn'ed child processes for usage with the message API  of 
+     'send' and 'receive', is now optional:
+
+         (spawn <sym-variable> <child-process> [true])
+
+     If the'send' or 'receive' is used on the child process spawned, the
+     optional flag must be set to 'true'.
+
+     The fakes versions on 'spawn', 'sync' and 'abort' in Win32 have been
+     taken out.
+
+     The newLISP shell "newlisp-x.x.x/util/nls" now works on MS Windows too.
+
+     The link feature using util/link.lsp did no works with 64-bit versions
+     of newLISP.
+
+     In the MinGW compile of nl-sock.c the include file wspapi.h has been
+     replaced with ws2spi.h. This file is part of the normal MinGW install.
+

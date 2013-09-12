@@ -132,14 +132,14 @@ int c;
 size_t count = 0;
 
 while((c = *utf8str++) != 0)
-	{
-	count++;
-	if ((c & 0xc0) == 0xc0)
-		{
-    	gcaa = utf8_table4[c & 0x3f];
-		utf8str += gcaa;
-		}
-	}
+    {
+    count++;
+    if ((c & 0xc0) == 0xc0)
+        {
+        gcaa = utf8_table4[c & 0x3f];
+        utf8str += gcaa;
+        }
+    }
 
 return(count);
 }
@@ -153,11 +153,11 @@ int utf8_1st_len(char * utf8str)
 int c;
 
 if((c = *utf8str) != 0)
-	{
-	if((c & 0xc0) == 0xc0)
-		return(utf8_table4[c & 0x3f] + 1);
-	else return(1);
-	}
+    {
+    if((c & 0xc0) == 0xc0)
+        return(utf8_table4[c & 0x3f] + 1);
+    else return(1);
+    }
 
 return(0);
 }
@@ -174,12 +174,12 @@ int wchar;
 int count = 0;
 
 while(maxwc-- && *utf8str != 0)
-	{
-	count++;
-	GETCHARINC(wchar, utf8str);
-/*	utf8str = utf8_wchar(utf8str, &wchar); */
-	*(unicode++) = wchar;
-	}
+    {
+    count++;
+    GETCHARINC(wchar, utf8str);
+/*  utf8str = utf8_wchar(utf8str, &wchar); */
+    *(unicode++) = wchar;
+    }
 *unicode = 0;
 
 return(count);
@@ -195,12 +195,12 @@ int wstr_utf8(char * utf8str, int * unicode, int maxstr)
 int len, size = 0;
 
 while(*unicode != 0 && size < maxstr)
-	{
-	len = wchar_utf8(*unicode, utf8str);
-	utf8str += len;
-	size += len;
-	unicode++;
-	}
+    {
+    len = wchar_utf8(*unicode, utf8str);
+    utf8str += len;
+    size += len;
+    unicode++;
+    }
 
 *utf8str = 0;
 
@@ -272,25 +272,25 @@ char chr;
 
 getInteger(params, &handle);
 if(read((int)handle, &chr, 1) <= 0)
-	return(nilCell);
+    return(nilCell);
 
 utf8C = chr;
-	
+    
 if((chr & 0xc0) == 0xc0)
-	{
-	gcaa = utf8_table4[chr & 0x3f];  /* Number of additional bytes */
-	gcss = 6*gcaa;
-	utf8C = (chr & utf8_table3[gcaa]) << gcss;
-	while (gcaa-- > 0) \
-		{
-		gcss -= 6;
-		
-		if(read((int)handle, &chr, 1) <= 0)
-			return(nilCell);
+    {
+    gcaa = utf8_table4[chr & 0x3f];  /* Number of additional bytes */
+    gcss = 6*gcaa;
+    utf8C = (chr & utf8_table3[gcaa]) << gcss;
+    while (gcaa-- > 0) \
+        {
+        gcss -= 6;
+        
+        if(read((int)handle, &chr, 1) <= 0)
+            return(nilCell);
 
-		utf8C |= (chr & 0x3f) << gcss;
-		}
-	}
+        utf8C |= (chr & 0x3f) << gcss;
+        }
+    }
 
 return(stuffInteger(utf8C));
 }

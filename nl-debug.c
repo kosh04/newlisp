@@ -54,21 +54,21 @@ char footerStr[32] = " s|tep n|ext c|ont q|uit > ";
 #define DEBUG_ENTRY "->"
 #define DEBUG_EXIT "<-"
 
-void openTrace(void)	
-	{
-	if(traceFlag) return;
-	traceFlag = TRACE_TRUE;
-	currentFunc = nilSymbol;
-	debugStackIdx = 0;
-	debugStack = (UINT *)allocMemory(MAX_CPU_STACK * 2 * sizeof(UINT));
-	}
+void openTrace(void)    
+    {
+    if(traceFlag) return;
+    traceFlag = TRACE_TRUE;
+    currentFunc = nilSymbol;
+    debugStackIdx = 0;
+    debugStack = (UINT *)allocMemory(MAX_CPU_STACK * 2 * sizeof(UINT));
+    }
 
 void closeTrace(void)
-	{
-	traceFlag = 0;
-	if(debugStack) free(debugStack);
-	debugStack = NULL;
-	}
+    {
+    traceFlag = 0;
+    if(debugStack) free(debugStack);
+    debugStack = NULL;
+    }
 
 
 CELL * p_debug(CELL * params)
@@ -87,15 +87,15 @@ return(result);
 CELL * p_trace(CELL * params)
 {
 if(params != nilCell)
-	{
-	if(getFlag(params))
-		{
-		openTrace();
-		traceFlag |= TRACE_IN_DEBUG;
-		}
-	else
-		closeTrace();
-	}
+    {
+    if(getFlag(params))
+        {
+        openTrace();
+        traceFlag |= TRACE_IN_DEBUG;
+        }
+    else
+        closeTrace();
+    }
 
 return((traceFlag == 0 ? nilCell : trueCell));
 }
@@ -111,16 +111,16 @@ strncpy(preStr, pre, 7);
 strncpy(postStr, post, 7);
 
 if(params != nilCell)
-	{
-	params = getString(params, &header);
-	strncpy(headerStr, header, 15);
-	}
+    {
+    params = getString(params, &header);
+    strncpy(headerStr, header, 15);
+    }
 
 if(params != nilCell)
-	{
-	getString(params, &footer);
-	strncpy(footerStr, footer, 31);
-	}
+    {
+    getString(params, &footer);
+    strncpy(footerStr, footer, 31);
+    }
 
 
 return(trueCell);
@@ -135,63 +135,63 @@ if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_DEBUG_NEXT)) return;
 traceFlag |= TRACE_IN_ENTRY;
 
 if(traceFlag & TRACE_SIGNAL)
-	{
-	traceFlag &= ~TRACE_SIGNAL;
-	executeSymbol(symHandler[currentSignal - 1], stuffInteger(currentSignal), NULL);
-	traceFlag &= ~TRACE_IN_ENTRY;
-	return;
-	}
+    {
+    traceFlag &= ~TRACE_SIGNAL;
+    executeSymbol(symHandler[currentSignal - 1], stuffInteger(currentSignal), NULL);
+    traceFlag &= ~TRACE_IN_ENTRY;
+    return;
+    }
 
 if(traceFlag & TRACE_SIGINT)
-	{
-	traceFlag &= ~TRACE_SIGINT;
-	longjmp(errorJump, ERR_USER_RESET);
-	}
-	
+    {
+    traceFlag &= ~TRACE_SIGINT;
+    longjmp(errorJump, ERR_USER_RESET);
+    }
+    
 if(traceFlag & TRACE_TIMER)
-	{
-	traceFlag &= ~TRACE_TIMER;
-	executeSymbol(timerEvent, NULL, NULL);
-	traceFlag &= ~TRACE_IN_ENTRY;
-	return;
-	}
+    {
+    traceFlag &= ~TRACE_TIMER;
+    executeSymbol(timerEvent, NULL, NULL);
+    traceFlag &= ~TRACE_IN_ENTRY;
+    return;
+    }
 
 if(debugStackIdx > 1)
-	{
-	if(printFunction(cell))
-		getDebuggerInput(DEBUG_ENTRY);
-	if(!traceFlag) return;
-	}
+    {
+    if(printFunction(cell))
+        getDebuggerInput(DEBUG_ENTRY);
+    if(!traceFlag) return;
+    }
 
 if(traceFlag & TRACE_DEBUG_NEXT)
-	{
-	traceFlag &= ~TRACE_IN_ENTRY;
-	return;
-	}
+    {
+    traceFlag &= ~TRACE_IN_ENTRY;
+    return;
+    }
 
 if(pCell->type == CELL_CONTEXT)
-	{
-	defaultFuncFlag = TRUE;
-	currentFunc = translateCreateSymbol(
-			((SYMBOL*)pCell->contents)->name,
-			CELL_NIL,
-			(SYMBOL*)pCell->contents,
-			TRUE);
+    {
+    defaultFuncFlag = TRUE;
+    currentFunc = translateCreateSymbol(
+            ((SYMBOL*)pCell->contents)->name,
+            CELL_NIL,
+            (SYMBOL*)pCell->contents,
+            TRUE);
 
-	pCell = (CELL *)currentFunc->contents;
-	}
+    pCell = (CELL *)currentFunc->contents;
+    }
 
 if((pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
-	&& args->type == CELL_SYMBOL)
-	{
-	if(debugStackIdx == 0) /* startup */
-		traceFlag &= ~TRACE_DEBUG_NEXT;
-	
-	if(!defaultFuncFlag)
-		currentFunc = (SYMBOL *)args->contents;	
-	pushDebugStack(recursionCount);
-	pushDebugStack(currentFunc);
-	}
+    && args->type == CELL_SYMBOL)
+    {
+    if(debugStackIdx == 0) /* startup */
+        traceFlag &= ~TRACE_DEBUG_NEXT;
+    
+    if(!defaultFuncFlag)
+        currentFunc = (SYMBOL *)args->contents; 
+    pushDebugStack(recursionCount);
+    pushDebugStack(currentFunc);
+    }
 
 traceFlag &= ~TRACE_IN_ENTRY;
 }
@@ -203,44 +203,44 @@ if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_SIGNAL | TRACE_SIGINT | T
 traceFlag |= TRACE_IN_EXIT;
 
 if(traceFlag & TRACE_DEBUG_NEXT)
-	{
-	if(currentLevel >= recursionCount)
-		traceFlag &= ~TRACE_DEBUG_NEXT;
-	else 
-		{
-		traceFlag &= ~TRACE_IN_EXIT;
-		return;
-		}
-	}
+    {
+    if(currentLevel >= recursionCount)
+        traceFlag &= ~TRACE_DEBUG_NEXT;
+    else 
+        {
+        traceFlag &= ~TRACE_IN_EXIT;
+        return;
+        }
+    }
 
 if( (pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
-		&& args->type == CELL_SYMBOL)
-	{
-	if((UINT)recursionCount == *(debugStack + debugStackIdx - 2) )
-		{
-		debugStackIdx -= 2;
-		if(debugStackIdx > 0)
-			currentFunc = (SYMBOL *)*(debugStack + debugStackIdx - 1);
-		if(debugStackIdx == 0)
-			traceFlag &= ~TRACE_DEBUG_NEXT;
-		}
-	}
+        && args->type == CELL_SYMBOL)
+    {
+    if((UINT)recursionCount == *(debugStack + debugStackIdx - 2) )
+        {
+        debugStackIdx -= 2;
+        if(debugStackIdx > 0)
+            currentFunc = (SYMBOL *)*(debugStack + debugStackIdx - 1);
+        if(debugStackIdx == 0)
+            traceFlag &= ~TRACE_DEBUG_NEXT;
+        }
+    }
 
 if(printFunction(cell))
-	{
-	varPrintf(OUT_CONSOLE, "\nRESULT: ");
-	printCell(result, TRUE, OUT_CONSOLE);
-	varPrintf(OUT_CONSOLE, "\n");
+    {
+    varPrintf(OUT_CONSOLE, "\nRESULT: ");
+    printCell(result, TRUE, OUT_CONSOLE);
+    varPrintf(OUT_CONSOLE, "\n");
 
-	if(debugStackIdx > 0)
-		{
-		getDebuggerInput(DEBUG_EXIT);
-		if(!traceFlag) return;
-		}
-	}
+    if(debugStackIdx > 0)
+        {
+        getDebuggerInput(DEBUG_EXIT);
+        if(!traceFlag) return;
+        }
+    }
 
 if(traceFlag & TRACE_DEBUG_NEXT)
-	currentLevel = recursionCount;
+    currentLevel = recursionCount;
 
 traceFlag &= ~TRACE_IN_EXIT;
 }
@@ -255,58 +255,58 @@ UINT * resultStackIdxSave;
 SYMBOL * contextSave;
 
 while(TRUE)
-	{
+    {
 
-	if(currentContext != mainContext)
-		context = currentContext->name;
-	else context = "";
+    if(currentContext != mainContext)
+        context = currentContext->name;
+    else context = "";
 
 
-	if(!evalSilent)
-		varPrintf(OUT_CONSOLE, "\n[%s %d %s]%s", msg, recursionCount, context, footerStr);
-	else evalSilent = FALSE;
+    if(!evalSilent)
+        varPrintf(OUT_CONSOLE, "\n[%s %d %s]%s", msg, recursionCount, context, footerStr);
+    else evalSilent = FALSE;
 
-	if(fgets(command, MAX_LINE - 1, IOchannel) == NULL)
-		fatalError(ERR_IO_ERROR, 0, 0);
+    if(fgets(command, MAX_LINE - 1, IOchannel) == NULL)
+        fatalError(ERR_IO_ERROR, 0, 0);
 
-	if( (strcmp(command, "n\n") == 0) || (strcmp(command, "n\r\n") == 0))
-		{
-		traceFlag |= TRACE_DEBUG_NEXT;
-		currentLevel = recursionCount;
-		break;
-		}
-	else if( (strcmp(command, "s\n") == 0) || (strcmp(command, "s\r\n") == 0))
-		{
-		traceFlag &= ~TRACE_DEBUG_NEXT;
-		break;
-		}
-	else if( (strcmp(command, "q\n") == 0) || (strcmp(command, "q\r\n") == 0))
-		{
-		closeTrace();
-		longjmp(errorJump, ERR_USER_RESET);
-		}
-	else if( (strcmp(command, "c\n") == 0) || (strcmp(command, "c\r\n") == 0))
-		{
-		closeTrace();
-		break;
-		}
+    if( (strcmp(command, "n\n") == 0) || (strcmp(command, "n\r\n") == 0))
+        {
+        traceFlag |= TRACE_DEBUG_NEXT;
+        currentLevel = recursionCount;
+        break;
+        }
+    else if( (strcmp(command, "s\n") == 0) || (strcmp(command, "s\r\n") == 0))
+        {
+        traceFlag &= ~TRACE_DEBUG_NEXT;
+        break;
+        }
+    else if( (strcmp(command, "q\n") == 0) || (strcmp(command, "q\r\n") == 0))
+        {
+        closeTrace();
+        longjmp(errorJump, ERR_USER_RESET);
+        }
+    else if( (strcmp(command, "c\n") == 0) || (strcmp(command, "c\r\n") == 0))
+        {
+        closeTrace();
+        break;
+        }
 
-	resultStackIdxSave = resultStackIdx;
-	memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
-	contextSave = currentContext;
-	currentContext = currentFunc->context;
-	if(setjmp(errorJump))
-		{
-		cleanupResults(resultStackIdxSave);
-		goto DEBUG_EVAL_END;
-		}
+    resultStackIdxSave = resultStackIdx;
+    memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+    contextSave = currentContext;
+    currentContext = currentFunc->context;
+    if(setjmp(errorJump))
+        {
+        cleanupResults(resultStackIdxSave);
+        goto DEBUG_EVAL_END;
+        }
 
-	executeCommandLine(command, OUT_CONSOLE, NULL);	
+    executeCommandLine(command, OUT_CONSOLE, NULL); 
 
-	DEBUG_EVAL_END:
-	currentContext = contextSave;
-	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
-	}
+    DEBUG_EVAL_END:
+    currentContext = contextSave;
+    memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+    }
 }
 
 
@@ -333,10 +333,10 @@ start = matchString(funcStr, expStr, &length);
 closeStrStream(&strStream);
 
 if(start == -1 || length == 0)
-	{
-	free(funcStr);
-	return FALSE;
-	}
+    {
+    free(funcStr);
+    return FALSE;
+    }
 
 varPrintf(OUT_CONSOLE, headerStr);
 
@@ -346,7 +346,7 @@ strncpy(expStr, funcStr + start, length);
 *(funcStr + start) = 0;
 
 varPrintf(OUT_CONSOLE, "%s%s%s%s%s", 
-	funcStr, preStr, expStr, postStr, funcStr + start + length);
+    funcStr, preStr, expStr, postStr, funcStr + start + length);
 
 free(funcStr);
 
@@ -366,16 +366,16 @@ while(*string <= ' ' && *string > 0) string++;
 position = flag = 0;
 
 while(*buffer)
-	{
-	if(*buffer > ' ')
-		if((*length = stringComp(buffer, string)) > 0)
-			{
-			flag = TRUE;
-			break;
-			}
-	position++;
-	buffer++;
-	}
+    {
+    if(*buffer > ' ')
+        if((*length = stringComp(buffer, string)) > 0)
+            {
+            flag = TRUE;
+            break;
+            }
+    position++;
+    buffer++;
+    }
 
 if(!flag) return(-1);
 return(position);
@@ -390,23 +390,23 @@ char * start;
 
 start = buffer;
 while(*string && *buffer)
-	{
-	if(*string > ' ')
-		{
-		if(*buffer > ' ')
-			{
-			if(*string != *buffer) return(0);
-			string++;
-			buffer++;
-			}
-		else buffer++;
-		}
-	else string++;
-	}
-	
+    {
+    if(*string > ' ')
+        {
+        if(*buffer > ' ')
+            {
+            if(*string != *buffer) return(0);
+            string++;
+            buffer++;
+            }
+        else buffer++;
+        }
+    else string++;
+    }
+    
 if(*string == 0)
-	return(buffer - start);
-	
+    return(buffer - start);
+    
 return(0);
 }
 

@@ -19,7 +19,7 @@ win-gui:
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-10.3.4-Release.html /c/newlisp
+	cp doc/newLISP-10.3.5-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	
