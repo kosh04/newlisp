@@ -127,7 +127,7 @@ N ))
 (assert (delete-file UnicodeStr))
 
 (if-not fail
-	(println ">>>>> UTF-16 path-file-names testing SUCESSFUL")
+	(println ">>>>> UTF-16 path-file-names testing SUCCESSFUL")
 	(println ">>>>> PROBLEM with UTF-16 path-file-names processing")
 )
 

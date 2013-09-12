@@ -200,6 +200,11 @@
 		(not (set 'lst '()))
 		(= (dostring (c str) (push c lst)) '(88 88 88 88 89))	
 		)
+
+		; impicit indexing
+		(set 'lst '(a b c d e f g))
+		(setf (lst 1) (lst 2))
+		(= lst '(a c c d e f g))
 )
 
 (println)

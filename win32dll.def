@@ -3,6 +3,7 @@ LIBRARY     NEWLISP.DLL
 
 EXPORTS
     dllName
+    debugConsole
     newlispEvalStr
     dllEvalStr
     WEP

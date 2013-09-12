@@ -1,0 +1,35 @@
+#!/usr/bin/newlisp
+
+;; numbers and names may be different on
+;; your platform look int:
+;; /usr/include/sys/signal.h or
+;; /usr/include/signal.h
+
+(define SIGUSR1 30)
+(define SIGUSR2 31)
+
+(define (myhandler s)
+	(println "signal " s " was fired")
+)
+
+; setup the handler
+(signal SIGUSR1 myhandler)
+(signal SIGUSR2 myhandler)
+
+(set 'mypid (sys-info -3))
+
+(dotimes (i 6)
+	(sleep 500)
+	(exec (string "kill -" SIGUSR1 " " mypid))
+	(exec (string "kill -" SIGUSR2 " " mypid))
+)
+
+(exit)
+
+
+
+
+
+
+
+

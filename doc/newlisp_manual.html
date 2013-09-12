@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.3.0 Manual and Reference</title>
+   <title>newLISP v.10.3.2 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.0<font size='1'> rev 2011-02-18</font></h2>
+<h2>User Manual and Reference v.10.3.2</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -563,7 +563,7 @@ in the same fashion.</p>
 <b>> </b>!vi foo.lsp
 </pre>
 
-<p>The Vi editor will open to edit the progtam "foo.lsp". After leaving
+<p>The Vi editor will open to edit the program "foo.lsp". After leaving
 the editor the program could be run using a load statement:</p>
 
 <pre>
@@ -732,7 +732,7 @@ can also be used as command string delimiters. Note that there is a space betwee
 Depending on the mode newLISP is running, different output is written to the log file. Both 
 options always must specify the  path of a log-file. The path may be a relative path and 
 can be either attached or detached to the <tt>-l</tt> or <tt>-L</tt> option. 
-The file must exist and is not created automatically.</p>
+If the file does not exist, it is created when the first logging output is written.</p>
 
 <pre>
 newlisp -l./logfile.txt -c
@@ -1842,7 +1842,7 @@ false, as in <tt>and</tt>, <tt>or</tt>, <tt>if</tt>, <tt>while</tt>,
 
 <p>Evaluation of <tt>(cons 'x '())</tt> yields <tt>(x)</tt>, but <tt>(cons 'x nil)</tt> 
 yields <tt>(x nil)</tt> because <tt>nil</tt> is treated as a Boolean value when 
-evaluated not as an empty list. The <tt>cons</tt> of two atoms in newLISP 
+evaluated, not as an empty list. The <tt>cons</tt> of two atoms in newLISP 
 does not yield a dotted pair, but rather a two-element list. The predicate 
 <tt>atom?</tt> is true for <tt>nil</tt>, but false for the empty list. The empty 
 list in newLISP is only an empty list and not equal to <tt>nil</tt>.</p>
@@ -2323,7 +2323,7 @@ variable, list, array, or string.</p>
 <a name="make_nondestructive"></a>
 <h3>Make a destructive function non-destructive</h3>
 
-<p>Destructive functions can be made non-destructive by wrapping the target 
+<p>Some destructive functions can be made non-destructive by wrapping the target 
 object into the <a href="#copy">copy</a> function.</p>
 
 <pre>
@@ -3519,8 +3519,20 @@ with <tt>new</tt>:</p>
 
 ; create some new classes
 
-(new Class 'Rectangle)
-(new Class 'Circle)
+(new Class 'Rectangle)   <span class='arw'>&rarr;</span> Rectangle
+(new Class 'Circle)      <span class='arw'>&rarr;</span> Circle
+
+; create some objects using the default constructor
+
+(set 'rect (Rectangle 10 20))   <span class='arw'>&rarr;</span> (Rectangle 10 20)
+(set 'circ (Circle 10 10 20))   <span class='arw'>&rarr;</span> (Circle 10 10 20)
+
+; create a list of objects
+; building the list using the list function instead of assigning
+; a quoted list ensures that the object constructors are executed
+
+(set 'shapes (list (Circle 5 8 12) (Rectangle 4 8) (Circle 7 7 15)))
+<span class='arw'>&rarr;</span> ((Circle 5 8 12) (Rectangle 4 8) (Circle 7 7 15))
 </pre>
 
 <p>The generic FOOP constructor is already pre-defined, and FOOP
@@ -4910,6 +4922,13 @@ digits to escape them:</p>
 <tr>
 <td><tt>\xnn</tt></td>
 <td>a hexadecimal code where nn is between 00 and FF</td>
+</tr>
+
+<tr>
+<td><tt>\unnnn</tt></td>
+<td>a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
+digits. When reading a quoted string, newLISP will translate 
+this to a UTF8 character in the UTF8 enabled versions of newLISP.</td>
 </tr>
 
 <tr>
@@ -7020,7 +7039,7 @@ arithmetic">
 
 <tr>
 <td><a href="#read-expr">read-expr</a></td>
-<td>reads and optionally translates s-expressions from source</td>
+<td>reads and translates s-expressions from source</td>
 </tr>
 
 <tr>
@@ -7298,7 +7317,7 @@ arithmetic">
 
 <tr>
 <td><a href="#read-expr">read-expr</a></td>
-<td>reads and optionally translates s-expressions from source</td>
+<td>reads and translates s-expressions from source</td>
 </tr>
 
 <tr>
@@ -8228,7 +8247,7 @@ to transfer files to remote newLISP server nodes.
 
 
 <p>The last example shows how <tt>apply</tt>'s <em>reduce</em> functionality 
-can be used to convert a two-argument function into one that takes multiple arguments.</p>
+can be used to convert a two-argument function into one that takes multiple arguments. Note, that a built-in <a href="#gcd">gcd</a> is available.</p>
 
 <p>
 <tt>apply</tt> should only be used on functions and operators that evaluate all 
@@ -9459,23 +9478,21 @@ probability of <em>float-p</em> and all trials are independent of one another:</
 <p>Transforms a number in <em>int</em> to a string of 1's and 0's or a 
 list, if <em>bool</em> evaluates to anything not <tt>nil</tt>.</p>
 
-<p>In string representation bits are in high to low order of significance. 
-In list presentation 1's and 0's are represented as <tt>true</tt> and 
-<tt>nil</tt> and in order from the lowest to the highest bit of significance.
-This allows direct indexing and program control switching on the result.</p>
+<p>In string representation bits are in high to low order. In list
+presentation 1's and 0's are represented as <tt>true</tt> and <tt>nil</tt>
+and in order from the lowest to the highest bit. This allows direct
+indexing and program control switching on the result.</p>
 
 <!-- example -->
 
 <pre>
-(bits 1234)             <span class='arw'>&rarr;</span> "10011010010"
+(bits 1234)      <span class='arw'>&rarr;</span> "10011010010"
 
-(int "10011010010" 0 2) <span class='arw'>&rarr;</span> 1234
+(int (bits 1234) 0 2) <span class='arw'>&rarr;</span> 1234
 
-(int (bits 1234) 0 2)   <span class='arw'>&rarr;</span> 1234
+(bits 1234 true)     <span class='arw'>&rarr;</span> (nil true nil nil true nil true true nil nil true)
 
-(bits 1234 true)        <span class='arw'>&rarr;</span> (nil true nil nil true nil true true nil nil true)
-
-((bits 1234 true) 0)    <span class='arw'>&rarr;</span> nil ; indexing of the result
+((bits 1234 true) 0) <span class='arw'>&rarr;</span> nil ; indexing of the result
 </pre>
 
 
@@ -12467,11 +12484,10 @@ specified, <em>str-key</em> contains a regular expression pattern. See
 <!-- example -->
 
 <pre>
-(ends-with "newLISP" "LISP")          <span class='arw'>&rarr;</span> true
-(ends-with "newLISP" "lisp")          <span class='arw'>&rarr;</span> nil
+(ends-with "newLISP" "LISP")         <span class='arw'>&rarr;</span> true
+(ends-with "newLISP" "lisp")         <span class='arw'>&rarr;</span> nil
 ;; use regular expressions
-(ends-with "newLISP" "lisp|york" 1)   <span class='arw'>&rarr;</span> true
-(ends-with "New York" "lisp|york" 1)  <span class='arw'>&rarr;</span> true
+(ends-with "newLISP" "lisp|york" 1)  <span class='arw'>&rarr;</span> true
 </pre>
 
 
@@ -13528,7 +13544,7 @@ $2  <span class='arw'>&rarr;</span> "80"
 
 <a name="find-all"></a>
 <h2><span class="function">find-all</span></h2>
-<h4>syntax: (find-all <em>str-pattern</em> <em>str-text</em> [<em>exp</em> [<em>int-regex-option</em>]])<br/>
+<h4>syntax: (find-all <em>str-regex-pattern</em> <em>str-text</em> [<em>exp</em> [<em>int-regex-option</em>]])<br/>
 syntax: (find-all <em>list-match-pattern</em> <em>list-lists</em> [<em>exp</em>])<br/>
 syntax: (find-all <em>exp-key</em> <em>list</em> <em>exp</em> <em>func-compare</em>)</h4>
 
@@ -13608,6 +13624,9 @@ function used for comparing list elements with the key expression in <em>exp-key
 ; process the found element available in $it
 
 (find-all 5 '(2 7 4 5 9 2 4 9 7 4 8) (* 3 $it) &lt;) <span class='arw'>&rarr;</span> (21 27 27 21 24)
+; same as
+(find-all 5 '(2 7 4 5 9 2 4 9 7 4 8) (* 3 $it) (fn (x y) (&lt; x y))) <span class='arw'>&rarr;</span> (21 27 27 21 24)
+
 
 (find-all 5 '(2 7 4 5 9 2 4 9 7 4 8) ("abcdefghijk" $it) &lt;) <span class='arw'>&rarr;</span> ("h" "j" "j" "h" "i")
 </pre>
@@ -15137,7 +15156,7 @@ imported function, use the functions
 and <a href="#int">int</a> for 32-bit integers. 
 By default, newLISP passes floating point numbers as 64-bit double floats, 
 integers as 32-bit integers, and strings as 32-bit integers for string 
-addresses.
+addresses (pointers in C).
 </p>
 
 <!-- example -->
@@ -15207,16 +15226,19 @@ str  <span class='arw'>&rarr;</span> "C:\\WINDOWS\000                     "
 ;; or use trim
 (trim str)  <span class='arw'>&rarr;</span> "C:\\WINDOWS"
 
-;; passing an integer parameter by reference
 
 (import "kernel32.dll" "GetComputerNameA")
 
-(set 'str (dup "\000" 64)  ; reserve space, initialize
+;; allocate memory and initialize to zeros
+(set 'str (dup "\000" 64)  
 
-;; get size in a buffer lpNum
+;; get size in a buffer lpNum to pass
+;; an integer parameter by reference
 (set 'lpNum (pack "lu" (length str)))  
 
 ;; call the function
+;; the size of the string is passed by reference
+;; str contains the string address (C pointer)
 (GetComputerNameA str lpNum) 
 
 str  <span class='arw'>&rarr;</span> "LUTZ-PC\000                        "
@@ -15258,6 +15280,17 @@ conventions by default and ignores any additional string.
 floating point arguments take up two spaces each
 (e.g., passing five floats takes up ten of the fourteen parameters).
 </p>
+
+<h3>Memory management</h3>
+<p>Any allocation performed by imported foreign functions has to be 
+deallocated manually if there's no call in the imported API to do so.
+See the <a href="http://www.newlisp.org/CodePatterns.html">Code Patterns in newLISP</a>
+document for an example.</p>
+
+<p>In case of calling foreign functions with passing by reference, 
+memory for variables needs to be allocated beforehand by newLISP
+&mdash; see import of <tt>GetWindowsDirectoryA</tt> above &mdash; 
+and hence, memory needs not be deallocated manually.</p>
 
 <br/><br/>
 
@@ -24146,7 +24179,7 @@ syntax: (source <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <a name="spawn"></a>
 <h2><span class="function">spawn</span></h2>
-<h4>syntax: (spawn <em>sym</em>  <em>exp</em>)</h4>
+<h4>syntax: (spawn <em>sym</em> <em>exp</em>)</h4>
 
 <p>Launches the evaluation of <em>exp</em> as a child process and immediately
 returns. The symbol in <em>sym</em> is quoted and receives the result of the 
@@ -25608,10 +25641,11 @@ Most systems use UTF-8 encoding only.</p>
 <span class='arw'>&rarr;</span> (f (g xyz) xyz)
 </pre>
 
+ 
+<h3>Use <tt>unify</tt> with <tt>bind</tt> for de-structuring</h3>
 
 <p>The function <a href="#bind">bind</a> can be used to set unified
 variables:</p>
-
 
 <pre>
 (bind (unify '(f (g A) A) '(f B xyz)))
@@ -25619,9 +25653,6 @@ variables:</p>
 A <span class='arw'>&rarr;</span> xyz 
 B <span class='arw'>&rarr;</span> (g xyz)
 </pre>
-
- 
-<h3>Use <tt>unify</tt> with <tt>bind</tt> for de-structuring</h3>
 
 <p>This can be used for de-structuring:</p>
 
@@ -25846,13 +25877,13 @@ not to be grouped with <a href="#begin">begin</a>:</p>
 	The following characters may define a format:
 </p>
  
-<table  summary="format chracters in pack">
+<table width="98%" summary="format chracters in pack">
 
 <tr align="left" valign="bottom"><th>format</th><th>description</th></tr>
 
 <tr>
-<td WIDTH="20%"><tt>c </tt></td>
-<td WIDTH="80%">a signed 8-bit number</td>
+<td><tt>c </tt></td>
+<td>a signed 8-bit number</td>
 </tr>
 
 <tr>
@@ -26255,16 +26286,12 @@ list <tt>()</tt> if <em>body</em> was not executed.</p>
 
 <!-- example -->
 <pre>
-(when condition 
-	(do-this)
-	(do-that)
+(when (read-line)
+	(set 'result (analyze (current-line)))
+	(report result)
 	(finish)
 )	
 </pre>
-
-<p>When the symbol <tt>condition</tt> evaluates to not <tt>nil</tt> or the 
-empty list <tt>()</tt>, all
-expressions in the <tt>when</tt> block are evaluated.</p>
 
 <p>See also the function <a href="#unless">unless</a> working like 
 <tt>(when (not ...) ...)</tt>.</p>
@@ -26481,28 +26508,42 @@ by file functions which can take URLs like <a href="#load">load</a>,
 
 <p>E.g. whenever a block of data requested with <a href="#get-url">get-url</a>
 arrives the function in <em>sym</em> or <em>func</em> will be called with
-the accumulated number of bytes transferred. Likewise when sending data with
+the number of bytes transferred. Likewise when sending data with
 <a href="#post-url">post-url</a> or any of the other data sending 
 functions, <em>sym</em> or <em>func</em> will be called with the number of
-bytes already transferred.</p>
+bytes transferred for each block of data transferred.</p>
 
 <!-- example -->
 
 <pre>
 (xfer-event (fn (n) (println "-&gt;" n)))
-(length (get-url "http://yahoo.com"))
-
-<b>-&gt;3779</b>
-<b>-&gt;5219</b>
-<b>-&gt;6659</b>
-<b>-&gt;8099</b>
-<b>-&gt;9490</b>
-<b>9490</b>
+(length (get-url "http://newlisp.org"))
+<b>
+-&gt;73
+-&gt;799
+-&gt;1452
+-&gt;351
+-&gt;1093
+-&gt;352
+-&gt;211
+-&gt;885
+-&gt;564
+-&gt;884
+-&gt;561
+-&gt;75
+-&gt;812
+-&gt;638
+-&gt;1452
+-&gt;801
+-&gt;5
+-&gt;927
+11935
+</b>
 </pre>
 
 
 <p>The computer output is shown in bold. Whenever a block of data is received
-the accumulated byte size is printed. Instead of defining the handler
+its byte size is printed. Instead of defining the handler
 function directory with a lambda function in <em>func</em>, a symbol
 containing a function definition could have been used:</p>
 

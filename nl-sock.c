@@ -1298,7 +1298,7 @@ if(mcAddr != NULL)
     mcast.imr_multiaddr.s_addr = inet_addr(mcAddr);
 	if(ADDR_FAMILY == AF_INET)
 		mcast.imr_interface.s_addr = INADDR_ANY;    
-/* no handled/debugged
+/* not handled/debugged
     else
     	mcast.imr_interface.s_addr = IN6ADDR_ANY_INIT;
 */

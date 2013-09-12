@@ -670,15 +670,13 @@ true
 (define (test-date )
   (= (date) (date (date-value)) (date (apply date-value (now)))))
 
+
 (define (test-date-parse)
 	(and
 		(= (date-parse "2007.1.3" "%Y.%m.%d") 1167782400)
 		(= (date-parse "20091014" "%Y%m%d") 1255478400)
-; note that the month name here is in German
-		(= (date-parse "Januar 10, 07" "%B %d, %y") 1168387200)
+		(= (date-parse "January 10, 07" "%B %d, %y") 1168387200)
 ))
-
-(define (test-parse-date) (test-date-parse))
 
 (define (test-date-list)
 	(let (value (date-value))
@@ -1946,13 +1944,7 @@ true
     (= (parse "hello regular   expression 1, 2, 3" {,\s*|\s+} 0)
        '("hello" "regular" "expression" "1" "2" "3"))))
 
-
-(define (test-date-parse)
-	(and
-		(= (date-parse "2007.1.3" "%Y.%m.%d") 1167782400)
-		(= (date-parse "20091014" "%Y%m%d") 1255478400)
-		(= (date-parse "January 10, 07" "%B %d, %y") 1168387200)
-))
+(define (test-parse-date) (test-date-parse))
 
 (define (test-prefix)
 	(set 's 'Foo:bar)

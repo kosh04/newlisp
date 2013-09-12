@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.3.1
-INT_VERSION = 10301
+VERSION = 10.3.2
+INT_VERSION = 10302
 
 default: makefile_build
 	make -f makefile_build
@@ -109,7 +109,7 @@ dpkg_utf8:
 # bombs out in the following script, but is fixed in 10.6.0
 # Snow Leopard.
 dmg_ppc:
-	make -f makefile_darwin_utf8_tigerPPC
+	make -f makefile_darwin_utf8_leopardPPC
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -120,7 +120,7 @@ dmg_ppc:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
 
 dmg_intel:
-	make -f makefile_darwin_utf8_tigerIntel
+	make -f makefile_darwin_utf8_leopardIntel
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \

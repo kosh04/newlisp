@@ -596,6 +596,7 @@ while((chr = fgetc(inStream)) != EOF)
 } while (errno == EINTR);
 #endif
 
+if(feof(inStream)) clearerr(inStream);
 if(chr == EOF && stream->position == 0) return(NULL);
 return(stream->buffer);
 }

@@ -48,6 +48,10 @@ time_t      8
 #include <wchar.h>
 #include <fcntl.h>
 
+#ifndef time_t
+#include <time.h>
+#endif
+
 #define str2cmp(s1,s2) ( ( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
 						 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )		 
 

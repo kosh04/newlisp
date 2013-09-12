@@ -44,10 +44,10 @@ opsys += 256;
 #endif
 
 initLocale();
+initStacks();
 initialize();
 mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 setupAllSignals();
-initStacks();
 initDefaultInAddr(); 
 
 initFile = getenv("NEWLISPLIB_INIT");

@@ -1,4 +1,4 @@
-.TH newlisp 1 "February 2011" "version 10.3.0" "Commandline Parameters"
+.TH newlisp 1 "June 2011" "version 10.3.0" "Commandline Parameters"
 .SH NAME
 newlisp \- lisp like programming language
 .SH SYNOPSIS
@@ -99,8 +99,18 @@ httpd.conf \-http \-d 8080 \-w /usr/home/www/httpdocs &
 .PP
 If the file httpd.conf contains:
 
-(define (httpd\-conf path\-name)
-    (if (ends\-with path\-name ".exe") "errorpage.html" path\-name))
+(command-event (fn (s)
+    (local (request)
+        (if (find "?" s) ; is this a query
+            (begin
+                (set 'request (first (parse s "?")))
+                ; discover illegal extension in queries
+                (if (ends-with request ".exe") 
+                    (set 'request "GET /errorpage.html")
+                    (set 'request s)))
+            (set 'request s))
+        request)
+))
 
 then all files ending in .exe will translate the request in to a request for an error page, else the original request string is returned.
 .PP

@@ -4,6 +4,7 @@
 ;; @version 2.1 - changes for 10.0
 ;; @version 2.2 - doc changes
 ;; @version 2.3 - fix in mail-send-body, thanks to Alessandro
+;; @version 2.31 - removed spurious apostrophe
 ;; @author Lutz Mueller 2001-2010, Cormullion 2008
 ;; <h2>Routines for sending mail</h2> 
 ;; This module implements routines to communicate with a SMTP mail server 
@@ -51,7 +52,7 @@
 
 (set 'debug-flag nil) 
 
-(define (send-mail mail-from mail-to mail-subje`ct mail-body SMTP-server (user-name "") (password "")) 
+(define (send-mail mail-from mail-to mail-subject mail-body SMTP-server (user-name "") (password "")) 
     (and 
         (set 'from-hostname (nth 1 (parse mail-from "@"))) 
         (set 'socket (net-connect SMTP-server 25)) 

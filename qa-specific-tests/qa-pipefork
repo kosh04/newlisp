@@ -26,7 +26,6 @@
 (wait-pid observer)
 (wait-pid counter)
 
-(println)
-(print ">>>>> Benchmarked pipes with forked processes: ")
-(println (div (- (time-of-day) start)  N) " ms per write->read")
+(println ">>>>> " (div (- (time-of-day) start)  N) 
+" ms per write->read pipe/fork (0.0356 ms Mac OSX, 1.83 GHz Core 2 Duo)")
 (exit)

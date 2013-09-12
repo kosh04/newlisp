@@ -4,7 +4,8 @@
 ;; @version 1.41 bug fixes for gs:listen and gs:check-event
 ;; @version 1.42 new table UI
 ;; @version 1.43 bug fix in new table UI action parameters
-;; @author LM, August 2008, 2009, 2010
+;; @version 1.44 manuals in menu only on MAC OSX, other platforms would block
+;; @author LM, August 2008, 2009, 2010, 2011
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -2419,7 +2420,7 @@ true
 ;; sequenced from start to end with no repetiton (loop count of 0). Note that the start-loop and
 ;; end-loop positions refer only to loop played after playing the full track. After the sequence
 ;; started playing 'gs:stop-sequence' can be used to stop it at any time. The midi system
-;; should not be close using 'gs:midi-close' before playing has finished or playing will
+;; should not be closed using 'gs:midi-close' before playing has finished or playing will
 ;; be cut off.
 ;;
 ;; See the function 'gs:add-track' for complete code example.

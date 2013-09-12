@@ -1,4 +1,4 @@
-# JOE syntax highlight file for newLISP v.10.0
+# JOE syntax highlight file for newLISP v.10.3.0
 
 # These colors are for the text console.
 # You will definitely need different colors for a terminal under X.
@@ -29,18 +29,21 @@
 # 29 April 2010, LM added new 'net-packet'
 # 26 May 2010, LM added new 'net-ipv'
 # 22 August 2010, LM date-parse replace parse-date, new date-list
-# version 1.8
+# 23 March 2011, Norman updated list with prim and depr functions
+# 28 March 2011, Norman updated list with prim and depr functions
+# 28 March 2011, L.M. added write-buffer (like write) to depr functions
+# version 1.11
 
-=Idle
-=Comment 	green
-=String 	bold black
+=Idle		
+=Comment 	bold green
+=String 	bold yellow
 =Text		bold black
 =Escape 	bold green
 =Paren		red
-=Quote		bold
-=Prim		bold blue
-=Tag		bold blue
-=Depr    	bold yellow
+=Quote		bold cyan
+=Prim		bold cyan
+=Tag		bold cyan
+=Depr    	bold black
 
 :idle Idle
 	*		idle
@@ -338,7 +341,7 @@
 "random"	prim
 "randomize"	prim
 "read"	prim
-"read-buffer"	prim
+
 "read-char"	prim
 "read-expr"	prim
 "read-file"	prim
@@ -403,6 +406,7 @@
 "sys-info"	prim
 "tan"	prim
 "tanh"	prim
+"term"	prim
 "throw"	prim
 "throw-error"	prim
 "time"	prim
@@ -430,7 +434,6 @@
 "when"	prim
 "while"	prim
 "write"	prim
-"write-buffer"	prim
 "write-char"	prim
 "write-file"	prim
 "write-line"	prim
@@ -444,8 +447,13 @@
 "nth-set"	depr
 "set-assoc"	depr
 "assoc-set"	depr
+"replace-assoc" depr
 "integer"	depr
 "ref-set"	depr
+"parse-date"	depr
+"name"		depr
+"read-buffer"	depr
+"write-buffer"	depr
 
 done		
 	"\-\"a-zA-Z_0-9!#@$%^&*+={}|/\\:';,.<>/?~`" ident
@@ -488,6 +496,6 @@ done
 	*		idle		noeat
 	
 :depr Depr
-  *  idle     noeat
+	*  idle     noeat
 
 

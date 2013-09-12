@@ -25,6 +25,7 @@
 #include <windows.h>
 #include <io.h>
 
+
 /*
 typedef struct _PROCESS_INFORMATION { // pi  
     HANDLE hProcess; 
@@ -165,6 +166,7 @@ return((UINT*)MapViewOfFile((HANDLE)hMemory, FILE_MAP_WRITE, 0, 0, size));
 
 extern SYMBOL * timerEvent;
 extern int milliSecTime(void);
+extern CELL * getCreateSymbol(CELL * params, SYMBOL * * symbol, char * name);
 
 /* 
 UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc);
@@ -184,17 +186,17 @@ int now;
 
 if(params != nilCell) 
   {
-  params = getSymbol(params, &timerEvent);
+  params = getCreateSymbol(params, &timerEvent, "$timer");
 
   if(params != nilCell)
 	{
-    getFloat(params, &seconds);
-    timerDuration = 1000 * seconds;
+	getFloat(params, &seconds);
+	timerDuration = 1000 * seconds;
 	if(timerDuration > 0)
 		{
-    	start = milliSecTime();
-    	_beginthread(timerFunc, 0, 0);
-    	seconds = timerDuration/1000.0;
+		start = milliSecTime();
+		_beginthread(timerFunc, 0, 0);
+		seconds = timerDuration/1000.0;
 		}
 	}
   else
@@ -202,7 +204,7 @@ if(params != nilCell)
     /* return the elapsed time */
     seconds = ((now = milliSecTime()) < start ? 
 			86400000 - start + now :
-            now - start)/1000.0;  
+			now - start)/1000.0;  
     }
   return(stuffFloat(&seconds));    
   }

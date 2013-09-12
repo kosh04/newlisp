@@ -1064,15 +1064,16 @@ CELL * findAllString(char * pattern, char * str, size_t size, CELL * params)
 {
 long options = 0;
 ssize_t findPos = -1;
-int len;
-int offset = 0;
+ssize_t lastPos = -1;
 CELL * result = nilCell;
-CELL * cell = NULL;
 CELL * exprCell;
 CELL * exprRes;
+CELL * cell = NULL;
 UINT * resultIdxSave;
+jmp_buf errorJumpSave;
 int errNo; 
-int lastPos = -1;
+int len;
+int offset = 0;
 
 exprCell = params;
 if((params = params->next) != nilCell)
@@ -1080,16 +1081,24 @@ if((params = params->next) != nilCell)
 
 resultIdxSave = resultStackIdx;
 	
-while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &len)) != -1)
+if(exprCell != nilCell)
+	{
+	memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+	if((errNo = setjmp(errorJump)) != 0)
+		{
+		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+		if(result != nilCell) deleteList(result);
+		longjmp(errorJump, errNo);
+		}	
+	}
+
+while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &len)) 
+       != -1)
 	{
 	if(exprCell != nilCell)
 		{
 		itSymbol->contents = sysSymbol[0]->contents;
-		if((exprRes = evaluateExpressionSafe(exprCell, &errNo)) == NULL)
-        	{
-			pushResult(result); /* push for later deletion */
-       		longjmp(errorJump, errNo);
-       		}
+		exprRes = evaluateExpression(exprCell);
 		exprRes = copyCell(exprRes);
 		}
 	else
@@ -1120,23 +1129,24 @@ while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &l
 	cleanupResults(resultIdxSave);
 	}
 
-if(result == nilCell)
-	return(getCell(CELL_EXPRESSION));
-
 itSymbol->contents = (UINT)nilCell;
+
+if(exprCell != nilCell)
+	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+
 return(result);
 }
 
 
 CELL * findAllList(CELL * pattern, CELL * list, CELL * exprCell)
 {
-CELL * result = nilCell;
-CELL * cell = NULL;
+CELL * result;
 CELL * exprRes;
 CELL * match;
 CELL * funcCell;
-int errNo;
 UINT * resultIdxSave;
+jmp_buf errorJumpSave;
+int errNo;
 
 funcCell = evaluateExpression(exprCell->next);
 resultIdxSave = resultStackIdx;
@@ -1144,6 +1154,16 @@ resultIdxSave = resultStackIdx;
 if(funcCell == nilCell && !isList(pattern->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, pattern));
 	
+result = getCell(CELL_EXPRESSION);
+
+memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+if((errNo = setjmp(errorJump)) != 0)
+	{
+	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+	deleteList(result);
+	longjmp(errorJump, errNo);
+	}
+
 while(list != nilCell)
 	{
 	if(funcCell == nilCell)
@@ -1172,35 +1192,17 @@ while(list != nilCell)
 	itSymbol->contents = (UINT)list;
 
 	if(exprCell != nilCell)
-		{
-		if((exprRes = evaluateExpressionSafe(exprCell, &errNo)) == NULL)
-       		{
-			pushResult(result); /* push for later deletion */
-   			longjmp(errorJump, errNo);
-   			}
-		}
+		exprRes = evaluateExpression(exprCell);
 	else 
 		exprRes = list;
 
-	exprRes = copyCell(exprRes);
+	addList(result, copyCell(exprRes));
 
-	if(result == nilCell)
-		{
-		cell = exprRes;
-		result = makeCell(CELL_EXPRESSION, (UINT)cell);
-		}
-	else
-		{
-		cell->next = exprRes;
-		cell = cell->next;
-		}
-	
 	CONTINUE_NEXT:	
 	list = list->next;
 	}
 
-if(result == nilCell)
-	return(getCell(CELL_EXPRESSION));
+memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
 itSymbol->contents = (UINT)nilCell;
 return(result);
@@ -1458,7 +1460,7 @@ COMPARE_START:
 		{
 		if(repCell != NULL)
 			{
-			/* take out usage of sysSymbol0] in 10.2
+			/* perhaps take out usage of sysSymbol[0] 
                should only be used for regex replacements 
 			   then $it doesn't need to be a copy */
 			deleteList((CELL*)sysSymbol[0]->contents);
@@ -1471,7 +1473,7 @@ COMPARE_START:
 		else /* remove mode */
 			cell->contents = (UINT)list->next;
 
-		list->next = nilCell;
+		list->next = nilCell; /* decouple */
 		deleteList(list);
 		cnt++;
 
@@ -1492,7 +1494,7 @@ COMPARE_START:
 			cell = list->next;	/* cell = old elmnt */
 			if(repCell != NULL)
 				{
-				/* take out usage of sysSymbol0] in 10.2
+				/* perhaps take out usage of sysSymbo[0]
                	should only be used for regex replacements */
 				deleteList((CELL*)sysSymbol[0]->contents);
 				itSymbol->contents = (UINT)copyCell(cell);
@@ -1507,11 +1509,12 @@ COMPARE_START:
 			}		
 		else	
 			list = list->next;
+
 		cleanupResults(resultIdxSave);
 		}
 
 	deleteList((CELL*)sysSymbol[0]->contents);	
-	/* sysSymbol[0] should not be used here, introduce $count */
+	/* sysSymbol[0] should not be used here, introduce $count ? */
 	sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
 	itSymbol->contents = (UINT)nilCell;
 	symbolCheck = refSymbol;

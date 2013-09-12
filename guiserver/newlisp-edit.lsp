@@ -9,6 +9,7 @@
 ; version 1.30 change fonts in both: editor and monitor depending on active window
 ; version 1.31 cmd-x/v/z/Z and ctrl-x/v/z/Z did not mark edit buffer as dirty
 ; version 1.32 newlispDoc directory configured now depending on NEWLISPDIR on Unix
+; version 1.33 eliminated manuals in help on all but OSX platform
 
 (set-locale "C")
 
@@ -404,10 +405,12 @@
 )
 
 (gs:menu 'HelpMenu "Help")
-(gs:menu-item 'HelpAbout 'helpabout-handler "About newLISP-GS")
-(gs:menu-item 'HelpManual 'helpmanual-handler "newLISP Manual and Reference")
+(unless (= ostype "OSX") ; on OSX use about option in top frame menu
+	(gs:menu-item 'HelpAbout 'helpabout-handler "About newLISP-GS"))
 (gs:menu-item 'HelpDemos 'opendemos-handler "Open Demo Folder")
-(gs:menu-item 'HelpGuiserver 'helpguiserver-handler "GS Manual")
+(when (= ostype "OSX")
+	(gs:menu-item 'HelpManual 'helpmanual-handler "newLISP Manual and Reference")
+	(gs:menu-item 'HelpGuiserver 'helpguiserver-handler "GS Manual"))
 
 (gs:menu 'RunMenu "Run")
 (gs:menu-item 'RunRun 'process-or-execbutton-handler "Run")
@@ -541,22 +544,19 @@
 	(gs:add-to 'ToolMenu (string "ToolScript" $idx)))
 
 ; Help menu
-;; manuals are not added to Help on Win32 because open browser
-;; prevents newlisp-edit/guiserever.jar from exiting
-(if (= ostype "Win32")
-	(begin
-		(gs:add-to 'HelpMenu 'HelpDemos)
-		(gs:add-separator 'HelpMenu)
-		(gs:add-to 'HelpMenu 'HelpAbout))
-	(begin
-		(gs:add-to 'HelpMenu 'HelpManual 'HelpGuiserver)
-		(gs:add-separator 'HelpMenu)
-		(gs:add-to 'HelpMenu 'HelpDemos)
-		(if (!= ostype "OSX")
-			(begin
-			(gs:add-separator 'HelpMenu)
-			(gs:add-to 'HelpMenu 'HelpAbout)
-))))
+; manuals are only added on Mac OSX, other platforms block
+; the IDE from working when the browser is opened until the 
+; it is closed again
+(when (= ostype "OSX")
+	(gs:add-to 'HelpMenu 'HelpManual 'HelpGuiserver)
+	(gs:add-separator 'HelpMenu))
+
+(gs:add-to 'HelpMenu 'HelpDemos)
+
+(unless (= ostype "OSX")
+	(gs:add-separator 'HelpMenu)
+	(gs:add-to 'HelpMenu 'HelpAbout))
+
 
 (gs:menu-bar 'TheEditor 'FileMenu 'EditMenu 'RunMenu 'ViewMenu 'ToolMenu 'HelpMenu)
 
@@ -1422,6 +1422,10 @@
 	(load-platform-help "/guiserver/index.html")
 )
 
+; help menu itrems for HTNL documentaion have been taken out because
+; only on Mac OSX they will not block the IDE. On Windows and Linux
+; the IDE stops working until the browser window is closed.
+
 (define (load-platform-help file-name , prog files)
 	(if (not (file? (string newlispDoc file-name)))
 		(gs:message-dialog 'TheEditor "Display documentation"
@@ -1432,8 +1436,7 @@
 		((= ostype "OSX")
 			(exec (string "open file://" newlispDoc file-name))
 		)
-		; Windows, loading docs from the menu has been disabled because open explorer blocks the Java part
-		; of newlisp-edit.lsp from exiting
+		; MS Windows
 		((= ostype "Win32")
 			(begin
 				(set 'prog (string "cmd /c \"" (env "PROGRAMFILES") "/Internet Explorer/IEXPLORE.EXE\""))

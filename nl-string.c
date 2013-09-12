@@ -25,6 +25,7 @@
 #include "protos.h"
 
 extern SYMBOL * sysSymbol[];
+extern int bigEndian;
 
 #define OVECCOUNT (MAX_REGEX_EXP * 3)    /*  max sub expressions in PCRE */
 
@@ -1546,7 +1547,7 @@ CELL * cell;
 ssize_t length, ln;
 int len, type;
 int listFlag = 0;
-int bigEndian = 1, endianSwitch = 0;
+int endianSwitch = 0;
 char chrV;
 unsigned char byteV;
 short int shortV;
@@ -1555,9 +1556,6 @@ unsigned int uint32V;         /* 32 bit */
 unsigned long long  uint64V; /* 64 bit */
 float floatV;
 double doubleV;
-
-/* find out endianess */
-bigEndian = (*((char *)&bigEndian) == 0) ;
 
 params = getString(params, &format);
 source = format;
@@ -1804,7 +1802,7 @@ CELL * next;
 size_t length, maxlen;
 int len;
 int type;
-int bigEndian = 1, endianSwitch = 0;
+int endianSwitch = 0;
 char chrV;
 unsigned char byteV;
 short shortV;
@@ -1814,9 +1812,6 @@ unsigned int uint32V;
 unsigned long long int uint64V;
 float floatV;
 double doubleV;
-
-/* find out endianess */
-bigEndian = (*((char *)&bigEndian) == 0) ;
 
 params = getString(params, &format);
 params = evaluateExpression(params);

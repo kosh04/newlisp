@@ -3,7 +3,9 @@
 		"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- This file is used on Mac OS X for the launchd and launchctl
 utiities. The file should go into the $HOME/Library/LaunchAgents/
-directory or in the system wide Library/LaunchAgents/ directory -->
+directory or in the system wide Library/LaunchAgents/ directory 
+customize the -d (port) and -w (working directory) options to 
+your own liking -->
 <plist version="1.0">
 <dict>
 	<key>Label</key>

@@ -8,6 +8,7 @@
 ;; @version 3.3  - typo in fetch-all didn't delete old fetches
 ;; @version 3.4  - documentaion error for load path
 ;; @version 3.41  - library load path for Fedora Linux
+;; @version 3.42  - library load path upgraded for OpenBSD 4.9
 ;; @author Lutz Mueller 2003-2010, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
@@ -93,7 +94,7 @@
 (set 'NEWLISP64 (not (zero? (& (sys-info -1) 256))))
 
 (set 'files '(
-	"/usr/local/lib/libmysqlclient.so.19.0" ; OpenBSD 4.6
+	"/usr/local/lib/libmysqlclient.so.20.0" ; OpenBSD 4.9
 	"/usr/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/lib/mysql/libmysqlclient.so" ; Linux Fedora
 	"/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
@@ -318,7 +319,9 @@
 
 (define (test-mysql)
   (MySQL:init)
-  (MySQL:connect 0 "" 0 "test")
+  (unless (MySQL:connect 0 "" 0 "test")
+    (println "Could not connect to MySQL")
+	(exit))
   
   (println "databases:")
   (MySQL:query "show databases;")

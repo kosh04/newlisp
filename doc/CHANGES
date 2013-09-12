@@ -5987,4 +5987,66 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      input lines.
 
      Fix for 'filter', 'index', 'clean', 'exist' and 'for-all' when
-     handling empty list elements ().
+     handling empty list elements (). Also, these functions are now
+     several times faster.
+
+     Check for missing parameter in inc, dec, ++, --. Using these
+     without any parameter messed up the value of 'nil'.
+
+     Fixed crash bug with boolean 'true' parameter in 'dotree'
+
+     Minimum SDK changed to 10.5 Leopard for makefiles:
+       makefile_darwin_utf8_leopardPPC
+       makefile_darwin_utf8_leopardIntel
+     to make a universal Tiger 10.4 based version the file:
+       makefile_darwin_universal_utf8_compat
+     still exists (for questions about this -> Greg Slepak).
+
+     bug fix for 'timer' when using recursively and not using symbols
+     but lambda expressions, e.g.: (timer foo 1) instead of (timer 'foo 1)
+     when the (timer ...) statement is part of foo.
+
+     New version 0.3 of json.lsp module now processes backslashed characters
+     as of JSON spec (thanks Ted Walther).
+
+     Speedup and memory lossless error recovery in 'map'.
+
+     Better memory management in error recovery of evaluateStream()
+     and sysEvalString()
+
+     Did not clear EOF error in 'read-line'.
+
+10.3.2
+     New 'debugConsole' in newlisp.dll can be imported and called for
+     re-opening std I/O to CONOUT$ and CONIN$.
+
+     Fixed memory leak in library mode.
+
+     Doc changes and additions.
+
+     makefile_darwin_utf8_lib for newlisp.dylib
+
+     Fix for "debug" option in 'get-url' when passing url-encoded
+     strings (thanks to Kosh for catching and fixing this)
+
+     The newlisp.1 man page showed an old invalid method to define
+     redirections in http-conf.lsp.
+
+     Significant speedup of 'series' with function in second argument.
+
+     Speedup of 'find-all' (for lists and strings) when function is used
+     as third argument.
+
+     Quoted strings now can contain unicode characters encoded using
+     \u.... , where .... are four hex digits e.g. "\u03b1\u03b2\u3b3"
+     for the Greek letters "αβγ" (alpha, beta, gamma). When reading 
+     the string, newLISP will translate it to UTF8 encoded characters
+     on UTF8 enabled versions of newLISP.
+
+     More work on 'map': speedup now also on smaller lists.
+
+     Avoid redundant cellCopy() when cell already on result stack
+     (needed change in array initialization).
+
+     Fixed and error message in gs:save-sequence
+

@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2010 February 5<sup>th</sup><br/>
+</h1>Version 2011 July 12<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.3
 </center>
 
@@ -146,6 +146,7 @@ newLISP is a registered trademark of Lutz Mueller.
 <li><a href="#toc-6">6. Modifying and searching lists</a>
   <ul>
   <li>'push' and 'pop'</li>
+  <li>'extend'</li>
   <li>Accessing lists</li>
   <li>Selecting more elements</li>
   <li>Filtering and differencing lists</li>
@@ -280,6 +281,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Compile on UNIX</li>
   <li>Compile a DLL on Win32</li>
   <li>Importing data structures</li>
+  <li>Memory management</li>
   <li>Unevenly aligned structures</li>
   <li>Passing parameters</li>
   <li>Extracting return values</li>
@@ -890,8 +892,10 @@ len:10 width:20 height:40
 ; 30 times faster with map
 ;
 (map println (flat L))
-  
-(dolist (item (flat L)) (println item)
+ 
+; same as
+ 
+(dolist (item (flat L)) (println item))
 </pre>
 
 <h3>Walking a directory tree</h3>
@@ -1880,7 +1884,7 @@ function factory can be used for a string stream:</p>
 <pre>
 ; tokenize using replace with regular expressions
    
-(set 'page (get-url "http://www.nodep.nl/newlisp/index.html"))
+(set 'page (get-url "http://newlisp.digidep.net/"))
    
 (replace {href="(http://.*lsp)"} page (first (push $1 links)) 0)
    
@@ -2254,7 +2258,7 @@ str &rarr; "ABCD"
 
 <h3>Using 'net-peek'</h3>
 
-<p>'net-peek returns the number of characters pending to read.</p>
+<p><tt>net-peek</tt> returns the number of characters pending to read.</p>
 
 <pre>
 (while ( = (net-peek aSock) 0)
@@ -2792,7 +2796,10 @@ Persons →  (
 (assoc anne-city persons) → (city "New York")
 </pre>
 
-<p>When all keys are symbols, as is in <tt>address</tt>, <tt>country</tt> and <tt>city</tt>, simple and nested associations in newLISP have the same format as newLISP <tt>FOOP</tt> (Functional Object Oriented Programming) objects. See the users manual chapter "17. Object Oriented Programming in newLISP" for details.</p>
+<p>When all keys are symbols, as is in <tt>address</tt>, <tt>country</tt> 
+and <tt>city</tt>, simple and nested associations in newLISP have the same 
+format as newLISP <tt>FOOP</tt> (Functional Object Oriented Programming) objects. 
+See the users manual chapter "18. Functional-object oriented programming" for details.</p>
 
 <h3>Updating nested associations</h3>
 
@@ -3025,7 +3032,7 @@ result: (7 11 15 19 23)
 (exit)
 </pre>
 
-<p>While <tt>net-eval</tt> is waiting for results, it calls the function <tt>idle-loop</tt> repeatedly with parameter <tt>p</tt>. The parameter <tt>p</tt> is <tt>nil</tt> when no result was received during the last 100 micro seconds, or <tt>p</tt> contains a list sent back from the remote node. The list contains the remote address and port and the evaluation result. The example shown would generate the following output:</p>
+<p>While <tt>net-eval</tt> is waiting for results, it calls the function <tt>idle-loop</tt> repeatedly with parameter <tt>p</tt>. The parameter <tt>p</tt> is <tt>nil</tt> when no result was received during the last 1000 milli seconds, or <tt>p</tt> contains a list sent back from the remote node. The list contains the remote address and port and the evaluation result. The example shown would generate the following output:</p>
 
 <pre>
 ("192.168.1.100" 4711 7)
@@ -3135,7 +3142,7 @@ result: (7 11 15 19 23)
 → "The message - more text"
 </pre>
 
-<p>The first two function return a message starting with the numbers of bytes transferred and the name of the remote file affected. The <tt>-read-file</tt> function returns the contents received.</p>
+<p>The first two function return a message starting with the numbers of bytes transferred and the name of the remote file affected. The <tt>read-file</tt> function returns the contents received.</p>
 
 <p>Under all error conditions an error message starting with the characters <tt>ERR:</tt> would be returned:</p>
 
@@ -3193,7 +3200,7 @@ server_args = httpd-conf.lsp -http -w /home/node
 <p>The startup file could also have been added the following way when starting the server in the background from a command shell, and <tt>httpd-conf.lsp</tt> is in the current directory:</p>
 
 <pre>
-newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;amp;
+newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;
 </pre>
 
 <p>All requests will be pre-processed with a function specified using <tt>command-event</tt> in <tt>httpd-conf.lsp</tt>:</p>
@@ -3247,7 +3254,11 @@ newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;amp;
 (exit)
 </pre>
 
-<p>A newLISP installation contains a module file <tt>cgi.lsp</tt>. This module contains subroutines for extracting parameters from HTTP GET and POST requests, extract or set cookies amd other useful routines when writing CGI files. See the modules section at: http://www.newlisp.org/modules/.</p>
+<p>A newLISP installation contains a module file <tt>cgi.lsp</tt>. 
+This module contains subroutines for extracting parameters from 
+HTTP GET and POST requests, extract or set cookies and other useful 
+routines when writing CGI files. See the modules section 
+at: http://www.newlisp.org/modules/.</p>
 
 <h3>Media types in HTTP modes</h3>
 
@@ -3437,6 +3448,23 @@ MYSTRUC * foo3(char * ptr, int num )
 
 <p>The return value from <tt>foo</tt> is the address to the structure <tt>astruc</tt>. To access the string pointer, 4 must be added as the size of an integer type in the 'C' programming language. The string in the string pointer then gets accessed using get-string.</p>
 
+<h3>Memory management</h3>
+
+<p>Any allocation performed by imported foreign functions has to be 
+deallocated manually if there's no call in the imported API to do so.
+The <tt>libc</tt> function <tt>free</tt> can be imported and used 
+to free memory allocated inside imported functions:</p>
+
+<pre>
+(import "/usr/lib/libc.so" "free")
+
+(free astruc) ; astruc contains memory address of allocated structure
+</pre>
+
+<p>In case of calling foreign functions with passing by reference, 
+memory for variables needs to be allocated beforehand by newLISP,
+and hence, memory needs not be deallocated manually.</p>
+
 <h3>Unevenly aligned structures</h3>
 
 <p>Sometimes data structures contain data types of different length than the normal CPU register word:</p>
@@ -3454,7 +3482,7 @@ struct mystruct * foo(void)
     data.x = 123;
     data.y = 456;
     data.z = sizeof(data);
-    return(&amp;amp;amp;data);
+    return(&amp;data);
     }
 </pre>
 
@@ -3485,7 +3513,7 @@ struct mystruct
     data.x = 123;
     data.y = 456;
     data.z = sizeof(data);
-    return(&amp;amp;amp;data);
+    return(&amp;data);
     }
 </pre>
 
@@ -3610,7 +3638,7 @@ double * wrapperFoo(int argc, ...)
     va_end(ap);
  
     result = glFoo(x, y, z);
-    return(&amp;amp;amp;result);
+    return(&amp;result);
     }
  
 /* eof */

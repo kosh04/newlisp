@@ -50,9 +50,9 @@ opsys += 128;
 #endif
 
 initLocale();
+initStacks();
 initialize();
 mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
-initStacks();
 
 initFile = getenv("NEWLISPLIB_INIT");
 
@@ -92,6 +92,22 @@ strncpy(libName, name, MAX_LINE);
 return(1);
 }
 
+/* import and call this to create a console for stdio - debugging I/O  */
+
+int EXPORT debugConsole() {
+
+int result;
+
+   IOchannel = stdin;
+
+   if(!AllocConsole())
+		return(0);
+
+   if(freopen("CONOUT$","w+t",stdout) == NULL) return(0);
+   if(freopen("CONIN$","r+t",stdin) == NULL) return(0);  
+
+return(1);
+}
 
 /* ---- imported and called from a client using newlisp.dll ---- */
 

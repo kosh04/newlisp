@@ -938,6 +938,12 @@
      a user is therefore not necessary.
 
 1.42
-   	 New table widget and support functions with code contributed by Unya from:
-   	 http://newlispfanclub.alh.net/forum/
+    New table widget and support functions with code contributed by Unya from:
+    http://newlispfanclub.alh.net/forum/
+
+1.43 
+    Bug fix in table API
+
+1.44
+    fixed error message in gs:save-sequence
  

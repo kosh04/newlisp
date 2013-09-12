@@ -362,11 +362,11 @@ public static void saveSequence(StringTokenizer params)
 		{
 		int[] fileTypes = MidiSystem.getMidiFileTypes(sequence);
 		if (fileTypes.length == 0)
-			ErrorDialog.show("gs:midi-save", "Cannot save sequence");
+			ErrorDialog.show("gs:save-sequence", "Cannot save sequence");
 		else 
 			if (MidiSystem.write(sequence, fileTypes[0], file) == -1) 
-				ErrorDialog.show("gs:midi-save", "Cannot write file");
-		} catch (Exception ex) {ErrorDialog.show("gs:midi-save", "Cannot write file:" + filePath);}
+				ErrorDialog.show("gs:save-sequence", "Cannot write file");
+		} catch (Exception ex) {ErrorDialog.show("gs:save-sequence", "Cannot write file:" + filePath);}
 	}
 
 

@@ -254,8 +254,10 @@ This is for 64bit large file support (LFS),
 #define pushEnvironment(A) (*(envStackIdx++) = (UINT)(A))
 #define popEnvironment() (*(--envStackIdx))
 
-#define pushResult(A) (*(resultStackIdx++) = (UINT)(A))
-#define popResult() ((CELL *)*(--resultStackIdx))
+/* reading top of stack in copyCell() does not require
+   subtracting 1 from index (changed in 10.3.2 */
+#define pushResult(A) (*(++resultStackIdx) = (UINT)(A))
+#define popResult() ((CELL *)*(resultStackIdx--))
 
 #define freeMemory free
 

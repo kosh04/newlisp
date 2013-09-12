@@ -29,7 +29,7 @@ extern SYMBOL * sysSymbol[];
 extern CELL * firstFreeCell;
 extern SYMBOL * dolistIdxSymbol;
 
-/* following used in count, difference, intersect, uniwue and sort 8.6.2 */
+/* following used in count, difference, intersect, unique and sort 8.6.2 */
 CELL * * listToSortedVector(CELL * list, ssize_t * length, CELL * func, int indexFlag);
 CELL * resortVectorToList(CELL * * vector, ssize_t length);
 void binsort(CELL * * x, ssize_t n, CELL * pCell);
@@ -39,16 +39,15 @@ CELL * p_map(CELL * params)
 CELL * argsPtr;
 CELL * arg;
 CELL * argCell;
-CELL * sPtr;
+CELL * funcPtr;
 CELL * cell;
 CELL * expr;
 CELL * results;
 CELL * res;
-CELL * qCell;
 CELL * cellIdx;
 UINT * resultIdxSave;
 
-sPtr = evaluateExpression(params);
+funcPtr = evaluateExpression(params);
 
 /* get first of argument lists */
 params = getEvalDefault(params->next, &cell);
@@ -57,6 +56,7 @@ argsPtr = cell = copyCell(cell);
 if(!isList(cell->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, cell));
 
+/* get rest of argument lists */
 while (params != nilCell)
 	{
 	params = getEvalDefault(params, &results);
@@ -69,15 +69,24 @@ while (params != nilCell)
 
 results = getCell(CELL_EXPRESSION);
 res = NULL;
-resultIdxSave = resultStackIdx;
 
 cellIdx = initIteratorIndex();
 
+expr = getCell(CELL_EXPRESSION);
+cell = copyCell(funcPtr);
+expr->contents = (UINT)cell;
+
+/* prepeare for deletion now, in case of error 
+   in mapped function execution */
+
+pushResult(argsPtr);
+pushResult(expr);
+pushResult(results);
+
+resultIdxSave = resultStackIdx;
+
 while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 	{
-	expr = getCell(CELL_EXPRESSION);
-	cell = copyCell(sPtr);
-	expr->contents = (UINT)cell;
 	arg = argsPtr;
 	while(arg != nilCell)              /* for all args */
 		{
@@ -88,28 +97,26 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 		if(isSelfEval(argCell->type))
 			cell = cell->next = argCell;
 		else
-			{
-			qCell = makeCell(CELL_QUOTE, (UINT)argCell);
-			cell = cell->next = qCell;
-			}	
+			cell = cell->next = makeCell(CELL_QUOTE, (UINT)argCell);
 		arg = arg->next;
 		}
 	cell = copyCell(evaluateExpression(expr));
-	deleteList(expr);
-	cleanupResults(resultIdxSave);
+	while(resultStackIdx > resultIdxSave) deleteList(popResult());
 	if(res == NULL)
 		results->contents = (UINT)cell;
 	else
 		res->next = cell;
 	res = cell;
-	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
+	if(cellIdx->type == CELL_LONG) cellIdx->contents += 1; 
+	cell = (CELL *)expr->contents;
+	deleteList(cell->next);
 	}
-deleteList(argsPtr);
 
+cell->next = nilCell; /* decouple */
 recoverIteratorIndex(cellIdx);
 
 symbolCheck = NULL;
-
+pushResultFlag = FALSE; /* results are already pushed */
 return(results);
 }
 
@@ -1226,6 +1233,7 @@ CELL * result;
 CELL * cell;
 ssize_t count;
 UINT * resultIndexSave;
+jmp_buf errorJumpSave;
 int errNo, trueFlag;
 
 pCell = evaluateExpression(params);
@@ -1238,6 +1246,15 @@ args = (CELL *)args->contents;
 result = NULL;
 count = 0;
 resultIndexSave = resultStackIdx;
+
+memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+if((errNo = setjmp(errorJump)) != 0)
+	{
+	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+	if(resultList) deleteList(resultList);
+	longjmp(errorJump, errNo);
+	}
+
 while(args != nilCell)
 	{
 	expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
@@ -1246,23 +1263,23 @@ while(args != nilCell)
 
 	pushResult(expr);
 
-	if(!(cell = evaluateExpressionSafe(expr, &errNo)))
-		{
-		if(resultList) deleteList(resultList);
-		longjmp(errorJump, errNo);
-		}
+	cell = evaluateExpression(expr);
 
-    trueFlag = !isNil(cell) && !isEmpty(cell);
+	trueFlag = !isNil(cell) && !isEmpty(cell);
 
 	cleanupResults(resultIndexSave);
 
-	if(mode == FILTER_EXISTS && trueFlag)
+	if(mode == FILTER_EXISTS && trueFlag)    
+		{
+		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 		return(copyCell(args));
+		}
 
 	else if (mode == FILTER_FOR_ALL)
 		{
 		if(trueFlag) goto CONTINUE_FOR_ALL;
-		else return(nilCell);
+		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+		return(nilCell);
 		}
 
 	if((trueFlag && mode != FILTER_CLEAN) || (!trueFlag && mode == FILTER_CLEAN))
@@ -1271,7 +1288,6 @@ while(args != nilCell)
 			{
 			resultList = makeCell(CELL_EXPRESSION, (mode == FILTER_INDEX) ? 
                         (UINT)stuffInteger((UINT)count): (UINT)copyCell(args));
-
 			result = (CELL*)resultList->contents;
 			}
 		else
@@ -1286,6 +1302,8 @@ while(args != nilCell)
 	args = args->next;
 	count++;
 	}
+
+memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
 if(mode == FILTER_EXISTS)
 	return(nilCell);
@@ -1685,7 +1703,7 @@ if(index[p] > 0)
 	return(array);
 	}
 else
-	while(size--) *(addr++) = nilCell;
+	while(size--) *(addr++) = copyCell(nilCell);
 
 return(array);
 }

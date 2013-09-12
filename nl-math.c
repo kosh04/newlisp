@@ -72,9 +72,17 @@ INT64 lValue = 0;
 
 cell = evaluateExpression(params);
 
-if(symbolCheck != NULL)
+if(symbolCheck != NULL)	
+	{
 	if(isProtected(symbolCheck->flags))
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+	}
+else
+	{
+	if(cell == nilCell)
+		errorProc(ERR_INVALID_PARAMETER);
+	}
+
 
 if(!isNil(cell)) getInteger64(cell, &lValue);
 
@@ -102,8 +110,15 @@ double lValue = 0.0;
 cell = evaluateExpression(params);
 
 if(symbolCheck != NULL)
+	{
 	if(isProtected(symbolCheck->flags))
 		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck))); 
+	}
+else
+	{
+	if(cell == nilCell)
+		errorProc(ERR_INVALID_PARAMETER);
+	}
 
 if(!isNil(cell)) getFloat(cell, &lValue);
 
@@ -1612,21 +1627,22 @@ CELL * p_series(CELL * params)
 {
 double fromFlt, factFlt;
 ssize_t count, i;
-CELL * sequence;
+CELL * series;
 CELL * cell;
 CELL * pCell;
 CELL * expr;
 CELL * cellIdx;
-int errNo;
 UINT * resultIdxSave;
+jmp_buf errorJumpSave;
+int errNo;
 
 cell = evaluateExpression(params);
 pCell = evaluateExpression(params->next);
 params = params->next;
 getInteger(params->next, (UINT *)&count);
 
-sequence = getCell(CELL_EXPRESSION);
-if(count <= 0) return(sequence);
+series = getCell(CELL_EXPRESSION);
+if(count <= 0) return(series);
 
 if(isNumber(pCell->type))
 	{
@@ -1635,7 +1651,7 @@ if(isNumber(pCell->type))
 	fromFlt = getFloatFromCell(cell);
 	factFlt = getFloatFromCell(pCell);
 	cell = copyCell(cell);
-	sequence->contents = (UINT)cell;
+	series->contents = (UINT)cell;
 	for(i = 1; i < count; i++)
 		{
 		fromFlt *= factFlt;
@@ -1646,8 +1662,16 @@ if(isNumber(pCell->type))
 else /* assumes lambda or primitive */
 	{
 	cellIdx = initIteratorIndex();
-	addList(sequence, copyCell(cell));
+	addList(series, copyCell(cell));
 	resultIdxSave = resultStackIdx;
+	memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
+	if((errNo = setjmp(errorJump)) != 0)
+		{
+		memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
+		deleteList(series);
+		longjmp(errorJump, errNo);
+		}
+
 	for(i = 1; i < count; i++)
 		{
 		cell = copyCell(cell);
@@ -1655,18 +1679,15 @@ else /* assumes lambda or primitive */
 		expr = makeCell(CELL_EXPRESSION, (UINT)copyCell(pCell));
    		((CELL *)expr->contents)->next = cell;
 		pushResult(expr);
-		if(!(cell = evaluateExpressionSafe(expr, &errNo)))
-			{
-			deleteList(sequence);
-			longjmp(errorJump, errNo);
-			}
-		addList(sequence, copyCell(cell));
+		cell = evaluateExpression(expr);
+		addList(series, copyCell(cell));
 		if(cellIdx->type == CELL_LONG) cellIdx->contents += 1;
 		}
 	recoverIteratorIndex(cellIdx);
+	memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 	}
 
-return(sequence);
+return(series);
 }
 
 /* ------------------------------- prime numbers ---------------------------- */

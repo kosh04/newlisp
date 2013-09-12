@@ -94,26 +94,28 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10301;
+int bigEndian = 1; /* gets set in main() */
+
+int version = 10302;
 
 char copyright[]=
-"\nnewLISP v.10.3.1 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.2 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.1 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.2 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.1 on %s IPv4/6%s\n\n";
+"newLISP v.10.3.2 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.1 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.2 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.1 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.3.2 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
@@ -257,7 +259,6 @@ UINT prettyPrintMaxLength =  MAX_PRETTY_PRINT_LENGTH;
 int stringOutputRaw = TRUE;
 
 #define pushLambda(A) (*(lambdaStackIdx++) = (UINT)(A))
-#define popLambda() ((CELL *)*(--lambdaStackIdx))
 
 int pushResultFlag = TRUE;
 
@@ -620,13 +621,16 @@ _fpreset();
 
 initLocale();
 initNewlispDir();
-IOchannel = stdin;
 
-initialize();
+IOchannel = stdin;
+bigEndian = (*((char *)&bigEndian) == 0);
+
 initStacks();
+initialize();
 initDefaultInAddr(); 
 
-#if WIN_32 && SUPPORT_UTF8
+#if WIN_32
+#if SUPPORT_UTF8
  {
    /*
      command line parameter is MBCS.
@@ -634,16 +638,17 @@ initDefaultInAddr();
    */
    char **argv_utf8 = allocMemory((argc + 1)* sizeof(char *)) ;
    {
-     for(idx = 0 ; idx<argc ; idx++)
-       {
-	 WCHAR *p_argvW = ansi_mbcs_to_utf16(argv[idx]) ;
-	 char *p_argvU = utf16_to_utf8(p_argvW) ;
-	 argv_utf8[idx] = p_argvU ;
-       }
-     argv_utf8[idx] = NULL ;
-     argv = argv_utf8 ;
+   for(idx = 0 ; idx<argc ; idx++)
+      {
+	  WCHAR *p_argvW = ansi_mbcs_to_utf16(argv[idx]) ;
+	  char *p_argvU = utf16_to_utf8(p_argvW) ;
+	  argv_utf8[idx] = p_argvU ;
+      }
+   argv_utf8[idx] = NULL ;
+   argv = argv_utf8 ;
    }
  }
+#endif
 #endif
 mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
@@ -1165,14 +1170,14 @@ CELL * xlate;
 resultIdxSave = resultStackIdx;
 while(result)
 	{
-	program = getCell(CELL_QUOTE);
+	pushResult(program = getCell(CELL_QUOTE));
 	result = compileExpression(stream, program);
 	if(readerEvent != nilSymbol && result)
 		{
+		--resultStackIdx; /* program gets consumed by executeSymbol() */
 		executeSymbol(readerEvent, program, &xlate);
-		program = makeCell(CELL_QUOTE, (UINT)xlate);
+		pushResult(program = makeCell(CELL_QUOTE, (UINT)xlate));
 		}
-	pushResult(program);
 	if(result)
 		{
 		if(flag && eval != nilCell) deleteList(eval);
@@ -1204,7 +1209,7 @@ CELL * cell;
 UINT * resultIdxSave;
 
 resultIdxSave = resultStackIdx;
-if(symbol == nilSymbol || symbol == NULL)   return(0);
+if(symbol == nilSymbol || symbol == trueSymbol || symbol == NULL)   return(0);
 pushResult(program = getCell(CELL_EXPRESSION));
 cell = makeCell(CELL_SYMBOL, (UINT)symbol);
 program->contents = (UINT)cell;
@@ -1464,7 +1469,9 @@ switch(cell->type)
 
 			else if(pCell->type  == CELL_MACRO)
 				{
+				pushLambda(args);
 				result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext); 
+				--lambdaStackIdx; 
 				break; 
 				}
 
@@ -1709,16 +1716,12 @@ for(;;)
 	/* get default parameters */
 	else if(local->type == CELL_EXPRESSION)
 		{
-		if(((CELL*)local->contents)->type == CELL_SYMBOL)
+		cell = (CELL *)local->contents;
+		if(cell->type == CELL_SYMBOL)
 			{
-			cell = (CELL *)local->contents;
-			if(cell->type == CELL_SYMBOL)
-				{
-				symbol = (SYMBOL *)cell->contents;
-				if(result == nilCell)
-					result = copyCell(evaluateExpression(cell->next));
-				}
-			else break;
+			symbol = (SYMBOL *)cell->contents;
+			if(result == nilCell)
+				result = copyCell(evaluateExpression(cell->next));
 			}
 		else break;
 		}
@@ -2071,6 +2074,13 @@ CELL * newCell;
 CELL * list;
 UINT len;
 
+/* avoids cellCopy if cell on resultStack */
+if(cell == (CELL *)*(resultStackIdx))
+	{
+	if(cell != nilCell && cell != trueCell)
+		return(popResult());
+	}
+
 if(firstFreeCell == NULL) allocBlock();
 newCell = firstFreeCell;
 firstFreeCell = newCell->next;
@@ -2158,7 +2168,7 @@ while(cell != nilCell)
 	next = cell->next;
 	
 	/* free cell */
-	if(cell != trueCell) 
+	if(cell != trueCell && cell != nilCell) 
 		{
 		cell->type = CELL_FREE;
 		cell->next = firstFreeCell;
@@ -2328,6 +2338,7 @@ switch(device)
 	case OUT_CONSOLE:
 #ifdef LIBRARY
 		writeStreamStr(&libStrStream, buffer, 0);
+		freeMemory(buffer);
 		return;
 #else
 		if(IOchannel == stdin)
@@ -3275,9 +3286,12 @@ int getToken(STREAM * stream, char * token, int * ptr_len)
 char *tkn;
 char chr;
 int tknLen;
+#ifdef SUPPORT_UTF8
+int len;
+#endif
 int floatFlag;
 int bracketBalance;
-char buff[4];
+char buff[8];
 
 tkn = token;
 tknLen = floatFlag = 0;
@@ -3288,7 +3302,7 @@ if(stream->ptr > (stream->buffer + stream->size - 4 * MAX_STRING))
 	{
 	if(stream->handle == 0)
 		{
-        /* coming from commmand line or p_evalString */
+		/* coming from commmand line or p_evalString */
 		stream->buffer = stream->ptr;
 		}
 	else
@@ -3447,6 +3461,24 @@ else
 							stream->ptr += 2;
 							break;
 							}
+#ifdef SUPPORT_UTF8
+					case 'u':
+						if(isxdigit((unsigned char)*(stream->ptr + 1)) &&
+						   isxdigit((unsigned char)*(stream->ptr + 2)) &&
+						   isxdigit((unsigned char)*(stream->ptr + 3)) &&
+						   isxdigit((unsigned char)*(stream->ptr + 4)))
+							{
+							buff[0] = '0';
+							buff[1] = 'x';
+							memcpy(buff + 2, stream->ptr + 1, 4);
+							buff[6] = 0;
+							len = wchar_utf8(strtol(buff, NULL, 16), tkn);
+							stream->ptr += 4;
+							tkn += len;
+							tknLen += len -1;
+							break;
+							}
+#endif
 					default:
 					    *(tkn++) = *stream->ptr;
 					}
@@ -3824,30 +3856,34 @@ return(params->next);
 CELL * getCreateSymbol(CELL * params, SYMBOL * * symbol, char * name)
 {
 CELL * cell;
+CELL * cellForDelete;
 
 cell = evaluateExpression(params);
 
 if(cell->type != CELL_SYMBOL)
-    {
-    if(cell->type == CELL_DYN_SYMBOL)
-        {
-        *symbol = getDynamicSymbol(cell);
-        return(params->next);
-        }
+	{
+	if(cell->type == CELL_DYN_SYMBOL)
+		{
+		*symbol = getDynamicSymbol(cell);
+		return(params->next);
+		}
 	*symbol = translateCreateSymbol(name, CELL_NIL, mainContext, TRUE);
-    (*symbol)->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
-	deleteList((CELL *)(*symbol)->contents);
-	(*symbol)->contents = (UINT)nilCell;
+	(*symbol)->flags |= SYMBOL_PROTECTED | SYMBOL_GLOBAL;
+	cellForDelete = (CELL *)(*symbol)->contents;
 	if(isNil(cell)) 
 		*symbol = nilSymbol;
 	else if(cell->type != CELL_LAMBDA && cell->type != CELL_MACRO && cell->type != CELL_PRIMITIVE)
 		{
 		*symbol = nilSymbol;
+		deleteList(cellForDelete);
 		return(errorProcExt(ERR_INVALID_PARAMETER, params));
 		}
-	else
+	else if(compareCells(cellForDelete, cell) != 0)
+		{
 		(*symbol)->contents = (UINT)copyCell(cell);
-    }
+		deleteList(cellForDelete);
+		}
+	}
 else
 	*symbol = (SYMBOL *)cell->contents;
 
@@ -4105,7 +4141,7 @@ return(sysEvalString(evalStr, context, params->next, mode));
 
 /* modes:
 EVAL_STRING  
-  the classic eval-string: read the string, compile to s-ezpression , evaluate
+  the classic eval-string: read the string, compile to s-expression , evaluate
 READ_EXPR_SYNC
   used by p_sync() in nl-filesys.c 
 READ_EXPR
@@ -4159,28 +4195,21 @@ if(proc != nilCell)
 
 while(TRUE)
 	{
-	program = getCell(CELL_QUOTE);
+	pushResult(program = getCell(CELL_QUOTE));
 	if(compileExpression(&stream, program) == 0) 
-		{
-		pushResult(program);
 		break;
-		}
 	if(readerEvent != nilSymbol)
 		{
+		--resultStackIdx;
 		executeSymbol(readerEvent, program, &xlate);
-		program = makeCell(CELL_QUOTE, (UINT)xlate);
+		pushResult(program = makeCell(CELL_QUOTE, (UINT)xlate));
 		}
-	pushResult(program);
 	if(mode == EVAL_STRING)
-		{
 		resultCell = evaluateExpression((CELL *)program->contents);
-		/* note that resultCell is already pushed for deletion
-		   as part of program cell */
-		}
 	else /* READ_EXPR or READ_EXPR_SYNC */
 		{
-		/* in a future version this will go into a $count sysvar instead
-           same in replace */
+		/* in a future version this will go into a $count sysvar instead,
+			same in replace */
 		deleteList((CELL *)sysSymbol[0]->contents);
 		sysSymbol[0]->contents = (UINT)stuffInteger(stream.ptr - stream.buffer); 
 		resultCell = (CELL *)program->contents;
@@ -4209,30 +4238,6 @@ if(proc != nilCell)
 return(resultCell);
 }
 
-#ifdef old_curry
-CELL * p_curry(CELL * params)
-{
-CELL * lambda;
-CELL * cell;
-SYMBOL * xPtr;
-
-xPtr = translateCreateSymbol("_x", CELL_NIL, currentContext, TRUE);
-lambda = getCell(CELL_LAMBDA);
-cell = getCell(CELL_EXPRESSION);
-lambda->contents =  (UINT)cell;
-
-cell->contents = (UINT)stuffSymbol(xPtr); 
-cell->next = getCell(CELL_EXPRESSION);
-cell = cell->next;
-cell->contents = (UINT)copyCell(params);
-cell = (CELL *)cell->contents;
-cell->next = copyCell(params->next);
-cell = cell->next;
-cell->next = stuffSymbol(xPtr);
-
-return(lambda);
-}
-#endif
 
 CELL * p_curry(CELL * params)
 {
@@ -4308,7 +4313,7 @@ for(;;)
 			}
 		args = args->next;
 		}
-#define REF_APPLY
+#define REF_APPLY 
 #ifdef REF_APPLY
 	pushResult(expr);
 	if(args == nilCell)
@@ -5607,7 +5612,11 @@ while(list!= nilCell)
 		if(doType == DOTREE)
 			{
 			sPtr = (SYMBOL *)list->contents;
-			if(*sPtr->name != '_') goto DO_CONTINUE;
+			if(*sPtr->name != '_') 
+				{
+				cell = nilCell;
+				goto DO_CONTINUE;
+				}
 			}
 		else
 			{

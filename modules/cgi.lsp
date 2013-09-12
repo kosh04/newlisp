@@ -7,6 +7,8 @@
 ;; @version v 2.6 - help text corrections
 ;; @version v 2.72 - help text corrections
 ;; @version v 2.8 - check for and use CONTENT_LENGTH when reading POST data
+;; @version v 2.9 - eliminate deprecated integer -> int
+;; @version v 2.91 - minor code cleanup in CONTENT_LENGTH handling
 ;; @author Lutz Mueller, 2002-2011
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -125,15 +127,15 @@
 (if params
 	(set 'params (get-vars params)))
 
-; get POST data if present
-;
+; get POST data if present, use CONTENT_LENGTH variable
+; if available
 (if (env "CONTENT_LENGTH")
 	(when (= (env "REQUEST_METHOD") "POST")
-  		(read (device) post-data (integer (env "CONTENT_LENGTH")))
+  		(read (device) post-data (int (env "CONTENT_LENGTH")))
   		(set 'params (get-vars post-data)))
 	(begin
 		(set 'inline (read-line))
-		(if inline 
+		(when inline 
 			(set 'params (get-vars inline)))
 	)
 )

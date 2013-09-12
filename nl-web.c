@@ -164,7 +164,7 @@ while(size)
   resultSize += sizeRead;
   size -= sizeRead;
   if(flag && transferEvent != nilSymbol)
-		executeSymbol(transferEvent, stuffInteger(resultSize), NULL);
+		executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
   wait_until_read_ready(sock);
   }
 
@@ -182,7 +182,7 @@ va_start(argptr,format);
 vasprintf(&buffer, format, argptr); 
 
 result = send(sock, buffer, strlen(buffer), NO_FLAGS_SET);
-if(debug) varPrintf(OUT_CONSOLE, buffer);
+if(debug) varPrintf(OUT_CONSOLE, "%s", buffer);
 
 freeMemory(buffer);
 va_end(argptr);
@@ -427,7 +427,7 @@ sendf(sock, debugFlag, "Host: %s\r\n", host);
 
 /* send optional custom header entries */
 if (customHeader != NULL)
-    sendf(sock, debugFlag, customHeader);
+    sendf(sock, debugFlag, "%s", customHeader);
 else
 	{
 	sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
@@ -446,14 +446,14 @@ if(type == HTTP_PUT || type == HTTP_PUT_APPEND)
 
 	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
 		return(webError(ERROR_TRANSFER));
-	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
+	if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
 	}
 else if(type == HTTP_POST)
 	{
 	sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
 	if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
 		return(webError(ERROR_TRANSFER));
-	if(debugFlag) varPrintf(OUT_CONSOLE, putPostStr);
+	if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
 	}
 else /* HTTP_GET, HTTP_DELETE */
 	sendf(sock, debugFlag, "\r\n");
@@ -617,7 +617,7 @@ else /* no content length given, relies on host closing the connection */
 		memcpy(resultPtr + resultSize, buff, sizeRead);
 		resultSize += sizeRead;
 		if(transferEvent != nilSymbol)
-			executeSymbol(transferEvent, stuffInteger(resultSize), NULL);
+			executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
 		}
 	}
 
@@ -967,7 +967,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP */
-#define SERVER_SOFTWARE "newLISP/10.3.1"
+#define SERVER_SOFTWARE "newLISP/10.3.2"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1023,7 +1023,7 @@ if(IOchannel != NULL && IOchannelIsSocketStream)
 	close(getSocket(IOchannel));
 	}
 else 
-	varPrintf(OUT_CONSOLE, content);
+	varPrintf(OUT_CONSOLE, "%s", content);
 return;
 #endif
 #ifdef DEBUGHTTP
