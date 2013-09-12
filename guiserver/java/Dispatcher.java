@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/14/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -146,6 +146,7 @@ public static void init()
 	classes.put("menu", MenuWidget.class);
 	classes.put("menu-popup", PopupMenuWidget.class);
 	classes.put("menu-bar", MenuBarWidget.class);
+	classes.put("table", TableWidget.class);
 	classes.put("tool-bar", ToolbarWidget.class);
 	classes.put("text-pane", TextPaneWidget.class);
 
@@ -199,6 +200,7 @@ public static void init()
 	methods.put("set-caret-color","setCaretColor");
 	methods.put("set-color","setBackground");	
 	methods.put("set-cursor","setCursor");
+	methods.put("set-echo-char", "setEchoChar");
 	methods.put("set-editable","setEditable");
 	methods.put("set-font","setFont");
 	methods.put("set-foreground","setForeground");
@@ -248,6 +250,16 @@ public static void init()
 	methods.put("save-sequence", "saveSequence");
 	methods.put("set-utf8", "setUTF8");
 	
+	// text table
+	methods.put("table-add-column", "tableAddColumn") ;
+	methods.put("table-add-row", "tableAddRow");
+	methods.put("table-set-column", "tableSetColumn");
+	methods.put("table-set-row-number", "tableSetRowNumber");
+	methods.put("table-set-cell", "tableSetCell");
+	methods.put("table-get-cell", "tableGetCell");
+	methods.put("table-get", "tableGetValueAll");
+	methods.put("table-get-size", "tableGetSize");
+
 	// 2D Grapics
 	// All methods hace the current canvas as target
 	

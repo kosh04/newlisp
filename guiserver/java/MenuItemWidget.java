@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/21/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -44,11 +44,13 @@ public MenuItemWidget(StringTokenizer params)
 	id = params.nextToken();
 	action = params.nextToken();
 	
-	String mtext = Base64Coder.decodeString(params.nextToken());
+	String mtext = params.nextToken();
+	
 	if(guiserver.UTF8)
-	try {
-		mtext = new String(mtext.getBytes(), "UTF8");
-		} catch (UnsupportedEncodingException ee) {}		
+		mtext = Base64Coder.decodeStringUTF8(mtext);
+	else
+		mtext = Base64Coder.decodeString(mtext);
+
 	menuitem.setText(mtext);
 	
 	gsObject.widgets.put(id, this);

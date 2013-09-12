@@ -899,4 +899,45 @@
 1.36 added 'term', '++', '--' and eliminated 'name' from
      SyntaxHighligher.java
 
+1.37 new OSXAdapter.java from Apple and related changes in guiserver.java
+     add 'serialVersionUID' to various files to avoid warnings in new Java versions
 
+1.38 an additional parameter in gs:text-field specifies a cover character to use
+     the text-field for password entry
+
+     new textfield-demo.lsp
+
+     a UTF-8 fix for gs:get-fonts when font names 
+
+     a UTF-8 fix for gs:append-text for labels 
+
+     a UTF-8 dix gs:select-list-items for combo boxes, added to widget-demo-(ru, jp).lsp
+
+     a UTF-8 fix for gs:get-text for Dialog widgets 
+
+     a UTF-8 fix for gs:menu-item-check
+
+     a UTF-8 fix for the tabbed pane when tabes are selected
+
+     a UTF-8 fix for gs:set-tool-tab
+
+     a UTF-8 fix for gs:set-font when font names are in UTF-8
+
+1.39
+     New Base64Coder.java with UTF8 aware encodeStringUTF8() and decodeStringUTF8()
+
+1.40
+     Syntax highlighting for date-parse (new writing of parse-date), date-list,
+     net-packet and net-ipv
+
+1.41
+     Instability when nesting gs:check-event calls inside handler functions called
+     from gs:listen, was entirely caused by an interaction of the global variable
+     'event' used in both functions. This variable is now localized in both functions.
+     Seperation of synchronous versus asynchronous communications, as suggested by
+     a user is therefore not necessary.
+
+1.42
+   	 New table widget and support functions with code contributed by Unya from:
+   	 http://newlispfanclub.alh.net/forum/
+ 

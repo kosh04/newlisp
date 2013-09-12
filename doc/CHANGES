@@ -5757,5 +5757,213 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Backed out some IPv4/6 changes in 10.2.7 reverting to 10.2.6 plus some
     IPv6 fixes. Next development version will split up nl-sock.c into UNIX 
     and Windows versions; recoding the UNIX version using getaddrinfo() and 
-    getnameinfo() for dynamic IPv4 and IPv6 support in the same version.
+	getnameinfo() for dynamic IPv4 and IPv6 support in the same version.
+
+10.2.9 development release May 27th, source only
+    Large portions of nl-sock.c have now been re-written to switch between 
+    IPv4 and IPv6 during runtime using the new 'net-ipv' function:
+        (net-ipv) ; show current protocol as 4 and 6
+        (net-ipv 4) ; switch to IPv4
+        (net-ipv 6) ; switch to IPv6
+
+    By default newLISP starts in IPv4 mode, to start up in IPv6 mode:
+        newlisp -6
+    When the IPv4 to IPv6 transition is completed in a few years, the
+    default will be changed to IPv6 and a 'newlisp -4' startup option
+    will be introduced. The current -6 option is only necessary when starting 
+    newLISP in server mode. In normal mode a (net-ipv ...) code switch can be used.
+
+    The nl-sock.c  uses the newer POSIX 'C' getaddrinfo() and getnameinfo() 
+    functions. Wondows 95 is not supported anymore. The minimum MS Windows version 
+    for newLISP is now Windows NT 5.01. This allowed mostly similar code
+    on Windows and UNIX and made a split into platform dependent files unnecessary.
+
+
+    New 'qa-specific-tests/qa-net6' for IPv6 testing included in:
+        make testall
+    UNIX like OSs test fine on IPv4 and IPv6. Currently I have no IPv6
+    capable MS Windows, FreeBSD and SunOS installations for testing.
+    But on all platforms this version compiles and links well.
+
+    Following systems test fine:
+        Mac OS X 10.6, IPv4 and 6, 32 and 64-bit
+        Windows XP SP2, IPv4 only, 32-bit
+        Linux UBUNTU 10.4, IPv4 and 6, 32-bit
+        OpenBSD 4.6, IPv4 and 6, 32 and 64-bit
+        FreeBSD 7.2, IPv4 only, 32-bit
+        SunOS 5.8 on Sparc Ultra-2, IPv4 only, 32-bit 
+
+10.2.10
+    Allow binary zeros in 'exec' piped-in data
+
+    Cleanup for sendHTTPpage()
+
+    Fixed a bug in 'copy', which passed on a wrong protection status, when
+    copying protected variables since 10.1.12
+
+    IPv6 not currently working on the Win32 MinGW compiled version
+
+    Changed winsock initialization to v.2.2
+
+10.2.11
+    Windows versions now compiled using wspiapi.h in nl-sock.c. This guarantees
+    working of freeaddrinfo(), needed for IPv6, on some older Win 2000 systems.
+
+    New multiline mode on the commandline, without using [cmd], [/cmd] tags:
+    just hitting [enter] on an empty line gets into and out of multiline mode. 
+    The [cmd], [/cmd] still work too and are needed internally when newLISP is 
+    working in server mode, for some IDEs and when pasting source containing
+    empty lines into the terminal. Tab-expansion (on Unix only) for built-in 
+    function names also works in multiline mode.
+
+    Minor changes in version 1.37 of the Java based Guiserver.
+
+    In 'net-ping' specify optional third parameter to get an error string instead
+    of response time, if the host did not respond. This behavior was present in
+    previous versions, but was not documented.
+
+10.2.12
+	Fixes and additions for newLISP-GS guiserver.jar. See guiserver/CHANGES
+
+10.2.13
+    More fixes in guiserver see guiserver/CHANGES
+    no changes in newlisp interpreter
+
+    New 'date-list' returns list of year, month, day, hours, minutes, seconds from
+    time value in seconds since January 1st, 1900 (reverse of 'date-value')
+
+    'date-parse' is new name of old 'parse-date'
+
+    The week-day value in 'now' and the new 'date-list' has been changed to
+    conform to the ISO-8601 standard (international standrad for time and date
+    related data). Now 1-7 for Monday thru Sunday.
+
+    Font size in syntax.cgi now bigger on iOS devices iPad and iPhone
+
+    newlisp_manual.html, CodePatterns.html, ExpressionEvaluation.html and 
+    MemoryManagement.html are now XHTML 1.0 Transitional compliant.
+
+    New users manual chapter "3. Interactive Lisp mode" explains all the
+    features of the read-eval-print-loop (REPL) in newLISP.
+
+    Guisererver: Fix in TextShape.java to fox crashes when painting canvas.
+
+10.2.14 Development Release Sept 2nd, 2010
+
+10.2.15
+    Increased maximum length of command-line to 511. This affects the interactive
+    command line and line length in HTTP request headers. 
+
+    Default connection timeout set to 10 secs, up from 3 secs. Always can be
+    overwritten by timeout parameters in net-connect and get,post,put and
+    delete -url functions.
+
+    The boolean flag in 'title_case' in non-UTF8 versions was not calculated
+    correctly.
+
+    All HTML files in the doc directory are UTF8 and XHTML 1.0 Trans. compliant.
+
+    Additional parameter in '!' on MS Windows can be used to enter process creation
+    flags, e.g. for suppressing creation of a command window. Not using the parameter
+    assumes the old '!' method. When the parameter is present (can be 0) an alter
+    native method of process creation is used without dependence on a command shell
+    window. On Unix this parameter is ignored.
+
+    Fixed a bug in symbol compare routines when comparing dynamic symbols.
+
+    Result of 'map' should always be unprotected.
+
+    More adjustments in switchable IPv4/6 mode. 
+
+    Last sys-info field should change 7th bit (512) with 'net-ipv'
+
+    A change in guiserver.lsp to fix instabilities when gs:check-event was called
+    from gs:listen invoked event handler functions.
+
+10.2.16
+    New table widget and supporting functions in Guiserver.
+
+10.2.17
+    Fixes in error handlers of xmlrpc-client.lsp and xmlrpc.cgi
+
+    Fixes in guiserver.jar in Table UI
+
+    The sniff and scan utilities are added to newlisp-x.x.x/examples 
+    directory in the source distribution.
+
+    On 64-bit versions 'date' and 'date-value' will work for dates year 2038 
+    and up to January 2100.
+
+    The 'mod' function assumes the second parameter to be 1 if missing, thus
+    returning the fractional part of a number.
+
+    Updates to configure-alt for Windows 7.
+
+    POST with multipart/form-data content-type now works with newLISP HTTPD
+    and CONTENT_TYPE is added to the environment by newLISP server.
+    now added.
+
+10.2.18
+    'extend' will take an un-initialized variable and create a list or string
+    depending on the second argument (similar to 'push'). Before a variable
+    in the first argument had to be initialized to a string or list.
+
+    Added path for Fedora Linux in mysql.lsp
+
+    PCRE was not configured correctly for utf8 when using configure-alt.
+    pcre-config.h now includes config.h when using configure-alt to build.
+    Builds with the standrad configure where never affected. 
+    versions.
+
+    Added a "divert" option to 'net-listen'. In this case a IPPROTO_DIVERT 
+    option is added to a raw socket. 'net-receive-from' and 'net-send-to' 
+    are used to serve the divert-socket returned by 'net-listen'. The 
+    interface address is given as an empty string for INADDR_ANY. 
+    BSD 'ipfw' or Linux 'ipchains' rules must be defined in the configuration 
+    of the FreeBSD, OpenBSD or Linux platform for the divert-port and the 
+    ports to be diverted. 'net-receive-from' will contain the local interface 
+    address for incoming packets and will contain 0.0.0.0 for outgoing packets. 
+    See the man page for divert. The same address received by 'net-receive-from' 
+    is used in the 'net-send-to' call when re-injecting the packet:
+
+        (set 'divertSocket (net-listen divertPort "" "divert"))
+
+        (until (net-error)
+            (set 'rlist (net-receive-from divertSocket maxBytes))
+            (set 'buffer (rlist 1))
+            ; buffer can be processed here before reinjecting
+            (net-send-to (rlist 0) divertPort buffer divertSocket)
+        )
+
+     newLISP must be run in superuser mode to be able to create divertSocket.
+
+     Some internal cleanup for p_first(), p_last()
+
+     Bug fixes for modules/json.lsp
+
+     Fixed cell leaks when 'ref', 'ref-all' failed with error in
+     compareFunc()
+
+     The return value for 'ref' has changed from () to nil, when not
+     finding anything.
+
+     Fixed cell leak when 'setf/q' failed with protection error
+
+     symbolCheck cleanup in 'assoc', 'lookup', 'ref', 'set-ref' and all
+     flow constructs results in some speedup for these functions.
+
+10.3.0 Stable Release, February 2nd, 2011
+     newLISP HTTP server now also sets  CONTENT_LENGTH environment 
+     variable when present in incoming client header.
+
+     In cgi.lsp added (outcommented) alternative method for reading 
+     POST data. This relies on CONTENT_LENGTH set in the environment.
+
+     Fixed a problem in assoc, lookup and pop-assochen nil is passed
+     as key.
+
+     cgi.lsp now uses CONTENT_LENGTH if present to receive POST data
+
+     Fisher Chi-2 derived probabilities in bayes-query are not normalized
+     any  more.
 

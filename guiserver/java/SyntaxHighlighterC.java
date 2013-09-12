@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 8/4/07.
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -172,6 +172,7 @@ static public void color(TextPaneWidget widget, int offset, int length)
 						continue;
 						}
 					}
+				continue;
 			case '/':
 				startToken = idx - 1;
 				if(text.startsWith("/*", startToken))

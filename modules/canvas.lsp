@@ -4,6 +4,7 @@
 ;; @version 1.1 doc changes only
 ;; @version 1.21 doc changes only
 ;; @version 1.3 compatibility pre and post 10.2.0 for new extend
+;; @version 1.31 doc formatting
 ;; @author Lutz Mueller, March 2009
 ;    Copyright (C) 2010 Lutz Mueller
 ;
@@ -89,7 +90,7 @@
 ;; (exit)
 
 ;; A package with more demo files can be downloaded from 
-;; @link http://www.newlisp.org/canvas/canvas-10.tgz www.newlisp.org/canvas/canvas-10.tgz .
+;; @link http://www.newlisp.org/canvas/canvas-13.tgz www.newlisp.org/canvas/canvas-13.tgz .
 ;; The demo files assume the Safari (4.0 beta) browser on Mac OS X and Win32 or
 ;; The Firefox browser (3.1. beta 3) on Linux and start the browser automatically.
 ;; Change the last 'cv:render' line in each of the demo file to manually load
@@ -408,7 +409,7 @@
 ;;    2 or "bevel"
 ;; </pre>
 
-;; @syntax (cv:line-width <int-pixels)
+;; @syntax (cv:line-width <int-pixels>)
 ;; @param <int-pixels> The line width in pixels.
 ;; <br>
 ;; Sets the line width in pixels for line drawing and the
@@ -908,7 +909,7 @@ function drawAllCanvas() { try
 
 	
 (define (cv:line lst)
-		(cv (format "Line(new Array(%s));" (list-path lst)))
+	(cv (format "Line(new Array(%s));" (list-path lst)))
 )
 
 

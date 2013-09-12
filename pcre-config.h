@@ -16,6 +16,12 @@ function will be used. */
 character codes, define this macro as 1. On systems that can use "configure",
 this can be done via --enable-ebcdic. */
 
+
+/* for newlisp compiled with configure-alt */
+#ifdef NEWCONFIG
+#include "config.h"
+#endif
+
 #ifndef PCRE_CONFIG_H
 #define PCRE_CONFIG_H
 

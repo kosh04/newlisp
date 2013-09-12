@@ -5,6 +5,9 @@
 ;; @version 2.2 - frequency vector in stat:power was shifted left by 1
 ;; @version 2.3 - $TEMP should be global
 ;; @version 2.4 - changed deprecated <tt>name</tt> to <tt>term</tt>
+;; @version 2.5 - fix in cov-matrix and dependents multiple-reg and corr-matrix
+;; @version 2.6 - fix in plot routines for version 4.4 of Gnuplot
+;; @version 2.7 - fix in extract-col fnd reduce-col or reserved variable mat
 ;; @author Lutz Mueller, 2001-2010
 ;; <h2>Functions for statistics and plotting with GNU plot</h2>
 ;; To use this module it has to be loaded at the beginning of the
@@ -29,6 +32,8 @@
 ;; If no Gnuplot program is found by the module all non-plot routines are still
 ;; usable.
 ;;
+;; The documention contains only the call patterns. See the source for more
+;; documentation.
 ;;
 ;; <h2>Summary of functions</h2><br>
 ;; <h3>Plot functions (requires 'gnuplot')</h3>
@@ -120,11 +125,11 @@
 ;; @return Covariance of data in lists <X> and <Y>
 
 ;; @syntax (stat:cov-matrix <X>)
-;; @param <X> A list of numbers.
+;; @param <X> A matrix of numbers.
 ;; @return Covariance matrix of <X> with <N> rows and <k> columns.
 
 ;; @syntax (stat:corr-matrix <X>)
-;; @param <X> A list of numbers.
+;; @param <X> A matrix of numbers.
 ;; @return Correlation matrix of <X> with <N> rows and <k> columns.
 
 ;; @syntax (stat:cumulate <X>)
@@ -175,7 +180,7 @@
 ;; @return Calculates all moments of list <X>.
 
 ;; @syntax (stat:multiple-reg <X> <offY>)
-;; @param <X> A list of numbers.
+;; @param <X> A matrix of numbers.
 ;; @param <offY> Zero based offset into <Y>.
 ;; @return Multiple regression of vars in <X> onto <Y> at <offsetY>.
 
@@ -311,7 +316,8 @@
 	(if unix
 		(begin
 			(write-file (append $TEMP "/plot") 
-					(append "set data style lines; plot " filelist "\r\n"))
+					;(append "set data style lines; plot " filelist "\r\n"))
+					(append "set style data lines; plot " filelist "\r\n")) ; gnuplot v4.4
 			(process (append gnuplot-program " -persist "  (env "HOME") "/tmp/plot")))
 	/* else Win32 */
 		(begin
@@ -529,7 +535,7 @@
 ; returns a matrix with two rows:
 ; first row is regression coefficients and multiple R: b0, b1, b2 ....., R
 ; second row is sum of squares: regression-SQ, error-SQ, total-SQ
-; (the unused part of the second row is zero padded)
+; (the unused part of the second row is <tt>nil</tt> padded)
 ;
 ; the SQs can be used to calculate mean sqares for regression and error:
 ;
@@ -586,7 +592,7 @@
 (define (cov-matrix X , XtX N I sumX sumX2)
 	(set 'XtX (multiply (transpose X) X)) 
 	(set 'N (length X))
-	(set 'I (matrix (dup t1 N)))
+	(set 'I (matrix (dup 1 N)))
 	(set 'sumX (multiply (transpose X) I)) 
 	(set 'sumX2 (multiply sumX (transpose sumX)))  
 	(set 'sumX2 (multiply sumX2 (diagonal (div 1 N) (length sumX2))))
@@ -664,18 +670,18 @@
 ;
 ; returns the reduced matrix
 ;
-(define (reduce-col mat off, X)
-	(set 'mat (transpose mat))
-	(pop mat off)
-	(transpose mat))
+(define (reduce-col matr off, X)
+	(set 'matr (transpose matr))
+	(pop matr off)
+	(transpose matr))
 
 ;
 ; extract a column from a matrix
 ;
 ; returns the extracted column
 ;
-(define (extract-col mat off, X)
-	(pop (transpose mat) off))
+(define (extract-col matr off, X)
+	(pop (transpose matr) off))
 
 ;
 ; convert list to ascii lines terminated by CR-LF

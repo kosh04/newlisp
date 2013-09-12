@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/13/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -59,12 +59,11 @@ public void actionPerformed(ActionEvent e)
 	String idx = Integer.toString(index);
 	String item = combobox.getSelectedItem().toString();
 
-	if(guiserver.UTF8)	
-		try {
-			item = new String(item.getBytes("UTF-8"));
-	} catch (UnsupportedEncodingException ee) {}
+	if(guiserver.UTF8 && item.length() != 0)
+		item = Base64Coder.encodeStringUTF8(item);
+	else
+		item = Base64Coder.encodeString(item);
 	
-	item = Base64Coder.encodeString(item);
 	guiserver.out.println("(" + action + " \"" + id + "\" " + idx + " \"" + item + "\")");
 	guiserver.out.flush();
 	}
@@ -73,11 +72,12 @@ public void addListItem(StringTokenizer tokens)
 	{
 	while(tokens.hasMoreTokens()) 
 		{
-		String text = Base64Coder.decodeString(tokens.nextToken());
+		String text = tokens.nextToken();
+	
 		if(guiserver.UTF8)
-			try {
-			text = new String(text.getBytes(), "UTF-8");
-			} catch (UnsupportedEncodingException ee) {}
+			text = Base64Coder.decodeStringUTF8(text);
+		else
+			text = Base64Coder.decodeString(text);
 
 		combobox.addItem(text);
 		}
@@ -103,11 +103,12 @@ public void insertListItem(StringTokenizer tokens)
 	
 	while(tokens.hasMoreTokens())
 		{
-		text = Base64Coder.decodeString(tokens.nextToken());
+		text = tokens.nextToken();
+	
 		if(guiserver.UTF8)
-			try {
-			text = new String(text.getBytes(), "UTF-8");
-			} catch (UnsupportedEncodingException ee) {}
+			text = Base64Coder.decodeStringUTF8(text);
+		else
+			text = Base64Coder.decodeString(text);
 		
 		index = Integer.parseInt(tokens.nextToken());
 		if(index > (combobox.getItemCount() - 1)) index = combobox.getItemCount() - 1;
@@ -118,7 +119,13 @@ public void insertListItem(StringTokenizer tokens)
 	
 public void selectListItem(StringTokenizer tokens)
 	{
-	String item = Base64Coder.decodeString(tokens.nextToken());
+	String item = tokens.nextToken();
+	
+	if(guiserver.UTF8)
+		item = Base64Coder.decodeStringUTF8(item);
+	else
+		item = Base64Coder.decodeString(item);
+
 	combobox.setSelectedItem(item);
 	}
 

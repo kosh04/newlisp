@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/14/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -38,12 +38,12 @@ String findTextAction;
 	
 public void setText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-		try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 
 	textcomp.setText(text);
 	}
@@ -51,20 +51,20 @@ public void setText(StringTokenizer tokens)
 	
 public void appendText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-		try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 
 	String oldtext = textcomp.getText();
 	int len = text.length() + oldtext.length();
 	if(len > 100000)
 			textcomp.setText((oldtext + text).substring(len - 100000));
 	else
-
 			textcomp.setText(oldtext + text);
+
 	if(isScrollable) scrollUp();
 	textcomp.repaint();
 	}
@@ -115,12 +115,12 @@ public void clearText(StringTokenizer params)
 public void getText(StringTokenizer params)
 	{
 	String text = textcomp.getText();
+	if(text == null) text = "";
 	
-	if(guiserver.UTF8)
-		try {
-			text = new String(text.getBytes("UTF-8"));
-			} 
-		catch (UnsupportedEncodingException e) {}
+	if(guiserver.UTF8 && text.length() != 0)
+		text = Base64Coder.encodeStringUTF8(text);
+	else
+		text = Base64Coder.encodeString(text);
 	
 	if(params.hasMoreTokens())
 		{
@@ -128,14 +128,14 @@ public void getText(StringTokenizer params)
 		if(text.length() == 0)
 			guiserver.out.println("(" + action + " \"" + id + "\")");
 		else
-			guiserver.out.println("(" + action + " \"" + id + "\" [text]" + Base64Coder.encodeString(text) + "[/text])");
+			guiserver.out.println("(" + action + " \"" + id + "\" [text]" + text + "[/text])");
 		}
 	else
 		{
 		if(text.length() == 0)
 			guiserver.out.println("(set 'gs:text nil)");
 		else
-			guiserver.out.println("(set 'gs:text (base64-dec [text]" + Base64Coder.encodeString(text) + "[/text]))");
+			guiserver.out.println("(set 'gs:text (base64-dec [text]" + text + "[/text]))");
 		}
 		
 	guiserver.out.flush();
@@ -146,10 +146,16 @@ public void getSelection(StringTokenizer params)
 	String action = params.nextToken();
 	String text = textcomp.getSelectedText();
 	if(text == null) text = "";
+
+	if(guiserver.UTF8 && text.length() != 0)
+		text = Base64Coder.encodeStringUTF8(text);
+	else
+		text = Base64Coder.encodeString(text);
+	
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else
-		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + Base64Coder.encodeString(text) + "[/text])");
+		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + text + "[/text])");
 	guiserver.out.flush();
 	}
 	
@@ -220,19 +226,30 @@ public void cutText(StringTokenizer tokens)
 public void pasteText(StringTokenizer tokens)
 	{
 	if(tokens.hasMoreTokens())
-		textcomp.replaceSelection(Base64Coder.decodeString(tokens.nextToken()));
+		{
+		String text = tokens.nextToken();
+	
+		if(guiserver.UTF8)
+			text = Base64Coder.decodeStringUTF8(text);
+		else
+			text = Base64Coder.decodeString(text);
+
+		textcomp.replaceSelection(text);
+		}
 	else
 		textcomp.paste();
 	}
+
 	
 public void insertText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+
 	if(guiserver.UTF8)
-		try {
-			text = new String(text.getBytes(), "UTF-8");
-			} 
-		catch (UnsupportedEncodingException e) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
+
 	String oldtext = textcomp.getText();
 	int newpos = Integer.parseInt(tokens.nextToken());
 	if(newpos > textcomp.getText().length()) newpos = textcomp.getText().length();
@@ -247,10 +264,15 @@ public void requestFocus(StringTokenizer tokens)
 
 public void setFont(StringTokenizer tokens)
 	{
-	String name = Base64Coder.decodeString(tokens.nextToken());
 	int style = 0;
 	int size = 12;
-	
+	String name = tokens.nextToken();
+
+	if(guiserver.UTF8)
+		name = Base64Coder.decodeStringUTF8(name);
+	else
+		name = Base64Coder.decodeString(name);
+
 	if(tokens.hasMoreTokens())
 		size = Integer.parseInt(tokens.nextToken());
 	

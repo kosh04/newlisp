@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/17/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -55,11 +55,12 @@ public TabbedPaneWidget(StringTokenizer params)
 		String cid = params.nextToken();
 		gsObject gsobject = (gsObject)gsObject.widgets.get(cid);
 
-		String title = Base64Coder.decodeString(params.nextToken());
+		String title = params.nextToken();
+	
 		if(guiserver.UTF8)
-		try {
-			title = new String(title.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+			title = Base64Coder.decodeStringUTF8(title);
+		else
+			title = Base64Coder.decodeString(title);
 
 		tabbedpane.addTab(title, gsobject.component);
 		tabsHash.put(gsobject.component, cid);
@@ -72,11 +73,17 @@ public TabbedPaneWidget(StringTokenizer params)
 		public void stateChanged(ChangeEvent e)
 			{
 			int index = tabbedpane.getSelectedIndex();
-			String title = Base64Coder.encodeString(tabbedpane.getTitleAt(index));
+			String title = tabbedpane.getTitleAt(index);
+
+			if(guiserver.UTF8 && title.length() != 0)
+				title = Base64Coder.encodeStringUTF8(title);
+			else
+				title = Base64Coder.encodeString(title);
+
 			//Component cmpnt = tabbedpane.getComponentAt(index);
 			//Object obj = cmpnt;
 			//gsObject gso = (gsObject)obj;
-			
+	
 			String cid = (String)tabsHash.get(tabbedpane.getComponentAt(index));
 			
 			guiserver.out.println("("+ action + " \"" + id +  "\" \"" + cid + "\" \"" + title + "\" " + index + ")");
@@ -92,11 +99,12 @@ public void insertTab(StringTokenizer tokens)
 	{
 	String scomp = tokens.nextToken();
 	
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+	
 	if(guiserver.UTF8)
-	try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 	
 	int index = 0;
 	ImageIcon icon = null;
@@ -154,12 +162,12 @@ public void setIcon(StringTokenizer tokens)
 	
 public void setText(StringTokenizer tokens)
 	{
-	String title = Base64Coder.decodeString(tokens.nextToken());
+	String title = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-	try {
-		title = new String(title.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		title = Base64Coder.decodeStringUTF8(title);
+	else
+		title = Base64Coder.decodeString(title);
 
 	int index = Integer.parseInt(tokens.nextToken());
 

@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/10/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ public class guiserver extends gsObject
 	static boolean connected = false;
 	static SplashWindow splash = null;
 	static Frame frame = null;
-	static double version = 1.36;
+	static double version = 1.43;
 
     public static void main (String args[]) throws IOException, InterruptedException 
 		{
@@ -98,7 +98,7 @@ public class guiserver extends gsObject
 		System.setProperty("line.separator", "\n");
 		
 		System.out.println(" connecting to " + host + ":" + portOut);
-		
+
 		int count = 0;
 		while(connected == false)
 		{
@@ -118,7 +118,7 @@ public class guiserver extends gsObject
 		
 		out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 		System.out.println("server connected");
-		
+
 		Dispatcher.init();
 		
 		String cmd = null;
@@ -198,7 +198,7 @@ public class guiserver extends gsObject
 		
 		if(MAC_OS_X) 
 			{
-			macOSXRegistration();
+			registerForMacOSXEvents();
 			guiserver.DOUBLE_BUFFERING = false; // not necessary on OX X
 			}
 		else
@@ -252,20 +252,26 @@ public void getScreen(StringTokenizer tokens)
 	guiserver.out.println("(set 'gs:screen '(" + screenW + " " + screenH + " " + screenRes + "))\n");
 	guiserver.out.flush();
 	}
-	
+
 public void getFonts(StringTokenizer tokens)
-	{
-	GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	String[] fontNames = ge.getAvailableFontFamilyNames();
-	
-	guiserver.out.print("(set 'gs:fonts '( ");
-	for(int i = 0; i < fontNames.length; i++)
-		guiserver.out.print("\"" + Base64Coder.encodeString(fontNames[i]) + "\" ");
-	guiserver.out.println(")) ");
-	guiserver.out.flush();
-	}	
-	
-	
+{
+    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    String[] fontNames = ge.getAvailableFontFamilyNames();
+    String item;
+
+    guiserver.out.print("(set 'gs:fonts '( ");
+    for(int i = 0; i < fontNames.length; i++)
+        {
+        item = fontNames[i];
+		if(guiserver.UTF8)
+        	guiserver.out.print("\"" + Base64Coder.encodeStringUTF8(item) + "\" ");
+		else
+        	guiserver.out.print("\"" + Base64Coder.encodeString(item) + "\" ");
+        }
+    guiserver.out.println(")) ");
+    guiserver.out.flush();
+	}
+
 public void getVersion(StringTokenizer tokens)
 	{
 	guiserver.out.println("(set 'gs:version " + guiserver.version + ")\n");
@@ -362,17 +368,20 @@ public void setUTF8(StringTokenizer tokens)
 	
 // Mac OS X specific methods
 
-	public void macOSXRegistration() {
-		if (MAC_OS_X) {
-			try {		
-				OSXAdapter.registerMacOSXApplication(this);
-				OSXAdapter.enablePrefs(true);
-			} catch (Exception e) {
-				System.err.println("Exception while loading the OSXAdapter:");
-				e.printStackTrace();
-			}
-		}
-	}
+    public void registerForMacOSXEvents() {
+        if (MAC_OS_X) {
+            try {
+                // Generate and register the OSXAdapter, passing it a hash of all the methods we wish to
+                // use as delegates for various com.apple.eawt.ApplicationListener methods
+                OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("quit", (Class[])null));
+                OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("about", (Class[])null));
+                //OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("preferences", (Class[])null));
+            } catch (Exception e) {
+                System.err.println("Error while loading the OSXAdapter:");
+                e.printStackTrace();
+            }
+        }
+    }
 
 	public void about() 
 		{
@@ -381,8 +390,8 @@ public void setUTF8(StringTokenizer tokens)
 			((DialogWidget)gsobject).jdialog.setVisible(true);			
 		else
 			JOptionPane.showMessageDialog(null, 
-				"Software: copyright (c) 2010 Lutz Mueller http://newlisp.org\n" +
-				"Icons: copyright (c) 2010 Michael Michaels http://neglook.com\nAll rights reserved.", 
+				"Software: copyright (c) 2011 Lutz Mueller http://newlisp.org\n" +
+				"Icons: copyright (c) 2011 Michael Michaels http://neglook.com\nAll rights reserved.", 
 				"About newLISP-GS v." + version, JOptionPane.PLAIN_MESSAGE,
 				getIconFromPath("/local/newLISP64.png", this.getClass()));
    		}

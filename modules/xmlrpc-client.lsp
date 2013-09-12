@@ -2,7 +2,8 @@
 ;; @description XMLRPC protocol client routines
 ;; @version 0.3 - comments redone for automatic documentation
 ;; @version 0.4 - multiple indices with <tt>nth</tt> redone to be compatible with future versions
-;; @version 0.5 -  doc changes
+;; @version 0.5 - doc changes
+;; @version 0.6 - fixed bug in error handler
 ;; @author Lutz Mueller, 2005-2010
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
@@ -12,17 +13,16 @@
 ;; ; or shorter
 ;; (module "xmlrpc-client.lsp")
 ;; </pre>
-;; The script 'xmlrpc.cgi' together with a webserver or the script
-;; 'xmlrpc-server' for a freestanding XML-RPC server can be used for
-;; testing. Both scripts implement a method 'newLISP.evalString'. This
-;; module contains a client side function for this method.
+;; The script 'xmlrpc.cgi' implements a method 'newLISP.evalString'. This  module contains 
+;; a client side function for this method for testing purposes. The file 'xmlrpc.cgi'
+;; can be found in the 'example' directory of the newLISP source distribution.
 ;; 
 ;; For further information on XML-RPC consult 
 ;; @link http://www.xmlrpc.com/ http://www.xmlrpc.com/ .
 ;;
 ;; Whenever a connection could be made, method functions will return a response
 ;; formatted by the XML-RPC server in XML. If a connection failed the function will
-;; return 'nil' and a call to '(XMLRPC:error)' will return and error text.
+;; return 'nil' and a call to '(XMLRPC:error)' will return an error text.
 ;;
 ;; If the XML received cannot be parsed into SXML, the function returns 'nil'
 ;; and '(XMLRPC:error)' will return an XML error. SXML is XML transformed into
@@ -92,7 +92,7 @@
 (define (get-result-data xml)
     (if (starts-with xml "ERR:") 
         (begin
-            (set error-msg xml)
+            (set 'error-msg xml)
             (throw nil)))
     (xml-type-tags nil nil nil nil)
     (set 'sxml (xml-parse xml (+ 1 2 4)))   

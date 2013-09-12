@@ -1,6 +1,6 @@
 /* primes.h - table of primitives
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ PRIMITIVE primitive[] =
 	{"curry",		p_curry,	0},
 	{"args",		p_args,		0},
 	{"map",			p_map,		0},
-	{"term",       	p_name, 	0},
+	{"term",       	p_term, 	0},
 	{"filter",		p_filter,	0},
 	{"clean",		p_clean,	0},
 	{"index",		p_index,	0},
@@ -235,9 +235,6 @@ PRIMITIVE primitive[] =
 	{"get-char",	p_getChar,	0},
 	{"sym",			p_symbol,	0},
 	{"parse",		p_parse,	0},
-#ifndef WIN_32
-	{"parse-date",	p_parseDate,	0},
-#endif
 	{"pack",		p_pack, 	0},
 	{"unpack",		p_unpack, 	0},
 	{"xml-parse",	p_XMLparse, 	0},
@@ -349,10 +346,6 @@ PRIMITIVE primitive[] =
 	{"xfer-event", 	p_transferEvent, 0},
 	{"reader-event", 	p_readerEvent, 0},
 	{"last-error", 	p_lastError, 0},
-/*
-	{"error-number",p_errorNumber,0},
-	{"error-text",	p_errorText,	0},
-*/
 	{"signal",		p_signal,	0},
 	{"sys-info",	p_systemInfo,	0},
 	{"sys-error",	p_systemError,	0},
@@ -387,11 +380,17 @@ PRIMITIVE primitive[] =
 	{"dump",		p_dump,	        0},
 	{"cpymem",		p_copyMemory,	0},
 	{"sleep",		p_sleep,	0},
+	{"$",			p_systemSymbol, 0},
+	/* ------------ date and time --------- */
 	{"time",		p_time,	        0},
 	{"time-of-day",	p_timeOfDay,    0},
-	{"now",         p_now,          0},
-	{"date-value",  p_dateValue,    0},
-	{"$",			p_systemSymbol, 0},
+	{"now",			p_now,			0},
+#ifndef WIN_32
+	{"date-parse",	p_dateParse,	0},
+	{"parse-date",	p_dateParse,	0},
+#endif
+	{"date-list",	p_dateList,		0},
+	{"date-value",  p_dateValue,	0},
 
 	/* ------------ net working ------------ */
 	{"net-close",		p_netClose,	0},
@@ -400,6 +399,7 @@ PRIMITIVE primitive[] =
 	{"net-accept",		p_netAccept,	0},
 	{"net-local",		p_netLocal,	0},
 	{"net-peer",		p_netPeer,	0},
+	{"net-ipv",			p_netIpv,	0},
 	{"net-lookup",		p_netLookup,	0},
 	{"net-receive",		p_netReceive,	0},
 	{"net-receive-from",p_netReceiveFrom,0},

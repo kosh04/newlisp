@@ -1,11 +1,10 @@
 /* nl-math.c
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -59,6 +58,7 @@
 #define OP_SIGNUM 34
 #define OP_ISNAN 35
 #define OP_ISINF 36
+
 
 #ifdef WIN_32
 int _matherr(struct _exception *e) {return 1;}
@@ -251,12 +251,19 @@ params = getFloat(params, &result);
 
 if(params == nilCell)
 	{
-	if(op == OP_SUBTRACT)
-		result = - result;
-	else if(op == OP_DIVIDE)
-		result = 1.0 / result;
-	else if(op == OP_POW)
-		result = result * result;
+	switch(op)
+		{
+		case OP_SUBTRACT:
+			result = - result; break;
+		case OP_DIVIDE:
+			result = 1.0 / result; break;
+		case OP_POW:
+			result = result * result; break;
+		case OP_MODULO:
+			result = result - (int)result; break;
+		default: break;
+		}
+	goto END_FLOAT_ARITHMETIK;
 	}
 
 else while(params != nilCell)
@@ -667,6 +674,10 @@ int compareSymbols(CELL * left, CELL * right)
 {
 SYMBOL * leftS;
 SYMBOL * rightS;
+char * lcName;
+char * rcName;
+char * lsName;
+char * rsName;
 int comp;
 
 if(left->contents == (UINT)nilSymbol)
@@ -685,23 +696,39 @@ if(left->contents == (UINT)trueSymbol)
 if(right->contents == (UINT)nilSymbol || right->contents == (UINT)trueSymbol)
 	return(1);
 
+if(left->contents == right->contents) return(0);
+
+/* else compare context- and symbol- names */
+
 if(left->type == CELL_SYMBOL)
-	leftS = (SYMBOL *)left->contents;
-else
-	leftS = getDynamicSymbol(left);
-
-if(right->type == CELL_SYMBOL)
-	rightS = (SYMBOL *)right->contents;
-else
-	rightS = getDynamicSymbol(right);
-
-if(leftS->context != rightS->context)
 	{
-	leftS = leftS->context;
-	rightS = rightS->context;
+	leftS = (SYMBOL *)left->contents;
+	lcName = ((SYMBOL *)leftS->context)->name;
+	lsName = leftS->name;
+	}
+else
+	{
+	lcName = ((SYMBOL *)left->aux)->name;
+	lsName = (char *)left->contents;
 	}
 
-if((comp = strcmp((char *)leftS->name, (char *)rightS->name)) == 0) return(0);
+if(right->type == CELL_SYMBOL)
+	{
+	rightS = (SYMBOL *)right->contents;
+	rcName = ((SYMBOL *)rightS->context)->name;
+	rsName = rightS->name;
+	}
+else
+	{
+	rcName = ((SYMBOL *)right->aux)->name;
+	rsName = (char *)right->contents;
+	}
+
+if((comp = strcmp(lcName, rcName)) == 0)
+	{
+	if((comp = strcmp(lsName, rsName)) == 0) return(0);	
+	}
+
 return (comp > 0 ? 1 : -1);
 }
 
@@ -754,6 +781,7 @@ if(left->type != right->type)
 	return( comp > 0 ? 1 : -1);
 	}
 
+/* left type and right type are the same */
 switch(left->type)
 	{
 	case CELL_STRING:
@@ -1383,6 +1411,10 @@ getFloat(params, &x);
 
 result = gammap(a, x);
 
+#ifdef DEBUG /* try (gammai 10 10), see also gammap() */
+printf("in p_gammai() result = %f\n", result);
+#endif
+
 return(stuffFloat(&result));
 }
 
@@ -1494,7 +1526,12 @@ double gammap(double a, double x)
 {
 double gln;
 gln = gammaln(a);
-return (x < a + 1) ? gser(a, x, gln) : (1.0 - gcf(a ,x , gln));
+#ifdef DEBUG
+/* horrible error on LLVM 32-bit Apple update Oct 7, 2010, fine on LLVM 64-bit
+   result is fine in printf() but gets passed up as NaN to gammai() by return() */
+printf("in gammap() result %f\n", (x < (a + 1.0)) ? gser(a, x, gln) : (1.0 - gcf(a ,x , gln)));
+#endif
+return( (x < (a + 1.0)) ? gser(a, x, gln) : (1.0 - gcf(a ,x , gln)) );
 }
 
 
@@ -2314,7 +2351,7 @@ double * p_tkn_and_cat;
 double p_tkn_and_all_cat;
 double * Pchi2 = NULL;
 double * Qchi2 = NULL;
-double sumS = 1.0;
+/* double sumS = 1.0; */
 long countNum, totalNum;
 
 CELL * result = NULL;
@@ -2492,11 +2529,11 @@ for(i = 0; i < nTkn; i++)
     
 if(!chainBayes)
     {
-    sumS = 0.0;
+/*  sumS = 0.0; */
     for(idx = 0; idx < maxIdx; idx++)
       {
       postP[idx] = (probChi2(Qchi2[idx],  2 * nTkn) - probChi2(Pchi2[idx],  2 * nTkn) + 1.0) / 2.0;
-      sumS += postP[idx];
+/*    sumS += postP[idx]; */
       }
     }
                                                 
@@ -2504,8 +2541,10 @@ if(!chainBayes)
 for(idx = 0; idx < maxIdx; idx++)
     {
     /* normalize probs from Fisher's Chi-2 */
+	/* taken out for 10.3, leads to misinterpretation of propbablities and NaNs
     if(!chainBayes) 
         postP[idx] /= sumS;
+	*/
 
     if(idx == 0)
         {
@@ -2525,7 +2564,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2010 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2011 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

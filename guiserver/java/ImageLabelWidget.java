@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/23/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -62,15 +62,14 @@ public ImageLabelWidget(StringTokenizer params)
 
 public void setText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
-	
+	String text = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-		try {
-		label.setText(new String(text.getBytes(), "UTF-8"));
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
 	else
-		label.setText(text);
+		text = Base64Coder.decodeString(text);
+
+	label.setText(text);
 	}
 	
 public void clearText(StringTokenizer tokens)

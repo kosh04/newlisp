@@ -1,0 +1,48 @@
+#!/usr/bin/env newlisp
+
+; - scan - v.1.0 port scanner in newLISP
+; much faster on Mac OSX, LINUX and other UNIX than on Windows
+; as on UNIX net-connect can return on failure before the timeout
+; has exspired. On Windows net-connect will wait out the timeout
+; if it cannot connect.
+;
+; Example:
+;
+
+(when (< (sys-info -2) 10204)
+	(println "newLISP v.10.2.4 or later required")
+	(exit))
+
+(set 'host (main-args 2))
+(unless host (println [text]
+- newLISP scan v1.1, a simple portscanner
+
+USAGE: scan <host-ip-or-name> [<timeout-msec> [<from-port> [<to-port>]]]
+
+EXAMPLES:
+   scan localhost 200 1 1024
+   scan example.com
+   scan 192.168.1.92 300 20
+
+Default for <timeout-msec> is 1000 milli seconds
+Defaults for <from-port> and <to-port> are 1 to 1024
+[/text])
+	(exit))
+
+(set 'timeout (or (int (main-args 3)) 1000))
+(set 'from-port (or (int (main-args 4)) 1))
+(set 'to-port (or (int (main-args 5)) 1024))
+
+(println "scanning: " host)
+(for (port from-port to-port)
+	(if (set 'socket (net-connect host port timeout))
+		(begin
+			(println "open port: " port " " (or (net-service port "tcp") ""))
+			(net-close socket))
+		(print port "\r"))
+)
+(println)
+(exit)
+
+;; eof
+

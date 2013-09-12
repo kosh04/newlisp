@@ -19,7 +19,7 @@ win-gui:
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-10.2.8-Release.html /c/newlisp
+	cp doc/newLISP-10.3-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	
@@ -51,6 +51,7 @@ win-gui:
 	cp guiserver/sound-demo.lsp /c/newlisp/guiserver
 	cp guiserver/stroke-demo.lsp /c/newlisp/guiserver
 	cp guiserver/tabs-demo.lsp /c/newlisp/guiserver
+	cp guiserver/table-demo.lsp /c/newlisp/guiserver
 	cp guiserver/textrot-demo.lsp /c/newlisp/guiserver
 	cp guiserver/widgets-demo.lsp /c/newlisp/guiserver
 	cp guiserver/word-count.lsp /c/newlisp/guiserver

@@ -1,4 +1,4 @@
-#!/usr/bin/env newlisp
+#!/usr/bin/newlisp
 
 # - syntax.cgi - this utility formats a newLISP source file as an HTML 
 # file with syntax highlighting
@@ -21,6 +21,7 @@
 # v.3.1 - change additional 'nil' arg in 'starts-with' to 1
 # v.3.2 - replace 'name' with 'term' and make compatible with older versions
 # v.3.3 - added utf-8 meta tag in header
+# v.3.4 - fontsize 150% for iPad or iPhone
 #
 # formats newLISP source files with syntax highlighting in HTML
 #
@@ -58,8 +59,12 @@
 (when (< (sys-info -2) 10111)
     (constant (global 'term) name))
 
-(if cgi-use 
-	(print "Content-Type: text/html\r\n\r\n"))
+(when cgi-use 
+	(print "Content-Type: text/html\r\n\r\n")
+	(set 'iPad (find "iPad" (env "HTTP_USER_AGENT") 1))
+	(set 'iPhone (find "iPhone" (env "HTTP_USER_AGENT") 1))
+)
+		
 
 (define keyword-color "#0000AA")      ; newLISP keywords
 (define tag-color "#308080")          ; newLISPdoc tags
@@ -91,23 +96,20 @@
 
 (set 'title file)
 
-(if cgi-use
-  (begin 
-    (if (and (not (starts-with file "http://" 1)) (not (ends-with file ".txt")))
-	(begin
-		(println "<h3>File not allowed for viewing: " file "</h3>")
-		(exit)))
-  ))
+(when cgi-use
+    (when (and (not (starts-with file "http://" 1)) (not (ends-with file ".txt")))
+        (println "<h3>File not allowed for viewing: " file "</h3>")
+        (exit))
+)
 
 
 (if (starts-with file "http://" 1)
 	(set 'file (get-url file 10000))
 	(set 'file (read-file file )))
 
-(if (not file)
-	(begin
-		(println "<h3>Cannot find file</h3>")
-		(exit)))
+(unless file
+    (println "<h3>Cannot find file</h3>")
+    (exit))
 
 (define (clean-comment str)
 	(replace {<font color='#......'>} str "" 0)
@@ -207,13 +209,17 @@
 (replace {&#091&} file "&#091;") ; left bracket
 (replace {&#092&} file "&#092;") ; back slash
 
-
 ; add pre and post tags
 (println (append 
 	{<!DOCTYPE HTML PUBLIC "4.01 Transitional">}
 	"<html><head><title>" title "</title>\n"
 	{<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />}
-	"</head><body>\n<pre>\n" file "\n</pre>" 
+	{<style type="text/css">}
+	(if (or iPad iPhone)
+		{pre {font-size: 150%}}
+		{pre {font-size: 100%}} )
+	"</style></head><body>\n<pre>\n" 
+	file "\n</pre>" 
 ))
 
 (println {<center><font face='Arial' size='-2' color='#444444'>}

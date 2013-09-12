@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/14/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -70,12 +70,12 @@ public LabelWidget(StringTokenizer params)
 
 public void setText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-		try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 
 	label.setText(text);
 	}
@@ -84,22 +84,29 @@ public void getText(StringTokenizer params)
 	{
 	String action = params.nextToken();
 	String text = label.getText();
-	if(guiserver.UTF8)
-		try {
-			text = new String(text.getBytes("UTF-8"));
-			} 
-		catch (UnsupportedEncodingException e) {}
+	
+	if(guiserver.UTF8 && text.length() != 0)
+		text = Base64Coder.encodeStringUTF8(text);
+	else
+		text = Base64Coder.encodeString(text);
 
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else
-		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + Base64Coder.encodeString(text) + "[/text])");
+		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + text + "[/text])");
 	guiserver.out.flush();
 	}
-	
+
+
 public void appendText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+	
+	if(guiserver.UTF8)
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
+
 	String oldtext = label.getText();
 	label.setText(oldtext + text);
 	}

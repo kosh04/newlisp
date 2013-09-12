@@ -6,7 +6,8 @@
 ;; @version 2.0 - bugfixes and documentation overhaul.
 ;; @version 2.1 - doc changes
 ;; @version 2.2 - formatting
-;; @author Lutz Mueller, July 2006, February 2009
+;; @version 2.3 - documentation
+;; @author Lutz Mueller, July 2006, 2009, 2010
 ;; <h2>Changes and fixes in version 2 </h2>
 ;; <ul>
 ;; <li>Bugfixes for bezier, which sometimes crashed.
@@ -365,16 +366,17 @@
 ;;
 ;; The position or orientation of the turtle will not change.
 
-;; @syntax (ps:render) 
+;; @syntax (ps:render [<filename>]) 
 ;; <br>
-;; Show on monitor (Mac OS X only).
-;; Uses the Mac OS X Preview.app to convert
-;; and view postscript files ending in '.ps'.
+;; Without the filename parameter, <tt>render</tt> creates a file <tt>noname.ps</tt>
+;; and on Mac OS X the file is shown on the monitor using the Mac OS X Preview
+;; application. 
 ;;
-;; On Unix and Win32 systems use (ps:render <filename>)
+;; Specify the <filename> parameter
 ;; to save the postscript file and convert and view
 ;; it using ghostscript from @link http://www.ghostscript.com/ www.ghostscript.com/
 ;; and @link http://www.cs.wisc.edu/~ghost/ www.cs.wisc.edu/~ghost .
+;;
 
 ;; @syntax (ps:rotate <num-deg>) 
 ;; @param <num-deg> The degrees of rotation: -360 to 0 to 360.

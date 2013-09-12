@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -435,12 +435,7 @@ int option = FALSE;
 
 #ifndef SUPPORT_UTF8
 params = getString(params, &string);
-if(params != nilCell)
-  {
-  params = evaluateExpression(params);
-  if(params->contents != (UINT)nilCell)
-    option = TRUE;
-  }
+option = getFlag(params);
 
 cell = stuffString(string);
 ptr = (void *)cell->contents;

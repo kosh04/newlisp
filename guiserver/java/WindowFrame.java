@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/11/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -123,11 +123,12 @@ public void setVisible(StringTokenizer tokens)
 
 public void setText(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+	
 	if(guiserver.UTF8)
-	try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 
 	jframe.setTitle(text);
 	}
@@ -138,16 +139,15 @@ public void getText(StringTokenizer tokens)
 	String action = tokens.nextToken();
 	String text = jframe.getTitle();
 	
-	if(guiserver.UTF8)
-		try {
-			text = new String(text.getBytes("UTF-8"));
-			} 
-		catch (UnsupportedEncodingException e) {}
+	if(guiserver.UTF8 && text.length() != 0)
+		text = Base64Coder.encodeStringUTF8(text);
+	else
+		text = Base64Coder.encodeString(text);
 
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else
-		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + Base64Coder.encodeString(text) + "[/text])");
+		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + text + "[/text])");
 	guiserver.out.flush();
 	}
 	
@@ -170,19 +170,19 @@ public void setResizable(StringTokenizer tokens)
 public void confirmDialog(StringTokenizer tokens)
 	{
 	String action = tokens.nextToken();
-	String title = Base64Coder.decodeString(tokens.nextToken());
-	String message = Base64Coder.decodeString(tokens.nextToken()); 
+	String title = tokens.nextToken();
+	String message = tokens.nextToken(); 
 
 	if(guiserver.UTF8)
-	try {
-		title = new String(title.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
-
-	if(guiserver.UTF8)
-	try {
-		message = new String(message.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
-	
+		{
+		title = Base64Coder.decodeStringUTF8(title);
+		message = Base64Coder.decodeStringUTF8(message);
+		}
+	else
+		{
+		title = Base64Coder.decodeString(title);
+		message = Base64Coder.decodeString(message);
+		}
 	
 	int option = JOptionPane.YES_NO_OPTION;
 	
@@ -201,19 +201,19 @@ public void confirmDialog(StringTokenizer tokens)
 
 public void messageDialog(StringTokenizer tokens)
 	{
-	String title = Base64Coder.decodeString(tokens.nextToken());
-	String message = Base64Coder.decodeString(tokens.nextToken());
-	
+	String title = tokens.nextToken();
+	String message = tokens.nextToken(); 
+
 	if(guiserver.UTF8)
-	try {
-		title = new String(title.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
-		
-	if(guiserver.UTF8)
-	try {
-		message = new String(message.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
-	
+		{
+		title = Base64Coder.decodeStringUTF8(title);
+		message = Base64Coder.decodeStringUTF8(message);
+		}
+	else
+		{
+		title = Base64Coder.decodeString(title);
+		message = Base64Coder.decodeString(message);
+		}
 	
 	int option = JOptionPane.PLAIN_MESSAGE;
 	String path;
@@ -242,12 +242,12 @@ public void ColorChooser(StringTokenizer tokens)
 	{
 	Color color;
 	String action = tokens.nextToken();
-	String title = Base64Coder.decodeString(tokens.nextToken());
+	String title = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-	try {
-		title = new String(title.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		title = Base64Coder.decodeStringUTF8(title);
+	else
+		title = Base64Coder.decodeString(title);
 	
 	Float red;
 	Float green;

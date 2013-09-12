@@ -1,11 +1,13 @@
-<!DOCTYPE HTML PUBLIC "4.01 Transitional">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-   <meta name="author" content="Lutz Mueller">
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+   <meta name="author" content="Lutz Mueller"/>
    <meta name="keywords" 
-         content="newLISP LISP SCHEME programming language manual reference Artificial Intelligence AI NUEVATEC">
-   <meta name="description" content="newLISP Code Patterns">
+         content="newLISP LISP SCHEME programming language manual reference Artificial Intelligence AI NUEVATEC"/>
+   <meta name="description" content="newLISP Code Patterns"/>
    <title>newLISP Code Patterns</title>
 
 <style type="text/css" media="screen">
@@ -84,24 +86,24 @@ tt {
 </head>
 <body style="margin: 20px;" text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
 
-<br><br>
+<br/><br/>
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2010 May 12<sup>th</sup><br>
-<a href="http://newlisp.org">newLISP</a> v.10.2.0
+</h1>Version 2010 January 26<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.2
 </center>
 
-<br><br><br>
+<br/><br/><br/>
 
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2010 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br>
-Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br>
-Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br>
-and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br>
-<br>
+Copyright &copy; 2011 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
+Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br/>
+Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br/>
+and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br/>
+<br/>
 newLISP is a registered trademark of Lutz Mueller.
 </font>
 </span>
@@ -178,6 +180,8 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Manipulate after definition</li>
   <li>Mapping and applying</li>
   <li>Functions making functions</li>
+  <li>Functions with memory</li>
+  <li>Functions using self modifying code</li>
   </ul></li>
 <li><a href="#toc-10">10. Text processing</a>
   <ul>
@@ -246,7 +250,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Association lists</li>
   <li>Nested associations</li>
   <li>Updating nested associations</li>
-  <li>In-memory database</li>
+  <li>Combining associations and hashes</li>
   </ul></li>
 <li><a href="#toc-21">21. Distributed computing</a>
   <ul>
@@ -265,10 +269,10 @@ newLISP is a registered trademark of Lutz Mueller.
   </ul></li>
 <li><a href="#toc-22">22. HTTPD web server only mode</a>
   <ul>
+  <li>Environment variables</li>
   <li>Pre-processing the request</li>
   <li>CGI processing in HTTP mode</li>
   <li>Media types in HTTP modes</li>
-  <li>Environment variables set</li>
   </ul></li>
 <li><a href="#toc-23">23. Extending newLISP</a>
   <ul>
@@ -280,11 +284,11 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Passing parameters</li>
   <li>Extracting return values</li>
   <li>Writing library wrappers</li>
-  </ul>
+  </ul></li>
 </ul>
-<br><br>
+<br/><br/>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-1"></a>
 <h2>1. Introduction</h2>
 
@@ -296,7 +300,7 @@ newLISP is a registered trademark of Lutz Mueller.
 
 <p>This collection of patterns and solutions is a work in progress. Over time, material will be added or existing material improved.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-2"></a>
 <h2>2. newLISP script files</h2>
 
@@ -327,6 +331,8 @@ newLISP is a registered trademark of Lutz Mueller.
      
 (println (main-args))
 (println (sys-info))
+
+(exit) ; important
 </pre>
 
 <p>A typical output executing the script from the system shell would be:</p>
@@ -409,7 +415,7 @@ newLISP is a registered trademark of Lutz Mueller.
 
 <p>It returns a list of all the filenames. This form of specifying indexes for rest is called implicit indexing. See the Users Manual for implicit indexing with other functions. The expression <tt>(main-args 2)</tt> extracts the 3rd argument from the command line containing the regular expression pattern.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-3"></a>
 <h2>3. Writing software in modules</h2>
 
@@ -640,9 +646,9 @@ db:db → (99 "B" (c d) 1 2.2 3 x y z)
 db:db         → (99 "B" (c d) 1 2.2 3 x y)
 </pre>
 
-<p>The function <tt>update</tt> is also a good example of how to pass operators or functions as a function argument (<tt>upper-case</tt> working on <tt>$it</tt>). Read more about this in the chapter //Functions as data//.</p>
+<p>The function <tt>update</tt> is also a good example of how to pass operators or functions as a function argument (<tt>upper-case</tt> working on <tt>$it</tt>). Read more about this in the chapter <a href="#toc-9">Functions as data</a>.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-4"></a>
 <h2>4. Local variables</h2>
 
@@ -768,7 +774,7 @@ len:10 width:20 height:40
 
 <p>Note that this macro would not work when called across namespaces, as the symbols used for naming would not be the same.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-5"></a>
 <h2>5. Walking through lists</h2>
 
@@ -906,7 +912,7 @@ len:10 width:20 height:40
 
 <p>In this example recursion is the only solution, because the entire nested list of files is not available when the function is called but gets created recursively during function execution.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-6"></a>
 <h2>6. Modifying and searching lists</h2>
 
@@ -1101,7 +1107,7 @@ A → ((a 1) (b 22) (c 33))
 
 <h3>The anaphoric variable</h3>
 
-<p>The internal <tt>anaphoric</tt> system variable <tt>$it</tt> holds the old list element. This can be used to configure the new one:</p>
+<p>The internal <em>anaphoric</em> system variable <tt>$it</tt> holds the old list element. This can be used to configure the new one:</p>
 
 <pre>
 (set 'L '(0 0 0))
@@ -1110,6 +1116,9 @@ A → ((a 1) (b 22) (c 33))
 (setf (L 1) (+ $it 1)) → 4
 L → '(0 3 0)
 </pre>
+
+<p>The following functions use the anaphoric <tt>$it</tt>:&nbsp;
+<tt>find-all</tt>, <tt>replace</tt>, <tt>set-ref</tt>, <tt>set-ref-all</tt> and <tt>setf setq</tt>.</p>
 
 <h3>Replace in simple lists</h3>
 
@@ -1304,7 +1313,7 @@ D → four
 E → (x y z)
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-7"></a>
 <h2>7. Program flow</h2>
 
@@ -1561,7 +1570,7 @@ E → (x y z)
 
 <p>Expressions are evaluated sequentially until one <tt>expr-i</tt> evaluates to <b>not</b> <tt>nil</tt> and not <tt>()</tt> or until all <tt>expr-i</tt> are exhausted. The last expression evaluated is the return value of the whole <tt>or</tt> expression.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-8"></a>
 <h2>8. Error handling</h2>
 
@@ -1606,11 +1615,11 @@ called from user defined function double
 ; define an error event handler
 ;
 (define (MyHandler)
-    (println "An error #" (error-number) " has occurred"))
+    (println  (last (last-error))  " has occurred"))
    
 (error-event 'MyHandler)
    
-(foo) → An error #23 has occurred
+(foo) → ERR: invalid function : (foo) has occurred 
 </pre>
 
 <h3>Catching errors</h3>
@@ -1661,7 +1670,7 @@ called from user defined function double
 
 <p>Numbers returned may be different on different UNIX platforms. Consult the file <tt>/usr/include/sys/errno.h</tt> on your platform.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-9"></a>
 <h2>9. Functions as data</h2>
 
@@ -1760,7 +1769,87 @@ called from user defined function double
 
 <p>Note that the 'curried' parameter is always the first parameter of the original function.</p>
 
-<br><center>&sect;</center><br>
+<h3>Functions with memory</h3>
+
+<p>newLISP can create local state variables using a name-space context:</p>
+
+<pre>
+; newLISP generator
+
+(define (gen:gen)
+    (setq gen:sum 
+    (if gen:sum (inc gen:sum) 1)))
+
+; this could be written even shorter, because
+; 'inc' treats nil as zero
+
+(define (gen:gen)
+    (inc gen:sum))
+
+(gen) &rarr; 1
+(gen) &rarr; 2 
+(gen) &rarr; 3
+</pre>
+
+<p>The example uses a default functor &mdash; fuctions name equals names-space name &mdash;
+to give it the appearance of a normal function. Other fuctions could be added to the
+namespace, e.g. for initializing the sum.</p>
+
+<pre>
+(define (gen:init x)
+    (setq gen:sum x))
+
+(gen:init 20) &rarr; 20
+
+(gen) &rarr; 21
+(gen) &rarr; 22
+</pre>
+
+<h3>Functions using self modifying code</h3>
+
+<p>The first class nature of lambda expressions in newLISP makes 
+it possible to write self modifying code:</p>
+
+<pre>
+;; sum accumulator
+(define (sum (x 0)) (inc 0 x))
+
+(sum 1)    &rarr; 1
+(sum 2)    &rarr; 3
+(sum 100)  &rarr; 103
+(sum)      &rarr; 103
+
+sum  &rarr; (lambda ((x 0)) (inc 103 x))
+</pre>
+
+<p>The following example shows a function making a self modifying 
+stream function using <tt>expand</tt> :</p>
+
+<pre>
+(define (make-stream lst)
+    (letex (stream lst) 
+        (lambda () (pop 'stream))))
+
+(set 'lst '(a b c d e f g h))
+(define mystream (make-stream lst))
+
+(mystream)  &rarr; a
+(mystream)  &rarr; b
+(mystream)  &rarr; c
+</pre>
+
+<p>Because <tt>pop</tt> works on both: lists and strings, the same 
+function factory can be used for a string stream:</p>
+
+<pre>
+(set 'str "abcddefgh")
+(define mystream (make-stream str))
+
+(mystream)  &rarr; "a"
+(mystream)  &rarr; "c"
+</pre>
+
+<br/><center>&sect;</center><br/>
 <a name="toc-10"></a>
 <h2>10. Text processing</h2>
 
@@ -1918,7 +2007,7 @@ str &rarr; "ABCD"
 
 <p>When indexing strings with either <tt>nth</tt> or implicit indexing, the string is addressed at character rather than byte boundaries to work correctly on UTF-8 enabled versions of newLISP.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-11"></a>
 <h2>11. Dictionaries and hashes</h2>
 
@@ -1998,7 +2087,7 @@ str &rarr; "ABCD"
 
 <p>Note that hashes create contexts similar to the <tt>bayes-train</tt> function. All string keys are prepended with an underscore and then transformed into a symbol. This means that namespaces created using <tt>bayes-train</tt> can be used like hashes to retrieve words and their statistics. See the <tt>bayes-train</tt> function in the manual for more detail.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-12"></a>
 <h2>12. TCP/IP client server</h2>
 
@@ -2071,7 +2160,7 @@ str &rarr; "ABCD"
 
 <p>There are many different ways to set up a client/server connection, see also the examples in the newLISP manual.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-13"></a>
 <h2>13. UDP communications</h2>
 
@@ -2145,7 +2234,7 @@ str &rarr; "ABCD"
 
 <p>The connection in the example is blocking on <tt>net-receive</tt> but could be de-blocked using <tt>net-select</tt> or <tt>net-peek</tt></p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-14"></a>
 <h2>14. Non-blocking comm</h2>
 
@@ -2173,7 +2262,7 @@ str &rarr; "ABCD"
 (net-receive...)
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-15"></a>
 <h2>15. Controlling other applications</h2>
 
@@ -2296,7 +2385,7 @@ tmp)
 .....
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-16"></a>
 <h2>16. Launching apps blocking</h2>
 
@@ -2330,7 +2419,7 @@ tmp)
 
 <p>In this example <tt>cgi-input</tt> could contain a string feeding a query input, normally coming from a web server. Note that output in this case is written directly to the screen, and cannot be returned to newLISP. Use process and pipe for two way std i/o communications with other applications.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-17"></a>
 <h2>17. Semaphores, shared memory</h2>
 
@@ -2387,7 +2476,7 @@ tmp)
 (exit)
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-18"></a>
 <h2>18. Multiprocessing and Cilk</h2>
 
@@ -2465,7 +2554,7 @@ plist))
 (sync 10000 report)
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-19"></a>
 <h2>19. Message exchange</h2>
 
@@ -2621,11 +2710,13 @@ pid:53181-&gt;6   pid:53180-&gt;56  pid:53179-&gt;96  pid:53178-&gt;78  pid:5317
 
 <p>The expression <tt>(set 'finished true)</tt> is sent to the parent where it gets evaluated and causes the parent's <tt>until</tt> loop to finish.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-20"></a>
 <h2>20. Databases and lookup tables</h2>
 
-<p>newLISP uses symbol trees to implement hashes. Symbols in name spaces can also be serialized to a file, as will be shown in the chapter about symbol creation and lookup.</p>
+<p>For smaller tables of not more than a few hundered entries association lists can be
+used. For larger databases use dictionaries and hashes as decribed in
+<a href="#toc-11">chapter 11.</a></p>
 
 <h3>Association lists</h3>
 
@@ -2713,7 +2804,7 @@ Persons →  (
 
 <p><tt>setf</tt> always returns the newly set element.</p>
 
-<h3>In-memory database</h3>
+<h3>Combining associations and hashes</h3>
 
 <p>Hashes and FOOP objects can be combined to form an in-memory database with keyed access.</p>
 
@@ -2737,7 +2828,7 @@ Persons →  (
 (Person "John Doe") → (Address (City "small town") (Telephone 1234567))
 </pre>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-21"></a>
 <h2>21. Distributed computing</h2>
 
@@ -3072,11 +3163,17 @@ result: (7 11 15 19 23)
 
 <p>Using local domain sockets fast communications between processes on the same file system and with newLISP servers is possible. See the Users Manual for more details.</p>
 
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-22"></a>
 <h2>22. HTTPD web server only mode</h2>
 
 <p>In all previous chapters the <tt>-c</tt> server mode was used. This mode can act as a <tt>net-eval</tt> server and at the same time answer <tt>HTTP</tt> requests for serving web pages or transfer of files and programs. The <tt>-c</tt> mode is the preferred mode for secure operation behind a firewall. newLISP also has a <tt>-http</tt> mode which works like a restricted <tt>-c</tt> mode. In <tt>-http</tt> mode only <tt>HTTP</tt> requests are served and command-line like formatted requests and <tt>net-eval</tt> requests are not answered. In this mode newLISP can act like a web server answering HTTP <tt>GET</tt>, <tt>PUT</tt>, <tt>POST</tt> and <tt>DELETE</tt> requests as well as <tt>CGI</tt> requests, but additional efforts should be made to restrict the access to unauthorized files and directories to secure the server when exposed to the internet.</p>
+
+<h3>Environment variables</h3>
+<p>In both server modes <tt>-c</tt> and <tt>-http</tt> the environment variables 
+DOCUMENT_ROOT, REQUEST_METHOD, SERVER_SOFTWARE and QUERY_STRING are set. 
+The variables CONTENT_TYPE, CONTENT_LENGTH, HTTP_HOST, HTTP_USER_AGENT 
+and HTTP_COOKIE are set too if present in the HTTP header sent by the client.</p>
 
 <h3>Pre-processing the request</h3>
 
@@ -3168,11 +3265,8 @@ newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;amp;
 <tr><td>.zip</td><td>application/zip</td></tr>
 <tr><td>any other</td><td>text/plain</td></tr>
 </table>
-<h3>Environment variables set</h3>
 
-<p>When receiving HTTP requests newLISP server mode will extract information from the HTTP request header and configure <tt>HTTP_HOST</tt>, <tt>HTTP_USER_AGENT</tt> and <tt>HTTP_COOKIE</tt> in the environment of the host operating system. If a <tt>httpd-conf</tt> functions was loaded on newLISP server startup header processing will happen after processing <tt>httpd-conf</tt>. The environment variables can be accessed by a CGI process.</p>
-
-<br><center>&sect;</center><br>
+<br/><center>&sect;</center><br/>
 <a name="toc-23"></a>
 <h2>23. Extending newLISP</h2>
 
@@ -3218,7 +3312,7 @@ gcc testlib.c -shared -o testlib.so
 <p>Or On Mac OSX/darwin do:</p>
 
 <pre>
-gcc -bundle -o testlib.so
+gcc testlib.c -bundle -o testlib.dylib
 </pre>
 
 <p>The library <tt>testlib.so</tt> will be built with Linux/UNIX default <tt>cdecl</tt> conventions. Importing the library is very similar on both Linux and Win32 platforms, but on Win32 the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
@@ -3518,7 +3612,7 @@ double * wrapperFoo(int argc, ...)
 </pre>
 
 
-<br><center>&sect;</center><br><hr><br>
+<br/><center>&sect;</center><br/><hr/><br/>
 
 <a NAME="appendix"></a>
 <a NAME="GFDL"></a>
@@ -3533,7 +3627,7 @@ Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.</p>
 </center>
 
-<br><br>
+<br/><br/>
 
 <b>0. PREAMBLE</b>
 

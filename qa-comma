@@ -23,12 +23,17 @@
 ;; set a locale which uses the decimal comma
 (if (= ostype "Win32")
 	(set-locale "C" ",") ; undocumented, make qa-comma work in "." countries
-	(set-locale "de_DE"))
+	(unless (set-locale "de_DE")
+		(println "Cannot set locale to 'de_DE' - must exit")
+		(exit))
+)
 
 (when utf8
  (set 'unicodelist '(913 914 915 916 937 945 946 947 948 969 32 
                  1040 1041 1042 1043 1044 1072 1073 1074 1075 1076 13 10))
  (set 'utf8str (join (map char unicodelist)))
+ (unless (catch (regex-comp (join (map char '(12411 12370 12411 12370)))) 'result)
+	(println "Problem compiling utf-8 regular expressions."))
 )
 
 (define (utf8qa)
@@ -625,6 +630,7 @@ true
 	(set 'aList '(a b c))
 	(= (replace 'b (copy aList)) '(a c))
 	(= aList '(a b c))
+	(find-all "12" "12345" (replace "1" (copy $0) "N"))
 ))
 
 (define (test-copy-file ) 
@@ -676,6 +682,20 @@ true
 (define (test-date )
   (= (date) (date (date-value)) (date (apply date-value (now)))))
 
+(define (test-date-parse)
+	(and
+		(= (date-parse "2007.1.3" "%Y.%m.%d") 1167782400)
+		(= (date-parse "20091014" "%Y%m%d") 1255478400)
+; note that the month name here is in German
+		(= (date-parse "Januar 10, 07" "%B %d, %y") 1168387200)
+))
+
+(define (test-parse-date) (test-date-parse))
+
+(define (test-date-list)
+	(let (value (date-value))
+		(= (apply date-value (date-list value)) value))
+)
 (define (test-date-value )
   (= 0 (date-value 1970 1 1 0 0 0)))
 
@@ -1013,15 +1033,19 @@ true
 ))
 
 (define (test-extend)
-	(and
-		(= (extend '() '(a) '(b c)) '(a b c))
-		(= (extend '(a) '() '(b)) '(a b))
-		(= (extend '(a) '(b) '(c d)) '(a b c d))
-		(not (set 'l '()))
-		(= (extend l '(a) '(b c)) '(a b c))
-		(= (extend l '(d e)) '(a b c d e))
-	)	
-)	
+    (and
+        (= (extend '() '(a) '(b c)) '(a b c))
+        (= (extend '(a) '() '(b)) '(a b))
+        (= (extend '(a) '(b) '(c d)) '(a b c d))
+        (not (set 'l '()))
+        (= (extend l '(a) '(b c)) '(a b c))
+        (= (extend l '(d e)) '(a b c d e))
+        (not (set 'l nil))
+        (= (extend l "abc" "def") "abcdef")
+        (not (set 'l nil))
+        (= (extend l '(a) '(b c)) '(a b c))
+    )
+)
 
 (define (test-factor)
     (= (apply * (factor 0x7FFFFFFFFFFFFFFF)) 0x7FFFFFFFFFFFFFFF))
@@ -1609,7 +1633,10 @@ true
   (and (= 3 (min 3 6 10 8)) (= 0,6 (min 0,7 0,6 1,2))))
 
 (define (test-mod )
-  (and (< (sub (mod 10,5 3,3) 0,6) 0,0001) (< (sub (mod 10 3) 1) 0,0001)))
+  (and 	(< (sub (mod 10,5 3,3) 0,6) 0,0001) 
+		(< (sub (mod 10 3) 1) 0,0001)
+		(< (sub (mod 10,5) 0,5) 0,0001)
+))
 
 (define (test-mul )
   (= 1e-09 (mul 0,0001 1e-05)))
@@ -1668,6 +1695,9 @@ true
 (define (test-net-listen ) net-listen-test)
 
 (define (test-net-local ) net-local-test)
+
+(define (test-net-ipv) 
+	(and (= (net-ipv) 4) (= (net-ipv 6) 6) (= (net-ipv 4) 4)))
 
 (define (test-net-lookup )
 	(if (> (sys-info -1) 512) ; IPv6
@@ -1895,14 +1925,6 @@ true
     (= (parse "," ",") '("" ""))  
     (= (parse "hello regular   expression 1, 2, 3" {,\s*|\s+} 0)
        '("hello" "regular" "expression" "1" "2" "3"))))
-
-(define (test-parse-date)
-	(and
-		(= (parse-date "2007.1.3" "%Y.%m.%d") 1167782400)
-		(= (parse-date "20091014" "%Y%m%d") 1255478400)
-; note that the month name here is in German
-		(= (parse-date "Januar 10, 07" "%B %d, %y") 1168387200)
-))
 
 (define (test-prefix)
 	(set 's 'Foo:bar)
@@ -2259,7 +2281,8 @@ true
     (= (ref '(x) pList) '(2 2))
     (set 'v (ref '(x) pList))
     (= (pList v) '(x))
-    (= (ref 'foo pList) '())
+    ;(= (ref 'foo pList) '()) changel in 10.2.18
+    (= (ref 'foo pList) nil)
     ; comparison functor
     (= (ref 'e '(a b (c d (e) f)) =) '(2 2 0))
     (= (ref 'e '(a b (c d (e) f)) >) '(0))

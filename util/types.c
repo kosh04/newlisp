@@ -19,6 +19,7 @@ double    8
 wchar_t   4
 size_t    4
 off_t     4
+time_t    4
 
 output on AMD64 and Intel dual Core 2
 
@@ -38,12 +39,14 @@ long double 16
 wchar_t     4
 size_t      8
 off_t       8
+time_t      8
 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
+#include <fcntl.h>
 
 #define str2cmp(s1,s2) ( ( (*(unsigned char *)(s1) << 8) |  *((unsigned char *)(s1) + 1) ) - \
 						 ( (*(unsigned char *)(s2) << 8) |  *((unsigned char *)(s2) + 1) )  )		 
@@ -70,6 +73,7 @@ printf("long double %lu\n", sizeof(long double));
 printf("wchar_t     %lu\n", sizeof(wchar_t));
 printf("size_t      %lu\n", sizeof(size_t));
 printf("off_t       %lu\n", sizeof(off_t));
+printf("time_t      %lu\n", sizeof(time_t));
 
 printf("\n");
 printf("format input              output\n");

@@ -75,6 +75,15 @@
 
 (gs:insert-tab 'MyTabs 'icons "icons tab" 3 "/local/newLISP16.png")
 ;(gs:remove-tab 'MyTabs 0) ; just for test
+
+(gs:table 'Table 'gs:no-action "A" "B" "C")
+(gs:table-set-row-number 'Table true)
+(gs:table-add-row 'Table "1 A" "1 B" "1 C")
+(gs:table-add-row 'Table "2 A" "2 B" "2 C")
+(gs:table-add-row 'Table "3 A" "3 B" "3 C")
+(gs:table-add-row 'Table "4 A" "4 B" "4 C")
+(gs:insert-tab 'MyTabs 'Table "Table tab" 4)
+
 (gs:request-focus 'MyTabs 3)
 (gs:add-to 'TheFrame 'MyTabs) 
 (gs:set-visible 'TheFrame true)

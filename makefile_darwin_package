@@ -36,7 +36,7 @@ darwin-package:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.2.8-Release.html $(datadir)/doc/newlisp/newLISP-10.2.8-Release.html
+	-install -m 644 doc/newLISP-10.3-Release.html $(datadir)/doc/newlisp/newLISP-10.3-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -91,6 +91,7 @@ darwin-package:
 	-install -m 644 guiserver/sound-demo.lsp $(datadir)/newlisp/guiserver/sound-demo.lsp
 	-install -m 644 guiserver/stroke-demo.lsp $(datadir)/newlisp/guiserver/stroke-demo.lsp
 	-install -m 644 guiserver/tabs-demo.lsp $(datadir)/newlisp/guiserver/tabs-demo.lsp
+	-install -m 644 guiserver/table-demo.lsp $(datadir)/newlisp/guiserver/table-demo.lsp
 	-install -m 644 guiserver/textrot-demo.lsp $(datadir)/newlisp/guiserver/textrot-demo.lsp
 	-install -m 644 guiserver/widgets-demo.lsp $(datadir)/newlisp/guiserver/widgets-demo.lsp
 	-install -m 644 guiserver/word-count.lsp $(datadir)/newlisp/guiserver/word-count.lsp

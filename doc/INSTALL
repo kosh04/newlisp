@@ -1,4 +1,4 @@
-BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2010-01-22)
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2010-09-03)
 -------------------------------------------------------------------
 
 CONTENTS
@@ -159,7 +159,15 @@ For questions and support for configure-alt, please contact:
      Ted Walther <ted@reactor-core.org>.
 
 Note thet configure-alt uses a version-numbered directory for the 
-installation. By default it also uses /usr/local instead of /usr.
+installation. By default it also uses /usr/local instead of /usr
+as a prefix for the bin, man, share/newlisp and share/doc/newlisp
+directories.
+
+Avoid having installs from the standard 'configure' and alternate
+'configure-alt' script on the same machine!
+
+NOTE, that newLISP can only be compiled for the IPL32 and LP64 memory
+models.
 
 
 (7) LOCALIZATION

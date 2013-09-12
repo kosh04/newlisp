@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -120,6 +120,9 @@ This is for 64bit large file support (LFS),
 #endif
 
 #ifdef WIN_32
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501 
+#endif
 #include <windef.h>
 #include <winbase.h>
 #else
@@ -233,7 +236,7 @@ This is for 64bit large file support (LFS),
 #define MAX_LONG 0x7FFFFFFFFFFFFFFFLL
 #endif
 
-#define DEFAULT_TIMEOUT 3000 /* 3 sec for connection phase in getPutPostUrl */
+#define CONNECT_TIMEOUT 10000 /* 10 sec for connection phase  getPutPostUrl */
 
 #ifndef NEWLISP64
 #ifdef TRU64
@@ -262,8 +265,9 @@ This is for 64bit large file support (LFS),
 #define FALSE 0
   
 #define MAX_STRING 2048
-#define MAX_LINE 255
-#define MAX_SYMBOL 255
+#define MAX_LINE 256
+#define MAX_COMMAND_LINE 512 
+#define MAX_SYMBOL 256
 
 #define MAX_READ_LEN 0x4000
 #define MAX_PRINT_LEN 0x4000
@@ -272,7 +276,7 @@ This is for 64bit large file support (LFS),
 #define MAX_BLOCK 4095
 #define MAX_URL_LEN 256
 
-#define MAX_REGEX_EXP 16
+#define MAX_REGEX_EXP 16 
 
 
 /* token types */
@@ -548,6 +552,7 @@ typedef struct
 
 extern char startupDir[];
 extern FILE * IOchannel;
+extern int ADDR_FAMILY;
 #ifdef WIN_32
 extern int IOchannelIsSocket;
 #endif

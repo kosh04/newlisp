@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/11/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -296,11 +296,12 @@ public void saveText(StringTokenizer tokens)
 
 public void findText(StringTokenizer tokens)
 	{
-	String findtext = Base64Coder.decodeString(tokens.nextToken());
+	String findtext = tokens.nextToken();
+	
 	if(guiserver.UTF8)
-		try {
-		findtext = new String(findtext.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		findtext = Base64Coder.decodeStringUTF8(findtext);
+	else
+		findtext = Base64Coder.decodeString(findtext);
 
 	String direction = "next";
 	boolean isRegex = false;
@@ -498,13 +499,14 @@ protected class MyDocumentListener implements DocumentListener
 
 	private void updateParams(DocumentEvent e)
 		{
-		Document document = (Document)e.getDocument();
+		Document document = e.getDocument();
 		documentLength = document.getLength();
 		}
 	}
 
 class UndoAction extends AbstractAction 
 	{
+	public static final long serialVersionUID = 1L;
 	public UndoAction() {
 		super("Undo");
 		setEnabled(false);
@@ -546,6 +548,7 @@ class UndoAction extends AbstractAction
 
 class RedoAction extends AbstractAction 
 	{
+	public static final long serialVersionUID = 1L;
 	public RedoAction() {
 		super("Redo");
 		setEnabled(false);
@@ -588,6 +591,7 @@ class RedoAction extends AbstractAction
 	
 class MyCaret extends DefaultCaret 
 	{
+	public static final long serialVersionUID = 1L;
 	public void paint(Graphics g) {
     if (!isVisible()) return;
     try 

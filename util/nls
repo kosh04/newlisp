@@ -40,36 +40,36 @@
 
     ; all directory changes must be done inside newLISP
     ; previous directory cd -
-	(starts-with s "cd -")
+    (starts-with s "cd -")
     (begin
-	    (set 'new-dir prev-dir)
-	    (set 'prev-dir (real-path))
-        (string " " (true? (change-dir new-dir))))
+      (set 'new-dir prev-dir)
+      (set 'prev-dir (real-path))
+      (string " " (true? (change-dir new-dir))))
 	
     ; pushd
     (starts-with s "pushd")
     (begin
       (set 'prev-dir (real-path))
-	  (push prev-dir dir-stack)
-	  (string " " (true? (change-dir (last (parse s " "))))))
+      (push prev-dir dir-stack)
+      (string " " (true? (change-dir (last (parse s " "))))))
 
-	; popd
-	(starts-with s "popd")
+    ; popd
+    (starts-with s "popd")
     (begin
-        (set 'prev-dir (real-path))
-	    (string " " (true? (change-dir (pop dir-stack)))))
+      (set 'prev-dir (real-path))
+      (string " " (true? (change-dir (pop dir-stack)))))
 
     ; go to home directory
     (= s "cd")
     (begin
-        (set 'prev-dir (real-path))
-        (string " " (true? (change-dir (env "HOME")))))
+      (set 'prev-dir (real-path))
+      (string " " (true? (change-dir (env "HOME")))))
 
     ; change directory cd
     (starts-with s "cd") 
     (begin
-        (set 'prev-dir (real-path))
-        (string " " (true? (change-dir (last (parse s " "))))))
+      (set 'prev-dir (real-path))
+      (string " " (true? (change-dir (last (parse s " "))))))
 
     ; else handle as a shell command, start newLISP expressions
     ; with either a space or a parenthesis

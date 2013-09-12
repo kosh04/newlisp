@@ -27,6 +27,8 @@
 # 6 December 2009, LM added new 'self'
 # 9 February 2010, LM added new 'extend', 'term', '++', '--' eliminated 'name'
 # 29 April 2010, LM added new 'net-packet'
+# 26 May 2010, LM added new 'net-ipv'
+# 22 August 2010, LM date-parse replace parse-date, new date-list
 # version 1.8
 
 =Idle
@@ -158,6 +160,8 @@
 "current-line"	prim
 "curry"	prim
 "date"	prim
+"date-parse"	prim
+"date-list"	prim
 "date-value"	prim
 "debug"	prim
 "dec"	prim
@@ -274,6 +278,7 @@
 "net-error"	prim
 "net-eval"	prim
 "net-interface" prim
+"net-ipv" prim
 "net-listen"	prim
 "net-local"	prim
 "net-lookup"	prim
@@ -306,7 +311,6 @@
 "ostype"	prim
 "pack"	prim
 "parse"	prim
-"parse-date"	prim
 "path"	prim
 "peek"	prim
 "pipe"	prim

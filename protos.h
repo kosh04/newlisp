@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2009 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -111,9 +111,11 @@ CELL * p_args(CELL * params);
 CELL * p_array(CELL * params);
 CELL * p_arrayList(CELL * params);
 CELL * p_asin(CELL * params);
+CELL * p_asinh(CELL * params);
 CELL * p_assoc(CELL * params);
 CELL * p_atan(CELL * params);
 CELL * p_atan2(CELL * params);
+CELL * p_atanh(CELL * params);
 CELL * p_base64Enc(CELL * params);
 CELL * p_base64Dec(CELL * params);
 CELL * p_bayesTrain(CELL * params);
@@ -156,6 +158,8 @@ CELL * p_criticalZ(CELL * params);
 CELL * p_currentLine(CELL * params);
 CELL * p_curry(CELL * params);
 CELL * p_date(CELL * params);
+CELL * p_dateList(CELL * params);
+CELL * p_dateParse(CELL * params);
 CELL * p_dateValue(CELL * params);
 CELL * p_debug(CELL * params);
 CELL * p_decrementF(CELL * params);
@@ -296,12 +300,12 @@ CELL * p_modFloat(CELL * params);
 CELL * p_modulo(CELL * params);
 CELL * p_mulFloat(CELL * params);
 CELL * p_multiply(CELL * params);
-CELL * p_name(CELL* params);
 CELL * p_netAccept(CELL * params);
 CELL * p_netClose(CELL * params);
 CELL * p_netConnect(CELL * params);
 CELL * p_netEval(CELL * params);
 CELL * p_netInterface(CELL * params);
+CELL * p_netIpv(CELL * params);
 CELL * p_netLastError(CELL * params);
 CELL * p_netListen(CELL * params);
 CELL * p_netLocal(CELL * params);
@@ -331,7 +335,6 @@ CELL * p_open(CELL * params);
 CELL * p_or(CELL * params);
 CELL * p_pack(CELL * params);
 CELL * p_parse(CELL * params);
-CELL * p_parseDate(CELL * params);
 CELL * p_peek(CELL * params);
 CELL * p_pipe(CELL * params);
 CELL * p_pmt(CELL * params);
@@ -403,7 +406,6 @@ CELL * p_signal(CELL * params);
 CELL * p_silent(CELL * params);
 CELL * p_sin(CELL * params);
 CELL * p_sinh(CELL * params);
-CELL * p_asinh(CELL * params);
 CELL * p_sleep(CELL * params);
 CELL * p_slice(CELL * params);
 CELL * p_sort(CELL * params);
@@ -425,7 +427,7 @@ CELL * p_systemError(CELL * params);
 CELL * p_systemInfo(CELL * params);
 CELL * p_tan(CELL * params);
 CELL * p_tanh(CELL * params);
-CELL * p_atanh(CELL * params);
+CELL * p_term(CELL* params);
 CELL * p_throw(CELL * params);
 CELL * p_throwError(CELL * params);
 CELL * p_time(CELL * params);
@@ -538,13 +540,13 @@ int netConnect(char * name, int port, int type, char * protocol, int ttl);
 int netConnectLocal(char * path);
 int netAccept(int listenSock);
 int netListenLocal(char * name);
-int netListenOrDatagram(int portNo, int type, char * ifAddr, char * mcAddr);
+int netListenOrDatagram(int portNo, int type, char * ifAddr, char * mcAddr, int option);
 int openFile(char * fileName, char * accessMode, char * option);
 int process(char * command, int inpipe, int outpipe, int errpipe);
 int semaphore(UINT sem_id, int value, int type);
 int sendall(int sock, char * buffer, int len);
 int sortFunc(const void * left, const void *right);
-int timediff(struct timeval end, struct timeval start);
+int timediff_ms(struct timeval end, struct timeval start);
 int waitPeek(int handle, int microsecs);
 int wait_ready(int sock, INT64 wait, int mode);
 int win32_fclose(FILE * fPtr);
@@ -626,7 +628,7 @@ void writeStreamChar(STREAM * stream, char chr);
 void writeStreamStr(STREAM * stream, char * buff, size_t length);
 size_t appendCellString(CELL * cell, char * buffer, size_t size);
 UINT * copyArray(CELL * params);
-UINT64 timediff64(struct timeval end, struct timeval start);
+UINT64 timediff64_us(struct timeval end, struct timeval start);
 
 #ifdef SUPPORT_UTF8
 int utf8_1st_len(char * utf8str);

@@ -44,7 +44,8 @@
 (define (inplace-rotate)
 	(rotate '(a b c)))
 
-; also check nth, first, last indexing 
+; also check nth, first, last
+; 10.2.18 assoc, lookup and  set-ref, ref, rotate on result
 (define (inplace-setf-setq)
 	(setf 0 1)
 	(setf ('(a b) 0) 'A)

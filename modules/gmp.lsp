@@ -135,6 +135,7 @@
 (define gmp-divzero-error "Division by zero in GMP module")
 
 (set 'files '(
+	"/usr/local/lib/libgmp.dylib" ; Mac OSX 64-bit
     "/usr/lib/libgmp.dylib" ;Mac OSX
     "/usr/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX

@@ -1,22 +1,72 @@
-<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
 <title>Expression Evaluation in newLISP</title>
 <style type="text/css" media="screen">
+
 <!--
-body, h1, h2, h3, h4, p {
-	font-family: Georgia, Times New Roman, Times, serif;
-	line-height: 120%;
- 	}
-pre {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-   	font-size: 100%;
+body, h4, p {
+    font-family: Lucida Sans, Helvetica, sans-serif;
+    line-height: 120%;
 	}
 
+h1, h2, h3 {
+	margin-top: 3%;
+    font-family: Lucida Sans, Helvetica, sans-serif;
+    line-height: 120%;
+	color: #404040;
+    }
+
+table {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: solid;
+	border-width: 0px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+	font-size: 95%;
+    }
+    
+th {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #eeeeee;
+    font-size: 100%;
+    }
+    
+td {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+    font-size: 100%;
+    }
+    
+pre {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: dashed;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 4px;
+    font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+    font-size: 90%;
+	background: #f8ffff;
+    }
+
 tt {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-	font-size: 100%;
-	}
+    font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+    font-size: 100%;
+    }
+    
 -->
 </style>
 </head>
@@ -26,8 +76,9 @@ tt {
 <br />
 <blockquote>
 <center><h2>Expression evaluation, Implicit Indexing, Contexts and Default Functors in the newLISP Scripting Language</h2></center>
-<center><font size="-1">Lutz Mueller, October 26th 2008, rev 5<br>
-</font></center>
+<center>
+<font size="-1">Lutz Mueller, 2007-2011. Last edit October 26th 2010, rev r8<br/></font>
+</center>
 
 <center><blockquote><blockquote><i>
 Implicit indexing and Default Functors in newLISP are an extension of normal LISP expression evaluation rules. Contexts provide lexically closed state-full namespaces in a dynamically scoped programming language.
@@ -36,7 +87,7 @@ Implicit indexing and Default Functors in newLISP are an extension of normal LIS
 
 <h3>S-expression evaluation and implicit indexing</h3>
 
-<p>In an earlier paper it was explained how s-expression evaluation in newLISP relates to ORO (One Reference Only) automatic memory management [1]. The following pseudo code of the expression evaluation function in newLISP shows how implicit indexing is an extension of Lisp s-expression evaluation rules:
+<p>In an earlier paper it was explained how s-expression evaluation in newLISP relates to ORO (One Reference Only) automatic memory management [1]. The following pseudo code of the expression evaluation function in newLISP shows how implicit indexing is an extension of Lisp s-expression evaluation rules:</p>
 
 <blockquote><pre>
 function evaluateExpression(expr)
@@ -111,7 +162,7 @@ function evaluateExpression(expr)
 (1 2 str)  &rarr; "bc"
 </pre></blockquote>
 
-<p>On first sight it seems logical to extend the same principle to the boolean data type. A ternary conditional expressions could be constructed without the necessity of the <tt>if</tt> operator, but in practical programming this leads to difficulties when reading code and causes too much ambiguity in error messages. Most of the time implicit indexing leads to better readable code, because the data object is grouped together with it's indices. Implicit indexing performs faster, but is also optional. The keywords <tt>nth</tt>, <tt>set-nth</tt> and <tt>nth-set</tt> can be used in the few cases where readability is better when using the explicit form of indexing.</p>
+<p>On first sight it seems logical to extend the same principle to the boolean data type. A ternary conditional expressions could be constructed without the necessity of the <tt>if</tt> operator, but in practical programming this leads to difficulties when reading code and causes too much ambiguity in error messages. Most of the time implicit indexing leads to better readable code, because the data object is grouped together with it's indices. Implicit indexing performs faster, but is also optional. The keywords <tt>nth</tt>, <tt>first</tt>, <tt>last</tt> and <tt>rest</tt> and <tt>slice</tt> can be used in the few cases where readability is better when using the explicit form of indexing.</p>
 
 <h3>The environment stack and dynamic scoping</h3>
 
@@ -258,7 +309,8 @@ function evaluateLambda(lambda-func, args)
 (context MAIN)
 </pre></blockquote>
 
-<p>Now the context is created and switched to on the top-level. When newLISP translates the subsequent set-statement and function definition, all symbols will be part of <tt>CTX</tt> as <tt>CTX:var</tt>, <tt>CTX:foo</tt>, <tt>CTX:x</tt> and <tt>CTX:y</tt>.
+<p>Now the context is created and switched to on the top-level. When newLISP translates the subsequent set-statement and function definition, all symbols will be part of <tt>CTX</tt> as <tt>CTX:var</tt>, <tt>CTX:foo</tt>, <tt>CTX:x</tt> and <tt>CTX:y</tt>.</p>
+
 
 <p>When loading code newLISP reads a top-level expression translating then evaluating it. This cycle is repeated until all top-level expression are read and evaluated.</p>
 
@@ -275,12 +327,12 @@ function evaluateLambda(lambda-func, args)
 <p>In detail the following steps are happening:</p>
 
 <ol>
-<li> current context is <tt>MAIN</tt>
-<li> read the opening top-level parenthesis <tt>I</tt> and create a Lisp cell of type <tt>EXPRESSION</tt>. 
-<li> read and lookup <tt>set</tt> in <tt>MAIN</tt> and find it to be a built-in primitive in <tt>MAIN</tt>, translate it to the address of this primitive function in memory. Create a Lisp cell of type <tt>PRIMITIVE</tt> containing the functions address in its contents slot.
-<li> read the quote <tt>'</tt> and create a Lisp cell of type <tt>QUOTE</tt>.
-<li> read and lookup lookup <tt>var</tt> in <tt>MAIN</tt>, it is not found in <tt>MAIN</tt>, create it in <tt>MAIN</tt> and translate it to the address in the binary symbol tree. Create a Lisp cell of type <tt>SYMBOL</tt> containing the symbols address in its contents slot. The previously created quote cell serves as an envelop for the symbols cell.
-<li> read <tt>123</tt> and create a Lisp cell of type <tt>INTEGER</tt> with <tt>123</tt> in its contents slot.
+<li> current context is <tt>MAIN</tt></li>
+<li> read the opening top-level parenthesis <tt>I</tt> and create a Lisp cell of type <tt>EXPRESSION</tt>.</li> 
+<li> read and lookup <tt>set</tt> in <tt>MAIN</tt> and find it to be a built-in primitive in <tt>MAIN</tt>, translate it to the address of this primitive function in memory. Create a Lisp cell of type <tt>PRIMITIVE</tt> containing the functions address in its contents slot.</li>
+<li> read the quote <tt>'</tt> and create a Lisp cell of type <tt>QUOTE</tt>.</li>
+<li> read and lookup lookup <tt>var</tt> in <tt>MAIN</tt>, it is not found in <tt>MAIN</tt>, create it in <tt>MAIN</tt> and translate it to the address in the binary symbol tree. Create a Lisp cell of type <tt>SYMBOL</tt> containing the symbols address in its contents slot. The previously created quote cell serves as an envelop for the symbols cell.</li>
+<li> read <tt>123</tt> and create a Lisp cell of type <tt>INTEGER</tt> with <tt>123</tt> in its contents slot.</li>
 <li> read the closing top-level parenthesis finish the following list structure in memory:<br />
 
 
@@ -295,70 +347,16 @@ function evaluateLambda(lambda-func, args)
 <p>The above list diagram shows the five Lisp cells, which are created. List and quote cells are envelope cells containing a list or a quoted expression.</p>
 
 <p>The statement <tt>(set 'var 123)</tt> is not executed yet, but symbol translation and creation have finished and the statement exists as a list structure in memory. The whole list structure can be referenced with one memory address, the address of the first created cell of type <tt>EXPRESSION</tt>.</p>
+</li>
 
-<li>Evaluate the statement
+<li>Evaluate the statement</li>
 </ol>
 
-<p>In similar fashion newLISP will read and translate the next top-level expression, which is the function definition of <tt>foo</tt>. Evaluating this top-level expression will result in an assignment of a lambda expression to the <tt>foo</tt> symbol.
+<p>In similar fashion newLISP will read and translate the next top-level expression, which is the function definition of <tt>foo</tt>. Evaluating this top-level expression will result in an assignment of a lambda expression to the <tt>foo</tt> symbol.</p>
 
 <p>In the above code snippet both instances of <tt>var</tt> refer to <tt>MAIN:var</tt>. The <tt>(context  'CTX)</tt> statement only changes the context, namespaces for newly created symbols. The symbol <tt>var</tt> was created during loading translating the <tt>foo</tt> function. By the time <tt>foo</tt> is called and executed <tt>var</tt> already exists inside the <tt>foo</tt> function as <tt>MAIN:var</tt>. The <tt>(context 'CTX)</tt> statement doesn't have any effect of the subsequent execution of <tt>(println var)</tt>.</p>
 
 <p>Context statements like <tt>(context 'CTX)</tt> above, change the current context for symbol creation during the loading and translation phase. The current context defines under which branch in the symbol tree new symbols are created. This affects only the the functions <tt>sym</tt>, <tt>eval-string</tt> and a special syntax of <tt>context</tt> to create symbols. Once a symbol belongs to a context it stays there.</p>
-
-<h3>Namespaces and the default functor</h3>
-
-<p>In newLISP a symbol is a <i>default functor</i> if it has the same name as the context it belongs too, e.g. <tt>Foo:Foo</tt> is the default functor symbol in the context <tt>Foo</tt>. In newLISP when using a context symbol in the functor position, it is taken as the default functor:</p>
-
-<blockquote><pre>
-(define (double:double x) (* 2 x))
-(double 3)  &rarr; 6
-
-(set 'my-list:my-list '(a b c d e f))
-(my-list 3)  &rarr; d
-</pre></blockquote>
-
-<p>The second example combines implicit indexing with usage of a default functor.</p>
-
-<p>Default functors can be applied and mapped using <tt>apply</tt> and <tt>map</tt> like any other function or functor symbol:</p>
-
-<blockquote><pre>
-(map my-list '(3 2 1 2))  &rarr; (d c b c)
-
-(apply double '(10))  &rarr; 20
-</pre></blockquote>
-
-<p>Default functors are a convenient way in newLISP to pass lists or other big data objects by reference:</p>
-
-<blockquote><pre>
-(set 'my-list:my-list '(a b c d e f))
-
-(define (set-last ctx val) 
-	(nth-set (ctx -1) val))
-
-(set-last my-list 99)  &rarr; f
-
-my-list:my-list  &rarr; (a b c d e 99)
-</pre></blockquote>
-
-<p>Default functors are also a convenient way to define functions with a closed state-full
-name space:</p>
-
-<blockquote><pre>
-(context 'accumulator)
-(define (accumulator:accumulator x) 
-	(if (not value) 
-		(set 'value x)
-		(inc 'value x)))
-(context MAIN)
-
-(accumulator 10)  &rarr; 10
-(accumulator 2)  &rarr; 12
-(accumulator 3)  &rarr; 15
-</pre></blockquote>
-
-<p>Note that the symbols <tt>x</tt> and <tt>value</tt> both belong to the namespace <tt>accumulator</tt>. Because <tt>(context 'accumulator)</tt> is at the top level, the translation of following function definition for <tt>accumulator:accumulator</tt> happens inside the current namespace <tt>accumulator</tt>.</p>
-
-<p>Namespaces in newLISP can be passed by reference and can be used to create state-full lexical closures.</p>
 
 <h3>Namespace context switching</h3>
 
@@ -402,6 +400,74 @@ var: 123</b>
 
 <p>The first time <tt>Foo:func</tt> is applied as a symbol &ndash; quoted, the second time the lambda function contained in <tt>Foo:func</tt> is applied directly, because <tt>apply</tt> evaluates it's first argument first.</p> 
 
+<h3>Namespaces and the default functor</h3>
+
+<p>In newLISP a symbol is a <i>default functor</i> if it has the same name as the context it belongs too, e.g. <tt>Foo:Foo</tt> is the default functor symbol in the context <tt>Foo</tt>. In newLISP when using a context symbol in the functor position, it is taken as the default functor:</p>
+
+<blockquote><pre>
+(define (double:double x) (* 2 x))
+(double 3)  &rarr; 6
+
+(set 'my-list:my-list '(a b c d e f))
+(my-list 3)  &rarr; d
+</pre></blockquote>
+
+<p>The second example combines implicit indexing with usage of a default functor.</p>
+
+<p>Default functors can be applied and mapped using <tt>apply</tt> and <tt>map</tt> like any other function or functor symbol:</p>
+
+<blockquote><pre>
+(map my-list '(3 2 1 2))  &rarr; (d c b c)
+
+(apply double '(10))  &rarr; 20
+</pre></blockquote>
+
+<p>Default functors are a convenient way in newLISP to pass lists or other big data objects by reference:</p>
+
+<blockquote><pre>
+(set 'my-list:my-list '(a b c d e f))
+
+(define (set-last ctx val) 
+	(setf (ctx -1) val))
+
+(set-last my-list 99)  &rarr; f
+
+my-list:my-list  &rarr; (a b c d e 99)
+</pre></blockquote>
+
+<p>Default functors are also a convenient way to define functions with a closed state-full
+name space:</p>
+
+<blockquote><pre>
+(context 'accumulator)
+(define (accumulator:accumulator x) 
+	(if (not value) 
+		(set 'value x)
+		(inc 'value x)))
+(context MAIN)
+
+(accumulator 10)  &rarr; 10
+(accumulator 2)  &rarr; 12
+(accumulator 3)  &rarr; 15
+</pre></blockquote>
+
+<p>Note that the symbols <tt>x</tt> and <tt>value</tt> both belong to the namespace <tt>accumulator</tt>. Because <tt>(context 'accumulator)</tt> is at the top level, the translation of following function definition for <tt>accumulator:accumulator</tt> happens inside the current namespace <tt>accumulator</tt>.</p>
+
+<p>Namespaces in newLISP can be passed by reference and can be used to create state-full lexical closures.</p>
+
+<h3>The default functor used as a pseudo hash function</h3>
+<p>A default functor containing <tt>nil</tt> and in operator position 
+will work similar to a hash function for building dictionaries with 
+associative key &rarr; value access:</p>
+
+<blockquote><pre>
+(define aHash:aHash) ; create namespace and default functor containing nil
+
+(aHash "var" 123) ; create and set a key "var" to 123
+
+(aHash "var")  &rarr; 123 ; retrieve value from key
+</pre></blockquote>
+
 <h3>References</h3>
 [1] <i>Lutz Mueller</i>, 2004-2008<br /> 
 <a href="http://newlisp.org/MemoryManagement.html">Automatic Memory Management in newLISP</a>.
@@ -410,6 +476,8 @@ var: 123</b>
 [2] <i>John McCarthy</i>, 1960<br />
 <a href="http://www-formal.stanford.edu/jmc/recursive.html">Recursive Functions of Symbolic Expressions and their Computation by Machine</a>.
 <br /><br />
+<center><font size="-1">Copyright &copy; 2007-2011, Lutz Mueller 
+<a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>
 </blockquote>
 </body>
 </html>

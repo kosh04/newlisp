@@ -3,7 +3,7 @@
 # normally peform the installation below
 
 all:
-	javac java/*.java
+	javac -Xlint java/*.java
 	mv java/*.class .
 	jar cmf Manifest guiserver.jar *.class images/*.png
 	rm *.class

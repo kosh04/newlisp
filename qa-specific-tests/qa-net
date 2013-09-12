@@ -1,6 +1,6 @@
 #!/usr/bin/newlisp
 
-; qa-net - test network routines for server mode
+; qa-net - test network routines for server mode IPv4
 ;
 ; tests: net-eval
 ; tests http mode of: load, save, read-file, write-file, delete-file
@@ -27,7 +27,7 @@
 ;
 
 (println)
-(println "Testing network API and server mode")
+(println "Testing network API and server mode IPv4")
 
 (when (not (or (file? "newlisp") (file? "newlisp.exe")))
 	(println ">>>>> Need a newlisp executable in the current directory for qa-net")
@@ -36,37 +36,19 @@
 
 (set 'start (time-of-day))
 
-(when (> (sys-info -1) 512)  ; IPv6
-	(println "Testing IPv6 networking functions")
-	(set 'targetURL (or 
-			(main-args 2)
-			(append "http://[::1]:10001/" (real-path) "/qa-junk.txt")))
+(println "Testing IPv4 networking functions")
+(set 'targetURL (or 
+	(main-args 2)
+	(append "http://localhost:10001/" (real-path) "/qa-junk.txt")))
 
-	(replace "\\" targetURL "/") ; for Win32
+(replace "\\" targetURL "/") ; for Win32
 
-	(if (not (ends-with targetURL "/qa-junk.txt"))
-		(set 'targetURL (append targetURL "/qa-junk.txt")))
+(when (not (ends-with targetURL "/qa-junk.txt"))
+	(set 'targetURL (append targetURL "/qa-junk.txt")))
 
-	(set 'host (1 ((regex {http://(.*?)\]:} targetURL) 3)))
-	(set 'port (int ((regex {http://.*?\]:(\d+)/} targetURL) 3)))
-	(set 'file-path ((regex {http://.*\]:\d+/(.*)} targetURL) 3))
-)
-
-(when (<= (sys-info -1) 512) ; IPv4
-	(println "Testing IPv4 networking functions")
-	(set 'targetURL (or 
-		(main-args 2)
-		(append "http://localhost:10001/" (real-path) "/qa-junk.txt")))
-
-	(replace "\\" targetURL "/") ; for Win32
-
-	(if (not (ends-with targetURL "/qa-junk.txt"))
-		(set 'targetURL (append targetURL "/qa-junk.txt")))
-
-	(set 'host ((regex "http://(.*?):" targetURL) 3))
-	(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
-	(set 'file-path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
-)
+(set 'host ((regex "http://(.*?):" targetURL) 3))
+(set 'port (int ((regex "http://.*?:(\\d+)/" targetURL) 3)))
+(set 'file-path ((regex "http://.*:\\d+/(.*)" targetURL) 3))
 
 
 (println)
@@ -98,17 +80,9 @@
 	(println " >>>> net-connect -> ERROR")
 	(println "net-connect to wrong port ->OK"))
 
-(when (<= (sys-info -1) 512) ; IPv4
-	(if (find "server code 404:" (get-url (string "http://" host ":" port)))
-		(println "get-url ->OK")
-		(println " >>>> get-url problem ->ERROR"))
-)
-
-(when (> (sys-info -1) 512) ; IPv6
-	(if (find "server code 404:" (get-url "http://[::1]:10001/"))
-		(println "get-url ->OK")
-		(println " >>>> get-url problem ->ERROR"))
-)
+(if (find "server code 404:" (get-url (string "http://" host ":" port)))
+	(println "get-url ->OK")
+	(println " >>>> get-url problem ->ERROR"))
 
 ; test short syntax normal mode
 (if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
@@ -120,19 +94,19 @@
 	(set 'result2 (println "net-eval error reporting ->OK"))
 	(println " >>>> net-eval problem with error reporting ->ERROR"))
 
-; test secure mode in both syntaxes
-(set 'result3 true)
-
 ; test saving to URL
 (set 'key (uuid))
 (set 'verify key)
 (if (catch (save targetURL 'key) 'res)
-	(set 'result4 (println "save to URL ->OK"))
+	(set 'result3 (println "save to URL ->OK"))
 	(println " >>>> save to URL ->ERROR"))
 
 (when (find ostype '("Win32""Cygwin"))
-	(println "waiting on Windows for file to be unlocked ...")
-    (sleep 2000))
+	(print "waiting on Windows for file to be unlocked .")
+	(until (= 53 (first (file-info file-path)))
+		(sleep 1000) 
+		(print "."))
+	(println))
 
 
 ; test loading from URL
@@ -140,7 +114,7 @@
        (println "loading target URL: " targetURL)
        (catch (= (load targetURL) verify) 'result) 
        (= key verify))
-       (set 'result5 (println "load from URL ->OK"))
+       (set 'result4 (println "load from URL ->OK"))
 	(begin
     	(println " >>>> load from URL ->ERROR OK on some Win32")
 		(println result))
@@ -155,14 +129,19 @@
 
 ; write content to remote URL
 (if	(find "transferred" (print (write-file targetURL content)) )
-	(set 'result6 (println "write-file to remote URL ->OK"))
+	(set 'result5 (println "write-file to remote URL ->OK"))
 	(println "write-file to remote URL ->ERROR"))
 
-(if (= ostype "Win32" ) (sleep 4000)) ; for Win32
+(when (find ostype '("Win32""Cygwin"))
+	(print "waiting on Windows for file to be unlocked .")
+	(until (= 100000 (first (file-info file-path)))
+		(sleep 1000) 
+		(print "."))
+	(println))
 
 ; read content from remote URL
 (if (catch (= contents (read-file targetURL)) 'result)
-    (set 'result7 (println "read-file from remote URL ->OK"))
+    (set 'result6 (println "read-file from remote URL ->OK"))
     (begin
         (println " >>>> read-file from  remote URL ->ERROR OK on some Win32")
 		(println result))
@@ -171,19 +150,19 @@
 ; delete file at remote URL
 (if (!= ostype "Win32") ; does not work on Windows when on the same machine
 	(if (delete-file targetURL)
-		(set 'result8 (println "delete-file from remote URL ->OK"))
+		(set 'result7 (println "delete-file from remote URL ->OK"))
 		(println " >>>> delete-file from remote URL ->Error"))
-	(set 'result8 true)
+	(set 'result7 true)
 )
 
-(if pid
+(when pid
 	(println "destroy -> " pid " ->" (destroy pid)))
 
 (println "\nduration -> " (- (time-of-day) start) " ms\n")
 
-(if (and result1 result2 result3 result4 result5 result6 result7 result8)
-	(println ">>>>> Network eval and network file functions SUCCESSFUL")
-	(println ">>>>> PROBLEM in network eval and network file functions")
+(if (and result1 result2 result3 result4 result5 result6 result7 )
+	(println ">>>>> Network eval and network file functions IPv4 SUCCESSFUL")
+	(println ">>>>> PROBLEM in network eval and network file IPv4 functions")
 )
 (println)
 (exit)

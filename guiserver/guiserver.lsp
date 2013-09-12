@@ -1,7 +1,9 @@
 ;; @module guiserver.lsp
 ;; @description Functions for programming GUIs and 2D graphics.
-;; @version 1.37 warning on Win32 if newLISP cannot connnect to guiserver.jar
-;; @version 1.37c documentation corrections
+;; @version 1.40 use text-field as a password field with additional parameter
+;; @version 1.41 bug fixes for gs:listen and gs:check-event
+;; @version 1.42 new table UI
+;; @version 1.43 bug fix in new table UI action parameters
 ;; @author LM, August 2008, 2009, 2010
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -13,7 +15,7 @@
 ;; 
 ;;
 ;; On Win32 the MIDI sound features require a soundbank file to
-;; be installed. See the desription for 'gs:play-note' for details.
+;; be installed. See the description for 'gs:play-note' for details.
 ;; <br><br>
 ;; <h2>What is newLISP-GS</h2>
 ;; 'guiserver.lsp' is a module for interfacing to 'guiserver.jar'
@@ -40,7 +42,7 @@
 ;; environment variable on Win32 systems and adding '/newlisp' to it.
 ;; This can be overwritten by specifying system wide  setting for the environment 
 ;; variable <tt>NEWLISPDIR</tt>, which normally is set to '%PROGRAMFILES%/newlisp' 
-;; on Win32. When using the Win32 binary installer 'NEWLISPDIR' is written to
+;; on Win32. When using the Win32 binary installer 'NEWLISPDIR' is written 
 ;; to the registry automatically and gets into effect after rebooting.
 ;; <br><br>
 ;; <h2>Architecture of a newLISP GUI application</h2>
@@ -72,12 +74,12 @@
 ;; #!/usr/bin/newlisp
 ;; ; button-demo.lsp - demonstrate the button control
 ;;  
-;; ;;;; initialization
+;; ; initialization
 ;; (load (append (env "NEWLISPDIR") "/guiserver.lsp")) 
 ;;
 ;; (gs:init) 
 ;;  
-;; ;;;; describe the GUI
+;; ; describe the GUI
 ;; (gs:frame 'ButtonDemo 100 100 400 300 "Button demo")
 ;; (gs:set-resizable 'ButtonDemo nil)
 ;; (gs:panel 'ColorPanel 360 200)
@@ -87,14 +89,14 @@
 ;; (gs:add-to 'ButtonDemo 'ColorPanel 'aButton)
 ;; (gs:set-visible 'ButtonDemo true)
 ;;  
-;; ;;;; define actions
+;; ; define actions
 ;; (define (abutton-action id)
 ;;     (gs:set-color 'ColorPanel (random) (random) (random)))
 ;;  
-;; ;;;; listen for incoming action requests and dispatch
+;; ; listen for incoming action requests and dispatch
 ;; (gs:listen)
 ;;  
-;; ;; eof 
+;; ; eof 
 
 ;; <br>
 ;; <h2>Application start</h2>
@@ -276,7 +278,7 @@
 ;; The usage of the reserved symbol 'term' will not pose a problem.
 ;; <br><br>
 ;; <h2>Return values</h2>
-;; newLISP-GS is an event driven asyncronous system. Most functions return
+;; newLISP-GS is an event driven asynchronous system. Most functions return
 ;; right away the number of characters sent out to the server.
 ;; In general, return values of 'gs:xxx' functions do not have
 ;; any specific meaning and can be discarded. Only the functions 'gs:get-bounds',
@@ -285,7 +287,7 @@
 ;; lists of values, which are stored in similar named variables: 'gs:bounds',
 ;; 'gs:fonts', 'gs:font-metrics', 'gs:instruments', 'gs:screen', 'gs:text' and
 ;; 'gs:version'. These functions will not return right away but block until
-;; the return valuse is sent beack from newLISP-GS.
+;; the return valuse is sent back from newLISP-GS.
 ;;
 ;; The function 'gs:get-text' can work both ways: event driven or with a return
 ;; value depending on the call pattern used.
@@ -382,7 +384,7 @@
 ;;    (gs:radio-button <sym-id> <sym-action> [<str-text> [<bool-selected>]])
 ;;    (gs:slider <sym-id> <sym-action> <str-orientation> <int-min> <int-max> <int-initial-value>)
 ;;    (gs:text-area <sym-id> <sym-action> [<int-width> <int-height>])
-;;    (gs:text-field <sym-id> <sym-action> <int-columns>)
+;;    (gs:text-field <sym-id> <sym-action> <int-columns>[<str-echo-char>])
 ;;    (gs:text-pane <sym-id> <sym-action> <str-style> [<int-width> <int-height>])
 ;;    (gs:toggle-button <sym-id> <sym-action> [<str-text> <bool-selected>])
 ;; </pre>
@@ -465,6 +467,7 @@
 ;;    (gs:set-color <sym-id> <float-red> <float-green> <float-blue> [<float-alpha>])
 ;;    (gs:set-color <sym-id> <list-rgb> [<float-alpha>])
 ;;    (gs:set-cursor <sym-id> <str-shape>)
+;;    (gs:set-echo-char <sym-id> <str-echo-char>)
 ;;    (gs:set-editable <sym-id> <boolean-flag>)
 ;;    (gs:set-flow-layout <sym-container> [<str-alignment> [<int-hgap> <int-vgap>]])
 ;;    (gs:set-font <sym-id> <str-family> <int-size> <str-type>)
@@ -492,6 +495,20 @@
 ;;    (gs:undo-enable <sym-id> <boolean-enabled>)
 ;; </pre>
 ;; </li>
+;; <li><b>The Table UI</b><br>
+;;  Since version 1.42 Guiserver has a table widget and supporting functions.
+;; <pre>
+;;    (gs:table <sym-id> <sym-action> [<str-column-header-name> ...])
+;;    (gs:table-add-column <sym-id> <str-column-header-name> ...)
+;;    (gs:table-add-row <sym-id> [<str-columns> ... ])
+;;    (gs:table-get <sym-id>)
+;;    (gs:table-get-cell <sym-id> <int-row> <int-column>)
+;;    (gs:table-get-size <sym-id>)
+;;    (gs:table-set-cell <sym-id> <int-row> <int-column> <str-value>)
+;;    (gs:table-set-column <sym-id> <int-column-number> <int-width> [<str-justification>])
+;;    (gs:table-set-row-number <sym-id> <bool-row-number>)
+;; </pre>
+;; </li>
 ;; <li><b>Special dialogs</b><br>
 ;;  These are standard dialogs for opening and saving files and for choosing colors.
 ;;  Each dialog when closed fires an event for which a handler function must be
@@ -515,7 +532,7 @@
 ;; after a call to 'gs:update'. Redrawing is also forced when resizing the window which hosts the canvas
 ;; or any action covering and uncovering the canvas. 
 ;; 
-;; After all tag operations redrawing is initiated by default, but it can be forced off by spcifying 
+;; After all tag operations redrawing is initiated by default, but it can be forced off by specifying 
 ;; 'nil' as the last parameter in a 'gs:xxx-tag' command. Suppressing immediate redraw is useful to avoid 
 ;; flicker when a batch of tag operations is performed.
 ;; 
@@ -780,7 +797,7 @@
 ;; @param <sym-list-combo> The name of the combo box or list box to which text entries are added.
 ;; @param <str-text> The text of the entry to be added.
 ;;
-;; Items are added in the same sequence as they appear in the 'gs:add-list' command and added to the
+;; Items are added in the same sequence as they appear in the 'gs:add-list-item' command and added to the
 ;; end of the existing list of items.
 
 (define (add-list-item comp)
@@ -804,7 +821,8 @@
 
 ;; @syntax (gs:add-track <int-channel> <list-of-notes>)
 ;; @param <int-channel> The channel belonging to this track.
-;; @param <list-of-notes> A list of notes. Each note is a list of key duration velocity and channel.;;
+;; @param <list-of-notes> A list of notes. Each note is a list of key duration velocity and bend.
+;;
 ;; In case of 'gs:add-track' the duration of a note is given in ticks.
 ;; 16 ticks are in a quarter note or <em>beat</em>.
 ;;
@@ -837,6 +855,7 @@
 ;; (exit)
 
 ;; The second example shows the usage of pitch-bend in notes:
+;; 
 ;; @example
 ;; (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
 ;; (gs:init)
@@ -900,7 +919,7 @@
 ;; @syntax (gs:button <sym-id> <sym-action> [<str-text> [<int-width> <int-height>]])
 ;; @param <sym-id> The name of the button.
 ;; @param <sym-action> The name of the event handler.
-;; @param <str-icon-path> An optional text for the button.
+;; @param <str-text> An optional text for the button.
 ;; @param <int-width> The optional width of the button.
 ;; @param <int-height> The optional height of the button.
 
@@ -916,7 +935,7 @@
 ;; @syntax (gs:canvas <sym-id>) 
 ;; @param <sym-id> The name of the canvas.
 ;;
-;; A canvas is a pane for drawing and receiving mouse input events. For most
+;; A canvas is a panel for drawing and receiving mouse input events. For most
 ;; applications a background color should be specified for the canvas using
 ;; 'gs:set-background' or 'gs:set-color' which call the same function internally. The
 ;; background forces the canvas to be cleared before redrawing components
@@ -927,8 +946,8 @@
 ;; the canvas before repainting is not enforced.
 ;;
 ;; A canvas can also be used to host widgets like buttons etc.. In this case
-;; the canvas is treated like a 'gs:pane', with a flow layout by default.
-;; Similar to a panel created with 'gs:pane' other layouts can be set.
+;; the canvas is treated like a 'gs:panel', with a flow layout by default.
+;; Similar to a panel created with 'gs:panel' other layouts can be set.
 ;;
 ;; When widgets are present on a canvas they appear to be floating over
 ;; the drawing. See the file 'textrot-demo.lsp' for an example.
@@ -975,7 +994,7 @@
 )
 
 ;; @syntax (gs:check-event <int-microseconds>)
-;; @param <int-microseconds> Wait for for an event a maximum of <int-microseconds> and execute it.
+;; @param <int-microseconds> Wait for an event a maximum of <int-microseconds> and execute it.
 ;;
 ;; The function 'gs:check-event' is used as an alternative to 'gs:listen' when the application
 ;; is performing some activity while waiting for user input from the GUI. Typically
@@ -990,10 +1009,12 @@
 ;; )
 
 
-(define (check-event us)
-	(if (net-select in "read" us)
+(define (check-event us , event)
+	(when (net-select in "read" us)
 		(if (net-receive in event 1000000000 "\n")
-			(eval-string event)
+			(begin 	
+			;	(println "check-event: " event)
+				(eval-string event))
 			(exit)))
 true
 )
@@ -1077,9 +1098,9 @@ true
 ;;
 ;; The type of the message box can be one of: '"yes-no"', '"yes-no-cancel"'
 ;; On return of the message box <sym-action> carries one of the responses <tt>0</tt> for the yes-,
-;; <tt>1</tt> for the no- or <tt>3</tt> for the cancel-button.
+;; <tt>1</tt> for the no- or <tt>2</tt> for the cancel-button.
 
-(define (confirm-dialog parent action title msg (type plain))
+(define (confirm-dialog parent action title msg (type "plain"))
 	(net-send out (string "confirm-dialog " parent " " action " " 
 						(base64-enc title) " " (base64-enc msg) " " type "\n"))
 )
@@ -1423,7 +1444,7 @@ true
 )
 
 ;; @syntax (gs:eval-shell <sym-id-text-area> <str-command>)
-;; @param <sym-id-text-area> The name of the text are in which to evaluate text.
+;; @param <sym-id-text-area> The name of the text area in which to evaluate text.
 ;; @param <str-command> The text to evaluate in the shell.
 
 (define (eval-shell id command)
@@ -1606,9 +1627,10 @@ true
 )
 
 ;; @syntax (gs:find-text <sym-id> <str-text> <sym-action> [<str-direction>])
-;; @param <sym-id> The name of the textr area or text pane.
-;; @param <boolean-next> The optional direction string '"next"' (default) or '"previous"'.
+;; @param <sym-id> The name of the text area or text pane.
+;; @param <str-text> The searching text.
 ;; @param <sym-action> A optional action to peform after find-text.
+;; @param <str-direction> The optional direction string '"next"' (default) or '"previous"'.
 ;;
 ;; The text area or text pane will be searched starting at the current caret position
 ;; forward or backwards depending on the optional direction field. After the search
@@ -1761,7 +1783,7 @@ true
 )
 
 ;; @syntax (gs:get-version)
-;; @return The version string of newLISP-GS running.
+;; @return The version of newLISP-GS running.
 ;;
 ;; After calling the 'gs:get-version' once the version number is also
 ;; available in 'gs:version'.
@@ -1916,12 +1938,12 @@ true
 )
 
 ;; @syntax (gs:key-event <sym-id> <sym-action>)
-;; @param <sym-canvas> The id of the component to register the action handler.
+;; @param <sym-id> The id of the component to register the action handler.
 ;; @param <sym-action> The symbol of the action handler.
 ;;
 ;; 'gs:key-event' can be used to register a general unspecific key event handler
 ;; for any component in the system. Since version 1.05 of newLISP-GS this also
-;; includes text widgets, which alrady handle key events using their normal event 
+;; includes text widgets, which already handle key events using their normal event 
 ;; handler function. With 'gs:key-event' a second handler function can be registered
 ;; for text widgets. Both functions will fire on their respective events.
 ;;
@@ -1992,8 +2014,9 @@ true
 ;; @param <boolean-flag> Prevent exit on loss of communication.
 ;; @return Never returns. Exits the application when the guiserver exits, except when <boolean-flag> is 'true'.
 
-(define (listen flag)
+(define (listen flag , event)
 	(while (net-receive in event 1000000000 "\n")
+		;(println "===>" event "<===")
 		(eval-string event))
 	(println "server shut down")
 	(if (not flag) (exit))
@@ -2006,7 +2029,7 @@ true
 ;; @syntax (gs:list-box <sym-id> <sym-action> [<list-str-items>])
 ;; @param <sym-id> The name of the list box.
 ;; @param <sym-action> The name of the event handler.
-;; @param <str-item> Zero, one or more text entries in the list box.
+;; @param <list-str-items> Zero, one or more text entries in a list.
 
 ;; The listbox when clicked with the mouse, or when the [enter] key is
 ;; presses, will pass the following parameters to the event handler:
@@ -2015,7 +2038,6 @@ true
 ;; <index> - the zero offset index of the highlighted listbox entry<br>
 ;; <item> - the string of the highlighted listbox entry<br>
 ;; <click-count> - the number of times the mouse has been clicked<br>
-;; </tt>
 
 (define (list-box id action)
 	(let (	s (string "list-box " id " " action " ")
@@ -2189,7 +2211,7 @@ true
 )
 
 ;; @syntax (gs:mouse-event <sym-id> <sym-action>)
-;; @param <sym-canvas> The id of the component to register the action handler.
+;; @param <sym-id> The id of the component to register the action handler.
 ;; @param <sym-action> The symbol of the action handler.
 ;;
 ;; 'gs:mouse-event' can be used to register a general unspecific mouse event handler
@@ -2355,6 +2377,7 @@ true
 ;; The default for the bend parameer is <tt>0</tt> for no bend. Negative values down to '-8192'
 ;; tune the note lower. Positive values up to '8191' tune the note higher. 
 ;; The following code is a complete example:
+;;
 ;; @example
 ;; ; load Guiserver
 ;; (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
@@ -2371,6 +2394,7 @@ true
 ;;
 
 ;; The second example demonstrated usage of the <int-bend> parameter:
+;;
 ;; @example
 ;; ; play the same note but with different bends below and above the note
 ;; (gs:midi-patch "Violin" 0)
@@ -2392,8 +2416,8 @@ true
 ;; @param <int-end-loop> The end of the loop in ticks. Default is <tt>-1</tt> for the end.
 ;;
 ;; All parameters are optional. When no parameters are given all tracks in the sequence are
-;; sequenced from start to end with no repetiton (loop count of 0). Note that the start and
-;; end positions refer only to loop played after playing the full track. After the sequence
+;; sequenced from start to end with no repetiton (loop count of 0). Note that the start-loop and
+;; end-loop positions refer only to loop played after playing the full track. After the sequence
 ;; started playing 'gs:stop-sequence' can be used to stop it at any time. The midi system
 ;; should not be close using 'gs:midi-close' before playing has finished or playing will
 ;; be cut off.
@@ -2462,7 +2486,7 @@ true
 ;; @param <int-index> The index of an entry to remove from the list or combo box.
 ;;
 ;; When specifying an index of <tt>0</tt>, the first item gets removed. When specifying an
-;; index equal or greater to the number of items in the list, the item is added at the end.
+;; index equal or greater to the number of items in the list, the item is removed at the end.
 
 (define (remove-list-item comp)
 	(let (s (string "remove-list-item " comp " "))
@@ -2832,6 +2856,23 @@ true
 	(net-send out (string "set-cursor " id " " shape "\n"))
 )
 
+;; @syntax (gs:set-echo-char <sym-id> [<str-covered-text>])
+;; @param <sym-id> The name of the component for which text is set.
+;; @param <str-covered-text> Obscured by the first letter for Password Input field.
+;; @example
+;; (gs:set-echo-char 'TheTextField "*")
+;; (gs:set-echo-char 'TheTextField)   ; no echo, behave as normal text field
+ 
+(define (set-echo-char id text)
+  (if (and text (> (length text) 0))
+  	(net-send out (string "set-echo-char " id " " (base64-enc text) "\n"))
+  	(net-send out (string "set-echo-char " id "\n")))
+)
+
+;; If no <str-covered-text> is specyfied or the string in <str-covered-text> is of
+;; 0 length, then the text field behaves as a normal text field.
+
+
 ;; @syntax (gs:set-editable <sym-id> <boolean-editable>)
 ;; @param <sym-id> The name of the text widget.
 ;; @param <boolean-editable> The flag 'true' or 'nil' to indicate if this text widget can be edited.
@@ -2978,9 +3019,9 @@ true
 	(net-send out (string "set-rotation " gs:currentCanvas " " angle "\n"))
 )
 
-;; @syntax (gs:set-scale <int-x> <int-y>)
-;; @param <int-x> The X-scale value of the current canvas.
-;; @param <int-y> The Y-scale value of the current canvas.
+;; @syntax (gs:set-scale <float-x> <float-y>)
+;; @param <float-x> The X-scale value of the current canvas.
+;; @param <float-y> The Y-scale value of the current canvas.
 ;;
 ;; Unlike the 'gs:scale-tag' operation which is cumulative, 'gs:set-scale'
 ;; will set an absolute scale value each time it is called.
@@ -3045,7 +3086,7 @@ true
 ;; @param <str-cap> One of optional '"butt"' (default), '"round"' or '"sqare"'.
 ;; @param <str-join> One of optional '"miter"' (default), '"bevel"' or '"round"'
 ;;
-;; For a <float-width> 0f 0.0 the thinnest possible line width be be chosen. 
+;; For a <float-width> 0f 0.0 the thinnest possible line width be chosen. 
 ;; Join is the decoration applied at the intersection of two path segments and at the 
 ;; intersection of the endpoints.
 ;; Cap is the decoration applied to the ends of unclosed subpaths and dash segments.
@@ -3166,7 +3207,7 @@ true
 ;; @param <boolean> The flag 'true' or 'nil' to indicate if in UTF-8 mode.
 ;;
 ;; When set in UTF-8 mode, guiserver will convert files to UTF-8 encoding
-;; when loading and saving files. On Mac OX X UTF-8 mode is by default enabled.
+;; when loading and saving files. On Mac OS X UTF-8 mode is by default enabled.
 ;; On startup guiserver.lsp will detect if newLISP is UTF-8 enabled and
 ;; switch the mode in Guiserver accordingly using 'gs:set-utf8'.
 
@@ -3258,7 +3299,7 @@ true
 	(net-send out (string "stop-sequence System\n"))
 )
 
-;; @syntax (gs:tabbed-pane <sym-id> <sym-action> <str-orientation> [<sym-tab> <sym-tab-title> ...])
+;; @syntax (gs:tabbed-pane <sym-id> <sym-action> <str-orientation> [<sym-tab> <str-title> ...])
 ;; @param <sym-id> The name of the tabbed pane.
 ;; @param <str-orientation> The position of the tabs; either '"top"' (default), '"bottom"','"left"' or '"right"'.
 ;; @param <sym-tab> The id symbol name of a tab
@@ -3274,11 +3315,207 @@ true
 		(net-send out s))
 )
 
+
+;; @syntax (gs:table <sym-id> <sym-action> [<str-column-header-name> ...])
+;; @param <sym-id> The name of the table.
+;; @param <sym-action> The handler function symbol when a cell is selected.
+;; @param <str-column-header-name> The optional column header name. 
+;;
+;; Creates a table with <str-column-header-name> specified column and empty row.
+;; For empty strings specified as column headers, the column number will be used.
+;; If there are no columns, an empty table (0 x 0) is created.
+;;
+;; When a cell is selected, the function in <sym-action> gets called with the
+;; table id, row, column and cell-contents. See the file 'table-demo.lsp'
+;; for an example. Cells can be edited  by either selecting or double clicking a cell.
+
+(define (table id action)
+  (let (s (string "table " id " " action)
+	  columns (if (null? (args)) '()
+		      (if (list? (args 0)) (args 0) (args))))
+    (dolist (col columns)
+      (write-buffer s (string " " (base64-enc col))))
+    ;(println "gs:table " s)
+    (write-buffer s "\n")
+    (net-send out s) ) )
+
+
+;; @syntax (gs:table-add-column <sym-id> <str-column-header-name> ...)
+;; @param <sym-id> The name of the table.
+;; @param <str-column-header-name> Add column header name(s). 
+;;
+;; When a column header name is empty, the name is set to the column number. 
+;; The table size grows.
+
+(define (table-add-column id)
+  (let (s (string "table-add-column " id)
+	  columns (if (null? (args)) '()
+		      (if (list? (args 0)) (args 0) (args))))
+    (dolist (col columns)
+      (write-buffer s (string " " (base64-enc col))))
+    ;(println "gs:table-add-column " s)
+    (write-buffer s "\n")
+    (net-send out s) ) )
+
+
+;; @syntax (gs:table-add-row <sym-id> [<str-columns> ... ])
+;; @syntax (gs:table-add-row <sym-id> ([<str-columns> ...))
+;; @param <sym-id> The name of the table.
+;; @param <str-columns> Add a row with contents in <str-columns>
+;;
+;; Add row with each column value. If necessary a scrollbar will appear.
+;; If no contents is defined in <str-columns>, or if contents for less
+;; columns is defined than available, column contents is left empty.
+;; Multiple column content can be specified as either a list
+;; of strings or as additional parameters of 'gs:table-add-row'. 
+
+(define (table-add-row id)
+  (let (s (string "table-add-row " id)
+	  columns (if (null? (args)) '()
+		      (if (list? (args 0)) (args 0) (args))))
+    (dolist (col columns)
+      (write-buffer s (string " " (base64-enc col))))
+    ;(println "gs:table-add-row " s)
+    (write-buffer s "\n")
+    (net-send out s) ) )
+
+
+;; @syntax (gs:table-get <sym-id>)
+;; @return table cells. stored in 'gs:table-full'.
+;;
+;; Get full table as a list of row lists.
+;; <pre>
+;; ( ("column0" "column1" ... ) ; 1'st row
+;;   ("column0" "column1" ... ) ; 2'nd row
+;;   ...
+;;   ... )
+;; </pre>
+;;
+;; The entire table contents is stored as a list of row lists in the 
+;; return value of 'gs:table-get', and is also stored in the variable 
+;; 'gs:table-full'. 
+
+(define (table-get id)
+	(set 'gs:table-full nil)
+	(let (s (string "table-get " id))
+		(write-buffer s "\n")
+		;(println "gs:table-get " s)
+		(net-send out s)
+		(while (not gs:table-full) (check-event 10000))
+		; decode base64 cell contents for each row in each cell
+		(set 'gs:table-full
+			(map (lambda (x) (map (lambda (s) 
+					(if (nil? s) nil (base64-dec s))
+						) x ) ) gs:table-full))
+	)
+)
+
+;; @syntax (gs:table-get-cell <sym-id> <int-row> <int-column>)
+;; @param <sym-id> The name of the table.
+;; @param <int-row> The row of the cell.
+;; @param <int-column> The column of the cell.
+;; @return cell value. stored in gs:table-cell.
+;;
+;; Get the cell contents as a string at sepcifed <int-row> and <int-column>.
+
+(define (table-get-cell id row col)
+  (set 'gs:table-cell nil)
+  (let (s (string "table-get-cell " id
+		  " " row
+		  " " col))
+    ;(println "gs:table-get-cell " s)
+    (write-buffer s "\n")
+    (net-send out s)
+    (while (not gs:table-cell) (check-event 10000))
+    gs:table-cell)
+  )
+
+
+;; @syntax (gs:table-get-size <sym-id>)
+;; @param <sym-id> The name of the table.
+;; @return table size list (row-size, column-size)
+;;
+;; Get table size, stored in 'gs:table-size'.
+;; Note, that adding columns or row will not automatically update
+;; the 'gs:table-size' variable. Use 'gs:table-get-size' to update
+;; this variable.
+
+(define (table-get-size id)
+  (set 'gs:table-size nil)
+  (let (s (string "table-get-size " id))
+    ;(println "gs:table-get-size " s)
+    (write-buffer s "\n")
+    (net-send out s)
+    (while (not gs:table-size) (check-event 10000))
+    gs:table-size
+    ) )
+
+
+;; @syntax (gs:table-set-cell <sym-id> <int-row> <int-column> <str-value>)
+;; @param <sym-id> The name of the table.
+;; @param <int-row> The row of the cell set.
+;; @param <int-column> The column of the cell set.
+;; @param <str-value> The cell value.
+;; @return The previous contents of the cell; also stored in 'gs:table-cell'.
+;;
+;; Sets a new table cell contents and returns the old cell contents. Row and
+;; column numbering starts with '0' (zero). The cell contents is passed
+;; as a string.
+
+(define (table-set-cell id row col value)
+  (set 'gs:table-cell nil)
+  (let (s (string "table-set-cell " id
+		  " " row
+		  " " col
+		  " " (base64-enc value)))
+    ;(println "gs:table-set-cell " s)
+    (write-buffer s "\n")
+    (net-send out s)
+    (while (not gs:table-cell) (check-event 10000))
+    gs:table-cell
+ ) )
+
+
+;; @syntax (gs:table-set-column <sym-id> <int-column-number> <int-width> [<str-justification>])
+;; @param <sym-id> The name of the table.
+;; @param <int-column-number> The column number of align.
+;; @param <int-width> The column width.
+;; @param <str-justification> The column align property, "left", "center", "right".
+;;
+;; A table column property is changed, adjusting the column width and alignment of cell
+;; contents. The <str-justification> parameter is optional and alignment is "left"
+;; by default.
+
+(define (table-set-column id columnNum width (justification "left"))
+  (let (s (string "table-set-column " id
+		  " " columnNum
+		  " " width
+		  " " justification))
+    ;(println "gs:table-set-column " s)
+    (write-buffer s "\n")
+    (net-send out s) ) )
+
+
+;; @syntax (gs:table-set-row-number <sym-id> <bool-row-number>)
+;; @param <sym-id> The name of the table.
+;; @param <bool-row-number> 'true' if rowns should carry a row number; default 'nil'.
+;;
+;; Show or hide the row number headers. The default is hiding row numbers.
+
+(define (table-set-row-number id boolRowheader)
+  (let (s (string "table-set-row-number " id
+		  " " boolRowheader))
+    ;(println "gs:table-set-row-number " s)
+    (write-buffer s "\n")
+    (net-send out s) ) )
+
+
 ;; @syntax (gs:text-area <sym-id> <sym-action> <int-width> <int-height>)
 ;; @param <symid> The name of the text area.
 ;; @param <sym-action> The name of the event handler.
 ;; @param <int-width> The optional width of the text area..
 ;; @param <int-height> The optional height of the text area.
+;;
 ;; @example
 ;; (gs:text-area 'TheText 'textarea-event 10 8)
 ;;
@@ -3299,18 +3536,23 @@ true
 		(net-send out (string "text-area " id " " action "\n")))
 )
 
-;; @syntax (gs:text-field <sym-id> <sym-action> <int-columns>)
+;; @syntax (gs:text-field <sym-id> <sym-action> <int-columns> [<str-covered-text>])
 ;; @param <sym-id> The name of the text field.
 ;; @param <sym-action> The name of the event handler.
 ;; @param <int-columns> The number of columns in the text field.
+;; @param <str-covered-text> Obscured by the first letter for Password Input field.
 ;; @example
-;; (gs:text-field 'TheText 'textfield-event)
+;; (gs:text-field 'TheTextField 'textfield-event)
+;; (gs:text-field 'PasswordTextField 'textfield-event "*")
 
 ;; The 'textfield-event' is fired when the enter key is pressed in the
-;; text field.
+;; text field. As an alternative the cover character for passwords can be
+;; set with 'gs:set-echo-char'.
 
-(define (text-field id action columns)
-	(net-send out (string "text-field " id " " action " " columns "\n"))
+(define (text-field id action columns text)
+  (if text
+      (net-send out (string "text-field " id " " action " " columns " " (base64-enc text) "\n"))
+      (net-send out (string "text-field " id " " action " " columns "\n")))
 )
 
 ;; @syntax (gs:text-pane <sym-id> <sym-action> <str-style> [<int-width> <int-height>])
@@ -3342,6 +3584,7 @@ true
 ;; To make hyperlinks in 'HTML' formatted text clickable, editing must
 ;; be disabled using the 'gs:set-editable' function. The functions 'gs:set-font'
 ;; and 'gs:append-text' will work only on the 'text/plain' content style.
+;;
 ;; @example
 ;; (gs:text-pane 'TheTextPane 'textpane-event "text/plain")
 ;;

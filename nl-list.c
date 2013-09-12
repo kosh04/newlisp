@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,6 +107,8 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
 deleteList(argsPtr);
 
 recoverIteratorIndex(cellIdx);
+
+symbolCheck = NULL;
 
 return(results);
 }
@@ -503,6 +505,8 @@ key = evaluateExpression(params);
 if((listMode = isList(key->type)))
 	key = (CELL *)key->contents;
 
+if(key == nilCell) key = copyCell(nilCell);
+
 getEvalDefault(params->next, &list);
 if(!isList(list->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, list));
@@ -527,13 +531,8 @@ while(key != nilCell)
 
 if(list == nilCell) return(nilCell);
 
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-	
-return(copyCell(list));
+pushResultFlag = FALSE;
+return(list);
 }
 
 
@@ -549,7 +548,9 @@ SYMBOL * symbolRef;
 key = evaluateExpression(params);
 if((listMode = isList(key->type)))
 	key = (CELL *)key->contents;
-	
+
+if(key == nilCell) key = copyCell(nilCell);
+
 params = getEvalDefault(params->next, &list);
 symbolRef = symbolCheck;
 
@@ -588,13 +589,9 @@ while(index--)
         list = list->next;
         }
 
-if((symbolCheck = symbolRef))
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-
-return(copyCell(list));
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(list);
 }
 
 
@@ -822,6 +819,8 @@ int listMode;
 key = evaluateExpression(params);
 if((listMode = isList(key->type)))
 	key = (CELL *)key->contents;
+
+if(key == nilCell) key = copyCell(nilCell);
 
 getEvalDefault(params->next, &list);
 
@@ -1328,7 +1327,7 @@ return(vector);
 #define REF_INDEX 0
 #define REF_CONTENTS 1
 
-void ref(CELL * keyCell, CELL * list, CELL * funcCell, CELL * result, 
+void ref(CELL * keyCell, CELL * list, CELL * funcCell, CELL * * head, 
 						CELL * * next, REFSTACK * refStack, int mode)
 {
 size_t idx = 0;
@@ -1339,14 +1338,6 @@ while(list != nilCell)
 	{
 	if(compareFunc(keyCell, list, funcCell) == 0)
 		{
-		/* deprecated, take out in 10.2
-		if(funcCell)
-			{
-			deleteList((CELL*)sysSymbol[0]->contents);
-			sysSymbol[0]->contents = (UINT)copyCell(list);
-			}
-		*/
-
 		if(refStack->base)
 			{
 			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
@@ -1355,13 +1346,15 @@ while(list != nilCell)
 			popRef();
 			}		
 		else
-			item = copyCell(list);
+			{
+			if(mode == REF_SINGLE)
+				item = list;
+			else
+				item = copyCell(list);
+			}
 
 		if(*next == NULL)
-			{
-			*next = item;
-			result->contents = (UINT)*next;
-			}
+			*next = *head = item;
 		else
 			{
 			(*next)->next = item;
@@ -1378,7 +1371,7 @@ while(list != nilCell)
 			if(refStack->idx < MAX_REF_STACK) pushRef(idx);
 			else errorProc(ERR_NESTING_TOO_DEEP);
 			}
-		ref(keyCell, (CELL*)list->contents, funcCell, result, next, refStack, mode);
+		ref(keyCell, (CELL*)list->contents, funcCell, head, next, refStack, mode);
 		if(refStack->base) popRef();
 		}
 
@@ -1391,16 +1384,18 @@ while(list != nilCell)
 
 CELL * reference(CELL * params, int mode)
 {
-CELL * result;
+CELL * head = NULL;
 CELL * keyCell;
 CELL * list;
 CELL * funcCell = NULL;
 CELL * next = NULL;
 REFSTACK refStack = {NULL, 0};
 int flag = 0;
+SYMBOL * symbolRef;
 
 keyCell = evaluateExpression(params);
 params = getEvalDefault(params->next, &list);
+symbolRef = symbolCheck;
 
 if(params != nilCell)
 	{
@@ -1414,20 +1409,24 @@ if(!flag)
 if(!isList(list->type))
 	return(errorProcExt(ERR_LIST_EXPECTED, list));
 
-result = getCell(CELL_EXPRESSION);
+ref(keyCell, (CELL *)list->contents, funcCell, &head, &next, &refStack, mode);
 
-ref(keyCell, (CELL *)list->contents, funcCell, result, &next, &refStack, mode);
-
-if(mode == REF_SINGLE)
+if(mode == REF_SINGLE) 
 	{
-	next = (CELL *)result->contents;
-	if(next == nilCell) return(result);
-	result->contents = (UINT)nilCell;
-	deleteList(result);
-	return(next);
+	if(head == NULL) return(nilCell);
+	if(flag) 
+		{
+		symbolCheck = symbolRef;
+		pushResultFlag = FALSE;
+		}
+	return(head);
 	}
 
-return(result);
+list = getCell(CELL_EXPRESSION);
+	
+list->contents = (UINT)((head == NULL) ? nilCell : head);
+
+return(list);
 }
 
 CELL * p_ref(CELL * params)
@@ -1498,12 +1497,9 @@ result = modRef(key, (CELL *)list->contents, funcCell, new, mode, &count);
 if(count == 0)
 	return(nilCell);
 
-if((symbolCheck = refSymbol))
-	{
-	pushResultFlag = FALSE;
-	return(list);
-	}
-return(copyCell(list));
+symbolCheck = refSymbol;
+pushResultFlag = FALSE;
+return(list);
 }
 
 

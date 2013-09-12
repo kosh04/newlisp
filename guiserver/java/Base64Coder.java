@@ -19,8 +19,10 @@
 *  &nbsp; Method decode(String) renamed to decodeString(String).<br>
 *  &nbsp; New method encode(byte[],int) added.<br>
 *  &nbsp; New method decode(String) added.<br>
+* 2010-08-11 added encodeStringUTF8(String) and decodeStringUTF8(String).<br>
 */
 
+import java.io.UnsupportedEncodingException;
 
 public class Base64Coder {
 
@@ -47,6 +49,17 @@ private static byte[]    map2 = new byte[128];
 */
 public static String encodeString (String s) {
    return new String(encode(s.getBytes())); }
+
+public static String encodeStringUTF8(String s) {
+   byte [] bs ;
+   try {
+       bs = s.getBytes("UTF-8") ;
+       String r = new String(encode(bs)) ;
+       return r ;
+   } catch (UnsupportedEncodingException ee) {}
+   return new String("") ;
+}
+
 
 /**
 * Encodes a byte array into Base64 format.
@@ -91,8 +104,20 @@ public static char[] encode (byte[] in, int iLen) {
 * @throws   IllegalArgumentException if the input is not valid Base64 encoded data.
 */
 public static String decodeString (String s) {
-	if(s.equals("nil")) return("");
+   if(s.equals("nil")) return("");
    return new String(decode(s)); }
+
+public static String decodeStringUTF8(String s) {
+   if(s.equals("nil")) return("");
+   try {
+       String r = new String(decode(s), "UTF-8") ;
+       return r ;
+   } catch (UnsupportedEncodingException ee) {}
+   return ("") ;
+}
+
+
+
 
 /**
 * Decodes a byte array from Base64 format.

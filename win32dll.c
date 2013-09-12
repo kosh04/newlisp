@@ -1,6 +1,6 @@
 /* win32dll.c - make the newlisp.exe usable as a DLL 
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,9 +47,6 @@ opsys += 64;
 
 #ifdef SUPPORT_UTF8
 opsys += 128;
-#endif
-#ifdef IPV6
-opsys += 512
 #endif
 
 initLocale();

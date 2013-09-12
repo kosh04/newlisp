@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/16/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -303,18 +303,21 @@ class stderrorListener implements Runnable
 
 
 private class BeginningOfLineAction extends AbstractAction {
+	public static final long serialVersionUID = 1L;
 	public void actionPerformed(ActionEvent ev) {
 		textArea.setCaretPosition(lastDot);
 		}
 	}
 
 private class EndOfLineAction extends AbstractAction {
+	public static final long serialVersionUID = 1L;
 	public void actionPerformed(ActionEvent ev) {
 		textArea.setCaretPosition(textArea.getText().length());
 		}
 	}
 
 private class HistoryUpAction extends AbstractAction {
+	public static final long serialVersionUID = 1L;
 	public void actionPerformed(ActionEvent ev) {
 		textArea.setCaretPosition(lastDot);
 		textArea.moveCaretPosition(textArea.getText().length());
@@ -329,6 +332,7 @@ private class HistoryUpAction extends AbstractAction {
 	}
 
 private class HistoryDownAction extends AbstractAction {
+	public static final long serialVersionUID = 1L;
 	public void actionPerformed(ActionEvent ev) {
 		textArea.setCaretPosition(lastDot);
 		textArea.moveCaretPosition(textArea.getText().length());
@@ -343,6 +347,7 @@ private class HistoryDownAction extends AbstractAction {
 	}
 
 private class CommandAction extends AbstractAction {
+	public static final long serialVersionUID = 1L;
 	public void actionPerformed(ActionEvent ev) {
 		String text = textArea.getText();
 		if(text.length() < lastDot) lastDot = text.length();

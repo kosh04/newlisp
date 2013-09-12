@@ -1,6 +1,12 @@
 #!/usr/bin/env newlisp
 
-; utf8 - transforming from and to nmbers, upper-case'ing and lower-case'ing
+; regex compile of UTF-8 patterns
+
+(if (catch (regex-comp "ほげほげ" 0x800) 'result)
+    (println "UTF-8 compile sucessfull")
+    (println "problem in UTF-8 compile"))
+
+; UTF-8 - transforming from and to nmbers, upper-case'ing and lower-case'ing
 
 ; should show Chinese characters if editor or terminal is UTF-8 capable
 (println "characters entered by keyboard:")

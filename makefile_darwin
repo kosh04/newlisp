@@ -1,4 +1,4 @@
-# makefile for newLISP v. 10.x.x on Mac OSX with readline support using LLVM compiler
+# makefile for newLISP v. 10.x.x on Mac OSX with readline  and UTF-8 support
 #
 # needs readline library and headerfiles installed (X tools)
 #
@@ -6,10 +6,9 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o
 
-CFLAGS = -m32 -Wall -c -O1 -DREADLINE -DMAC_OSX -DSUPPORT_UTF8
+CFLAGS = -m32 -Wall -O1 -c -DREADLINE -DMAC_OSX -pedantic
 
-CC = /Developer/usr/bin/llvm-gcc
-#CC = /Developer/usr/llvm-gcc-4.2/bin/llvm-gcc-4.2
+CC = gcc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m32 -lm -lreadline -o newlisp
@@ -18,6 +17,6 @@ default: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_darwin_utf8_llvm
+$(OBJS): primes.h protos.h makefile_darwin_utf8
 
 

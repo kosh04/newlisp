@@ -1,6 +1,6 @@
 /* nl-symbol.c --- symbol handling routines for newLISP
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -279,13 +279,16 @@ if(symbolType(sPtr) == CELL_CONTEXT)
 if(sPtr->flags & (SYMBOL_PROTECTED | SYMBOL_BUILTIN) )
 	return(nilCell);
 
-/* nil as extra parameter deletes without reference checking
-   true as extra parameter deletes only if no references are found
-   no extra parameter assumes reference checking
+/* nil as extra parameter deletes without reference checking.
+   true as extra parameter deletes only if no references are found,
+   No extra parameter assumes reference checking is on and if
+   a reference is found it is replaced with nil.
 */
 params = params->next;
+/* extra parameter is specified as nil */
 if(params != nilCell && !getFlag(params))
 	checkReferences = FALSE;
+/* extra parameter is specified as true */
 else if(getFlag(params))
 	{
 	if(cell->type == CELL_CONTEXT)
@@ -390,6 +393,7 @@ symbol->context = mainContext;
 symbol->flags |= (SYMBOL_PROTECTED | SYMBOL_GLOBAL);
 }
 
+/* only used when S in (delete 'S) is not a context */
 int references(SYMBOL * sPtr, int replaceFlag)
 {
 CELL * blockPtr;
@@ -450,7 +454,7 @@ return(count);
 }
 
 /* renamed to 'term' in v.10.1.11 */
-CELL * p_name(CELL * params)
+CELL * p_term(CELL * params)
 {
 SYMBOL * sPtr;
 

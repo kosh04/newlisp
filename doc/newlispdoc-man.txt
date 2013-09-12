@@ -70,5 +70,5 @@ SEE ALSO
 
 
 
-version 3.0                      January 2010                    newlispdoc(1)
+version 3.0                      February 2011                   newlispdoc(1)
 

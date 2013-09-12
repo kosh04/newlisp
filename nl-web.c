@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ CELL * webError(int no);
 CELL * base64(CELL * params, int type);
 
 jmp_buf socketTimeoutJump;
-long socketTimeout;
+long socketTimeout = 0;
 struct timeval socketStart;
 
 /* socket send and receive routines with timeout */
@@ -97,7 +97,7 @@ while(wait_ready(sock, 1000, 0) <= 0)
   if(socketTimeout)
     {
     gettimeofday(&tm, NULL);
-    if(timediff(tm, socketStart) > socketTimeout)
+    if(timediff_ms(tm, socketStart) > socketTimeout)
         longjmp(socketTimeoutJump, 1);
     }
   } 
@@ -140,7 +140,7 @@ while(wait_ready(sock, 1000, 0) <= 0)
   	if(socketTimeout)
 		{
 		gettimeofday(&tm, NULL);
-		if(timediff(tm, socketStart) > socketTimeout)
+		if(timediff_ms(tm, socketStart) > socketTimeout)
 		longjmp(socketTimeoutJump, 1);
 		}
 	}
@@ -193,24 +193,24 @@ return(result);
 
 CELL * p_getUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_GET, DEFAULT_TIMEOUT));
+return(getPutPostDeleteUrl(NULL, params, HTTP_GET, CONNECT_TIMEOUT));
 }
 
 
 CELL * p_putUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_PUT, DEFAULT_TIMEOUT));
+return(getPutPostDeleteUrl(NULL, params, HTTP_PUT, CONNECT_TIMEOUT));
 }
 
 
 CELL * p_postUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_POST, DEFAULT_TIMEOUT));
+return(getPutPostDeleteUrl(NULL, params, HTTP_POST, CONNECT_TIMEOUT));
 }
 
 CELL * p_deleteUrl(CELL * params)
 {
-return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, DEFAULT_TIMEOUT));
+return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, CONNECT_TIMEOUT));
 }
 
 #define BASE64_ENC 0
@@ -345,6 +345,7 @@ params = params->next;
 if(isNumber(result->type))
 	{
     getIntegerExt(result, (UINT*)&socketTimeout, FALSE);
+	/* set connection timeout to total-timeout specified by user */
 	timeout = socketTimeout;
 	}
 
@@ -369,7 +370,7 @@ else if(isString(result->type))
 else if(result != nilCell)
     return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, result));
 
-/* if timeout is specified, custom-header can be specified too */
+/* if total timeout is specified, custom-header can be specified too */
 if(socketTimeout && params != nilCell)
         getString(params, &customHeader);
 
@@ -406,6 +407,7 @@ gettimeofday(&socketStart, NULL);
 CONNECT_TO_HOST:
 if(sock) 
     close(sock);
+
 
 if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, timeout)) == SOCKET_ERROR)
 	return(webError(errorIdx));
@@ -660,10 +662,8 @@ return(result);
 
 int parseUrl(char * url, char * protocol, char * host, int * port, char * path, size_t maxlen)
 {
-#ifdef IPV6
-char * bracketPtr;
-#endif
-char * colonPtr;
+char * bracketPtr = NULL;
+char * colonPtr = NULL;
 char * slashPtr;
 int len;
 
@@ -680,57 +680,55 @@ while(*(url + len) <= ' ' && len > 0)
 if(my_strnicmp(url, "http://", 7) == 0)
     {
     strncpy(protocol,"http", MAX_PROTOCOL );
-#ifdef IPV6
-	if(*(url + 7) == '[')
+	if( (ADDR_FAMILY == AF_INET6) && (*(url + 7) == '[') )
 		strncpy(host, url+8, maxlen);
 	else
-#endif
-    strncpy(host, url+7, maxlen);
+    	strncpy(host, url+7, maxlen);
     }
 else if( my_strnicmp(url, "https://", 8) == 0)
     {
     strncpy(protocol, "https", MAX_PROTOCOL);
-#ifdef IPV6
-	if(*(url + 8) == '[')
+	if( (ADDR_FAMILY == AF_INET6) && (*(url + 8) == '[') )
 		strncpy(host, url+9, maxlen);
 	else
-#endif
-    strncpy(host, url+8, maxlen);
+    	strncpy(host, url+8, maxlen);
     }
 else 
     return(FALSE);
 
-#ifdef IPV6
-bracketPtr = strchr(host, ']');
-#else
-colonPtr = strchr(host, ':');
-#endif
+if(ADDR_FAMILY == AF_INET6)
+	bracketPtr = strchr(host, ']');
+else
+	colonPtr = strchr(host, ':');
 
 slashPtr = strchr(host, '/');
 
-#ifdef IPV6
-if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
+if(ADDR_FAMILY == AF_INET6)
 	{
-	*bracketPtr = '\0';
-	if(*(bracketPtr + 1) == ':')
-		*port = atoi(bracketPtr + 2);
+	if (bracketPtr != NULL && (slashPtr == NULL || bracketPtr < slashPtr))
+		{
+		*bracketPtr = '\0';
+		if(*(bracketPtr + 1) == ':')
+			*port = atoi(bracketPtr + 2);
+		}
+	else
+		{
+		colonPtr = strchr(host, ':');
+		if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
+			{
+			*colonPtr++ = '\0';
+			*port = atoi(colonPtr);
+			}
+		}
 	}
 else
-	{
-	colonPtr = strchr(host, ':');
+	{	
 	if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
 		{
 		*colonPtr++ = '\0';
 		*port = atoi(colonPtr);
 		}
-	}	
-#else
-if (colonPtr != NULL && (slashPtr == NULL || colonPtr < slashPtr)) 
-	{
-	*colonPtr++ = '\0';
-	*port = atoi(colonPtr);
 	}
-#endif
 
 if(path == NULL) return(TRUE);
 
@@ -766,11 +764,8 @@ strncpy(path, url, maxlen);
 
 size_t parseValue(char * str)
 {
-char * number;
 while(!isDigit((unsigned char)*str) && *str != 0) ++str;
-number = str;
-while(isDigit((unsigned char)*str)) ++str;
-return atol(number);
+return atol(str);
 }
 
 CELL * webError(int errorNo)
@@ -971,18 +966,18 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
    Subset HTTP/1.0 compliant.
 */
 
-/* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.2.8"
+/* #define DEBUGHTTP */
+#define SERVER_SOFTWARE "newLISP/10.3.0"
 
 int sendHTTPmessage(int status, char * description, char * request);
-void handleHTTPcgi(char * command, char * query);
+void handleHTTPcgi(char * command, char * query, ssize_t querySize);
 size_t readHeader(char * buff, int * pragmaFlag);
 ssize_t readPayLoad(ssize_t size, char * content, int outFile, char * request);
 int endsWith(char * str, char * ext);
 char * getMediaType(char * request);
 void url_decode(char *dest, char *src);
 
-void sendHTTPpage(char * content, size_t size, char * media, int closeFlag)
+void sendHTTPpage(char * content, size_t size, char * media)
 {
 int pos = 0;
 char status[128];
@@ -1019,11 +1014,8 @@ if(media != NULL)
 /* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
 fflush(IOchannel); 
-if(closeFlag) 
-	{
-	fclose(IOchannel); 
-	IOchannel = NULL;
-	}
+fclose(IOchannel); 
+IOchannel = NULL;
 #else /* it is WIN_32 */
 if(IOchannel != NULL && IOchannelIsSocketStream)
 	{
@@ -1074,7 +1066,7 @@ setenv("SERVER_SOFTWARE", SERVER_SOFTWARE, 1);
 setenv("REQUEST_METHOD", requestMethod[type], 1);
 
 #ifdef DEBUGHTTP
-printf("# HTTP request:%s:%d:\r\n", request, type);
+printf("# HTTP request:%s:%s:\r\n", request, requestMethod[type]);
 #endif
 
 /* stuff after request */
@@ -1124,7 +1116,7 @@ switch(type)
 	case HTTP_GET:
 	case HTTP_HEAD:
 		if(endsWith(request, CGI_EXTENSION))
-			handleHTTPcgi(request, query);
+			handleHTTPcgi(request, query, strlen(query));
 		else
 			{
 			mediaType = getMediaType(request);
@@ -1140,14 +1132,14 @@ switch(type)
 					"Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
 					(long)fileSize(request), mediaType);
 #endif
-				sendHTTPpage(buff, strlen(buff), NULL, TRUE);
+				sendHTTPpage(buff, strlen(buff), NULL);
 				}
 			else
 				{
 				if((size = readFile(request, &content)) == -1)
 					sendHTTPmessage(404, ERROR_404, request);
 				else
-					sendHTTPpage(content, size, mediaType, TRUE);
+					sendHTTPpage(content, size, mediaType);
 				if(content) free(content);
 				}
 			}
@@ -1157,7 +1149,7 @@ switch(type)
 		if(unlink(request) != 0)	
 			sendHTTPmessage(500, "Could not delete", request);
 		else
-			sendHTTPpage("File deleted", 12, MEDIA_TEXT, TRUE);
+			sendHTTPpage("File deleted", 12, MEDIA_TEXT);
 		break;
 
 	case HTTP_POST:
@@ -1175,7 +1167,7 @@ switch(type)
 			break;
 			}
 
-		handleHTTPcgi(request, query);
+		handleHTTPcgi(request, query, size);
 		free(query); 
 		break;
 
@@ -1200,7 +1192,7 @@ switch(type)
 		if(transferred != -1)
 			{
 			snprintf(buff, 255, "%d bytes transferred for %s\r\n", (int)transferred, request);
-			sendHTTPpage(buff, strlen(buff), MEDIA_TEXT, TRUE);
+			sendHTTPpage(buff, strlen(buff), MEDIA_TEXT);
 			}
 		break;
 
@@ -1219,7 +1211,7 @@ int sendHTTPmessage(int status, char * desc, char * req)
 char msg[256];
 
 snprintf(msg, 256, "Status:%d %s\r\nERR:%d %s: %s\r\n", status, desc, status, desc, req);
-sendHTTPpage(msg, strlen(msg), MEDIA_TEXT, TRUE);
+sendHTTPpage(msg, strlen(msg), MEDIA_TEXT);
 return(0);
 }
 
@@ -1237,6 +1229,7 @@ size_t readHeader(char * buff, int * pragmaFlag)
 {
 size_t size = 0;
 int offset;
+char numStr[16];
 
 *pragmaFlag = 0;
 
@@ -1256,11 +1249,17 @@ while(fgets(buff, MAX_LINE - 1, IOchannel) != NULL)
 		*(buff + offset--) = 0;	
 
 	if(my_strnicmp(buff, "content-length:", 15) == 0)
+		{
 		size = parseValue(buff + 15);
+		snprintf(numStr, 16, "%lu", (long unsigned int)size);
+		setenv("CONTENT_LENGTH", numStr, 1);
+		}
 	if(my_strnicmp(buff, "pragma: append", 14) == 0)
 		*pragmaFlag = TRUE;
 
 	/* trim leading white space */
+	if(my_strnicmp(buff, "content-type:", 13) == 0)
+		setenv("CONTENT_TYPE", trim(buff + 13), 1);
 	if(my_strnicmp(buff, "Host:", 5) == 0)
 		setenv("HTTP_HOST", trim(buff + 5), 1);
 	if(my_strnicmp(buff, "User-Agent:", 11) == 0)
@@ -1327,7 +1326,7 @@ return(transferred);
 
 
 
-void handleHTTPcgi(char * request, char * query)
+void handleHTTPcgi(char * request, char * query, ssize_t querySize)
 {
 FILE * handle;
 char * command;
@@ -1378,7 +1377,7 @@ if((handle = popen(command, "w")) == NULL)
 	return;
 	}
 
-if((size = fwrite(query, 1, strlen(query), handle)) < 0)
+if((size = fwrite(query, 1, querySize, handle)) < 0)
 	fatalError(ERR_IO_ERROR, 0, 0);
 
 fflush(handle);
@@ -1388,7 +1387,7 @@ size = readFile(tempfile, &content);
 if(size == -1)	
 	sendHTTPmessage(500, "cannot read output of", request);
 else
-	sendHTTPpage(content, size, NULL, TRUE);
+	sendHTTPpage(content, size, NULL);
 	
 #ifdef DEBUGHTTP
 printf("# Temporary file: %s\n", tempfile);

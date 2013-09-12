@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/20/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -43,11 +43,12 @@ public ToggleButtonWidget(StringTokenizer params)
 	
 	if(params.hasMoreTokens())
 		{
-		String text = Base64Coder.decodeString(params.nextToken());
+		String text = params.nextToken();
+	
 		if(guiserver.UTF8)
-		try {
-			text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+			text = Base64Coder.decodeStringUTF8(text);
+		else
+			text = Base64Coder.decodeString(text);
 
 		abutton.setText(text);
 		}

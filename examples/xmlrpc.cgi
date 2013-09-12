@@ -1,4 +1,4 @@
-#!/usr/home/nuevatec/bin/newlisp
+#!/usr/bin/newlisp
 #
 # xmlrpc.cgi - CGI script to handle XML-RPC requests
 #
@@ -12,6 +12,8 @@
 #	method name for newLISP.evalString was listed wrong
 # v.1.2 - 2010-02-09
 #	method name for newLISP.evalString was listed wrong
+# v.1.3  - 2010-10-07
+#	replaced obsolete 'error-text' with 'last-error'
 #
 # supports the following methods:
 #
@@ -28,7 +30,7 @@
 (when (< (sys-info -2) 10111)
     (constant (global 'write) write-buffer))
 
-(set 'version "1.2")
+(set 'version "1.3")
 
 # formatting templates for responses
 
@@ -201,10 +203,9 @@
     (if (not m) 
         (error 8 "Invalid format for method newLISP.evalString")
         (set 'result 
-            (string (eval-string (base64-dec (first (first m))) (error-text))))
-;;              "This function has been disabled in this demo for security reasons.")
-        (format normal-response 
-            (append "<base64>" (base64-enc result) "</base64>")) )
+            (string (eval-string (base64-dec (first (first m))) MAIN (last (last-error)))))
+    (format normal-response 
+        (append "<base64>" (base64-enc result) "</base64>")) )
 )
      
 

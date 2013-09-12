@@ -1,0 +1,176 @@
+#!/usr/bin/newlisp
+
+; qa-net6 - test network routines for server mode in IPv6 mode
+; currently only UNIX like OSs.
+;
+; tests: net-eval
+; tests http mode of: load, save, read-file, write-file, delete-file
+; 
+; assumes newlisp executable in the current directory:
+;     newlisp-x.x.x/
+;
+; usage to test on local host:
+;
+;        ./newlisp qa-net  
+;
+; usage to test on a remote host
+; 
+;        ./newlisp qa-net http://mysite.com:10001//home/test
+; or 
+;        ./newlisp qa-net http://localhost:4711//Users/Lutz/newlisp-8.9.8
+;
+
+(when (find ostype '("OS/2" "SunOS"))
+	(println "disabled for " ostype " - must exit -")
+	(exit))
+
+
+(net-ipv 6)
+; check if IPv6 works
+(if (set 'sock (net-listen 10001))
+	(net-close sock)
+	(begin
+		(print " >>>> " (last(net-error)))
+		(println ". Cannot test IPv6 on this platform.")
+		(exit)
+	))
+
+(println)
+(println "Testing network API and server mode IPv6")
+
+(when (not (or (file? "newlisp") (file? "newlisp.exe")))
+	(println ">>>>> Need a newlisp executable in the current directory for qa-net")
+	(exit)
+)
+
+(set 'start (time-of-day))
+
+(println "Testing IPv6 networking functions")
+(set 'targetURL (or 
+		(main-args 2)
+		(append "http://[::1]:10001/" (real-path) "/qa-junk.txt")))
+
+(replace "\\" targetURL "/") ; for Win32
+
+(if (not (ends-with targetURL "/qa-junk.txt"))
+	(set 'targetURL (append targetURL "/qa-junk.txt")))
+
+(set 'host (1 ((regex {http://(.*?)\]:} targetURL) 3)))
+(set 'port (int ((regex {http://.*?\]:(\d+)/} targetURL) 3)))
+(set 'file-path ((regex {http://.*\]:\d+/(.*)} targetURL) 3))
+
+(println)
+(println "target URL: " targetURL)
+
+(println "host: " host)
+(println "port: " port)
+(println "path: " file-path)
+
+; check if server is online or start it, if not
+; start one on localhost if no URL was specified
+; on the command line
+(set 'connection (net-connect host port 1000))
+(if (not connection)
+	(begin
+		(println "Starting server on localhost")
+		(if (find ostype '("Win32" "OS/2"))
+			(set 'pid (process (string "newlisp -6 -c -d " port)))
+			(set 'pid (process (string "./newlisp -6 -c -d " port)))))
+	(begin
+		(println "Server already running ...")
+		(net-close connection)))
+	
+
+(println "waiting for server ...")
+(sleep 1000)
+
+(if (net-connect host (+ port 1) 500)
+	(println " >>>> net-connect -> ERROR")
+	(println "net-connect to wrong port ->OK"))
+
+
+(if (find "server code 404:" (get-url "http://[::1]:10001/"))
+	(println "get-url ->OK")
+	(println " >>>> get-url problem ->ERROR"))
+
+; test short syntax normal mode
+(if (=  (net-eval host port {(+ 3 4)} 1000) 7) 
+	(set 'result1 (println "net-eval normal mode ->OK"))
+	(println " >>>> net-eval poblem with normal mode ->ERROR"))
+
+; test error reporting
+(if (= (net-eval host port "(abc)") "\nERR: invalid function : (abc)\n")
+	(set 'result2 (println "net-eval error reporting ->OK"))
+	(println " >>>> net-eval problem with error reporting ->ERROR"))
+
+; test saving to URL
+(set 'key (uuid))
+(set 'verify key)
+(if (catch (save targetURL 'key) 'res)
+	(set 'result3 (println "save to URL ->OK"))
+	(println " >>>> save to URL ->ERROR"))
+
+(when (find ostype '("Win32""Cygwin"))
+	(print "waiting on Windows for file to be unlocked .")
+	(until (= 53 (first (file-info file-path)))
+		(sleep 1000) 
+		(print "."))
+	(println))
+
+; test loading from URL
+(if (and
+       (println "loading target URL: " targetURL)
+       (catch (= (load targetURL) verify) 'result) 
+       (= key verify))
+       (set 'result4 (println "load from URL ->OK"))
+	(begin
+    	(println " >>>> load from URL ->ERROR OK on some Win32")
+		(println result))
+)
+
+; test writing file to remote
+
+; generate random binary data
+(set 'content "")
+(dotimes (i 100000)
+	(write-buffer content (pack "c" (rand 255))))
+
+; write content to remote URL
+(if	(find "transferred" (print (write-file targetURL content)) )
+	(set 'result5 (println "write-file to remote URL ->OK"))
+	(println "write-file to remote URL ->ERROR"))
+
+(when (find ostype '("Win32""Cygwin"))
+	(print "waiting on Windows for file to be unlocked .")
+	(until (= 100000 (first (file-info file-path)))
+		(sleep 1000) 
+		(print "."))
+	(println))
+
+; read content from remote URL
+(if (catch (= contents (read-file targetURL)) 'result)
+    (set 'result6 (println "read-file from remote URL ->OK"))
+    (begin
+        (println " >>>> read-file from  remote URL ->ERROR OK on some Win32")
+		(println result))
+)
+
+; delete file at remote URL
+(if (!= ostype "Win32") ; does not work on Windows when on the same machine
+	(if (delete-file targetURL)
+		(set 'result7 (println "delete-file from remote URL ->OK"))
+		(println " >>>> delete-file from remote URL ->Error"))
+	(set 'result7 true)
+)
+
+(if pid
+	(println "destroy -> " pid " ->" (destroy pid)))
+
+(println "\nduration -> " (- (time-of-day) start) " ms\n")
+
+(if (and result1 result2 result3 result4 result5 result6 result7)
+	(println ">>>>> Network eval and network file functions IPv6 SUCCESSFUL")
+	(println ">>>>> PROBLEM in network eval and network file IPv6 functions")
+)
+(println)
+(exit)

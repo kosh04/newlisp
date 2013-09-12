@@ -7,6 +7,7 @@
 ;; @version 3.2  - a fix when fetch-all has an empty result
 ;; @version 3.3  - typo in fetch-all didn't delete old fetches
 ;; @version 3.4  - documentaion error for load path
+;; @version 3.41  - library load path for Fedora Linux
 ;; @author Lutz Mueller 2003-2010, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
@@ -94,8 +95,10 @@
 (set 'files '(
 	"/usr/local/lib/libmysqlclient.so.19.0" ; OpenBSD 4.6
 	"/usr/lib/libmysqlclient.so" ; Linux, UNIX
+	"/usr/lib/mysql/libmysqlclient.so" ; Linux Fedora
 	"/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
 	"/usr/local/mysql/lib/libmysqlclient.dylib" ; MacOS X
+	"/usr/lib/libmysqlclient.dylib" ; MacOS X
 ))
 
 (set 'library (files (or 

@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/23/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -46,13 +46,15 @@ public DialogWidget(StringTokenizer params)
 	{
 	id = params.nextToken();
 	String owner = params.nextToken();
-	String message = Base64Coder.decodeString(params.nextToken());
-	if(guiserver.UTF8)
-	try {
-		message = new String(message.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
  
-		boolean ismodal = false;
+	String message = params.nextToken();
+	
+	if(guiserver.UTF8)
+		message = Base64Coder.decodeStringUTF8(message);
+	else
+		message = Base64Coder.decodeString(message);
+
+	boolean ismodal = false;
 	
 	jfowner = ((WindowFrame)gsObject.widgets.get(owner)).jframe;
 		
@@ -131,15 +133,15 @@ public DialogWidget(StringTokenizer params)
 	
 	
 public void setText(StringTokenizer tokens)
-	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	{	
+	String text = tokens.nextToken();
 	
 	if(guiserver.UTF8)
-	try {
-		jdialog.setTitle(new String(text.getBytes(), "UTF-8"));
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
 	else
-		jdialog.setTitle(text);
+		text = Base64Coder.decodeString(text);
+	
+	jdialog.setTitle(text);
 	}
 
 
@@ -147,10 +149,16 @@ public void getText(StringTokenizer tokens)
 	{
 	String action = tokens.nextToken();
 	String text = jdialog.getTitle();
+	
+	if(guiserver.UTF8 && text.length() != 0)
+		text = Base64Coder.encodeStringUTF8(text);
+	else
+		text = Base64Coder.encodeString(text);
+
 	if(text.length() == 0)
 		guiserver.out.println("(" + action + " \"" + id + "\")");
 	else
-		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + Base64Coder.encodeString(text) + "[/text])");
+		guiserver.out.println("(" + action + " \"" + id + "\" [text]" + text + "[/text])");
 	guiserver.out.flush();
 	}
 	

@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 6/16/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import java.util.*;
 @SuppressWarnings("unchecked") 
 class SplashWindow extends Window
 {
+public static final long serialVersionUID = 1L;
 int width;
 int height;
 Image splashImage;

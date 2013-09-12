@@ -6,9 +6,9 @@ NAME
        newlisp - lisp like programming language
 
 SYNOPSIS
-       newlisp  [-n]  [-h]  [-c | -C | -http] [-t microseconds] [-s stack] [-m
-       max-mem-megabyte] [[-l path-file | -L path-file] [-p port-number  |  -d
-       port-number]] [-w directory] [lisp-files ...] [-e programtext]
+       newlisp  [-n]  [-h | -v] [-c | -C | -http] [-t microseconds] [-s stack]
+       [-m max-mem-megabyte] [[-l path-file | -L path-file] [-p port-number  |
+       -d port-number]] [-w directory] [lisp-files ...] [-e programtext]
 
 DESCRIPTION
        Invokes newLISP which first loads init.lsp if present. Then one or more
@@ -27,6 +27,8 @@ OPTIONS
 
        -h     Display a short help text.
 
+       -v     Display a version string.
+
        -c     Suppress the commandline prompt.
 
        -C     Force prompt when running newLISP in pipe I/O mode for Emacs.
@@ -38,8 +40,8 @@ OPTIONS
               specified the stack defaults to 1024.
 
        -m max-mem-megabyte
-              Limits  memory  to max-mem-megabyte megabytes for LISP cell mem-
-              ory.
+              Limits  memory  to max-cell-mem-megabyte megabytes for Lisp cell
+              memory.
 
        lisp-files
               Load and evaluate the specified lisp source files  in  sequence.
@@ -83,6 +85,10 @@ OPTIONS
               mode. Server will disconnect when no further input is read after
               accepting a client connection.
 
+       -6     Starts newLISP in IPv6 'Internet Protocol version 6' mode. With-
+              out  this  switch newLISP willl start in IPv4 mode. The protocol
+              mode can also be switched with the built-in  'net-ipv'  function
+              during runtime.
 
 EXAMPLES
        Start interactive session
@@ -101,14 +107,14 @@ EXAMPLES
               newlisp -e "(+ 3 4)"
 
 
-       newLISP is started as a server (the & indicates to  LINUX  to  run  the
+       newLISP  is  started  as  a server (the & indicates to LINUX to run the
        process in the background) and can be connected to with telnet by issu-
        ing telnet localhost 1234
               newlisp -p 1234 &
 
 
-       newLISP is started as a server for another newlisp  process  connecting
-       with  the  net-eval  function or HTTP requests. Connection timeout is 3
+       newLISP  is  started as a server for another newlisp process connecting
+       with the net-eval function or HTTP requests. Connection  timeout  is  3
        seconds.
               newlisp -c -t 3000000 -d 4711 &
 
@@ -118,11 +124,11 @@ EXAMPLES
               newlisp -l /usr/home/www/log.txt -http -d 8080 &
 
 
-       newLISP is started as a server handling HTTP requests and defining  the
+       newLISP  is started as a server handling HTTP requests and defining the
        startup/web root directory
               newlisp -http -d 8080 -w /usr/home/www/httpdocs &
 
-       When accepting HTTP commands a file httpd.conf  can  be  loaded,  which
+       When  accepting  HTTP  commands  a file httpd.conf can be loaded, which
        will preprocess the path-name in the HTTP request
               newlisp httpd.conf -http -d 8080 -w /usr/home/www/httpdocs &
 
@@ -131,14 +137,14 @@ EXAMPLES
        (define (httpd-conf path-name)
            (if (ends-with path-name ".exe") "errorpage.html" path-name))
 
-       then all files ending in .exe  will  translate  the  request  in  to  a
-       request  for  an  error  page,  else  the  original  request  string is
+       then  all  files  ending  in  .exe  will  translate the request in to a
+       request for  an  error  page,  else  the  original  request  string  is
        returned.
 
 
 EXIT STATUS
-       newLISP returns a zero exit status for  normal  termination  unless  an
-       exit  command  specifies a code to be returned. Non zero is returned in
+       newLISP  returns  a  zero  exit status for normal termination unless an
+       exit command specifies a code to be returned. Non zero is  returned  in
        case of abnormal exit.
 
 AUTHOR
@@ -148,5 +154,5 @@ AUTHOR
 
 
 
-version 10.2.0                    March 2010                        newlisp(1)
+version 10.3.0                   February 2011                      newlisp(1)
 

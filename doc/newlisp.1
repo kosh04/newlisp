@@ -1,9 +1,9 @@
-.TH newlisp 1 "March 2010" "version 10.2.0" "Commandline Parameters"
+.TH newlisp 1 "February 2011" "version 10.3.0" "Commandline Parameters"
 .SH NAME
 newlisp \- lisp like programming language
 .SH SYNOPSIS
 .B newlisp
-[\-n] [\-h] [\-c | \-C | \-http] [\-t microseconds] [\-s stack] [\-m max\-mem\-megabyte] [[\-l path\-file | \-L path\-file] [\-p port\-number | \-d port\-number]] [\-w directory] [lisp\-files ...] [\-e programtext]
+[\-n] [\-h | -v] [\-c | \-C | \-http] [\-t microseconds] [\-s stack] [\-m max\-mem\-megabyte] [[\-l path\-file | \-L path\-file] [\-p port\-number | \-d port\-number]] [\-w directory] [lisp\-files ...] [\-e programtext]
 .SH DESCRIPTION
 Invokes newLISP which first loads init.lsp if present. Then one or more options and one or more newLISP source files can be specified. The options and source files are executed in the sequence they appear. For some options is makes sense to have source files loaded first like for the \-p and \-d options. For other options like \-s and \-m it is logical to specify these before the source files to be loaded. If a \-e switch is used the programtext is evaluated and then newlisp exits otherwise evaluation continues interactively (unless an exit occurs during lisp\-file interpretation).
 .SH OPTIONS
@@ -13,6 +13,9 @@ Suppress loading of any init.lsp or .init.lsp initialization file.
 .TP
 \-h
 Display a short help text.
+.TP
+\-v
+Display a version string.
 .TP
 \-c
 Suppress the commandline prompt.
@@ -27,7 +30,7 @@ only accept HTTP commands
 Stack size to use when starting newLISP. When no stack size is specified the stack defaults to 1024.
 .TP
 \-m max\-mem\-megabyte
-Limits memory to max\-mem\-megabyte megabytes for LISP cell memory.
+Limits memory to max\-cell\-mem\-megabyte megabytes for Lisp cell memory.
 .TP
 lisp\-files
 Load and evaluate the specified lisp source files in sequence. Source files can be specified using URLs. If an (exit) is executed by one of the source files then newlisp exits and all processing ceases.
@@ -49,7 +52,9 @@ Run in demon mode. As for the \-p option, but newLISP does not exit after a clos
 .TP
 \-t microseconds-connection-timeout
 Specifies a connection timeout when running in \-p or \-d demon mode. Server will disconnect when no further input is read after accepting a client connection.
-
+.TP
+\-6
+Starts newLISP in IPv6 'Internet Protocol version 6' mode. Without this switch newLISP willl start in IPv4 mode. The protocol mode can also be switched with the built-in 'net-ipv' function during runtime. 
 .SH EXAMPLES
 .TP
 Start interactive session

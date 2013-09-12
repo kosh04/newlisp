@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.2.8
+VERSION=10.3.0
 
 rm -f config.h makefile_build makefile_install
 
@@ -70,11 +70,12 @@ case `uname` in
 	SunOS) true ${os_type:=SUNOS} ;;
 	AIX) true ${os_type:=AIX} ;; 
 	OSF1) true ${os_type:=TRU64} ;;
-MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
+	MINGW32_*) true ${os_type:=WIN_32} ;;
 	OS/2) true ${os_type:=OS2} ;;
 	*)
 		echo Could not discover your OS platform use one of the following commands:
 		make help
+		exit
 		;;
 esac
 
@@ -111,7 +112,7 @@ elif [ ${os_type} = OS2 ] ; then
 	DEFAULT_CFLAGS="${OS2_CFLAGS}"
 	DEFAULT_LDFLAGS="${OS2_LDFLAGS}"
 	DEFAULT_TARG="${OS2_TARG}"
-	true ${enable_readline:=no};
+	true ${enable_readline:=yes};
 fi
 
 # Only LP64 and ILP32 memory models are officially supported, but we'll try to
@@ -144,6 +145,25 @@ ${CC:-${DEFAULT_CC}} test-memorymodel.c -o test-memorymodel 2>/dev/null
 true ${memory_model:=`./test-memorymodel`}
 echo "Detected memory model `./test-memorymodel`"
 rm -f test-memorymodel*
+
+# time_t is 64 bits on modern platforms.  Support this.
+cat > test-time-t.c <<EOF
+#include <stdio.h>
+#include <time.h>
+
+int
+main(int argc, char** argv) {
+	short bits = sizeof(time_t) * 8;
+
+	if (bits == 64) { printf("64BIT"); return 0; }
+	if (bits == 32) { printf("32BIT"); return 0; }
+	printf("UNSUPPORTED\n"); return 1;
+}
+EOF
+${CC:-${DEFAULT_CC}} test-time-t.c -o test-time-t 2>/dev/null
+true ${time_t_size:=`./test-time-t`}
+echo "Detected time_t size `./test-time-t`"
+rm -f test-time-t*
 
 # If we can't compile with readline, and the environment variables don't
 # specify otherwise, we will disable it.
@@ -187,9 +207,8 @@ true ${enable_readline:=no};
 rm -f test-readline*
 
 
-# Safe defaults; I hope Lutz makes ipv6 default to "yes" soon.
+# Safe defaults; 
 true ${enable_utf8:=yes};
-true ${enable_ipv6:=no};
 
 # Default values to control how the Makefile is generated
 true ${enable_static:=no};
@@ -210,8 +229,6 @@ case "${nlc_arg}" in
 	--disable-utf8) enable_utf8=no; ;;
 	--enable-readline) enable_readline=yes; ;;
 	--disable-readline) enable_readline=no; ;;
-	--enable-ipv6) enable_ipv6=yes; ;;
-	--disable-ipv6) enable_ipv6=no; ;;
 	--enable-static) enable_static=yes; ;;
 	--disable-static) enable_static=no; ;;
 	--enable-debug) enable_debug=yes; ;;
@@ -236,7 +253,7 @@ case "${nlc_arg}" in
 	--datadir) nlc_prev=datadir ;;
 	--datadir=*) datadir="$nlc_optarg" ;;
 	--help) cat <<EOF
-Usage: ./configure [options]
+Usage: ./configure-alt [options]
      --help              # Show this help message.
 
      --prefix=dir        # standard GNU option
@@ -251,8 +268,6 @@ Usage: ./configure [options]
      --disable-utf8      # Disable UTF8 support
      --enable-readline   # (default) Enable readline support
      --disable-readline  # Disable readline support
-     --enable-ipv6       # Enable IPv6 support
-     --disable-ipv6      # (default) Disable IPv6 support
      --enable-static     # Link newlisp statically, suitable for use in chroot jails
      --disable-static    # (default) Link newlisp dynamically
      --enable-debug      # Include debugging information in the newlisp binary
@@ -303,6 +318,14 @@ if [ $memory_model = LP64 ] ; then
 EOF
 fi
 
+if [ $time_t_size = 64BIT ] ; then
+	cat >> config.h <<EOF
+/* Large values of time_t are supported. */
+#define TIME_T_64
+
+EOF
+fi
+
 if [ $enable_utf8 = yes ] ; then
 	DEFAULT_OBJS="${DEFAULT_OBJS} nl-utf8.o"
 	cat >> config.h <<EOF
@@ -331,15 +354,6 @@ configure.  Also if necessary, use the INCLUDES variable to specify where the
 readline header files are."
 
 EOF
-fi
-
-if [ $enable_ipv6 = yes ] ; then
-	cat >> config.h <<EOF
-/* IPv6 support was chosen */
-#define IPV6
-
-EOF
-	echo "IPV-6 support is enabled"
 fi
 
 echo "/* EOF */" >> config.h
@@ -388,8 +402,6 @@ COMPILEOBJS="	\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
 
 if [ $os_type = OS2 ] ; then
 	STRIPBINARY=""
-#	LINKSTAGE="\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
-#	COMPILEOBJS="\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
 elif [ $os_type = AIX -a $memory_model = LP64 ] ; then
 	LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
 fi
@@ -455,7 +467,7 @@ install:
 	-install -m 644 doc/manual_frame.html \$(docdir)/manual_frame.html
 	-install -m 644 doc/CodePatterns.html \$(docdir)/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html \$(docdir)/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.2.6-Release.html \$(docdir)/newLISP-10.2.6-Release.html
+	-install -m 644 doc/newLISP-10.3-Release.html \$(docdir)/newLISP-10.3-Release.html
 	-install -m 644 doc/newlisp.1 \$(man1dir)/newlisp.1
 	-install -m 644 doc/newlispdoc.1 \$(man1dir)/newlispdoc.1
 	-install -m 644 modules/canvas.lsp \$(pkgdatadir)/modules/canvas.lsp

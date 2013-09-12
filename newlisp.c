@@ -1,7 +1,7 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 
 #ifdef WIN_32
 #include <winsock2.h>
+#else
+#include <sys/socket.h>
 #endif
 
 #ifdef READLINE
@@ -34,12 +36,6 @@
 
 #ifdef SUPPORT_UTF8
 #include <wctype.h>
-#endif
-
-#ifdef IPV6
-#define IPV 6
-#else
-#define IPV 4
 #endif
 
 #define freeMemory free
@@ -98,26 +94,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10208;
+int version = 10300;
 
 char copyright[]=
-"\nnewLISP v.10.2.8 Copyright (c) 2010 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.0 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.8 on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.3.0 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.8 on %s IPv%d%s\n\n";
+"newLISP v.10.3.0 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.2.8 64-bit on %s IPv%d UTF-8%s\n\n";
+"newLISP v.10.3.0 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.2.8 64-bit on %s IPv%d%s\n\n";
+"newLISP v.10.3.0 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
@@ -212,7 +208,6 @@ char lc_decimal_point;
 #define EXCEPTION_CONTINUATION -2
 int errorReg = 0;
 CELL * throwResult;
-int errnoSave;
 
 /* buffers for read-line and error reporting */
 STREAM readLineStream;
@@ -331,13 +326,13 @@ else /* if idle */
   executeSymbol(timerEvent, NULL, NULL);
 }
 
-#endif /* solaris */
+#endif /* SOLARIS, TRUE64, AIX */
 
 
 void setupAllSignals(void)
 {
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX)
-setupSignalHandler(SIGINT,ctrlC_handler);
+setupSignalHandler(SIGINT, ctrlC_handler);
 #else
 setupSignalHandler(SIGINT, signal_handler);
 #endif
@@ -578,20 +573,23 @@ while(mainArgs[idx] != NULL)
 return(argList);
 }
 
+char * getCommandLine(int batchMode);
     
 int main(int argc, char * argv[])
 {
-char command[MAX_LINE];
+char command[MAX_COMMAND_LINE];
 STREAM cmdStream = {0, NULL, NULL, 0, 0};
-#ifdef READLINE
 char * cmd;
-#endif
 int idx;
 
 
 #ifdef WIN_32
 WSADATA WSAData;
-WSAStartup(MAKEWORD(1,1), &WSAData);
+if(WSAStartup(MAKEWORD(2,2), &WSAData) != 0)
+	{
+	printf("Winsocket initialization failed\n");
+    exit(-1);
+	}
 pagesize = 4096;
 #endif
 
@@ -600,9 +598,6 @@ opsys += 128;
 #endif
 #ifdef NEWLISP64
 opsys += 256;
-#endif
-#ifdef IPV6
-opsys += 512;
 #endif
 
 #ifndef WIN_32
@@ -623,7 +618,7 @@ IOchannel = stdin;
 
 initialize();
 initStacks();
-initDefaultInAddr(); /* nl-sock.c */
+initDefaultInAddr(); 
 
 mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
@@ -651,7 +646,6 @@ if(realpath(".", startupDir) == NULL)
 
 for(idx = 1; idx < argc; idx++)
 	{
-#ifndef  NOCMD
 	if(strncmp(argv[idx], "-c", 2) == 0)
 		noPromptMode = TRUE;
 
@@ -723,12 +717,23 @@ for(idx = 1; idx < argc; idx++)
 		continue;
 		}	
 
+	if(strcmp(argv[idx], "-6") == 0)
+		{
+		ADDR_FAMILY = AF_INET6;
+		initDefaultInAddr(); 
+		}
+
+	if(strcmp(argv[idx], "-v") == 0)
+		{
+		varPrintf(OUT_CONSOLE, banner, OSTYPE, ".");
+		exit(0);
+		}
+
 	if(strcmp(argv[idx], "-h") == 0)
 		{
 		printHelpText();
 		exit(0);
 		}
-#endif
 	
 	loadFile(argv[idx], 0, 0, mainContext);
 	}
@@ -739,7 +744,7 @@ if(isatty(fileno(IOchannel)))
 	{
 	isTTY = TRUE;
 	if(!noPromptMode) 	
-		varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, banner2);
+		varPrintf(OUT_CONSOLE, banner, OSTYPE, banner2);
 	}
 else
 	{
@@ -748,7 +753,7 @@ else
 #endif
 		setbuf(IOchannel,0);
 	if(forcePromptMode)
-		varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, banner2);
+		varPrintf(OUT_CONSOLE, banner, OSTYPE,  banner2);
 	}
 
 /* ======================= main entry on reset ====================== */
@@ -772,13 +777,9 @@ rl_attempted_completion_function = (CPPFunction *)newlisp_completion;
 while(TRUE)
 	{
 	cleanupResults(resultStack);
-#ifdef READLINE
-	if(isTTY) 
+	if(isTTY)  
 		{
-		errnoSave = errno;
-		if((cmd = readline(prompt())) == NULL) exit(0);
-		errno = errnoSave; /* reset errno, set by readline() */
-		if(strlen(cmd) > 0) add_history(cmd);
+		cmd = getCommandLine(FALSE);
 		executeCommandLine(cmd, OUT_CONSOLE, &cmdStream);
 		free(cmd);
 		continue;
@@ -786,13 +787,8 @@ while(TRUE)
 
 	if(IOchannel != stdin || forcePromptMode) 
 		varPrintf(OUT_CONSOLE, prompt());
-#endif
-#ifndef READLINE
-	if(isTTY || IOchannel != stdin || forcePromptMode) 
-		varPrintf(OUT_CONSOLE, prompt());
-#endif	
 
-	/* timeout if nothing read after accepting connection */
+	/* demon mode timeout if nothing read after accepting connection */
 	if(connectionTimeout && IOchannel && demonMode)
 		{
 #ifdef WIN_32
@@ -808,7 +804,7 @@ while(TRUE)
 			}
 		}
 
-	if(IOchannel == NULL || fgets(command, MAX_LINE - 1, IOchannel) == NULL)
+	if(IOchannel == NULL || fgets(command, MAX_COMMAND_LINE - 1, IOchannel) == NULL)
 		{
 		if(!demonMode)  exit(1);
 		if(IOchannel != NULL) fclose(IOchannel);
@@ -861,17 +857,39 @@ char ** newlisp_completion (char * text, int start, int end)
 {
 return(completion_matches(text, (CPFunction *)command_generator));
 }
-#endif
+#endif /* READLINE */
+
+
+char * getCommandLine(int batchMode)
+{
+char * cmd;
+
+#ifdef READLINE
+int errnoSave = errno;
+if((cmd = readline(batchMode ? "" : prompt())) == NULL) exit(0);
+errno = errnoSave; /* reset errno, set by readline() */
+if(strlen(cmd) > 0) 
+	add_history(cmd);
+#else
+if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
+cmd = calloc(MAX_COMMAND_LINE, 1);
+if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) exit(1);
+#endif	
+
+return(cmd);
+}
+
 
 void printHelpText(void)
 {
 varPrintf(OUT_CONSOLE, copyright, 
-	"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:\n");
-varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n",
+	"usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:");
+varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
+	" -n no init.lsp (must be first)",
 	" -h this help",
-	" -n no init (must be first)",
+	" -v version",
 	" -s <stacksize>",
-	" -m <max-mem-MB>",
+	" -m <max-mem-MB> cell memory",
 	" -e <quoted lisp expression>",
 	" -l <path-file> log connections",
 	" -L <path-file> log all",
@@ -880,9 +898,10 @@ varPrintf(OUT_CONSOLE, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n
 	" -C force prompts",
 	" -t <usec-server-timeout>",
 	" -p <port-no>",
-	" -d <port-no>",
+	" -d <port-no> demon mode",
 	" -http only",
-	"more info at http://newlisp.org");
+	" -6 IPv6 mode",
+	"\nmore info at http://newlisp.org");
 }
 
 
@@ -901,7 +920,7 @@ if(!IOchannelIsSocketStream)
 	setbuf(IOchannel,0);
 
 if(!reconnect && !noPromptMode)
-	varPrintf(OUT_CONSOLE, banner, OSTYPE, IPV, ".");
+	varPrintf(OUT_CONSOLE, banner, OSTYPE, ".");
 }
 
 
@@ -910,6 +929,7 @@ char * prompt(void)
 char * context;
 CELL * result;
 static char string[64];
+
 
 if(evalSilent || noPromptMode) 
 	{
@@ -993,17 +1013,21 @@ char * processCommandEvent(char * command);
 void executeCommandLine(char * command, UINT outDevice, STREAM * cmdStream)
 {
 STREAM stream;
-char buff[MAX_LINE];
-int batchMode;
+char buff[MAX_COMMAND_LINE];
+char * cmd;
+int batchMode = 0;
 
-batchMode = (memcmp(command, "[cmd]", 5) == 0);
+if(memcmp(command, "[cmd]", 5) == 0)
+	batchMode = 2;
+else if(isTTY && (*command == '\n' || *command == '\r' || *command == 0))
+	batchMode = 1;
 
 #ifndef LIBRARY
 if(!batchMode && commandEvent != nilSymbol)
 	command = processCommandEvent(command);
 #endif
 
-if(strlen(command) == 0 || *command == '\n') return;
+if(!isTTY && (*command == '\n' || *command == '\r' || *command == 0)) return;
 
 if(!batchMode) 
 	{
@@ -1033,16 +1057,27 @@ if(noPromptMode == FALSE && *command == '!' && *(command + 1) != ' ' && strlen(c
 if(cmdStream != NULL && batchMode)
 	{
 	openStrStream(cmdStream, 1024, TRUE);
-	while(fgets(buff, MAX_LINE - 1, IOchannel) != NULL)
+	for(;;)
 		{
-		if(memcmp(buff, "[/cmd]", 6) == 0)
+		if(isTTY) 
+			{
+			cmd = getCommandLine(TRUE);
+			strncpy(buff, cmd, MAX_COMMAND_LINE -1);
+#ifdef READLINE
+			strlcat(buff, "\n", 1);
+#endif
+			free(cmd);
+			}
+		else
+			if(fgets(buff, MAX_COMMAND_LINE - 1, IOchannel) == NULL) break;
+		if( (memcmp(buff, "[/cmd]", 6) == 0 && batchMode == 2) || 
+				(batchMode == 1 && (*buff == '\n' || *buff == '\r' || *buff == 0)))
 			{
 			if(logTraffic) 
 				{
 				writeLog(cmdStream->buffer, 0);
 				writeLog(buff, 0);
 				}
-
 			makeStreamFromString(&stream, cmdStream->buffer);
 			evaluateStream(&stream, outDevice, 0);
 			return;
@@ -1471,7 +1506,6 @@ if(pushResultFlag)
 		deleteList(popResult());
 
 	pushResult(result);
-	/* 10112 symbolCheck = NULL; */
 	}
 else 
 	pushResultFlag = TRUE;
@@ -1508,6 +1542,7 @@ CELL * pCell;
 pCell = evaluateExpression(args);
 if(pCell->type == CELL_STRING)
 	{
+	/* sent contents */
 	if(args->next != nilCell)
 		{
 		sPtr = makeSafeSymbol(pCell, newContext, TRUE);
@@ -1528,6 +1563,7 @@ if(pCell->type == CELL_STRING)
 		pushResultFlag = FALSE;
 		return((CELL *)sPtr->contents);
 		}
+	/* get contents */
 	else 
 		{
 		sPtr = makeSafeSymbol(pCell, newContext, FALSE);
@@ -1541,6 +1577,7 @@ if(pCell->type == CELL_STRING)
 			}
 		}
 	}
+/* create Tree from association list */
 else if(pCell->type == CELL_EXPRESSION)
 	{
 	args = (CELL *)pCell->contents;
@@ -1557,6 +1594,7 @@ else if(pCell->type == CELL_EXPRESSION)
 		}
 	return(stuffSymbol(newContext));
 	}
+/* return association list */
 else if(pCell->type == CELL_NIL)
 	{
 	return(associationsFromTree(newContext));
@@ -2963,7 +3001,7 @@ else dataLen = MAX_FILE_BUFFER;
 
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, nilCell, HTTP_GET, 60000);
+	result = getPutPostDeleteUrl(fileName, nilCell, HTTP_GET, CONNECT_TIMEOUT);
 	pushResult(result);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
@@ -2975,6 +3013,7 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
 if(makeStreamFromFile(&stream, fileName, dataLen + 4 * MAX_STRING, offset) == 0) 
 	return(NULL);
 
+/* the stream contains the whole file, when encrypt flag was set */
 if(encryptFlag)
 	encryptPad(stream.buffer, stream.buffer, key, dataLen, strlen(key));
 
@@ -3905,13 +3944,8 @@ CELL * result;
 
 params = evaluateExpression(params);
 result = evaluateExpression(params);
-if(symbolCheck)
-	{
-	pushResultFlag = 0;
-	return(result);
-	}
-
-return(copyCell(result));
+pushResultFlag = FALSE;
+return(result);
 }
 
 
@@ -3920,9 +3954,6 @@ CELL * p_catch(CELL * params)
 jmp_buf errorJumpSave;
 UINT * envStackIdxSave;
 UINT * lambdaStackIdxSave;
-#ifdef CONTINUE
-UINT * resultStackIdxSave;
-#endif
 int recursionCountSave;
 int value;
 CELL * expr;
@@ -3949,10 +3980,6 @@ contextSave = currentContext;
 /* save FOOP environment */
 objSave = (CELL *)objSymbol.contents;
 objCellSave = objCell;
-#ifdef CONTINUE
-resultStackIdxSave = resultStackIdx;
-CATCH_CONTINUE:
-#endif
 itSymbol->contents = (UINT)nilCell;
 
 if((value = setjmp(errorJump)) != 0)
@@ -3968,13 +3995,6 @@ if((value = setjmp(errorJump)) != 0)
 	objCell = objCellSave;
 
     evalCatchFlag--;
-#ifdef CONTINUE
-	if(value == EXCEPTION_CONTINUATION)
-		{
-		cleanupResults(resultStackIdxSave);
-		goto CATCH_CONTINUE;
-		}
-#endif
     if(value == EXCEPTION_THROW)
         {
 		if(symbol == NULL) return(throwResult);
@@ -4029,17 +4049,6 @@ evalFunc = NULL;
 errorProcExt(ERR_USER_ERROR, evaluateExpression(params));
 return(nilCell);
 }
-
-#ifdef CONTINUE
-CELL * p_continue(CELL * params)
-{
-if(evalCatchFlag == 0) 
-    return(errorProc(ERR_CONTINUE_WO_CATCH));
-
-longjmp(errorJump, EXCEPTION_CONTINUATION);
-return(trueCell);
-}
-#endif
 
 CELL * evalString(CELL * params, int mode);
 
@@ -4532,15 +4541,13 @@ symbolRef = symbolCheck;
 stringRef = stringCell;
 indexRefPtr = stringIndexPtr;
 
-itSymbol->contents = (UINT)cell;
-
-new = copyCell(evaluateExpression(params->next));
-
-itSymbol->contents = (UINT)nilCell;
-	
 if(symbolRef && isProtected(symbolRef->flags))
 	return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
 
+itSymbol->contents = (UINT)cell;
+new = copyCell(evaluateExpression(params->next));
+itSymbol->contents = (UINT)nilCell;
+	
 params = params->next; 
 params = params->next; 
 
@@ -4877,12 +4884,8 @@ else if(isList(cell->type))
 
 else if(cell->type == CELL_ARRAY)
 	{
-	if(symbolCheck)
-		{
-		pushResultFlag = FALSE;
-		return(*(CELL * *)cell->contents);
-		}	
-	return(copyCell(*(CELL * *)cell->contents)); 
+	pushResultFlag = FALSE;
+	return(*(CELL * *)cell->contents);
 	}
 
 return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, params));
@@ -4897,7 +4900,15 @@ CELL * tail;
 /* cell = evaluateExpression(params); */
 getEvalDefault(params, &cell);
 
-if(cell->type == CELL_STRING)
+if(isList(cell->type))
+	{
+	tail = makeCell(CELL_EXPRESSION, (UINT)copyList(((CELL*)cell->contents)->next));
+	return(tail);
+	}
+else if(cell->type == CELL_ARRAY)
+	return(subarray(cell, 1, MAX_LONG));
+
+else if(cell->type == CELL_STRING)
 	{
 	if(*(char *)cell->contents == 0)
 		return(stuffString(""));
@@ -4907,14 +4918,6 @@ if(cell->type == CELL_STRING)
 	return(stuffString((char *)(cell->contents + utf8_1st_len((char *)cell->contents))));
 #endif
 	}
-
-else if(isList(cell->type))
-	{
-	tail = makeCell(CELL_EXPRESSION, (UINT)copyList(((CELL*)cell->contents)->next));
-	return(tail);
-	}
-else if(cell->type == CELL_ARRAY)
-	return(subarray(cell, 1, MAX_LONG));
 
 return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, params));
 }
@@ -5102,12 +5105,8 @@ else if(isList(cell->type))
 
 else if(cell->type == CELL_ARRAY)
 	{
-	if(symbolCheck)
-		{
-		pushResultFlag = FALSE;
-		return(*((CELL * *)cell->contents + (cell->aux - 1) / sizeof(UINT) - 1));
-		}
-	return(copyCell(*((CELL * *)cell->contents + (cell->aux - 1) / sizeof(UINT) - 1)));
+	pushResultFlag = FALSE;
+	return(*((CELL * *)cell->contents + (cell->aux - 1) / sizeof(UINT) - 1));
 	}
 
 return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, params));
@@ -5140,7 +5139,10 @@ while(isNil(cell) || isEmpty(cell))
 	{
 	params = params->next;
 	if(params->next == nilCell) 
-		return(copyCell(cell));
+		{
+		pushResultFlag = FALSE;
+		return(cell);
+		}
 	params = params->next;
 	cell = evaluateExpression(params);
 	}
@@ -5148,13 +5150,8 @@ while(isNil(cell) || isEmpty(cell))
 if(params->next != nilCell) 
 	cell = evaluateExpression(params->next);
 	
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-
-return(copyCell(cell));
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -5168,13 +5165,8 @@ if(!isNil(cell) && !isEmpty(cell))
 
 cell = evaluateExpression(params->next);
 
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-
-return(copyCell(cell));
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -5189,13 +5181,8 @@ while((params = params->next) != nilCell)
 	cell = evaluateExpression(params);
 
 WHEN_END:
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-
-return(copyCell(cell));
+pushResultFlag = FALSE;
+return(cell);
 }
 
 CELL * p_unless(CELL * params)
@@ -5209,13 +5196,8 @@ while((params = params->next) != nilCell)
 	cell = evaluateExpression(params);
 
 UNLESS_END:
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-
-return(copyCell(cell));
+pushResultFlag = FALSE;
+return(cell);
 }
 
 
@@ -5241,13 +5223,8 @@ while(params != nilCell)
 	else return(errorProc(ERR_LIST_EXPECTED));
 	}
 
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(eval);
-	}
-
-return(copyCell(eval));
+pushResultFlag = FALSE;
+return(eval);
 }
 
 
@@ -5269,12 +5246,8 @@ while(cases != nilCell)
           || cond->type == CELL_TRUE)
 		{
 		eval = evaluateBlock(cond->next);
-        if(symbolCheck)
-        	{
-        	pushResultFlag = FALSE;
-        	return(eval);
-        	}
-		return(copyCell(eval));
+        pushResultFlag = FALSE;
+        return(eval);
 		}
     }
 	cases = cases->next;
@@ -5301,11 +5274,6 @@ CELL * cell;
 CELL * cellIdx;
 UINT * resultIdxSave;
 SYMBOL * symbolRef = NULL;
-
-/*
-if(params == nilCell)
-	return(errorProc(ERR_MISSING_ARGUMENT));
-*/
 
 cellIdx = initIteratorIndex();
 
@@ -5363,13 +5331,9 @@ while(TRUE)
 END_REPEAT:
 recoverIteratorIndex(cellIdx);
 
-if((symbolCheck = symbolRef))
-	{
-	pushResultFlag = FALSE;
-	return(result);
-	}
-	
-return(copyCell(result));
+symbolCheck = symbolRef;
+pushResultFlag = FALSE;
+return(result);
 }
 
 
@@ -5650,18 +5614,17 @@ CELL * p_evalBlock(CELL * params)
 CELL * cell;
 
 cell = evaluateBlock(params);
-if(symbolCheck)
-	{
-	pushResultFlag = FALSE;
-	return(cell);
-	}
-	
-return(copyCell(cell));
+pushResultFlag = FALSE;
+return(cell);
 }
 
 CELL * p_copy(CELL * params)
 {
-return(copyCell(evaluateExpression(params)));
+CELL * copy;
+
+copy = copyCell(evaluateExpression(params));
+symbolCheck = NULL;
+return(copy);
 }
 
 CELL * p_silent(CELL * params)
@@ -5907,7 +5870,7 @@ serializeSymbols(params, (UINT)&strStream);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
 	dataCell = stuffString(strStream.buffer);
-	result = getPutPostDeleteUrl(fileName, dataCell, HTTP_PUT, 60000);
+	result = getPutPostDeleteUrl(fileName, dataCell, HTTP_PUT, CONNECT_TIMEOUT);
 	pushResult(result);
 	deleteList(dataCell);
 	errorFlag = (strncmp((char *)result->contents, "ERR:", 4) == 0);
@@ -6550,35 +6513,36 @@ return(makeCell(CELL_SYMBOL, (UINT)timerEvent));
 }
 #endif
 
+#define IGNORE_S 0
+#define DEFAULT_S 1
+#define RESET_S 2
 CELL * p_signal(CELL * params)
 {
 SYMBOL * signalEvent;
 UINT sig;
 char sigStr[12];
+char mode;
 
 params = getInteger(params, &sig);
 if(sig > 32 || sig < 1) return(nilCell);
-    
-if(params != nilCell)
+
+if(params->type == CELL_STRING)
 	{
-	if(isNil(params))
-		{
-		signal(sig, SIG_IGN);
-		symHandler[sig - 1] = nilSymbol;
-		}
-	else if(isTrue(params))
-		{
-		signal(sig, SIG_DFL);
-		symHandler[sig - 1] = nilSymbol;
-		}
-	else
-		{
-		snprintf(sigStr, 11, "$signal-%ld", sig);
-		getCreateSymbol(params, &signalEvent, sigStr);
-		symHandler[sig - 1] = signalEvent;
-		if(signal(sig, signal_handler) == SIG_ERR)
-			return(nilCell);
-		}
+	mode = toupper(*(char *)params->contents);
+	symHandler[sig - 1] = nilSymbol;
+	if(mode == 'I') /* "ignore" */
+		return(signal(sig, SIG_IGN) == SIG_ERR ? nilCell: trueCell);
+	else if(mode == 'D') /* "default" */
+		return(signal(sig, SIG_DFL) == SIG_ERR ? nilCell: trueCell);
+	else if(mode == 'R') /* "reset" */
+		return(signal(sig, signal_handler) == SIG_ERR ? nilCell: trueCell);
+	}
+else if(params != nilCell)
+	{
+	snprintf(sigStr, 11, "$signal-%ld", sig);
+	getCreateSymbol(params, &signalEvent, sigStr);
+	symHandler[sig - 1] = signalEvent;
+	if(signal(sig, signal_handler) == SIG_ERR) return(nilCell);
 	}
   
 return(makeCell(CELL_SYMBOL, (UINT)symHandler[sig - 1]));

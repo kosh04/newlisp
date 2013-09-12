@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -37,17 +37,18 @@ static String reserved[] = {
 "bayes-query","bayes-train","begin","beta","betai","bind","binomial","bits","callback","case","catch",
 "ceil","change-dir","char","chop","clean","close","command-event","command-line","cond","cons","constant",
 "context","context?","copy","copy-file","cos","cosh","count","cpymem","crc32","crit-chi2","crit-z","current-line",
-"curry","date","date-value","debug","dec","def-new","default","define","define-macro","delete","delete-file",
-"delete-url","destroy","det","device","difference","directory","directory?","div","do-until","do-while","doargs",
-"dolist","dostring","dotimes","dotree","dump","dup","empty?","encrypt","ends-with","env","erf","error-event",
-"estack","eval","eval-string","exec","exists","exit","exp","expand","explode","extend","factor","fft","file-info",
-"file?","filter","find","find-all","first","flat","float","float?","floor","flt","for","for-all","fork",
-"format","fv","gammai","gammaln","gcd","get-char","get-float","get-int","get-long","get-string","get-url",
+"curry","date","date-parse","date-list","date-value","debug","dec","def-new","default","define","define-macro",
+"delete","delete-file","delete-url","destroy","det","device","difference","directory","directory?","div",
+"do-until","do-while","doargs", "dolist","dostring","dotimes","dotree","dump","dup","empty?","encrypt",
+"ends-with","env","erf","error-event","estack","eval","eval-string","exec","exists","exit","exp","expand",
+"explode","extend","factor","fft","file-info","file?","filter","find","find-all","first","flat","float","float?"
+,"floor","flt","for","for-all","fork", "format","fv","gammai","gammaln","gcd","get-char","get-float","get-int",
+"get-long","get-string","get-url",
 "global","global?","if","if-not","ifft","import","inc","index","inf?","int","integer","integer?","intersect",
 "invert","irr","join","lambda?","last","last-error","legal?","length","let","letex","letn","list","list?",
 "load","local","log","lookup","lower-case","macro?","main-args","make-dir","map","mat","match","max","member",
-"min","mod","mul","multiply","net-accept","net-close","net-connect","net-error","net-eval",
-"net-interface", "net-listen","net-local","net-lookup","net-peek","net-peer","net-ping","net-receive",
+"min","mod","mul","multiply","net-accept","net-close","net-connect","net-error","net-eval", "net-interface", 
+"net-listen","net-local","net-lookup","net-packet","net-ipv", "net-peek","net-peer","net-ping","net-receive",
 "net-receive-from", "net-receive-udp","net-select","net-send","net-send-to","net-send-udp","net-service",
 "net-sessions","new", "nil","nil?","normal","not","now","nper","npv","nth","null?","number?","open","or",
 "ostype","pack","parse", "parse-date","path","peek","pipe","pmt","pop","pop-assoc", "post-url","pow","prefix",

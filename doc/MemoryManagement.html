@@ -1,32 +1,80 @@
-<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
 <title>Automatic Memory Management in newLISP</title>
 <style type="text/css" media="screen">
 <!--
-body, h1, h2, h3, h4, p {
-	font-family: Georgia, Times New Roman, Times, serif;
-	line-height: 120%;
- 	}
-pre {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-   	font-size: 100%;
+body, h4, p {
+    font-family: Lucida Sans, Helvetica, sans-serif;
+    line-height: 120%;
 	}
 
+h1, h2, h3 {
+	margin-top: 3%;
+    font-family: Lucida Sans, Helvetica, sans-serif;
+    line-height: 120%;
+	color: #404040;
+    }
+
+table {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: solid;
+	border-width: 0px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+	font-size: 95%;
+    }
+    
+th {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #eeeeee;
+    font-size: 100%;
+    }
+    
+td {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+    font-size: 100%;
+    }
+    
+pre {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: dashed;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 4px;
+    font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+    font-size: 90%;
+	background: #f8ffff;
+    }
+
 tt {
-	font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
-	font-size: 100%;
-	}
+    font-family: Andale Mono, "Bitstream Vera Sans Mono", Monaco, "Courier New";
+    font-size: 100%;
+    }
 -->
 </style>
 </head>
 
 <body text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
 
-<br>
+<br/>
 <blockquote>
 <center><h2>Automatic Memory Management in newLISP</h2></center>
-<center><font size="-1">Lutz Mueller, 2004-2010. Last edit 2010-02-24 rev 24<br>
+<center><font size="-1">Lutz Mueller, 2004-2011. Last edit 2010-10-27 rev 26<br/>
 </font></center>
 
 <center><blockquote><blockquote><i>
@@ -91,9 +139,10 @@ result's memory object. This should not be confused with one-bit reference count
 management does not set bits to mark objects as <i>sticky</i>.</p>
 
 <p>newLISP follows a one reference only (ORO) rule. Every memory object not referenced by a 
-symbol or context reference is obsolete once newLISP reaches a higher evaluation level during 
+symbol is obsolete once newLISP reaches a higher evaluation level during 
 expression evaluation. Objects in newLISP (excluding symbols and contexts) are passed by value 
-to other functions. As a result, each newLISP object only requires one reference.</p>
+copy to other user-defined functions. As a result, each newLISP object only requires one 
+reference.</p>
 
 <p>newLISP's ORO rule has advantages. It simplifies not only memory management but also 
 other aspects of the newLISP language. For example, while users of traditional LISP 
@@ -107,56 +156,57 @@ those cells back into that list. As a result, only a few CPU instructions (point
 are needed to unlink a free cell or to re-insert a deleted cell.</p>
 
 <p>The overall effect of ORO memory management is a faster evaluation time and a smaller memory 
-and disk footprint than traditional interpreted LISP's can offer. Time spent creating and 
-deleting memory objects is more than compensated for by the lack of processing time used in
+and disk footprint than traditional interpreted LISP's can offer. Time spent linking and 
+unlinking memory objects is more than compensated for by the lack of processing time used in
 traditional garbage collection. ORO memory management also avoids occasional processing
 pauses seen in languages using traditional garbage collection and the tuning of garbage
 collection parameters required when running memory intensive programs.</p>
+
+<p>ORO memory management happens synchronous to other processing in the interpreter, which
+results in deterministic processing times.</p>
 
 <p>In versions before 10.1.3, newLISP employed a classic mark and sweep algorithm to 
 free un-referenced cells under error conditions. Starting version 10.1.3, this has been 
 eliminated and replaced by a proper cleanup of the result stack under error conditions.</p>
 
-<h3>Optimizations to ORO memory management <font size="-1">&sup2;</font></h3>
+<h3>Performance considerations with copying parameters</h3>
 
-<p>newLISP version 10.0, released during the last quarter of 2008 introduced optimizations to
-ORO management to many built-in functions. Previously only <tt>set</tt>, <tt>define</tt> and
-<tt>eval</tt> where optimized, and they allowed for a reference return instead of returning ORO
-managed, copied objects. Today all destructive built-in functions can work directly on memory
-objects returned by reference from other built-in functions. This has substantially reduced
-the need for copying and deleting memory objects and increased the speed of some built-in
-functions.</p>
+<p>In theory, passing parameters to user-defined functions by value (memory copying) instead 
+by reference poses a potential disadvantage when dealing with large lists, arrays or strings.
+But in practice newLISP performs faster or as fast than other scripting languages and offers
+language facilities to pass very large memory object by reference.</p>
 
-<p>These optimizations also have increased flexibility when writing programs.</p>
- 
-<h3>Performance considerations with value-passing</h3>
+<p>Since newLISP version 9.4.5 functions can pass list, array and string type parameters 
+as references using <i>default functor</i> namespace ids. Namespaces (called contexts 
+in newLISP) have very little overhead and can be used to wrap functions and data.
+This allows reference passing of large memory object into user-defined functions.</p>
 
-<p>Passing parameters to user-defined functions by value (memory copying) instead of by 
-reference poses a potential disadvantage when dealing with large lists, arrays or strings. 
-For practical purposes, however, the overhead needed to copy a large list is often 
-negligible compared to the processing done on the list. For built-in functions  newLISP 
-has optimized the behavior by allowing for reference return and allowing destructive 
-built-in functions to work directly on referenced memory.</p>
+<p>Since version 10.2 FOOP (Functional Object Oriented Programming) in newLISP also passes
+the target object of a method call by reference.</p>
 
-<p>Since newLISP version 9.4.5 functions can also take list, array and string type parameters 
-as references passed by <i>default functor</i> namespace ids. Namespaces (called contexts 
-in newLISP) play a special role. They have very little overhead and can be used to wrap 
-functions and data.</p>
-  
 <p>But even in instances where reference passing and other optimizations are nor present, 
 the speed of ORO memory management more than compensates for the overhead required to
 copy and delete objects.</p>
 
+<h3>Optimizations to ORO memory management <font size="-1">&sup2;</font></h3>
+
+<p>Since newLISP version 10.1, all lists, arrays and strings are passed in and out of
+built-in functions by reference. All built-in functions work directly on memory
+objects returned by reference from other built-in functions. This has substantially 
+reduced the need for copying and deleting memory objects and increased the speed of 
+some built-in functions. Now only parameters into user-defined functions and return
+values passed out of user-defined functions are ORO managed.</p>
+
 <h3>Memory and datatypes in newLISP</h3>
 
-<p>The memory objects of newLISP strings are allocated from and freed to the host's OS 
+<p>The memory objects of newLISP strings are allocated from and freed to the host's OS, 
 whenever newLISP recycles the cells from its allocated chunks of cell memory. This means 
 that newLISP handles cell memory more efficiently than string memory. As a result, it is 
-often better to use symbols than strings for efficient text processing. For example, 
+often better to use symbols rather than strings for efficient processing. For example, 
 when handling natural language it is more efficient to handle natural language words as 
-individual symbols in a separated name-space, rather than as a single string. 
-The <tt>bayes-train</tt> function in newLISP uses this method. newLISP can handle millions 
-of symbols without degrading performance.</p>
+individual symbols in a separated name-space, then as single strings. 
+The <tt>bayes-train</tt> function in newLISP uses this method. newLISP can handle 
+millions of symbols without degrading performance.</p>
 
 <p>Programmers coming from other programming languages frequently overlook that symbols in 
 LISP can act as more than just variables or object references. The symbol is a useful data 
@@ -241,28 +291,28 @@ function evaluateExpression(expr)
 <li>
 <tt>resultStackIndex</tt> is an index pointing to the top element in the 
 <tt>resultStack</tt>. The deeper the level of evaluation the higher the value of 
-<tt>resultStackIndex</tt>.<br><br>
+<tt>resultStackIndex</tt>.<br/><br/>
 </li>
 <li>
 <tt>resultStackIndexSave</tt> serves as a temporary storage for the value of 
 <tt>resultStackIndex</tt> upon entry of the <tt>evaluateExpression(func, args)</tt> function. 
 Before exit the <tt>resultStack</tt> is popped to the saved level of <tt>resultStackIndex</tt>. 
 Popping the <tt>resultStack</tt> implies deleting the memory objects pointed to by entries in 
-the <tt>resultStack</tt>.<br><br>
+the <tt>resultStack</tt>.<br/><br/>
 </li>
 <li>
 <tt>resultStack[]</tt> is a preallocated stack area for saving pointers to LISP cells 
-and indexed by <tt>resultStackIndex</tt>.<br><br>
+and indexed by <tt>resultStackIndex</tt>.<br/><br/>
 </li>
 <li>
 <tt>symbolContents(expr)</tt> and <tt>quoteContents(expr)</tt> extract contents from symbols 
-or quote-envelope cells.<br><br>
+or quote-envelope cells.<br/><br/>
 </li>
 <li>
 <tt>typeOf(expr)</tt> extracts the type of an expression, which is either a <tt>BOOLEAN</tt> 
 constant like <tt>nil</tt> or <tt>true</tt> or a <tt>NUMBER</tt> or <tt>STRING</tt>, or is 
 a variable <tt>SYMBOL</tt> holding some contents, or a <tt>QUOTE</tt> serving as an envelope 
-to some other <tt>LIST</tt> expression <tt>expr</tt>.<br><br>
+to some other <tt>LIST</tt> expression <tt>expr</tt>.<br/><br/>
 </li>
 <li>
 <tt>evaluateFunc(func, args)</tt> is the application of a built-in function to its arguments. 
@@ -270,7 +320,7 @@ The built-in  function is the evaluated first member of a list in <tt>expr</tt> 
 arguments are the <tt>rest</tt> of the list in <tt>expr</tt>. The function <tt>func</tt> is 
 extracted calling <tt>evaluateExpression(first(expr))</tt> recursively. For example if the 
 expression (<tt>expr</tt> is <tt>(foo x y)</tt> than <tt>foo</tt> is a built-in function and 
-<tt>x</tt> and <tt>y</tt> are the function arguments or parameters.<br><br>
+<tt>x</tt> and <tt>y</tt> are the function arguments or parameters.<br/><br/>
 </li>
 <li>
 <tt>evaluateLambda(func, args)</tt> works simlar to <tt>evaluateFunc(func, args)</tt>, applying 
@@ -360,26 +410,26 @@ preceded by the prompt <tt>&gt;</tt> show the command-line entry.</p>
 <tt>x</tt> and <tt>y</tt>, copies parameters into local variables and restores the old 
 environment upon exit. These actions too involve creation and deletion of memory objects. 
 Details are omitted, because they are similar to methods in other dynamic languages.</p>
-<br>
+<br/>
 
 <h3>References</h3>
 &ndash; Glenn Krasner, 1983: <i>Smalltalk-80, Bits of History, Words of
-Advice</i><br>
-Addison Wesley Publishing Company<br>
-  <br>
+Advice</i><br/>
+Addison Wesley Publishing Company<br/>
+  <br/>
 &ndash; Richard Jones, Rafael Lins, 1996: <i>Garbage Collection, Algorithms
-for Automatic Dynamic Memory Management</i><br>
-John Wiley &amp; Sons <br>
-<br>
+for Automatic Dynamic Memory Management</i><br/>
+John Wiley &amp; Sons <br/>
+<br/>
 &sup1; <font size="-1">Reference counting and mark-and-sweep algorithms where specifically 
 developed for LISP. Other schemes like copying or generational algorithms where developed 
 for other languages like Smalltalk and later also used in LISP.</font>
-<br><br>
+<br/><br/>
 &sup2; <font size="-1">This chapter was added in October 2008.</font>
-<br><br>
+<br/><br/>
 &sup3; <font size="-1">This is a shortened rendition of expression evaluation not including handling of default functors and implicit indexing.</font>
-<br><br>
-<center><font size="-1">Copyright &copy; 2004-2010, Lutz Mueller 
+<br/><br/>
+<center><font size="-1">Copyright &copy; 2004-2011, Lutz Mueller 
 <a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>
 </blockquote>
 </body>

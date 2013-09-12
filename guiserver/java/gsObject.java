@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/19/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -231,7 +231,19 @@ public void Disable(StringTokenizer tokens)
 	
 public void setToolTip(StringTokenizer tokens)
 	{
-	jcomponent.setToolTipText(Base64Coder.decodeString(tokens.nextToken()));
+	String text = tokens.nextToken();
+	
+	if(guiserver.UTF8)
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
+
+	jcomponent.setToolTipText(text);
+	}
+	
+public void setEchoChar(StringTokenizer tokens)
+	{
+	ErrorDialog.wrongApplication(Dispatcher.cmd, id);
 	}
 	
 public void setEditable(StringTokenizer tokens)
@@ -251,11 +263,12 @@ public void setSelected(StringTokenizer tokens)
 
 public void setTitledBorder(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+	
 	if(guiserver.UTF8)
-	try {
-		text = new String(text.getBytes(), "UTF-8");
-		} catch (UnsupportedEncodingException ee) {}
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 		
 	jcomponent.setBorder(BorderFactory.createTitledBorder(text));
 	}
@@ -315,7 +328,13 @@ public void requestFocus(StringTokenizer tokens)
 	
 public void setFont(StringTokenizer tokens)
 	{
-	String name = Base64Coder.decodeString(tokens.nextToken());
+	String name = tokens.nextToken();
+	
+	if(guiserver.UTF8)
+		name = Base64Coder.decodeStringUTF8(name);
+	else
+		name = Base64Coder.decodeString(name);
+
 	int style = 0;
 	int size = 12;
 	
@@ -336,7 +355,12 @@ public void setFont(StringTokenizer tokens)
 	
 public void getFontMetrics(StringTokenizer tokens)
 	{
-	String text = Base64Coder.decodeString(tokens.nextToken());
+	String text = tokens.nextToken();
+	
+	if(guiserver.UTF8)
+		text = Base64Coder.decodeStringUTF8(text);
+	else
+		text = Base64Coder.decodeString(text);
 	
 	FontMetrics fm = component.getFontMetrics(component.getFont());
 	

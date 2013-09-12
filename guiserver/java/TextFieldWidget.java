@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/16/07.
 //
 //
-//    Copyright (C) 2010 Lutz Mueller
+//    Copyright (C) 2011 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@ import javax.swing.text.*;
 @SuppressWarnings("unchecked")
 public class TextFieldWidget extends aTextWidget {
 
-JTextField textfield;
+JPasswordField textfield;
 
 public TextFieldWidget(StringTokenizer params)
 	{
-	textfield = new JTextField();
+	textfield = new JPasswordField();
 	jcomponent = textfield;
 	component = textfield;
 	container = textfield;
@@ -46,7 +46,17 @@ public TextFieldWidget(StringTokenizer params)
 	id = params.nextToken();
 	action = params.nextToken();
 	textfield.setColumns(Integer.parseInt(params.nextToken()));
-	
+
+	if (params.hasMoreTokens())
+	    {
+		String covered = Base64Coder.decodeString(params.nextToken()) ;
+		textfield.setEchoChar(covered.charAt(0)) ;
+	    }
+	else
+	    {
+		textfield.setEchoChar((char)0) ;
+	    }
+
 	gsObject.widgets.put(id, this);
 
 	ActionListener listener = new ActionListener() {
@@ -54,7 +64,7 @@ public TextFieldWidget(StringTokenizer params)
 			{	
 			if(action != null)
 				{	
-				String param = "\"" + Base64Coder.encodeString(textfield.getText()) + "\"";
+				String param = "\"" + Base64Coder.encodeString(String.valueOf(textfield.getPassword())) + "\"";
 				guiserver.out.println("("+ action + "\"" + id +  "\"" + param + ")");
 				guiserver.out.flush();
 				}
@@ -77,6 +87,22 @@ public TextFieldWidget(StringTokenizer params)
 	textfield.addKeyListener(keyListener);
 	textfield.addActionListener(listener);
 	}
+
+public void setEchoChar(StringTokenizer params)
+    {
+	if (params.hasMoreTokens())
+	    {
+		String p = params.nextToken() ;
+		String str = Base64Coder.decodeString(p) ;
+
+		textfield.setEchoChar(str.charAt(0)) ;
+	    }
+	else
+	    {
+		textfield.setEchoChar((char)0) ;
+	    }
+
+    }
 
 }
  

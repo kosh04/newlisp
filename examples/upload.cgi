@@ -1,13 +1,13 @@
-#!/home/htdocs/cgi-bin/newlisp
+#!/usr/bin/newlisp
 #
-# Upload script v. 1.0
-# v 1.1 - changed 'integer' to 'int'
-# v 1.2 - eliminated quote in write-buffer syntax
-# v 1.3 - change in read-buffer for version 10.0
-# v 1.4 - change in exit condition for reader loop
-# v 1.4 - changed 'write-bufffer' to 'write'
-# serves POST request from upload.html
-# 
+#!/usr/bin/env newlisp
+#
+# upload.cgi - process uploads from POST request
+#
+# version 1.6
+#
+# works on Apache server 1.2 and after and newLISP server 10.3.0 and after
+# works on newLISP CGI with 10.1 and after
 
 ; make compatible with older versions of newLISP
 (when (< (sys-info -2) 10110)
@@ -25,7 +25,7 @@
 	(set 'len (int (env "CONTENT_LENGTH") 0))
 	(set 'type (env "CONTENT_TYPE"))
 	(if (not (find ".*multipart/form-data;.*boundary=.*" type 1))
-	      (throw-error "wrong upload format"))
+	      (throw-error "wrong upload format, multipart/form-data content-type not found"))
 
 	; read data into intermediate file
 	(set 'infile (open "upload-file" "write"))
@@ -38,7 +38,7 @@
 	(set 'disposition (read-line infile))
 
 	(if (not (find ".*filename=\"(.*)\".*" disposition 1))
-		(throw-error "wrong upload format"))
+		(throw-error "wrong upload format, did not find filename"))
 	(if (= "" (set 'filename $1))
 		(throw-error "need file name")
 		(set 'filename (last (parse filename "/|\\\\" 0))))
@@ -47,7 +47,9 @@
 	(while (!= "" (read-line infile)))
 	(set 'start (seek infile))
 	(set 'end (search infile boundary))
-	(set 'size (- end start 2))
+	(if-not end
+		(throw-error "wrong upload format, did not find boundary string")
+		(set 'size (- end start 2)))
 
 	(set 'outfile (open filename "write"))
 	(seek infile start)

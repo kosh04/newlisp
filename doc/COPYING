@@ -1,12 +1,12 @@
 Copyright information
 ---------------------
 
-Documentation found in this package is licensed under the
-"GNU Free Documentation License Version 1.2, November 2002".
-The text of this license is contained in this file.
-
 Source code for this package copyright (c) Lutz Mueller is
 licensed under the "GNU GENERAL PUBLIC LICENSE Version 3, June 2007".
+The text of this license is contained in this file.
+
+Documentation found in this package is licensed under the
+"GNU Free Documentation License Version 1.2, November 2002".
 The text of this license is contained in this file.
 
 All icons and images are copyright (c) Michael Michaels
@@ -14,10 +14,6 @@ under the "GNU GENERAL PUBLIC LICENSE Version 3, June 2007".
 
 Files starting with the letters "pcre" are copyright (c) University 
 of Cambridge. The text of this license is contained in this file.
-
-The files osx-dlfcn.c and osx-dlfcn.h are copyright 
-(c) Jorge Acereda and Peter O'Gorman.  The text of this license 
-is contained in this file.
 
 Code for base-64 conversions from the cURL project is included 
 in nl-web.c and copyright (c) Daniel Stenberg, <daniel@haxx.se>. 
@@ -36,13 +32,11 @@ Following:
 - GNU General Public License v. 3
 - GNU Free Documentation License
 - Universiy of Cambridge License
-- Acereda and Gorman License
-- Daniel Stenbers / cURL license
-- Thomas Niemann license
-- Zlib license
+- Daniel Stenbers, cURL License
+- Thomas Niemann License
+- Michael Sabin, Zlib License
 
 ---------------------------------------------------------------------
-
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 3, 29 June 2007
@@ -1099,37 +1093,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 -----------------------------------------------------------------------------
 
-Copyright (c) 2002 Jorge Acereda  <jacereda@users.sourceforge.net> &
-                   Peter O'Gorman <ogorman@users.sourceforge.net>
-                   
-Portions may be copyright others, see the AUTHORS file included with this
-distribution.                  
-
-Maintained by Peter O'Gorman <ogorman@users.sourceforge.net>
-
-Bug Reports and other queries should go to <ogorman@users.sourceforge.net>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
------------------------------------------------------------------------------
-
 Copyright (C) 1998 - 2004, Daniel Stenberg, <daniel@haxx.se>, et al.
 
 This software is licensed as described in the file COPYING, which
@@ -1159,9 +1122,10 @@ to the author.
 Thomas Niemann 
 Portland,  Oregon 
 epaperpress.com
+
 -----------------------------------------------------------------------------
 
-Copyright (C) 2007,2008,2009 Michael Sabin
+Copyright (C) 2007,2008,2010 Michael Sabin
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages

@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.2.8
-INT_VERSION = 10208
+VERSION = 10.3.0
+INT_VERSION = 10300
 
 default: makefile_build
 	make -f makefile_build
@@ -137,7 +137,7 @@ clean:
 	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz guiserver/java/._* TEST newlisp-universal
 	-rm -f guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
 	-rm -f doc/*.bak util/*.bak examples/*.bak modules/*.bak
-	-chmod 644 *.h *.c *.lsp Makefile makefile*
+	-chmod 644 *.h *.c Makefile makefile*
 	-chmod 755 configure configure-alt examples/*
 	-chmod 644 doc/* modules/*.lsp examples/*.lsp examples/*.html
 	-chmod 644 guiserver/*
@@ -158,6 +158,7 @@ check:
 	./newlisp qa-specific-tests/qa-ref
 	./newlisp qa-specific-tests/qa-message
 	./newlisp qa-specific-tests/qa-win32dll
+	./newlisp qa-specific-tests/qa-bench
 
 # old naming for check 
 test: 
@@ -169,6 +170,7 @@ checkall:
 	./newlisp qa-specific-tests/qa-xml
 	./newlisp qa-specific-tests/qa-setsig
 	./newlisp qa-specific-tests/qa-net
+	./newlisp qa-specific-tests/qa-net6
 	./newlisp qa-specific-tests/qa-cilk
 	./newlisp qa-specific-tests/qa-ref
 	./newlisp qa-specific-tests/qa-message

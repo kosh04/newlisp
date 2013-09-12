@@ -8,6 +8,8 @@
 ;;    newlisp qa-bench report # report on individual functions
 ;;    newlisp qa-bench report 10 # report and run 10 times long
 
+(set-locale "en_US")
+
 (println)
 (println "Benchmarking all non I/O primitives")
 
@@ -1383,6 +1385,7 @@
     (= (format "%x" (get-int (address adr))) "aabbccdd")
     (= (format "%x" (get-int (+ (address adr) 0))) "aabbccdd")
     (= (format "%x" (get-int (+ (address adr) 4))) "ccddeeff")
+
     (set 'adr (pack "> ldld" 0xaabbccdd 0xccddeeff))
     (= adr "\170\187\204\221\204\221\238\255")
     (set 'adr (pack "< ldld" 0xaabbccdd 0xccddeeff))
@@ -1390,6 +1393,7 @@
     (set 'buff (pack "lulululululululu" 1 2 3 4))
     (apply and (map (fn (i) (= (+ i 1) (get-int (+ (* i 4) (address buff))))) '(0 1 2 3))) 
 ))
+
 
 (define (test-get-long)
 	(set 'adr (pack "Ld" -1))
@@ -1872,10 +1876,10 @@
        '("hello" "regular" "expression" "1" "2" "3"))))
 
 
-(define (test-parse-date)
+(define (test-date-parse)
 	(and
-		(= (parse-date "2007.1.3" "%Y.%m.%d") 1167782400)
-		(= (parse-date "January 10, 07" "%B %d, %y") 1168387200)
+		(= (date-parse "2007.1.3" "%Y.%m.%d") 1167782400)
+		(= (date-parse "January 10, 07" "%B %d, %y") 1168387200)
 ))
 
 

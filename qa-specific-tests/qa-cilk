@@ -17,7 +17,7 @@
 ;10    89      177
 
 (println)
-(println "Testig Cilk API")
+(println "Testing Cilk API")
 
 (define (fibo n)
   (local (f1 f2)
@@ -52,8 +52,7 @@
 (println "N of processes -> " (set 'result3 (length (sync))))
 (println "waiting  to sync -> " (set 'result4 (sync 5000)))
 
-; calculate (fibo 7) -> 21 needs to create 41 processes
-(println "fibo(7) with 41 processes -> "(set 'result5 (fibo 7)))
+(println "fibo(5) -> (needs 15 processes) " (set 'result5 (fibo 5)))
 
 ; check inlet function
 (define (inlet pid) 
@@ -66,6 +65,7 @@
 
 (println (sync 2000 inlet))
 (println)
+
 (if (and
          (apply and result0) 
          (= 10 (length result0))
@@ -73,7 +73,7 @@
          (empty? result2) 
          (= 10 result3) 
          (true? result4)
-         (= result5 21)
+         (= result5 8)
          (= result6 '((p1 400) (p2 500))))
 	(println ">>>>> The Cilk API tested SUCCESSFUL")
 	(println ">>>>> PROBLEM with Cilk API")

@@ -1,0 +1,3 @@
+newlisp -e '(net-receive (net-listen 3000 "" "udp") buff 10) (if (= buff "hello") "broadcast Ok" "broadcast Problem")' &
+newlisp -e '(net-send (net-connect "10.0.0.255" 3000 "broadcast") "hello")'
+

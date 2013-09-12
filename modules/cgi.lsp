@@ -6,7 +6,8 @@
 ;; @version v 2.5 - cleanup put-page for 10.0
 ;; @version v 2.6 - help text corrections
 ;; @version v 2.72 - help text corrections
-;; @author Lutz Mueller, 2002-2010
+;; @version v 2.8 - check for and use CONTENT_LENGTH when reading POST data
+;; @author Lutz Mueller, 2002-2011
 ;;
 ;; This module defines basic CGI processing tools for processing
 ;; CGI GET and POST requests and cookies.
@@ -124,13 +125,21 @@
 (if params
 	(set 'params (get-vars params)))
 
-; get stdin POST method parameters if present
+; get POST data if present
 ;
-(set 'inline (read-line))
-(if inline 
-	(set 'params (get-vars inline)))
+(if (env "CONTENT_LENGTH")
+	(when (= (env "REQUEST_METHOD") "POST")
+  		(read (device) post-data (integer (env "CONTENT_LENGTH")))
+  		(set 'params (get-vars post-data)))
+	(begin
+		(set 'inline (read-line))
+		(if inline 
+			(set 'params (get-vars inline)))
+	)
+)
  
 (if (not params) (set 'params '()))
+
 
 ; get cookies
 ;

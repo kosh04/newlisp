@@ -42,11 +42,14 @@
 # and all types ending 3f:
 # 
 
+(when (= 256 (& 256 (last (sys-info)))) ; if it is 64 bit version
+	(println "This file can run only on the 32-bit version of newLISP")
+	(exit))
 
 (if 
   (= ostype "OSX") ;; drawings will be visible only on x86 based OS X
   (begin
-    (set 'GL_LIB "/System/Library/Frameworks/OpenGL.Framework/libraries/libGL.dylib")
+    (set 'GL_LIB "/System/Library/Frameworks/OpenGL.Framework/Libraries/libGL.dylib")
     (set 'GLUT_LIB "/System/Library/Frameworks/GLUT.Framework/GLUT")
   )
   (find ostype '("Win32", "Cygwin"))
@@ -62,6 +65,7 @@
 (import GL_LIB "glClear")
 (import GL_LIB "glClearColor")
 (import GL_LIB "glEnable")
+(import GL_LIB "glHint")
 (import GL_LIB "glColor3d")
 (import GL_LIB "glBegin")
 (import GL_LIB "glEnd")
@@ -69,6 +73,7 @@
 (import GL_LIB "glFlush")
 (import GL_LIB "glFinish")
 (import GL_LIB "glRotated")
+(import GL_LIB "glLineWidth")
 
 (import GLUT_LIB "glutInit")
 (import GLUT_LIB "glutDisplayFunc")
@@ -92,8 +97,12 @@
 (import GLUT_LIB "glutWireCube")
 (import GLUT_LIB "glutWireTeapot")
 
-(constant 'GL_COLOR_BUFFER_BIT  0x00004000)
-(constant 'GL_TRIANGLES         0x0004)
+(constant 'GL_COLOR_BUFFER_BIT 0x00004000)
+(constant 'GL_TRIANGLES 0x0004)
+(constant 'GL_BLEND 0x0BE2)
+(constant 'GL_LINE_SMOOTH 0x0B20)
+(constant 'GL_DONT_CARE 0x1100)
+(constant 'GL_LINE_SMOOTH_HINT 0x0C52)
 
 (constant 'GLUT_DOUBLE 0x0002)
 (constant 'GLUT_SINGLE 0x0000)
@@ -174,3 +183,7 @@
 
 ;; eof
 
+;(glEnable GL_BLEND)
+;(glEnable GL_LINE_SMOOTH) ; turn on antialiasing
+;(glHint GL_LINE_SMOOTH_HINT GL_DONT_CARE)
+;(glLineWidth 3)

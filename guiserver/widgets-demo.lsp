@@ -48,6 +48,7 @@
 (gs:set-flow-layout 'ListPanel "center"  50 1)
 (gs:set-titled-border 'ListPanel "combox-box and list-box")
 (gs:combo-box 'TheComboBox 'action-handler "one" "two" "three")
+(gs:select-list-item 'TheComboBox "two")
 (gs:set-background 'TheComboBox 1.0 0.9 0.9)
 (gs:set-foreground 'TheComboBox 0 0 1)
 (gs:set-font 'TheComboBox "Lucida Serif Typewriter" 14 "plain")
@@ -71,7 +72,7 @@
 (gs:set-background 'TheTextArea 0.7 0.8 0.8)
 (gs:button 'GetTextFieldButton 'gettextfield-handler "get text field")
 (gs:button 'GetTextAreaButton 'gettextarea-handler "get text area")
-(gs:add-to 'TextPanel 'TheTextField 'TheTextArea 'GetTextFieldButton  'GetTextAreaButton)
+(gs:add-to 'TextPanel 'TheTextField 'GetTextFieldButton 'TheTextArea 'GetTextAreaButton)
 
 ;; slider, progress-bar and scroll-area
 (gs:panel 'SlidePanel)
@@ -113,7 +114,6 @@
 		(gs:confirm-dialog 'WidgetsDemo 'action-handler 
 				"A Message" "Enjoy GUI server" 
 				"yes-no"
-				;(amb "error" "informaton" "warning" "question" "plain")
 		))
 
 	(let ( (out-text (list (string (args 0)))) (len (length (args))))

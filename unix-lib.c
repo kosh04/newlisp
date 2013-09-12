@@ -1,6 +1,6 @@
 /* unix-lib.c - make the newlisp shared newlisp library
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,15 +42,13 @@ opsys += 128;
 #ifdef NEWLISP64
 opsys += 256;
 #endif
-#ifdef IPV6
-opsys += 512
-#endif
 
 initLocale();
 initialize();
 mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
 setupAllSignals();
 initStacks();
+initDefaultInAddr(); 
 
 initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)

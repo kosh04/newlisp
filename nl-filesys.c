@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ INT64 fileSizeW(WCHAR * pathName);
 char * strptime(const char * str, const char * fmt, struct tm * ttm);
 #endif
 
-size_t calcDateValue(int year, int month, int day, int hour, int min, int sec);
+time_t calcDateValue(int year, int month, int day, int hour, int min, int sec);
 extern STREAM readLineStream;
 extern FILE * IOchannel;
 extern int pagesize;
@@ -312,7 +312,7 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, DEFAULT_TIMEOUT);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_GET, CONNECT_TIMEOUT);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
@@ -433,7 +433,7 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
 	result = getPutPostDeleteUrl(fileName, params, 
-				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, DEFAULT_TIMEOUT);
+				(*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, CONNECT_TIMEOUT);
 	if(memcmp((char *)result->contents, "ERR:", 4) == 0)
 		return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
 	return(result);
@@ -755,7 +755,7 @@ CELL * result;
 params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
 	{
-	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, DEFAULT_TIMEOUT);
+	result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, CONNECT_TIMEOUT);
 	return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
 	}
 
@@ -947,13 +947,46 @@ return(size);
 
 /* ------------------------- processes and pipes ------------------------- */
 
-
+#ifndef WIN_32
 CELL * p_system(CELL *params)
 {
 char * command;
 getString(params, &command);
 return(stuffInteger((UINT)system(command)));
 }
+#else
+CELL * p_system(CELL *params)
+{
+UINT creation_flags = 0;
+char * command;
+STARTUPINFO si;
+PROCESS_INFORMATION pi;
+UINT result;
+
+memset(&si, 0, sizeof(STARTUPINFO));
+memset(&pi, 0, sizeof(PROCESS_INFORMATION));
+
+si.cb = sizeof(STARTUPINFO);
+
+params = getString(params, &command);
+if(params != nilCell)
+	getInteger(params, &creation_flags);
+else
+	return(stuffInteger((UINT)system(command)));
+
+result = CreateProcessA(NULL, command, NULL, NULL, 0, (DWORD)creation_flags, NULL, NULL, 
+		(LPSTARTUPINFO)&si, (LPPROCESS_INFORMATION)&pi); 
+
+
+if(!result) return(nilCell);
+
+WaitForSingleObject(pi.hProcess, -1);
+CloseHandle(pi.hProcess);
+CloseHandle(pi.hThread); 
+
+return(stuffInteger(result));
+}
+#endif
 
 
 CELL * p_exec(CELL * params)
@@ -962,6 +995,7 @@ CELL * lineList;
 char * line;
 char * command, * data;
 FILE * handle;
+size_t size;
 
 params = getString(params, &command);
 if(params == nilCell)
@@ -977,12 +1011,12 @@ if(params == nilCell)
 	return(lineList);
 	}
     
-getString(params, &data);
+getStringSize(params, &data, &size, TRUE);
 
 if((handle = popen(command, "w")) == NULL)
 	return(nilCell);
 
-if(fwrite(data, sizeof(char), strlen(data), handle) < strlen(data))
+if(fwrite(data, 1, (size_t)size, handle) < strlen(data))
 	return(nilCell);
 
 pclose(handle);
@@ -1449,7 +1483,7 @@ gettimeofday(&tv, NULL);
 while(mySpawnList != NULL)
 	{
 	gettimeofday(&tp, NULL);
-	if(timediff(tp, tv) > timeout) return(nilCell);
+	if(timediff_ms(tp, tv) > timeout) return(nilCell);
 	pid = waitpid(-1, &result, WNOHANG);
 	if(pid) 
 		{
@@ -2080,7 +2114,7 @@ if( 	(*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
 }
 
 /* ------------------------------ time and date functions -------------------- */
-
+extern int ADDR_FAMILY;
 CELL * p_systemInfo(CELL * params)
 {
 CELL * cell;
@@ -2096,7 +2130,8 @@ cell = stuffIntegerList(
 	(UINT)parentPid,
 	(UINT)getpid(),
 	(UINT)version,
-	(UINT)opsys);
+	(UINT)opsys
+	);
 
 if(params != nilCell)	
 	{
@@ -2139,7 +2174,7 @@ struct tm * ltm;
 char * ct;
 char * fmt;
 ssize_t offset;
-ssize_t tme;
+time_t tme;
 
 #ifdef SUPPORT_UTF8
 #ifdef WCSFTIME
@@ -2228,7 +2263,7 @@ return(microSecTime()/1000);
 
 /* returns a differerence of 2 timeval structs in milliseconds
 */
-int timediff(struct timeval out, struct timeval in )
+int timediff_ms(struct timeval out, struct timeval in )
 {
 	if( (out.tv_usec -= in.tv_usec) < 0 )   {
 		out.tv_sec--;
@@ -2242,7 +2277,7 @@ return(out.tv_sec*1000 + (out.tv_usec/1000));
 
 /* returns a differerence of 2 timeval structs in microseconds
 */
-UINT64 timediff64(struct timeval out, struct timeval in )
+UINT64 timediff64_us(struct timeval out, struct timeval in )
 {
 UINT64 usec;
 
@@ -2257,15 +2292,15 @@ return(usec);
 }
 
 #ifndef WIN_32
-CELL * p_parseDate(CELL * params)
+CELL * p_dateParse(CELL * params)
 {
 struct tm ttm;
 char * dateStr;
 char * formatStr;
-size_t dateValue;
+time_t dateValue;
 
 params = getString(params, &dateStr);
-params = getString(params, &formatStr);
+getString(params, &formatStr);
 
 memset (&ttm, 0, sizeof (ttm));
 ttm.tm_mday = 1;
@@ -2305,7 +2340,7 @@ while(N--)
 
 gettimeofday(&end, NULL);
 
-diff = (1.0 * timediff64(end, start)) / 1000;
+diff = (1.0 * timediff64_us(end, start)) / 1000;
 return(stuffFloat(&diff));
 }
 
@@ -2371,8 +2406,8 @@ cell = stuffIntegerList(
     (UINT)ttm->tm_min,
     (UINT)ttm->tm_sec,
     (UINT)tv.tv_usec,
-    (UINT)ttm->tm_yday + 1,
-    (UINT)ttm->tm_wday + 1,
+    (UINT)ttm->tm_yday,
+    ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday),
 
 #if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) || defined(CYGWIN)
     gmtoff, isdst
@@ -2406,11 +2441,42 @@ return(cell);
 }
 
 
+CELL * p_dateList(CELL * params)
+{
+struct tm *ttm;
+ssize_t timeValue;
+CELL * cell;
+
+params = getInteger(params, (UINT*)&timeValue);
+ttm = gmtime((time_t *)&timeValue);
+
+cell = stuffIntegerList(
+    8,
+    (UINT)ttm->tm_year + 1900,
+    (UINT)ttm->tm_mon + 1,
+    (UINT)ttm->tm_mday,
+    (UINT)ttm->tm_hour,
+    (UINT)ttm->tm_min,
+    (UINT)ttm->tm_sec,
+    (UINT)ttm->tm_yday,
+    ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday)
+);
+
+if(params != nilCell)	
+	{
+	pushResult(cell);
+	return(copyCell(implicitIndexList(cell, params)));
+	}
+
+return(cell);
+}
+
+
 CELL * p_dateValue(CELL * params)
 {
 struct timeval tv;
 ssize_t year, month, day, hour, min, sec;
-size_t dateValue;
+time_t dateValue;
 
 if(params->type == CELL_NIL)
 	{
@@ -2442,9 +2508,9 @@ return(stuffInteger((UINT)dateValue));
 }
 
 
-size_t calcDateValue(int year, int month, int day, int hour, int min, int sec)
+time_t calcDateValue(int year, int month, int day, int hour, int min, int sec)
 {
-size_t dateValue;
+time_t dateValue;
 
 dateValue = 367 * year - (7 * (year + ((month + 9) / 12)))/4 
             + (275 * month)/9 + day + 1721013;
@@ -2453,7 +2519,7 @@ dateValue = dateValue * 24 * 3600 + hour * 3600 + min * 60 + sec
             - 413319296; /* correction for 1970-1-1 */
 
 #ifdef NEWLISP64
-dateValue = dateValue % 0x80000000;
+dateValue = dateValue & 0xffffffff;
 #endif
 
 return(dateValue);

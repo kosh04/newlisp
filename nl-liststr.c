@@ -1,7 +1,7 @@
 /* nl-liststr.c --- newLISP primitives handling lists and strings
 
 
-    Copyright (C) 2010 Lutz Mueller
+    Copyright (C) 2011 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -241,8 +241,17 @@ size_t size;
 params = getEvalDefault(params, &target);
 if((symbolRef = symbolCheck))
 	{
-	if(isProtected(symbolCheck->flags))
-		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
+	if(isProtected(symbolRef->flags))
+		return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
+	if(isNil((CELL *)symbolRef->contents))
+		{
+        deleteList((CELL*)symbolRef->contents);
+		head = evaluateExpression(params);
+		if(isList(head->type) || head->type == CELL_STRING)
+			target = copyCell(head);
+        symbolRef->contents = (UINT)target;
+		params = params->next;
+	    }
 	}
 
 if(isList(target->type))
@@ -1566,17 +1575,13 @@ if(symbolCheck && isProtected(symbolCheck->flags))
 
 if(list->type == CELL_STRING)
 	{	
-	cell = copyCell(list);	
 	length = list->aux - 1;
 	if((count = adjustCount(count, length)) == 0) 
 		{
-		if(symbolCheck)
-			{
-			pushResultFlag = FALSE;
-			return(list);
-			}
-		return(cell);
+		pushResultFlag = FALSE;
+		return(list);
 		}
+	cell = copyCell(list);	
 	memcpy((char*)cell->contents, (char *)(list->contents + length - count), count);
 	memcpy((char*)(cell->contents + count), (char *)list->contents, length - count);
 	memcpy((char*)list->contents, (char*)cell->contents, length);
