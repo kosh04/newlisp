@@ -1,8 +1,6 @@
-#!/usr/bin/newlisp
-#
 #!/usr/bin/env newlisp
 #
-# upload.cgi - process uploads from POST request
+# upload.cgi - process uploads from POST multipart/form-data
 #
 # version 1.6
 #

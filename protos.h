@@ -639,7 +639,10 @@ size_t utf8_wlen(char * utf8str);
 int wchar_utf8(int cvalue, char *buffer);
 
 #ifdef USE_WIN_UTF16PATH
+WCHAR *ansi_mbcs_to_utf16(const char *);
 char * utf16_to_utf8(const WCHAR *utf16str);
+WCHAR * utf8_to_utf16(const char *utf8str);
+int utf16_to_utf8ptr(const WCHAR *utf16str, char * utf8str, int size) ;
 INT64 fileSize_utf16(char * pathName8);
 char *win32_realpath(const char *filepath, char *realpath);
 int	rename_utf16(const char* oldname8, const char* newname8);

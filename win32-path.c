@@ -133,8 +133,48 @@ char * utf16_to_utf8(const WCHAR *utf16str)
 		return(utf8str);
 }
 
+/*
+mbcs_to_utf16
+Uses the Windows API to convert a FileSystem/CommandArgs OEM CodePage string to a UTF-16 string.
+Returns a pointer to a WCHAR string, or NULL if there was an error
+*/
+WCHAR * ansi_mbcs_to_utf16(const char *mbcsStr)
+{
+	int size = -1;
+	WCHAR *utf16str = NULL;
 
-/* 
+	size = MultiByteToWideChar(
+		CP_OEMCP,
+		0,			/* no flags=ignore errors if possible */
+		mbcsStr,
+		-1,			/* read until NULL character */
+		NULL,		
+		0			/* just calculate size */
+	);
+	
+	if (size == 0) return (NULL);
+	
+	utf16str = (WCHAR*)allocMemory((size+1) * sizeof(WCHAR));
+	
+	size = MultiByteToWideChar(
+		CP_OEMCP,
+		0,
+		mbcsStr,
+		-1,
+		utf16str,
+		size
+	);	
+	
+	if (size == 0) 
+	{
+		free(utf16str);
+		return(NULL);
+	}
+	else
+		return(utf16str);
+}
+
+/*
 win32_realpath
 Identical interface as realpath
 for both ANSI and UTF-16 path names on Windows.

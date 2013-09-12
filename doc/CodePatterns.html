@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2010 January 26<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.2
+</h1>Version 2010 February 5<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.3
 </center>
 
 <br/><br/><br/>
@@ -969,7 +969,7 @@ L → (a b (c x d (e f) g) h i)
 (push 'x L V)
 L → (a b (c x d (e f) g) h i))
 (ref 'x L) → (2 1) ; search for a nested member
-(pop L V) → 'v
+(pop L V) → 'x
 </pre>
 
 <h3>'extend'</h3>
@@ -1474,7 +1474,7 @@ E → (x y z)
     condition-2 exp-true-2
     ...
     condition-n exp-true-n
-    false-expr
+    expr-false
 )
 </pre>
 
@@ -2749,7 +2749,7 @@ Persons →  (
 
 <pre>
 (lookup "John Doe" Persons 0)   → "123-555"
-(lookup "John Doe" Persons -1)  → make
+(lookup "John Doe" Persons -1)  → male
 (lookup "Jane Doe" Persons 1)   → 2000.00
 (lookup "Jane Doe" Persons -2)  → 2000.00
  
@@ -2782,7 +2782,7 @@ Persons →  (
 (assoc "Anne" persons) → ("Anne" (address (country "USA") (city "New York")))
  
 ; two keys
-(assoc '("Anne" 'address) persons) → (address (country "USA") (city "New York"))
+(assoc '("Anne" address) persons) → (address (country "USA") (city "New York"))
  
 ; three keys
 (assoc '("Anne" address city) persons) → (city "New York")
@@ -2849,11 +2849,11 @@ Persons →  (
 <h3>Start a state-full server</h3>
 
 <pre>
-newlisp -c -d 4711 &amp;amp;
+newlisp -c -d 4711 &amp;
  
-newlisp myprog.lsp -c -d 4711 &amp;amp;
+newlisp myprog.lsp -c -d 4711 &amp;
  
-newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;amp;
+newlisp myprog.lsp -c -w /home/node25 -d 4711 &amp;
 </pre>
 
 <p>newLISP is now listening on port 4711, the &amp; (ampersand) sign tells newLISP to run in the background (UNIX only). The <tt>-c</tt> switch suppresses command line prompts. newLISP now behaves like a newLISP console without prompts listening on port 4711 for command line like input. Any other available port could have been chosen. Note that on UNIX, ports below 1024 need administrator access rights.</p>
@@ -2926,7 +2926,12 @@ telnet localhost 4711
 telnet 192.168.1.100 4711
 </pre>
 
-<p>Multi-line expressions can be entered by enclosing them in <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags, each tag on a separate line. Both the opening and closing tags should be on separate lines.</p>
+<p>Multi-line expressions can be entered by enclosing them in <tt>[cmd]</tt>, 
+<tt>[/cmd]</tt> tags, each tag on a separate line. Both the opening and closing 
+tags should be on separate lines. Although newLISP has a second, new
+multi-line mode for the interactive shell since version 10.3.0 without tags, 
+when using <tt>netcat</tt> or other UNIX utilities, multi-line expressions still have 
+to be enclosed in <tt>[cmd]</tt>, <tt>[/cmd]</tt> tags.</p>
 
 <h3>Test with netcat on UNIX</h3>
 

@@ -8,8 +8,7 @@ newLISP(tm) is LISP like scripting language for general programming
 artificial intelligence and statistics. 
 
 For more details about newLISP see the Users Manual and Reference in the
-distribution file: 'newlisp_manual.html' and for newlisp-tk: 
-'./newlisp-tk/newlisp-tk.html'
+distribution file: 'doc/newlisp_manual.html' 
 
 Code contributions, bug fixes, reports and comments are welcome. New
 versions are available at:
@@ -20,7 +19,7 @@ versions are available at:
       or
     http://sourceforge.net/projects/newlisp
 
-See the file CHANGES in the source distribtion for changes over 
+See the file doc/CHANGES in the source distribtion for changes over 
 previous versions or
 
     http://newlisp.org/downloads/newLISP_xx_Release_Notes.html
@@ -109,7 +108,7 @@ MORE INFO
 ---------
 See in the doc/ directory of the source distribution
 
-Lutz Mueller, July 2009/Jan 2010
+Lutz Mueller, July 2009/Jan 2010/March 2011
 
                                   +++
 

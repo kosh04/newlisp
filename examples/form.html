@@ -1,12 +1,9 @@
 <html>
-<head>
-<META http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-<title>A form to check newLISP CGI</title>
-</head>
+<head><title>A form to check newLISP CGI</title></head>
 <body>
 <h3>A test form for checking out the POST method in HTTP.</h3>
 <p>Change "localhost" in the action statement to the correct hostname, if trying this remotely.</p>
-<form action="form.cgi" method="POST">
+<form action="/form.cgi" method="POST">
 Name (text entry field) <input type="text" name="name"> <p>
 Check Me (checkbox)
 <p><input type="checkbox" name="checkMe"></p>
@@ -34,5 +31,6 @@ Choose one (select)
 Submit It (submit) <input type="submit" value="Go">
 </p>
 </form>
+Source of CGI script: <a href="form-cgi.txt">form.cgi</a>
 </body>
 </html>

@@ -30,9 +30,9 @@ extern void printResultStack();
 size_t adjustNegativeIndex(ssize_t index, size_t length)
 {
 if(index < 0) index = length + index;
-else if((index+1) > length) errorProc(ERR_STRING_INDEX_OUTOF_BOUNDS);
+else if((index+1) > length) errorProc(ERR_STRING_INDEX_INVALID);
 
-if(index < 0) errorProc(ERR_STRING_INDEX_OUTOF_BOUNDS);
+if(index < 0) errorProc(ERR_STRING_INDEX_INVALID);
 
 return(index);
 }
@@ -477,7 +477,7 @@ while(isList(list->type))
 			insert = INSERT_BEFORE;
 			}
 		else if(index >= 0) insert = INSERT_AFTER;
-		else errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+		else errorProc(ERR_LIST_INDEX_INVALID);
 		}
 	else insert = INSERT_BEFORE;
 
@@ -485,7 +485,7 @@ while(isList(list->type))
 		{
 		if(list == nilCell)
 			{
-			if(index >= 0) errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+			if(index >= 0) errorProc(ERR_LIST_INDEX_INVALID);
 			insert = INSERT_END;
 			break;
 			}
@@ -586,7 +586,7 @@ while(isList(list->type))
        	list = list->next;
        	}
 	if(list == nilCell) 
-		errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+		errorProc(ERR_LIST_INDEX_INVALID);
 
     if(params == nilCell || !isList(list->type))  break;
     params = getIntegerExt(params, (UINT*)&index, evalFlag);
@@ -809,7 +809,7 @@ while(params->type != CELL_NIL)
 	if(index < idx) list = head, idx = 0;
 	while(idx < index  && list != nilCell) list = list->next, idx++; 
 	if(list == nilCell) 
-		errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+		errorProc(ERR_LIST_INDEX_INVALID);
 	if(result == NULL)
 		{
 		result = getCell(CELL_EXPRESSION);

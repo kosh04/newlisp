@@ -1096,10 +1096,17 @@ else if(isList(cell->type))
 	params = getIntegerExt(params, (UINT *)&index, FALSE);
 	evalFlag = FALSE;
 	}
-else return(errorProcExt(ERR_LIST_INDEX_OUTOF_BOUNDS, params));
+else return(errorProcExt(ERR_LIST_INDEX_INVALID, params));
 
 while(isList(list->type))
 	{
+	/* 10.3.1 catch changes in the list to be indexed 
+       caused by circular reference in index expression 
+       e.g (lst (set 'lst foo)) , when foo is a vector 
+    */
+	if(list->type == 255)
+		return(errorProc(ERR_LIST_REFERENCE_CHANGED));
+
 	/* last element optimization */
 	if(index == -1 && list->aux != (UINT)nilCell) 
 		list = (CELL *)list->aux;
@@ -1112,7 +1119,7 @@ while(isList(list->type))
 		while(index--)	list = list->next;
 
 		if(list == nilCell) 
-			errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+			errorProc(ERR_LIST_INDEX_INVALID);
 		}
 
 	if(params == nilCell || !isList(list->type))  break;
@@ -1245,7 +1252,7 @@ while(args != nilCell)
 		longjmp(errorJump, errNo);
 		}
 
-    trueFlag = !isNil(cell);
+    trueFlag = !isNil(cell) && !isEmpty(cell);
 
 	cleanupResults(resultIndexSave);
 

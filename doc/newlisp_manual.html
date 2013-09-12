@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.3.0</h2>
+<h2>User Manual and Reference v.10.3.0<font size='1'> rev 2011-02-18</font></h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -496,11 +496,10 @@ are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p
 <a name="deprecated"></a>
 <h2>2. Deprecated functions and future changes</h2>
 
-<p>Since version 10.2.9 newLISP can switch between IPv4 and IPv6 modes during
+<p>Since version 10.3.0 newLISP can switch between IPv4 and IPv6 modes during
 run-time using the new <a href="#net-ipv">net-ipv</a> function. The 
 <tt>-6</tt> commandline option can be used to start newLISP in IPv6 mode. 
-As of the current version 10.2.10 IPv6 mode is only tested on Unix platforms 
-and is not yet operational on Win32. After transition to IPv6 the <tt>-6</tt>
+After transition to IPv6 the <tt>-6</tt>
 commandline switch will be changed to <tt>-4</tt> for starting up in IPv4
 mode.</p>
 
@@ -2324,7 +2323,7 @@ variable, list, array, or string.</p>
 <a name="make_nondestructive"></a>
 <h3>Make a destructive function non-destructive</h3>
 
-<p>Some destructive functions can be made non-destructive by wrapping the target 
+<p>Destructive functions can be made non-destructive by wrapping the target 
 object into the <a href="#copy">copy</a> function.</p>
 
 <pre>
@@ -9460,21 +9459,23 @@ probability of <em>float-p</em> and all trials are independent of one another:</
 <p>Transforms a number in <em>int</em> to a string of 1's and 0's or a 
 list, if <em>bool</em> evaluates to anything not <tt>nil</tt>.</p>
 
-<p>In string representation bits are in high to low order. In list
-presentation 1's and 0's are represented as <tt>true</tt> and <tt>nil</tt>
-and in order from the lowest to the highest bit. This allows direct
-indexing and program control switching on the result.</p>
+<p>In string representation bits are in high to low order of significance. 
+In list presentation 1's and 0's are represented as <tt>true</tt> and 
+<tt>nil</tt> and in order from the lowest to the highest bit of significance.
+This allows direct indexing and program control switching on the result.</p>
 
 <!-- example -->
 
 <pre>
-(bits 1234)      <span class='arw'>&rarr;</span> "10011010010"
+(bits 1234)             <span class='arw'>&rarr;</span> "10011010010"
 
-(int (bits 1234) 0 2) <span class='arw'>&rarr;</span> 1234
+(int "10011010010" 0 2) <span class='arw'>&rarr;</span> 1234
 
-(bits 1234 true)     <span class='arw'>&rarr;</span> (nil true nil nil true nil true true nil nil true)
+(int (bits 1234) 0 2)   <span class='arw'>&rarr;</span> 1234
 
-((bits 1234 true) 0) <span class='arw'>&rarr;</span> nil ; indexing of the result
+(bits 1234 true)        <span class='arw'>&rarr;</span> (nil true nil nil true nil true true nil nil true)
+
+((bits 1234 true) 0)    <span class='arw'>&rarr;</span> nil ; indexing of the result
 </pre>
 
 
@@ -12466,10 +12467,11 @@ specified, <em>str-key</em> contains a regular expression pattern. See
 <!-- example -->
 
 <pre>
-(ends-with "newLISP" "LISP")         <span class='arw'>&rarr;</span> true
-(ends-with "newLISP" "lisp")         <span class='arw'>&rarr;</span> nil
+(ends-with "newLISP" "LISP")          <span class='arw'>&rarr;</span> true
+(ends-with "newLISP" "lisp")          <span class='arw'>&rarr;</span> nil
 ;; use regular expressions
-(ends-with "newLISP" "lisp|york" 1)  <span class='arw'>&rarr;</span> true
+(ends-with "newLISP" "lisp|york" 1)   <span class='arw'>&rarr;</span> true
+(ends-with "New York" "lisp|york" 1)  <span class='arw'>&rarr;</span> true
 </pre>
 
 
@@ -25844,13 +25846,13 @@ not to be grouped with <a href="#begin">begin</a>:</p>
 	The following characters may define a format:
 </p>
  
-<table width="98%" summary="format chracters in pack">
+<table  summary="format chracters in pack">
 
 <tr align="left" valign="bottom"><th>format</th><th>description</th></tr>
 
 <tr>
-<td><tt>c </tt></td>
-<td>a signed 8-bit number</td>
+<td WIDTH="20%"><tt>c </tt></td>
+<td WIDTH="80%">a signed 8-bit number</td>
 </tr>
 
 <tr>
@@ -26253,12 +26255,16 @@ list <tt>()</tt> if <em>body</em> was not executed.</p>
 
 <!-- example -->
 <pre>
-(when (read-line)
-	(set 'result (analyze (current-line)))
-	(report result)
+(when condition 
+	(do-this)
+	(do-that)
 	(finish)
 )	
 </pre>
+
+<p>When the symbol <tt>condition</tt> evaluates to not <tt>nil</tt> or the 
+empty list <tt>()</tt>, all
+expressions in the <tt>when</tt> block are evaluated.</p>
 
 <p>See also the function <a href="#unless">unless</a> working like 
 <tt>(when (not ...) ...)</tt>.</p>

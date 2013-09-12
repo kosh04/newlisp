@@ -20,9 +20,11 @@
 ;(bayes-train '() (parse (lower-case (read-file "Comedy.txt")) "[^a-z]+" 0) 'DoyleDowson)
 ;(bayes-train (parse (lower-case (read-file "Sherlock.txt")) "[^a-z]+" 0) '() 'DoyleDowson)
 
+; training with the Dowson novel
 (print "... Loading from Gutenberg project ...")
 (bayes-train '() (parse (lower-case (read-file (docs 0))) "[^a-z]+" 0) 'DoyleDowson)
 
+; training with the Doyle novel
 (println "Loading from Gutenberg project ...")
 (bayes-train (parse (lower-case (read-file (docs 1))) "[^a-z]+" 0) '() 'DoyleDowson)
 

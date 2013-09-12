@@ -94,26 +94,26 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
-int version = 10300;
+int version = 10301;
 
 char copyright[]=
-"\nnewLISP v.10.3.0 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.3.1 Copyright (c) 2011 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.0 on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.1 on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.0 on %s IPv4/6%s\n\n";
+"newLISP v.10.3.1 on %s IPv4/6%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.3.0 64-bit on %s IPv4/6 UTF-8%s\n\n";
+"newLISP v.10.3.1 64-bit on %s IPv4/6 UTF-8%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.3.0 64-bit on %s IPv4/6%s\n\n";
+"newLISP v.10.3.1 64-bit on %s IPv4/6%s\n\n";
 #endif 
 #endif
 
@@ -446,7 +446,13 @@ char * envPtr;
 #ifndef LIBRARY
 char EXEName[MAX_LINE];
 
-GetModuleFileName(NULL, EXEName, MAX_LINE);
+#ifdef SUPPORT_UTF8
+ WCHAR wEXEName[MAX_LINE] ;
+ GetModuleFileNameW(NULL, wEXEName, MAX_LINE);
+ utf16_to_utf8ptr(wEXEName, EXEName, MAX_LINE);
+#else
+ GetModuleFileName(NULL, EXEName, MAX_LINE);
+#endif
 name = EXEName;
 #endif
 #endif
@@ -620,6 +626,25 @@ initialize();
 initStacks();
 initDefaultInAddr(); 
 
+#if WIN_32 && SUPPORT_UTF8
+ {
+   /*
+     command line parameter is MBCS.
+     MBCS -> Unicode(UTF-16) -> UTF-8
+   */
+   char **argv_utf8 = allocMemory((argc + 1)* sizeof(char *)) ;
+   {
+     for(idx = 0 ; idx<argc ; idx++)
+       {
+	 WCHAR *p_argvW = ansi_mbcs_to_utf16(argv[idx]) ;
+	 char *p_argvU = utf16_to_utf8(p_argvW) ;
+	 argv_utf8[idx] = p_argvU ;
+       }
+     argv_utf8[idx] = NULL ;
+     argv = argv_utf8 ;
+   }
+ }
+#endif
 mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
 if((errorReg = setjmp(errorJump)) != 0) 
@@ -875,7 +900,6 @@ if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
 cmd = calloc(MAX_COMMAND_LINE, 1);
 if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) exit(1);
 #endif	
-
 return(cmd);
 }
 
@@ -1017,6 +1041,8 @@ char buff[MAX_COMMAND_LINE];
 char * cmd;
 int batchMode = 0;
 
+memset(buff + MAX_COMMAND_LINE -2, 0, 2);
+
 if(memcmp(command, "[cmd]", 5) == 0)
 	batchMode = 2;
 else if(isTTY && (*command == '\n' || *command == '\r' || *command == 0))
@@ -1062,9 +1088,11 @@ if(cmdStream != NULL && batchMode)
 		if(isTTY) 
 			{
 			cmd = getCommandLine(TRUE);
-			strncpy(buff, cmd, MAX_COMMAND_LINE -1);
 #ifdef READLINE
+			strncpy(buff, cmd, MAX_COMMAND_LINE -2);
 			strlcat(buff, "\n", 1);
+#else
+			strncpy(buff, cmd, MAX_COMMAND_LINE -1);
 #endif
 			free(cmd);
 			}
@@ -1977,7 +2005,7 @@ while(list != nilCell)
 	}
 offset = len + offset;
 if(offset < 0) 
-	errorProc(ERR_LIST_INDEX_OUTOF_BOUNDS);
+	errorProc(ERR_LIST_INDEX_INVALID);
 return(offset);
 }
 
@@ -2837,22 +2865,22 @@ char * errorMessage[] =
 	"symbol not in MAIN context",	/* 48 */
 	"symbol not in current context", /* 49 */
 	"target cannot be MAIN",		/* 50 */
-	"list index out of bounds",		/* 51 */
+	"invalid list index",			/* 51 */
 	"array index out of bounds",	/* 52 */
-	"string index out of bounds",	/* 53 */
+	"invalid string index",			/* 53 */
 	"nesting level to deep",		/* 54 */
-	"invalid syntax",               /* 55 */
-	"user error",	                /* 56 */
-	"user reset -",		 	 		/* 57 */
-	"received SIGINT -",		 	/* 58 */
-	"function is not reentrant",	/* 59 */
-	"not allowed on local symbol",  /* 60 */
-	"no reference found",			/* 61 */
-	"list is empty",				/* 62 */
-	"I/O error",					/* 63 */
-	"no working directory found",	/* 64 */
-	"invalid PID",					/* 65 */
-	"FOOP stack overflow",			/* 66 */
+	"list reference changed",		/* 55 */
+	"invalid syntax",               /* 56 */
+	"user error",	                /* 57 */
+	"user reset -",		 	 		/* 58 */
+	"received SIGINT -",		 	/* 59 */
+	"function is not reentrant",	/* 60 */
+	"not allowed on local symbol",  /* 61 */
+	"no reference found",			/* 62 */
+	"list is empty",				/* 63 */
+	"I/O error",					/* 64 */
+	"no working directory found",	/* 65 */
+	"invalid PID",					/* 66 */
 	NULL
 	};
 

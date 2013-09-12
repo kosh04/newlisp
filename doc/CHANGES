@@ -5967,3 +5967,24 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Fisher Chi-2 derived probabilities in bayes-query are not normalized
      any  more.
 
+10.3.1 
+     Documentation changes
+
+     When a list reference changes while being indexed an error is thrown.
+     Code written this way will normally not make sense, but now fails
+     more gracefully.
+
+     (set 'lst '(1 2 3 4 5))
+     (lst (set 'lst '(1 2 3)))
+     ---> ERR: list reference changed
+
+     MBCS coded characters in pathnames in the Windows UTF-8 version.
+
+     Better worded error message when wrong parameter type in implicit
+     indexing of strings and lists.
+
+     Fixed a buffer overflow for interactive multiline mode for long
+     input lines.
+
+     Fix for 'filter', 'index', 'clean', 'exist' and 'for-all' when
+     handling empty list elements ().

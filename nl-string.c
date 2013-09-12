@@ -59,7 +59,7 @@ if(offset < 0)
 	if(offset < 0) offset = 0;
 */
 	if(offset < 0)
-		return(errorProc(ERR_STRING_INDEX_OUTOF_BOUNDS));
+		return(errorProc(ERR_STRING_INDEX_INVALID));
 	}
 else
 	offset = (offset > slen) ? slen : offset;
@@ -175,7 +175,11 @@ ssize_t i, p;
 #endif
 
 ptr = (char*)cell->contents;
-getInteger(params, (UINT *)&index);
+
+params = evaluateExpression(params);
+if(!isNumber(params->type))
+	errorProcExt(ERR_STRING_INDEX_INVALID, params);
+getIntegerExt(params, (UINT *)&index, FALSE);
 
 stringCell = cell;
 if(cell->aux == 1 && (index == 0 || index == -1)) 
