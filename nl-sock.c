@@ -1,6 +1,6 @@
 /* nl-sock.c
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,11 @@
 #define IPPROTO_DIVERT 254
 #endif
 
+/* Android needs it */
+#ifndef ICMP6_FILTER
+#define ICMP6_FILTER 1
+#endif
+
 #endif /* end UNIX */
 
 #ifdef CYGWIN
@@ -70,7 +75,7 @@ struct icmp
    unsigned short icmp_id;
    unsigned short icmp_seq;
 };
-#endif
+#endif /* end CYGWIN */
 
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX)
 #include <stropts.h>
@@ -304,8 +309,8 @@ return(TRUE);
 }
 #endif
 
-
-#ifdef WIN_32
+/* ANDROID and WIN_32 need this */
+#ifndef in_port_t
 #define in_port_t short int
 #endif
 
@@ -405,7 +410,7 @@ CELL * p_netConnect(CELL * params)
 CELL * cell;
 char * remoteHostName; 
 UINT portNo;
-UINT topt = CONNECT_TIMEOUT; /* default ms timeout */
+UINT topt = CONNECT_TIMEOUT; /* default ms timeout from newlisp.h */
 char * protocol = NULL;
 int sock;
 int type; 
@@ -1430,6 +1435,7 @@ else if(*mode == 'w')
     setSize = select(FD_SETSIZE, NULL, &socketSet, NULL, tmvPtr);
 else if(*mode == 'e')
     setSize = select(FD_SETSIZE, NULL, NULL, &socketSet, tmvPtr);
+else return(errorProcExt2(ERR_INVALID_PARAMETER, stuffString(mode)));
 
 if(setSize >= 0)
     {
@@ -1446,11 +1452,11 @@ if(setSize >= 0)
     while(sockListPtr != nilCell)
         {
         sockListPtr = getIntegerExt(sockListPtr, &socket, FALSE);
-        printf("testing %lu\n", socket);
+        /* printf("testing %lu\n", socket); */
         if(FD_ISSET(socket, &socketSet))
             {
             addList(list, stuffInteger(socket));
-            printf("adding %lu\n", socket);
+            /* printf("adding %lu\n", socket); */
             }
         }
 
@@ -1527,6 +1533,8 @@ t = time(NULL);
 snprintf(text, 79, "Connected to %s on %s", name, ctime(&t));
 /* printf(text); */
 writeLog(text, 0);
+
+setenv("REMOTE_ADDR", name, 1);
 
 return(fdopen(connection, "r+")); 
 }
@@ -2314,9 +2322,15 @@ switch(iph->ip_p)
   {
   case IPPROTO_TCP:
     tcph = (struct tcphdr *)(packet + sizeof(struct ip));
+#ifdef ANDROID
+    dport = tcph->dest;
+    if(tcph->check == 0) 
+        tcph->check = pseudo_chks(iph, packet, (char *) tcph, tcph->doff * 4);
+#else
     dport = tcph->th_dport;
     if(tcph->th_sum == 0) 
         tcph->th_sum = pseudo_chks(iph, packet, (char *) tcph, tcph->th_off * 4);
+#endif
     break;
   case IPPROTO_UDP:
     udph = (struct udphdr *)(packet + sizeof(struct ip));

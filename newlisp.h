@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@
 #define LIBFFI " libffi"
 #else /* not FFI */
 #define LIBFFI ""
+
 #endif /* FFI */
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */
@@ -50,6 +51,10 @@
 
 #ifdef LINUX
 #define OSTYPE "Linux"
+#endif
+
+#ifndef ANDROID
+#define SEMAPHORE 
 #endif
 
 #ifdef _BSD
@@ -259,7 +264,7 @@ This is for 64bit large file support (LFS),
 #define MAX_LONG 0x7FFFFFFFFFFFFFFFLL
 #endif
 
-#define CONNECT_TIMEOUT 10000 /* 10 sec for connection phase  getPutPostUrl */
+#define CONNECT_TIMEOUT 10000 
 
 #ifndef NEWLISP64
 #ifdef TRU64
@@ -295,15 +300,11 @@ This is for 64bit large file support (LFS),
 #define MAX_SYMBOL 256
 #define MAX_BIN_NO 66
 
-#define MAX_READ_LEN 0x4000
-#define MAX_PRINT_LEN 0x4000
-#define MAX_LOAD_BUFFER 0x4000
-#define MAX_FILE_BUFFER 0x4000
+#define MAX_FILE_BUFFER 0x40000
 #define MAX_BLOCK 4095
 #define MAX_URL_LEN 256
 
 #define MAX_REGEX_EXP 16 
-
 
 /* token types */
 #define TKN_ERROR -1
@@ -486,13 +487,14 @@ This is for 64bit large file support (LFS),
 #define ERR_CANNOT_OPEN_SOCKETPAIR 68
 #define ERR_CANNOT_FORK_PROCESS 69
 #define ERR_NO_SOCKET 70
+#define ERR_INVALID_JSON 71
 #ifdef FFI
-#define ERR_FFI_PREP_FAILED 71
-#define ERR_FFI_INVALID_TYPE 72
-#define ERR_FFI_STRUCT_EXPECTED 73
-#define MAX_ERROR_NUMBER 73
+#define ERR_FFI_PREP_FAILED 72
+#define ERR_FFI_INVALID_TYPE 73
+#define ERR_FFI_STRUCT_EXPECTED 74
+#define MAX_ERROR_NUMBER 74
 #else
-#define MAX_ERROR_NUMBER 70
+#define MAX_ERROR_NUMBER 71
 #endif
 #define UNKNOWN_ERROR "Unknown error"
 

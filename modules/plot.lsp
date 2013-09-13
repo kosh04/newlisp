@@ -4,6 +4,7 @@
 ;; @version 1.2 allow different length data vectors
 ;; @version 2.0 added plotXY for plotting data points -> (x, y)
 ;; @version 2.1 added plot:reset for resetting optional labels and settings
+;; @version 2.2 option plot:data-min, plot:data-max did not work
 ;; @author Lutz Mueller, September 2011, April 2012
 ;;
 ;; In its initial release the <tt>plot.lsp</tt> module can draw
@@ -305,10 +306,10 @@
     ; set data min, max and range over all plot vectors
     (set 'M (length (args)))
     (set 'N 0)
-    (unless (and data-min data-max)
-        (dotimes (m M)
-            (set 'data (args m) )
-            (set 'N (max N (length data)))
+    (dotimes (m M)
+        (set 'data (args m) )
+        (set 'N (max N (length data)))
+        (unless (and data-min data-max)
             (if (= 0 m)
                 (begin
                     (set 'ymin (apply min data))

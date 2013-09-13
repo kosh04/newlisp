@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2012 June 12<sup>th</sup><br/>
+</h1>Version 2012 December 12<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.4.3
 </center>
 
@@ -135,7 +135,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Default variable values</li>
   <li><tt>args</tt> as local substitute</li>
   </ul></li>
-<li><a href="#toc-5">5. Walking through lists</a>
+<li><a href="#toc-5">5. Walking through lists and data</a>
   <ul>
   <li>Recursion or iteration?</li>
   <li>Speed up with memoization</li>
@@ -772,7 +772,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 
 <br/><center>&sect;</center><br/>
 <a name="toc-5"></a>
-<h2>5. Walking through lists</h2>
+<h2>5. Walking through lists and data</h2>
 
 <h3>Recursion or iteration?</h3>
 
@@ -804,7 +804,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 
 <h3>Speed up with memoization</h3>
 
-<p>A memoizing function caches results for faster retrieval when called with the same parameters again. The following function makes a memoizing function from any built-in or user defined function with an arbitrary number of arguments. A namespace is created for the memoizing function as a cache data.</p>
+<p>A memoizing function caches results for faster retrieval when called with the same parameters again. The following function makes a memoizing function from any built-in or user defined function with an arbitrary number of arguments. A namespace is created for the memoizing function as a data cache.</p>
 
 <pre>
 ; speed up a recursive function using memoization

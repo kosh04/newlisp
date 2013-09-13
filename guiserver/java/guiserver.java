@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/10/07.
 //
 //
-//    Copyright (C) 2012 Lutz Mueller
+//    Copyright (C) 2013 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ public class guiserver extends gsObject
 	static boolean connected = false;
 	static SplashWindow splash = null;
 	static Frame frame = null;
-	static double version = 1.47;
+	static double version = 1.48;
 
     public static void main (String args[]) throws IOException, InterruptedException 
 		{
@@ -390,8 +390,8 @@ public void setUTF8(StringTokenizer tokens)
 			((DialogWidget)gsobject).jdialog.setVisible(true);			
 		else
 			JOptionPane.showMessageDialog(null, 
-				"Software: copyright (c) 2012 Lutz Mueller http://newlisp.org\n" +
-				"Icons: copyright (c) 2012 Michael Michaels http://neglook.com\nAll rights reserved.", 
+				"Software: copyright (c) 2013 Lutz Mueller http://newlisp.org\n" +
+				"Icons: copyright (c) 2013 Michael Michaels http://neglook.com\nAll rights reserved.", 
 				"About newLISP-GS v." + version, JOptionPane.PLAIN_MESSAGE,
 				getIconFromPath("/local/newLISP64.png", this.getClass()));
    		}

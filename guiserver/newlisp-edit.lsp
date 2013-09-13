@@ -10,14 +10,15 @@
 ; version 1.31 cmd-x/v/z/Z and ctrl-x/v/z/Z did not mark edit buffer as dirty
 ; version 1.32 newlispDoc directory configured now depending on NEWLISPDIR on Unix
 ; version 1.33 eliminated manuals in help on all but OSX platform
+; version 1.34 fix for OSX Homebrew when NEWLISPENV is not /usr/share/newlisp
 
 (set-locale "C")
 
 ;;;; initialization
 (set 'newlispDir (env "NEWLISPDIR"))
 
-(set 'newlispDoc (if (= ostype "Win32") 
-	newlispDir (replace "newlisp" (copy newlispDir) "doc/newlisp")))
+(set 'newlispDoc (if (= ostype "Win32")
+   newlispDir (join (reverse (cons "doc/newlisp" (rest (reverse (parse newlispDir "/"))))) "/")))
 
 (load (string newlispDir "/guiserver.lsp"))
 
@@ -1402,8 +1403,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2012 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2012 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2007-13 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2007-13 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)

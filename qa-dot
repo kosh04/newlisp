@@ -1127,8 +1127,10 @@ true
 (define (test-file? )
   (and 
     (file? "qa-dot")
+    (= (file? "qa-dot" true) "qa-dot")
     (file? "modules/")
     (file? "modules")
+    (not (file? "modules" true))
 ))
 
 (define (test-filter )
@@ -1499,6 +1501,21 @@ true
 	(= (join '("A" "B" "C") "-") "A-B-C")
 	(= (join '("A" "B" "C") "-" true) "A-B-C-")
 ))
+
+(define (test-json-error)
+    (and
+        (not (json-parse {{"key" : "value" , "hello"  "world"}}))
+        (= (json-error) '("missing : colon" 28))
+    ))
+
+; see also qa-specific-tests/qa-json
+(define (test-json-parse)
+    (and 
+        (= (json-parse { {"key" : "value" , "hello" : "world", "array" : [1, 2, 3, 4, 5]} })
+        '(("key" "value") ("hello" "world") ("array" (1 2 3 4 5))))
+        (= (json-parse { [1,2,3,4,5,6,{ "nested" : 777}, 8, 9] } )
+          '(1 2 3 4 5 6 (("nested" 777)) 8 9) )
+    ))
 
 (define (test-lambda? )
   (lambda? qa))
@@ -2875,6 +2892,11 @@ true
     (= '() (sort '()))
 	(= (sort '(1 nil)) '(nil 1))
 	(= (sort '(a nil true 1 1.2)) (sort (list 'a nil true 1 1.2)) '(nil true 1 1.2 a))
+    ;; at runtime generated sort function v10.4.6
+    (define (f<g= f g)
+        (expand (fn (a b) (f (g a) (g b))) 'f 'g))
+    (set 'lst '((c 4) (b 5) (a 2)))
+    (= (sort lst (f<g= < last)) '((a 2) (c 4) (b 5)))
   )
 )
 

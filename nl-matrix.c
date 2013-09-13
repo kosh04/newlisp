@@ -1,6 +1,6 @@
 /* nl-matrix.c --- matrix functions for newLISP
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,9 @@ void freeMatrix(double * * m, int rows);
 
 /* since version 7.4.8 'transpose' tramspose any matrix not only
    matrices containing numbers.
+
+   some of the algorithms used come from C LAPACK and index
+   starting 1 not 0 as usual in C
 */ 
 CELL * p_matTranspose(CELL * params)
 {

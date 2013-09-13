@@ -1,5 +1,8 @@
 # makefile for newLISP v.10.x.x on Cygwin with readline support
 #
+# support for CYGWIN was dropped with version 8.6 in 2005
+# nl-sock.c needs a GNU version of icmp6.h
+#
 # Note, that readline support may require different libraries on different OSs
 # 
 # To install, install the normal Win32 version of newLISP first, 

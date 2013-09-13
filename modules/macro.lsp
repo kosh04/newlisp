@@ -2,6 +2,7 @@
 ;; @description Rewrite macros for newLISP
 ;; @version 1.03
 ;; @version 1.04 typo in documentation
+;; @version 1.1 make it work with default functors
 ;; @author Lutz Mueller 2010
 ;; <h2>Introduction</h2>
 ;; This module implements rewrite macros. Rewrite macros take an expression
@@ -84,7 +85,10 @@
 	; make sure patterns and replacements are lists, and macro is new
 	(unless (and (list? callp) (list? body) (not (eval (callp 0))))
 		(throw-error "Wrong arguments or double definition."))
-	(push (list (first callp) '*) macro-list -1)
+    ; if functor is default functor push context symbol
+    (if (= (term (prefix (callp 0))) (term (callp 0)))
+	    (push (list (prefix (first callp)) '*) macro-list -1)
+	    (push (list (first callp) '*) macro-list -1))
 	(eval (expand '(define-macro callp (expand 'body)) 'callp 'body))
 )
 

@@ -1,6 +1,6 @@
 /* unix-lib.c - make the newlisp shared newlisp library
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #include "newlisp.h"
 #include "protos.h"
 
+extern int bigEndian;
+char preLoad[3];
+CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern void setupAllSignals(void);
 extern void loadStartup(char * name);
 extern int evalSilent;
@@ -28,6 +31,12 @@ extern SYMBOL * mainArgsSymbol;
 extern char linkOffset[];
 
 int libInitialized = 0;
+
+#ifdef MAC_OSX
+#define LIBNAME "newlisp.dylib"
+#else
+#define LIBNAME "newlisp.so"
+#endif
 
 void initializeMain(void)
 {
@@ -49,12 +58,14 @@ opsys += 1024;
 initFFI();
 #endif
 
+bigEndian = (*((char *)&bigEndian) == 0);
 initLocale();
 initStacks();
 initialize();
-mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
+mainArgsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)stuffString(LIBNAME));
 setupAllSignals();
 initDefaultInAddr(); 
+sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
 initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)

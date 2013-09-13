@@ -172,6 +172,53 @@ foo * useFoo(int value)
 	}
 
 
+/* miscellanous tests */
+
+typedef struct 
+{
+double dat[2];
+} gsl_complex;
+
+/* structure return
+(struct 'complex "double" "double")
+(import LIB "gsl_complex_rect" "complex" "double" "double")
+(gsl_complex_rect 3.0 4.0) ;=> (3 4)
+*/
+
+gsl_complex complex_test(gsl_complex gs)
+{
+return(gs);
+}
+
+
+/* mixed floats intd for simple ffi and 32bit
+(import "ffitest.dylib" "mixed_int_float")
+(get-string (mixed_int_float 123 (flt 123.456) 456 (flt 789.123)))
+;=> "123 123.456001 456 789.122986\n"
+*/
+
+char * mixed_int_float(int x, float a, int y, float b)
+{
+static char buff[100];
+
+sprintf(buff, "%d %f %d %f\n", x, a, y, b);
+
+return(buff);
+}
+
+/* arrays */
+
+int array_test(int n, int m, double * ptr[])
+{
+int i , j;
+
+for(i = 0; i < n; i++)
+    for(j = 0; j < m; j++)
+        printf("%lf ", ptr[i][j]);
+
+return(0);
+}
+
 
 
 /* eof */

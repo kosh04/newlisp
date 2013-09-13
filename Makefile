@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.4.5
-INT_VERSION = 10405
+VERSION = 10.4.6
+INT_VERSION = 10406
 
 default: makefile_build
 	make -f makefile_build
@@ -50,6 +50,9 @@ help:
 	@echo "  make testall         # run an extended test suite with less output"
 	@echo "  make version         # replace version number in several files after changing in Makefile"
 	@echo "  make bench           # benchmark relative to 32-bit Mac OS 10.5 on MacMini 1.83Ghz"
+	@echo "  make dist            # make a source distribution .tgz package "
+	@echo "  make android_dist    # make a source package for Android NDK compilation"
+	@echo "  make android_dist_utf8  # make a source package for Android NDK compilationi utf8"
 	@echo
 	@echo "Note! on some systems use gmake instead of make."
 	@echo "Note! not all makefiles are listed in this help, specifically 64-bit versions."
@@ -156,6 +159,7 @@ check:
 	./newlisp qa-dot
 	./newlisp qa-specific-tests/qa-dictionary
 	./newlisp qa-specific-tests/qa-xml
+	./newlisp qa-specific-tests/qa-json
 	./newlisp qa-specific-tests/qa-setsig
 	./newlisp qa-specific-tests/qa-net
 	./newlisp qa-specific-tests/qa-cilk
@@ -172,6 +176,7 @@ checkall:
 	./newlisp qa-dot
 	./newlisp qa-specific-tests/qa-dictionary
 	./newlisp qa-specific-tests/qa-xml
+	./newlisp qa-specific-tests/qa-json
 	./newlisp qa-specific-tests/qa-setsig
 	./newlisp qa-specific-tests/qa-net
 	./newlisp qa-specific-tests/qa-net6
@@ -219,6 +224,7 @@ install_home:
 uninstall_home:
 	-make -f makefile_install uninstall_home
 
+# This make the main newlisp-x.x.x.tgz source distribuition package
 dist: clean
 	-mkdir newlisp-$(VERSION)
 	-mkdir newlisp-$(VERSION)/guiserver
@@ -243,6 +249,47 @@ dist: clean
 	tar czvf newlisp-$(VERSION).tgz newlisp-$(VERSION)/*
 	rm -rf newlisp-$(VERSION)
 	mv newlisp-$(VERSION).tgz ..
+
+
+# this makes a Android source pacage for compilation using the Android NDK
+# may want to change APP_PLOTFORM spec to something different
+android_dist_utf8:
+	-mkdir newlisp-ndk-utf8-$(VERSION)
+	-mkdir newlisp-ndk-utf8-$(VERSION)/jni
+	-mkdir newlisp-ndk-utf8-$(VERSION)/libs
+	-mkdir newlisp-ndk-utf8-$(VERSION)/libs/armeabi
+	-mkdir newlisp-ndk-utf8-$(VERSION)/obj
+	-mkdir newlisp-ndk-utf8-$(VERSION)/obj/local
+	-mkdir newlisp-ndk-utf8-$(VERSION)/obj/local/armeabi
+	cp nl*.c newlisp.c *.h pcre*.c newlisp-ndk-utf8-$(VERSION)/jni
+	rm newlisp-ndk-utf8-$(VERSION)/jni/win32-ffi.h
+	cp doc/Android.html newlisp-ndk-utf8-$(VERSION)
+	cp util/Android-utf8.mk newlisp-ndk-utf8-$(VERSION)/jni/Android.mk
+	cp util/Application.mk newlisp-ndk-utf8-$(VERSION)/jni
+
+	tar czvf newlisp-ndk-utf8-$(VERSION).tgz newlisp-ndk-utf8-$(VERSION)/*
+	rm -rf newlisp-ndk-utf8-$(VERSION)
+	mv newlisp-ndk-utf8-$(VERSION).tgz ..
+
+android_dist:
+	-mkdir newlisp-ndk-$(VERSION)
+	-mkdir newlisp-ndk-$(VERSION)/jni
+	-mkdir newlisp-ndk-$(VERSION)/libs
+	-mkdir newlisp-ndk-$(VERSION)/libs/armeabi
+	-mkdir newlisp-ndk-$(VERSION)/obj
+	-mkdir newlisp-ndk-$(VERSION)/obj/local
+	-mkdir newlisp-ndk-$(VERSION)/obj/local/armeabi
+	cp nl*.c newlisp.c *.h pcre*.c newlisp-ndk-$(VERSION)/jni
+	rm newlisp-ndk-$(VERSION)/jni/win32-ffi.h
+	rm newlisp-ndk-$(VERSION)/jni/nl-utf8.c 
+	cp doc/Android.html newlisp-ndk-$(VERSION)
+	cp util/Android.mk newlisp-ndk-$(VERSION)/jni
+	cp util/Application.mk newlisp-ndk-$(VERSION)/jni
+
+	tar czvf newlisp-ndk-$(VERSION).tgz newlisp-ndk-$(VERSION)/*
+	rm -rf newlisp-ndk-$(VERSION)
+	mv newlisp-ndk-$(VERSION).tgz ..
+
 
 # this changes to the current version number in several files
 #

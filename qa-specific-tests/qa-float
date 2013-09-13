@@ -90,6 +90,36 @@
 (println "machine epsilon: " (result 0) " => 1.110223025e-16")
 
 (println)
+(if 
+    (and 
+         ;(= 2.2250738585072007e-308 2.2250738585072011e-308) ; true on OSX nil on FreeBSD and Win232
+         ;(= 2.2250738585072011e-308 2.2250738585072012e-308) ; true on FreeBSD and Win32 nil on OSX
+
+         ;(= (bits (first (unpack "Lu" (pack "lf" 2.2250738585072007e-308)))) ; true on FreeBSD and Win32 nil OSX
+         ;"1111111111111111111111111111111111111111111111111110")
+         ;(= (bits (first (unpack "Lu" (pack "lf" 2.2250738585072007e-308)))) ; true on OSX nil on FreeBSD and Win32
+         ;"1111111111111111111111111111111111111111111111111111")
+
+         ;(= (bits (first (unpack "Lu" (pack "lf" 2.2250738585072011e-308)))) ; true on OSX and Win32 nil on FreeBSD
+         ;"1111111111111111111111111111111111111111111111111111") ; 52 bits
+         ;(= (bits (first (unpack "Lu" (pack "lf" 2.2250738585072011e-308)))) ; true on FreeBS nil on OSX and Win32
+         ;"10000000000000000000000000000000000000000000000000000") ; 53 bits
+
+
+         ; work on FreeBSD and OSX but not on Win32 XP
+;         (= (bits 2.2250738585072007e-308) "0")
+;         (= (bits (first (unpack "Lu" (pack "lf" 2.2250738585072012e-308))))
+;         "10000000000000000000000000000000000000000000000000000")  ; 53 bits
+
+         ; works on FreeBSD, OSX and Win32
+         (= (bits (first (unpack "Lu" (pack "lf" (sqrt -1)))))
+         "1111111111111000000000000000000000000000000000000000000000000000") ; 64 bits
+    )
+    (println "bit patterns OK")
+    (println "problems in bit patterns")
+)
+
+(println)
 (if-not (apply and result-list)
 	(println ">>>>> PROBLEM in floating point tests")
 	(println ">>>>> Floating point tests SUCCESSFUL")

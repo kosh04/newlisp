@@ -10,6 +10,7 @@
 ;; @version v 2.9 - eliminate deprecated integer -> int
 ;; @version v 2.91 - minor code cleanup in CONTENT_LENGTH handling
 ;; @version v 3.0 - handle multipart POST data. Added by Unya, Oct 2012
+;; @version v 3.2 - fixed for large POST data
 ;; @author Lutz Mueller, Unya 2002-2012
 ;;
 ;; This module defines basic CGI processing tools for processing
@@ -132,7 +133,9 @@
 ; if available
 (if (env "CONTENT_LENGTH")
     (when (= (env "REQUEST_METHOD") "POST")
-        (read (device) post-data (int (env "CONTENT_LENGTH")))
+        (set 'post-data "")
+        (while (read (device) buffer (int (env "CONTENT_LENGTH")))
+            (write post-data buffer))
 
         (let (boundary (when (regex "multipart/form-data; boundary=(.*)"
                 (env "CONTENT_TYPE")) (append "--" $1)))

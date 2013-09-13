@@ -107,6 +107,7 @@
 	(xml-type-tags nil nil nil nil)
 	(print (= (xml-parse "<msg>Hello World</msg>" (+ 1 2 4 8 16) 'CTX)
     		'((CTX:msg "Hello World"))) )
+    (= (xml-parse "<foo:var>Hello</foo:var>" 31) '((foo.var "Hello")))
 	(begin (println) (println) true)
 ))
 

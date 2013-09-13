@@ -1,4 +1,4 @@
-#!/home/public/cgi-bin/newlisp
+#!/usr/bin/newlisp
 #
 # Demo of CGI 1.1 interface 
 #

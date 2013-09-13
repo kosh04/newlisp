@@ -57,6 +57,13 @@ or
     
 This will bring up the debian installer application.
 
+On some UBUNTU libraries libreadline and libffi may have to be installed
+when making from source:
+
+    sudo apt-get install libreadline6 libreadline6-dev  
+and
+    apt-get install libffi-dev 
+
 
 (4) MINIMUM INSTALL
 -------------------
@@ -148,6 +155,13 @@ and does not occur on newer versions of GCC. The 'long long' data type
 is not used anywhere in the newLISP source but part of some header files 
 of the GCC installation.
 
+Most of the makefile_xxxxx can also be used this way:
+
+    make -f makefile_xxxxx
+
+but always read the contents of makefile_xxxxx first, as it sometimes
+contains specific instructions.
+
 
 configure-alt script
 --------------------
@@ -179,6 +193,51 @@ configure-alt will configure a 64-bit (LP64) application by default
 if the platform and tools are capable. The standard configure script
 will configure a makefile for 32-bit (ILP32) by default. This may 
 change in the future.
+
+Compiling and running newlisp-x.x.x/util/types.c will produce:
+
+IPL32 memory model
+------------------
+type      bytes
+---------------
+char        1
+char *      4
+void *      4
+short int   2
+int         4
+long        4
+long int    4
+long long int  8
+size_t      4
+float       4
+double      8
+long double 16
+wchar_t     4
+size_t      4
+off_t       8
+time_t      4
+
+
+LP64 memory model
+-----------------
+type      bytes
+---------------
+char        1
+char *      8
+void *      8
+short int   2
+int         4
+long        8
+long int    8
+long long int  8
+size_t      8
+float       4
+double      8
+long double 16
+wchar_t     4
+size_t      8
+off_t       8
+time_t      8
 
 
 (7) LOCALIZATION

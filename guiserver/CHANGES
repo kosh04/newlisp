@@ -957,3 +957,4 @@
 
 1.47 gs:get-text now handles empty gs:text-field correctly
 
+1.48 added various new primitives to SyntaxHighlighter.java

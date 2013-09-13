@@ -8,7 +8,8 @@
 ;; @version 1.45 doc fixes
 ;; @version 1.47 doc fixes
 ;; @version 1.48 doc fixes
-;; @author LM, August 2008, 2009, 2010, 2012
+;; @version 1.50 doc fixes
+;; @author LM, August 2008, 2009, 2010, 2012, 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -252,7 +253,6 @@
 ;; <li>Symbol ids of components can be expressed as strings.</li>
 ;; <li>Number values can be expressed as strings.</li>
 ;; <li>Numbers can be expressed as floats or integers.</li>
-;; <li>String constants for type and orientation constants can be given as symbols.</li>
 ;; </ul>
 ;; </blockquote>
 ;; Here are some examples:
@@ -264,10 +264,6 @@
 ;;     (gs:panel "ColorPanel" "360" "200")
 ;;     ; is the same as
 ;;     (gs:panel "ColorPanel" 360.0 "200.00")
-;;
-;;     (gs:set-flow-layout 'ButtonDemo "center" 2 15)
-;;     ; is the same as
-;;     (gs:set-flow-layout 'ButtonDemo 'center 2 15)
 ;; </pre>
 ;; Although the first form is preferred for clarity and readability, in some cases coding
 ;; may be more efficient using the other forms.

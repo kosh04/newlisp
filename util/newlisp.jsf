@@ -35,7 +35,8 @@
 # 23 December 2011, L.M. added struct
 # 2 April 2012, L.M. added union, even?, odd?, crit-f, crit-t, prob-f, prob-t
 # 26 April 2012, L.M. added corr, stats, t-test
-# version 1.15
+# 20 January 2013, L.M. added json-parse, json-error
+# version 1.16
 
 =Idle		
 =Comment 	bold green
@@ -256,6 +257,8 @@
 "invert"	prim
 "irr"	prim
 "join"	prim
+"json-error"    prim
+"json-parse"    prim
 "lambda?"	prim
 "last"	prim
 "last-error"	prim

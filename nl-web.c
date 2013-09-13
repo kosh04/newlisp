@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -963,12 +963,12 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
    handles queries in GET requests and sets environment variables 
    DOCUMENT_ROOT, REQUEST_METHOD, SERVER_SOFTWARE and QUERY_STRING,
    and when present in client request header HTTP_HOST, HTTP_USER_AGENT
-   and HTTP_COOKIE. No special encodings are supported.
+   and HTTP_COOKIE. REMOTE_ADDR is set when the client connects.
    Subset HTTP/1.0 compliant.
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.4.5"
+#define SERVER_SOFTWARE "newLISP/10.4.6"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1104,7 +1104,7 @@ if(*sptr == '/')
 
 if((len = strlen(request)) == 0)
     {
-    if(isFile(DEFAULT_PAGE_2) == 0) 
+    if(isFile(DEFAULT_PAGE_2, 0) == 0) 
         request = DEFAULT_PAGE_2;
     else
         request = DEFAULT_PAGE_1;
@@ -1346,25 +1346,37 @@ srandom(milliSecTime());
 printf("# CGI request:%s:%s:\r\n", request, query);
 #endif
 
-if(isFile(request) != 0)
+if(isFile(request, 0) != 0)
     {
     sendHTTPmessage(404, ERROR_404, request);
     return;
     }
 
-if(isFile("/tmp") != 0)
+#ifdef ANDROID
+if(!isDir("/data/tmp"))
+#else
+if(!isDir("/tmp"))
+#endif
     {
 #ifdef WIN_32
     sendHTTPmessage(500, "Need \\tmp directory on current drive", request);
 #else
+#ifdef ANDROID
+    sendHTTPmessage(500, "Need /data/tmp directory", request);
+#else
     sendHTTPmessage(500, "Need /tmp directory", request);
+#endif
 #endif
     return;
     }
 
 size = strlen(request) + 64;
 command = alloca(size);
+#ifdef ANDROID
+snprintf(tempfile, 31, "/data/tmp/nl%02x%08x%08x", (unsigned int)size, (unsigned int)random(), (unsigned int)random());
+#else
 snprintf(tempfile, 30, "/tmp/nl%02x%08x%08x", (unsigned int)size, (unsigned int)random(), (unsigned int)random());
+#endif
 
 #if defined (WIN_32) || (OS2)
 snprintf(command, size - 1, "newlisp \"%s\" > %s", request, tempfile);

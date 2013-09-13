@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,6 +101,8 @@ CELL * setEvent(CELL * params, SYMBOL * * eventSymPtr, char * sysSymName);
 CELL * setNthStr(CELL * cellStr, CELL * new, char * insertPtr);
 CELL * subarray(CELL * array, ssize_t offset, ssize_t length);
 CELL * transposeArray(CELL * array);
+CELL * p_JSONparse(CELL * params);
+CELL * p_JSONerror(CELL * params);
 CELL * p_XMLerror(CELL * params);
 CELL * p_XMLparse(CELL * params);
 CELL * p_XMLtypeTags(CELL * params);
@@ -551,7 +553,7 @@ int getRegexOptions(CELL * params);
 int isLegalSymbol(char * symName);
 unsigned short in_cksum(unsigned short * addr, int len);
 int isDir(char * fileName);
-int isFile(char * fileName);
+int isFile(char * fileName, int flag);
 int main(int argc, char * argv[]);
 int makeStreamFromFile(STREAM * stream, char * fileName, size_t size, size_t offset);
 int makeStreamFromString(STREAM * stream, char * str);

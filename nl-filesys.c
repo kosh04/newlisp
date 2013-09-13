@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,8 +35,10 @@
 
 #ifndef WIN_32
 #include <sys/types.h>
+#ifndef ANDROID
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#endif
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #endif
@@ -105,9 +107,11 @@ extern STREAM errorStream;
 extern UINT netErrorIdx;
 
 /* semaphore() function type */
+#ifdef SEMAPHORE
 #define SEM_CREATE 0
 #define SEM_STATUS 1
 #define SEM_SIGNAL 2
+#endif
 
 /* used in fork and spawn */
 int parentPid = 0;
@@ -126,17 +130,17 @@ int flag;
 params = getString(params, &fileName);
 flag = getFlag(params);
 
-return(isFile(fileName) ? nilCell : flag ? stuffString(fileName) : trueCell);
+return(isFile(fileName, flag) ? nilCell : flag ? stuffString(fileName) : trueCell);
 }
 
-int isFile(char * fileName)
+int isFile(char * fileName, int flag)
 {
 struct stat fileInfo;
+int result;
 
 #ifdef WIN32
 char slash;
 size_t len;
-int result;
 
 len = strlen(fileName);
 slash = *(fileName + len - 1);
@@ -150,10 +154,16 @@ result = stat(fileName, &fileInfo);
 #endif
 if(slash == '\\' || slash == '/')
     *(fileName + len - 1) = slash;
-return(result);
 #else /* not WIN32 */
-return(stat(fileName, &fileInfo));
+result = stat(fileName, &fileInfo);
 #endif
+if(result == 0)
+    {
+    if(flag)
+        result = ! S_ISREG(fileInfo.st_mode);
+    }
+
+return(result);
 }
 
 CELL * p_isDirectory(CELL * params)
@@ -1856,7 +1866,6 @@ return(trueCell);
 }
 
 /* ------------------------------ semaphores --------------------------------- */
-
 #ifdef WIN_32
 
 UINT winCreateSemaphore(void);
@@ -1909,6 +1918,7 @@ return(stuffInteger(sem_id));
 }
 #endif
 
+#ifdef SEMAPHORE
 #ifndef WIN_32
 /* Mac OS X, Linux/UNIX */
 
@@ -2021,6 +2031,8 @@ return(sem_id);
 }
 
 #endif  /* Mac OS X, Linux, UNIX - not WIN_32 */
+
+#endif /* SEMAPHORE */
 
 #ifdef WIN_32
 UINT winSharedMemory(int size);
@@ -2280,9 +2292,14 @@ else
     checkDeleteShareFile(address);
     memset((char *)(address + 2), 0, pagesize - 2 * sizeof(long));
 #ifndef WIN_32
+#ifdef ANDROID
+    strncpy((char *)(address + 2), "/data/tmp/nls-", 15);
+    getUUID((char *)(address + 2) + 14, 0);
+#else /* all other UNIX */
     strncpy((char *)(address + 2), "/tmp/nls-", 10);
     getUUID((char *)(address + 2) + 9, 0);
-#else
+#endif
+#else /* WIN_32 */
     strncpy((char *)(address + 2), "/temp/nls-", 11);
     getUUID((char *)(address + 2) + 10, 0);
 #endif
@@ -2298,7 +2315,11 @@ void checkDeleteShareFile(UINT * address)
 {
 if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
 #ifndef WIN_32
+#ifdef ANDROID
+        (strncmp((char *)(address + 2), "/data/tmp/nls-", 9) == 0) &&
+#else
         (strncmp((char *)(address + 2), "/tmp/nls-", 9) == 0) &&
+#endif
         (strlen((char *)(address + 2)) == 45) )
 #else
         (strncmp((char *)(address + 2), "/temp/nls-", 10) == 0) &&

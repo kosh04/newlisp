@@ -1,0 +1,26 @@
+/* qa-simpleffi */
+
+/* use either from main distribution directory or qa-specific-tests directory */
+
+(if (ends-with (real-path) "qa-specific-tests")
+    (if (zero? (& 0x100 (sys-info -1)))
+        (! "gcc -m32 ../util/ffitest.c -shared -o ffitest.dylib")
+        (! "gcc -m64 ../util/ffitest.c -shared -o ffitest.dylib"))
+    (if (zero? (& 0x100 (sys-info -1)))
+        (! "gcc -m32 util/ffitest.c -shared -o ffitest.dylib")
+        (! "gcc -m64 util/ffitest.c -shared -o ffitest.dylib"))
+)
+
+(import "ffitest.dylib" "mixed_int_float")
+(if (zero? (& 0x100 (sys-info -1)))
+  (if (= (get-string (mixed_int_float 123 (flt 123.456) 456 (flt 789.123))) "123 123.456001 456 789.122986\n")
+    (println "simple ffi with mixed int/float on 32-bit SUCCESSFULL")
+    (println "ERROR in simple ffi")
+  )
+  (println "no float or double support for simple ffi on 64-bit")
+)
+
+(delete-file "ffitest.dylib")
+
+(exit)
+

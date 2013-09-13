@@ -6429,7 +6429,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      On OSX Mountain Lion 10.8.0 compiles also using clang instead of gcc.
 
 
-10.4.5
+10.4.5 Maintenance Release, November 21st, 2012
      Doc changes.
 
      Avoid overrun of invalid utf8 strings in utf8_wlen() in nl-utf8.c and
@@ -6455,4 +6455,52 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Added makefile_linuxLP64_redhat_utf8_ffi and makefile_linux_redhat_utf8_ffi.
      Work Centos and Fedora. Use ./configure to configure these makefiles for correct
      libffi version. Thanks to Ivan Ribeiro for this contribution. 
+
+10.4.6
+     When using option 8 in xml-parse (translation of XML tags into newLISP symbols),
+     then the colon : in XML tags with namespace part, will be translated into a dot.
+
+     macro.lsp now works when defining default functors as macros.
+
+     A fix in cgi.lsp for receiving large POST data.
+
+     Fix for newlisp-edit.lsp for usage in OSX homebrew distribution.
+
+     In 'file?' the 'true' flag not only causes the filename to be returned but now
+     also implies that the filename is not a directory, else 'nil' is returned.
+
+     Crtl-D in Unix now will emit a line feed before exiting.
+
+     Added 'make android_dist' and 'make android_dist_utf8' for making 
+     newlisp-ndk-x.x.x.tgz and newlisp-ndk-utf8-x.x.x.tgz package.
+
+     A fix in sort when the sorting function is generated at run-time.
+
+     On LINUX and BSD when compiled with GNU libreadline support a matching paren will 
+     blink on the simple or multiple newLISP command line. For this the following line:
+         set blink-matching-paren on
+     should be put into Bash .inputrc
+
+     When making for Linux Android, 'share' and 'spawn' now work for data > 4072 bytes,
+     when a /data/tmp directory is created on the Android device. 
+     
+     This /data/tmp directory must also be present for CGI when running newLISP HTTP
+     server on Android. 
+
+     Lower 4 bits of (sys-info -1) on Android is 11 but 'ostype' is "Linux".
+
+     JSON parser function (json-parse <string>) translates a JSON formatted string
+     into a S-expression. (json-error) returns error information of the form:
+     (<text str> <int-position>) when (json-parse <string>) returned 'nil'. 
+     ECMA-262 compliant as defined at  http://json.org 
+
+     big/small -endian initilaization wasn't happening in LIBRARY compile flavor, 
+     always assumed big-endian.
+
+     The module files: cgi.lsp, macro.lsp, plot.lsp and sqlite3.lsp have been updated.
+
+     Added error checking on net-select mode parameter.
+
+     Server mode now sets the REMOTE_ADDR environment variable to the IP-string of 
+     the connecting client.
 

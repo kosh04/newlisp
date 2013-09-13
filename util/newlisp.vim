@@ -9,9 +9,10 @@
 " Last change:  2012 April 2nd, LM added union,odd?,even?,crit-f,cri-t,prob-f,prob-t
 " Last change:  2012 April 19th, LM deprecated if-not and local
 " Last change:  2012 April 26th, added corr, stats, t-test
+" Last change:  2013 January 20th, added json-error, json-parse and sysvars $error-event $x
 " newLISP site: http://www.newlisp.org/
 
-" $Id: newlisp.vim,v 1.36 2011/12/23 13:55:35 slobin Exp $
+" $Id: newlisp.vim,v 1.362 2011/12/23 13:55:35 slobin Exp $
 
 " *** Some syntax quirks of newLISP and how this file treats them: ***
 
@@ -112,19 +113,20 @@ syn keyword newlispFunction add address amb and append append-file apply args ar
 syn keyword newlispFunction array? asin asinh assoc atan atan2 atanh atom? base64-dec base64-enc
 syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback
 syn keyword newlispFunction case catch ceil change-dir char chop clean close command-event cond cons
-syn keyword newlispFunction constant context context? continue copy copy-file corr cos cosh count cpymem
-syn keyword newlispFunction crc32 crit-chi2 crit-f crit-t crit-z current-line curry date date-list date-parse
-syn keyword newlispFunction date-value debug dec def-new default define define-macro delete
-syn keyword newlispFunction delete-file delete-url destroy det device difference directory
+syn keyword newlispFunction constant context context? continue copy copy-file corr cos cosh count
+syn keyword newlispFunction cpymem crc32 crit-chi2 crit-f crit-t crit-z current-line curry date 
+syn keyword newlispFunction date-list date-parse date-value debug dec def-new default define define-macro 
+syn keyword newlispFunction delete delete-file delete-url destroy det device difference directory
 syn keyword newlispFunction directory? div do-until do-while doargs dolist dostring dotimes dotree
 syn keyword newlispFunction dump dump-symbol dup empty? encrypt ends-with env erf error-event eval
 syn keyword newlispFunction eval-string even? exec exists exit exp expand explode extend factor fft
 syn keyword newlispFunction file-info file? filter find find-all first flat float float? floor flt
 syn keyword newlispFunction for for-all fork format fv gammai gammaln gcd get-char get-float get-int
 syn keyword newlispFunction get-long get-string get-url global global? if if-not ifft import inc
-syn keyword newlispFunction index inf? int integer integer? intersect invert irr join lambda? last
-syn keyword newlispFunction last-error legal? length let letex letn list list? load local log lookup
-syn keyword newlispFunction lower-case macro? main-args make-dir map mat match max member min mod
+syn keyword newlispFunction index inf? int integer integer? intersect invert irr join json-error
+syn keyword newlispFunction json-parse lambda? last last-error legal? length let letex letn list list?
+syn keyword newlispFunction load local log lookup syn keyword newlispFunction lower-case macro? 
+syn keyword newlispFunction main-args make-dir map mat match max member min mod syn keyword 
 syn keyword newlispFunction mul multiply net-accept net-close net-connect net-error net-eval
 syn keyword newlispFunction net-interface net-ipv net-listen net-local net-lookup net-packet
 syn keyword newlispFunction net-peek net-peer net-ping net-receive net-receive-from net-receive-udp
@@ -145,7 +147,8 @@ syn keyword newlispFunction unicode unify union unique unless unpack until upper
 syn keyword newlispFunction wait-pid when while write write-buffer write-char write-file write-line
 syn keyword newlispFunction xfer-event xml-error xml-parse xml-type-tags zero? \| ~
 
-syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 $args $idx $it $main-args
+syn keyword newlispVariable ostype $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12 $13 $14 $15 
+syn keyword newlispVariable ostype $args $error-event $idx $it $main-args $x
 syn keyword newlispKeyword fn lambda
 syn keyword newlispPreloaded Class Tree module
 

@@ -1,0 +1,140 @@
+#!/usr/bin/newlisp
+
+; test JSON translation
+
+(set 'js-1 [text]
+{
+    "name": "John Smith",
+    "age": 32,
+    "employed": true,
+    "address": {
+        "street": "701 First Ave.",
+        "city": "Sunnyvale, CA 95125",
+        "country": "United States"
+    },
+    "children": [
+        {
+            "name": "Richard",
+            "age": 7
+        },
+        {
+            "name": "Susan",
+            "age": 4
+        },
+        {
+            "name": "James",
+            "age": 3
+        }
+    ]
+}
+[/text])
+
+; this from a (public blog post) has empty objects:
+;    curl https://api.balancedpayments.com/v1/credits \
+;        -d amount=10000 \
+;        -d description="Math lesson" \
+;        -d bank_account[name]="Johann Bernoulli" \
+;        -d bank_account[account_number]=9900000001 \
+;        -d bank_account[routing_number]=121000358 \
+;        -d bank_account[type]=checking \
+;        -u 7b7a51ccb10c11e19c0a026ba7e239a9:
+
+(set 'js-2 [text]
+{
+  "status": "pending", 
+  "description": "Math lesson", 
+  "created_at": "2013-01-08T18:28:56.979172Z", 
+  "uri": "/v1/credits/CR23hlY1ElsZOFuKiruxPL3W", 
+  "amount": 10000, 
+  "meta": {}, 
+  "id": "CR23hlY1ElsZOFuKiruxPL3W", 
+  "bank_account": {
+    "routing_number": "121000358", 
+    "bank_name": "BANK OF AMERICA, N.A.", 
+    "name": "Johann Bernoulli", 
+    "meta": {}, 
+    "account_number": "xxxxxx0001", 
+    "fingerprint": "1eH719hwbYRpEILVKyboPs_pn", 
+    "type": "checking"
+  }
+}
+[/text])
+
+; like js-2, but no white space between tokens, just one long line
+(set 'js-3 [text]
+{"status": "pending","description":"Math lesson","created_at":"2013-01-08T18:28:56.979172Z","uri":"/v1/credits/CR23hlY1ElsZOFuKiruxPL3W","amount":10000,"meta":{},"id":"CR23hlY1ElsZOFuKiruxPL3W","bank_account":{"routing_number":"121000358","bank_name": "BANK OF AMERICA, N.A.","name":"Johann Bernoulli","meta":{},"account_number":"xxxxxx0001","fingerprint": "1eH719hwbYRpEILVKyboPs_pn","type":"checking"}}
+[/text])
+
+(if (and 
+        (= (json-parse js-1)
+          '(("name" "John Smith") 
+            ("age" 32) 
+            ("employed" true) 
+            ("address" (
+                ("street" "701 First Ave.") 
+                ("city" "Sunnyvale, CA 95125") 
+                ("country" "United States"))) 
+            ("children" (
+                (("name" "Richard") ("age" 7)) 
+                (("name" "Susan") ("age" 4)) 
+                (("name" "James") ("age" 3))))))
+        ; empty objects {}
+        (= (json-parse js-2) (json-parse js-3)
+            '(("status" "pending") 
+              ("description" "Math lesson") 
+              ("created_at" "2013-01-08T18:28:56.979172Z") 
+              ("uri" "/v1/credits/CR23hlY1ElsZOFuKiruxPL3W") 
+              ("amount" 10000) 
+            ("meta" ()) 
+            ("id" "CR23hlY1ElsZOFuKiruxPL3W") 
+            ("bank_account" ( 
+                ("routing_number" "121000358") 
+                ("bank_name" "BANK OF AMERICA, N.A.") 
+                ("name" "Johann Bernoulli") 
+                ("meta" ()) 
+                ("account_number" "xxxxxx0001") 
+                ("fingerprint" "1eH719hwbYRpEILVKyboPs_pn") 
+                ("type" "checking")))))
+        ; from test-json-error qa-dot
+        (and
+          (not (json-parse {{"key" : "value" , "hello"  "world"}}))
+          (= (json-error) '("missing : colon" 28))
+        )
+        ; test-json-parse from qa-dot with arrays
+        (and
+          (= (json-parse { {"key" : "value" , "hello" : "world", "array" : [1, 2, 3, 4, 5]} })
+          '(("key" "value") ("hello" "world") ("array" (1 2 3 4 5))))
+          (= (json-parse { [1,2,3,4,5,6,{ "nested" : 777}, 8, 9] } )
+            '(1 2 3 4 5 6 (("nested" 777)) 8 9) )
+        )
+        ; empty array and empty object
+        (and (= (json-parse {[]}) '()) (= (json-parse {{}}) '()))
+        ; only for utf8 enabled versions
+        (if utf8 (= (json-parse { {"greek letters" : "\u03b1\u03b2\u03b3\u03b4"} })
+                    '(("greek letters" "αβγδ")))
+                 true
+        )
+    )
+    (println ">>>>> JSON translation tested SUCESSFUL")
+    (println ">>>>> PROBLEM in JSON translation")
+)
+
+(println)
+(exit)
+
+;; Other Tests
+
+; one long JSON line without spacesi (~ 700 bytes):
+; (json-parse (first (exec "curl -Ls http://webutils.flourishworks.com/dns")))
+; The JSON string returned by curl is different every time, but works.
+
+; longer JSON text (~ 3600 bytes), fill in any other ip-number
+; (json-parse (get-url "http://apps.db.ripe.net/whois/lookup/ripe/inetnum/208.94.116.204.json"))
+
+; large 10 Mbyte JSON file:
+; (write-file "auctions.json"  
+;     (get-url "http://eu.battle.net/auction-data/258993a3c6b974ef3e6f22ea6f822720/auctions.json"))
+; (time (set 'S (json-parse (read-file "auctions.json")))) ;=> 240.057 ms
+; (length (flat S)) ;=> 1212355 tokens
+
+

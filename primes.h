@@ -1,6 +1,6 @@
 /* primes.h - table of primitives
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -248,6 +248,8 @@ PRIMITIVE primitive[] =
 	{"xml-parse",	p_XMLparse, 	0},
 	{"xml-error",	p_XMLerror,	0},
 	{"xml-type-tags",   p_XMLtypeTags,  0},
+    {"json-parse",  p_JSONparse, 0},
+    {"json-error",  p_JSONerror, 0},
 	{"base64-enc",		p_base64Enc,	0},
 	{"base64-dec",		p_base64Dec,	0},
 	{"crc32",		p_crc32,	0},
@@ -298,15 +300,21 @@ PRIMITIVE primitive[] =
 #endif
 #ifndef OS2
 #ifndef WIN_32
+#ifndef LIBRARY
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
 	{"abort",		p_abort,	0},
 	{"send",		p_send,		0},
 	{"receive",		p_receive,	0},
 #endif
+#endif
+#ifndef LIBRARY
 	{"share",		p_share,	0},
 #endif
+#endif
+#ifdef SEMAPHORE
 	{"semaphore",	p_semaphore,0},
+#endif
 	{"seek",		p_seek,		0},
 #ifndef WIN_32
 	{"peek",		p_peek,		0},

@@ -15,6 +15,7 @@
 ## version 1.19 added new 'date-list'
 ## version 1.20 added new 'struct'
 ## version 1.21 added new 'union', 'even?', 'odd?'. 'crit-f', 'crit-t', 'prob-f', 'prob-t'
+## version 1.22 added new 'json-error', 'json-parse'
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -47,9 +48,9 @@ color blue "([[:space:]()]|^)(div|do-until|do-while|doargs|dolist|dostring|dotim
 color blue "([[:space:]()]|^)(encrypt|ends-with|env|erf|error-event|eval|eval-string|even?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(exec|exists|exit|exp|expand|explode|extend|factor|fft|file-info|file\?|filter|find)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(find-all|first|flat|float|float\?|floor|flt|for|for-all|fork|format|fv|gammai)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(gammaln|gcd|get-char|get-float|get-int|get-long|get-string|get-url|global|global\?|if)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(ifft|import|inc|inf?|index|int|integer|integer\?|intersect|invert|irr|join|lambda\?|last)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(last-error|legal\?|length|let|letex|letn|list|list\?|load|local|log|lookup|lower-case)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(gammaln|gcd|get-char|get-float|get-int|get-long|get-string|get-url|global|global\?|if|last-error)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(ifft|import|inc|inf?|index|int|integer|integer\?|intersect|invert|irr|join|json-error|json-parse)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(lambda\?|last|legal\?|length|let|letex|letn|list|list\?|load|local|log|lookup|lower-case)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(macro\?|main-args|make-dir|map|mat|match|max|member|min|mod|mul|multiply)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-accept|net-close|net-connect|net-error|net-eval|net-interface|net-ipv|net-listen)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(net-local|net-lookup|net-packet|net-peek|net-peer|net-ping|net-receive|net-receive-from)([[:space:]()]|$)"

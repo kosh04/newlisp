@@ -4,7 +4,7 @@
 ;   (if (and (primitive? (eval sm)) (< sm 'zzzz))
 ; in procedure (qa) defined arounf line 160
 
-(write-line 2 "Testung for cell leaks, wait ...")
+(write-line 2 "Testing for cell leaks, wait ...")
 
 (set 'testing-cell-leaks true)
 

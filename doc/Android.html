@@ -1,0 +1,96 @@
+<body style="font-family: Helvetica, Verdanan, Arial, sans-serif;">
+<h2>Make newLISP for Android Linux</h2>
+<p>Fore the following download: <a href="http://www.newlisp.org/code/newlisp-ndk-10.4.5.tgz">http://www.newlisp.org/code/newlisp-ndk-10.4.5.tgz</a></p>
+<p>This package can also be made starting newLISP v.10.4.6 using the following command from the main distribution directory:</p>
+<pre>
+  make android_dist
+  # or
+  make android_dist_utf8
+</pre>
+<p>This will make a newlisp-ndk-x.x.x.tgz in the parent directory of the distribution directory where x.x.x is the version number.</p>
+<p>It is missing (semaphore), which requires libraries that do not exist on Android. It also does not contain the READLINE compile flavor. UTF8 support can be added by making a source package using <tt>make android_dist_utf8</tt>.</p>
+
+<p>In order for <tt>share</tt> to work for more than 4072 bytes a <tt>/data/tmp</tt> directory must be created on the Android device. This directory is also required if more than 4072 data are transferred when using the <tt>spawn</tt> function.</p>
+
+<p>Thanks to <i>Kanen Flowers</i> from <a href="http://www.scruffy.tv/">www.scruffy.tv</a> for doing the adaptation to the Android flavor of Linux and putting together the following instructions:</p>
+
+<h2>Steps to compile:</h2>
+<ol>
+<li>Download the <a href="http://developer.android.com/tools/sdk/ndk/index.html">android-ndk</a></li>
+<li>Make sure your environment works (see above documentation) on your platform</li>
+<li>Unpack and put newlisp-ndk in the android-ndk directory</li>
+<li>Compile newlisp</li>
+</ol>
+<pre>
+  kanen (~/Code/android-ndk)$ ./ndk-build -C newlisp-ndk/
+  make: Entering directory `/Users/kanen/Code/android-ndk/newlisp-ndk'
+  Compile thumb  : newlisp <= newlisp.c
+  Compile thumb  : newlisp <= nl-symbol.c
+  Compile thumb  : newlisp <= nl-math.c
+  Compile thumb  : newlisp <= nl-list.c
+  Compile thumb  : newlisp <= nl-liststr.c
+  Compile thumb  : newlisp <= nl-string.c
+  Compile thumb  : newlisp <= nl-sock.c
+  Compile thumb  : newlisp <= nl-import.c
+  Compile thumb  : newlisp <= nl-xml.c
+  Compile thumb  : newlisp <= nl-web.c
+  Compile thumb  : newlisp <= nl-matrix.c
+  Compile thumb  : newlisp <= nl-debug.c
+  Compile thumb  : newlisp <= pcre.c
+  Compile thumb  : newlisp <= nl-filesys.c
+  Executable     : newlisp
+  Install        : newlisp => libs/armeabi/newlisp
+  make: Leaving directory `/Users/kanen/Code/android-ndk/newlisp-ndk'
+</pre>
+<p>The binary gets put into <tt>libs/armeabi/newlisp</tt>. From there, you just have to build an Android emulator and you can copy newLISP over to it.</p>
+<p>For that, you need the <a href="http://developer.android.com/sdk/index.html">android-sdk</a>.</p>
+<p>First, list the targets and find the armeabi version you want to use. I use Target 4, which isn't the most recent, but is the most widely deployed, at API level 15.</p>
+<pre>
+  kanen (~/Code/android-sdk/tools)$ ./android list targets
+  Available Android targets:
+  id: 4 or "Google Inc.:Google APIs:15"
+       Name: Google APIs
+       Type: Add-On
+       Vendor: Google Inc.
+       Revision: 2
+       Description: Android + Google APIs
+       Based on Android 4.0.3 (API level 15)
+       ABIs : armeabi-v7a
+</pre>
+<p>Now, generate an emulator from that target platform:</p>
+<pre>
+  kanen (~/Code/android-sdk/tools)$ ./android create avd -n MyEmulator -t 4
+</pre>
+<p>Then, run the emulator:</p>
+<pre>
+  kanen (~/Code/android-sdk/tools)$ ./emulator -avd MyEmulator &
+</pre>
+<p>Attach a shell to the emulator:</p>
+<pre>
+  kanen (~/Code/android-sdk/platform-tools)$ ./adb shell
+</pre>
+<p>Make sure everything's ok and create a directory for newLisp:</p>
+<pre>
+  # mkdir /data/nl
+  # chmod 777 /data/nl
+  # exit
+</pre>
+<p>Copy newLisp to the emulator:</p>
+<pre>
+  ./adb push ~/Code/android-ndk/newlisp-ndk/libs/armeabi/newlisp /data/nl
+</pre>
+<p>Go back into the shell and run newLisp:</p>
+<pre>
+  kanen (~/Code/android-sdk/platform-tools)$ ./adb shell
+  # cd /data
+  # cd nl 
+  # ls
+  newlisp
+  # ./newlisp
+  newLISP v.10.4.5 on Linux IPv4/6, execute 'newlisp -h' for more info.
+
+  >
+</pre>
+
+<center>+++</center>
+</body>

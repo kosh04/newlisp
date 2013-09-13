@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.4.5 Manual and Reference</title>
+   <title>newLISP v.10.4.6 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.4.5</h2>
+<h2>User Manual and Reference v.10.4.6</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -273,7 +273,7 @@ newLISP is a registered trademark of Lutz Mueller.
 	</ul>
 </li>
 
-<li><a href="#XML">XML, SXML and XML-RPC</a></li>
+<li><a href="#JSON_XML">JSON, XML, SXML and XML-RPC</a></li>
 <li><a href="#internationalization">Customization, localization and UTF-8</a>
   <ul>
   <li><a href="#naming">Customizing function names</a></li>
@@ -512,6 +512,10 @@ be removed in a future version.</p>
 been taken out of the documentation. Both functions will keep on working
 for an indefinite time.</p>
 
+<p>Since version 10.4.6 newLISP has a built-in function <a href="#json-parse">
+json-parse</a> for translating JSON data into S-expressions. The module
+file <tt>json.lsp</tt> is removed from the distribution.</p>
+
 <br/>
 
 <center>
@@ -590,6 +594,17 @@ functions can be used:</p>
 show all the built-in functions starting with the same characters. When hitting
 [tab] twice before a function name has started, all built-in function names will
 be displayed.</p>
+
+<p>On most Unix, parenthesis matching can be enabled on the commandline by
+including the following line in the file <tt>.inputrc</tt> in the home
+directory:</p>
+
+<pre>
+set blink-matching-paren on
+</pre>
+
+<p>Not all systems have a version of <tt>libreadline</tt> advanced enough for 
+this to work.</p>
 
 
 <br/>
@@ -996,7 +1011,7 @@ about CGI processing for newLISP server modes can be found in the document
 </p>
 
 <p>In both server modes <tt>-c</tt> and <tt>-http</tt> the environment variables 
-DOCUMENT_ROOT, REQUEST_METHOD, SERVER_SOFTWARE and QUERY_STRING are set. 
+DOCUMENT_ROOT, HTTP_HOST, REMOTE_ADDR, REQUEST_METHOD, SERVER_SOFTWARE and QUERY_STRING are set. 
 The variables CONTENT_TYPE, CONTENT_LENGTH, HTTP_HOST, HTTP_USER_AGENT 
 and HTTP_COOKIE are also set, if present in the HTTP header sent by the client.</p>
 
@@ -1540,14 +1555,13 @@ the following characters escaped with a <tt>\</tt> (backslash):</p>
 <tr><td><tt>\"</tt></td><td>for a double quote inside a quoted string</td></tr>
 <tr><td><tt>\n</tt></td><td>for a line-feed character (ASCII 10)</td></tr>
 <tr><td><tt>\r</tt></td><td>for a return character (ASCII 13)</td></tr>
+<tr><td><tt>\b</tt></td><td>for a backspace BS character (ASCII 8)</td></tr>
 <tr><td><tt>\t</tt></td><td>for a TAB character (ASCII 9)</td></tr>
+<tr><td><tt>\f</tt></td><td>for a formfeed FF character (ASCII 12)</td></tr>
 <tr><td><tt>\nnn</tt></td><td>for a three-digit ASCII number (nnn format between 000 and 255)</td></tr>
 <tr><td><tt>\xnn</tt></td><td>for a two-digit-hex ASCII number (xnn format between x00 and xff)</td></tr>
-<tr>
-<td><tt>\unnnn</tt></td>
-<td>for a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
-digits. newLISP will translate this to a UTF8 character in the UTF8 
-enabled versions of newLISP.</td>
+<tr><td><tt>\unnnn</tt></td><td>for a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
+digits. newLISP will translate this to a UTF8 character in the UTF8 enabled versions of newLISP.</td>
 </tr>
 <tr><td><tt>\\</tt></td><td>for the backslash character (ASCII 92) itself</td></tr>
 </table><br/>
@@ -3824,9 +3838,26 @@ corresponding actions on files.</p>
 </center>
 
 <br/>
-<a name="XML"></a>
-<h2>20. XML, S-XML, and XML-RPC</h2>
+<a name="JSON_XML"></a>
+<h2>20. JSON, XML, S-XML, and XML-RPC</h2> 
+<b>JSON support</b>
+<p>JSON-encoded data can be parsed into S-expressions using the 
+<a href="#json-parse">json-parse</a> function. Error information for
+failed JSON translations can be retrieved using <a href="#json-error">json-error</a>.</p>
 
+<p>For a description of the JSON format (<u>J</u>ava<u>S</u>cript <u>O</u>bject <u>N</u>otation)
+consult <a href="http://json.org">json.org</a>.
+Examples for correct formatted JSON text can be seen at 
+<a href="http://json.org/examples.html">json.org/examples.html</a>.</p>
+
+<p>To retrieve data in nested lists resulting from JSON translation, use the
+<a href="#assoc">assoc</a>, <a href="#lookup">lookup</a> and <a href="#ref">ref</a>
+functions.</p>
+
+<p>See the decription of <a href="#json-parse">json-parse</a> for a complete example
+of parsing and processing JSON data.</p>
+
+<b>XML suport</b>
 <p>newLISP's built-in support for XML-encoded data or documents
 comprises three functions:
 <a href="#xml-parse">xml-parse</a>,
@@ -3889,18 +3920,17 @@ text, raw string data, comments, and element data.</p>
 	  (COLOR "red")
 	  (PRICE "0.80"))))
 	
-</pre>		<p>
-	S-XML is XML
-	reformatted as newLISP <em>S-expressions</em>.
-	The <tt>@</tt> (at symbol) denotes
-	an XML attribute specification.
-</p>
-<p>
-	See <a href="#xml-parse">xml-parse</a> in
-	the reference section of the manual
-	for details on parsing and option numbers,
-	as well as for a longer example.
-</p>
+</pre>
+<p>S-XML is XML reformatted as newLISP <em>S-expressions</em>.
+The <tt>@</tt> (at symbol) denotes an XML attribute specification.</p>
+
+<p>To retrieve data in nested lists resulting from S-XML translation, use the
+<a href="#assoc">assoc</a>, <a href="#lookup">lookup</a> and <a href="#ref">ref</a>
+functions.</p>
+
+<p>See <a href="#xml-parse">xml-parse</a> in the reference section of the manual
+for details on parsing and option numbers, as well as for a longer example.</p>
+
 <br/>
 <b>XML-RPC</b>
 <br/>
@@ -4088,7 +4118,7 @@ newLISP correctly parses numbers
 depending on the locale set:</p>
 
 <pre>
-; switch to German locale on a Linux system
+; switch to German locale on a Linux  or OSX system
 (set-locale "de_DE") <span class='arw'>&rarr;</span> ("de_DE" ",")
 
 ; newLISP source and output use a decimal comma
@@ -4173,23 +4203,14 @@ in this chapter.</p>
 </p>
 <pre>
 export LC_CTYPE=en_US.UTF-8
-</pre>		<p>
-	<tt>(3)</tt> The UTF-8&ndash;enabled newLISP
-	automatically switches to the locale found
-	on the operating system.
-	Make sure the command shell
-	is UTF-8&ndash;enabled.
-	When using the Tcl/Tk front-end on Linux/Unix,
-	Tcl/Tk will automatically switch to UTF-8 display
-	as long as the Unix environment variable
-	is set correctly.
-	The U.S. version of WinXP's <tt>notepad.exe</tt>
-	can display Unicode UTF-8&ndash;encoded characters,
-	but the command shell and the Tcl/Tk front-end cannot.
-	On Linux and other Unixes,
-	the Xterm shell can be used
-	when started as follows:
-</p>
+</pre>		
+<p><tt>(3)</tt> The UTF-8&ndash;enabled newLISP automatically switches to the locale found
+on the operating system.  Make sure the command shell
+is UTF-8&ndash;enabled.  The U.S. version of WinXP's <tt>notepad.exe</tt>
+can display Unicode UTF-8&ndash;encoded characters, but the command shell cannot.
+On Linux and other Unixes, the Xterm shell can be used
+when started as follows:</p>
+
 <pre>
 LC_CTYPE=en_US.UTF-8 xterm
 </pre>		<p>
@@ -4532,7 +4553,13 @@ number as the second character.<br/><br/></li>
 <tt>" ' ( ) : ,</tt> and the space character. These mark the end of a variable symbol.<br/><br/></li>
 
 <li>A symbol name starting with <tt>[</tt> (left square bracket) and ending with 
-<tt>]</tt> (right square bracket) may contain any character except the right square bracket.</li>
+<tt>]</tt> (right square bracket) may contain any character except the right square 
+bracket.<br/><br/></li>
+
+<li>A symbol name starting with <tt>$</tt> (dollar sign) is global. There are several of these
+symbols already <a href="#system_symbols">built into newLISP</a> and set and changed 
+internally. This type of global symbol can also be created by the user.
+</li>
 
 </ol>
 
@@ -4563,7 +4590,7 @@ can be used to create symbols containing these characters:
 
 
 <pre>
-(set (sym "(#:L*") 456)  <span class='arw'>&rarr;</span> 456
+(set (sym "(#:L*") 456)  <span class='arw'>&rarr;</span> 456 ; the symbol '(#:L*'
 
 (eval (sym "(#:L*"))  <span class='arw'>&rarr;</span> 456
 
@@ -4873,47 +4900,18 @@ digits to escape them:</p>
 
 <table width="98%"  summary="escaping special characters in strings">
 <tr align="left" valign="bottom"><th>character</th><th>description</th></tr>
-<tr>
-<td><tt>\"</tt></td>
-<td>for a double quote inside a quoted string</td>
-</tr>
-
-<tr>
-<td><tt>\n</tt></td>
-<td>the line-feed character (ASCII 10)</td>
-</tr>
-
-<tr>
-<td><tt>\r</tt></td>
-<td>the carriage return character (ASCII 13)</td>
-</tr>
-
-<tr>
-<td><tt>\t</tt></td>
-<td>the tab character (ASCII 9)</td>
-</tr>
-
-<tr>
-<td><tt>\nnn</tt></td>
-<td>a decimal ASCII code where nnn is between 000 and 255</td>
-</tr>
-
-<tr>
-<td><tt>\xnn</tt></td>
-<td>a hexadecimal code where nn is between 00 and FF</td>
-</tr>
-
-<tr>
-<td><tt>\unnnn</tt></td>
-<td>a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
+<tr><td><tt>\"</tt></td><td>for a double quote inside a quoted string</td></tr>
+<tr><td><tt>\n</tt></td> <td>the line-feed character (ASCII 10)</td></tr>
+<tr> <td><tt>\r</tt></td> <td>the carriage return character (ASCII 13)</td> </tr>
+<tr><td><tt>\b</tt></td><td>for a backspace BS character (ASCII 8)</td></tr>
+<tr><td><tt>\t</tt></td><td>for a TAB character (ASCII 9)</td></tr>
+<tr><td><tt>\f</tt></td><td>for a formfeed FF character (ASCII 12)</td></tr>
+<tr><td><tt>\nnn</tt></td> <td>a decimal ASCII code where nnn is between 000 and 255</td></tr>
+<tr><td><tt>\xnn</tt></td> <td>a hexadecimal code where nn is between 00 and FF</td></tr>
+<tr><td><tt>\unnnn</tt></td><td>a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
 digits. When reading a quoted string, newLISP will translate 
-this to a UTF8 character in the UTF8 enabled versions of newLISP.</td>
-</tr>
-
-<tr>
-<td><tt>\\</tt></td>
-<td>the backslash character itself</td>
-</tr>
+this to a UTF8 character in the UTF8 enabled versions of newLISP.</td></tr>
+<tr><td><tt>\\</tt></td> <td>the backslash character itself</td></tr>
 </table><br/>
 
 <p>Decimals start with a digit. Hexadecimals start with <tt>x</tt>:.</p>
@@ -6868,6 +6866,16 @@ arithmetic">
 <tr>
 <td><a href="#get-url">get-url</a></td>
 <td>reads a file or page from the web</td>
+</tr>
+
+<tr>
+<td><a href="#json-error">json-error</a></td>
+<td>returns error informaton from a failed JSON translation.</td>
+</tr>
+
+<tr>
+<td><a href="#json-parse">json-parse</a></td>
+<td>parses JSON formatted data</td>
 </tr>
 
 <tr>
@@ -9562,7 +9570,9 @@ reassigned to a different callback function.</p>
 <p>The address returned by <tt>callback</tt> is registered with the 
 <a href="http://www.opengl.org/documentation/specs/glut/spec3/spec3.html">Glut</a> library. 
 The above code is a snippet from the file <tt>opengl-demo.lsp</tt>, 
-in the <tt>examples/</tt> directory of the source distribution of newLISP.</p>
+in the <tt>examples/</tt> directory of the source distribution of newLISP
+and can also be downloaded from 
+<a href="http://www.newlisp.org/downloads/OpenGL/">newlisp.org/downloads/OpenGL</a>.</p>
 
 <p>In the second <b>extended <tt>callback</tt> syntax</b> type specifiers are used to 
 describe the functions return and parameter value types when the function is called. 
@@ -10061,15 +10071,12 @@ request for an error page:</p>
 ;; reject query commands using CGI with .exe files
 
 (command-event (fn (s)
-    (local (request)
-        (if (find "?" s) ; is this a query
-            (begin
-                (set 'request (first (parse s "?")))
-                ; discover illegal extension in queries
-                (if (ends-with request ".exe") 
-                    (set 'request "GET /errorpage.html")
-                    (set 'request s)))
-            (set 'request s))
+    (let (request s)
+        (when (find "?" s) ; is this a query
+            (set 'request (first (parse s "?")))
+            ; discover illegal extension in queries
+            (when (ends-with request ".exe")
+                (set 'request "GET /errorpage.html")) )
         request)
 ))
 </pre> 
@@ -12575,19 +12582,14 @@ syntax: (empty? <em>str</em>)</h4>
 <h4>syntax: (encrypt <em>str-source</em> <em>str-pad</em>)</h4>
 
 <p>
-	Performs a one-time&ndash;pad encryption of <em>str-source</em> 
-	using the encryption pad in <em>str-pad</em>. 
-	The longer <em>str-pad</em> is 
-	and the more random the bytes are, 
-	the safer the encryption. 
-	If the pad is as long as the source text, 
-	is fully random, and is used only once, 
-	then one-time&ndash;pad encryption 
-	is virtually impossible to break, 
-	since the encryption seems to contain only random data. 
-	To retrieve the original, 
-	the same function and pad 
-	are applied again to the encrypted text:
+Performs a <a href="http://en.wikipedia.org/wiki/One-time_pad">one-time pad</a> (OTP)
+encryption of <em>str-source</em> using the encryption pad in <em>str-pad</em>. 
+The longer <em>str-pad</em> is and the more random the bytes are, 
+the safer the encryption.  If the pad is as long as the source text, 
+is fully random, and is used only once, then one-time&ndash;pad encryption 
+is virtually impossible to break, since the encryption seems to contain only 
+random data.  To retrieve the original, the same function and pad 
+are applied again to the encrypted text:
 </p>
 
 <!-- example -->
@@ -13481,9 +13483,9 @@ not the link, except for the <em>mode</em> field.</p>
 <p>Checks for the existence of a file in <em>str-name</em>. Returns <tt>true</tt> 
 if the file exists; otherwise, it returns <tt>nil</tt>.  This function will also return 
 <tt>true</tt> for directories. If the optional <em>bool</em> value is <tt>true</tt>,
-<em>str-path-name</em> is returned. The existence of a file does not imply anything about 
-its read or write permissions. A file may exist while not having the permissions 
-to read from or write to it by the current user.</p>
+the file must not be a directory and <em>str-path-name</em> is returned or <tt>nil</tt>
+if the file is a directory. The existence of a file does not imply anything about its 
+read or write permissions for the current user.</p>
 
 <!-- example -->
 
@@ -15952,6 +15954,147 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 
 <br/><br/>
 
+<a name="json-error"></a>
+<h2><span class="function">json-error</span></h2>
+<h4>syntax: (json-error)</h4>
+
+<p>When <a href="#json-parse">json-parse</a> returns <tt>nil</tt> due
+to a failed JSON data translation, this function retrieves an error
+description and the last scan position of the parser.</p>
+
+<pre>
+; failed parse returns nil
+
+(json-parse [text]{"address" "http://example.com"}[/text]) <span class='arw'>&rarr;</span> nil
+
+; inspect the error information
+
+(json-error) <span class='arw'>&rarr;</span> ("missing : colon" 11)
+</pre>
+
+<br/><br/>
+
+<a name="json-parse"></a>
+<h2><span class="function">json-parse</span></h2>
+<h4>syntax: (json-parse <em>str-json-data</em>)</h4>
+
+<p>This function parses JSON formatted text and translated it to newLISP S-expressions.
+All data types conforming to the ECMA-262 standard are translated. The resulting lists
+from JSON object data can be processed using <a href="#assoc">assoc</a>, 
+<a href="#lookup">lookup</a> and <a href="#ref">ref</a>.</p>
+
+<p>The following example shows a nested JSON objectx from a file <tt>person.json</tt>:</p>
+
+<!-- example -->
+
+<pre>
+{
+    "name": "John Smith",
+    "age": 32,
+    "employed": true,
+    "address": {
+        "street": "701 First Ave.",
+        "city": "Sunnyvale, CA 95125",
+        "country": "United States"
+    },
+    "children": [
+        {
+            "name": "Richard",
+            "age": 7
+        },
+        {
+            "name": "Susan",
+            "age": 4
+        },
+        {
+            "name": "James",
+            "age": 3
+        }
+    ]
+}
+</pre>
+<p>The file is read, parsed and the resulting S-expression stored in <tt>jsp</tt>:</p>
+
+<pre>
+(set 'jsp (json-parse (read-file "person.json")))
+<span class='arw'>&rarr;</span>
+( ("name" "John Smith") 
+  ("age" 32) 
+  ("employed" true) 
+  ("address" ( ("street" "701 First Ave.") 
+               ("city" "Sunnyvale, CA 95125") 
+               ("country" "United States")) ) 
+  ("children" (
+      (("name" "Richard") ("age" 7)) 
+      (("name" "Susan") ("age" 4)) 
+      (("name" "James") ("age" 3))) )
+)
+</pre>
+
+<p>Data can be extracted using <a href="#assoc">assoc</a>, <a href="#lookup">lookup</a> 
+or <a href="#ref">ref</a>:</p>
+
+<pre>
+; the address
+(lookup "address" jsp)
+<span class='arw'>&rarr;</span> (("street" "701 First Ave.") ("city" "Sunnyvale, CA 95125") ("country" "United States"))
+
+; the city of the address
+(lookup "city" (lookup "address" jsp)) 
+<span class='arw'>&rarr;</span> "Sunnyvale, CA 95125"
+
+; a child named Susan
+(ref '(( * "Susan") *) jsp match true) 
+<span class='arw'>&rarr;</span> (("name" "Susan") ("age" 4))
+
+; all names
+(map last (ref-all '("name" *) jsp match true)) 
+<span class='arw'>&rarr;</span> ("John Smith" "Richard" "Susan" "James")
+
+; only names of children
+(map last (ref-all '("name" *) (lookup "children" jsp) match true))
+<span class='arw'>&rarr;</span>
+("Richard" "Susan" "James")
+
+; names of children other method
+(map last (map first (lookup "children" jsp)))
+<span class='arw'>&rarr;</span>
+("Richard" "Susan" "James")
+</pre>
+
+<p>Although most of the time JSON object types are parsed, all JSON data
+types can be parsed directly, without ocurring as part of a JSON object.
+The following examples show parsing of a JSON array:</p>
+
+<pre>
+; parse a JSON array data type
+
+(json-parse "[1, 2, 3, 4, 5]") <span class='arw'>&rarr;</span> (1 2 3 4 5)
+</pre>
+
+<p>When the UTF-8 capable version of newLISP is used, JSON formatted Unicode
+gets translated into UTF-8:</p>
+
+<pre>
+; parse a JSON object data type ands Unicode
+; the outer {,} are newLISP string delimiters [text],[/text] tags could also be used
+; the inner {,} are JSON object delimiters
+
+(json-parse { {"greek letters" : "\u03b1\u03b2\u03b3\u03b4"} }) <span class='arw'>&rarr;</span> (("greek letters" "αβγδ"))
+</pre>
+
+<p>The hex-code representation of Unicoder characters in JSON is the same as can be used in
+UTF-8 enabled newLISP.</p>
+
+<p>Because JSON objects contain <tt>{,},"</tt> characters, quotes should not be used
+to limit JSON data, or all quotes inside the JSON data would need a preceding backslash <tt>\</tt>.
+<tt>{,}</tt> braces can be used as long as braces inside the JSON data are balanced.
+The safest delimiter are <tt>[text], [/text]</tt> tags &mdash; they suppress all special processing
+of the string when read by newLISP and are suitable to delimit large data sizes greater
+2047 bytes.</p>
+
+<br/><br/>
+ 
 <a name="join"></a>
 <h2><span class="function">join</span></h2>
 <h4>syntax: (join <em>list-of-strings</em> [<em>str-joint</em> [<em>bool-trail-joint</em>]])</h4>
@@ -22233,8 +22376,10 @@ nuevatec.com
 
 
 <pre>
-;; double backslash for parentheses (special char in regex)
+;; double backslash for parentheses and other special char in regex
 (regex "\\(abc\\)" "xyz(abc)xyz")  <span class='arw'>&rarr;</span> ("(abc)" 3 5)  
+;; double backslash for backslash (special char in regex)
+(regex "\\d{1,3}" "qwerty567asdfg")  <span class='arw'>&rarr;</span> ("567" 6 3)
 
 ;; one backslash for quotes (special char in newLISP)
 (regex "\"" "abc\"def")  <span class='arw'>&rarr;</span> ("\"" 3 1)     
@@ -23043,7 +23188,8 @@ the string <tt>#define</tt> and prints the rest of the line after the string "#d
 <h4>syntax: (self [<em>int-index</em> ... ])</h4>
 
 <p>The function <tt>self</tt> accesses the target object of a FOOP method.
-One or more <em>int-index</em> are used to access the object members.</p>
+One or more <em>int-index</em> are used to access the object members.
+<tt>self</tt> is set by the <a href="#colon">:&nbsp;colon</a> operator.</p>
 
 <p>Objects referenced with <tt>self</tt> are mutable:</p>
 
@@ -25459,7 +25605,7 @@ resource statistics. Ten integers report the following status:</p>
 <tr><td>7</td><td>Pid of running newLISP process</td></tr>
 <tr><td>8</td><td>Version number as an integer constant</td></tr>
 <tr><td>9</td><td>Operating system constant:<br/>
-linux=1, bsd=2, osx=3, solaris=4,  win32=6, os/2=7, cygwin=8, tru64unix=9, aix=10
+linux=1, bsd=2, osx=3, solaris=4,  win32=6, os/2=7, cygwin=8, tru64, unix=9, aix=10, android=11
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 11 will be set for ffilib (extended import/callback API) versions (add 1024)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 10 will be set for IPv6 versions (add 512)<br/>
@@ -25483,9 +25629,9 @@ after offset 5. This way older source code does not need to change.</p>
 <!-- example -->
 
 <pre>
-(sys-info)     <span class='arw'>&rarr;</span> (401 268435456 376 1 0 2048 39220 10002 131)
+(sys-info)     <span class='arw'>&rarr;</span> (429 268435456 402 1 0 2048 0 19453 10406 1155)
 (sys-info 3)   <span class='arw'>&rarr;</span> 1 
-(sys-info -2)  <span class='arw'>&rarr;</span> 10002
+(sys-info -2)  <span class='arw'>&rarr;</span> 10406 ;; version 10.4.6
 </pre>
 
 
@@ -27206,7 +27352,7 @@ by file functions which can take URLs like <a href="#load">load</a>,
 </p>
 
 <p>E.g. whenever a block of data requested with <a href="#get-url">get-url</a>
-arrives the function in <em>sym</em> or <em>func</em> will be called with
+arrives, the function in <em>sym</em> or <em>func</em> will be called with
 the number of bytes transferred. Likewise when sending data with
 <a href="#post-url">post-url</a> or any of the other data sending 
 functions, <em>sym</em> or <em>func</em> will be called with the number of
@@ -27332,7 +27478,7 @@ The following option numbers can be used:
 <tr><td>4</td><td>suppress comment tags</td></tr>
 <tr><td>8</td><td>translate string tags into symbols</td></tr>
 
-<tr><td>16</td><td>add SXML (S-expression XML) attribute tags</td></tr>
+<tr><td>16</td><td>add SXML (S-expression XML) attribute tags (@ ...)</td></tr>
 </table><br/>
 
 <p>
@@ -27506,6 +27652,10 @@ formatted output can be generated:
     (FRUIT (NAME "banana") (COLOR "yellow") (PRICE "0.60"))))
 </pre>
 
+<p>If the original XML tags contain a namspace part separated by a <tt>:</tt>,
+that colon will be translated into a <tt>.</tt> dot in the resulting newLISP
+symbol.</p>
+
 
 <p>
 Note that using option number <tt>16</tt> 
@@ -27519,9 +27669,9 @@ for further information on XML parsing.
 
 <h3>Parsing into a specified context</h3>
 
-<p>When parsing XML expressions, XML tags are translated into newLISP symbols.
-The <i>sym-context</i> option specifies the target context for the symbol
-creation:</p>
+<p>When parsing XML expressions, XML tags are translated into newLISP symbols,
+when option 8 is specified.  The <i>sym-context</i> option specifies the target 
+context for the symbol creation:</p>
 
 <pre>
 (xml-type-tags nil nil nil nil)
@@ -27531,7 +27681,6 @@ creation:</p>
     (CTX:FRUIT (CTX:NAME "orange") (CTX:COLOR "orange") (CTX:PRICE "1.00")) 
     (CTX:FRUIT (CTX:NAME "banana") (CTX:COLOR "yellow") (CTX:PRICE "0.60"))))
 </pre>
-
 
 <p>If the context does not exist, it will be created. If it exists, the quote can 
 be omitted or the context can be referred to by a variable.</p>

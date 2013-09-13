@@ -75,6 +75,7 @@
     ))
 
 (register_callback_simple (callback 0 'callme-simple))
+
 (trigger_callback_simple)
 
 ;; test extended callback API
@@ -91,6 +92,7 @@
 (set 'is64bit (not (zero? (& 256 (sys-info -1)))))
 
 (register_callback (callback 'callme "void" "char*" "int" "double" ))
+
 (trigger_callback)
 
 (if (and

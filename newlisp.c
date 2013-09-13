@@ -1,7 +1,7 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,11 @@ extern STREAM libStrStream;
 #endif
 
 #ifdef LINUX
+#ifdef ANDROID
+int opsys = 11;
+#else
 int opsys = 1;
+#endif
 #endif
 
 #ifdef _BSD
@@ -88,32 +92,34 @@ int opsys = 9;
 int opsys = 10;
 #endif
 
+/* opsys = 11 taken for ANDROID; see LINUX */
+
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10405;
+int version = 10406;
 
 char copyright[]=
-"\nnewLISP v.10.4.5 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.4.6 Copyright (c) 2013 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.5 on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.6 on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.5 on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.6 on %s IPv4/6%s%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.5 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.6 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.5 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.6 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif
 
-char banner2[]= ", execute 'newlisp -h' for more info.";
+char banner2[]= ", execute 'newlisp -h' for options.";
 
 char linkOffset[] = "@@@@@@@@";
 char preLoad[] = 
@@ -134,6 +140,8 @@ int demonMode = 0;
 int noPromptMode = 0;
 int forcePromptMode = 0;
 int httpMode = 0;
+int evalSilent = 0;
+
 
 #ifdef WIN_32
 int IOchannelIsSocketStream = 0;
@@ -234,8 +242,6 @@ UINT * lambdaStackIdx;
 SYMBOL objSymbol = {SYMBOL_GLOBAL | SYMBOL_BUILTIN, 
     0, "container of (self)", 0, NULL, NULL, NULL, NULL};
 CELL * objCell;
-
-int evalSilent = 0;
 
 extern PRIMITIVE primitive[];
 
@@ -490,7 +496,9 @@ char            *setlocale(int, const char *);
 
 void initLocale(void)
 {
+#ifndef ANDROID
 struct lconv * lc;
+#endif
 char * locale;
 
 #ifndef SUPPORT_UTF8
@@ -502,8 +510,12 @@ locale = setlocale(LC_ALL, "");
 if (locale != NULL)
   stringOutputRaw = (strcmp(locale, "C") == 0);
 
+#ifdef ANDROID
+lc_decimal_point = '.';
+#else
 lc = localeconv();
 lc_decimal_point = *lc->decimal_point;
+#endif
 }
 
 /* set NEWLISPDIR only if not set already */
@@ -798,6 +810,10 @@ if(errorReg && !isNil((CELL*)errorEvent->contents) )
 #ifdef READLINE
 rl_readline_name = "newlisp";
 rl_attempted_completion_function = (CPPFunction *)newlisp_completion;
+#if defined(LINUX) || defined(_BSD)
+/* in Bash .inputrc put 'set blink-matching-paren on' */
+rl_set_paren_blink_timeout(300000); 
+#endif
 #endif
 
 while(TRUE)
@@ -894,13 +910,21 @@ int len;
 
 if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
 cmd = calloc(MAX_COMMAND_LINE, 1);
-if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) exit(1);
+if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) 
+    {
+    puts("");
+    exit(0);
+    }
 len = strlen(cmd);
 /* cut off line terminators  left by fgets */
 *(cmd + len - LINE_FEED_LEN) = 0;
 #else /*  READLINE */
 int errnoSave = errno;
-if((cmd = readline(batchMode ? "" : prompt())) == NULL) exit(0);
+if((cmd = readline(batchMode ? "" : prompt())) == NULL) 
+    {
+    puts("");
+    exit(0);
+    }
 errno = errnoSave; /* reset errno, set by readline() */
 if(strlen(cmd) > 0) 
     add_history(cmd);
@@ -942,6 +966,7 @@ if((IOchannel  = serverFD(IOport,  IOdomain, reconnect)) == NULL)
     printf("newLISP server setup on %s failed.\n", IOdomain);
     exit(1);
     }
+
 #ifdef WIN_32
 else    IOchannelIsSocketStream = TRUE; 
 
@@ -956,10 +981,9 @@ if(!reconnect && !noPromptMode)
 
 char * prompt(void)
 {
-char * context;
+char * contextName = "";
 CELL * result;
 static char string[64];
-
 
 if(evalSilent || noPromptMode) 
     {
@@ -980,8 +1004,7 @@ if(promptEvent != nilSymbol)
     }
     
 if(currentContext != mainContext)
-    context = currentContext->name;
-else context = "";
+    contextName = currentContext->name;
 
 if(traceFlag & TRACE_SIGINT) 
     {
@@ -990,9 +1013,9 @@ if(traceFlag & TRACE_SIGINT)
     }
     
 if(traceFlag)
-    snprintf(string, 63, "%s %d> ", context, recursionCount);
+    snprintf(string, 63, "%s %d> ", contextName, recursionCount);
 else
-    snprintf(string, 63, "%s> ", context);
+    snprintf(string, 63, "%s> ", contextName);
 
 return(string);
 }
@@ -2508,6 +2531,8 @@ while(size--)
     {
     switch(chr = *str++)
         {
+        case '\b': varPrintf(device,"\\b"); break;
+        case '\f': varPrintf(device,"\\f"); break;
         case '\n': varPrintf(device,"\\n"); break;
         case '\r': varPrintf(device,"\\r"); break;
         case '\t': varPrintf(device,"\\t"); break;
@@ -2920,10 +2945,11 @@ char * errorMessage[] =
     "cannot open socket pair",      /* 68 */
     "cannot fork process",          /* 69 */
     "no comm channel found",        /* 70 */
+    "invalid JSON syntax",          /* 71 */
 #ifdef FFI
-    "ffi preparation failed",       /* 71 */
-    "invalid ffi type",             /* 72 */
-    "ffi struct expected",          /* 73 */
+    "ffi preparation failed",       /* 72 */
+    "invalid ffi type",             /* 73 */
+    "ffi struct expected",          /* 74 */
 #endif
     NULL
     };
@@ -3494,6 +3520,10 @@ else
                         *(tkn++) = '\n'; break;
                     case '\\':
                         *(tkn++) = '\\'; break;
+                    case 'b':
+                        *(tkn++) = '\b'; break;
+                    case 'f':
+                        *(tkn++) = '\f'; break;
                     case 'r':
                         *(tkn++) = '\r'; break;
                     case 't':
@@ -3512,13 +3542,13 @@ else
                             stream->ptr += 2;
                             break;
                             }
-#ifdef SUPPORT_UTF8
                     case 'u':
                         if(isxdigit((unsigned char)*(stream->ptr + 1)) &&
                            isxdigit((unsigned char)*(stream->ptr + 2)) &&
                            isxdigit((unsigned char)*(stream->ptr + 3)) &&
                            isxdigit((unsigned char)*(stream->ptr + 4)))
                             {
+#ifdef SUPPORT_UTF8
                             buff[0] = '0';
                             buff[1] = 'x';
                             memcpy(buff + 2, stream->ptr + 1, 4);
@@ -3527,9 +3557,15 @@ else
                             stream->ptr += 4;
                             tkn += len;
                             tknLen += len -1;
+#else
+                            *(tkn++) = '\\';
+                            memcpy(tkn, stream->ptr, 5);
+                            tknLen = 5;   
+                            tkn += 5;
+                            stream->ptr += 4;
+#endif
                             break;
                             }
-#endif
                     default:
                         *(tkn++) = *stream->ptr;
                     }
@@ -4013,7 +4049,9 @@ return(params->next);
 
 CELL * p_setLocale(CELL * params)
 {
+#ifndef ANDROID
 struct lconv * lc;
+#endif
 char * locale;
 UINT category;
 CELL * cell;
@@ -4034,16 +4072,17 @@ if(locale == NULL)
 
 stringOutputRaw = (strcmp(locale, "C") == 0);
 
+#ifndef ANDROID
 lc = localeconv();  
-#ifdef WIN_32
-if(cell->type == CELL_STRING) /* second parameter */
-    *lc->decimal_point = *(char *)cell->contents; 
-#endif
 lc_decimal_point = *lc->decimal_point;
-
+#endif
 cell = getCell(CELL_EXPRESSION);
 addList(cell, stuffString(locale));
+#ifdef ANDROID
+addList(cell, stuffStringN(".", 1));
+#else
 addList(cell, stuffStringN(lc->decimal_point, 1));
+#endif
 return(cell);
 }
 
@@ -6900,7 +6939,7 @@ objCell = objCellSave;
 #ifdef FOOP_DEBUG
 printf("leavin colon objCell restored to:");
 printCell(obj, TRUE, OUT_CONSOLE);
-puts("\n");
+puts("");
 #endif
 
 

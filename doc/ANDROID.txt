@@ -1,0 +1,93 @@
+Fore the following download: http://www.newlisp.org/code/newlisp-ndk-10.4.5.tgz 
+
+
+From: http://newlispfanclub.alh.net/forum/viewtopic.php?f=2&p=20877&sid=a41fb6a4fd35618d8266d88acb102297#p20877
+
+by kanen » Fri Dec 21, 2012 7:23 am
+
+We have it working. It's stable.
+
+It is missing (semaphore), which requires libraries that do not exist on Android. I'm attaching the full source, hoping Lutz will add everything necessary to make this work as part of the main newlisp download.
+
+Steps to compile:
+
+1. Download the android-ndk - http://developer.android.com/tools/sdk/ndk/index.html
+2. Make sure your environment works (see above documentation) on your platform
+3. Unpack and put newlisp-ndk in the android-ndk directory
+4. Compile newlisp
+
+Code:
+  kanen (~/Code/android-ndk)$ ./ndk-build -C newlisp-ndk/
+  make: Entering directory `/Users/kanen/Code/android-ndk/newlisp-ndk'
+  Compile thumb  : newlisp <= newlisp.c
+  Compile thumb  : newlisp <= nl-symbol.c
+  Compile thumb  : newlisp <= nl-math.c
+  Compile thumb  : newlisp <= nl-list.c
+  Compile thumb  : newlisp <= nl-liststr.c
+  Compile thumb  : newlisp <= nl-string.c
+  Compile thumb  : newlisp <= nl-sock.c
+  Compile thumb  : newlisp <= nl-import.c
+  Compile thumb  : newlisp <= nl-xml.c
+  Compile thumb  : newlisp <= nl-web.c
+  Compile thumb  : newlisp <= nl-matrix.c
+  Compile thumb  : newlisp <= nl-debug.c
+  Compile thumb  : newlisp <= pcre.c
+  Compile thumb  : newlisp <= nl-filesys.c
+  Executable     : newlisp
+  Install        : newlisp => libs/armeabi/newlisp
+  make: Leaving directory `/Users/kanen/Code/android-ndk/newlisp-ndk'
+
+The binary gets put into libs/armeabi/newlisp. From there, you just have to build an Android emulator and you can copy newLisp over to it.
+
+For that, you need the android-sdk - http://developer.android.com/sdk/index.html
+
+First, list the targets and find the armeabi version you want to use. I use Target 4, which isn't the most recent, but is the most widely deployed, at API level 15.
+Code:
+  kanen (~/Code/android-sdk/tools)$ ./android list targets
+  Available Android targets:
+  id: 4 or "Google Inc.:Google APIs:15"
+       Name: Google APIs
+       Type: Add-On
+       Vendor: Google Inc.
+       Revision: 2
+       Description: Android + Google APIs
+       Based on Android 4.0.3 (API level 15)
+       ABIs : armeabi-v7a
+
+Now, generate an emulator from that target platform:
+Code:
+  kanen (~/Code/android-sdk/tools)$ ./android create avd -n MyEmulator -t 4
+
+
+Then, run the emulator:
+Code:
+  kanen (~/Code/android-sdk/tools)$ ./emulator -avd TrustMe
+
+Attach a shell to the emulator:
+Code:
+  kanen (~/Code/android-sdk/platform-tools)$ ./adb shell
+
+Make sure everything's ok and create a directory for newLisp:
+Code:
+  # mkdir /data/nl
+  # chmod 777 /data/nl
+  # exit
+
+
+Copy newLisp to the emulator:
+Code:
+  ./adb push ~/Code/android-ndk/newlisp-ndk/libs/armeabi/newlisp /data/nl
+
+
+Go back into the shell and run newLisp:
+Code:
+  kanen (~/Code/android-sdk/platform-tools)$ ./adb shell
+  # cd /data
+  # cd trustpipe
+  # ls
+  newlisp
+  # ./newlisp
+  newLISP v.10.4.5 on Linux IPv4/6, execute 'newlisp -h' for more info.
+
+  >
+

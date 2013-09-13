@@ -1,6 +1,6 @@
 #!/usr/bin/newlisp
 ;;
-;; border-demo.lsp - demonstrate the border layout
+;; border-layout-demo.lsp - demonstrate the border layout
 
 ;;;; initialization
 (set-locale "C")

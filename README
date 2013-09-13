@@ -30,20 +30,33 @@ New versions in development are available at:
 
 Please contact me via email at: lutz@nuevatec.com.
 
+Some of the information in this file is expanded in file newlisp-x.x.x/doc/INSTALL.
+
 
 BUILD, CHECK and INSTALL
 ------------------------
 
-Type: 
+Normally the correct makefile_xxxxx will be picked automatically just typing: 
 
   make
 
 to discover the current platform and make for Linux, MacOSX, FreeBSD, OpenBSD,
-NetBSD, Solaris/SunOS and Win32 (MinGW on MSYS) automatically.
+NetBSD, Solaris/SunOS and Win32 (MinGW on MSYS). Sometimes the makefile_xxxxx
+must be specified explicitely, e.g. when compiling for the RaspberryPi runnning
+a sub-flavor of Linux and cross-compiled on a desktop system:
+
+  make -f makefile_raspberrypi
+
+Any other makefile_xxxxx can be picked the same way, but always read the
+makefile_xxxxx first, sometimes it contains special instructions!
 
 To test the compiled newlisp executable do:
 
   make check
+
+or showing only success or failure:
+
+  make testall
 
 From a user account if the sudo command and admin password is available:
 

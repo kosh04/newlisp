@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include "newlisp.h"
 #include "protos.h"
-#include <search.h>
 
 extern SYMBOL * starSymbol;
 extern SYMBOL * plusSymbol;
@@ -102,12 +101,7 @@ while(argsPtr->contents != (UINT)nilCell) /* for all instances of a arg */
         }
 
     cell = evaluateExpression(expr);
-    /* don't use optimized copyCell()
-    if(cell->type == CELL_STRING)
-        cell = stuffStringN((char *)cell->contents, cell->aux - 1);
-    else 
-    */
-        cell = copyCell(cell);
+    cell = copyCell(cell);
     while(resultStackIdx > resultIdxSave)
             deleteList(popResult());
 
@@ -1068,13 +1062,14 @@ for(i = 0; i < *length; i++)
     list = list->next;
     if(indexFlag) prev->next = (void *)i;
     }
-
 if(func != nilCell && func != NULL)
     {
     func = evaluateExpression(func);
     if(func->type == CELL_SYMBOL) 
         func = (CELL*)((SYMBOL *)func->contents)->contents;
+    func = copyCell(func);
     binsort(vector, *length, func);
+    deleteList(func);
     } 
 else
     binsort(vector, *length, NULL);

@@ -1,6 +1,6 @@
-/* nl-xml.c - newLISP XML interface 
+/* nl-xml.c - newLISP XML and JSON interface 
 
-    Copyright (C) 2012 Lutz Mueller
+    Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -493,10 +493,15 @@ return makeElementNode(tagCell, attributes, childs);
 CELL * makeTagSymbolCell(char * tagStart, int tagLen)
 {
 char * name;
+char * ptr;
 CELL * cell;
 
 name = (char *)callocMemory(tagLen + 1);
 memcpy(name, tagStart, tagLen);
+
+if(optionsFlag & OPTION_TAGS_TO_SYMBOLS)
+    if((ptr = strstr(name, ":")))  *ptr = '.';
+
 cell = stuffSymbol(translateCreateSymbol(name, CELL_NIL, XMLcontext, 1));
 freeMemory(name);
 return(cell);
@@ -653,9 +658,363 @@ while(tagPos--) if((unsigned char)*source++ > 32) return(FALSE);
 return(TRUE);
 }
 
+/* --------------------------------- JSON interface ------------------------- */
+
+CELL * getJSONobject(char * jsonStr, char * * restStr);
+CELL * getJSONstring(char * jsonStr, char * * restStr);
+CELL * getJSONvalue(char * jsonStr, char * * restStr);
+CELL * setJSONerror(char * errorText, char * jsonStr);
+
+CELL * lastJSONerror = NULL;
+char * jsonStrStart;
+
+CELL * p_JSONparse(CELL * params)
+{
+char * restStr;
+
+if(lastJSONerror) deleteList(lastJSONerror);
+lastJSONerror = nilCell;
+getString(params, &jsonStrStart);
+return(getJSONvalue(jsonStrStart, &restStr));
+}
+
+
+CELL * getJSONobject(char * jsonStr, char * * restStr)
+{
+CELL * object;
+CELL * pair = NULL;
+CELL * key;
+char * ptr;
+
+
+/* a JSON object is a (key value) association expression */
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+
+if(*jsonStr != '{') 
+    return(setJSONerror("missing {", jsonStr));
+
+++jsonStr;
+/* make object envelope */
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+object = getCell(CELL_EXPRESSION);
+if(*jsonStr == '}')
+    {
+    *restStr = jsonStr + 1;
+    return(object);
+    }
+
+/* get a key : value pair */
+GET_PAIR:
+if(pair == NULL)
+    {
+    pair = getCell(CELL_EXPRESSION);
+    object->contents = (UINT)pair; /* !!! only the first time then pair->next */
+    }
+else
+    {
+    pair->next = getCell(CELL_EXPRESSION);
+    pair = pair->next;
+    }
+
+/* get key string */
+if((key = getJSONstring(jsonStr, &ptr)) == nilCell)
+    {
+    deleteList(object);
+    return(nilCell);
+    }
+pair->contents = (UINT)key;
+jsonStr = ptr;
+
+/* key and value must be separated by : colon */
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+if(*jsonStr != ':') 
+    {
+    deleteList(object);
+    return(setJSONerror("missing : colon", jsonStr));
+    }
+
+if((key->next = getJSONvalue(++jsonStr, &ptr)) == nilCell)
+    {
+    deleteList(object);
+    return(nilCell);
+    }
+
+jsonStr = ptr;
+
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+if(*jsonStr == '}')
+    {
+    *restStr = jsonStr + 1;
+    return(object);
+    }
+
+if(*jsonStr == ',')
+    {
+    ++jsonStr;
+    goto GET_PAIR;
+    }
+
+deleteList(object);
+return(setJSONerror("invalid JSON object", jsonStr));
+}
+
+
+CELL * getJSONstring(char * jsonStr, char * * restStr)
+{
+char * token;
+char * xlated;
+size_t size;
+int i, j;
+#ifdef SUPPORT_UTF8
+int len;
+char buff[8];
+#endif
+
+/* get key string */
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+
+if(*jsonStr != '"') return(setJSONerror("missing key", jsonStr));
+
+token = ++jsonStr, size = 0;
+while(*jsonStr != '"' && *jsonStr != 0) ++jsonStr, ++size;
+
+if(*jsonStr++ != '"') return(setJSONerror("missing closing quote", jsonStr));
+
+*restStr = jsonStr;
+
+xlated = alloca(size + 1);
+i = j = 0;
+while(i < size)
+    {
+    if(*(token + i) == '\\')
+        {
+        ++i;
+        switch(*(token + i))
+            {
+            case '"': 
+                *(xlated + j++) = '\\'; 
+                *(xlated + j++) = '"';
+                break;
+            case '\\':
+                *(xlated + j++) = '\\'; 
+                *(xlated + j++) = '\\';
+                break;
+            case '/':
+                *(xlated + j++) = '/';
+                break;
+            case 'b': 
+                *(xlated + j++) = '\b';
+                break;
+            case 'f': 
+                *(xlated + j++) = '\f';
+                break;
+            case 'n': 
+                *(xlated + j++) = '\n';
+                break;
+            case 'r': 
+                *(xlated + j++) = '\r';
+                break;
+            case 't': 
+                *(xlated + j++) = '\t';
+                break;
+            case 'u': 
+                if(isxdigit((unsigned char)*(token + i + 1)) &&
+                   isxdigit((unsigned char)*(token + i + 2)) &&
+                   isxdigit((unsigned char)*(token + i + 3)) &&
+                   isxdigit((unsigned char)*(token + i + 4)))
+                    {
+#ifdef SUPPORT_UTF8
+                    buff[0] = '0';
+                    buff[1] = 'x';
+                    memcpy(buff + 2, token + i + 1, 4);
+                    buff[6] = 0;
+                    len = wchar_utf8(strtol(buff, NULL, 16), xlated + j);
+                    j += len;
+#else
+                    *(xlated + j) = '\\';
+                    memcpy(xlated + j + 1, token + i, 5);
+                    j += 6;
+#endif
+                    i += 4;
+                    }
+                else
+                    return(setJSONerror("invalid unicode", jsonStr));
+                break;
+            default:
+                *(xlated + j++) = *(token + i);
+                break;
+            }
+        ++i;
+        }
+    else
+        *(xlated + j++) = *(token + i++);
+    }
+
+*(xlated + j) = 0;
+return(stuffStringN(xlated, j));
+}
+
+
+/* get value as one of: string, number, object, array, true, false, null */
+CELL * getJSONvalue(char * jsonStr, char * * restStr)
+{
+CELL * cell;
+CELL * array = NULL;
+CELL * next = NULL;
+char * ptr;
+char * number;
+size_t len;
+int isFloat = FALSE;
+double floatNumber;
+SYMBOL * falseSymbol;
+
+while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
+
+/* string value */
+if(*jsonStr == '"')
+    {
+    cell = getJSONstring(jsonStr, &ptr);
+    *restStr = ptr;
+    return(cell);
+    }
+    
+/* check if number digit or + - */
+if(isDigit((unsigned char)*jsonStr))
+    ptr = jsonStr++;
+else if((*jsonStr == '-' || *jsonStr == '+') && isDigit((unsigned char)*(jsonStr + 1)))
+    ptr = jsonStr++;
+else goto NOT_STRING_OR_NUMBER;
+
+number = alloca(32);
+while(isDigit((unsigned char)*jsonStr)) ++jsonStr;
+if(*jsonStr == '.')
+    {
+    isFloat = TRUE;
+    ++jsonStr;
+    while(isDigit((unsigned char)*jsonStr)) ++jsonStr;
+    }
+
+if(*jsonStr == 'e' || *jsonStr == 'E') 
+    {
+    isFloat = TRUE;
+    ++jsonStr;
+    if(*jsonStr == '-' || *jsonStr == '+')
+        ++jsonStr;
+    if(!isDigit((unsigned char)*jsonStr))
+        return(setJSONerror("invalid JSON number format", jsonStr));
+        while(isDigit((unsigned char)*jsonStr)) ++jsonStr;
+    }
+
+/* number must end with space or control character  or white space*/
+if(*jsonStr != ' ' && *jsonStr != '\n' && *jsonStr != '\n' && *jsonStr != '\t' && *jsonStr != '\f' &&
+   *jsonStr != ',' && *jsonStr != '}' && *jsonStr != ']' && *jsonStr != 0)
+    return(setJSONerror("invalid JSON number format", jsonStr));
+
+len = (size_t)jsonStr - (size_t)ptr;
+memcpy(number, ptr, len);
+number[len] = 0;
+*restStr = jsonStr;
+
+if(isFloat)
+    {
+    floatNumber = atof(number);
+    return(stuffFloat(&floatNumber));
+    }
+else
+    return(stuffInteger(atol(number)));
+
+
+NOT_STRING_OR_NUMBER:
+/* it's one of object, array, true, false, null */
+
+switch(*jsonStr)
+    {
+    case '{':
+        cell = getJSONobject(jsonStr, &ptr);
+        break;
+    case '[':
+        ++jsonStr;
+        while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr;
+        if(*jsonStr == ']')
+            {
+            *restStr = jsonStr + 1;
+            return(getCell(CELL_EXPRESSION));
+            }
+        GET_ARRAY_ELEMENT:
+        if((cell = getJSONvalue(jsonStr, &ptr)) == nilCell)
+            {
+            if(array) deleteList(array);
+            return(nilCell);
+            }
+        if(array == NULL)
+            {
+            array = getCell(CELL_EXPRESSION);
+            array->contents = (UINT)cell;
+            }
+        else
+            next->next = cell;
+        next = cell;
+        jsonStr = ptr;
+        /* whitespace */
+        while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr;
+        if(*jsonStr == ',') {++jsonStr; goto GET_ARRAY_ELEMENT;}
+        if(*jsonStr == ']')
+            {
+            *restStr = jsonStr + 1;
+            return(array);
+            }
+        if(array) deleteList(array);
+        return(setJSONerror("invalid JSON array format", jsonStr));
+    case 't':
+        if(strncmp(jsonStr, "true", 4) == 0)
+            {
+            cell = stuffSymbol(trueSymbol);
+            ptr = jsonStr + 4;
+            break;
+            }
+    case 'f':
+        if(strncmp(jsonStr, "false", 5) == 0)
+            {
+            falseSymbol = translateCreateSymbol("false", CELL_SYMBOL, mainContext, TRUE);
+            cell = stuffSymbol(falseSymbol);
+            ptr = jsonStr + 5;
+            break;
+            }
+    case 'n':
+        if(strncmp(jsonStr, "null", 4) == 0)
+            {
+            ptr = jsonStr + 4;
+            cell = stuffSymbol(nilSymbol);
+            break;
+            }
+    default:
+    return(setJSONerror("invalid JSON value format", jsonStr));
+    }
+
+*restStr = ptr;
+return(cell);
+}
+
+
+CELL * p_JSONerror(CELL * params)
+{
+return( lastJSONerror == NULL ? nilCell : copyCell(lastJSONerror));
+}
+
+
+CELL * setJSONerror(char * errorText, char * jsonStr)
+{
+CELL * cell = stuffString(errorText);
+
+if(lastJSONerror) deleteList(lastJSONerror);
+
+lastJSONerror = getCell(CELL_EXPRESSION);
+lastJSONerror->contents = (UINT)cell;
+cell->next = stuffInteger((UINT)jsonStr - (UINT)jsonStrStart);
+
+return(nilCell);
+}
+
 /* eof */
-
-
-
 
 

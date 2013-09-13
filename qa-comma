@@ -21,12 +21,14 @@
 ;;
 
 ;; set a locale which uses the decimal comma
-(if (= ostype "Win32")
-	(set-locale "C" ",") ; undocumented, make qa-comma work in "." countries
-	(unless (set-locale "de_DE")
-		(println "Cannot set locale to 'de_DE' - must exit")
-		(exit))
-)
+(setq LOCALE (if (= ostype "Win32") "German_Germany.1252" "de_DE.UTF-8"))
+(unless (set-locale LOCALE)
+    (println "Cannot set locale to '" LOCALE "' - must exit")
+    (exit))
+
+(unless (= (last (set-locale)) ",")
+    (println "Cannot set comma locale - must exit")
+    (exit))
 
 (when utf8
  (set 'unicodelist '(913 914 915 916 937 945 946 947 948 969 32 
@@ -1122,9 +1124,11 @@ true
 
 (define (test-file? )
   (and 
-    (file? "qa-comma")
+    (file? "qa-dot")
+    (= (file? "qa-dot" true) "qa-dot")
     (file? "modules/")
     (file? "modules")
+    (not (file? "modules" true))
 ))
 
 (define (test-filter )
@@ -1481,6 +1485,21 @@ true
 	(= (join '("A" "B" "C") "-") "A-B-C")
 	(= (join '("A" "B" "C") "-" true) "A-B-C-")
 ))
+
+(define (test-json-error)
+    (and
+        (not (json-parse {{"key" : "value" , "hello"  "world"}}))
+        (= (json-error) '("missing : colon" 28))
+    ))
+
+; see also qa-specific-tests/qa-json
+(define (test-json-parse)
+    (and 
+        (= (json-parse { {"key" : "value" , "hello" : "world", "array" : [1, 2, 3, 4, 5]} })
+        '(("key" "value") ("hello" "world") ("array" (1 2 3 4 5))))
+        (= (json-parse { [1,2,3,4,5,6,{ "nested" : 777}, 8, 9] } )
+          '(1 2 3 4 5 6 (("nested" 777)) 8 9) )
+    ))
 
 (define (test-lambda? )
   (lambda? qa))
@@ -2836,6 +2855,11 @@ true
     (= '() (sort '()))
 	(= (sort '(1 nil)) '(nil 1))
 	(= (sort '(a nil true 1 1,2)) (sort (list 'a nil true 1 1,2)) '(nil true 1 1,2 a))
+    ;; at runtime generated sort function v10.4.6
+    (define (f<g= f g)
+        (expand (fn (a b) (f (g a) (g b))) 'f 'g))
+    (set 'lst '((c 4) (b 5) (a 2)))
+    (= (sort lst (f<g= < last)) '((a 2) (c 4) (b 5)))
   )
 )
 

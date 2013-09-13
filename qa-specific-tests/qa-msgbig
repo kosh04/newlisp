@@ -1,5 +1,8 @@
 #!/usr/bin/newlisp
 
+; now updated for reworked message API in v.10.3.5:
+; must specify 'true' in 'spawn' when using 'send/'receive'
+
 ; --------------------------------- roundtrip test
 (println "\n10 round trips to 10 child processes with 80,000 bytes in each package")
 
@@ -12,7 +15,7 @@
 )
 
 (dotimes (i 10)
-	(spawn 'r (child-process)))
+	(spawn 'r (child-process)i true))
 
 (println "\nPIDs of spawned childs:\n" (sync)) (println)
 

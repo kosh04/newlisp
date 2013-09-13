@@ -23,6 +23,9 @@
 
 #define EXPORT __declspec(dllexport) __stdcall
 
+extern int bigEndian;
+char preLoad[3];
+CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern char linkOffset[];
 extern void loadStartup(char *name);
 extern LPSTR getLibname(void);
@@ -54,10 +57,12 @@ opsys += 1024;
 initFFI();
 #endif
 
+bigEndian = (*((char *)&bigEndian) == 0);
 initLocale();
 initStacks();
 initialize();
-mainArgsSymbol->contents = (UINT)getCell(CELL_EXPRESSION);
+mainArgsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)stuffString(libName));
+sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
 initFile = getenv("NEWLISPLIB_INIT");
 
