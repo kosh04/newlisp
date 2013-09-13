@@ -5,13 +5,13 @@
 ;; @version 1.3 - added lib for opnBSD and tested for 64-bit newLISP
 ;; @version 1.4 - doc changes
 ;; @version 1.5 - replaced <tt>write-buffer</tt> with <tt>write</tt>
-;; @author L.M 2006-2010
+;; @version 1.6 - removed broken <tt>squeeze</tt> and <tt>unsqueeze</tt> functions.
+;; @author L.M 2006-2013
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
 ;; from @link http://www.zlib.net/ www.zib.net is needed.
 ;;
-;; The module offers two types of compression/decompression support:
-;; one for fast in memory compression/decopmpression, the other for
+;; The module offers two compression/decompression support as
 ;; GZ compatible file compression and decompression.
 ;; 
 ;; Before using the module it must be loaded:
@@ -43,40 +43,6 @@
 (import library "gzread")
 (import library "gzclose")
 (import library "gzwrite")
-
-;; @syntax (zlib:squeeze <str-buffer>)
-;; @return The string containing the compressed <str-buffer>.
-;; @example
-;; (set 'str-z  (zlib:squeeze str))
-
-(define (squeeze src)
-	(letn (	(srclen (length src)) 
-			(destlen (int (add (mul 1.01 srclen) 12))) 
-			(dest (dup "\000" destlen))
-			(destlenp (pack "ld" destlen))
-			)
-	(compress dest destlenp src srclen)
-	(set 'destlen (first (unpack "ld" destlenp)))
-	(slice dest 0 destlen)))
-
-
-;; @syntax (zlib:unsqueeze <str-buffer>)
-;; @return The original uncompressed string from a compressed buffer in <str-buffer>
-;; @example
-;; (set 'str (zlib:unsqueeze str-z))
-
-(define (unsqueeze src)
-	(letn (	(srclen (length src)) 
-			(destlen (* srclen 3)) 
-			(dest (dup "\000" destlen))
-			(destlenp (pack "ld" destlen))
-			)
-		(while (= -5 (uncompress dest destlenp src srclen))
-			(set 'destlen (* 2 destlen))	
-			(set 'dest (dup "\000" destlen))
-			(set 'destlenp (pack "ld" destlen)))
-		(set 'destlen (first (unpack "ld" destlenp)))
-		(slice dest 0 destlen)))
 
 ;; @syntax (zlib:gz-read-file <str-file-name>)
 ;; @return A string buffer with the original contents.

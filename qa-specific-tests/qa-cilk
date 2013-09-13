@@ -16,6 +16,10 @@
 ; 9    55      109
 ;10    89      177
 
+
+(when (= ostype "Win32")
+	(exit))
+
 (println)
 (println "Testing Cilk API")
 

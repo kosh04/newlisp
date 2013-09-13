@@ -69,8 +69,7 @@ echo "creating makefile_build ..."
 echo
 
 if   [ ${os_type} = MAC_OSX ] ; then
-    echo on Snow Leopard 32-bit is made even if 64-bit is the detected default
-	cp makefile_darwin_utf8_ffi makefile_build
+	cp makefile_darwinLP64_utf8_ffi makefile_build
 elif [ ${os_type} = LINUX ] ; then
 	if [ -f /etc/redhat-release ] ; then
 		libffi_version=$(ls -d /usr/lib*/libffi*/include)
@@ -117,7 +116,7 @@ fi
 
 
 if   [ ${os_type} = MAC_OSX ] ; then
-    echo "to make for 32-bit on MAC_OSX type:"
+    echo "to make for 64-bit on MAC_OSX type:"
 else
 	echo "to make for ${memory_model} on ${os_type} type:"
 fi

@@ -1,12 +1,19 @@
 #!/usr/bin/newlisp
 
 ;; qa-bench - benchmarking all non I/O primitives
+;; needs xml support compiled (is standard) 
 ;;
 ;; USAGE:
 ;;    newlisp qa-bench
 ;;    newlisp qa-bench 2    # run twice as long
 ;;    newlisp qa-bench report # report on individual functions
 ;;    newlisp qa-bench report 10 # report and run 10 times long
+
+
+(unless xml-parse
+    (println ">>>>> qa-bench needs needs XML support compiled")
+    (exit)
+)
 
 (set-locale "en_US")
 

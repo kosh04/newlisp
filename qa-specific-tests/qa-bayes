@@ -11,7 +11,7 @@
         ; A Comedy of Masks - Ernest Dowson and Arthur Moore, 547KB
         "http://www.gutenberg.org/files/16703/16703.txt"
         ; The Adventures of Sherlock Holmes - Conan Doyle, 576KB
-        "http://www.gutenberg.org/dirs/etext99/advsh12.txt"
+        "http://www.gutenberg.org/cache/epub/1661/pg1661.txt"
         ; The tale of Beowulf - anonymous, 219KB
         "http://www.gutenberg.org/files/20431/20431-8.txt"
         ))
@@ -21,12 +21,16 @@
 ;(bayes-train (parse (lower-case (read-file "Sherlock.txt")) "[^a-z]+" 0) '() 'DoyleDowson)
 
 ; training with the Dowson novel
-(print "... Loading from Gutenberg project ...")
-(bayes-train '() (parse (lower-case (read-file (docs 0))) "[^a-z]+" 0) 'DoyleDowson)
+(println "... Loading from Gutenberg project ...")
+(set 'ComedyOfMasks (read-file (docs 1)))
+(println "training: Comedy of Masks")
+(bayes-train '() (parse (lower-case ComedyOfMasks) "[^a-z]+" 0) 'DoyleDowson)
 
 ; training with the Doyle novel
 (println "Loading from Gutenberg project ...")
-(bayes-train (parse (lower-case (read-file (docs 1))) "[^a-z]+" 0) '() 'DoyleDowson)
+(set 'AdventuresOfSherlockHolmes (read-file (docs 1)))
+(println "training: The Adventures of Sherlock Holmes")
+(bayes-train (parse (lower-case AdventuresOfSherlockHolmes) "[^a-z]+" 0) '() 'DoyleDowson)
 
 (setf result (bayes-query (parse "he was putting the last touches to a picture") 'DoyleDowson))
 (if (< (apply add (map sub result '(0.03802079132 0.9619792087))) 0.001)

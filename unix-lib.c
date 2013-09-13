@@ -24,7 +24,6 @@ extern int bigEndian;
 char preLoad[3];
 CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern void setupAllSignals(void);
-extern void loadStartup(char * name);
 extern int evalSilent;
 extern int opsys;
 extern SYMBOL * mainArgsSymbol;
@@ -40,7 +39,7 @@ int libInitialized = 0;
 
 void initializeMain(void)
 {
-char name[MAX_LINE + 1];
+char name[MAX_LINE];
 char * initFile;
 
 opsys += 64;
@@ -71,11 +70,9 @@ initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)
     {
     strncpy(name, initFile, MAX_LINE);
+    name[MAX_LINE - 1] = 0;
     loadFile(name, 0, 0, mainContext);
     }
-
-if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
-    loadFile("newlisp.so", *(UINT*)linkOffset, 1, mainContext);
 
 libInitialized = 1;
 reset();

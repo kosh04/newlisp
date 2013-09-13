@@ -489,18 +489,29 @@ true
    (inc x) 
    (= x 2)))
 
-(define (test-bessel)
-    (and
-        (< (abs (sub (bessel 0 1,23) 0,6560705717)) 0,000000001)
-        (< (abs (sub (bessel 1 1,23) 0,5058005726)) 0,000000001)
-        (< (abs (sub (bessel 2 1,23) 0,1663693838)) 0,000000001)
-))
-
 (define (test-beta )
   (< (abs (sub (beta 1 2) 0,5)) 1e-05))
 
 (define (test-betai )
   (< (abs (sub (betai 0,5 5 10) 0,910217)) 1e-05))
+
+(define (test-bigint?)
+    (and
+        (bigint? 123456789012345678901234567890)
+        (bigint? 123456789012345678901234567890L)
+        (bigint? 0L)
+        (bigint? 123L)
+        (bigint? (bigint 12345))
+        (bigint? (bigint 12345.678))
+        (bigint? (bigint "12345"))
+    ))
+
+(define (test-bigint)
+    (and
+        (= 12345L (bigint 12345))
+        (= 12345 (bigint 12345.678))
+        (= 12345 (bigint "12345"))
+))
 
 (define (test-bind)
 	(bind '((a 1) (b "hello") (c (3 4))))
@@ -2339,9 +2350,11 @@ true
   )
 )
 
-(define (test-read-expr , clist) true
-    (set 'code "; a statement\n(define (double x) (+ x x))\n")
-    (= (read-expr code (context)) '(define (double x) (+ x x)))
+(define (test-read-expr , code)
+    (and
+        (set 'code "; a statement\n(define (double x) (+ x x))\n")
+        (= (read-expr code (context)) '(define (double x) (+ x x)))
+        (= $count 41))
 )
 
 (define (test-read-buffer )
@@ -2381,12 +2394,24 @@ true
 
 (define (test-reader-event) true)
 
+
 (define (test-real-path) 
   (and
 	(string? (real-path))
     (string? (real-path "."))
+    (not (real-path "foofoo"))
+    (not (real-path "foofoo" true))
+    (if (!= ostype "Win32")
+        (let ( old-path (env "PATH"))
+            (and
+                (env "PATH" (append (real-path) ":" (env "PATH")))
+                ; on Unix newLISP's which() is used to find executable path
+                (= (real-path "newlisp" true) (append (real-path) "/newlisp"))
+                (env "PATH" old-path))
+        )
+        true
+    )
  ))
-
 
 (define (test-receive) true) ; tested with qa-message
 
@@ -2479,7 +2504,7 @@ true
   (not (catch (replace) 'result))
   (catch (replace "a" '("x" "a" "y")) 'result)
   (= (replace "a" "ababab" "b") "bbbbbb")
-  (= $0 3)
+  (= $count 3)
   (= (replace 'a '(a a b a b a a a b a) 'b) '(b b b b b b b b b b))
   (= (replace 'a '(a a b a b a a a b a)) '(b b b))
   (= (replace 'a '(a)) '())
@@ -2490,10 +2515,10 @@ true
   (= (replace "\\b" "abc" "x" 0) "xabcx")
   (= (replace "(?<=[0-9])(?=(?:[0-9]{3})+(?![0-9]))" "1234567" "," 0) "1,234,567")
   (= (replace "a" "ababab" (upper-case $0) 0) "AbAbAb")
-  (= $0 3)
+  (= $count 3)
   (set 'str2 "abaBab")
   (= (replace "b|B" str2 "z" 0) "azazaz")
-  (= $0 3)
+  (= $count 3)
   (replace-once "aaa")
   (= (replace "%([0-9A-F][0-9A-F])" "%41123%42456%43" (char (int (append "0x" $1))) 1) "A123B456C")
   ; replace with comparison functor
@@ -2503,13 +2528,13 @@ true
   (= (replace 10 L 10 (fn (x y) (< x y))) '(1 4 10 5 6 10 2 3 10))
   ;
   (set 'AL '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
-  (= (replace '(mary *)  AL (list 'mary (apply + (rest $0))) match)
+  (= (replace '(mary *)  AL (list 'mary (apply + (rest $it))) match)
     '((john 5 6 4) (mary 14) (bob 4 2 7 9) (jane 3)))
   (set 'AL '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
-  (= (replace '(*) AL (list ($0 0) (apply + (rest $0))) match)
+  (= (replace '(*) AL (list ($it 0) (apply + (rest $it))) match)
     '((john 15) (mary 14) (bob 22) (jane 3)))
   (set 'AL '((john 5 6 4) ("mary" 3 4 7) (bob 4 2 7 9) ("jane" 3)))
-  (= (replace nil AL (cons (sym ($0 0)) (rest $0)) (fn (x y) (string? (y 0))))
+  (= (replace nil AL (cons (sym ($it 0)) (rest $it)) (fn (x y) (string? (y 0))))
     '((john 5 6 4) (mary 3 4 7) (bob 4 2 7 9) (jane 3)))
 
   ; default functor
@@ -3496,7 +3521,7 @@ true
 
 (println "total time: " (- (time-of-day) start-of-qa))
 
-(exit)
+(unless do-not-exit (exit))
 
 
 ;; eof

@@ -23,10 +23,9 @@
 
 extern SYMBOL * starSymbol;
 extern SYMBOL * plusSymbol;
-extern SYMBOL * sysSymbol[];
+extern CELL * countCell;
 
 extern CELL * firstFreeCell;
-extern SYMBOL * dolistIdxSymbol;
 
 /* following used in count, difference, intersect, unique and sort 8.6.2 */
 CELL * * listToSortedVector(CELL * list, ssize_t * length, CELL * func, int indexFlag);
@@ -1164,8 +1163,8 @@ int intFlag;
 
 if((intFlag = (((CELL*)params->next)->next == nilCell)))
     {
-    params = getInteger64(params, &fromInt64);
-    getInteger64(params, &toInt64);
+    params = getInteger64Ext(params, &fromInt64, TRUE);
+    getInteger64Ext(params, &toInt64, TRUE);
     stepCnt = (fromInt64 > toInt64) ? fromInt64 - toInt64 : toInt64 - fromInt64;
     cell = stuffInteger64(fromInt64);
     }
@@ -1203,6 +1202,7 @@ for(i = 1; i <= stepCnt; i++)
     cell = cell->next;
     }
 
+sequence->aux = (UINT)cell; /* last element optimization */
 return(sequence);
 }
 
@@ -1404,6 +1404,7 @@ while(list != nilCell)
             }   
 
         if(mode == REF_SINGLE) return;
+        countCell->contents++;
         }
 
     if(isList(list->type))
@@ -1480,6 +1481,7 @@ return(reference(params, REF_SINGLE));
 
 CELL * p_refAll(CELL * params)
 {
+countCell->contents = 0;
 return(reference(params, REF_ALL));
 }
 
@@ -1499,6 +1501,7 @@ while(list != nilCell)
         *count += 1;
         updateCell(list, new);
         if(mode == SETREF_SINGLE) return(list);
+        countCell->contents++;
         }
     else if(isList(list->type))
         {
@@ -1553,6 +1556,7 @@ return(setRef(params, SETREF_SINGLE));
 
 CELL * p_setRefAll(CELL * params)
 {
+countCell->contents = 0;
 return(setRef(params, SETREF_ALL));
 }
 
@@ -1579,7 +1583,11 @@ if(val != nilCell)
         else
             deleteList((CELL *)cell->contents);
         }
-    else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL) 
+    else if(cell->type == CELL_STRING || cell->type == CELL_DYN_SYMBOL 
+#ifdef BIGINT
+            || cell->type == CELL_BIGINT
+#endif
+            ) 
         freeMemory( (void *)cell->contents);
 
     cell->type = new->type;
@@ -1598,12 +1606,12 @@ if(val != nilCell)
 itSymbol->contents = (UINT)nilCell;
 }
 
-void flat(CELL * list, CELL * result, CELL * * next)
+void flat(CELL * list, CELL * result, CELL * * next, UINT recursion)
 {
 while(list != nilCell)
     {
-    if(isList(list->type))
-        flat((CELL*)list->contents, result, next);
+    if(isList(list->type) && recursion != 0)
+        flat((CELL*)list->contents, result, next, recursion - 1);
     else
         {
         if(*next == NULL)
@@ -1628,12 +1636,15 @@ CELL * p_flat(CELL * params)
 CELL * list;
 CELL * result;
 CELL * next = NULL;
+UINT recursion = -1;
 
-getListHead(params, &list);
+params = getListHead(params, &list);
+if(params != nilCell)
+    getInteger(params, &recursion);
 
 result = getCell(CELL_EXPRESSION);
 
-flat(list, result, &next);
+flat(list, result, &next, recursion);
 
 return(result);
 }

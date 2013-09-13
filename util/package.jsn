@@ -1,0 +1,9 @@
+{
+  "name": "newLISP",
+  "version": "10.4.7",
+  "repo": "newlisp.org",
+  "description": "Lisp-like scripting language",
+  "keywords": ["statistics", "AI", "networking", "multicore", "distributed processing"],
+  "license": "GPL3",
+  "install": "make; make install"
+}

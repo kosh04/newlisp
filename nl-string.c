@@ -25,6 +25,7 @@
 #include "protos.h"
 
 extern SYMBOL * sysSymbol[];
+extern CELL * countCell;
 extern int bigEndian;
 
 #define OVECCOUNT (MAX_REGEX_EXP * 3)    /*  max sub expressions in PCRE */
@@ -56,9 +57,6 @@ CELL * substring(char * string, ssize_t slen, ssize_t offset, ssize_t len)
 if(offset < 0)
     {
     offset = slen + offset;
-/* before 10.1.11
-    if(offset < 0) offset = 0;
-*/
     if(offset < 0)
         return(errorProc(ERR_STRING_INDEX_INVALID));
     }
@@ -101,7 +99,7 @@ ssize_t foundPosition;
 
 char * searchString;
 char * buffer;
-long options;
+INT options;
 size_t len;
 
 params = getInteger(params, (UINT *)&fileHandle);
@@ -495,11 +493,6 @@ size =  wstr_utf8(utf8str, unicode, size * UTF8_MAX_BYTES + 1);
 utf8str = reallocMemory(utf8str, size + 1);
 
 free(unicode);
-/*
-cell = getCell(CELL_STRING);
-cell->contents = (UINT)utf8str;
-cell->aux = size + 1;
-*/
 return(makeStringCell(utf8str, size));
 #endif
 
@@ -602,7 +595,7 @@ if(*fmt == 's')
     return(++fmt);
     }
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #ifdef TRU64 /* supporting ld, li, lu, lx, lX formats */
 if(*fmt == 'l' &&  
         (*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
@@ -720,7 +713,7 @@ while(params->type != CELL_NIL)
     if(fType == CELL_INT64)
         {
         if(isNumber(cell->type))
-            cell = getInteger64(cell, &bigNum);
+            cell = getInteger64Ext(cell, &bigNum, TRUE);
         else goto FORMAT_DATA_ERROR;
 
         varPrintf((UINT)&fmtStream, fmt, bigNum);
@@ -738,7 +731,11 @@ while(params->type != CELL_NIL)
             floatNum = *(double *)&cell->contents;
 #endif
         else if(cell->type == CELL_LONG)
-            floatNum = (long)cell->contents;
+            floatNum = (INT)cell->contents;
+#ifdef BIGINT
+        else if(cell->type == CELL_BIGINT)
+            floatNum = bigintCellToFloat(cell);
+#endif
         else goto FORMAT_DATA_ERROR;
 
         varPrintf((UINT)&fmtStream, fmt, floatNum);
@@ -1099,7 +1096,7 @@ CELL * p_integer(CELL * params)
 {
 char * intString;
 INT64 num;
-long base;
+INT base;
 CELL * deflt, * cell;
 INT64 result;
 
@@ -1110,7 +1107,12 @@ if(cell->type == CELL_STRING)
     intString = (char *)cell->contents;
 else if(isNumber(cell->type))
     {
-    getInteger64(cell, &num);
+#ifdef BIGINT
+    if(cell->type == CELL_BIGINT)
+        num = bigintToInt64(cell);
+    else
+#endif
+    getInteger64Ext(cell, &num, FALSE);
     return(stuffInteger64(num));
     }
 else 
@@ -1165,6 +1167,11 @@ if(cell->type == CELL_STRING)
     fltString = (char *)cell->contents;
 else if(isNumber(cell->type))
     {
+#ifdef BIGINT
+    if(cell->type == CELL_BIGINT)
+        value = bigintCellToFloat(cell);
+    else
+#endif
     getFloat(cell, &value);
     return(stuffFloat(&value));
     }
@@ -1192,7 +1199,7 @@ char number[32];
 SYMBOL * context;
 SYMBOL * sPtr;
 CELL * cell;
-#ifdef WIN_32
+#ifdef WINDOWS
 char * fmt = "%I64d";
 #endif
 
@@ -1210,11 +1217,11 @@ switch(cell->type)
         snprintf(number, 30, "%ld", *(INT64 *)&cell->aux); 
 #else
 
-#ifdef WIN_32
+#ifdef WINDOWS
         snprintf(number, 30, fmt, *(INT64 *)&cell->aux);
 #else
         snprintf(number, 30, "%lld", *(INT64 *)&cell->aux);
-#endif /* WIN_32 */
+#endif /* WINDOWS */
 
 #endif /* TRU64 */
         token = number;
@@ -1230,6 +1237,8 @@ switch(cell->type)
         break;
     case CELL_STRING:
         token = (char*)cell->contents;
+        if((cell->aux - 1) > MAX_SYMBOL)
+            errorProcExt(ERR_STRING_TOO_LONG, cell);
         break;
     case CELL_SYMBOL:
         sPtr = (SYMBOL*)cell->contents;
@@ -1351,11 +1360,7 @@ return(stuffInteger(*(int *)getAddress(params)));
 
 CELL * p_getLong(CELL * params)
 {
-#ifndef NEWLISP64
 return(stuffInteger64(*(INT64 *)getAddress(params)));
-#else
-return(stuffInteger(*(UINT *)getAddress(params)));
-#endif
 }
 
 CELL * p_getFloat(CELL * params)
@@ -1488,7 +1493,7 @@ STREAM stream = {0, NULL, NULL, 0, 0};
 int tklen;
 size_t srclen;
 /* PCRE stuff */
-long options = 0;
+INT options = 0;
 pcre *re = NULL;
 
 params = getStringSize(params, &string, &srclen, TRUE);
@@ -1927,7 +1932,7 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
             *(INT64 *)&cell->aux = int32V;
 #else
             cell = getCell(CELL_LONG);
-            *(long *)&cell->contents = int32V;
+            *(INT *)&cell->contents = int32V;
 #endif
             break;
 
@@ -2094,7 +2099,7 @@ int ovector[OVECCOUNT];
 int rc, idx;
 char * pattern;
 char * string;
-long options = 0;
+INT options = 0;
 UINT offset = 0;
 int len;
 size_t size;
@@ -2168,7 +2173,7 @@ return(result);
 CELL * p_regexComp(CELL * params)
 {
 char * pattern;
-long options = 0;
+INT options = 0;
 pcre * re;
 int rc;
 size_t size;
@@ -2247,7 +2252,7 @@ if((cPattern == NULL) || (strcmp(cPattern, pattern) != 0) || (options != cacheOp
     len = strlen(pattern);
     cPattern = (char *)allocMemory(len + 1);
     memcpy(cPattern, pattern, len + 1);
-#ifdef WIN_32
+#ifdef WINDOWS
     if(re != NULL) free(re);
 #else
     if(re != NULL) (pcre_free)(re);
@@ -2337,6 +2342,7 @@ while(offset <= buffLen)
 
     resultStackIdxSave = resultStackIdx; 
 
+    countCell->contents++;
     if((cell = evaluateExpressionSafe(exprCell, &errNo)) == NULL)
         {
         freeRegex(start_rx);

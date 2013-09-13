@@ -6,18 +6,18 @@
 
 (write-line 2 "Testing for cell leaks, wait ...")
 
-(set 'testing-cell-leaks true)
+(set 'do-not-exit true) ; avoids exit
 
 (set 'before (sys-info 0))
 (set 'after (sys-info 0))
 
-(load "qa-dot")
+(silent (load "qa-dot"))
 
-(load "qa-dot")
+(silent (load "qa-dot"))
 (println (sys-info))
 (set 'before (sys-info 0))
 
-(load "qa-dot")
+(silent (load "qa-dot"))
 (println (sys-info))
 (set 'after (sys-info 0))
 

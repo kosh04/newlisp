@@ -8,7 +8,7 @@
 </head>
 
 <body style="margin: 20px;" text="#111111" bgcolor="#FFFFFF" 
-			link="#376590" vlink="#551A8B" alink="#ffAA28">
+            link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
 <p><a href="index.html">Module index</a></p><br/>
@@ -18,7 +18,11 @@
 <b>Version: </b>1.42 new table UI<br/>
 <b>Version: </b>1.43 bug fix in new table UI action parameters<br/>
 <b>Version: </b>1.44 fixes in newlisp-edit.lsp<br/>
-<b>Author: </b>LM, August 2008, 2009, 2010, 2011<br/>
+<b>Version: </b>1.45 doc fixes<br/>
+<b>Version: </b>1.47 doc fixes<br/>
+<b>Version: </b>1.48 doc fixes<br/>
+<b>Version: </b>1.50 doc fixes<br/>
+<b>Author: </b>LM, August 2008, 2009, 2010, 2012, 2013<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -84,7 +88,7 @@
  The following example application shows all the essential elements of a newLISP GUI
  application:
 <br/><br/>
-<b>example:</b><blockquote><pre> #!/usr/bin/newlisp
+<b>Example:</b><blockquote><pre> #!/usr/bin/newlisp
  ; button-demo.lsp - demonstrate the button control
   
  ; initialization
@@ -260,7 +264,6 @@
  <li>Symbol ids of components can be expressed as strings.</li>
  <li>Number values can be expressed as strings.</li>
  <li>Numbers can be expressed as floats or integers.</li>
- <li>String constants for type and orientation constants can be given as symbols.</li>
  </ul>
  </blockquote>
  Here are some examples:
@@ -272,10 +275,6 @@
      (gs:panel "ColorPanel" "360" "200")
      ; is the same as
      (gs:panel "ColorPanel" 360.0 "200.00")
-<br/><br/>
-     (gs:set-flow-layout 'ButtonDemo "center" 2 15)
-     ; is the same as
-     (gs:set-flow-layout 'ButtonDemo 'center 2 15)
  </pre>
  Although the first form is preferred for clarity and readability, in some cases coding
  may be more efficient using the other forms.
@@ -484,7 +483,7 @@
     (gs:set-font <em>sym-id</em> <em>str-family</em> <em>int-size</em> <em>str-type</em>)
     (gs:set-foreground <em>sym-id</em> <em>float-red</em> <em>float-green</em> <em>float-blue</em> [<em>float-alpha</em>])
     (gs:set-foreground <em>sym-id</em> <em>list-rgb</em> [<em>float-alpha</em>])
-    (gs:set-grid-layout <em>sym-container</em> <em>int-columns</em> <em>int-rows</em> [<em>int-hgap</em> <em>int-vgap</em>])
+    (gs:set-grid-layout <em>sym-container</em> <em>int-rows</em> <em>int-columns</em> [<em>int-hgap</em> <em>int-vgap</em>])
     (gs:set-icon <em>sym-id</em> <em>str-icon-path</em> [<em>int-index</em>])
     (gs:set-look-and-feel <em>str-look</em>)
     (gs:set-resizable <em>sym-frame</em> <em>boolean-flag</em>)
@@ -552,7 +551,7 @@
  lines, shapes, text and images can be moved to a different position.
 <br/><br/>
  All positions given in <tt>int x</tt> and <tt>int y</tt> must be given as integers. Values
- will not be converted automatically as is the case wioth newLISP's built-in functions. To
+ will not be converted automatically as is the case with newLISP's built-in functions. To
  guarantee integer type, values can be casted e.g.: 
  <pre>(gs:draw-circle 'MyCircle (int x) (int y) (int r))</pre>
  <pre>
@@ -781,7 +780,7 @@
  present. See the command <tt>gs:play-note</tt> for more information on the note bend parameter.
  The following code is a complete example:
 <br/><br/>
-<b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+<b>Example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
  (gs:midi-init)
 
@@ -803,7 +802,7 @@
  (exit)</pre></blockquote>
  The second example shows the usage of pitch-bend in notes:
 <br/><br/>
-<b>example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
+<b>Example:</b><blockquote><pre> (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
  (gs:midi-init)
  
@@ -911,7 +910,7 @@
  force an exit of the application when communication between the newLISP-GS and the newLISP
  application process fails. 
 <br/><br/>
-<b>example:</b><blockquote><pre> (while (gs:check-event 10000) ; check for 10 milliseconds
+<b>Example:</b><blockquote><pre> (while (gs:check-event 10000) ; check for 10 milliseconds
      (do-myprocess)
  )</pre></blockquote>
 <br/><br/><center>&sect;</center><br/>
@@ -1044,7 +1043,7 @@
  The function <tt>gs:dispose-splash</tt> is used to turn off the splash image after
  the newLISP GUI application has started.
 <br/><br/>
-<b>example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
+<b>Example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
  ; or on Win32
  java -jar "c:\Program Files\newlisp\guiserver.jar" 4711 "newlisp program.lsp" /local/newLISPsplashWin.png</pre></blockquote>
  The example starts newLISP-GS with an application <tt>program.lsp</tt> and a splash
@@ -1110,6 +1109,7 @@
 <a name="gs_draw-image"></a><h3><font color=#CC0000>gs:draw-image</font></h3>
 <b>syntax: (<font color=#CC0000>gs:draw-image</font> <em>sym-tag</em> <em>str-path</em> <em>int-x</em> <em>int-y</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
 <b>parameter: </b><em>sym-tag</em> - The tag group of the image.<br/>
+<b>parameter: </b><em>str-path</em> - The file path-name of the image.<br/>
 <b>parameter: </b><em>int-x</em> - The X position of the image top left corner.<br/>
 <b>parameter: </b><em>int-y</em> - The Y position of the image top left corner.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width in which to draw the image.<br/>
@@ -1141,7 +1141,7 @@
 <br/><br/>
  Draws a path with the points found in <em>list-points</em>. 
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:draw-path 'P '(1 0 2 2 3 0))</pre></blockquote>
+<b>Example:</b><blockquote><pre> (gs:draw-path 'P '(1 0 2 2 3 0))</pre></blockquote>
  The example will draw an upwards-pointing triangle without base at the 
  points <tt>1,0</tt>, <tt>2,2</tt> and <tt>3,0</tt> 
 
@@ -1154,7 +1154,7 @@
 <br/><br/>
  Draws a polygon with the points found in <em>list-points</em>. 
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:draw-polygon 'P '(1 0 2 2 3 0))</pre></blockquote>
+<b>Example:</b><blockquote><pre> (gs:draw-polygon 'P '(1 0 2 2 3 0))</pre></blockquote>
  The example will draw an upwards-pointing triangle with the points <tt>1,0</tt>, <tt>2,2</tt>
  and <tt>3,0</tt>.
 
@@ -1234,7 +1234,7 @@
 <br/><br/>
  If no width and height are specified, the current size of the canvas is assumed.
 <br/><br/>
-<b>example:</b><blockquote><pre>
+<b>Example:</b><blockquote><pre>
  (gs:export "/usr/home/pictures/mypic.png")</pre></blockquote>
  This will generate a <tt>.png</tt> file exactly as the image seen on the screen.
  The color format is RGBA with 8 bit per color and an alpha channel. When
@@ -1305,7 +1305,7 @@
  the current color set with <tt>gs:set-paint</tt> or the optional color
  given in <em>list-color</em>.
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:fill-polygon 'P '(1 0 2 2 3 0))
+<b>Example:</b><blockquote><pre> (gs:fill-polygon 'P '(1 0 2 2 3 0))
 
  (gs:fill-polygon 'P '(1 0 2 2 3 0) gs:gray)</pre></blockquote>
  The example will fill an upwards pointing triangle with the points <tt>1,0</tt>, <tt>2,2</tt>
@@ -1486,7 +1486,7 @@
 <b>parameter: </b><em>sym-id</em> - The name of the image button.<br/>
 <b>parameter: </b><em>sym-action</em> - The name of the event handler.<br/>
 <b>parameter: </b><em>str-icon-path</em> - The path for an image icon.<br/>
-<b>parameter: </b><em>str-down-con-path</em> - The path for a pressed down image icon.<br/>
+<b>parameter: </b><em>str-down-icon-path</em> - The path for a pressed down image icon.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the image button.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the image button.<br/>
 
@@ -1557,7 +1557,7 @@
 <br/><br/>
  Components respond to the following key event types: <tt>"pressed"</tt>, <tt>"released"</tt>, <tt>"typed"</tt>.
 <br/><br/>
-<b>example:</b><blockquote><pre>
+<b>Example:</b><blockquote><pre>
  (define (key-action id type code modifiers)
      (println "id:" id " type:" type " key code:" code " modifiers:" modifiers)
  )</pre></blockquote>
@@ -1743,7 +1743,7 @@
  An instrument from the current soundbank is attached to a
  specific channel or to channel <tt>0</tt> if no channel is specified.
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:midi-patch (find "Electric Grand" gs:instruments) 0)</pre></blockquote>
+<b>Example:</b><blockquote><pre> (gs:midi-patch (find "Electric Grand" gs:instruments) 0)</pre></blockquote>
  In order for the <tt>gs:instruments</tt> variable to contain a list of instruments,
  <tt>gs:get-instruments</tt> must have been called earlier, i.e. after <tt>gs:midi-init</tt>.
 
@@ -1776,7 +1776,7 @@
  for any component in the system. Components respond to the following types:
  <tt>"pressed"</tt>, <tt>"released"</tt>, <tt>"clicked"</tt>,
 <br/><br/>
-<b>example:</b><blockquote><pre>
+<b>Example:</b><blockquote><pre>
  (define (mouse-action id type x y button cnt mods)
      (println "id:" id " type:" type " x:" x " y:" y " button:" button " count:" cnt " mods:" mods)
  )</pre></blockquote>
@@ -1814,7 +1814,7 @@
 <b>parameter: </b><em>sym-action</em> - The symbol of the action handler.<br/>
 <b>parameter: </b><em>boolean-tags</em> - A <tt>true</tt> to indicate checking for tags.<br/>
 <br/><br/>
- If <em>boolean-tags</em> is <tt>true</tt>, the the action event will carry a list of
+ If <em>boolean-tags</em> is <tt>true</tt>, the action event will carry a list of
  all tags which contained the X,Y coordinates of the mouse.
 
 
@@ -1914,7 +1914,7 @@
  tune the note lower. Positive values up to <tt>8191</tt> tune the note higher. 
  The following code is a complete example:
 <br/><br/>
-<b>example:</b><blockquote><pre> ; load Guiserver
+<b>Example:</b><blockquote><pre> ; load Guiserver
  (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
  (gs:init)
 
@@ -1929,7 +1929,7 @@
 </pre></blockquote>
  The second example demonstrated usage of the <em>int-bend</em> parameter:
 <br/><br/>
-<b>example:</b><blockquote><pre> ; play the same note but with different bends below and above the note
+<b>Example:</b><blockquote><pre> ; play the same note but with different bends below and above the note
  (gs:midi-patch "Violin" 0)
  (for (bend -2024 2024 128)
      (gs:play-note 80 1 95 0 bend))</pre></blockquote>
@@ -2112,7 +2112,7 @@
  coordinates relative to their center point. Then a <tt>gs:translate-tag</tt>
  command should be used to place the object to correct place:
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:circle 'C 0 0 50)
+<b>Example:</b><blockquote><pre> (gs:circle 'C 0 0 50)
  (gs:gs:translate-tag 'C 200 100)
  ...
  (gs:scale-tag 'C 1.1 1.1)</pre></blockquote>
@@ -2314,12 +2314,12 @@
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_set-echo-char"></a><h3><font color=#CC0000>gs:set-echo-char</font></h3>
-<b>syntax: (<font color=#CC0000>gs:set-echo-char</font> <em>sym-id</em> [<em>str-covered-text</em>])</b><br/>
+<b>syntax: (<font color=#CC0000>gs:set-echo-char</font> <em>sym-id</em> [<em>str-cover-char</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component for which text is set.<br/>
-<b>parameter: </b><em>str-covered-text</em> - Obscured by the first letter for Password Input field.<br/>
-<b>example:</b><blockquote><pre> (gs:set-echo-char 'TheTextField "*")
+<b>parameter: </b><em>str-cover-char</em> - Cover character for password entry.<br/>
+<b>Example:</b><blockquote><pre> (gs:set-echo-char 'TheTextField "*")
  (gs:set-echo-char 'TheTextField)   ; no echo, behave as normal text field</pre></blockquote>
- If no <em>str-covered-text</em> is specyfied or the string in <em>str-covered-text</em> is of
+ If no <em>str-cover-char</em> is specyfied or the string in <em>str-cover-char</em> is of
  0 length, then the text field behaves as a normal text field.
 
 
@@ -2800,7 +2800,7 @@
 <a name="gs_table-set-row-number"></a><h3><font color=#CC0000>gs:table-set-row-number</font></h3>
 <b>syntax: (<font color=#CC0000>gs:table-set-row-number</font> <em>sym-id</em> <em>bool-row-number</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
-<b>parameter: </b><em>bool-row-number</em> - <tt>true</tt> if rowns should carry a row number; default <tt>nil</tt>.<br/>
+<b>parameter: </b><em>bool-row-number</em> - <tt>true</tt> if rows should carry a row number; default <tt>nil</tt>.<br/>
 <br/><br/>
  Show or hide the row number headers. The default is hiding row numbers.
 
@@ -2814,7 +2814,7 @@
 <b>parameter: </b><em>int-width</em> - The optional width of the text area..<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the text area.<br/>
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:text-area 'TheText 'textarea-event 10 8)
+<b>Example:</b><blockquote><pre> (gs:text-area 'TheText 'textarea-event 10 8)
 
  (define (textarea-event id code dot mark) ...)</pre></blockquote>
  <tt>gs:text-area</tt> transmits the following parameters in its event:
@@ -2829,12 +2829,12 @@
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_text-field"></a><h3><font color=#CC0000>gs:text-field</font></h3>
-<b>syntax: (<font color=#CC0000>gs:text-field</font> <em>sym-id</em> <em>sym-action</em> <em>int-columns</em> [<em>str-covered-text</em>])</b><br/>
+<b>syntax: (<font color=#CC0000>gs:text-field</font> <em>sym-id</em> <em>sym-action</em> <em>int-columns</em> [<em>str-cover-char</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the text field.<br/>
 <b>parameter: </b><em>sym-action</em> - The name of the event handler.<br/>
 <b>parameter: </b><em>int-columns</em> - The number of columns in the text field.<br/>
-<b>parameter: </b><em>str-covered-text</em> - Obscured by the first letter for Password Input field.<br/>
-<b>example:</b><blockquote><pre> (gs:text-field 'TheTextField 'textfield-event)
+<b>parameter: </b><em>str-cover-char</em> - Cover character for password entry.<br/>
+<b>Example:</b><blockquote><pre> (gs:text-field 'TheTextField 'textfield-event)
  (gs:text-field 'PasswordTextField 'textfield-event "*")</pre></blockquote>
  The <tt>textfield-event</tt> is fired when the enter key is pressed in the
  text field. As an alternative the cover character for passwords can be
@@ -2873,7 +2873,7 @@
  be disabled using the <tt>gs:set-editable</tt> function. The functions <tt>gs:set-font</tt>
  and <tt>gs:append-text</tt> will work only on the <tt>text/plain</tt> content style.
 <br/><br/>
-<b>example:</b><blockquote><pre> (gs:text-pane 'TheTextPane 'textpane-event "text/plain")
+<b>Example:</b><blockquote><pre> (gs:text-pane 'TheTextPane 'textpane-event "text/plain")
 
  (define (textpane-event id code mods dot mark len undo redo) ...)</pre></blockquote>
  <tt>gs:text-pane</tt> transmits the following parameters in its event:

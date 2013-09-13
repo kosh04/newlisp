@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2012 December 12<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.4.3
+</h1>Version 2013 April 5<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.5.0
 </center>
 
 <br/><br/><br/>
@@ -99,7 +99,7 @@ tt {
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2012 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
+Copyright &copy; 2013 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
 Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br/>
 Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br/>
 and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br/>
@@ -134,6 +134,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Unused parameters as locals</li>
   <li>Default variable values</li>
   <li><tt>args</tt> as local substitute</li>
+  <li><tt>args</tt> and <tt>local</tt> used together for named variables</li>
   </ul></li>
 <li><a href="#toc-5">5. Walking through lists and data</a>
   <ul>
@@ -702,6 +703,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
         (+ x y)))
 </pre>
 
+
 <p>The variables x and y are initialized, then the expression (+ x y) is evaluated. The <tt>let</tt> form is just an optimized version and syntactic convenience for writing:</p>
 
 <pre>
@@ -714,6 +716,17 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 (letn ((x 1) (y (+ x 1)))
     (list x y))              → (1 2)
 </pre>
+
+<p><tt>local</tt> works the same way but variables are intitialized to <tt>nil</tt></p>
+
+<pre>
+(local (a b c) 
+   ...          ; expressions using the locale variables a b c
+)
+</pre>
+
+<p>After exiting the <tt>local</tt> expression <tt>a</tt>, <tt>b</tt> and <tt>c</tt> are
+restored to their old values, similar when using <tt>let</tt> or <tt>letn</tt> and <tt>letex</tt>.</p>
 
 
 <h3>Unused parameters as locals</h3>
@@ -769,6 +782,23 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
    
 (foo 3 4)   → 7
 </pre>
+
+<h3><tt>args</tt> and <tt>local</tt> used together for named variables</h3>
+
+<pre>
+(define-macro (foo)
+   (local (len width height)
+      (bind (args) true)
+      (println "len:" len " width:" width " height:" height)
+   ))
+
+(foo (width 20) (height 30) (len 10))
+
+<b>len:10 width:20 height:30</b>
+</pre>
+
+<p><tt>local</tt> will shadow / protect the values of the variables <tt>len</tt>, <tt>width</tt>
+and <tt>height</tt> at higher dynamic scoping levels.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-5"></a>
@@ -1302,7 +1332,7 @@ L → (j r r s w)
 <pre>
 ; uses unify together with bind for destructuring
 (set 'structure '((one "two") 3 (four (x y z))))
-(set 'pattern '((A B) C (D E)))
+(set 'pattern '((A B) C (D E))) ; unify needs uppercase for binding
 (bind (unify pattern structure))
 A → one
 B → "two"
@@ -1435,7 +1465,7 @@ E → (x y z)
    
 ; more than one statement in the true or false
 ; part must be blocked with (begin ...)
-(if (= x Y)
+(if (= x y)
     (begin
         (some-func x)
         (some-func y))

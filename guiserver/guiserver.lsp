@@ -9,6 +9,7 @@
 ;; @version 1.47 doc fixes
 ;; @version 1.48 doc fixes
 ;; @version 1.50 doc fixes
+;; @version 1.51 return value for gs:export
 ;; @author LM, August 2008, 2009, 2010, 2012, 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -1476,10 +1477,11 @@ true
 ;; than seen on the screen is printed to the image.
 
 (define (export image-path width height)
-	(if (and width height)
+	(let (result (if (and width height)
 		(net-send out (string "export " gs:currentCanvas " " (base64-enc image-path) " " width " " height "\n"))
-		(net-send out (string "export " gs:currentCanvas " " (base64-enc image-path) "\n"))
-	)
+		(net-send out (string "export " gs:currentCanvas " " (base64-enc image-path) "\n")) ))
+        (if (number? result) true nil)
+    )
 )
 			
 

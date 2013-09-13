@@ -23,7 +23,9 @@
 #include "protos.h"
 
 extern CELL * lastCellCopied;
+extern CELL * countCell;
 extern SYMBOL * sysSymbol[];
+extern SYMBOL * countSymbol;
 extern void printResultStack();
 
 /* used only on string indices */
@@ -59,7 +61,7 @@ CELL * p_member(CELL * params)
 {
 CELL * key;
 CELL * list;
-long options  = -1;
+INT options  = -1;
 char * ptr;
 ssize_t pos;
 
@@ -115,6 +117,11 @@ switch(params->type)
 #ifndef NEWLISP64
     case CELL_INT64:
         length = sizeof(INT64); break;
+#endif
+#ifdef BIGINT
+    case CELL_BIGINT:   
+        length = lengthBigint((int *)params->contents, params->aux - 1);
+        break;
 #endif
     case CELL_FLOAT:
         length = sizeof(double); break;
@@ -191,6 +198,7 @@ if(list == NULL)
     return(getCell(CELL_EXPRESSION));
 
 symbolCheck = NULL;
+list->aux = (UINT)lastCellCopied; /* last element optimization */
 return(list);
 }
 
@@ -247,11 +255,13 @@ if((symbolRef = symbolCheck))
         return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
     if(isNil((CELL *)symbolRef->contents))
         {
-        deleteList((CELL*)symbolRef->contents);
-        head = evaluateExpression(params);
+        head = evaluateExpression(params); /* extension */
         if(isList(head->type) || head->type == CELL_STRING)
+            {
             target = copyCell(head);
-        symbolRef->contents = (UINT)target;
+            deleteList((CELL*)symbolRef->contents);
+            symbolRef->contents = (UINT)target;
+            }
         params = params->next;
         }
     }
@@ -973,7 +983,7 @@ CELL * next;
 CELL * keyCell;
 CELL * funcCell;
 size_t size;
-long options = -1;
+INT options = -1;
 size_t offset = 0;
 UINT * resultIdxSave;
 
@@ -1059,7 +1069,7 @@ return(stuffInteger(found + offset));
 
 CELL * findAllString(char * pattern, char * str, size_t size, CELL * params)
 {
-long options = 0;
+INT options = 0;
 ssize_t findPos = -1;
 ssize_t lastPos = -1;
 CELL * result = nilCell;
@@ -1077,6 +1087,7 @@ if((params = params->next) != nilCell)
     getInteger(params, (UINT *)&options);
 
 resultIdxSave = resultStackIdx;
+countCell->contents = 0;
     
 if(exprCell != nilCell)
     {
@@ -1092,6 +1103,7 @@ if(exprCell != nilCell)
 while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &len)) 
        != -1)
     {
+    countCell->contents++;
     if(exprCell != nilCell)
         {
         itSymbol->contents = sysSymbol[0]->contents;
@@ -1147,10 +1159,13 @@ int errNo;
 
 funcCell = evaluateExpression(exprCell->next);
 resultIdxSave = resultStackIdx;
+countCell->contents = 0;
 
+/* 10.4.7
 if(funcCell == nilCell && !isList(pattern->type))
     return(errorProcExt(ERR_LIST_EXPECTED, pattern));
-    
+*/
+  
 result = getCell(CELL_EXPRESSION);
 
 memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
@@ -1165,16 +1180,25 @@ while(list != nilCell)
     {
     if(funcCell == nilCell)
         {
-        /* match only takes lists*/
-        if(!isList(list->type))
-            goto CONTINUE_NEXT;
+        /* added in 10.4.7, this makes exp in func in 3rd syntax optional */
+        if(!isList(pattern->type))
+            {
+            if(compareFunc(pattern, list, NULL) != 0)
+                goto CONTINUE_NEXT;
+            }
+        else 
+            {
+            /* match only takes lists*/
+            if(!isList(list->type))
+                goto CONTINUE_NEXT;
 
-        match = patternMatchL((CELL *)pattern->contents, (CELL *)list->contents, TRUE);
+            match = patternMatchL((CELL *)pattern->contents, (CELL *)list->contents, TRUE);
 
-        if(match == NULL || match == nilCell)
-            goto CONTINUE_NEXT;
+            if(match == NULL || match == nilCell)
+                goto CONTINUE_NEXT;
 
-        deleteList(match);
+            deleteList(match);
+            }
         }
     else
         {
@@ -1183,9 +1207,7 @@ while(list != nilCell)
             goto CONTINUE_NEXT;
         }
 
-    /* take out sysSymbol in future, should only be used in regex */
-    deleteList((CELL*)sysSymbol[0]->contents);
-    sysSymbol[0]->contents = (UINT)copyCell(list);
+    countCell->contents++;
     itSymbol->contents = (UINT)list;
 
     if(exprCell != nilCell)
@@ -1194,6 +1216,7 @@ while(list != nilCell)
         exprRes = list;
 
     addList(result, copyCell(exprRes));
+    /* increment $count here */
 
     CONTINUE_NEXT:  
     list = list->next;
@@ -1328,7 +1351,7 @@ CELL * startsEndsWith(CELL * params, int type)
 char * string;
 char * key;
 char * keydollar;
-long options = -1;
+INT options = -1;
 size_t slen, pos;
 int klen;
 CELL * cell, * list;
@@ -1425,9 +1448,8 @@ CELL * newList;
 char * keyStr;
 char * buff;
 char * newBuff;
-UINT cnt; 
 size_t newLen;
-long options;
+INT options;
 UINT * resultIdxSave;
 SYMBOL * refSymbol;
 
@@ -1439,7 +1461,7 @@ refSymbol = symbolCheck;
 if(symbolCheck && (isProtected(symbolCheck->flags) || isBuiltin(symbolCheck->flags)))
     return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
 
-cnt = 0;
+countCell->contents = 0;
 resultIdxSave = resultStackIdx;
 if(isList(cell->type))
     {
@@ -1459,14 +1481,10 @@ if(isList(cell->type))
 COMPARE_START:
     if(compareFunc(keyCell, list, funcCell) == 0)
         {
+        countCell->contents++;
         if(repCell != NULL)
             {
-            /* perhaps take out usage of sysSymbol[0] 
-               should only be used for regex replacements 
-               then $it doesn't need to be a copy */
-            deleteList((CELL*)sysSymbol[0]->contents);
-            itSymbol->contents = (UINT)copyCell(list);
-            sysSymbol[0]->contents = itSymbol->contents;
+            itSymbol->contents = (UINT)list;
             cell->contents = (UINT)copyCell(evaluateExpression(repCell));
             cell = (CELL*)cell->contents;
             cell->next = list->next;
@@ -1474,9 +1492,8 @@ COMPARE_START:
         else /* remove mode */
             cell->contents = (UINT)list->next;
 
-        list->next = nilCell; /* decouple */
+        list->next = nilCell; /* decouple  and delete old */
         deleteList(list);
-        cnt++;
 
         if(repCell != NULL)
             list = cell;
@@ -1492,21 +1509,17 @@ COMPARE_START:
         {
         if(compareFunc(keyCell, list->next, funcCell) == 0)
             {
+            countCell->contents++;
             cell = list->next;  /* cell = old elmnt */
             if(repCell != NULL)
                 {
-                /* perhaps take out usage of sysSymbo[0]
-                should only be used for regex replacements */
-                deleteList((CELL*)sysSymbol[0]->contents);
-                itSymbol->contents = (UINT)copyCell(cell);
-                sysSymbol[0]->contents = itSymbol->contents;
+                itSymbol->contents = (UINT)cell;
                 list->next = copyCell(evaluateExpression(repCell));
                 list = list->next;
                 }
             list->next = cell->next;
             cell->next = nilCell;
             deleteList(cell);
-            cnt++;
             }       
         else    
             list = list->next;
@@ -1514,9 +1527,6 @@ COMPARE_START:
         cleanupResults(resultIdxSave);
         }
 
-    deleteList((CELL*)sysSymbol[0]->contents);  
-    /* sysSymbol[0] should not be used here, introduce $count ? */
-    sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
     itSymbol->contents = (UINT)nilCell;
     symbolCheck = refSymbol;
     pushResultFlag = FALSE;
@@ -1539,7 +1549,7 @@ if(cell->type == CELL_STRING)
             getInteger(repCell->next, (UINT*)&options);
 
     newBuff = replaceString(keyStr, keyCell->aux - 1, 
-                           buff, (size_t)cell->aux -1, repCell, &cnt, options, &newLen);
+                           buff, (size_t)cell->aux -1, repCell, &countCell->contents, options, &newLen);
     if(newBuff != NULL)
         {
         freeMemory(buff);
@@ -1547,8 +1557,6 @@ if(cell->type == CELL_STRING)
         cell->aux = newLen + 1;
         }
 
-    deleteList((CELL*)sysSymbol[0]->contents);  
-    sysSymbol[0]->contents = (UINT)stuffInteger(cnt);
     symbolCheck = refSymbol;
     pushResultFlag = FALSE;
     return(cell);
@@ -1628,6 +1636,7 @@ last->next = (CELL *)list->contents;
 list->contents = (UINT)cell;
 
 pushResultFlag = FALSE;
+list->aux = (UINT)previous; /* last element optimization */
 return(list);
 }
 

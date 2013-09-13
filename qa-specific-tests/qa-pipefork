@@ -2,6 +2,10 @@
 #
 # two forked processes communicating via pipes
 
+(when (= ostype "Win32")
+	(exit))
+
+
 (println)
 (println "Testing/benchmarking  pipes with forked processes")
 

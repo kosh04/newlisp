@@ -228,34 +228,28 @@ char *win32_realpath(const char *filepath, char *realpath)
     
 #endif
 
-    return (realpath);  
+return(isFile(realpath, 0) ? 0 : realpath);
 }
-
-
 
 /*
-fileSize_utf16
-Same behavior as fileSize() in nl-filesys.c
-but accepts a UTF-8 string which is converted to UTF-16
-and the wide-character open function is used.
+win32_getModulePath - added by LM for version 10.4.7
+used in newlisp.c:loadStartup(..) and newlisp.c:linkUnlink(...)
+gets the full path for a loaded module (executable).
+EXEName must be allocated by caller with PATH_MAX typically
 */
-INT64 fileSize_utf16(char * pathName8)
+
+char * win32_getExePath(char * EXEName)
 {
-    int handle;
-    INT64 size = 0;
+#ifdef SUPPORT_UTF8
+ WCHAR wEXEName[PATH_MAX] ;
+ GetModuleFileNameW(NULL, wEXEName, PATH_MAX);
+ utf16_to_utf8ptr(wEXEName, EXEName, PATH_MAX);
+#else
+ GetModuleFileName(NULL, EXEName, PATH_MAX);
+#endif
 
-    WCHAR * pathName16 = utf8_to_utf16(pathName8);
-    if (pathName16)
-    {
-        handle = _wopen(pathName16, O_RDONLY | O_BINARY, 0);
-        size = lseek(handle, 0, SEEK_END);
-        close(handle);
-        if(size == -1) size = 0;
-        free(pathName16);
-    }
-    return(size);
+return(EXEName);
 }
-
 
 /* ---------------------------------------------------------------------------- 
 Wrappers for wide-character functions.

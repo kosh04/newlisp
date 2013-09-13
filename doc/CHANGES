@@ -6456,7 +6456,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Work Centos and Fedora. Use ./configure to configure these makefiles for correct
      libffi version. Thanks to Ivan Ribeiro for this contribution. 
 
-10.4.6
+10.4.6  development version released on 2013-02-05
      When using option 8 in xml-parse (translation of XML tags into newLISP symbols),
      then the colon : in XML tags with namespace part, will be translated into a dot.
 
@@ -6504,3 +6504,77 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      Server mode now sets the REMOTE_ADDR environment variable to the IP-string of 
      the connecting client.
 
+     Last cell speed optimization for lists made with 'append', 'sequence', series
+     and 'rotate'.
+
+10.4.7
+     Eliminate unused JSON error message.
+
+     Elminated usage of $0 in replace on lists (no regular expressions). The count
+     of replacements now is contained in the new $count system var, not $0. The usage
+     of $0 - $15 now is strictly for regular expressions. This also speeds up replace.
+
+     read-expr now uses $count instead of $0 for the number of characters processed.
+
+     Eliminated undocumented usage of $0 for found elements in find-all on lists.
+     Only $it is used. $0 only on find-all on strings with regular expressions.
+     The system variable $count is updated for all forms of find-all, ref-all and
+     set-ref-all.
+
+     Link feature now built in with comandline flag -x for all OS flavors:
+        newlisp -x <source-file> <executable-file>
+     The file util/link.lsp is not required anymore but has been included and 
+     adapted to changes for the -x linkage. The file illustrates the internals
+     of the linkage process when using the -x option.
+
+     An additional true flag in the real-path function allows finding the executable
+     path of executables - similar to the "which" utility on UNIX. This is a by-
+     product of fixing the link.lsp feature for UNIX. The additional flag works
+     on all platforms. 'real-path' on Windows and BSD now also veryfies that path 
+     and file are valid, as it already did on non-BSD Unix (OSX, Linux).
+
+     Enforce MAX_SYMBOL for tags in xml-parse and symbol creation using sym.
+
+     Security fixes for strncpy and strncat.
+
+     Windows CGI server mode was broken in development version 10.4.6 (isDir()).
+
+     Preparation for 64-bit Windows (in early summer).
+
+10.4.8
+    Cleanup of the factor function.
+
+    Like date-parse, date-value will produce negative values for dates before 1970-1-1
+    til 1901-12-14.
+
+    The function 'flat' now can take an optioal depth parameter to limit flattening
+    a list up to certain level: (flat <list> [<level>])
+
+        (flat '(1 2 (3 4 (5 6)) (7 8 (9 10)))  ) => (1 2 3 4 5 6 7 8 9 10)
+        (flat '(1 2 (3 4 (5 6)) (7 8 (9 10))) 1) => (1 2 3 4 (5 6) 7 8 (9 10))
+        (flat '(1 2 (3 4 (5 6)) (7 8 (9 10))) 2) => (1 2 3 4 5 6 7 8 9 10)
+
+    A fix for 'extend' when passing wrong type to unitialized symbol.
+
+    A fix in the parser to accept -.9 as -0.9 or +.9 as +0.9
+
+    =, +, -, *, /, %, ++, --, >, <, <=, >=, !=  operators and the functions 'abs', 
+    'even?', 'odd?', 'length', 'number?' and 'zero?' are all working on big-integers 
+    of unlimited size. 'float' and 'int' convert bigints into double floats and 
+    64-bit integers and the function 'bigint' converts integers and floats to big 
+    integers. See the section "Big integer, unlimited precision arithmetik" in 
+    chapter 8. of the Users Manual for more information.
+
+    Extended commandline buffer to 1024 bytes.
+
+    The "debug" option in: (get-url "http://newlisp.org" "header debug") will now also 
+    output the status header line of the server response in the console.
+
+10.5.0 Stable Release May 21st, 2013
+    Further speed improvements on big integer multiplication and division/modulus.
+
+    Check for division by zero in big integer division/modulus.
+
+    Memory fix for ++, -- on big integers.
+
+    The OSX Intel version is now 64-bit by default.

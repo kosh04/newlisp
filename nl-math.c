@@ -1,5 +1,6 @@
 /* nl-math.c
 
+
     Copyright (C) 2013 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
@@ -50,7 +51,6 @@
 #define OP_EXP 26
 #define OP_MIN 27
 #define OP_MAX 28
-#define OP_ABS 29
 #define OP_CEIL 30
 #define OP_FLOOR 31
 #define OP_NAN 32
@@ -59,16 +59,73 @@
 #define OP_ISNAN 35
 #define OP_ISINF 36
 
+#ifdef BIGINT
+#define BIGINT_BASE 1000000000 /* 9 zeros */
+#define BIGINT_BASE2 1000000000000000000LL
+#endif
 
-#ifdef WIN_32
+#ifdef WINDOWS
 int _matherr(struct _exception *e) {return 1;}
 #endif
+
+/*#define DEBUG*/
+#ifdef DEBUG
+void debug(int * x, int n, char * txt)
+{
+int i;
+
+printf("%s ", txt);
+for(i = 0; i <= n; i++)
+    printf("%d_", x[i]);
+printf("\n");
+}
+#endif
+
+CELL * p_abs(CELL * params) 
+{  
+CELL * cell;
+INT64 intValue;
+double floatValue;
+#ifdef BIGINT
+int * numPtr;
+#endif
+    
+cell = evaluateExpression(params);
+#ifdef BIGINT
+if(cell->type == CELL_BIGINT)
+    {
+    cell = copyCell(cell);
+    numPtr = (int *)cell->contents;
+    if(*numPtr == -1) *numPtr = 1;
+    return(cell);
+    }
+else
+#endif 
+if(cell->type == CELL_FLOAT)
+    {
+    floatValue = getDirectFloat(cell);
+    if(floatValue < 0.0) floatValue = floatValue * -1.0;
+    return(stuffFloat(&floatValue));
+    }
+
+getInteger64Ext(cell, &intValue, FALSE);
+if(intValue < 0) intValue = intValue * -1;
+
+return(stuffInteger64(intValue));
+}
 
 CELL * incDecI(CELL * params, int type)
 {
 CELL * cell;
 INT64 adjust = 1;
 INT64 lValue = 0;
+#ifdef BIGINT
+int * lvaluePtr;
+int * adjustPtr;
+int * resultPtr;
+int * freePtr = NULL;
+int lvlen, adjlen, reslen;
+#endif
 
 cell = evaluateExpression(params);
 
@@ -84,10 +141,39 @@ else
     }
 
 
-if(!isNil(cell)) getInteger64(cell, &lValue);
+if(!isNil(cell)) 
+#ifdef BIGINT
+    {
+    if(cell->type == CELL_BIGINT)
+        {
+        lvaluePtr = (int *)cell->contents;
+        lvlen = cell->aux - 1;
+
+        if(params->next != nilCell)
+            freePtr = getBigintSizeDirect(evaluateExpression(params->next) , &adjustPtr, &adjlen);
+        else
+            freePtr = adjustPtr = intToBigint(1, &adjlen);
+
+        *adjustPtr = *adjustPtr * type;
+        reslen = (lvlen > adjlen) ? lvlen + 2 : adjlen + 2;
+        resultPtr = calloc(reslen, sizeof(int));
+        addBigint(lvaluePtr, lvlen, adjustPtr, adjlen, resultPtr, &reslen);
+        if(freePtr) freeMemory(freePtr);
+        /* update old cell */
+        freeMemory((void *)cell->contents);
+        cell->contents = (UINT)resultPtr;
+        cell->aux = reslen + 1;
+        return(copyCell(cell));
+        }
+    getInteger64Ext(cell, &lValue, FALSE);
+    }
+#else
+    getInteger64Ext(cell, &lValue, FALSE);
+#endif
+    
 
 if(params->next != nilCell)
-    getInteger64(params->next, &adjust);
+    getInteger64Ext(params->next, &adjust, TRUE);
 
 #ifndef NEWLISP64
 cell->type = CELL_INT64;
@@ -141,11 +227,20 @@ CELL * p_decrementI(CELL * params) { return(incDecI(params, -1)); }
 CELL * p_incrementF(CELL * params) { return(incDecF(params, 1)); }
 CELL * p_decrementF(CELL * params) { return(incDecF(params, -1)); }
 
-
 CELL * arithmetikOp(CELL * params, int op)
 {
 INT64 number;
 INT64 result;
+#ifdef BIGINT
+int sizex = 0;
+int sizey = 0;
+int n;
+int * num = NULL;
+int * numx;
+int * numy;
+int * freePtr = NULL;
+#endif
+CELL * cell;
 
 if(params == nilCell)
     {
@@ -155,8 +250,77 @@ if(params == nilCell)
         return(stuffInteger64(1));
     }
 
-params = getInteger64(params, &result); 
+cell = evaluateExpression(params);
+params = params->next;
+#ifdef BIGINT
+if(cell->type == CELL_BIGINT)
+    {
+    if(params == nilCell)
+        {
+        cell = copyCell(cell);
+        switch(op)
+            {
+            case OP_SUBTRACT:
+                *(int *)cell->contents *= -1; break;
+            case OP_ADD:
+            case OP_MULTIPLY:
+            case OP_DIVIDE:
+            case OP_MODULO:
+                break;
+            default:
+                return(errorProc(ERR_BIGINT_NOT_ALLOWED));
+            }
+        return(cell);
+        }
+    /* first OP is CELL_BIGINT */
+    numx = (int*)cell->contents;
+    sizex = cell->aux - 1;
 
+    /* if 2nd OP is not CELL_BIGINT memory is allocated */
+    params = evaluateExpression(params);
+    if(params->type == CELL_BIGINT)
+        {
+        numy = (int*)params->contents;
+        sizey = params->aux - 1;
+        }
+    else
+        freePtr = getBigintSizeDirect(params, &numy, &sizey); 
+
+    if(op == OP_MULTIPLY)
+        n = sizex + sizey + 2; 
+    else
+        n = sizex > sizey ? sizex  + 2: sizey + 2;
+
+    switch(op)
+        {
+        case OP_ADD:
+            num = addBigint(numx, sizex, numy, sizey, malloc(n * sizeof(int)), &n); 
+            break;
+        case OP_SUBTRACT:
+            num = subBigint(numx, sizex, numy, sizey, malloc(n * sizeof(int)), &n); 
+            break;
+        case OP_MULTIPLY:
+            num = mulBigint(numx, sizex, numy, sizey, malloc(n * sizeof(int)), &n); 
+            break;
+        case OP_DIVIDE:         
+            num = divModBigint(numx, sizex, numy, sizey, FALSE, &n); 
+            break;
+        case OP_MODULO:
+            num = divModBigint(numx, sizex, numy, sizey, TRUE, &n);
+            break;
+        default:
+            return(errorProc(ERR_BIGINT_NOT_ALLOWED));
+        }    
+
+    if(freePtr) freeMemory(freePtr); 
+    cell = getCell(CELL_BIGINT);
+    cell->contents = (UINT)num;
+    cell->aux = n + 1; 
+    return(cell);
+    }
+#endif
+
+getInteger64Ext(cell, &result, FALSE);
 if(params == nilCell)
     {
     switch(op)
@@ -176,7 +340,7 @@ if(params == nilCell)
 
 else while(params != nilCell)
     {
-    params = getInteger64(params, &number);
+    params = getInteger64Ext(params, &number, TRUE);
     switch(op)
         {
         case OP_ADD:            result += number; break;
@@ -184,7 +348,7 @@ else while(params != nilCell)
         case OP_MULTIPLY:       result *= number; break;
         case OP_DIVIDE:         
             if(number == 0) return(errorProc(ERR_MATH));
-            result /= number; break;
+                                result /= number; break;
         case OP_BIT_OR:         result |= number; break;
         case OP_BIT_AND:        result &= number; break;
         case OP_BIT_XOR:        result ^= number; break;
@@ -198,11 +362,7 @@ else while(params != nilCell)
         }
     }
 
-#ifndef NEWLISP64
 return(stuffInteger64(result));
-#else
-return(stuffInteger(result));
-#endif
 }
 
 
@@ -222,7 +382,7 @@ CELL * p_modulo(CELL * params) { return(arithmetikOp(params, OP_MODULO)); }
 CELL * p_bitNot(CELL * params)
 {
 INT64 number;
-getInteger64(params, &number);
+getInteger64Ext(params, &number, TRUE);
 return(stuffInteger64(~number));
 }
 
@@ -326,10 +486,32 @@ if(leftFloat > rightFloat) return(1);
 return(0);
 }
 
+/* should only be called when left and right type are different 
+   and only called from compareCells()
+*/
 int compareInts(CELL * left, CELL * right)
 {
 INT64 leftnum;
 INT64 rightnum;
+
+#ifdef BIGINT
+int * leftnumPtr;
+int leftlen;
+int * rightnumPtr;
+int rightlen;
+int cmp;
+
+if(left->type == CELL_BIGINT)
+    {
+    leftnumPtr = (int *)left->contents;
+    leftlen = left->aux - 1;
+    /* would never get here when right->type == CELL_BIGINT */
+    getBigintSizeDirect(right , &rightnumPtr, &rightlen);
+    cmp = cmpBigint(leftnumPtr, leftlen, rightnumPtr, rightlen);
+    freeMemory(rightnumPtr); 
+    return(cmp);
+    }
+#endif
 
 #ifndef NEWLISP64
 if(left->type == CELL_LONG)
@@ -339,12 +521,21 @@ else
 
 if(right->type == CELL_LONG)
     rightnum = (int)right->contents;
+#ifdef CELL_BIGINT
+else if(right->type == CELL_BIGINT)
+    getInteger64Ext(right, &rightnum, FALSE);
+#endif
 else
     rightnum = *(INT64 *)&right->aux;
-#else
+#else /* NEWLISP64 */
 leftnum = (UINT)left->contents;
+#ifdef CELL_BIGINT 
+if(right->type == CELL_BIGINT)
+   getInteger64Ext(right, &rightnum, FALSE);
+else
+#endif 
 rightnum = (UINT)right->contents;
-#endif
+#endif /* NEWLISP64 */
 
 if(leftnum < rightnum) return(-1);
 if(leftnum > rightnum) return(1);
@@ -364,11 +555,22 @@ else if(param->type == CELL_LONG)
     floatNum = (long)param->contents;
 else if(param->type == CELL_INT64)
     floatNum = *(INT64 *)&param->aux;
-#else
+#ifdef BIGINT
+else if(param->type == CELL_BIGINT)
+    floatNum = bigintCellToFloat(param);
+#endif
+
+#else /* NEWLISP64 */
 if(param->type == CELL_FLOAT)
     return(*(double *)&param->contents);
 else if(param->type == CELL_LONG)
     floatNum = (long)param->contents;
+
+#ifdef BIGINT
+else if(param->type == CELL_BIGINT)
+    floatNum = bigintCellToFloat(param);
+#endif
+
 #endif
 
 return(floatNum);
@@ -394,7 +596,6 @@ CELL * p_atanh(CELL * params) { return(functionFloat(params, OP_ATANH)); }
 CELL * p_sqrt(CELL * params) { return(functionFloat(params, OP_SQRT)); }
 CELL * p_log(CELL * params) { return(functionFloat(params, OP_LOG)); }
 CELL * p_exp(CELL * params) { return(functionFloat(params, OP_EXP)); }
-CELL * p_abs(CELL * params) { return(functionFloat(params, OP_ABS)); }
 CELL * p_ceil(CELL * params) { return(functionFloat(params, OP_CEIL)); }
 CELL * p_floor(CELL * params) { return(functionFloat(params, OP_FLOOR)); }
 CELL * p_erf(CELL * params) { return(functionFloat(params, OP_ERRORFUNC)); }
@@ -439,7 +640,6 @@ switch(op)
       floatN = log(floatN); 
     break;
   case OP_EXP: floatN = exp(floatN); break;
-  case OP_ABS: floatN = (floatN < 0.0) ? -floatN : floatN; break;
   case OP_CEIL: floatN = ceil(floatN); break;
   case OP_FLOOR: floatN = floor(floatN); break;
   case OP_ERRORFUNC: floatN = erf(floatN); break;
@@ -508,7 +708,7 @@ CELL * p_round(CELL * params)
 {
 double fNum;
 double precision = 1.0;
-long digits = 0;
+INT digits = 0;
 char * fmt;
 char * result;
 
@@ -537,10 +737,10 @@ return(stuffFloat(&fNum));
 
 CELL * p_rand(CELL * params)
 {
-long range;  
-long n;
+INT range;  
+INT n;
 CELL * dist, * cell;
-long rnum;
+INT rnum;
 double scale;
 
 params = getInteger(params, (UINT *)&range);
@@ -578,7 +778,7 @@ return(dist);
 
 CELL * p_amb(CELL * params)
 {
-long len;
+INT len;
 CELL * cell;
 
 if((len = listlen(params)) == 0) return(nilCell);
@@ -602,7 +802,7 @@ CELL *  p_seed(CELL * params)
 {
 INT64 seedNum;
 
-getInteger64(params, &seedNum);
+getInteger64Ext(params, &seedNum, TRUE);
 
 srandom((UINT)(seedNum & 0xFFFFFFFF));
 
@@ -630,7 +830,7 @@ CELL * compareOp(CELL * params, int op)
 {
 CELL * left;
 CELL * right;
-long cnt = 0;
+INT cnt = 0;
 int comp;
 
 left = evaluateExpression(params);
@@ -842,6 +1042,12 @@ switch(left->type)
         if(*(INT64 *)&left->aux < *(INT64 *)&right->aux) return(-1);
         break;
 #endif
+#ifdef BIGINT
+    case CELL_BIGINT:
+        comp = cmpBigint((int *)(UINT)left->contents, 
+                        left->aux - 1, (int *)(UINT)right->contents, right->aux - 1);
+        return(comp);
+#endif 
     case CELL_LONG:
     default:
         if((long)left->contents > (long)right->contents) return(1);
@@ -866,7 +1072,6 @@ while(left != nilCell)
 if(right == nilCell) return(0);
 return(-1);
 }
-
 
 /* ---------------------------- encryption -----------------------------
 
@@ -1154,7 +1359,7 @@ CELL * cell;
 size_t length, i, j;
 CELL * * vector;
 int repetition = 0;
-long rnum;
+INT rnum;
 double scale;
 
 getListHead(params, &list);
@@ -1210,7 +1415,7 @@ for(i = 1; i < length; i++)
     cell = cell->next;
     }
 cell->next = nilCell;
-free(vector);
+freeMemory(vector);
 
 return(list);
 }
@@ -1486,9 +1691,9 @@ getFloat(params, &x);
 
 result = gammap(a, x);
 
-#ifdef DEBUG /* try (gammai 10 10), see also gammap() */
+/*
 printf("in p_gammai() result = %f\n", result);
-#endif
+*/
 
 return(stuffFloat(&result));
 }
@@ -1667,7 +1872,7 @@ return exp(-x + a * log(x) - gln) * h;
 
 CELL * p_binomial(CELL * params)
 {
-long n, k;
+INT n, k;
 double bico, p, binomial;
 
 params = getInteger(params, (UINT *)&n);
@@ -1747,6 +1952,7 @@ else /* assumes lambda or primitive */
     memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
     }
 
+series->aux = (UINT)cell; /* last element optimization */
 return(series);
 }
 
@@ -1759,69 +1965,35 @@ return(series);
 * Ray Gardner -- 1985 -- public domain
 * Modified Feb. 1989 by Thad Smith > public domain
 *
-* This version takes numbers up to the limits of double precision.
 */
-
-
-CELL * pushFactor (INT64 d, int k, INT64 * prevFact, CELL * factList)
-{
-if (! *prevFact)
-    {
-    factList->contents = (UINT)stuffInteger64(d);
-    factList = (CELL*)factList->contents;
-    k--;
-    }
-
-while(k--)
-    {
-    factList->next = stuffInteger64(d);
-    factList = factList->next;
-    }
-
-(*prevFact)++;
-
-return(factList);
-}
-
 
 CELL * p_factor (CELL * params)
 {
 INT64 d, n;
-long k;
-INT64 prevFact = 0;
+INT k;
 CELL * factList;
-CELL * next;
+int i;
 
-getInteger64(params, &n);
+getInteger64Ext(params, &n, TRUE);
 
-d = n + 1;     /* test for roundoff error */
-
-if ( (n + 3 != d + 2)  || (n < 2) )
-      return(nilCell);
+if (n < 2) return(nilCell);
       
-next = factList = getCell(CELL_EXPRESSION);
+factList = getCell(CELL_EXPRESSION);
 
-if ( n > 2 )
-      {
-      d = 2;
-      for ( k = 0; (n % d) == 0; k++ )
-              n /= d;
-      if ( k )  next = pushFactor(d, k, &prevFact, next);
+d = 2;
+for (k = 0; (n % d) == 0; k++)
+    n /= d;
+for(i = 0; i < k; i++) addList(factList, stuffInteger64(d));
       
-      for ( d = 3; d * d <= n; d += 2 )
-            {
-            for ( k = 0; (n % d) == 0; k++ )
-                n /= d;
-            if ( k ) next = pushFactor(d, k, &prevFact, next);
-            }
-      }
+for (d = 3; d * d <= n; d += 2)
+    {
+    for (k = 0; (n % d) == 0; k++)
+        n /= d;
+    for(i = 0; i < k; i++) addList(factList, stuffInteger64(d));
+    }
 
-if ( n > 1 )
-      {
-      if ( ! prevFact ) 
-        factList->contents = (UINT)stuffInteger64(n);
-      else  next = pushFactor(n, 1, &prevFact, next);
-      }
+if (n > 1)
+    addList(factList, stuffInteger64(n));
       
 return(factList);
 }
@@ -1831,13 +2003,13 @@ CELL * p_gcd(CELL * params)
 INT64 m, n;
 INT64 t, r;
 
-params = getInteger64(params, &m);
+params = getInteger64Ext(params, &m, TRUE);
 if(m < 0) m = -m;
 n = m;
 
 while(params != nilCell)
     {
-    params = getInteger64(params, &n);
+    params = getInteger64Ext(params, &n, TRUE);
     if(n < 0) n = -n;
 
     ITERATE_GCD:
@@ -1858,12 +2030,12 @@ return(stuffInteger64(n));
 
 CELL * p_pmt(CELL * params)
 {
-long nper;
+INT nper;
 double rate, pv;
 double fv = 0.0;
 double pmt = 0.0;
 double inc;
-long type = 0;
+INT type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1888,11 +2060,11 @@ return stuffFloat(&pmt);
 
 CELL * p_pv(CELL * params)
 {
-long nper;
+INT nper;
 double rate, pmt, pv;
 double fv = 0.0;
 double inc;
-long type = 0;
+INT type = 0;
 
 params = getFloat(params, &rate);
 params = getInteger(params, (UINT *)&nper);
@@ -1920,7 +2092,7 @@ return stuffFloat(&pv);
 CELL * p_fv(CELL * params)
 {
 double rate, pmt, pv;
-long nper, type;
+INT nper, type;
 double inc, fv;
 
 params = getFloat(params, &rate);
@@ -1949,7 +2121,7 @@ CELL * p_nper(CELL * params)
 double rate, pmt, pv;
 double fv = 0.0;
 double R, c, nper;
-long type = 0;
+INT type = 0;
 
 params = getFloat(params, &rate);
 params = getFloat(params, &pmt);
@@ -2092,7 +2264,7 @@ double guess = 0.5;
 double * amountsVec;
 int * timesVec;
 int i, N = 0;
-long number;
+INT number;
 
 params = getListHead(params, &amounts);
 list = amounts;
@@ -2124,8 +2296,8 @@ for(i = 0; i < N; i++)
         }
     else 
         {
-        free(amountsVec);
-        free(timesVec);
+        freeMemory(amountsVec);
+        freeMemory(timesVec);
         return(errorProcExt(ERR_NUMBER_EXPECTED, amounts));
         }
 
@@ -2146,8 +2318,8 @@ else
     result = floor((10000 * result + 0.5))/10000;
     }
 
-free(amountsVec);
-free(timesVec);
+freeMemory(amountsVec);
+freeMemory(timesVec);
 
 if(result == IRR_ERROR)
     return(nilCell);
@@ -2268,7 +2440,7 @@ if(maxIdx < 1) errorProc(ERR_MISSING_ARGUMENT);
 
 category = alloca(maxIdx * sizeof(CELL *));
 total = alloca(maxIdx * sizeof(int));
-token = alloca(MAX_STRING + 1);
+token = alloca(MAX_SYMBOL + 1);
 
 for(idx = 0; idx < maxIdx; idx++)
   {
@@ -2289,12 +2461,12 @@ for(idx = 0; idx < maxIdx; idx++)
     switch(list->type)
       {
       case CELL_STRING:
-        if(list->aux > MAX_STRING) continue;
+        if(list->aux > MAX_SYMBOL + 1) continue;
         *token = '_';
         memcpy(token + 1, (char *)list->contents, list->aux);
         break;
       case CELL_SYMBOL:
-        strncpy(token, ((SYMBOL *)list->contents)->name, MAX_STRING);
+        strncpy(token, ((SYMBOL *)list->contents)->name, MAX_SYMBOL + 1);
         break;
       }
     
@@ -2429,7 +2601,7 @@ double p_tkn_and_all_cat;
 double * Pchi2 = NULL;
 double * Qchi2 = NULL;
 /* double sumS = 1.0; */
-long countNum, totalNum;
+INT countNum, totalNum;
 
 CELL * result = NULL;
 CELL * cell = NULL;
@@ -2508,7 +2680,7 @@ for(idx = 0; idx < maxIdx; idx++)
     if(!chainBayes) Pchi2[idx] = Qchi2[idx] = 0.0;
     }
 
-token = alloca(MAX_STRING + 1);
+token = alloca(MAX_SYMBOL + 1);
 tkn = tokens;
 while(tkn != nilCell) tkn = tkn->next, nTkn++;
 
@@ -2519,12 +2691,12 @@ for(i = 0; i < nTkn; i++)
     switch(tkn->type)
       {
       case CELL_STRING:
-        if(tkn->aux > MAX_STRING) continue;
+        if(tkn->aux > MAX_SYMBOL + 1) continue;
         *token = '_';
         memcpy(token + 1, (char *)tkn->contents, tkn->aux);
         break;
       case CELL_SYMBOL:
-        strncpy(token, ((SYMBOL *)tkn->contents)->name, MAX_STRING);
+        strncpy(token, ((SYMBOL *)tkn->contents)->name, MAX_SYMBOL + 1);
         break;
       }
 
@@ -2757,7 +2929,7 @@ set = *root;
 *left = set->left;
 *right = set->right;
 
-free(set);
+freeMemory(set);
 }
 
 
@@ -3083,7 +3255,7 @@ while(*tset != NULL)
     deleteList(set->left);
     deleteList(set->right);
     *tset = set->next;
-    free(set);
+    freeMemory(set);
     }
 }
 
@@ -3112,7 +3284,7 @@ char result[65];
 INT64 num;
 CELL * resultList;
 
-params = getInteger64(params, &num);
+params = getInteger64Ext(params, &num, TRUE);
 
 do  {
     temp[count++] = (num % 2) != 0;
@@ -3133,21 +3305,34 @@ for(i = 0; i < count; i++)
 return(stuffStringN(result, count));
 }
 
-CELL * p_isOdd(CELL * params)
+
+#define BOOL_EVEN 0
+#define BOOL_ODD 1
+
+CELL * isOddEven(CELL * params, int type)
 {
 INT64 num;
 
-getInteger64(params, &num);
-return((0 == (num & 1)) ? nilCell : trueCell);
+params = evaluateExpression(params);
+
+#ifdef BIGINT
+if(params->type == CELL_BIGINT)
+    num = *((int *)params->contents + params->aux - 1);
+else
+#endif
+    getInteger64Ext(params, &num, FALSE);
+
+if(type == BOOL_EVEN)
+    return((0 == (num & 1)) ? trueCell : nilCell);
+else /* BOOL_ODD */
+    return((0 == (num & 1)) ? nilCell : trueCell);
 }
+
+CELL * p_isOdd(CELL * params)
+{ return(isOddEven(params, BOOL_ODD)); }
 
 CELL * p_isEven(CELL * params)
-{
-INT64 num;
-
-getInteger64(params, &num);
-return((0 == (num & 1)) ? trueCell : nilCell);
-}
+{ return(isOddEven(params, BOOL_EVEN)); }
 
 /* ------------------------------ basic statistics ------------------------- */
 
@@ -3214,7 +3399,7 @@ for(idx = 0; idx < N; idx++)
     }
 avdev /= N;
 
-free(vector);
+freeMemory(vector);
 
 if(var != 0.0)
     {
@@ -3259,8 +3444,8 @@ sumxy = 0.0;
 for(idx = 0; idx < Nx; idx++)
     sumxy += X[idx] * Y[idx];
 
-free(X);
-free(Y);
+freeMemory(X);
+freeMemory(Y);
 
 dependent = getFlag(params->next);
 if(dependent && Nx != Ny)
@@ -3330,8 +3515,8 @@ sumxy = 0.0;
 for(idx = 0; idx < Nx; idx++)
     sumxy += X[idx] * Y[idx];
 
-free(X);
-free(Y);
+freeMemory(X);
+freeMemory(Y);
 
 cov = sumxy - sumx * sumy / Nx;
 corr = cov / sqrt(sd2x * sd2y);
@@ -3358,5 +3543,668 @@ addList(cell, stuffFloat(&tprob));
 return(cell);
 }
 
+/* ============================= Big Integer support ============================= */
 
+#ifdef BIGINT
+
+/* translate either INT64 or double float to big int */
+
+CELL * p_bigInt(CELL * params)
+{
+int * numPtr;
+int len;
+CELL * cell;
+
+cell = evaluateExpression(params);
+if(cell->type == CELL_BIGINT)
+    return(copyCell(cell));
+
+if(cell->type == CELL_STRING)
+    numPtr = strToBigint((char *)cell->contents, cell->aux - 1, &len);
+else getBigintSizeDirect(cell, &numPtr, &len);
+
+cell = getCell(CELL_BIGINT);
+cell->aux = len + 1;
+cell->contents = (UINT)numPtr;
+
+return(cell);
+}
+
+/* does not do evaluate expression on cell
+   returns NULL when called with cell->type CELL_BIGINT
+   else returns numPtr which mast be freed or use by caller
+*/
+int * getBigintSizeDirect(CELL * cell, int * * numPtr, int * len)
+{
+int size;
+int * num = NULL;
+
+#ifndef NEWLISP64
+if(cell->type == CELL_INT64)
+    num = intToBigint(*(INT64 *)&cell->aux, &size);
+else if(cell->type == CELL_LONG)
+    num = intToBigint((INT64)cell->contents, &size);
+else if(cell->type == CELL_FLOAT)
+    {
+#ifdef WINDOWS
+    if(isnan(*(double *)&cell->aux) || !_finite(*(double *)&cell->aux)) 
+        num = intToBigint(0, &size);
+    num = floatToBigint(*(double *)&cell->aux, &size);
+#else
+    if(isnan(*(double *)&cell->aux)) 
+        num = intToBigint(0, &size);
+    num = floatToBigint(*(double *)&cell->aux, &size);
+#endif
+    }
+#else /* NEWLISP64 */
+if(cell->type == CELL_LONG)
+    num = intToBigint((INT64)cell->contents, &size);
+else if(cell->type == CELL_FLOAT)
+    {
+    if(isnan(*(double *)&cell->contents))  
+        num = intToBigint(0, &size);
+    num = floatToBigint( *(double *)&cell->contents, &size);
+    }
+#endif
+else if(cell->type == CELL_BIGINT)
+    {
+    *numPtr = (int *)cell->contents;
+    *len = cell->aux - 1;
+    return(NULL);
+    }
+else 
+    errorProcArgs(ERR_NUMBER_EXPECTED, cell);
+
+*numPtr = num;
+*len = size;
+
+return(num);
+}
+
+
+/*  memory for num int array is allocated inside
+    return is ptr to the int array and length in *intlen
+*/
+int * strToBigint(char * str, int len, int * intlen)
+{
+int n, i, j, cut;
+int sign = 1;
+char * ptr = str;
+int * num;
+
+/* don't look at trailing L */
+if(*(str + len - 1) == 'L')
+    len--;
+
+/* skip leading sign */
+if(*ptr == '-' || *ptr == '+')
+    {
+    sign = (*ptr == '-') ? -1 : 1;
+    ptr++;
+    len--;
+    }
+
+/* remove leading zeros */
+while(len > 1 && *ptr == '0')
+    {
+    ptr++;
+    len--;
+    }
+
+n = len / 9 + 1;
+cut = len % 9;
+if(cut) n++;
+else cut = 9;
+
+num = calloc(sizeof(int), n);
+num[0] = sign;
+
+for(i = 1; i < n; i++)
+    {
+    for(j = 0; j < cut; j++)
+	num[i] = 10 * num[i] + ptr[j] - 48;
+    ptr += cut;
+    cut = 9;
+    }
+
+*intlen = n - 1;
+return(num);
+}
+
+
+/* when offset is specified (48) '+' is suppressed only '-' is put
+   when offset = 0, first digit is either -1 or 1  
+   call with offset either 0 or 48
+   do  ot call with 0 for num
+*/
+char * bigintToDigits(int * num, int n, int offset, int * slen)
+{
+int i, j, k = 0, cnt = 0, len = 0;
+int q, basediv;
+char * digits;
+int bigdigit;
+
+if(n == 1 && num[1] == 0)
+    {
+    digits = calloc(3, 1);
+    if(offset == 0)
+        {
+        digits[0] = '1';
+        digits[1] = 0;
+        }
+    else
+        digits[0] = '0';
+    return(digits); 
+    }
+
+/* cnt of digits in first big digit */
+bigdigit = num[1];
+basediv = BIGINT_BASE / 10;
+while(bigdigit / basediv == 0)
+    {
+    basediv /= 10;
+    cnt++;
+    }
+
+cnt = 9 - cnt;
+len = 9 * (n - 1) + cnt;
+
+digits = calloc(len + 2, 1);
+if(offset != 0)
+    {
+    if(num[0] == -1) digits[k++] = '-';
+    }
+else
+    digits[k++] = num[0];
+
+for(i = 1; i <=n; i++)
+    {
+    bigdigit = num[i];
+    for(j = 0; j < cnt; j++)
+        {
+        q = bigdigit / basediv;
+        digits[k++] = q + offset;
+        bigdigit -= q * basediv;
+        basediv /= 10; 
+        }
+    basediv = BIGINT_BASE / 10;
+    cnt = 9;
+    }
+
+if(slen) *slen = len;
+return(digits);
+} 
+
+/* digits come in high to low with leading sign digit (1 or -1)
+   nx and ny are the length without sign digit
+*/
+
+int * addBigint(int * x, int nx, int * y, int ny, int * sm, int * nsm)
+{
+int i, carry = 0, digit, n, d, sign;
+int * ptr;
+
+if(nx < ny)
+    {
+    n = nx; nx = ny; ny = n;
+    ptr = x; x = y; y = ptr;
+    }
+d = nx - ny;
+
+if(*x != *y) /* signs are different */
+    {
+    sign = x[0]; 
+    y[0] = sign;
+    sm = subBigint(x, nx, y, ny, sm, nsm);
+    x[0] = sign; y[0] = sign * -1;
+    return(sm);
+    }
+    
+ptr = sm + 1;
+
+/* memset(sm, 0, (nx + 2) * sizeof(int)); */
+
+for(i = ny; i > 0; i--) /* ny is the smaller */
+    {
+    digit = x[i + d] + y[i] + carry;
+    carry = digit / BIGINT_BASE;
+    ptr[i + d] = digit % BIGINT_BASE;
+    }
+
+for(i = nx - ny; i > 0; i--) /* nx is the bigger */
+    {
+    digit = x[i] + carry;
+    carry = digit / BIGINT_BASE;
+    ptr[i] = digit % BIGINT_BASE;
+    }
+ptr[0] = carry;
+
+if(*ptr == 0)
+    {
+    for(i = 0; i < nx; i++)
+        ptr[i] = ptr[i + 1];
+    *nsm = nx;
+    }
+else
+    *nsm = nx + 1;
+
+sm[0] = x[0];
+
+return(sm);
+}
+
+    
+int * subBigint(int * x, int nx, int * y, int ny, int * sm, int * nsm)
+{
+INT64 digit;
+int * ptr;
+int sign, i, j, n, carry = 0;
+
+if(*x != *y)
+    {
+    sign = x[0];
+    y[0] = sign;
+    addBigint(x, nx, y, ny, sm, nsm);
+    x[0] = sign; y[0] = sign * -1;
+    return(sm); 
+    }
+
+/* compare and subtract the abs(smaller) from the abs(greater) */
+if(cmpAbsBigint(x, nx, y, ny) >= 1)
+    sm[0] = x[0];
+else
+    {
+    sm[0] = x[0] * -1;
+    n = nx; nx = ny; ny = n;
+    ptr = x; x = y; y = ptr; 
+    }
+
+for(i = nx, j = ny; i > 0; i--, j--)
+    {
+    if(j > 0)
+        digit = (INT64)x[i] - y[j] - carry;
+    else
+        digit = (INT64)x[i] - carry;
+    if(digit < 0)
+        {
+        digit = digit + BIGINT_BASE;
+        carry = 1;
+        }
+    else
+        carry = 0;
+
+    sm[i] = digit % BIGINT_BASE;
+    }
+
+i = 1; n = 0;
+
+/* remove leading zero's */
+while (sm[i] == 0 && i <= nx) n++, i++;
+if(n == nx)
+    {
+    *nsm = 1;
+    return(sm);
+    }
+
+memmove((char *)sm + 1 * sizeof(int), (char *)sm + (n + 1) * sizeof(int), (nx - n) * sizeof(int));
+*nsm = (nx - n);
+
+return(sm);
+}
+
+
+int * mulBigint(int * x, int nx, int * y,  int ny, int * p, int * n)
+{
+int i, j, k, carry;
+INT64 digit;
+
+memset(p, 0, (nx + ny + 1) * sizeof(int));
+for(i = ny; i > 0 ; i--) /* for each digit in multiplier */
+    {
+    carry = 0;
+    for(j = nx; j > 0; j--)
+        {
+        digit = (INT64)p[j + i] + (INT64)y[i] * x[j] + carry;
+        carry = digit / BIGINT_BASE;
+        p[j + i] = digit % BIGINT_BASE;
+        }
+    digit = (INT64)p[i] + carry;
+    p[i] = digit % BIGINT_BASE;
+    }
+
+/* remove leading zero's */
+k = nx + ny;
+while(p[1] == 0 && k > 1)
+    {
+    for(i = 1; i < k; i++)
+        p[i] = p[i + 1];
+    k--;
+    }
+
+/* set sign  and n */
+*p = *x * *y;
+*n = k;
+return(p);
+}
+
+
+/* q = x/y - caller must _not_ allocate space for q
+*/
+int * divModBigint(int * x, int nx, int * y, int ny, int rmndr, int * nq)
+{
+int * r;
+int * q;
+int * p;
+int * ptr;
+INT64 digit;
+int i, j, k, carry;
+int nr, sq, n, pn;
+double rFloat, yFloat;
+
+if(y[1] == 0 && ny == 1)
+    errorProc(ERR_MATH);
+
+if(cmpAbsBigint(x, nx, y, ny) < 0)
+    {
+    if(rmndr)
+        {
+        q = malloc((nx + 1) * sizeof(int));
+        memcpy((void *)q, (void *)x, (nx + 1) * sizeof(int));
+        *nq = nx;
+        }
+    else
+        {
+        q = malloc(sizeof(int) * 2);
+        q[0] = 1; q[1] = 0;
+        *nq = 1;
+        }
+    return(q);
+    }
+
+r = alloca((nx + 1) * sizeof(int));
+q = alloca((nx - ny + 1) * sizeof(int));
+p = alloca((nx + 1) * sizeof(int));
+
+nr = 0; sq = 0;
+r[0] = q[0] = p[0] = 1; 
+yFloat = bigintToAbsFloat(y, (ny > 2) ? 2 : ny);
+
+for(i = 1; i <= nx; i++)    
+    {
+    r[++nr] = x[i];
+
+    if(cmpAbsBigint(r, nr, y, ny) < 0) continue;
+
+    rFloat = bigintToAbsFloat(r, (ny > 2) ? (nr + 2 - ny) : nr);
+    q[++sq] = rFloat / yFloat + 1.0; /* like ceil() */
+
+    PRODUCT: 
+    carry = 0;
+    for(j = ny, pn = ny; j > 0; j--)
+        {
+        digit = (INT64)y[j] * q[sq] + carry;
+        if(digit >= BIGINT_BASE)
+            {
+            p[j] = digit % BIGINT_BASE;
+            carry = digit/BIGINT_BASE;
+            }
+        else
+            p[j] = digit, carry = 0;
+        }
+    if(carry) /* shift right */
+        {
+        for(j = ny; j > 0; j--) p[j+1] = p[j];
+        p[1] = carry, ++pn;
+        }
+
+    if(cmpAbsBigint(r, nr, p, pn) < 0) 
+        {
+        q[sq] = q[sq] - 1; /* q[sq] too big */
+        goto PRODUCT;
+        }
+
+    /* ----- inlined from subBigint ----- */
+    for(k = nr, j = pn, carry = 0; k > 0; k--, j--)
+        {
+        if(j > 0)
+            digit = (INT64)r[k] - p[j] - carry;
+        else
+            digit = (INT64)r[k] - carry;
+        if(digit < 0)
+            {
+            digit += BIGINT_BASE;
+            carry = 1;
+            }
+        else
+            carry = 0;
+
+        r[k] = digit % BIGINT_BASE;
+        }
+    /* trim leading zero's */
+    if(r[1] == 0) {
+        k = 1; n = 0;
+        while (r[k] == 0 && k <= nr) n++, k++;
+        if(n == nr) nr = 1;
+        else
+            {
+            nr = (nr - n);
+            memmove((char *)r + 1 * sizeof(int), 
+                (char *)r + (n + 1) * sizeof(int), nr * sizeof(int));
+            }
+        }
+    /* ---------------------------------- */
+    if(r[1] == 0 && i < nx) nr = 0;
+    }
+
+if(rmndr)
+    {
+    q = malloc((nr + 1) * sizeof(int));
+    memcpy((void *)q, (void *) r, (nr + 1) * sizeof(int));
+    q[0] = x[0]; /* set sign */
+    *nq = nr;
+    }
+else
+    {
+    ptr = malloc((sq + 1) * sizeof(int));
+    memcpy((void *)ptr, (void *)q, (sq + 1) * sizeof(int));
+    q = ptr;
+    q[0] = *x * *y;
+    *nq = sq;
+    }     
+
+return(q);
+}
+
+
+int cmpAbsBigint(int * x, int nx, int * y, int ny)
+{
+int cmp, i;
+
+cmp = nx - ny;
+if(cmp == 0)
+    {
+    for(i = 1; i <= nx; i++)
+        {
+        if(x[i] > y[i]) return(1);
+        if(x[i] < y[i]) return(-1);
+        }
+    return(0);
+    }
+
+return (cmp > 0) ? 1 : -1;
+}
+
+int cmpBigint(int * x, int nx, int * y, int ny)
+{
+int cmp;
+
+/* make sure 0 == -0 */
+if(nx == 1 && ny == 1 && x[1] == 0 && y[1] == 0)
+    return(0);
+
+if(*x > *y) return(1);
+if(*x < *y) return(-1);
+
+/* signs are both 1,1 or -1, -1 */
+cmp = cmpAbsBigint(x, nx, y, ny);
+
+return(cmp * *x);
+}
+
+/* biggest  int64  9 223372036 854775807
+   smallest int64 -9 223372036 854775808
+*/
+
+INT64 bigintToInt64(CELL * cell)
+{
+INT64 num;
+int * numPtr;
+int  i;
+
+int maxInt[4] = {1, 9, 223372036, 854775807};
+int minInt[4] = {-1, 9, 223372036, 854775808};
+
+numPtr = (int *)(UINT)cell->contents;
+if(cmpBigint((int *)(UINT)cell->contents, cell->aux -1, maxInt, 3) == 1 ||
+            cmpBigint((int *)(UINT)cell->contents, cell->aux - 1, minInt, 3) == -1)
+    errorProc(ERR_CANNOT_CONVERT);
+
+num = numPtr[1];
+for(i = 2; i < cell->aux; i++)
+    num = num * BIGINT_BASE + numPtr[i];
+
+num = num * numPtr[0];
+
+return(num);
+}
+
+int * intToBigint(INT64 num, int * len)
+{
+int idx = 1;
+int * digit;
+
+digit = malloc(4 * sizeof(int));
+
+if(num < 0)
+    {
+    digit[0] = -1;
+    num = -num;
+    }
+else
+    digit[0] = 1;
+
+if(num > BIGINT_BASE2)
+    {
+    digit[idx] = (int)(num / BIGINT_BASE2);
+    num = num - digit[idx] * BIGINT_BASE2;
+    idx++;
+    }
+
+if(num > BIGINT_BASE)
+    {
+    digit[idx] =(int)(num / BIGINT_BASE);
+    num = num - digit[idx] * BIGINT_BASE;
+    idx++;
+    }
+
+digit[idx] = num;
+
+*len = idx;
+
+return(digit);
+}
+
+
+/* only used internally by divModBigint() 
+   does not check for overflow */
+double bigintToAbsFloat(int * numPtr, int n)
+{
+double value;
+int i;
+
+value = numPtr[1];
+for(i = 2; i <= n; i++)
+    value = value * BIGINT_BASE + numPtr[i];
+
+return(value);
+}
+
+
+double bigintCellToFloat(CELL * cell)
+{
+double value;
+int * numPtr;
+int i;
+
+numPtr = (int *)(UINT)cell->contents;
+value = numPtr[1];
+for(i = 2; i < cell->aux; i++)
+    {
+    value = value * BIGINT_BASE + numPtr[i];
+    if( value > 1.797693134862301e308)
+        return(1/0.0);
+    }
+
+value *= numPtr[0];
+
+return(value);
+}
+
+int * floatToBigint(double fnum, int * len)
+{
+int decDigits, bigDigits;
+int inum, i, sign;
+int * numPtr;
+
+#ifdef SOLARIS
+        if(isnan(fnum - fnum))
+#else
+        if(isinf(fnum))
+#endif
+    errorProcExt2(ERR_CANNOT_CONVERT, stuffFloat(&fnum));
+        
+sign = fnum < 0 ? -1 : 1;
+fnum = fnum * sign;
+
+/* account for rounding errors */
+if(fnum > 1.797693134862301e308)
+    fnum = 1.797693134862301e308;
+    
+decDigits = log(fnum) / log(10) + 1;
+if(decDigits <= 0) 
+    {
+    numPtr = calloc(2, sizeof(int));
+    numPtr[0] = 1;
+    *len = 1;
+    return(numPtr);
+    }
+
+bigDigits = ((decDigits - 1) / 9) + 1;
+*len = bigDigits;
+numPtr = calloc(bigDigits + 3, sizeof(int)); 
+numPtr[0] = sign;
+for(i = 1; i <= 3; i++)
+    {
+    inum = fnum / pow(1000000000, (bigDigits - i));
+    numPtr[i] = inum;
+    fnum = fnum - (INT64)inum * pow(1000000000, (bigDigits - i));
+    }
+
+return(numPtr);
+}
+
+int lengthBigint(int * num, int len)
+{
+int cnt = 0;
+int bigdigit, basediv;
+
+if((bigdigit = num[1]) == 0) return(1);
+
+basediv = BIGINT_BASE / 10;
+while(bigdigit / basediv == 0)
+    basediv /= 10, cnt++;
+
+return(9 * (len - 1) + 9 - cnt);
+}
+#endif
 /* eof */

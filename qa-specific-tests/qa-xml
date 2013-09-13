@@ -2,6 +2,11 @@
 
 # qa-xml - test newLISP xml-parse, xml-type-tags functions
 
+(unless xml-parse
+    (println ">>>>> compiles without XML support")
+    (exit)
+)
+
 (println)
 (println "Testing XML functions")
 

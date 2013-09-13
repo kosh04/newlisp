@@ -33,7 +33,7 @@
 #define FIONREAD I_NREAD
 #endif
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #include <sys/types.h>
 #ifndef ANDROID
 #include <sys/ipc.h>
@@ -63,8 +63,9 @@ extern char ** environ;
 #endif
 #endif
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #define fgetc win32_fgetc
+#define realpath win32_realpath
 #define random rand
 #define srandom srand
 #include <conio.h>  
@@ -79,15 +80,10 @@ See also http://www.mingw.org/MinGWiki/index.php/binary
 */
 unsigned int _CRT_fmode = _O_BINARY;
 
-
 int setenv (const char *name, const char *value, int replace);
-#ifdef USE_WIN_UTF16PATH
-INT64 fileSizeW(WCHAR * pathName);
-#endif
-
 #endif /* Win32 */
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #include <sys/socket.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
@@ -138,7 +134,7 @@ int isFile(char * fileName, int flag)
 struct stat fileInfo;
 int result;
 
-#ifdef WIN32
+#ifdef WINDOWS
 char slash;
 size_t len;
 
@@ -154,7 +150,7 @@ result = stat(fileName, &fileInfo);
 #endif
 if(slash == '\\' || slash == '/')
     *(fileName + len - 1) = slash;
-#else /* not WIN32 */
+#else /* not WINDOWS */
 result = stat(fileName, &fileInfo);
 #endif
 if(result == 0)
@@ -178,7 +174,7 @@ int isDir(char * fileName)
 {
 struct stat fileInfo;
 
-#ifdef WIN32
+#ifdef WINDOWS
 char slash;
 size_t len;
 
@@ -194,13 +190,13 @@ if(stat_utf16(fileName, &fileInfo) != 0)
 if(stat(fileName, &fileInfo) != 0)
 #endif
     {
-#ifdef WIN32
+#ifdef WINDOWS
     *(fileName + len - 1) = slash;
 #endif
     return(0);
     }
 
-#ifdef WIN32
+#ifdef WINDOWS
 *(fileName + len - 1) = slash;
 #endif
 
@@ -363,7 +359,7 @@ return(makeStringCell(buffer, size));
 ssize_t readFile(char * fileName, char * * buffer)
 {
 int handle; 
-size_t size;
+off_t size;
 struct stat fileInfo;
 
 fileName = getLocalPath(fileName);
@@ -581,7 +577,7 @@ if(params == nilCell)
 else
     {
 #ifdef LFS
-    getInteger64(params, &paramPosition);
+    getInteger64Ext(params, &paramPosition, TRUE);
 #else
     getInteger(params, (UINT *)&paramPosition);
 #endif
@@ -692,7 +688,7 @@ char * getLocalPath(char * fileName)
 if(my_strnicmp(fileName, "file://", 7) == 0)
     fileName = fileName + 7;
 
-#ifdef WIN_32
+#ifdef WINDOWS
 if(*fileName == '/' && *(fileName + 2) == ':')
     fileName = fileName + 1;
 #endif
@@ -707,7 +703,7 @@ int blocking = 0;
 
 fileName = getLocalPath(fileName);
 
-#ifndef WIN_32
+#ifndef WINDOWS
 if(option != NULL && *option == 'n')
     blocking = O_NONBLOCK;
 #endif
@@ -716,7 +712,7 @@ if(*accessMode == 'r')
     return(open(fileName, O_RDONLY | O_BINARY | blocking, 0));
 
 else if(*accessMode == 'w')
-#ifdef WIN_32
+#ifdef WINDOWS
     return(open( fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE) );
 #else
     return(open(fileName,O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | blocking, 
@@ -728,7 +724,7 @@ else if(*accessMode == 'u')
 
 else if(*accessMode == 'a')
        {
-#ifdef WIN_32
+#ifdef WINDOWS
        return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE));
 #else
        return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
@@ -819,7 +815,7 @@ if(params != nilCell)
     mode = mode > 0xfff ? 0xfff : mode;
     }
 
-#ifdef WIN_32
+#ifdef WINDOWS
 return(mkdir(dirString) == 0 ? trueCell : nilCell);
 #else
 return(mkdir(dirString, (mode_t)mode) == 0 ? trueCell : nilCell);
@@ -892,17 +888,30 @@ return(dirList);
 
 #define DOT_PATH ".\000"
 
+
 CELL * p_realpath(CELL * params)
 {
 char  path[PATH_MAX];
-char * dir;
+char * name;
 
 if(params != nilCell)
-    getString(params, &dir);
-else dir = DOT_PATH;
+    {
+    params = getString(params, &name);
+    if(getFlag(params))
+        {
+        if((name = which(name, alloca(PATH_MAX))) == NULL)
+            return(nilCell);
+        return(stuffString(name));
+        }
+    }
+else name = DOT_PATH;
 
-if(realpath(dir, path) == NULL)
+if(realpath(name, path) == NULL)
     return(nilCell);
+
+#ifdef _BSD /* behaves like Windows */
+if(isFile(path, 0)) return(nilCell);
+#endif
 
 return(stuffString(path));
 }
@@ -916,7 +925,7 @@ int result = 0;
 
 params = getString(params, &pathName);
 
-#ifdef WIN_32 /* has no link-flag */
+#ifdef WINDOWS /* has no link-flag */
 #ifdef USE_WIN_UTF16PATH
 result = stat_utf16(pathName, &fileInfo);
 #else
@@ -948,11 +957,7 @@ list = stuffIntegerList(
 #ifndef NEWLISP64
 #ifdef LFS
 ((CELL *)list->contents)->type = CELL_INT64;
-#ifdef USE_WIN_UTF16PATH
-*(INT64 *)&((CELL *)list->contents)->aux = fileSize_utf16(pathName);
-#else
-*(INT64 *)&((CELL *)list->contents)->aux = fileSize(pathName);
-#endif /* UTF16PATH */
+*(INT64 *)&((CELL *)list->contents)->aux = (INT64)fileInfo.st_size;
 #endif /* LFS */
 #endif /* NEWLISP64 */
 
@@ -968,26 +973,32 @@ return(list);
 
 #ifdef LFS
 INT64 fileSize(char * pathName)
-{
-int handle;
-INT64 size;
-
-#ifndef WIN_32
-handle = open(pathName,O_RDONLY | O_BINARY | O_NONBLOCK , 0);
 #else
-handle = open(pathName,O_RDONLY | O_BINARY, 0);
+size_t fileSize(char * pathName)
 #endif
-size = lseek(handle, 0, SEEK_END);
-close(handle);
-if(size == -1) size = 0;
-return(size);
+{
+struct stat fileInfo;
+int result;
+
+#ifdef WINDOWS /* has no link-flag */
+#ifdef USE_WIN_UTF16PATH
+result = stat_utf16(pathName, &fileInfo);
+#else
+result = stat(pathName, &fileInfo);
+#endif
+#else /* Unix */
+result = stat(pathName, &fileInfo);
+#endif
+
+if(result != 0) return 0;
+
+return(fileInfo.st_size);
 }
-#endif
 
 
 /* ------------------------- processes and pipes ------------------------- */
 
-#ifndef WIN_32
+#ifndef WINDOWS
 CELL * p_system(CELL *params)
 {
 char * command;
@@ -1101,7 +1112,7 @@ return(argc);
 
 
 
-#ifdef WIN_32
+#ifdef WINDOWS
 int kill(pid_t pid, int sig);
 int winPipe(UINT * inpipe, UINT * outpipe);
 UINT winPipedProcess(char * command, int inpipe, int outpipe, int option);
@@ -1149,7 +1160,7 @@ return(stuffInteger(result));
 }
 
 
-#else /* not WIN_32 */
+#else /* not WINDOWS */
 
 CELL * p_pipe(CELL * params)
 {
@@ -1378,8 +1389,7 @@ while(pidSpawn)
             }
         else if(mode == PROCESS_SPAWN_ABORT)
             {
-            /* close(pidSpawn->socket);  10.3.6 */
-            FD_CLR(pidSpawn->socket, &myFdSet); /* 10.3.6 */
+            FD_CLR(pidSpawn->socket, &myFdSet);
             kill(pidSpawn->pid, 9);
             waitpid(pidSpawn->pid, (int *)0, 0);
             }
@@ -1429,7 +1439,7 @@ if((address = mmap( 0, pagesize,
     PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
         return(nilCell);
 
-memset(address, 0, sizeof(long));
+memset(address, 0, sizeof(INT));
 
 params = getSymbol(params, &symPtr);
 if(isProtected(symPtr->flags))
@@ -1866,7 +1876,7 @@ return(trueCell);
 }
 
 /* ------------------------------ semaphores --------------------------------- */
-#ifdef WIN_32
+#ifdef WINDOWS
 
 UINT winCreateSemaphore(void);
 UINT winWaitSemaphore(UINT hSemaphore);
@@ -1877,7 +1887,7 @@ int getSemaphoreCount(UINT hSemaphore);
 CELL * p_semaphore(CELL * params)
 {
 UINT sem_id;
-long value;
+INT value;
 
 if(params != nilCell)
     {
@@ -1919,12 +1929,12 @@ return(stuffInteger(sem_id));
 #endif
 
 #ifdef SEMAPHORE
-#ifndef WIN_32
+#ifndef WINDOWS
 /* Mac OS X, Linux/UNIX */
 
 CELL * p_semaphore(CELL * params)
 {
-long sem, value, result;
+INT sem, value, result;
 
 if(params == nilCell)
     {
@@ -2030,11 +2040,11 @@ if(semctl(sem_id, 0, SETVAL, 0) == -1) /* LINUX, BSD, TRU64 */
 return(sem_id);
 }
 
-#endif  /* Mac OS X, Linux, UNIX - not WIN_32 */
+#endif  /* Mac OS X, Linux, UNIX - not WINDOWS */
 
 #endif /* SEMAPHORE */
 
-#ifdef WIN_32
+#ifdef WINDOWS
 UINT winSharedMemory(int size);
 UINT * winMapView(UINT handle, int size);
 #endif
@@ -2050,7 +2060,7 @@ CELL * p_share(CELL * params)
 {
 void * address;
 CELL * cell;
-#ifdef WIN_32
+#ifdef WINDOWS
 UINT handle;
 #endif
 
@@ -2058,7 +2068,7 @@ UINT handle;
 if(params != nilCell) 
     {
     cell = evaluateExpression(params);
-#ifndef WIN_32
+#ifndef WINDOWS
     if(isNil(cell)) /* release shared address */
         {
         getInteger(params->next, (UINT *)&address);
@@ -2071,7 +2081,7 @@ if(params != nilCell)
 #endif
     getIntegerExt(cell, (UINT *)&address, FALSE);
     params = params->next;
-#ifdef WIN_32
+#ifdef WINDOWS
     if((address = winMapView((UINT)address, pagesize)) == NULL)
         return(nilCell);
 #endif
@@ -2079,7 +2089,7 @@ if(params != nilCell)
     }
 
 /* get shared memory UNIX */
-#ifndef WIN_32
+#ifndef WINDOWS
 if((address = (UINT*)mmap(
     0, pagesize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
         return(nilCell);
@@ -2087,7 +2097,7 @@ if((address = (UINT*)mmap(
 memset((char *)address, 0, pagesize);
 return(stuffInteger((UINT)address));
 
-/* get shared memory WIN_32 */
+/* get shared memory WINDOWS */
 #else 
 
 if((handle = winSharedMemory(pagesize)) == 0)
@@ -2140,18 +2150,18 @@ if(params != nilCell)
         {
         case CELL_NIL:
             *address = cell->type;
-#ifdef WIN_32
+#ifdef WINDOWS
             UnmapViewOfFile(address);
 #endif
             return(nilCell);
         case CELL_TRUE:
             *address = cell->type;
-#ifdef WIN_32
+#ifdef WINDOWS
             UnmapViewOfFile(address);
 #endif
             return(trueCell);
         case CELL_LONG:
-            *(address + 1) = sizeof(long);
+            *(address + 1) = sizeof(INT);
             *(address + 2) = cell->contents;
             break;
 #ifndef NEWLISP64
@@ -2172,19 +2182,19 @@ if(params != nilCell)
 #endif /* NEWLISP64 */
         case CELL_STRING:
             getStringSize(cell, &str, &size, FALSE);
-            if(size > (pagesize - 3 * sizeof(long)))
+            if(size > (pagesize - 3 * sizeof(INT)))
                 return(copyCell(readWriteSharedExpression(address, cell)));
 
             *(address + 1) = size;
             memcpy((char *)(address + 2), str, size);
-            *((char *)address + 2 * sizeof(long) + size) = 0;
+            *((char *)address + 2 * sizeof(INT) + size) = 0;
             break;
         default:
             return(errorProcExt(ERR_ILLEGAL_TYPE, cell));
         }
 
     *address = cell->type;
-#ifdef WIN_32
+#ifdef WINDOWS
     UnmapViewOfFile(address);
 #endif
     return(copyCell(cell));
@@ -2194,12 +2204,12 @@ if(params != nilCell)
 switch(*address & RAW_TYPE_MASK)
     {
     case CELL_NIL:
-#ifdef WIN_32 
+#ifdef WINDOWS 
         UnmapViewOfFile(address);
 #endif
         return(nilCell);
     case CELL_TRUE:
-#ifdef WIN_32 
+#ifdef WINDOWS 
         UnmapViewOfFile(address);
 #endif
         return(trueCell);   
@@ -2232,7 +2242,7 @@ switch(*address & RAW_TYPE_MASK)
         return(nilCell);
     }
 
-#ifdef WIN_32
+#ifdef WINDOWS
         UnmapViewOfFile(address);
 #endif
 return(cell);
@@ -2257,7 +2267,7 @@ char * buffer = NULL;
 if(params == nilCell)
     {
     size = *(address + 1);
-    if(size < (pagesize - 3 * sizeof(long) ))
+    if(size < (pagesize - 3 * sizeof(INT) ))
         {   
         cell = sysEvalString((char *)(address + 2), 
                 currentContext, nilCell, READ_EXPR_SYNC);
@@ -2282,16 +2292,16 @@ prettyPrintFlags &= ~PRETTYPRINT_STRING;
 
 *(address + 1) = strStream.position;
 
-if(strStream.position < pagesize - 3 * sizeof(long))
+if(strStream.position < pagesize - 3 * sizeof(INT))
     {
     memcpy((char *)(address + 2), strStream.buffer, strStream.position);
-    *((char *)address + 2 * sizeof(long) + strStream.position) = 0;
+    *((char *)address + 2 * sizeof(INT) + strStream.position) = 0;
     }
 else
     {
     checkDeleteShareFile(address);
-    memset((char *)(address + 2), 0, pagesize - 2 * sizeof(long));
-#ifndef WIN_32
+    memset((char *)(address + 2), 0, pagesize - 2 * sizeof(INT));
+#ifndef WINDOWS
 #ifdef ANDROID
     strncpy((char *)(address + 2), "/data/tmp/nls-", 15);
     getUUID((char *)(address + 2) + 14, 0);
@@ -2299,7 +2309,7 @@ else
     strncpy((char *)(address + 2), "/tmp/nls-", 10);
     getUUID((char *)(address + 2) + 9, 0);
 #endif
-#else /* WIN_32 */
+#else /* WINDOWS */
     strncpy((char *)(address + 2), "/temp/nls-", 11);
     getUUID((char *)(address + 2) + 10, 0);
 #endif
@@ -2314,7 +2324,7 @@ return(cell);
 void checkDeleteShareFile(UINT * address)
 {
 if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
-#ifndef WIN_32
+#ifndef WINDOWS
 #ifdef ANDROID
         (strncmp((char *)(address + 2), "/data/tmp/nls-", 9) == 0) &&
 #else
@@ -2505,7 +2515,7 @@ usec = (UINT64)1000000 * out.tv_sec + out.tv_usec;
 return(usec);
 }
 
-#ifndef WIN_32
+#ifndef WINDOWS
 CELL * p_dateParse(CELL * params)
 {
 struct tm ttm;
@@ -2543,7 +2553,7 @@ double diff;
 
 gettimeofday(&start, NULL);
 if(params->next != nilCell)
-    getInteger64(params->next, &N);
+    getInteger64Ext(params->next, &N, TRUE);
 
 resultIdxSave = resultStackIdx;
 while(N--)  
@@ -2570,15 +2580,15 @@ CELL * p_now(CELL * params)
 {
 struct timeval tv;
 struct tm *ttm;
-#ifndef WIN_32
+#ifndef WINDOWS
 struct tm *ltm;
 #ifndef SUNOS
 #ifndef OS2
-long gmtoff;
+INT gmtoff;
 UINT isdst;
 #endif
 #endif
-#else /* WIN_32 */
+#else /* WINDOWS */
 TIME_ZONE_INFORMATION timeZone;
 #endif
 ssize_t offset = 0;
@@ -2593,7 +2603,7 @@ if(params != nilCell)
         tv.tv_sec += offset;
     }
 
-#ifndef WIN_32
+#ifndef WINDOWS
 ltm = localtime((time_t *)&tv.tv_sec);
 #ifndef SUNOS
 #ifndef OS2
@@ -2607,7 +2617,7 @@ gmtoff = ltm->tm_gmtoff/60;
 
 #endif
 #endif
-#else /* WIN_32 */
+#else /* WINDOWS */
 GetTimeZoneInformation(&timeZone);
 #endif
 
@@ -2641,7 +2651,7 @@ cell = stuffIntegerList(
 #endif
 #endif
 
-#if defined(WIN_32)
+#if defined(WINDOWS)
      -timeZone.Bias,
      timeZone.DaylightBias  
 #endif
@@ -2704,7 +2714,7 @@ params = getInteger(params, (UINT *)&year);
 params = getInteger(params, (UINT *)&month);
 params = getInteger(params, (UINT *)&day);
 
-if(year < 1970) return(stuffInteger(0));
+/* if(year < 1970) return(stuffInteger(0)); */
 
 hour = min = sec = 0;
 if(params != nilCell)
@@ -2735,7 +2745,10 @@ dateValue = dateValue * 24 * 3600 + hour * 3600 + min * 60 + sec
             - 413319296; /* correction for 1970-1-1 */
 
 #ifdef NEWLISP64
-dateValue = dateValue & 0xffffffff;
+if(dateValue & 0x80000000)
+    dateValue = dateValue | 0xFFFFFFFF00000000;
+else
+    dateValue = dateValue & 0xffffffff;
 #endif
 
 return(dateValue);
@@ -2757,7 +2770,7 @@ nanosleep(&tm, 0);
 
 #else
 
-#ifdef WIN_32
+#ifdef WINDOWS
 Sleep(ms);
 #else
 sleep((ms + 500)/1000);
@@ -2898,7 +2911,7 @@ return(envList);
 /* thanks to Peter van Eerten for contributing this function */
 CELL * p_readKey(CELL * params)
 {
-#if defined(WIN_32) || defined(OS2)
+#if defined(WINDOWS) || defined(OS2)
 return(stuffInteger(getch()));
 #else
 
@@ -2932,7 +2945,7 @@ return(stuffInteger(c));
 
 /* --------------------- peek a file descriptor ------------------------------*/
 
-#ifndef WIN_32
+#ifndef WINDOWS
 CELL * p_peek(CELL * params)
 {
 UINT handle;
@@ -3018,7 +3031,7 @@ gettimeofday(&tp, (struct timezone *)0);
 /* add UUID UTC offset Oct 15, 1582 */
 timestamp = tp.tv_sec * (INT64)10000000 + tp.tv_usec * 10 + OCT151582; 
 
-#ifdef WIN_32
+#ifdef WINDOWS
 if(timestamp <= last_time) timestamp = last_time + 1;
 #else
 if(timestamp < last_time) clock_seq++;
@@ -3058,7 +3071,7 @@ if(uuid_version == 4)
     {
     clock_seq = random();
     uuid.time_low = random();
-#ifdef WIN_32
+#ifdef WINDOWS
     uuid.time_low |= (random() << 16);
 #endif
     uuid.time_mid = random();
@@ -3066,7 +3079,7 @@ if(uuid_version == 4)
     }
 else
     {
-    uuid.time_low = (unsigned long)(timestamp & 0xFFFFFFFF);
+    uuid.time_low = (unsigned int)(timestamp & 0xFFFFFFFF);
     uuid.time_mid = (unsigned short)((timestamp >> 32) & 0xFFFF);
     uuid.time_hi_and_version = (unsigned short)(timestamp >> 48) ;
     }

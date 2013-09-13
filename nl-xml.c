@@ -20,6 +20,8 @@
 #include "newlisp.h"
 #include "protos.h"
 
+#ifdef XML_SUPPORT
+
 #define XML_TEXT 0
 #define XML_CDATA 1
 #define XML_COMMENT 2
@@ -447,6 +449,12 @@ tagStart = source;
 tagLen = 0;
 while((unsigned char)*source > ' ' && source < endSrc) ++source, ++tagLen; /* find tag end */
 
+if(tagLen > MAX_SYMBOL)
+    {
+    xmlError = "tag name too long";
+    return nilCell;
+    }
+
 attributes = parseAttributes(endSrc);
 if(optionsFlag & OPTION_SXML_ATTRIBUTES)
     {
@@ -529,6 +537,11 @@ while(!xmlError && source < endSrc)
     nameLen = 0;
     while((unsigned char)*source > ' ' && *source != '=' && source < endSrc) source++, nameLen++; /* get end */
     if(nameLen == 0) break;
+    if(nameLen > MAX_SYMBOL)
+        {
+        xmlError = "attribute name too long";
+        return nilCell;
+        }
     while((unsigned char)*source <= ' ' && source < endSrc) source++; /* strip leading space */
     if(*source != '=')
         {
@@ -658,12 +671,24 @@ while(tagPos--) if((unsigned char)*source++ > 32) return(FALSE);
 return(TRUE);
 }
 
+#endif /* XML_SUPPORT */
+
 /* --------------------------------- JSON interface ------------------------- */
 
 CELL * getJSONobject(char * jsonStr, char * * restStr);
 CELL * getJSONstring(char * jsonStr, char * * restStr);
 CELL * getJSONvalue(char * jsonStr, char * * restStr);
 CELL * setJSONerror(char * errorText, char * jsonStr);
+
+#define ERR_JSON_MISSING_BRACE "missing {"
+#define ERR_JSON_MISSING_COLON "missing : colon"
+#define ERR_JSON_INVALID_OBJECT "invalid JSON object"
+#define ERR_JSON_MISSING_KEY "missing key"
+#define ERR_JSON_CLOSING_QUOTE "missing closing quote"
+#define ERR_JSON_INVALID_UNICODE "invalid unicode"
+#define ERR_JSON_INVALID_NUMBER "invalid JSON number format"
+#define ERR_JSON_INVALID_ARRAY "invalid JSON array format"
+#define ERR_JSON_INVALID_VALUE "invalid JSON value format"
 
 CELL * lastJSONerror = NULL;
 char * jsonStrStart;
@@ -691,7 +716,7 @@ char * ptr;
 while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
 
 if(*jsonStr != '{') 
-    return(setJSONerror("missing {", jsonStr));
+    return(setJSONerror(ERR_JSON_MISSING_BRACE, jsonStr));
 
 ++jsonStr;
 /* make object envelope */
@@ -730,7 +755,7 @@ while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace 
 if(*jsonStr != ':') 
     {
     deleteList(object);
-    return(setJSONerror("missing : colon", jsonStr));
+    return(setJSONerror(ERR_JSON_MISSING_COLON, jsonStr));
     }
 
 if((key->next = getJSONvalue(++jsonStr, &ptr)) == nilCell)
@@ -755,7 +780,7 @@ if(*jsonStr == ',')
     }
 
 deleteList(object);
-return(setJSONerror("invalid JSON object", jsonStr));
+return(setJSONerror(ERR_JSON_INVALID_OBJECT, jsonStr));
 }
 
 
@@ -773,12 +798,12 @@ char buff[8];
 /* get key string */
 while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
 
-if(*jsonStr != '"') return(setJSONerror("missing key", jsonStr));
+if(*jsonStr != '"') return(setJSONerror(ERR_JSON_MISSING_KEY, jsonStr));
 
 token = ++jsonStr, size = 0;
 while(*jsonStr != '"' && *jsonStr != 0) ++jsonStr, ++size;
 
-if(*jsonStr++ != '"') return(setJSONerror("missing closing quote", jsonStr));
+if(*jsonStr++ != '"') return(setJSONerror(ERR_JSON_CLOSING_QUOTE, jsonStr));
 
 *restStr = jsonStr;
 
@@ -838,7 +863,7 @@ while(i < size)
                     i += 4;
                     }
                 else
-                    return(setJSONerror("invalid unicode", jsonStr));
+                    return(setJSONerror(ERR_JSON_INVALID_UNICODE, jsonStr));
                 break;
             default:
                 *(xlated + j++) = *(token + i);
@@ -901,14 +926,14 @@ if(*jsonStr == 'e' || *jsonStr == 'E')
     if(*jsonStr == '-' || *jsonStr == '+')
         ++jsonStr;
     if(!isDigit((unsigned char)*jsonStr))
-        return(setJSONerror("invalid JSON number format", jsonStr));
+        return(setJSONerror(ERR_JSON_INVALID_NUMBER, jsonStr));
         while(isDigit((unsigned char)*jsonStr)) ++jsonStr;
     }
 
 /* number must end with space or control character  or white space*/
 if(*jsonStr != ' ' && *jsonStr != '\n' && *jsonStr != '\n' && *jsonStr != '\t' && *jsonStr != '\f' &&
    *jsonStr != ',' && *jsonStr != '}' && *jsonStr != ']' && *jsonStr != 0)
-    return(setJSONerror("invalid JSON number format", jsonStr));
+    return(setJSONerror(ERR_JSON_INVALID_NUMBER, jsonStr));
 
 len = (size_t)jsonStr - (size_t)ptr;
 memcpy(number, ptr, len);
@@ -964,7 +989,7 @@ switch(*jsonStr)
             return(array);
             }
         if(array) deleteList(array);
-        return(setJSONerror("invalid JSON array format", jsonStr));
+        return(setJSONerror(ERR_JSON_INVALID_ARRAY, jsonStr));
     case 't':
         if(strncmp(jsonStr, "true", 4) == 0)
             {
@@ -988,7 +1013,7 @@ switch(*jsonStr)
             break;
             }
     default:
-    return(setJSONerror("invalid JSON value format", jsonStr));
+    return(setJSONerror(ERR_JSON_INVALID_VALUE, jsonStr));
     }
 
 *restStr = ptr;

@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.4.6
-INT_VERSION = 10406
+VERSION = 10.5.0
+INT_VERSION = 10500
 
 default: makefile_build
 	make -f makefile_build
@@ -127,7 +127,7 @@ dmg_ppc:
 		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
 
 dmg_intel:
-	make -f makefile_darwin_utf8_ffi
+	make -f makefile_darwinLP64_utf8_ffi
 	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
@@ -166,6 +166,7 @@ check:
 	./newlisp qa-specific-tests/qa-ref
 	./newlisp qa-specific-tests/qa-message
 	./newlisp qa-specific-tests/qa-win32dll
+	./newlisp qa-specific-tests/qa-bigint 10000
 	./newlisp qa-specific-tests/qa-bench
 
 # old naming for check 
@@ -194,6 +195,9 @@ checkall:
 	./newlisp qa-specific-tests/qa-pipefork
 	./newlisp qa-specific-tests/qa-ffi
 	./newlisp qa-specific-tests/qa-libffi
+	./newlisp qa-specific-tests/qa-bigint 10000
+	./newlisp qa-specific-tests/qa-longnum
+	./newlisp qa-specific-tests/qa-factorfibo 60
 	./newlisp qa-specific-tests/qa-bench
 
 testall: 
@@ -262,7 +266,7 @@ android_dist_utf8:
 	-mkdir newlisp-ndk-utf8-$(VERSION)/obj/local
 	-mkdir newlisp-ndk-utf8-$(VERSION)/obj/local/armeabi
 	cp nl*.c newlisp.c *.h pcre*.c newlisp-ndk-utf8-$(VERSION)/jni
-	rm newlisp-ndk-utf8-$(VERSION)/jni/win32-ffi.h
+	rm newlisp-ndk-utf8-$(VERSION)/jni/win-ffi.h
 	cp doc/Android.html newlisp-ndk-utf8-$(VERSION)
 	cp util/Android-utf8.mk newlisp-ndk-utf8-$(VERSION)/jni/Android.mk
 	cp util/Application.mk newlisp-ndk-utf8-$(VERSION)/jni
@@ -280,7 +284,7 @@ android_dist:
 	-mkdir newlisp-ndk-$(VERSION)/obj/local
 	-mkdir newlisp-ndk-$(VERSION)/obj/local/armeabi
 	cp nl*.c newlisp.c *.h pcre*.c newlisp-ndk-$(VERSION)/jni
-	rm newlisp-ndk-$(VERSION)/jni/win32-ffi.h
+	rm newlisp-ndk-$(VERSION)/jni/win-ffi.h
 	rm newlisp-ndk-$(VERSION)/jni/nl-utf8.c 
 	cp doc/Android.html newlisp-ndk-$(VERSION)
 	cp util/Android.mk newlisp-ndk-$(VERSION)/jni

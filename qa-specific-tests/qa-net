@@ -26,6 +26,11 @@
 ; 
 ;
 
+(delete-file "qa-junk.txt")
+(when (file? "qa-junk.txt")
+	(println ">>>>> Please remove file qa-junk.txt manually")
+	(exit))
+
 (println)
 (println "Testing network API and server mode IPv4")
 
@@ -164,4 +169,8 @@
 	(println ">>>>> PROBLEM in network eval and network file IPv4 functions")
 )
 (println)
+(delete-file "qa-junk.txt")
+(when (file? "qa-junk.txt")
+	(println ">>>>> Please remove file qa-junk.txt manually"))
+
 (exit)

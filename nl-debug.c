@@ -21,7 +21,7 @@
 #include "newlisp.h"
 #include "protos.h"
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #define fgets win32_fgets
 #endif
 
@@ -107,21 +107,25 @@ char * pre, * post, * header, * footer;
 params = getString(params, &pre);
 params = getString(params, &post);
 
-strncpy(preStr, pre, 7);
-strncpy(postStr, post, 7);
+strncpy(preStr, pre, 8);
+strncpy(postStr, post, 8);
+*(preStr + 7) = 0;
+*(postStr + 7) = 0;
 
 if(params != nilCell)
     {
     params = getString(params, &header);
-    strncpy(headerStr, header, 15);
+    strncpy(headerStr, header, 16);
     }
 
 if(params != nilCell)
     {
     getString(params, &footer);
-    strncpy(footerStr, footer, 31);
+    strncpy(footerStr, footer, 32);
     }
 
+*(headerStr + 15) = 0;
+*(footerStr + 31) = 0;
 
 return(trueCell);
 }
@@ -341,7 +345,7 @@ if(start == -1 || length == 0)
 varPrintf(OUT_CONSOLE, headerStr);
 
 expStr = allocMemory(length + 1);
-strncpy(expStr, funcStr + start, length);
+strncpy(expStr, funcStr + start, length + 1);
 *(expStr + length) = 0;
 *(funcStr + start) = 0;
 

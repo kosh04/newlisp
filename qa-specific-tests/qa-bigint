@@ -1,0 +1,69 @@
+; test big integer operators
+
+(unless bigint
+    (println "big integers not enabled in this version")
+    (exit))
+
+(seed 5291991)
+
+(if (> (length (main-args)) 2)
+    (set 'N (int (main-args -1)))
+    (set 'N 100000))
+
+(dotimes (i N)
+    (set 'f (pow (random 10 100) (+ 15 (rand 50))))
+    (set 'f1 (float (bigint f)))
+    (print i "      \r")
+    (unless (< (abs (sub (abs (div f f1)) 1)) 0.000000000000001)
+       (println f "   " f1 " " (abs (sub (abs (div f f1)) 1)))
+       (println ">>>>> ERROR in big integer/float conversion")
+       (exit))
+)
+
+(define (get-bignum n , num)
+    (set 'num (amb "-" ""))
+    (if (zero? n) (++ n))
+    (dotimes (i n)
+        (extend num (string (+ (rand 1000) 1))))
+    (extend num "L")
+    (bigint num))
+        
+(dotimes (i N)
+    (setq x (get-bignum (rand 30)))
+    (setq y (get-bignum (rand 30)))
+    (print i "      \r")
+    
+    (setq x+y (+ x y))
+    (setq x-y (- x y))
+
+    (setq x*y (* x y))
+    (setq x/y (/ x y))
+
+    (unless (and (= (- x+y y) x) (= (- x+y x) y) (= (+ x-y y) x) ) 
+            (println ">>>>> ERROR in +, - with " x " " y)
+            (exit))
+
+    (unless (and (= (/ x*y x) y) (= (/ x*y y) x)) 
+        (println ">>>>> ERROR in * / with:\n" x "\n" y "\nat: " i)
+        (println "x*y / x ->" (/ x*y x) )
+        (println "x*y / y ->" (/ x*y y) )
+        (exit))
+
+    (unless (= (% x y) (- x (* x/y y)))
+            (println ">>>>> ERROR in %, * , / operation with " x " " y)
+            (exit))
+
+    (when (> (abs x/y) 0)
+        ;(println x " " y " remainder " (- (abs x) (* (abs x/y) (abs y))))
+        (unless (< (- (abs x) (* (abs x/y) (abs y))) (abs y))
+            (println ">>>>> ERROR in abs, -, *, - with " x " " y)
+            (exit))
+    )
+
+)
+
+(println ">>>>> abs, float, bigint, +, -, *, /, % big integers tested SUCCESSFUL")
+
+(exit)
+
+;; eof    

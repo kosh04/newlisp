@@ -245,9 +245,11 @@ PRIMITIVE primitive[] =
 	{"parse",		p_parse,	0},
 	{"pack",		p_pack, 	0},
 	{"unpack",		p_unpack, 	0},
+#ifdef XML_SUPPORT
 	{"xml-parse",	p_XMLparse, 	0},
 	{"xml-error",	p_XMLerror,	0},
 	{"xml-type-tags",   p_XMLtypeTags,  0},
+#endif
     {"json-parse",  p_JSONparse, 0},
     {"json-error",  p_JSONerror, 0},
 	{"base64-enc",		p_base64Enc,	0},
@@ -299,7 +301,7 @@ PRIMITIVE primitive[] =
 	{"wait-pid",	p_waitpid,	0},
 #endif
 #ifndef OS2
-#ifndef WIN_32
+#ifndef WINDOWS
 #ifndef LIBRARY
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
@@ -316,7 +318,7 @@ PRIMITIVE primitive[] =
 	{"semaphore",	p_semaphore,0},
 #endif
 	{"seek",		p_seek,		0},
-#ifndef WIN_32
+#ifndef WINDOWS
 	{"peek",		p_peek,		0},
 #endif
 	
@@ -381,6 +383,10 @@ PRIMITIVE primitive[] =
 	{"NaN?",		p_isnan,	0},
 	{"inf?",		p_isinf,	0},
 	{"integer?",	p_isInteger,	0},
+#ifdef BIGINT
+	{"bigint?",	p_isBigInteger,	0},
+	{"bigint",	    p_bigInt,	0},
+#endif
 	{"float?",		p_isFloat,	0},
 	{"number?",		p_isNumber,	0},
 	{"string?",		p_isString,	0},
@@ -409,7 +415,7 @@ PRIMITIVE primitive[] =
 	{"time",		p_time,	        0},
 	{"time-of-day",	p_timeOfDay,    0},
 	{"now",			p_now,			0},
-#ifndef WIN_32
+#ifndef WINDOWS
 	{"date-parse",	p_dateParse,	0},
 	{"parse-date",	p_dateParse,	0},
 #endif

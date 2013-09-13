@@ -27,7 +27,6 @@ extern int bigEndian;
 char preLoad[3];
 CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern char linkOffset[];
-extern void loadStartup(char *name);
 extern LPSTR getLibname(void);
 extern int evalSilent;
 extern int opsys;
@@ -41,7 +40,7 @@ char libName[MAX_LINE] = "newlisp.dll";
 
 void initializeMain(void)
 {
-char name[MAX_LINE + 1];
+char name[MAX_LINE];
 char * initFile;
 
 WSAStartup(MAKEWORD(2,2), &WSAData);
@@ -69,10 +68,11 @@ initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)
 	{
 	strncpy(name, initFile, MAX_LINE);
+    name[MAX_LINE - 1] = 0;
 	loadFile(name, 0, 0, mainContext);
 	}
 
-if(strncmp(linkOffset, "@@@@@@@@", 8)) /* contains linked source */
+if(strncmp(linkOffset + 4, "@@@@", 4)) /* contains linked source */
 	{
 	GetModuleFileName(GetModuleHandle(libName), name, MAX_LINE);
 	loadFile(name, *(UINT*)linkOffset, 1, mainContext);

@@ -16,6 +16,7 @@
 ## version 1.20 added new 'struct'
 ## version 1.21 added new 'union', 'even?', 'odd?'. 'crit-f', 'crit-t', 'prob-f', 'prob-t'
 ## version 1.22 added new 'json-error', 'json-parse'
+## version 1.23 added new 'bigint', 'bigint?'
 
 # make sure that lines are not broken when copying/pasting this, maximize browser window
 
@@ -39,7 +40,7 @@ syntax "lisp" "\.lsp$"
 color blue "([[:space:]()]|^)(\!|\!=|\$|%|&|\*|\+|\+\+|-|--|/|:|<|<<|<=|=|>|>=|>>|@|NaN\?|^|abort|abs|acos|acosh)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(add|address|amb|and|append|append-file|apply|args|array|array-list|array\?)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(asin|asinh|assoc|atan|atan2|atanh|atom\?|base64-dec|base64-enc|bayes-query)([[:space:]()]|$)"
-color blue "([[:space:]()]|^)(bayes-train|begin|beta|betai|bind|binomial|bits|callback|case|catch)([[:space:]()]|$)"
+color blue "([[:space:]()]|^)(bayes-train|begin|beta|betai|bigint|bigint\?|bind|binomial|bits|callback|case|catch)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(ceil|change-dir|char|chop|clean|close|command-event|cond|cons|constant|context)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(context\?|copy|copy-file|corr|cos|cosh|count|cpymem|crc32|crit-chi2|crit-f|crit-t|crit-z|current-line)([[:space:]()]|$)"
 color blue "([[:space:]()]|^)(curry|date|date-parse|date-list|date-value|debug|dec|def-new|default|define|define-macro)([[:space:]()]|$)"

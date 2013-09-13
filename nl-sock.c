@@ -21,7 +21,7 @@
 #include "newlisp.h"
 #include <string.h>
 
-#ifdef WIN_32
+#ifdef WINDOWS
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -111,7 +111,7 @@ struct icmp
 #define MAX_PENDING_CONNECTS 128
 #define NO_FLAGS_SET 0
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #define close closesocket
 #else
 #define SOCKET_ERROR -1
@@ -289,7 +289,7 @@ return(NULL);
 
 /* ========================= IO session functions end ===================== */
 
-#ifdef WIN_32
+#ifdef WINDOWS
 int ipstrFromSockAddr(struct sockaddr * addr, char * host, int len)
 {
 WSAAddressToString(addr, defaultInLen, NULL, host, (LPDWORD)&len);
@@ -309,7 +309,7 @@ return(TRUE);
 }
 #endif
 
-/* ANDROID and WIN_32 need this */
+/* ANDROID and WINDOWS need this */
 #ifndef in_port_t
 #define in_port_t short int
 #endif
@@ -416,7 +416,7 @@ int sock;
 int type; 
 
 params = getString(params, &remoteHostName); 
-#ifndef WIN_32
+#ifndef WINDOWS
 if(params == nilCell)
     {
     if((sock = netConnectLocal(remoteHostName)) == SOCKET_ERROR)
@@ -463,7 +463,7 @@ return(stuffInteger((UINT)sock));
 }
 
 
-#ifndef WIN_32
+#ifndef WINDOWS
 /* create local domain UNIX socket */
 int netConnectLocal(char * path)
 {
@@ -496,8 +496,8 @@ return(sock);
 
 int blockSocket(int sock)
 {
-#ifdef WIN_32
-unsigned long arg = 0;
+#ifdef WINDOWS
+u_long arg = 0;
 return(ioctlsocket(sock, FIONBIO, &arg));
 #else /* UNIX */
 int arg;
@@ -510,8 +510,8 @@ return(fcntl(sock, F_SETFL, arg));
 #ifdef UNBLOCK
 int unblockSocket(int sock)
 {
-#ifdef WIN_32
-unsigned long arg = 1;
+#ifdef WINDOWS
+u_long arg = 1;
 return(ioctlsocket(sock, FIONBIO, &arg));
 #else /* Unix */
 int arg;
@@ -530,8 +530,8 @@ int netConnect(char * remoteHostName, int portNo, int type, char * prot, int top
 struct addrinfo hints, *res, *res0;
 char portStr[10];
 int sock, opt;
-#ifdef WIN_32
-unsigned long arg = 1;
+#ifdef WINDOWS
+u_long arg = 1;
 #else
 int arg, value;
 socklen_t socklen = sizeof(sock);
@@ -548,7 +548,7 @@ if((sock = socket(ADDR_FAMILY, type, 0)) == INVALID_SOCKET)
 
 if(prot == NULL) /* topt is timeout in millisecs */
     {
-#ifdef WIN_32
+#ifdef WINDOWS
     if(ioctlsocket(sock, FIONBIO, &arg) != 0)
         {
         netErrorIdx = ERR_INET_CANNOT_CHANGE_SOCK_BLOCK;
@@ -600,7 +600,7 @@ for(res = res0; res; res = res->ai_next)
     result = connect(sock, res->ai_addr, res->ai_addrlen);
     if(result < 0)
         {
-#ifdef WIN_32
+#ifdef WINDOWS
         if(WSAGetLastError() == WSAEWOULDBLOCK)
 #else
         if(errno == EINPROGRESS) 
@@ -611,7 +611,7 @@ for(res = res0; res; res = res->ai_next)
                 netErrorIdx = result < 0 ? ERR_INET_CONNECT_FAILED : ERR_INET_TIMEOUT;
                 goto CONNECT_FAILED;
                 }
-#ifndef WIN_32 
+#ifndef WINDOWS 
             getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)&value, &socklen); 
             if (value) 
                 { 
@@ -751,13 +751,13 @@ int netAccept(int listenSock)
 int sock, family;
 struct sockaddr * dest_sin;
 socklen_t dest_slen;
-#ifndef WIN_32
+#ifndef WINDOWS
 struct sockaddr_un dest_sun;
 #endif
 
 family = getSocketFamily(listenSock);
 
-#ifndef WIN_32
+#ifndef WINDOWS
 if(family == AF_UNIX)
     {
     dest_slen = sizeof(struct sockaddr_un);
@@ -1052,7 +1052,7 @@ params = getInteger(params, &portNo);
 params = getInteger(params, (UINT *)&readSize);
 if(params != nilCell)
     {
-    params = getInteger64(params, &wait);
+    params = getInteger64Ext(params, &wait, TRUE);
     if(params != nilCell)
         getString(params, &ifaddr);
     }
@@ -1207,7 +1207,7 @@ type = SOCK_STREAM;
 cell = evaluateExpression(params);
 params = params->next;
 
-#ifndef WIN_32
+#ifndef WINDOWS
 if(cell->type == CELL_STRING)
     {
     if((sock = netListenLocal((char *)cell->contents)) == SOCKET_ERROR)
@@ -1229,7 +1229,7 @@ if(params != nilCell)
         *option = toupper(*option);
         if(*option == 'U')
             type = SOCK_DGRAM;
-#ifndef WIN_32
+#ifndef WINDOWS
         else if(*option == 'D')
             {
             type = SOCK_RAW;
@@ -1253,7 +1253,7 @@ if((sock = netListenOrDatagram((int)portNo, type, ifAddr, mcAddr, sockopt))
 return(stuffInteger(sock));
 } 
 
-#ifndef WIN_32
+#ifndef WINDOWS
 int netListenLocal(char * name)
 {
 int sock;
@@ -1357,8 +1357,8 @@ return(sock);
 CELL * p_netPeek(CELL * params)
 {
 UINT sock;
-#ifdef WIN_32
-unsigned long result;
+#ifdef WINDOWS
+u_long result;
 #else
 int result;
 #endif
@@ -1418,7 +1418,7 @@ else if(isList(cell->type))
 else return(errorProcExt(ERR_LIST_OR_NUMBER_EXPECTED, params));
 
 params = getString(params->next, &mode);
-getInteger64(params, &wait);
+getInteger64Ext(params, &wait, TRUE);
 
 tmvPtr = (wait == -1) ? NULL : &timeOut;
 timeOut.tv_sec = wait/1000000;
@@ -1475,7 +1475,7 @@ void writeLog(char * text, int newLine)
 int handle;
 
 
-#ifdef WIN_32
+#ifdef WINDOWS
 handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 #else
 handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
@@ -1500,7 +1500,7 @@ text[79] = 0;
 
 if(!reconnect)
     {
-#ifndef WIN_32
+#ifndef WINDOWS
     if(port != 0)
         sock = netListenOrDatagram(port, SOCK_STREAM, NULL, NULL, 0);
     else
@@ -1571,7 +1571,7 @@ int ready;
 int sock;
 size_t size, count = 0;
 ssize_t bytes;
-long timeOut = 60000; /* milli secs */
+INT timeOut = 60000; /* milli secs */
 int start, elapsed = 0;
 CELL * result;
 STREAM * netStream;
@@ -1637,7 +1637,7 @@ else
     }
 
 
-#ifndef WIN_32
+#ifndef WINDOWS
 if(port != 0)
     sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
 else
@@ -2274,7 +2274,7 @@ struct pseudohdr
     };
 
 
-#ifndef WIN_32
+#ifndef WINDOWS
 unsigned short pseudo_chks( struct ip * iph, char * packet, char * header, int data_offset);
 /* (net-packet str-packeA [int-config-flags]) */
 
@@ -2404,7 +2404,7 @@ return(checksum);
 
 /* ------------------ socket->filestream stuff for win32 ------------------------*/
 
-#ifdef WIN_32
+#ifdef WINDOWS
 extern int IOchannelIsSocketStream;
 
 /*

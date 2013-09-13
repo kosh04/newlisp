@@ -80,7 +80,7 @@ static Color numberColor = new Color(192,128, 0);
 static Color parenColor = new Color(192, 0, 0);
 static Color quotedColor = new Color(96, 96, 192);
 
-static String numberPattern = "^-?\\d+$|^-?\\d+\\.\\d+$|^0x[0-9a-fA-F]+$";
+static String numberPattern = "^-?\\d+$|^-?\\d+\\.\\d+$|^0x[0-9a-fA-F]+$|^0b[01]+$";
 static Pattern compiledPattern;
 
 static StyledDocument doc;

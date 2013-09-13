@@ -36,7 +36,8 @@
 # 2 April 2012, L.M. added union, even?, odd?, crit-f, crit-t, prob-f, prob-t
 # 26 April 2012, L.M. added corr, stats, t-test
 # 20 January 2013, L.M. added json-parse, json-error
-# version 1.16
+# 20 May 2013, L.M. added bigint, bigint? 
+# version 1.17
 
 =Idle		
 =Comment 	bold green
@@ -137,6 +138,8 @@
 "begin"	prim
 "beta"	prim
 "betai"	prim
+"bigint"	prim
+"bigint?"	prim
 "bind"	prim
 "binomial"	prim
 "bits"	prim

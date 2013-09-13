@@ -1,0 +1,107 @@
+#!/usr/bin/newlisp
+
+; Fibonacci series
+
+(define (fibo n) 
+    (let (x 0L y 1L) ; 1 2 3 5 8 13 21
+        (for (_ 0 n) (++ x (swap y x))) ) 
+)
+
+; Collect all prime numbers up to N
+; using sieve algorithm
+
+(define (primes N)
+    (let (p (array N (sequence 0 N)))  
+        (for (i 2 (- N 1))
+            (when (p i) (let (j i)
+                (while (< (* i j) N)
+                    (setf (p (* i j)) nil)
+                    (++ j)))))
+        ; take all but 0 and 1
+        (2 (filter true? (array-list p)))
+    )
+)
+
+
+; Factorization into primes for big integers
+; for integers up to 64-bit use the built-in
+; factor function.
+
+(define (big-factor n , d k fact-list)
+    (set 'n (bigint n)) 
+    (set 'd 2L 'k 0)
+    (while (zero? (% n d))
+        (set 'n (/ n d))
+        (++ k) )
+    (dotimes (i k) (push d fact-list -1))
+    (set 'd 3L 'k 0)
+    (while (<= (* d d) n)
+        (while (zero? (% n d))
+            (set 'n (/ n d))
+            (++ k) )
+        (dotimes (i k) (push d fact-list -1))
+        (set 'k 0)
+        (++ d 2L))
+    (when (> n 1) (push n fact-list -1))
+    fact-list
+)
+
+
+; Use precollected primes wne factoring.
+; Speed gains vary greatly from a few percent
+; to 10 times as fast. The higher the prime factors
+; the less is the speed advantage.
+
+; Collect all primes up to a million
+
+(define (collect-primes)
+    (println "collecting all primes up to a million ...")
+    (set 'mprimes (map bigint (primes 1000000)))
+    (set 'mprimes (array (length mprimes) mprimes))
+    (println (length mprimes) " primes found")
+)
+
+; Primes are only collected once for the first
+; invocation of the function.
+
+(define (bfactor n , d k i np fact-list)
+    (set 'n (bigint n)) 
+    (unless mprimes (collect-primes))
+    (set 'd 2L 'k 0)
+    (while (zero? (% n d))
+        (set 'n (/ n d))
+        (++ k) )
+    (dotimes (i k) (push d fact-list -1))
+    (set 'd (mprimes 1) 'k 0 'i 0 'np (- (length mprimes) 1))
+    (while (<= (* d d) n)
+        (while (zero? (% n d))
+            (set 'n (/ n d))
+            (++ k) )
+        (dotimes (i k) (push d fact-list -1))
+        (set 'k 0)
+	(if (< i np)
+            (set 'd (mprimes (++ i))) 	
+            (++ d 2L))
+    )
+    (when (> n 1) (push n fact-list -1))
+    fact-list
+)
+
+
+; Calculate fibonacci numbers from 1 to N and factorize them.
+
+(set 'N (int (main-args -1) 100))
+(for (i 1 N)
+    (set 'f (fibo i))
+    (set 'duration (time (set 'facts (bfactor f))))
+    (println "fibo " i " " f " -> " (if (= 1 (length facts)) "PRIME" facts) " " duration "ms") 
+    (unless (= f (apply * facts 2))
+        (println ">>>>> ERROR factoring fibo " i " " f " -> " facts)
+        (exit))	
+    (inc total-duration duration)
+)
+
+(println "Total duration: " (div total-duration 1000) " seconds")
+
+(exit)
+;; eof

@@ -20,27 +20,11 @@
 #ifndef NEWLISP_H
 #define NEWLISP_H
 
-/* include -DFFI in your makefile on the compile line 
-   and -lffi on the link line */
-#ifdef FFI
+/* Take out bigger less used code portions.  By default these capabilities 
+   are enabled on all shipped binaries. Out-comment definitions to suppress. */
+#define XML_SUPPORT
+#define BIGINT 
 
-#if defined(MAC_OSX)
-#include <ffi/ffi.h>
-#endif
-
-#if defined(WIN_32) || defined(CYGWN) 
-#include "win32-ffi.h" 
-#endif
-
-#ifdef LINUX /* makefiles specify include directory */
-#  include <ffi.h>
-#endif
-
-#define LIBFFI " libffi"
-#else /* not FFI */
-#define LIBFFI ""
-
-#endif /* FFI */
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */
 #ifdef NEWCONFIG
@@ -84,7 +68,14 @@
 #endif 
 
 #ifdef WIN_32
+#define WINDOWS
 #define OSTYPE "Win32"
+#endif
+
+#ifdef WIN_64 /* has never been tried, just preparation */
+#define WINDOWS
+#define OSTYPE "Win64"
+#define NEWLISP64
 #endif
 
 #ifdef CYGWIN
@@ -94,6 +85,28 @@
 #ifdef OS2 
 #define OSTYPE "OS/2" 
 #endif 
+
+/* include -DFFI in your makefile on the compile line 
+   and -lffi on the link line */
+#ifdef FFI
+
+#if defined(MAC_OSX)
+#include <ffi/ffi.h>
+#endif
+
+#if defined(WINDOWS) || defined(CYGWN) 
+#include "win-ffi.h" 
+#endif
+
+#ifdef LINUX /* makefiles specify include directory */
+#  include <ffi.h>
+#endif
+
+#define LIBFFI " libffi"
+#else /* not FFI */
+#define LIBFFI ""
+
+#endif /* FFI */
 
 #ifdef TRU64
 #define strtoll strtol
@@ -136,7 +149,7 @@ This is for 64bit large file support (LFS),
 #include <wchar.h>
 #define WCSFTIME
 #endif
-#ifdef WIN_32
+#ifdef WINDOWS
 #include <wchar.h>
 #endif
 #ifdef CYGWIN
@@ -145,7 +158,7 @@ This is for 64bit large file support (LFS),
 #endif
 #endif
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501 
 #endif
@@ -169,7 +182,7 @@ This is for 64bit large file support (LFS),
 #include <sys/timeb.h>
 #include <sys/types.h>
 
-#if defined(LINUX) || defined(WIN_32) || defined(OS2)
+#if defined(LINUX) || defined(WINDOWS) || defined(OS2)
 #include <malloc.h>
 #endif
 
@@ -193,7 +206,7 @@ This is for 64bit large file support (LFS),
 #define MY_SETENV 
 #endif
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #define LITTLE_ENDIAN
 #define MY_VASPRINTF
 #define MY_SETENV
@@ -220,7 +233,7 @@ This is for 64bit large file support (LFS),
 
 #define realpath win32_realpath
 
-/* WIN_32 UTF16 support for file paths */
+/* WINDOWS UTF16 support for file paths */
 #ifdef SUPPORT_UTF8 
 #define USE_WIN_UTF16PATH
 #define rename rename_utf16
@@ -238,9 +251,9 @@ This is for 64bit large file support (LFS),
 #define closedir _wclosedir
 #endif /* SUPPORT_UTF8 */
 
-#endif /* WIN_32 */
+#endif /* WINDOWS */
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #define LINE_FEED "\n"
 #define LINE_FEED_LEN 1
 #define NET_PING
@@ -255,7 +268,14 @@ This is for 64bit large file support (LFS),
 
 #define UTF8_MAX_BYTES 6
 
+/* autosize on 32-bit ILP32 and 64-bit on LP64 and LLP64 */
+#ifndef WIN_64 /* UNIX 32 or 64 or WIN_32 */
+#define INT long
 #define UINT unsigned long 
+#else          /* WIN_64 LLP64 */
+#define INT long long
+#define UINT unsigned long long
+#endif
 
 #define INT16 short int
 #ifndef NEWLISP64
@@ -294,15 +314,19 @@ This is for 64bit large file support (LFS),
 #define TRUE 1
 #define FALSE 0
   
-#define MAX_STRING 2048
-#define MAX_LINE 256
-#define MAX_COMMAND_LINE 512 
-#define MAX_SYMBOL 256
-#define MAX_BIN_NO 66
+#define MAX_STRING 2048 /* buffer length */
+#define MAX_LINE 256 /* buffer length */
+/* following limits are only for parsing */
+#define MAX_COMMAND_LINE 1024 /* buffer length */
+#define MAX_SYMBOL 255 /* strlen() */
+#define MAX_HEX_NO 68 /* 16 + 0x */
+#define MAX_BIN_NO 66 /* 64 + 0B */
+#define MAX_DECIMALS 32 /* numbers with decimal point */
+#define MAX_DIGITS 1001 /* 1000 + sign, limitation only for parsing source */
 
 #define MAX_FILE_BUFFER 0x40000
 #define MAX_BLOCK 4095
-#define MAX_URL_LEN 256
+#define MAX_URL_LEN 255 /* strlen() */
 
 #define MAX_REGEX_EXP 16 
 
@@ -340,8 +364,9 @@ This is for 64bit large file support (LFS),
 #define NUMBER_TYPE_MASK 0x0080
 #define EVAL_SELF_TYPE_MASK 0x0100
 #define INT64_MASK 0x0200
-#define CALL_CDECL_MASK 0x0400
-#define CALL_DLL_MASK 0x0800
+#define BIGINT_MASK 0x0400
+#define CALL_CDECL_MASK 0x1000
+#define CALL_DLL_MASK 0x2000
 
 /* only used for type ids used in shared memory
    to indicate translation from string */
@@ -352,7 +377,14 @@ This is for 64bit large file support (LFS),
 #define CELL_TRUE (1 | EVAL_SELF_TYPE_MASK)
 #define CELL_INT 2 /* any INT */
 #define CELL_LONG (2 | EVAL_SELF_TYPE_MASK | NUMBER_TYPE_MASK)
+#ifndef NEWLISP64
 #define CELL_INT64 (2 | EVAL_SELF_TYPE_MASK | NUMBER_TYPE_MASK | INT64_MASK)
+#endif
+
+#ifdef BIGINT
+#define CELL_BIGINT (2 | EVAL_SELF_TYPE_MASK | NUMBER_TYPE_MASK | BIGINT_MASK)
+#endif
+
 #define CELL_FLOAT (3 | EVAL_SELF_TYPE_MASK | NUMBER_TYPE_MASK)
 #define CELL_STRING (4 | EVAL_SELF_TYPE_MASK)
 #define CELL_SYMBOL (5 | SYMBOL_TYPE_MASK)
@@ -380,6 +412,7 @@ This is for 64bit large file support (LFS),
 #define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
 #define isFFI(A) ((A) & SYMBOL_FFI)
+
 #define isDigit(A) isdigit((int)(A))
 #define isHexDigit(A) isxdigit((int)(A))
 
@@ -487,15 +520,12 @@ This is for 64bit large file support (LFS),
 #define ERR_CANNOT_OPEN_SOCKETPAIR 68
 #define ERR_CANNOT_FORK_PROCESS 69
 #define ERR_NO_SOCKET 70
-#define ERR_INVALID_JSON 71
-#ifdef FFI
-#define ERR_FFI_PREP_FAILED 72
-#define ERR_FFI_INVALID_TYPE 73
-#define ERR_FFI_STRUCT_EXPECTED 74
-#define MAX_ERROR_NUMBER 74
-#else
-#define MAX_ERROR_NUMBER 71
-#endif
+#define ERR_FFI_PREP_FAILED 71
+#define ERR_FFI_INVALID_TYPE 72
+#define ERR_FFI_STRUCT_EXPECTED 73
+#define ERR_BIGINT_NOT_ALLOWED 74
+#define ERR_CANNOT_CONVERT 75
+#define MAX_ERROR_NUMBER 75
 #define UNKNOWN_ERROR "Unknown error"
 
 /* network error handling */
@@ -631,7 +661,7 @@ typedef struct
 extern char startupDir[];
 extern FILE * IOchannel;
 extern int ADDR_FAMILY;
-#ifdef WIN_32
+#ifdef WINDOWS
 extern int IOchannelIsSocket;
 #endif
 extern int MAX_CPU_STACK;

@@ -83,7 +83,9 @@ typedef struct {
 
 int main(int argc, char * argv[])
 {
-int x = 1;
+int endian = 1;
+long x, y, z;
+
 alignment1 checkstruct1;
 alignment2 checkstruct2;
 alignment3 checkstruct3;
@@ -144,7 +146,7 @@ printf("%%lu   0x8000000000000000LL %lu\n", 0x8000000000000000LL);
 
 printf("\n");
 
-if(*(char *)&x == 1)
+if(*(char *)&endian == 1)
 	printf("CPU is little endian\n");
 else
 	printf("CPU is big endian\n");
@@ -163,6 +165,17 @@ printf("size of struct {char, short int, int} is: %ld\n", sizeof(checkstruct1));
 printf("size of struct {char, int, short int} is: %ld\n", sizeof(checkstruct2));
 printf("size of struct {char, short int, long, int} is: %ld\n", sizeof(checkstruct3));
 printf("size of struct {char, long, short int, int} is: %ld\n", sizeof(checkstruct4));
+
+x = 9223372036854775807L;
+y = 1000L;
+z = x * y;
+printf("\n9223372036854775807 * 1000 = %ld\n", z);
+
+x = 11;
+y = -4;
+z = x % y;
+
+printf("11 %% -4 = %ld\n", z);
 
 exit(0);
 }

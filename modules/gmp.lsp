@@ -9,8 +9,17 @@
 ;; @version 2.0 more fixes for 64-bit, allocated space for handles was to small
 ;; @version 2.1 changed deprecated <tt>name</tt> to <tt>term</tt>
 ;; @version 2.2 out-comment 64-bit lib on Mac OSX, newLISP is shipped as 32-bit
+;; @version 2.2 document built-in big integer arithmetik in newLISP
 ;; @author Lutz Mueller, 2007-2011
 ;; <h3>The GNU MP Bignum Library</h3>
+;;
+;; Since version 10.4.8, newLISP has built-in support for unlimited precision big-integer
+;; arithmetik supporting the integer operators 
+;; <tt>= ,- , *, /, %, ++, --, &lt;, &lt;= , &gt;, &gt;=, !=</tt>
+;; and the functions <tt>abs</tt>, <tt>even?</tt>, <tt>odd</tt>, <tt>sgn</tt>  and <tt>zero?</tt>. 
+;; As this module has some functions not available built into newLISP, it is still packaged with
+;; the distribution.
+;;
 ;; This modules interfaces to libgmp which can be obtained from @link http://gmplib.org/ http://gmplib.org/ .
 ;;
 ;; Source code for libgmp.so (UNIX) or lbgmp.dll (Win32) or libgmp.dylib (Mac OS X) 
@@ -141,6 +150,7 @@
     "/usr/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.3.dylib" ;Mac OSX
     "/opt/local/lib/libgmp.dylib" ;Mac OSX
+    "/usr/local/lib/libgmp.dylib" ;Mac OSX
     "/usr/local/lib/libgmp.so.8.0" ; OpenBSD 4.6
     "/usr/lib/libgmp.so.3" ; Linux, BSDs
     "/usr/local/lib/libgmp.so" ; Linux, BSDs
@@ -252,7 +262,8 @@
   (if (or (not (string? p1)) (not (string? p2))) (throw-error gmp-type-error))
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
-  (__gmpz_mul rop op1 op2)
+  (dotimes (i 1000000)
+    (__gmpz_mul rop op1 op2))
   (if (MAIN:> (__gmpz_sizeinbase rop 10) MAX_PRECISION)
   	(throw-error gmp-size-error))
   (get-string (__gmpz_get_str rops 10 rop))
@@ -265,7 +276,8 @@
   (__gmpz_set_str op1 p1 0)
   (__gmpz_set_str op2 p2 0)
   (if (MAIN:= (__gmpz_cmp_si op2 0) 0) (throw-error gmp-divzero-error))
-  (__gmpz_tdiv_q rop op1 op2)
+  (dotimes (i 1000000)
+  (__gmpz_tdiv_q rop op1 op2))
   (get-string (__gmpz_get_str rops 10 rop))
 )
 

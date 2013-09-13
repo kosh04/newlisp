@@ -21,7 +21,7 @@
 #include "newlisp.h"
 #include "protos.h"
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #include <dlfcn.h>
 #endif
 
@@ -40,11 +40,11 @@ void ffi_trampoline(ffi_cif *cif, void *ret, void **args, void *symbol);
 #endif
 
 
-#if defined(WIN_32) || defined(CYGWIN)
+#if defined(WINDOWS) || defined(CYGWIN)
 UINT stdcallFunction(UINT fAddress, UINT * args, int count);
 #endif
 
-#ifdef WIN_32
+#ifdef WINDOWS
 
 CELL * p_importLib(CELL * params)
 {
@@ -235,7 +235,7 @@ while(params->type != CELL_NIL && count < 14)
     params = (CELL *)params->next;
     }
 
-#if defined(WIN_32) || defined(CYGWIN)
+#if defined(WINDOWS) || defined(CYGWIN)
 if(pCell->type == CELL_IMPORT_DLL)
     return(stuffInteger(stdcallFunction(pCell->contents, args, count)));
 else
@@ -317,7 +317,7 @@ return(0);
 }
 
 
-#if defined(WIN_32) || defined(CYGWIN)
+#if defined(WINDOWS) || defined(CYGWIN)
 UINT stdcallFunction(UINT fAddress, UINT * args, int count)
 {
 UINT _stdcall (*function)();
@@ -407,39 +407,39 @@ return(stuffInteger(number));
 
 /* 16 callback functions for up to 8 parameters */
 
-long template(long n, long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8);
+INT template(INT n, INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8);
 
-long callback0(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback0(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(0, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback1(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback1(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(1, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback2(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback2(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(2, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback3(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback3(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(3, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback4(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback4(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(4, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback5(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback5(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(5, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback6(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback6(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(6, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback7(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback7(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(7, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback8(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback8(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(8, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback9(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback9(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(9, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback10(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback10(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(10, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback11(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback11(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(11, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback12(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback12(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(12, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback13(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback13(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(13, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback14(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback14(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(14, p1, p2, p3, p4, p5, p6, p7, p8);}
-long callback15(long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT callback15(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(15, p1, p2, p3, p4, p5, p6, p7, p8);}
 
 typedef struct {
@@ -467,11 +467,11 @@ LIBCALLBACK callback[] = {
 };
 
 
-long template(long n, long p1, long p2, long p3, long p4, long p5, long p6, long p7, long p8) 
+INT template(INT n, INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
 {
 CELL * args;
 CELL * cell;
-long result;
+INT result;
 jmp_buf errorJumpSave;
 
 memcpy(errorJumpSave, errorJump, sizeof(errorJump));
@@ -491,7 +491,7 @@ if(cell->type == CELL_INT64)
     result = *(INT64 *)&cell->aux;
 else 
 #endif
-    result = (long)cell->contents;
+    result = (INT)cell->contents;
 
 args->contents = (UINT)nilCell;
 
@@ -516,7 +516,7 @@ SYMBOL * symbol;
 CELL * ffiCell;
 FFIMPORT *ffi;
 char * cb_name;
-int result;
+int result, len;
 
 #ifdef MAC_OSX
 ffi_closure *closure;
@@ -531,9 +531,10 @@ else
 	goto CALLBACK_SIMPLE;
 
 #ifdef FFI
-cb_name = calloc(sizeof(char) * (strlen(sPtr->name)+6), 1);
-strcpy(cb_name, "$ffi-");
-strcat(cb_name, sPtr->name);
+len = strlen(sPtr->name);
+cb_name = calloc(sizeof(char) * (len + 6), 1);
+strncpy(cb_name, "$ffi-", 6);
+strncat(cb_name, sPtr->name, len);
 
 symbol = translateCreateSymbol(cb_name, CELL_NIL, mainContext, TRUE);
 if(isFFI(symbol->flags)) /* already defined */
@@ -1031,7 +1032,7 @@ CELL * executeLibFFI(CELL * pCell, CELL * params)
         else if(ffiType == &ffi_type_sint64 
                || ffiType == &ffi_type_uint64) /* int 64-bit unsiged 64-bit in newLISP */
             {
-            params = getInteger64(params, &value64);
+            params = getInteger64Ext(params, &value64, TRUE);
             avalues[c] = alloca(sizeof(INT64));
             *(INT64 *)avalues[c] = value64;
             }
@@ -1081,7 +1082,7 @@ CELL * ffiTypeToCell(ffi_type *type, void * result)
     else if(type == &ffi_type_charpointer)
         return stuffString(*(char **)result);
     else if(type == &ffi_type_pointer)
-        return stuffInteger(*((unsigned long *)result));
+        return stuffInteger(*((UINT  *)result));
     else if(type == &ffi_type_double)
         return stuffFloat((double *)result);
     else if(type == &ffi_type_float)
@@ -1100,17 +1101,9 @@ CELL * ffiTypeToCell(ffi_type *type, void * result)
     else if(type == &ffi_type_sint32)
         return stuffInteger(*((int *)result));
     else if(type == &ffi_type_uint32)
-#ifndef NEWLISP64
         return stuffInteger64(*((unsigned int *)result));
-#else
-        return stuffInteger(*((unsigned int *)result));
-#endif
     else if(type == &ffi_type_sint64 || type == &ffi_type_uint64)
-#ifndef NEWLISP64
         return stuffInteger64(*((INT64 *)result));
-#else
-        return stuffInteger(*((INT64 *)result));
-#endif 
 
     return nilCell;
     }
@@ -1154,7 +1147,7 @@ void ffi_trampoline(ffi_cif *cif, void *ret, void **args, void *data)
     /* int 64-bit in newLISP */
     else if(cif->rtype == &ffi_type_sint64 || cif->rtype == &ffi_type_uint64) 
         {
-        getInteger64(result, &value64);
+        getInteger64Ext(result, &value64, TRUE);
         *(INT64 *)ret = value64;
         }
     else if(cif->rtype == &ffi_type_void)

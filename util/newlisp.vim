@@ -10,6 +10,7 @@
 " Last change:  2012 April 19th, LM deprecated if-not and local
 " Last change:  2012 April 26th, added corr, stats, t-test
 " Last change:  2013 January 20th, added json-error, json-parse and sysvars $error-event $x
+" Last change:  2013 May 20th, added bigint and bigint?, un-deprecated local
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.362 2011/12/23 13:55:35 slobin Exp $
@@ -111,9 +112,9 @@ syn match newlispNoSeparatorError "\(\"\|\k\)\+" contained
 syn keyword newlispFunction ! != $ % & * + ++ - -- / < << <= = > >= >> NaN? ^ abort abs acos acosh
 syn keyword newlispFunction add address amb and append append-file apply args array array-list
 syn keyword newlispFunction array? asin asinh assoc atan atan2 atanh atom? base64-dec base64-enc
-syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback
-syn keyword newlispFunction case catch ceil change-dir char chop clean close command-event cond cons
-syn keyword newlispFunction constant context context? continue copy copy-file corr cos cosh count
+syn keyword newlispFunction bayes-query bayes-train begin beta betai bigint bigint? bind binomial bits 
+syn keyword newlispFunction callback case catch ceil change-dir char chop clean close command-event cond 
+syn keyword newlispFunction cons constant context context? continue copy copy-file corr cos cosh count
 syn keyword newlispFunction cpymem crc32 crit-chi2 crit-f crit-t crit-z current-line curry date 
 syn keyword newlispFunction date-list date-parse date-value debug dec def-new default define define-macro 
 syn keyword newlispFunction delete delete-file delete-url destroy det device difference directory
@@ -159,7 +160,7 @@ syn keyword newlispObsolete name
 syn keyword newlispObsolete error-number error-text
 
 " functions that still exist but are deprecated
-syn keyword newlispDeprecated integer parse-date if-not local
+syn keyword newlispDeprecated integer parse-date if-not 
 
 " functions that are not compiled in by default
 syn keyword newlispDebugging dump-symbol continue

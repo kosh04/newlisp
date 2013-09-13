@@ -37,6 +37,7 @@ CELL * p_deleteFile(CELL * params);
 CELL * dolist(CELL * params, int argsFlag);
 CELL * environment(void);
 CELL * errorProc(int errorNumber);
+CELL * errorProcArgs(int errorNumber, CELL * expr);
 CELL * errorProcExt(int errorNumber, CELL * expr);
 CELL * errorProcExt2(int errorNumber, CELL * expr);
 CELL * evalCheckSymbol(CELL * cell);
@@ -58,7 +59,7 @@ CELL * functionFloat(CELL * params, int operand);
 CELL * getCell(int type);
 CELL * getFloat(CELL * params, double * floatNumber);
 CELL * getInteger(CELL * params, UINT * number);
-CELL * getInteger64(CELL * params, INT64 * number);
+CELL * getInteger64Ext(CELL * params, INT64 * number, int evalFlag);
 CELL * getIntegerExt(CELL * params, UINT * number, int evalFlag);
 CELL * getListHead(CELL * params, CELL * * list);
 CELL * getEvalDefault(CELL * params, CELL * * result);
@@ -276,6 +277,7 @@ CELL * p_isEmpty(CELL * params);
 CELL * p_isFile(CELL * params);
 CELL * p_isFloat(CELL * params);
 CELL * p_isInteger(CELL * params);
+CELL * p_isBigInteger(CELL * params);
 CELL * p_isLambda(CELL * params);
 CELL * p_isLegal(CELL * params);
 CELL * p_isList(CELL * params);
@@ -499,6 +501,7 @@ CELL * stuffInteger(UINT contents);
 CELL * stuffInteger64(INT64 contents);
 #endif
 CELL * stuffIntegerList(int argc, ...);
+CELL * stuffBigint(char * token);
 CELL * stuffString(char * string);
 CELL * stuffStringN(char * string, int len);
 CELL * stuffSymbol(SYMBOL * sPtr);
@@ -529,8 +532,13 @@ char * prompt(void);
 char * readStreamText(STREAM * stream, int * size);
 char * replaceString (char * keyStr, int keyLen, char * buff, size_t buffLen, CELL * exprCell, 
     					UINT * cnt, int options, size_t * newLen);
+#ifdef WINDOWS
 char * win32_fgets(char * buffer, int  size, FILE * fPtr);
 char * win32_realpath(const char * filepath, char * realpath);
+char * win32_getExePath(char *);
+#endif
+
+char * which(char * name, char * path);
 size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr);
 size_t Curl_base64_decode(const char *src, char *dest);
 double getDirectFloat(CELL * param);
@@ -659,6 +667,25 @@ void writeStreamStr(STREAM * stream, char * buff, size_t length);
 size_t appendCellString(CELL * cell, char * buffer, size_t size);
 UINT * copyArray(CELL * params);
 UINT64 timediff64_us(struct timeval end, struct timeval start);
+
+#ifdef BIGINT
+int * getBigintSizeDirect(CELL * params, int * * numPtr, int * len);
+int * mulBigint(int * x, int nx, int * y, int ny, int * p, int * n);
+int * divModBigint(int * x, int nx, int * y, int ny, int rmndr, int * n);
+int * addBigint(int * x, int nx, int * y, int ny, int * sm, int * nsm);
+int * subBigint(int * x, int nx, int * y, int ny, int * sm, int * nsm);
+int cmpBigint(int * x, int nx, int * y, int ny);
+int cmpAbsBigint(int * x, int nx, int * y, int ny);
+int * strToBigint(char * str, int len, int * intlen);
+char * bigintToDigits(int * num, int n, int offset, int * slen);
+INT64 bigintToInt64(CELL * cell);
+double bigintCellToFloat(CELL * cell);
+double bigintToAbsFloat(int * num, int n);
+CELL * p_bigInt(CELL * params);
+int * intToBigint(INT64 num, int * len);
+int * floatToBigint(double fnum, int * len);
+int lengthBigint(int * num, int len);
+#endif
 
 #ifdef SUPPORT_UTF8
 int utf8_1st_len(char * utf8str);

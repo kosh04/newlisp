@@ -21,7 +21,7 @@
 #include <errno.h>
 #include "protos.h"
 
-#ifdef WIN_32
+#ifdef WINDOWS
 #include <winsock2.h>
 #else
 #include <sys/types.h>
@@ -36,7 +36,7 @@
 
 #define BUFFSIZE 10240
 
-#ifndef WIN_32
+#ifndef WINDOWS
 #define SOCKET_ERROR -1
 #else
 #define fgets win32_fgets
@@ -55,7 +55,7 @@ extern char * netErrorMsg[];
 char * requestMethod[] = {"GET", "HEAD", "PUT", "PUT", "POST", "DELETE"};
 
 /* with MinGW gcc 3.4.5 not needed
-#ifdef WIN_32
+#ifdef WINDOWS
 struct timezone {
        int     tz_minuteswest;
        int     tz_dsttime;
@@ -65,7 +65,7 @@ int gettimeofday( struct timeval *tp, struct timezone *tzp );
 #endif
 */
 
-#ifdef WIN_32
+#ifdef WINDOWS
 extern int IOchannelIsSocketStream;
 #endif
 
@@ -73,15 +73,15 @@ extern SYMBOL * transferEvent;
 
 ssize_t readFile(char * fileName, char * * buffer);
 int writeFile(char * fileName, char * buffer, size_t size, char * type);
-int parseUrl(char *url, char * protocol, char * host, int * port, char * path, size_t maxlen);
-void parsePath(char * url, char * path, size_t maxlen);
+int parseUrl(char *url, char * protocol, char * host, int * port, char * path, size_t bufflen);
+void parsePath(char * url, char * path, size_t bufflen);
 size_t parseValue(char * str);
 void trimTrailing(char * ptr);
 CELL * webError(int no);
 CELL * base64(CELL * params, int type);
 
 jmp_buf socketTimeoutJump;
-long socketTimeout = 0;
+INT socketTimeout = 0;
 struct timeval socketStart;
 
 /* socket send and receive routines with timeout */
@@ -278,7 +278,7 @@ char * host;
 char * pHost;
 char * path;
 char * customHeader = NULL;
-size_t maxlen;
+size_t bufflen;
 int port, pPort, sock = 0;
 char * option, * method = NULL;
 char buff[BUFFSIZE];
@@ -375,16 +375,16 @@ else if(result != nilCell)
 if(socketTimeout && params != nilCell)
         getString(params, &customHeader);
 
-maxlen = strlen(url);
-if(maxlen < MAX_URL_LEN) maxlen = MAX_URL_LEN;
+bufflen = strlen(url) + 1;
+if(bufflen < MAX_URL_LEN + 1) bufflen = MAX_URL_LEN + 1;
 
 protocol = alloca(8);
-host = alloca(maxlen + 1);
-pHost = alloca(maxlen + 1);
-path = alloca(maxlen + 1);
+host = alloca(bufflen);
+pHost = alloca(bufflen);
+path = alloca(bufflen);
 
 /* parse URL for parameters */
-if(parseUrl(url, protocol, host, &port, path, maxlen) == FALSE)
+if(parseUrl(url, protocol, host, &port, path, bufflen) == FALSE)
     return(webError(ERROR_BAD_URL));
 
 /* printf("protocol: %s host:%s port %d path:%s\n", protocol, host, port, path); */
@@ -393,12 +393,12 @@ proxyUrl = getenv("HTTP_PROXY");
 
 if(proxyUrl == NULL)
     {
-    strncpy(pHost, host, maxlen);
+    strncpy(pHost, host, bufflen);
     pPort = port;
     }
 else
     {
-    if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, maxlen) == FALSE)
+    if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, bufflen) == FALSE)
         return(webError(ERROR_BAD_URL));
     }
 
@@ -430,9 +430,7 @@ sendf(sock, debugFlag, "Host: %s\r\n", host);
 if (customHeader != NULL)
     sendf(sock, debugFlag, "%s", customHeader);
 else
-    {
     sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
-    }
 
 sendf(sock, debugFlag, "Connection: close\r\n");
 
@@ -475,6 +473,8 @@ if(++responseLoop == 4)
 if (recvs_tm(buff, BUFFSIZE, sock) == NULL) 
    return(webError(ERROR_NO_RESPONSE));
 
+if(debugFlag) varPrintf(OUT_CONSOLE, "%s\n", buff);
+
 /* go past first token */
 for (buffPtr = buff; *buffPtr != '\0' && !isspace((int)*buffPtr); ++buffPtr) {;}
 
@@ -483,7 +483,6 @@ while(isspace((int)*buffPtr)) ++buffPtr;
 
 /* get status code */
 statusCode = atoi(buffPtr);
-/* printf("statusCode:%d\n", statusCode); */
 switch (statusCode) 
     {
     case 0:
@@ -515,15 +514,11 @@ memset(buff, 0, BUFFSIZE);
 if(listFlag || headRequest)
     headerCell = stuffString("");
 
-/* printf("%s", "retrieving headers\n"); */
-
 /* Retrieve header */
 while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
     {
     if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
         return(webError(ERROR_HEADER));
-
-/* printf("==>%s<==\n", buff); */
 
     if(listFlag || headRequest) appendCellString(headerCell, buff, strlen(buff));
 
@@ -539,16 +534,16 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
         buffPtr = buff + 9;
         while(isspace((int)*buffPtr)) ++buffPtr;
         if(*buffPtr == '/')
-            strncpy(path, buffPtr + 1, maxlen);
+            strncpy(path, buffPtr + 1, bufflen);
         else /* its a url or path */
             {
-            if(parseUrl(buffPtr, protocol, host, &port, path, maxlen) == FALSE)
+            if(parseUrl(buffPtr, protocol, host, &port, path, bufflen) == FALSE)
                 /* path only */
                 parsePath(buffPtr, path, buffPtr - buff);
 
             if(proxyUrl == NULL)
                 {
-                strncpy(pHost, host, maxlen);
+                strncpy(pHost, host, bufflen);
                 pPort = port;
                 }
             }
@@ -636,13 +631,13 @@ else
     result = getCell(CELL_STRING);
     if(statusCode >= 400)
         {
-        maxlen = strlen(errorTxt);
-        buffPtr = allocMemory(maxlen + resultSize + 1);
-        memcpy(buffPtr, errorTxt, maxlen);
-        memcpy(buffPtr + maxlen, resultPtr, resultSize);
+        bufflen = strlen(errorTxt);
+        buffPtr = allocMemory(bufflen + resultSize + 1);
+        memcpy(buffPtr, errorTxt, bufflen);
+        memcpy(buffPtr + bufflen, resultPtr, resultSize);
         free(resultPtr);
         resultPtr = buffPtr;
-        resultSize += maxlen;
+        resultSize += bufflen;
         }       
     result->contents = (UINT)resultPtr;
     result->aux = resultSize + 1;
@@ -661,7 +656,7 @@ return(result);
 }
 
 
-int parseUrl(char * url, char * protocol, char * host, int * port, char * path, size_t maxlen)
+int parseUrl(char * url, char * protocol, char * host, int * port, char * path, size_t bufflen)
 {
 char * bracketPtr = NULL;
 char * colonPtr = NULL;
@@ -682,17 +677,17 @@ if(my_strnicmp(url, "http://", 7) == 0)
     {
     strncpy(protocol,"http", MAX_PROTOCOL );
     if( (ADDR_FAMILY == AF_INET6) && (*(url + 7) == '[') )
-        strncpy(host, url+8, maxlen);
+        strncpy(host, url+8, bufflen);
     else
-        strncpy(host, url+7, maxlen);
+        strncpy(host, url+7, bufflen);
     }
 else if( my_strnicmp(url, "https://", 8) == 0)
     {
     strncpy(protocol, "https", MAX_PROTOCOL);
     if( (ADDR_FAMILY == AF_INET6) && (*(url + 8) == '[') )
-        strncpy(host, url+9, maxlen);
+        strncpy(host, url+9, bufflen);
     else
-        strncpy(host, url+8, maxlen);
+        strncpy(host, url+8, bufflen);
     }
 else 
     return(FALSE);
@@ -736,17 +731,17 @@ if(path == NULL) return(TRUE);
 if (slashPtr != NULL) 
     {
     *slashPtr++ = '\0';
-    strncpy(path, slashPtr, maxlen);
+    strncpy(path, slashPtr, bufflen);
     } 
 else
-    strncpy(path, "", maxlen);
+    strncpy(path, "", bufflen);
 
 /* printf("protocol:%s host:%s port:%d path:%s\n", protocol, host, *port, path); */
 
 return(TRUE);
 }
 
-void parsePath(char * url, char * path, size_t maxlen)
+void parsePath(char * url, char * path, size_t bufflen)
 {
 int len;
 
@@ -760,7 +755,7 @@ while(*(url + len) <= ' ' && len > 0)
     
 /* trim leading whitespace */
 while(*url <= ' ') url++;
-strncpy(path, url, maxlen);
+strncpy(path, url, bufflen);
 }
 
 size_t parseValue(char * str)
@@ -968,7 +963,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.4.6"
+#define SERVER_SOFTWARE "newLISP/10.5.0"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1011,13 +1006,13 @@ if(media != NULL)
     printf("Content-length: %d\r\nContent-type: %s\r\n\r\n", (int)size, media);
 #endif
     }
-#ifndef WIN_32
+#ifndef WINDOWS
 /* size = fwrite(content, 1, size, IOchannel); */ /* does not work with xinetd on OSX */
 size = write(fileno(IOchannel), content, size); 
 fflush(IOchannel); 
 fclose(IOchannel); 
 IOchannel = NULL;
-#else /* it is WIN_32 */
+#else /* it is WINDOWS */
 if(IOchannel != NULL && IOchannelIsSocketStream)
     {
     sendall(getSocket(IOchannel), content, size);
@@ -1124,14 +1119,14 @@ switch(type)
 
             if(type == HTTP_HEAD)
                 {
-#ifndef WIN_32
+#if defined(WINDOWS) || defined(TRU64)
+                snprintf(buff, MAX_BUFF - 1, 
+                    "Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
+                    (INT)fileSize(request), mediaType);
+#else
                 snprintf(buff, MAX_BUFF - 1, 
                     "Content-length: %lld\r\nContent-type: %s\r\n\r\n", 
                     (long long int)fileSize(request), mediaType);
-#else
-                snprintf(buff, MAX_BUFF - 1, 
-                    "Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
-                    (long)fileSize(request), mediaType);
 #endif
                 sendHTTPpage(buff, strlen(buff), NULL);
                 }
@@ -1252,7 +1247,11 @@ while(fgets(buff, MAX_LINE - 1, IOchannel) != NULL)
     if(my_strnicmp(buff, "content-length:", 15) == 0)
         {
         size = parseValue(buff + 15);
+#if defined(WINDOWS) || defined(TRU64)
         snprintf(numStr, 16, "%lu", (long unsigned int)size);
+#else
+        snprintf(numStr, 16, "%llu", (long long unsigned int)size);
+#endif
         setenv("CONTENT_LENGTH", numStr, 1);
         }
     if(my_strnicmp(buff, "pragma: append", 14) == 0)
@@ -1286,9 +1285,9 @@ printf("# Payload size:%ld\r\n", (long)size);
 while(size > 0)
     {
     readsize = (size > MAX_BUFF) ? MAX_BUFF : size;
-#ifndef WIN_32
+#ifndef WINDOWS
     bytes = read(fileno(IOchannel), buff + offset, readsize); 
-#else /* it is WIN_32 */
+#else /* it is WINDOWS */
     if(IOchannel != NULL && IOchannelIsSocketStream)
         bytes = recv(getSocket(IOchannel), buff + offset, readsize, NO_FLAGS_SET);
     else
@@ -1319,7 +1318,7 @@ while(size > 0)
     transferred += bytes;
     size -= bytes;
     }   
-#ifndef WIN_32
+#ifndef WINDOWS
 fflush(NULL); 
 #endif
 return(transferred);
@@ -1334,7 +1333,7 @@ char * command;
 char * content = NULL;
 ssize_t size;
 char tempfile[32];
-#ifdef WIN_32_BEFORE_SETTING_BINARYMODE
+#ifdef WINDOWS_BEFORE_SETTING_BINARYMODE
 char * ptr;
 char * pos;
 int bytes = 0;
@@ -1353,12 +1352,12 @@ if(isFile(request, 0) != 0)
     }
 
 #ifdef ANDROID
-if(!isDir("/data/tmp"))
+if(isFile("/data/tmp", 0) != 0)
 #else
-if(!isDir("/tmp"))
+if(isFile("/tmp", 0) != 0)
 #endif
     {
-#ifdef WIN_32
+#ifdef WINDOWS
     sendHTTPmessage(500, "Need \\tmp directory on current drive", request);
 #else
 #ifdef ANDROID
@@ -1378,7 +1377,7 @@ snprintf(tempfile, 31, "/data/tmp/nl%02x%08x%08x", (unsigned int)size, (unsigned
 snprintf(tempfile, 30, "/tmp/nl%02x%08x%08x", (unsigned int)size, (unsigned int)random(), (unsigned int)random());
 #endif
 
-#if defined (WIN_32) || (OS2)
+#if defined (WINDOWS) || (OS2)
 snprintf(command, size - 1, "newlisp \"%s\" > %s", request, tempfile);
 #else
 snprintf(command, size - 1, "./\"%s\" > %s", request, tempfile);
@@ -1427,9 +1426,11 @@ typedef struct
     {
     char * extension;
     char * type;
-    } MEDIA_TYPE;
-    
-MEDIA_TYPE mediaType[] = {
+    } T_MEDIA_TYPE;
+
+/* T_ prefix added in 10.4.8 to compile on later MinGW */
+
+T_MEDIA_TYPE mediaType[] = {
     {".avi", "video/x-msvideo"},
     {".css", "text/css"},
     {".gif", "image/gif"},
@@ -1464,7 +1465,7 @@ return(MEDIA_TEXT);
 void url_decode(char *dest, char *src)
 {
 char code[3] = {0};
-unsigned long ascii = 0;
+unsigned int ascii = 0;
 char *end = NULL;
 
 while(*src)

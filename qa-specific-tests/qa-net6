@@ -20,7 +20,9 @@
 ;        ./newlisp qa-net http://localhost:4711//Users/Lutz/newlisp-8.9.8
 ;
 
-(when (find ostype '("OS/2" "SunOS"))
+; one windows run this alone, not as part of 'make testall'
+; remove the file qa-junk.txt manually before running
+(when (find ostype '("OS/2" "SunOS" "Win32"))
 	(println "disabled for " ostype " - must exit -")
 	(exit))
 

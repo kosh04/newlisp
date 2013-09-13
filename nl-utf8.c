@@ -262,7 +262,7 @@ size_t size;
 char * utf8str;
 
 params = getStringSize(params, (void *)&unicode, &size, TRUE);
-#ifdef WIN_32
+#ifdef WINDOWS
 if(getFlag(params)) /* its a MBCS string */
     return(utf8_from_mbcs((void *)unicode));
 #endif
