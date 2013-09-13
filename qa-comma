@@ -504,6 +504,9 @@ true
         (bigint? (bigint 12345))
         (bigint? (bigint 12345.678))
         (bigint? (bigint "12345"))
+        (bigint? (bigint "12345"))
+        (bigint? (bigint "123hello"))
+        (nil? (bigint "hello")) 
     ))
 
 (define (test-bigint)

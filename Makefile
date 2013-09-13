@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.0
-INT_VERSION = 10500
+VERSION = 10.5.1
+INT_VERSION = 10501
 
 default: makefile_build
 	make -f makefile_build
@@ -122,9 +122,9 @@ dmg_ppc:
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
 		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
 		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
-	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
+	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-ppc.dmg
 	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
-		~/newlisp/OSX-package/newlisp-$(VERSION)-ppc.dmg
+		~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-ppc.dmg
 
 dmg_intel:
 	make -f makefile_darwinLP64_utf8_ffi
@@ -133,9 +133,9 @@ dmg_intel:
 	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
 		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
 		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
-	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
+	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-intel.dmg
 	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
-		~/newlisp/OSX-package/newlisp-$(VERSION)-intel.dmg
+		~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-intel.dmg
 
 # this cleans up the distribution directory for a clean build from scratch
 

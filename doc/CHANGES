@@ -6578,3 +6578,14 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Memory fix for ++, -- on big integers.
 
     The OSX Intel version is now 64-bit by default.
+
+10.5.1
+    bigint will take mal-formed integers:
+       (bigint "hello") -> nil 
+       (bigint "123hello") -> 123L
+       (bigint "+123hello") -> 123L
+       (bigint "-123hello") -> -123L
+       (bigint "123.456") -> 123L
+    but should not be used on string of scientific notation, where it only converts the mantissa
+       (bigint "123.456e10" -> 123L
+

@@ -1,0 +1,8 @@
+10.5.1
+    bigint will take mal-formed integers:
+       (bigint "hello") -> nil 
+       (bigint "123hello") -> 123L
+       (bigint "123.456") -> 123L
+    but should not be used on string of scientific notation
+       (bigint "123.456e10" -> 123L
+

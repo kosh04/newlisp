@@ -3552,15 +3552,22 @@ return(cell);
 CELL * p_bigInt(CELL * params)
 {
 int * numPtr;
-int len;
+int len, size = 0;
 CELL * cell;
+char * ptr;
 
 cell = evaluateExpression(params);
 if(cell->type == CELL_BIGINT)
     return(copyCell(cell));
 
 if(cell->type == CELL_STRING)
-    numPtr = strToBigint((char *)cell->contents, cell->aux - 1, &len);
+    {
+    ptr = (char *)cell->contents;
+    if(*ptr == '-' || *ptr == '+') ++size, ptr++;
+    while(isdigit(*ptr++)) ++size;
+    if(size == 0) return(nilCell);
+    numPtr = strToBigint((char *)cell->contents, size, &len);
+    }
 else getBigintSizeDirect(cell, &numPtr, &len);
 
 cell = getCell(CELL_BIGINT);

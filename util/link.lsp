@@ -33,7 +33,7 @@
     (set 'keylen (pack "ld" (length buff)))
     (write-buffer handle keylen 4)
 
-    ;; append lisp source encrypted at the end
+    ;; append lisp source at the end
     (seek handle size)
     (write-buffer handle buff (length buff))
     (close handle)
