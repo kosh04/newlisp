@@ -46,6 +46,7 @@ String command = "";
 int historyIndex = 0;
 Vector history;
 String lastShellCommand;
+String lastShellArgs;
 String commandBatch = "";
 boolean isInBatch = false;
 
@@ -134,15 +135,19 @@ public void clearText(StringTokenizer params)
 public void runShell(StringTokenizer tokens)
 	{
 	String command;
+    String args;
 	
 	if(tokens == null)
 		{
 		command = lastShellCommand;
+        args = lastShellArgs;
 		}
 	else
 		{
 		command = Base64Coder.decodeString(tokens.nextToken());
 		lastShellCommand = command;
+        args = Base64Coder.decodeString(tokens.nextToken());
+        lastShellArgs = args;
 		}
 	
 	history = new Vector();
@@ -173,18 +178,26 @@ public void runShell(StringTokenizer tokens)
 	textArea.setText("");
 	lastCharCode = 65535;
 	lastDot = 0;
-	try { setupShell(command); }
+	try { setupShell(command, args); }
 	catch (IOException ioex) {
-		ErrorDialog.show("run-shell", "Could not start " + command);
+		ErrorDialog.show("run-shell", "Could not start " + command + " " + args);
 		process = null;
 		}
 	}
 	
-public void setupShell(String command) throws IOException
+public void setupShell(String command, String args) throws IOException
 	{
-	String s;
-	int chr;
-	process = Runtime.getRuntime().exec(command);
+    String[] cmdArray = {"","","","","","","","","",""};
+
+    cmdArray[0] = command;
+    //System.out.println("--->" + command);
+    String[] argsArray = args.split("\\s");
+    for (int x = 0; x < argsArray.length; x++)
+        {
+        cmdArray[x + 1] = argsArray[x];
+        //System.out.println(argsArray[x]);
+        }
+	process = Runtime.getRuntime().exec(cmdArray);
 
 	if(guiserver.UTF8)
 		{

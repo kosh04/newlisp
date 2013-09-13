@@ -225,6 +225,14 @@ sPtr->context = context;
 return(sPtr);
 }
 
+CELL * assignSymbol(SYMBOL * sPtr, CELL * content)
+{
+deleteList((CELL*)sPtr->contents);
+sPtr->contents = (UINT)content;
+
+return(content);
+}
+
 /* ------------------------- dump RB tree info of a symbol -------------------- */
 
 #ifdef SYMBOL_DEBUG

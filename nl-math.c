@@ -22,6 +22,7 @@
 
 /* turn on for extra debugging output */
 /* #define BAYES_DEBUG */
+/* #define DEBUG */
 
 #define OP_ADD 1
 #define OP_SUBTRACT 2
@@ -68,7 +69,6 @@
 int _matherr(struct _exception *e) {return 1;}
 #endif
 
-/*#define DEBUG*/
 #ifdef DEBUG
 void debug(int * x, int n, char * txt)
 {
@@ -3906,7 +3906,10 @@ int * ptr;
 INT64 digit;
 int i, j, k, carry;
 int nr, sq, n, pn;
-double rFloat, yFloat;
+/* turn of certain optimizations using 'volatile' necessary 
+   on Linux but will no affect performance on other platforms
+*/
+volatile double rFloat, yFloat;
 
 if(y[1] == 0 && ny == 1)
     errorProc(ERR_MATH);
@@ -3935,15 +3938,48 @@ p = alloca((nx + 1) * sizeof(int));
 nr = 0; sq = 0;
 r[0] = q[0] = p[0] = 1; 
 yFloat = bigintToAbsFloat(y, (ny > 2) ? 2 : ny);
-
+#ifdef DEBUG
+printf("yFloat %f\n", yFloat); 
+#endif
 for(i = 1; i <= nx; i++)    
     {
+#ifdef DEBUG
+    printf("i = %d\n", i);
+#endif
     r[++nr] = x[i];
+#ifdef DEBUG
+    debug(r, nr, "r after <- x[i]");
+#endif
+    if(sq == 0 && cmpAbsBigint(r, nr, y, ny) < 0)
+        continue;
 
-    if(cmpAbsBigint(r, nr, y, ny) < 0) continue;
+    n = (ny > 2) ? (nr + 2 - ny) : nr; 
+    rFloat = bigintToAbsFloat(r, n);
+#ifdef DEBUG
+    printf("rFloat %f\n", rFloat); 
+#endif
 
-    rFloat = bigintToAbsFloat(r, (ny > 2) ? (nr + 2 - ny) : nr);
-    q[++sq] = rFloat / yFloat + 1.0; /* like ceil() */
+    if(yFloat > rFloat)
+        {
+#ifdef DEBUG
+        printf("yFloat > rFloat\n");
+#endif
+        q[++sq] = 0;
+        goto TRIM_ZEROS;
+        }
+
+    if(yFloat == rFloat)
+        {
+#ifdef DEBUG
+        printf("yFloat == rFloat\n");
+#endif
+        q[++sq] = 1;
+        }
+    else 
+        q[++sq] = rFloat / yFloat + 1.0; /* like ceil() */
+#ifdef DEBUG
+    debug(q, sq, "q after float div");
+#endif
 
     PRODUCT: 
     carry = 0;
@@ -3963,10 +3999,15 @@ for(i = 1; i <= nx; i++)
         for(j = ny; j > 0; j--) p[j+1] = p[j];
         p[1] = carry, ++pn;
         }
-
+#ifdef DEBUG
+    debug(p, pn, "p product");
+#endif
     if(cmpAbsBigint(r, nr, p, pn) < 0) 
         {
         q[sq] = q[sq] - 1; /* q[sq] too big */
+#ifdef DEBUG
+        printf("decrementing q[sq]\n");
+#endif
         goto PRODUCT;
         }
 
@@ -3988,6 +4029,7 @@ for(i = 1; i <= nx; i++)
         r[k] = digit % BIGINT_BASE;
         }
     /* trim leading zero's */
+TRIM_ZEROS:
     if(r[1] == 0) {
         k = 1; n = 0;
         while (r[k] == 0 && k <= nr) n++, k++;
@@ -3999,6 +4041,9 @@ for(i = 1; i <= nx; i++)
                 (char *)r + (n + 1) * sizeof(int), nr * sizeof(int));
             }
         }
+#ifdef DEBUG
+    debug(r, nr, "r after subtraction and trimming");
+#endif
     /* ---------------------------------- */
     if(r[1] == 0 && i < nx) nr = 0;
     }
@@ -4018,7 +4063,6 @@ else
     q[0] = *x * *y;
     *nq = sq;
     }     
-
 return(q);
 }
 

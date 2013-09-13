@@ -801,7 +801,12 @@ while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace 
 if(*jsonStr != '"') return(setJSONerror(ERR_JSON_MISSING_KEY, jsonStr));
 
 token = ++jsonStr, size = 0;
-while(*jsonStr != '"' && *jsonStr != 0) ++jsonStr, ++size;
+while(*jsonStr != '"' && *jsonStr != 0) 
+    {
+    if(*jsonStr == '\\')
+        ++jsonStr, ++size;
+    ++jsonStr, ++size;
+    }
 
 if(*jsonStr++ != '"') return(setJSONerror(ERR_JSON_CLOSING_QUOTE, jsonStr));
 
@@ -816,13 +821,12 @@ while(i < size)
         ++i;
         switch(*(token + i))
             {
-            case '"': 
-                *(xlated + j++) = '\\'; 
-                *(xlated + j++) = '"';
-                break;
             case '\\':
                 *(xlated + j++) = '\\'; 
                 *(xlated + j++) = '\\';
+                break;
+            case '"': 
+                *(xlated + j++) = '"';
                 break;
             case '/':
                 *(xlated + j++) = '/';

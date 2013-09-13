@@ -10,6 +10,7 @@
 ;; @version 1.48 doc fixes
 ;; @version 1.50 doc fixes
 ;; @version 1.51 return value for gs:export
+;; @version 1.52 fix in run-shell for Java 7 update 21
 ;; @author LM, August 2008, 2009, 2010, 2012, 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -453,7 +454,7 @@
 ;;    (gs:remove-list-item <sym-list-combo> <int-index> [<int-index> ...])
 ;;    (gs:remove-tab <sym-tabbed-pane> <int-index>)
 ;;    (gs:request-focus <sym-id>)
-;;    (gs:run-shell <sym-text-area> <str-commmand>)
+;;    (gs:run-shell <sym-text-area> <str-commmand> <str-args>)
 ;;    (gs:select-list-item <sym-id> <str-item> [<boolean-flag>])
 ;;    (gs:select-text <sym-id> <int-from> [<int-to>])
 ;;    (gs:set-accelerator <sym-menu-item> <str-keystroke>)
@@ -2553,12 +2554,13 @@ true
 		x " " y " " repaint "\n"))
 )
 
-;; @syntax (gs:run-shell <id-text-area> <str-command>)
+;; @syntax (gs:run-shell <id-text-area> <str-command> <str-args>)
 ;; @param <idx-text-area> The id of the text area to wich a shell process will be attached.
 ;; @param <str-command> The command string to start the shell process.
+;; @param <str-args> The arguments of the command (max 8 arguments).
 
-(define (run-shell id command)
-	(net-send out (string "run-shell " id " " (base64-enc command) "\n"))
+(define (run-shell id command arguments)
+	(net-send out (string "run-shell " id " " (base64-enc command)  " " (base64-enc arguments) "\n"))
 )
 
 ;; @syntax (gs:save-file-dialog <sym-parent-frame> <sym-action> [<str-directory> [<str-initial-file> [<str-mask> <str-description>]]])

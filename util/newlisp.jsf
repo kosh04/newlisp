@@ -37,6 +37,7 @@
 # 26 April 2012, L.M. added corr, stats, t-test
 # 20 January 2013, L.M. added json-parse, json-error
 # 20 May 2013, L.M. added bigint, bigint? 
+# 18 JUne 2013, L.M. added kmeans-query, kmeans-train
 # version 1.17
 
 =Idle		
@@ -262,6 +263,8 @@
 "join"	prim
 "json-error"    prim
 "json-parse"    prim
+"kmeans-query"  prim
+"kmeans-train"  prim
 "lambda?"	prim
 "last"	prim
 "last-error"	prim

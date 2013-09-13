@@ -959,3 +959,6 @@
 
 1.48 added various new primitives to SyntaxHighlighter.java
      syntxa highlighting for binary numbers like 0b10101
+
+1.50 fixed gs:run-shell in newlisp-edit.lsp and TextAreaWidget.java for different
+     handling of Runtime.getRuntime().exec(cmdArray) in Java 7 update 21.

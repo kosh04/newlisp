@@ -114,6 +114,8 @@
                     '(("greek letters" "αβγδ")))
                  true
         )
+        ; escaped quotes fixed in 10.5.2
+        (= (json-parse [text]{"foo": ["bar", "\"baz\""]}[/text]) '(("foo" ("bar" "\"baz\""))))
     )
     (println ">>>>> JSON translation tested SUCESSFUL")
     (println ">>>>> PROBLEM in JSON translation")

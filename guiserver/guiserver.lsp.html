@@ -11,7 +11,7 @@
             link="#376590" vlink="#551A8B" alink="#ffAA28">
 <blockquote>
 <center><h1>guiserver.lsp</h1></center>
-<p><a href="index.html">Module index</a></p><br/>
+<p><a href="index.html">Module index</a></p><a href="guiserver.lsp.src.html">source</a>&nbsp;<a href="guiserver.lsp">download</a><br/>
 <h2>Module:&nbsp;guiserver.lsp</h2><p>Functions for programming GUIs and 2D graphics.</p>
 <b>Version: </b>1.40 use text-field as a password field with additional parameter<br/>
 <b>Version: </b>1.41 bug fixes for gs:listen and gs:check-event<br/>
@@ -22,6 +22,8 @@
 <b>Version: </b>1.47 doc fixes<br/>
 <b>Version: </b>1.48 doc fixes<br/>
 <b>Version: </b>1.50 doc fixes<br/>
+<b>Version: </b>1.51 return value for gs:export<br/>
+<b>Version: </b>1.52 fix in run-shell for Java 7 update 21<br/>
 <b>Author: </b>LM, August 2008, 2009, 2010, 2012, 2013<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -463,7 +465,7 @@
     (gs:remove-list-item <em>sym-list-combo</em> <em>int-index</em> [<em>int-index</em> ...])
     (gs:remove-tab <em>sym-tabbed-pane</em> <em>int-index</em>)
     (gs:request-focus <em>sym-id</em>)
-    (gs:run-shell <em>sym-text-area</em> <em>str-commmand</em>)
+    (gs:run-shell <em>sym-text-area</em> <em>str-commmand</em> <em>str-args</em>)
     (gs:select-list-item <em>sym-id</em> <em>str-item</em> [<em>boolean-flag</em>])
     (gs:select-text <em>sym-id</em> <em>int-from</em> [<em>int-to</em>])
     (gs:set-accelerator <em>sym-menu-item</em> <em>str-keystroke</em>)
@@ -2043,9 +2045,10 @@
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_run-shell"></a><h3><font color=#CC0000>gs:run-shell</font></h3>
-<b>syntax: (<font color=#CC0000>gs:run-shell</font> <em>id-text-area</em> <em>str-command</em>)</b><br/>
+<b>syntax: (<font color=#CC0000>gs:run-shell</font> <em>id-text-area</em> <em>str-command</em> <em>str-args</em>)</b><br/>
 <b>parameter: </b><em>idx-text-area</em> - The id of the text area to wich a shell process will be attached.<br/>
 <b>parameter: </b><em>str-command</em> - The command string to start the shell process.<br/>
+<b>parameter: </b><em>str-args</em> - The arguments of the command (max 8 arguments).<br/>
 
 
 <br/><br/><center>&sect;</center><br/>

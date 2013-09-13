@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.5.2 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #705040;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #202020;
+	}
+
+li {
+	margin-bottom: 15px;
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.5.2 Development Release
+<font color="red" size="-1">2013-06-25</font></h1>
+
+<p>This development release fixes bugs in the new, unlimited precision, integer
+arithmetic subsystem and introdduces functions for KMEANS data clustering.</p>
+
+<h3>New Features</h3>
+<ul>
+<li>New cluster analysis functions <tt>kmeans-train</tt> and <tt>kmeans-query</tt>.</li>
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>Big integer division had problems with embedded, aligned big int sized zeros
+and trailing zeros in results. On Linux, compiler optmizations in big integer
+division code caused problems and are disabled now with no decrease in 
+performance.</li>
+
+<li>The <tt>bigint</tt> function now accepts integers in strings with trailing
+non-digit characters and floats in simple dot-decimal notation.</li>
+
+<li>After Jave update, 7u21 install directory names could not have spaces. This
+has been fixed.</li>
+
+<li>Escaped <tt>"</tt> quote characters in <tt>json-parse</tt> strings are now 
+handled correctly.</li>
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous version 10.5.0.</p>
+
+<center>&part;</center>
+
+</body>
+</html>

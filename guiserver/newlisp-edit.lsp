@@ -11,6 +11,7 @@
 ; version 1.32 newlispDoc directory configured now depending on NEWLISPDIR on Unix
 ; version 1.33 eliminated manuals in help on all but OSX platform
 ; version 1.34 fix for OSX Homebrew when NEWLISPENV is not /usr/share/newlisp
+; version 1.50 fix for run-shell for Java 7 update 21 (also runs on previous Java)
 
 (set-locale "C")
 
@@ -222,9 +223,9 @@
 (define (start-newlisp-shell)
 	(if (= ostype "Win32")
 		(gs:run-shell 'OutputArea 
-			(string newlispDir "/newlisp.exe " currentExtension " -C -w \"" $HOME "\""))
+			(string newlispDir "/newlisp.exe") (string currentExtension " -C -w \"" $HOME "\""))
 		(gs:run-shell 'OutputArea 
-			(string "/usr/bin/newlisp " currentExtension " -C -w " $HOME))
+			(string "/usr/bin/newlisp") (string currentExtension " -C -w " $HOME))
 	)
 )
 

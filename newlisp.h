@@ -21,9 +21,13 @@
 #define NEWLISP_H
 
 /* Take out bigger less used code portions.  By default these capabilities 
-   are enabled on all shipped binaries. Out-comment definitions to suppress. */
+   are enabled on all shipped binaries. Out-comment definitions to suppress.
+   Other capabilities like READLINE, SUPPORT_UTF8 can be en/disabled in
+   makefiles.
+*/
 #define XML_SUPPORT
 #define BIGINT 
+#define KMEANS /* not done yet */
 
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */

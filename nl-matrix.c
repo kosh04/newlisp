@@ -23,6 +23,7 @@
 
 #include "newlisp.h"
 #include "protos.h"
+#include "float.h"
 
 double * * multiply(double ** A, double ** B, int m, int n, int k, int l);
 double * * invert(double * * A, int n, int * err, double tiny);
@@ -528,6 +529,248 @@ for (i = n; i >= 1; i--)
     }
 }
 
+/* ------------ KMEANS clustering ------------------------------- */
+
+#ifdef KMEANS
+#define DOUBLE_MAX 1.0e308 /* approximate for IEEE 754 */
+
+/* (kmeans-train data k context [centroidsi [criterium]])
+   data = n * m matrix (list or array)
+   k = number of clusters
+   centroids = k * m matrix of start centroids (optional) (list or array)
+   when centroids then optional convergence criterium, 1e-10 by default
+   the m of optional centroids may be smaller than m in data to force
+   reduction of dimension, e.g. when the last column of date is pre-labeled
+
+   date and optional centroids as either array or list
+
+   if no centroids are given, they are calculated from
+   inital random membership
+
+   returns a list of idecreasing inner SSQs from start to 
+   end of iterations
+
+   result context ctx
+   ctx:centroids (m * k list)
+   ctx:clusters list with k sublists of indices into data (k sublists)
+   cts:labels list with n cluster numbers for each data records  (n list)
+
+   labels go from 1 to k
+
+   NOTE, indices in C-source are not 0-based as usually in C but 
+   go from 1 to N
+*/
+CELL * p_kmeansTrain(CELL * params)
+{
+double * * X; /* data */
+double * * C; /* centroids `*/
+int * labels; /* membership */
+int * counts; /* cluster sizes */
+double ssqTotal; /* total sum inner distances */
+double ssqCluster; /* inner ssq of a cluster */
+double ssqMin;     /* minimum ssq for one record */
+double ssqPrev = DOUBLE_MAX;
+double dist;
+double crit = 1.0e-10;
+CELL * centroids;
+CELL * clusters;
+CELL * SSQlist = NULL;
+CELL * membership;
+CELL * * cellArray;
+SYMBOL * ctx;
+SYMBOL * sPtr;
+int n, m, k; /* rows, columns, groups */
+int i, j, l; /* loop imdices */
+int err = 0, type;
+int kc, mc;
+UINT p;
+
+if((X = getMatrix(params, &type, &n, &m, &err)) == NULL)
+    return(errorProcExt(err, params));
+
+params = getInteger(params->next, &p);
+k = p;
+
+if((ctx = getCreateContext(params, TRUE)) == NULL)
+  return(errorProcExt(ERR_SYMBOL_OR_CONTEXT_EXPECTED, params));
+
+membership = getCell(CELL_EXPRESSION);
+sPtr = translateCreateSymbol("labels", CELL_EXPRESSION, ctx, TRUE); 
+assignSymbol(sPtr, membership);
+
+/* make centroid matrix */
+params = params->next;
+if(params == nilCell)
+    C = allocateMatrix(k, m);
+/* or get predefined centroids from user */
+else 
+    {
+    if((C = getMatrix(params, &type, &kc, &mc, &err)) == NULL)  
+        return(errorProcExt(err, params));
+    /* allow forcing less columns via optional centroids mc <= m */
+    if((kc != k) || (mc >  m)) 
+        return(errorProcExt(ERR_WRONG_DIMENSIONS, params));
+    m = mc;
+    /* optionally custom criterium */
+    if(params->next != nilCell)
+        getFloat(params->next, &crit);
+    }
+
+counts = allocMemory((k + 1) * sizeof(int));
+labels = allocMemory((n + 1) * sizeof(int));
+
+if(params != nilCell)
+    goto ASSIGN_MEMBERSHIP;
+
+/* asssign random membership */
+for(i = 1; i <= n; i++)
+    labels[i] = (i % k) + 1;
+
+ITERATE_KMEANS:
+/* calc KMEANS centroids from membership */
+for(l = 1; l <= k; l++)     
+    {
+    counts[l] = 0;
+    for(j = 1; j <= m; j++)
+        C[l][j] = 0;
+    }
+
+for(i = 1; i <= n; i++)
+    {
+    l = labels[i];
+    counts[l] += 1;
+    for(j = 1; j <= m; j++)
+        C[l][j] += X[i][j];
+    }
+
+for(l = 1; l <= k; l++) 
+    for(j = 1; j <= m; j++)
+        C[l][j] = C[l][j] / counts[l];
+
+/* assign each record in X to closest centroid */
+ASSIGN_MEMBERSHIP:
+ssqTotal = 0.0;
+for(i = 1; i <= n; i++)
+    {
+    ssqMin = DOUBLE_MAX;
+    for(l = 1; l <= k; l++)
+        {
+        ssqCluster = 0.0;
+        for(j = 1; j <= m; j++)
+            {
+            dist = X[i][j] - C[l][j];
+            ssqCluster += dist * dist;
+            }
+        if(ssqCluster < ssqMin)
+            {
+            ssqMin = ssqCluster;
+            labels[i] = l;
+            }
+        }
+    ssqTotal += ssqMin;
+    }
+
+if(fabs(ssqPrev - ssqTotal) > crit)
+    {
+    ssqPrev = ssqTotal;
+    if(SSQlist == NULL) SSQlist = getCell(CELL_EXPRESSION);
+    addList(SSQlist, stuffFloat(&ssqTotal));
+    goto ITERATE_KMEANS;
+    }
+            
+/* entroid matrix as nested list */
+centroids = matrix2data(C, CELL_EXPRESSION, k, m);
+sPtr = translateCreateSymbol("centroids", CELL_EXPRESSION, ctx, TRUE); 
+assignSymbol(sPtr, centroids);
+
+/* cluster memberships, for each cluster a list of X data record indices */
+clusters = getCell(CELL_EXPRESSION);
+cellArray = (CELL * *)allocMemory(k * sizeof(CELL));
+for(l = 1; l <= k; l++)
+    {
+    cellArray[l] = getCell(CELL_EXPRESSION);
+    addList(clusters, cellArray[l]);
+    }
+for(i = 1; i <= n; i++)
+    {
+    l = labels[i];
+    addList(cellArray[l], stuffInteger(i - 1));
+    }
+
+sPtr = translateCreateSymbol("clusters", CELL_EXPRESSION, ctx, TRUE); 
+assignSymbol(sPtr, clusters);
+
+for(i = 1; i <= n; i++) 
+    addList(membership, stuffInteger(labels[i]));
+
+freeMatrix(C, k);
+freeMatrix(X, n);
+free(cellArray);
+free(counts);
+free(labels);
+
+return(SSQlist);
+}
+
+/* (kmeans-query data-record-vector centroids)
+
+   calculates eucledian distances to all centroids
+   from a previous (kmeans-train data k context [centroids])
+
+   can also be used on the original data to get
+   eucledian distance from one data record to all
+   other records (a KNN fucntion could be built this way)
+
+   (kmeans-query data-record-vector data)
+
+*/
+
+CELL * p_kmeansQuery(CELL * params)
+{
+CELL * data;
+CELL * centroids;
+CELL * dat;
+CELL * result;
+CELL * row;
+CELL * cent;
+double dist;
+double ssq;
+
+params = getEvalDefault(params, &data);
+if(data->type != CELL_EXPRESSION)
+    errorProcExt(ERR_LIST_EXPECTED, data);
+
+getEvalDefault(params, &centroids);
+if(centroids->type != CELL_EXPRESSION)
+    return(errorProcExt(ERR_NOT_MATRIX, centroids));
+
+row = (CELL *)centroids->contents;
+if(row->type != CELL_EXPRESSION)
+    return(errorProcExt(ERR_LIST_EXPECTED, row));
+
+result = getCell(CELL_EXPRESSION);
+while(row != nilCell) /* for each centroid */
+    {
+    cent = (CELL *)row->contents;
+    dat = (CELL *)data->contents;
+    ssq = 0.0;
+    while(cent != nilCell && dat != nilCell) 
+        {
+        dist = fabs(getDirectFloat(cent) - getDirectFloat(dat));
+        ssq += dist * dist; 
+        cent = cent->next;
+        dat = dat->next;
+        }
+    dist = sqrt(ssq);
+    addList(result, stuffFloat(&dist));
+    row = row->next;
+    }
+
+return(result);
+}
+
+#endif
+
 /* ------------ make a matrix from list or array expr ----------- */
 
 double * * getMatrix(CELL * params, int * type, int * n, int * m, int *err)
@@ -588,7 +831,7 @@ for(i = 1; i <= n; i++)
 return(matrix);
 }
 
-/* --------------------------- get dimensons or a matrix --------------- */
+/* --------------------------- get dimensons on a matrix --------------- */
 
 int getDimensions(CELL * mat, int * n, int * m)
 {

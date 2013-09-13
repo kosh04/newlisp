@@ -6579,13 +6579,61 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
     The OSX Intel version is now 64-bit by default.
 
-10.5.1
+10.5.1 development release Jun 4th, 2013
     bigint will take mal-formed integers:
        (bigint "hello") -> nil 
        (bigint "123hello") -> 123L
        (bigint "+123hello") -> 123L
        (bigint "-123hello") -> -123L
        (bigint "123.456") -> 123L
-    but should not be used on string of scientific notation, where it only converts the mantissa
+    but should not be used on string of scientific notation, it only converts the mantissa
        (bigint "123.456e10" -> 123L
+
+    Fixed division when aligned or not aligned embedded bigint 0s (9 zeros).
+
+    Fixed more big integer division problems and added more tests to qa-bigint.
+
+    Compiler optimizations are now supressed in part of the big integer 
+    division code to make it work on Linux. Does not affect performance.
+
+10.5.2
+   Fix for Java 7u21 in guisserver.jar, guiserver.lsp and newlisp-edit.
+   function gs:run-shell now takes separate command and args parameters.
+
+   New functions 'kmeans-train' and 'kmeans-query' for cluster analysis. The
+   Function 'kmeans-train' allows starting centroids to be either generated
+   randomly or be passed as an extra parameter. This allows clustering like
+   in Kmeans++ or other advanced schemes of pre-calculated start centroids.
+   When pre-calculated centroids are given, they are allowed to have less 
+   columns, thus forcing kmeans clustering with less columns. This allows
+   to pre- or post-label the data set by including cluster-membership labels
+   in the last column. 
+
+        (kmeans-train matrix-data int-k context [matrix-centroids]) 
+            return => list of inner SSQs for all iterations
+
+        matrix-data -> n rows by m columns (list or array)
+        int-k       -> number of desired clusters
+        context     -> new or existing context for results
+        matrix-centroids -> optional k * m starting centroids (list or array)
+
+        ctx:centroids -> k * m matrix of k centroids
+        ctx:clusters  -> list with k sublists each containing indices into data
+        ctx:labels    -> list of n cluster numbers, one for each data record
+
+        (kmeans-query list-data centroids)
+            return => list of k Eucledian distances from the k centroids
+
+        list-data -> data record to be classified
+        centroids -> result in namespace from previous kmeans-train or any other
+                     list of data records to calculate Eucledian distances
+    
+ 
+        'kmeans-query' can also be used for KNN (K Nearest Neigbour) analysis,
+        as it calculates the Eucledean distances for any matrix given in
+        the second argument, not only centroids, but e.g. the original
+        dataset. If the data-set is pre-labeled, then list-data has less
+        columns forcing to not include the label in analysis.
+ 
+   Fixed handling escaped " (quote) in JSON strings.
 

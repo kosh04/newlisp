@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.1 Manual and Reference</title>
+   <title>newLISP v.10.5.2 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -45,9 +45,15 @@ span.gnu {
 	color:#dd0000;
 	}
 
-h4, b	{
+h4	{
 	font-family: Verdana, Lucida Sans, Helvetica,  sans-serif;
     color: #404040;
+	}
+
+b	{
+	font-family: Verdana, Lucida Sans, Helvetica,  sans-serif;
+    color: #404040;
+	font-weight: 600;
 	}
 
 
@@ -135,7 +141,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.1</h2>
+<h2>User Manual and Reference v.10.5.2</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -4561,7 +4567,7 @@ is sufficient for localized behavior.</p>
 
 <tr>
 <td><a href="#utf8len">utf8len</a></td>
-<td>returns the number of UTF-8 characters in a a string</td>
+<td>returns the number of UTF-8 characters in a string</td>
 </tr>
 
 </table><br/>
@@ -5034,7 +5040,7 @@ this to a UTF8 character in the UTF8 enabled versions of newLISP.</td></tr>
 <tr><td><tt>\\</tt></td> <td>the backslash character itself</td></tr>
 </table><br/>
 
-<p>Decimals start with a digit. Hexadecimals start with <tt>x</tt>:.</p>
+<p>Decimals start with a digit. Hexadecimals start with <tt>x</tt>:</p>
 
 <pre>
 "\065\066\067" <span class='arw'>&rarr;</span> "ABC"
@@ -6535,6 +6541,16 @@ arithmetic">
 <tr>
 <td><a href="#crit-t">crit-t</a></td>
 <td>calculates the <em>Student's t</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#kmeans-query">kmeans-query</a></td>
+<td>calculate distances to cluster centroids or other data points</td>
+</tr>
+
+<tr>
+<td><a href="#kmeans-train">kmeans-train</a></td>
+<td>partion a data set into clusters</td>
 </tr>
 
 <tr>
@@ -9543,15 +9559,16 @@ between decimal and binary arithmetic.</p>
 <!-- example -->
 
 <pre>
-(bigint 12345)  <span class='arw'>&rarr;</span> 12345L
+(bigint 12345)          <span class='arw'>&rarr;</span> 12345L
 
-(bigint 1.234567890e30)
-<span class='arw'>&rarr;</span> 1234567889999999957361000000000L 
+(bigint 1.234567890e30) <span class='arw'>&rarr;</span> 1234567889999999957361000000000L 
 
 (set 'num 567890)
-(bigint num)  <span class='arw'>&rarr;</span> 567890L)
+(bigint num)            <span class='arw'>&rarr;</span> 567890L
 
-(bigint "-54321") <span class='arw'>&rarr;</span> -54321L
+(bigint "-54321")       <span class='arw'>&rarr;</span> -54321L
+(bigint "123.45")       <span class='arw'>&rarr;</span> 123L
+(bigint "123hello")     <span class='arw'>&rarr;</span> 123L
 </pre>
 
 <p>See also the manual chapter <a href="#big_int">Big integer, unlimited precision arithmetic</a></p>
@@ -16364,6 +16381,204 @@ of the string when read by newLISP and are suitable to delimit large data sizes 
 
 <br/><br/>
 
+<a name="kmeans-query"></a>
+<h2><span class="function">kmeans-query</span></h2>
+<h4>syntax: (kmeans-query <em>list-data</em> <em>matrix-centroids</em>)<br/>
+syntax: (kmeans-query <em>list-data</em> <em>matix-data</em></h4>
+
+<p>In the first usage, <tt>kmeans-query</tt> calculates the Eucledian distances
+from the data vector given in <em>list-data</em> to the centroids given in
+<em>matix-centroids</em>. The data vector in <em>list-data</em> has <b><i>m</i></b> 
+elements. The 2-dimensional list in <em>matrix-centroids</em>, result from a previous
+<a href="#kmeans-train">kmeans-train</a> clustering, has <b><i>k</i></b>
+rows and <b><i>m</i></b> columns for <b><i>k</i></b> centroids measuring <b><i>m</i></b>
+features.</p>
+
+<pre>
+; centroids from previous kmeans-train
+K:centroids <span class='arw'>&rarr;</span>
+    ( (6.39 7.188333333 5.935) 
+      (7.925714286 3.845714286 9.198571429) 
+      (2.207142857 2.881428571 0.8885714286) )
+
+(kmeans-query '(1 2 3) K:centroids) <span class='arw'>&rarr;</span>
+    (8.036487279 9.475994267 2.58693657) ; distances to cluster 1, 2 and 3
+</pre>
+
+<p>The data record <tt>(1 2 3)</tt> shows the smallest distance to the 3rd
+cluster centroid and would be classified as belonging to that cluster.</p>
+
+<p>In the second application <tt>kmeans-query</tt> calculates Eucledian distances to a list
+of other data points which are not centroids. The following example
+calculates distances of the <tt>(1 2 3)</tt> data vector to all original points
+from the original <a href="#kmeans-train">kmeans-train</a> data analysis.</p>
+
+<p>This vector could be sorted for a subsequent kNN (k Nearest Neighbor)
+analysis:</p>
+
+<pre>
+(kmeans-query '(1 2 3) data) <span class='arw'>&rarr;</span>
+    (10.91671196 3.190626898 9.19723328 3.014415366 9.079763213 
+     6.83130295 8.533111976 9.624816881 6.444261013 2.013107051 
+     3.186549858 9.475199206 9.32936761 2.874786949 7.084638311 
+     10.96221237 10.50080473 3.162419959 2.423674896 9.526436899)
+
+; show distances to members in each cluster
+
+; for cluster labeled 1
+(select (kmeans-query '(1 2 3) data) (K:clusters 0)) <span class='arw'>&rarr;</span> 
+    (9.079763213 6.83130295 9.624816881 6.444261013 7.084638311 10.50080473)
+
+; for cluster labeled 2
+(select (kmeans-query '(1 2 3) data) (K:clusters 1)) <span class='arw'>&rarr;</span>
+    (10.91671196 9.19723328 8.533111976 9.475199206 9.32936761 10.96221237 9.526436899)
+
+; for cluster labeled 3
+(select (kmeans-query '(1 2 3) data) (K:clusters 2)) <span class='arw'>&rarr;</span>
+    (3.190626898 3.014415366 2.013107051 3.186549858 2.874786949 3.162419959 2.423674896)
+</pre>
+
+<p>We see that the smallest distances are shown for the data points in
+the 3rd cluster at offset 2.</p>
+
+<p>If the numbers of elements - features - in records of <em>list-data</em> 
+is different from the number of columns in the data or centroid matrix, 
+then the smaller is taken for calculating the Eucledian distances. This 
+is useful when ther last column of the data matrix does not contain feature 
+data, but labels identifying the cluster of a data point.</p>
+
+<br/><br/>
+
+<a name="kmeans-train"></a>
+<h2><span class="function">kmeans-train</span></h2>
+<h4>syntax: (kmeans-train <em>matrix-data</em> <em>int-k</em> <em>context</em> [<em>matrix-centroids</em>])</h4>
+
+<p>The function performs Kmeans clusteranalysis on <em>matrix-data</em>. 
+All <b><i>n</i></b> data records are partitioned into a number of <em>int-k</em> 
+different groups. The Kmeans algorithm tries to minimize the sum sum of squared 
+inner cluster distances (SSQ). On some data sets, the result can depend on the 
+starting centroid points. When no optional <em>matrix-centroids</em> are given, 
+<tt>kmeans-train</tt> will assign an initial random cluster membership to each 
+data row and calculate starting centroids.</p>
+
+<p>Both, the <b><i>n * m</i></b> <em>matrix-data</em> and the optional <b><i>k * m</i></b>
+<em>matrix-centroids</em> can be either nested lists or 2-dimensional arrays.</p>
+
+<p>The algorithm then iterates, moving the centroids in to their final result position. 
+Via the optional <em>matrix-centroids</em> parameter, initial start centroids can be 
+specified for more guided Kmeans clustering. The right choice of initial centroids can 
+speed up the process and avoid not wanted local minima.</p>
+
+<p><tt>kmeans-train</tt> returns a vector of total SSQs, the sum of squared inner distances
+from the centroid inside the cluster for all clusters. The Iterating algorithm stops when the
+change of SSQ from one to the next iteration is less than 1e-10.</p>
+
+<p>The following example analyses 20 data records measuring <i>m = 3</i> features 
+and tries to partition data into <b><i>k = 3</i></b> clusters. Other numbers than <b><i>k = 3</i></b> 
+could be tried.</p>
+
+<pre>
+(set 'data '(
+  (6.57 4.96 11.91) 
+  (2.29 4.18 1.06) 
+  (8.63 2.51 8.11) 
+  (1.85 1.89 0.11) 
+  (7.56 7.93 5.06) 
+  (3.61 7.95 5.11) 
+  (7.18 3.46 8.7) 
+  (8.17 6.59 7.49) 
+  (5.44 5.9 5.57) 
+  (2.43 2.14 1.59) 
+  (2.48 2.26 0.19) 
+  (8.16 3.83 8.93) 
+  (8.49 5.31 7.47) 
+  (3.12 3.1 1.4) 
+  (6.77 6.04 3.76) 
+  (7.01 4.2 11.9) 
+  (6.79 8.72 8.62) 
+  (1.17 4.46 1.02) 
+  (2.11 2.14 0.85) 
+  (9.44 2.65 7.37)))
+
+(kmeans-train data 3 'MAIN:K) <span class='arw'>&rarr;</span> 
+(439.7949357 90.7474276 85.06633163 82.74597619)
+
+; cluster membership
+K:labels <span class='arw'>&rarr;</span> (2 3 2 3 1 1 2 1 1 3 3 2 2 3 1 2 1 3 3 2)
+
+; the centroid for each cluster
+K:centroids <span class='arw'>&rarr;</span>
+    ( (6.39 7.188333333 5.935) 
+      (7.925714286 3.845714286 9.198571429) 
+      (2.207142857 2.881428571 0.8885714286) )
+
+; ceach of the result clusters with indices into the data set
+K:clusters <span class='arw'>&rarr;</span> 
+    ( (4 5 7 8 14 16) 
+      (0 2 6 11 12 15 19) 
+      (1 3 9 10 13 17 18) )
+
+; cluster of data records labeled 1 at offset 0
+(select data (K:clusters 0)) <span class='arw'>&rarr;</span>
+    ( (7.56 7.93 5.06) 
+      (3.61 7.95 5.11) 
+      (8.17 6.59 7.49) 
+      (5.44 5.9 5.57) 
+      (6.77 6.04 3.76) 
+      (6.79 8.72 8.62) )
+
+; cluster of data records labeled 2 at offset 1
+(select data (K:clusters 1)) <span class='arw'>&rarr;</span>
+    ( (6.57 4.96 11.91) 
+      (8.63 2.51 8.11) 
+      (7.18 3.46 8.7) 
+      (8.16 3.83 8.93) 
+      (8.49 5.31 7.47) 
+      (7.01 4.2 11.9) 
+      (9.44 2.65 7.37) )
+
+; cluster of data records labeled 3 at offset 2
+(select data (K:clusters 2)) <span class='arw'>&rarr;</span>
+    ( (2.29 4.18 1.06) 
+      (1.85 1.89 0.11) 
+      (2.43 2.14 1.59) 
+      (2.48 2.26 0.19) 
+      (3.12 3.1 1.4) 
+      (1.17 4.46 1.02) 
+      (2.11 2.14 0.85) )
+
+; append a cluster label to each data record
+(set 'labeled-data (transpose (push K:labels (transpose data) -1)))
+
+labeled-data: <span class='arw'>&rarr;</span>
+    ( (6.57 4.96 11.91 2) 
+      (2.29 4.18 1.06 3) 
+      (8.63 2.51 8.11 2) 
+      (1.85 1.89 0.11 3) 
+      (7.56 7.93 5.06 1) 
+      (3.61 7.95 5.11 1) 
+      ... ...
+      (2.11 2.14 0.85 3) 
+      (9.44 2.65 7.37 2) )
+
+</pre>
+
+<p>The result context should be prefixed with <tt>MAIN</tt> when code is
+written in a namespace context. If the context does not exists already, it
+will be created.</p>
+
+<p>Results in <tt>K:labels</tt>, <tt>K:clusters</tt> and <tt>K:centroids</tt>
+will be overwritten, if already present from previous calculations.</p>
+
+<p>The returned list of SSQs shows how in each iteration the sum of inner squared
+distances decreases.</p>
+
+<p>The centroids in <tt>K:centroids</tt> can be used for later classification
+of new data records using <a href="#kmeans-query">kmeans-query</a>.</p>
+ 
+<br/><br/>
+
+
 <a name="lambda"></a>
 
 <h2><span class="function">lambda</span></h2>
@@ -22730,6 +22945,9 @@ that pre-compiled patterns are used. Normal pattern options are specified
  during pre-compilation with <tt>regex-comp</tt> . The <tt>0x10000</tt> option 
 can only be combined with <tt>0x8000</tt>, the option used to specify that only 
 one replacement should be made when using <a href="#replace">replace</a>.</p>
+
+<p>The function <a href="#ends-with">ends-with</a> should not be used with compiled 
+patterns, as it tries to append to an un-compiled pattern internally.</p>
 
 <br/><br/>
 
