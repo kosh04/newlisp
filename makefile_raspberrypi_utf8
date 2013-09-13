@@ -3,6 +3,8 @@
 # Note, that readline support may require different libraries on different OSs
 # 
 # USAGE: sb2 make -f makefile_raspberrypi_utf8
+# RUNNING and TEST: sb2 make testall
+# sb2 is an ARM emulator
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o

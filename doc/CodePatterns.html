@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2012 April 6<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.4.0
+</h1>Version 2012 April 19<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.4.2
 </center>
 
 <br/><br/><br/>
@@ -130,11 +130,10 @@ newLISP is a registered trademark of Lutz Mueller.
 <li><a href="#toc-4">4. Local variables</a>
   <ul>
   <li>Locals in looping functions</li>
-  <li>Locals in <tt>let</tt> and <tt>local</tt></li>
+  <li>Locals in <tt>let</tt> and <tt>letn</tt></li>
   <li>Unused parameters as locals</li>
   <li>Default variable values</li>
   <li><tt>args</tt> as local substitute</li>
-  <li>Named parameters and <tt>bind</tt></li>
   </ul></li>
 <li><a href="#toc-5">5. Walking through lists</a>
   <ul>
@@ -686,7 +685,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 
 <p>All looping functions like <tt>doargs</tt>, <tt>dolist</tt>, <tt>dostring</tt>, <tt>dotimes</tt>, <tt>dotree</tt> and <tt>for</tt> use local variables. During loop execution, the variable takes different values. But after leaving the looping function, the variable regains its old value. <tt>let</tt>, <tt>define</tt>, and <tt>lambda</tt> expressions are another method for making variables local:</p>
 
-<h3>Locals in <tt>let</tt> and <tt>local</tt></h3>
+<h3>Locals in <tt>let</tt> and <tt>letn</tt></h3>
 
 <p><tt>let</tt> is the usual way in newLISP to declare symbols as local to a block.</p>
 
@@ -700,13 +699,6 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 ; alternative syntax
 (define (sum-sq a b)
     (let (x (* a a) y (* b b))
-        (+ x y)))
- 
-; using local
-(define (sum-sq a b)
-    (local (x y)
-        (set 'x (* a a))
-        (set 'y (* b b))
         (+ x y)))
 </pre>
 
@@ -723,7 +715,6 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
     (list x y))              → (1 2)
 </pre>
 
-<p>The function <tt>local</tt> works like a <tt>let</tt> but initializes all variables to <tt>nil</tt>.</p>
 
 <h3>Unused parameters as locals</h3>
 
@@ -778,31 +769,6 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
    
 (foo 3 4)   → 7
 </pre>
-
-<h3>Named parameters and <tt>bind</tt></h3>
-
-<p><tt>bind</tt> can also be used together with <tt>local</tt> and <tt>args</tt> to write functions with named parameters:</p>
-
-<pre>
-(define-macro (foo)
-    (local (len width height)
-        (bind (args) true)
-        (println "len:" len " width:" width " height:" height)
-))
-       
-     
-&gt; (foo (width (+ 15 5)) (height 30) (len 10))
-len:10 width:20 height:30
-     
-&gt; (foo (width (+ 15 5)) (height (* width 2)) (len 10))
-len:10 width:20 height:40
-       
-&gt;
-</pre>
-
-<p>Arguments are evaluated incrementally in the local environment and assigned to the local variables.</p>
-
-<p>Note that this macro would not work when called across namespaces, as the symbols used for naming would not be the same.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-5"></a>
@@ -2521,7 +2487,7 @@ tmp)
 <pre>
 ; calculate primes in a range
 (define (primes from to)
-    (local (plist)
+    (let (plist '())
     (for (i from to)
         (if (= 1 (length (factor i)))
         (push i plist -1)))
@@ -2563,7 +2529,7 @@ plist))
 
 <pre>
 (define (fibo n)
-    (local (f1 f2)
+    (let (f1 nil f2 nil)
         (if (&lt; n 2) 1
             (begin
                 (spawn 'f1 (fibo (- n 1)))
@@ -3272,7 +3238,7 @@ newlisp httpd-conf.lsp -http -d 80 -w /home/www &amp;
 ; reject query commands using CGI with .exe files
  
 (command-event (fn (s)
-    (local (request)
+    (let (request nil)
     (if (find "?" s) ; is this a query
         (begin
             (set 'request (first (parse s "?")))
@@ -3668,9 +3634,9 @@ and double precision floating point types and for advanced usage of <tt>pack</tt
 
 <h3>Writing library wrappers</h3>
 
-<p>Sometimes newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on Mac OS X cannot be used.</p>
+<p>Sometimes the simple version of newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on Mac OS X cannot be used.</p>
 
-<p>A special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
+<p>Since newLISP version 10.4.0, the problem can be solved easiest using the newer extended syntax of <tt>import</tt>, which automatically resolves platform and architectural differences. On very small systems or whenever the needed <tt>libffi</tt> system libray is not present on a platform, a special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
 
 <pre>
 /* wrapper.c - demo for wrapping library function

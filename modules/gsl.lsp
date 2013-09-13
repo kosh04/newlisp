@@ -1,6 +1,7 @@
 ;; @module gsl.lsp 
 ;; @description Selected functions from the GNU Scientific Library
 ;; @version 1.0 - initial release. Minimum newLISP version is 10.4.0.
+;; @version 1.1 - added check for extended ffi enabled version.
 ;; @author Lutz Mueller 2012
 
 ;; <h2>Module GSL For The GNU Scientific Library</h2>
@@ -157,6 +158,11 @@
 ; install needs the root password
 ;
 
+(when (!= 1024 (& 1024 (sys-info -1)))
+    (println "This module needs newLISP compiled for extended ffi.")
+    (println "Must exit")
+    (exit))
+
 ; the following assumes the libararies installed in the system library path
 (set 'LIB 
 	(if 
@@ -167,7 +173,7 @@
 
 ; load libgslcblas which contans functions referenced by libgsl
 ; the symbol cblas_sdsdot is not needed but newLISP versions before
-; 10.4.2 can not use the 'import' statement without a functio name
+; 10.4.2 can not use the 'import' statement without a function name
 ; libgslcblas is mainly needed internally by libgsl.
 ; On windows the library is automatically loaded by libgsl-0.dll.
 (if 
@@ -184,8 +190,7 @@
 (import LIB "gsl_set_error_handler_off" "void*") ; turn of error handler
 (import LIB "gsl_strerror" "char*" "int") ; get error text
 
-; in vector functions "void*" can be used instead of structs "vector"
-; because pointers are only used passed around internally
+; pointers are only used passed around internally
 ; for debugging (unpack vector vptr) can always be used
 (import LIB "gsl_vector_alloc" "void*" "long") 
 (import LIB "gsl_vector_calloc" "void*" "long") 

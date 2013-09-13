@@ -952,4 +952,7 @@
     loops.
 
     Added struct to SyntaxHighlighter.java
+
+1.46 added various new primitives to SyntaxHighlighter.java
+
  

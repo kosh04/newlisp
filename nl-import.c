@@ -155,7 +155,6 @@ hLibrary = 0;
 if((hLibrary = dlopen(libName, RTLD_LAZY)) == 0)
 #else
 if((hLibrary = dlopen(libName, RTLD_GLOBAL|RTLD_LAZY)) == 0)
-/* if((hLibrary = dlopen(libName, RTLD_GLOBAL)) == 0) */
 #endif
     return(errorProcExt2(ERR_IMPORT_LIB_NOT_FOUND, stuffString((char *)dlerror())));
 
@@ -1028,7 +1027,7 @@ CELL * executeLibFFI(CELL * pCell, CELL * params)
         else if(ffiType == &ffi_type_double)  /* double 64-bit */
             params = getFloat(params, avalues[c]);
         else if(ffiType == &ffi_type_sint64 
-               || ffiType == &ffi_type_uint64) /* int 64-bit i o unsiged 64-bit in newLISP */
+               || ffiType == &ffi_type_uint64) /* int 64-bit unsiged 64-bit in newLISP */
             {
             params = getInteger64(params, &value64);
             avalues[c] = alloca(sizeof(INT64));

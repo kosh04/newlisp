@@ -70,8 +70,7 @@
         (< (sub (prob-z 3) 0.998650102) 0.00001)
 ))
 
-(if-not 
-    (and
+(if (not (and
         (test-prob-f)
         (test-crit-f)
         (test-prob-chi2)
@@ -79,7 +78,7 @@
         (test-prob-t)
         (test-crit-t)
         (test-prob-z)
-        (test-crit-z))
+        (test-crit-z)))
 
 	(println ">>>>> PROBLEM in statistical distributions tests")
 	(println ">>>>> Statisitical distribution tests SUCCESSFUL")

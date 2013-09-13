@@ -8,7 +8,7 @@
 # this version works on both, 32-bit and 64-bit newLISP
 # on a Mac OSX standard install everything neede for 32-bit or 64-bit
 # is included. On Windows XP and Windows 7, glut32.dll must be added. 
-# on Linux opengl.so, glut.so and libffi.so must be added, most
+# on Linux opengl.so, libglut.so and libffi.so must be added, most
 # Linux seem to include libffi.so already. See also the C version:
 # http://graphics.stanford.edu/courses/cs248-01/OpenGLHelpSession/code_example.html
 

@@ -7,7 +7,8 @@
 ;; @version 2.1 - doc changes
 ;; @version 2.2 - formatting
 ;; @version 2.3 - documentation
-;; @author Lutz Mueller, July 2006, 2009, 2010
+;; @version 2.4 - replaced if-not with unless
+;; @author Lutz Mueller, July 2006, 2009, 2010, 2012
 ;; <h2>Changes and fixes in version 2 </h2>
 ;; <ul>
 ;; <li>Bugfixes for bezier, which sometimes crashed.
@@ -1020,7 +1021,7 @@
 	
 (define (line-cap mode)
 	(if (string? mode) (set 'mode (find mode '("butt" "round" "square"))))
-	(if-not mode (throw-error "Not a valid line-cap mode"))
+	(unless mode (throw-error "Not a valid line-cap mode"))
 	(ps (format "%g setlinecap" mode)))
 
 (define (line-join mode)

@@ -552,6 +552,7 @@ return(stuffInteger(size + (lineFeed ? LINE_FEED_LEN : 0)));
 CELL * p_seek(CELL * params)
 {
 UINT handle;
+FILE * fstream;
 #ifdef LFS
 INT64 paramPosition;
 off_t newPosition;
@@ -566,6 +567,8 @@ if(params == nilCell)
     {
     if(handle == 0)
         newPosition = ftell(stdout);
+    else if((fstream = getIOstream(handle)) != NULL)
+        newPosition = ftell(fstream);
     else if( (newPosition = lseek(handle, 0, SEEK_CUR)) == -1)
         return(nilCell);
     }
@@ -597,7 +600,6 @@ return(stuffInteger64(paramPosition));
 return(stuffInteger(paramPosition));
 #endif
 }
-
 
 char * readStreamLine(STREAM * stream, FILE * inStream)
 {

@@ -210,6 +210,9 @@ PRIMITIVE primitive[] =
 	{"bind",		p_bind,			0},
 	{"uuid",		p_uuid,			0},
 	{"gcd",			p_gcd,			0},
+    {"stats",       p_stats,        0},
+    {"t-test",      p_ttest,        0},
+    {"corr",        p_corr,         0},
 	
 	/* ------------ string ops ------------- */
 	{"eval-string",	p_evalString,	0},

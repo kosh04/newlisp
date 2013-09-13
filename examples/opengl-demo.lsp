@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp  
+#!/usr/bin/newlisp 
 # OpenGL and GLUT demo - opengl-demo.lsp
 # using simple import and callback API
 # tested on Win32 and OS X (Intel) 32-bit only!
@@ -6,9 +6,10 @@
 # version 1.2, July 2009 - make drawObject working with motion
 
 # this version runs only on 32-bit newLISP and libraries
-# for 64-bit newlisp use opendl-demo-ffi.lsp, which runs both 32/64
-# for this extended ffi version newLISP 10.3.10 or later is required
-# www.newlisp.org/code/opengl-demo-ffi-lsp.txt
+# for 64-bit newlisp use http://www.newlisp.org/downloads/OpenGL/opengl-demo-ffi-lsp.txt, 
+# which runs both 32/64 versions of newLISP. For this extended ffi version newLISP 10.4.0 
+# or later is required. The extended ffi interface is present in all binary distributions 
+# (Windows, OSX, Ubuntu)
 
 # WIn32
 # opengl32.dll - should be already on you WindowsXP installation or at www.opengl.org  

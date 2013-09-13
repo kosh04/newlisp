@@ -284,14 +284,17 @@ switch(datCell->type)
         if(params != nilCell)
             {
             params = getInteger(params, (UINT*)&offset);
-            offset = adjustNegativeIndex(offset, (size_t)datCell->aux - 1);
-            if(getFlag(params))
+#ifdef SUPPORT_UTF8 
+            if(getFlag(params)) /* treat as offset into 8-bit array */
+                {
+                offset = adjustNegativeIndex(offset, (size_t)datCell->aux - 1);
                 return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));
+                }
+#endif
             }
-
         else offset = 0;
 
-        offset = adjustNegativeIndex(offset, len);
+        offset = adjustNegativeIndex(offset, (size_t)len);
         
 #ifndef SUPPORT_UTF8
         return(stuffInteger((UINT)*((unsigned char *)string + (UINT)offset)));

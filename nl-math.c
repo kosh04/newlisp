@@ -3125,6 +3125,8 @@ while(tset != NULL)
 }
 #endif
 
+/* ---------------------------------- end unify ----------------------------- */
+
 CELL * p_bits(CELL * params) 
 { 
 int count = 0;
@@ -3170,5 +3172,215 @@ INT64 num;
 getInteger64(params, &num);
 return((0 == (num & 1)) ? trueCell : nilCell);
 }
+
+/* ------------------------------ basic statistics ------------------------- */
+
+double * getVector(CELL * data, UINT * N, double * Sum, double * Mean, double * Sd2)
+{
+CELL * cell;
+UINT idx, n;
+double * vector = NULL;
+double value, sum, ssq, sd2;
+
+n = sum = ssq = 0;
+if(data->type == CELL_EXPRESSION)
+    {
+    if((data = cell = (CELL *)data->contents) == nilCell)
+        return(NULL);
+    idx = 1;
+    while(cell->next != nilCell) 
+        { cell = cell->next; idx++; }
+    cell = data;
+    vector = callocMemory(sizeof(double) * idx);
+    n = idx;
+    for (idx = 0; idx < n; idx++)
+        {
+        value = getDirectFloat(cell);
+        *(vector + idx) = value;
+        sum += value;
+        ssq += value * value;
+        cell = cell->next;
+        }
+    }
+
+sd2 = ssq - sum * sum / n;
+
+*N = n;
+*Sum = sum;
+*Mean = sum / n;
+*Sd2 = sd2;
+
+return(vector);
+}
+
+
+CELL * p_stats(CELL * params)
+{
+CELL * cell;
+UINT N = 0;
+double sum, mean, sd2, avdev, sdev, var, skew, curt, s;
+double * vector;
+int idx;
+
+if((vector = getVector(evaluateExpression(params), &N, &sum, &mean, &sd2)) == NULL)
+    return(errorProc(ERR_LIST_EXPECTED));
+
+var = sd2 / (N - 1);    /* pop variance */
+sdev = sqrt(var);       /* standard deviation */
+
+skew = curt = avdev = 0.0;
+for(idx = 0; idx < N; idx++)
+    {
+    s = vector[idx] - mean;
+    avdev += fabs(s);
+    skew += s * s * s;
+    curt += s * s * s * s;
+    }
+avdev /= N;
+
+free(vector);
+
+if(var != 0.0)
+    {
+    skew = skew / (N * var * sdev);
+    curt = curt / (N * var * var) - 3.0; 
+    }
+else skew = curt = 0.0;
+
+cell = getCell(CELL_EXPRESSION);
+addList(cell, stuffInteger(N));
+addList(cell, stuffFloat(&mean));
+addList(cell, stuffFloat(&avdev));
+addList(cell, stuffFloat(&sdev));
+addList(cell, stuffFloat(&var));
+addList(cell, stuffFloat(&skew));
+addList(cell, stuffFloat(&curt));
+
+return(cell);
+}
+
+CELL * p_ttest(CELL * params)
+{
+UINT Nx, Ny, df;
+double sumx, sumy, sumxy;
+double meanx, meany;
+double sd2x, sd2y;
+double varx, vary;
+double sdevx, sdevy;
+double * X;
+double * Y;
+double svar, cov, t, tprob;
+CELL * cell;
+int dependent, idx;
+
+if((X = getVector(evaluateExpression(params), &Nx, &sumx, &meanx, &sd2x)) == NULL)
+    return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
+params = params->next;
+if((Y = getVector(evaluateExpression(params), &Ny, &sumy, &meany, &sd2y)) == NULL)
+    return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
+
+sumxy = 0.0;
+for(idx = 0; idx < Nx; idx++)
+    sumxy += X[idx] * Y[idx];
+
+free(X);
+free(Y);
+
+dependent = getFlag(params->next);
+if(dependent && Nx != Ny)
+    return(errorProc(ERR_WRONG_DIMENSIONS));
+
+varx = sd2x / (Nx - 1);
+vary = sd2y / (Ny - 1);
+sdevx = sqrt(varx);
+sdevy = sqrt(vary);
+cov = sumxy - sumx * sumy / Nx;
+
+/* t for related samples  Nx = Ny */
+if(dependent)
+    {
+    df = Nx - 1;
+    cov /= df;
+    t = (meanx - meany) / sqrt((varx + vary - 2.0 * cov) / Nx);
+    }
+/* t for different means in independent samples with equal variance */
+else
+    {
+    df = Nx + Ny - 2;
+    svar = (sd2x + sd2y) / df;
+    t = (meanx - meany) / sqrt(svar * (1.0/Nx + 1.0/Ny));
+    }
+
+tprob = 2.0 * (1.0 - probT(fabs(t), df)); /* two tailed */
+
+cell = getCell(CELL_EXPRESSION);
+addList(cell, stuffFloat(&meanx));
+addList(cell, stuffFloat(&meany));
+addList(cell, stuffFloat(&sdevx));
+addList(cell, stuffFloat(&sdevy));
+addList(cell, stuffFloat(&t));
+addList(cell, stuffInteger(df));
+addList(cell, stuffFloat(&tprob));
+
+return(cell);
+}
+
+/* unequal variances in unpaired t-test 
+
+t = (meanx - meany) / sqrt(sd2x/Nx + sd2y/Ny);
+df = ((sd2x/Nx + sd2y/Ny)^2) / ( ((sd2x/Nx)^2)/(Nx -1) + ((sd2y/Ny)^2)/(Ny - 1))
+
+*/
+
+CELL * p_corr(CELL * params)
+{
+UINT idx, Nx, Ny, df;
+double * X;
+double * Y;
+double sumxy, sumx, sumy, meanx, meany, sd2x, sd2y;
+double cov, corr, b0, b1, t, tprob;
+CELL * cell;
+
+
+if((X = getVector(evaluateExpression(params), &Nx, &sumx, &meanx, &sd2x)) == NULL)
+    return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
+if((Y = getVector(evaluateExpression(params->next), &Ny, &sumy, &meany, &sd2y)) == NULL)
+    return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
+
+if(Nx != Ny)
+    return(errorProc(ERR_WRONG_DIMENSIONS));
+
+sumxy = 0.0;
+for(idx = 0; idx < Nx; idx++)
+    sumxy += X[idx] * Y[idx];
+
+free(X);
+free(Y);
+
+cov = sumxy - sumx * sumy / Nx;
+corr = cov / sqrt(sd2x * sd2y);
+b1 = cov / sd2x;
+b0 = meany - b1 * meanx;
+t = corr * sqrt((Nx - 2) / (1.0 - corr * corr));
+
+/* standard error of corr */
+/* rse = sqrt( (1.0 - corr * corr) / (Nx - 2) ); */
+/* see http://irthoughts.wordpress.com/2010/06/10/on-spearmans-correlation-coefficients-with-excel/ */
+/* rse = corr / t; */
+
+df = Nx - 2;
+tprob = 2 * (1.0 - probT(fabs(t), df)); /* two tailed */
+
+cell = getCell(CELL_EXPRESSION);
+addList(cell, stuffFloat(&corr));
+addList(cell, stuffFloat(&b0)); /* y = b0 + b1*x */
+addList(cell, stuffFloat(&b1));
+addList(cell, stuffFloat(&t));
+addList(cell, stuffInteger(df));
+addList(cell, stuffFloat(&tprob));
+
+return(cell);
+}
+
 
 /* eof */

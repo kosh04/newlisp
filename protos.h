@@ -138,9 +138,6 @@ CELL * p_bitNot(CELL * params);
 CELL * p_bitOr(CELL * params);
 CELL * p_bitXor(CELL * params);
 CELL * p_callback(CELL * params);
-#ifdef FFI
-CELL * p_struct(CELL * params);
-#endif
 CELL * p_case(CELL * params);
 CELL * p_catch(CELL * params);
 CELL * p_ceil(CELL * params);
@@ -159,6 +156,7 @@ CELL * p_context(CELL * params);
 CELL * p_copy(CELL * params);
 CELL * p_copyFile(CELL * params);
 CELL * p_copyMemory(CELL * params);
+CELL * p_corr(CELL * params);
 CELL * p_cos(CELL * params);
 CELL * p_cosh(CELL * params);
 CELL * p_acosh(CELL * params);
@@ -430,7 +428,11 @@ CELL * p_sort(CELL * params);
 CELL * p_spawn(CELL * params);
 CELL * p_sqrt(CELL * params);
 CELL * p_startsWith(CELL * params);
+CELL * p_stats(CELL * params);
 CELL * p_string(CELL * params);
+#ifdef FFI
+CELL * p_struct(CELL * params);
+#endif
 CELL * p_subFloat(CELL * params);
 CELL * p_subtract(CELL * params);
 CELL * p_swap(CELL * params);
@@ -446,6 +448,7 @@ CELL * p_systemInfo(CELL * params);
 CELL * p_tan(CELL * params);
 CELL * p_tanh(CELL * params);
 CELL * p_term(CELL* params);
+CELL * p_ttest(CELL * params);
 CELL * p_throw(CELL * params);
 CELL * p_throwError(CELL * params);
 CELL * p_time(CELL * params);

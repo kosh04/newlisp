@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.4.2 Manual and Reference</title>
+   <title>newLISP v.10.4.3 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.4.2</h2>
+<h2>User Manual and Reference v.10.4.3</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -303,7 +303,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li><a href="#bit_operators">Bit operators</a></li>
   <li><a href="#predicates">Predicates</a></li>
   <li><a href="#timedate">Date and time functions</a></li>
-  <li><a href="#montecarlo">Simulation and modeling functions</a></li>
+  <li><a href="#montecarlo">Statistics, simulation and modeling functions</a></li>
   <li><a href="#pattern">Pattern matching</a></li>
   <li><a href="#financial">Financial math functions</a></li>
   <li><a href="#input_output">File and I/O operations</a></li>
@@ -503,6 +503,10 @@ run-time using the new <a href="#net-ipv">net-ipv</a> function. The
 After transition to IPv6 the <tt>-6</tt>
 commandline switch will be changed to <tt>-4</tt> for starting up in IPv4
 mode.</p>
+
+<p>The functions <tt>if-not</tt> and <tt>local</tt> are deprecated and have
+been taken out of the documentation. Both functions will keep on working
+for an indefinite time.</p>
 
 <br/>
 
@@ -4410,8 +4414,8 @@ are forgotten and the environment's symbols are restored to their previous value
 </p>
 <p>
 	For other ways of declaring and initializing local variables,
-	see <a href="#let">let</a>, <a href="#letex">letex</a>, 
-	<a href="#letn">letn</a> and <a href="#local">local</a>.
+	see <a href="#let">let</a>, <a href="#letex">letex</a> and
+	<a href="#letn">letn</a>.
 </p>
 
 <br/>
@@ -5276,10 +5280,12 @@ arithmetic">
 <td>makes a list</td>
 </tr>
 
+<!-- 
 <tr>
 <td><a href="#local">local</a></td>
 <td>declares local variables</td>
 </tr>
+-->
 
 <tr>
 <td><a href="#lookup">lookup</a></td>
@@ -5837,26 +5843,6 @@ arithmetic">
 </tr>
 
 <tr>
-<td><a href="#crit-chi2">crit-chi2</a></td>
-<td>calculates the <em>Chi&sup2;</em> statistic for a given probability</td>
-</tr>
-
-<tr>
-<td><a href="#crit-f">crit-f</a></td>
-<td>calculates the <em>F</em> statistic for a given probability</td>
-</tr>
-
-<tr>
-<td><a href="#crit-t">crit-t</a></td>
-<td>calculates the <em>Student's t</em> statistic for a given probability</td>
-</tr>
-
-<tr>
-<td><a href="#crit-z">crit-z</a></td>
-<td>calculates the normal distributed <em>Z</em> for a given probability</td>
-</tr>
-
-<tr>
 <td><a href="#dec">dec</a></td>
 <td>decrements a number in a variable, list or array</td>
 </tr>
@@ -5965,26 +5951,6 @@ arithmetic">
 <tr>
 <td><a href="#pow">pow</a></td>
 <td>calculates <em>x</em> to the power of <em>y</em></td>
-</tr>
-
-<tr>
-<td><a href="#prob-chi2">prob-chi2</a></td>
-<td>calculates the tail probability of a <em>Chi&sup2;</em> distribution value</td>
-</tr>
-
-<tr>
-<td><a href="#prob-f">prob-f</a></td>
-<td>calculates the tail probability of a <em>F</em> distribution value</td>
-</tr>
-
-<tr>
-<td><a href="#prob-t">prob-t</a></td>
-<td>calculates the tail probability of a <em>Student's t</em> distribution value</td>
-</tr>
-
-<tr>
-<td><a href="#prob-z">prob-z</a></td>
-<td>calculates the cumulated probability of a <em>Z</em> distribution value</td>
 </tr>
 
 <tr>
@@ -6373,10 +6339,10 @@ arithmetic">
 </table><br/>
 
 <a name="montecarlo"></a>
-<h3>Simulation and modeling functions</h3>
+<h3>Statistics, simulation and modeling functions</h3>
 
 
-<table border="0" cellpadding="1" width="95%" align="center" summary="Simulation and modelling math functions">
+<table border="0" cellpadding="1" width="95%" align="center" summary="Statistics, simulation and modelling math functions">
 
 
 <tr>
@@ -6395,8 +6361,53 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#corr">corr</a></td>
+<td>calculates the <em>product-moment correlation</em> coefficient</td>
+</tr>
+
+<tr>
+<td><a href="#crit-chi2">crit-chi2</a></td>
+<td>calculates the <em>Chi&sup2;</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#crit-f">crit-f</a></td>
+<td>calculates the <em>F</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#crit-t">crit-t</a></td>
+<td>calculates the <em>Student's t</em> statistic for a given probability</td>
+</tr>
+
+<tr>
+<td><a href="#crit-z">crit-z</a></td>
+<td>calculates the normal distributed <em>Z</em> for a given probability</td>
+</tr>
+
+<tr>
 <td><a href="#normal">normal</a></td>
 <td>makes a list of normal distributed floating point numbers</td>
+</tr>
+
+<tr>
+<td><a href="#prob-chi2">prob-chi2</a></td>
+<td>calculates the tail probability of a <em>Chi&sup2;</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-f">prob-f</a></td>
+<td>calculates the tail probability of a <em>F</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-t">prob-t</a></td>
+<td>calculates the tail probability of a <em>Student's t</em> distribution value</td>
+</tr>
+
+<tr>
+<td><a href="#prob-z">prob-z</a></td>
+<td>calculates the cumulated probability of a <em>Z</em> distribution value</td>
 </tr>
 
 <tr>
@@ -6416,8 +6427,17 @@ arithmetic">
 
 <tr>
 <td><a href="#seed">seed</a></td>
-
 <td>seeds the internal random number generator</td>
+</tr>
+
+<tr>
+<td><a href="#stats">stats</a></td>
+<td>calculates some basic statistics for a data vector</td>
+</tr>
+
+<tr>
+<td><a href="#t-test">t-test</a></td>
+<td>performs a t-test on dependent or independent data samples</td>
 </tr>
 
 </table><br/>
@@ -9382,28 +9402,6 @@ E <span class='arw'>&rarr;</span> (x y z)
 <p><a href="#unify">unify</a>  returns an association list and <tt>bind</tt> binds the 
 associations.</p>
 
-<p><tt>bind</tt> together with <a href="#args">args</a> can be used to write functions 
-with named parameters:</p>
-
-<pre>
-(define-macro (foo) 
-    (local (len width height)
-        (bind (args) true)
-        (println "len:" len " width:" width " height:" height)
-))
-
-<b>&gt;</b> (foo (width (+ 15 5)) (height 30) (len 10))
-<b>len:10 width:20 height:30</b>
-
-<b>&gt;</b> (foo (width (+ 15 5)) (height (* width 2)) (len 10))
-<b>len:10 width:20 height:40</b>
-
-`<b>&gt;</b>
-</pre>
-
-<p>Arguments are evaluated incrementally in the local environment and assigned to 
-the local variables.</p>
-
 <br/><br/>
 
 <a name="binomial"></a>
@@ -10517,6 +10515,44 @@ A modified version of the data is returned.</p>
 <pre>
 (copy-file "/home/me/newlisp/data.lsp" "/tmp/data.lsp")
 </pre>
+
+<br/><br/>
+
+<a name="corr"></a>
+<h2><span class="function">corr</span></h2>
+<h4>syntax: (corr <em>list-vector-X</em> <em>list-vector-Y</em>)</h4>
+
+<p>Calculates the <em>Pearson</em> product-moment correlation coefficient as a measure
+of the linear relationship between the two variables in  <em>list-vector-X</em>
+and  <em>list-vector-Y</em>. Both lists must be of same length.</p>
+
+<p><tt>corr</tt> returns a list containing the following values:</p>
+
+<table>
+<tr align="left"><th>name</th><th>description</th></tr>
+<tr><td>r</td><td>Correlation coefficient</td></tr>
+<tr><td>b0</td><td>Regression coefficient offset</td></tr>
+<tr><td>b1</td><td>Regression coefficient slope</td></tr>
+<tr><td>t</td><td>t - statistic for significance testing</td></tr>
+<tr><td>df</td><td>Degrees of freedom for t</td></tr>
+<tr><td>p</td><td>Two tailed probability of t under the null hyothesis</td></tr>
+</table>
+<br />
+<!-- example -->
+
+<pre>
+(set 'study-time '(90 100 130 150 180 200 220 300 350 400))
+(set 'test-errors '(25 28 20 20 15 12 13 10 8 6))
+
+(corr study-time test-errors) <span class='arw'>&rarr;</span> (-0.926 29.241 -0.064 -6.944 8 0.0001190)
+</pre>
+
+<p>The negative correlation of <tt>-0.926</tt> between study time and test errors is 
+highly signficant with a two-tailed <tt>p</tt> of about <tt>0.0001</tt> under the null hypothesis.</p>
+
+<p>The regression coefficients <tt>b0 = 29.241</tt> and <tt>b1 = -0.064</tt>
+can be used to estimate values of the Y variable (test errors) from values in X (study time)
+using the equation <tt><em><b>Y = b0 + b1 * X</b></em></tt>.</p>
 
 <br/><br/>
 
@@ -15163,6 +15199,7 @@ syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</e
 
 <br/><br/>
 
+<!--
 <a name="if-not"></a>
 <h2><span class="function">if-not</span></h2>
 <h4>syntax: (if-not <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])</h4>
@@ -15175,8 +15212,6 @@ or the empty list <tt>()</tt>, <em>exp-1</em> is evaluated;
 otherwise, the optional <em>exp-2</em> is evaluated.
 </p>	
 
-<!-- example --> 
- 
 <pre>
 (set 'x 50)                       <span class='arw'>&rarr;</span> 50 
 (if-not (&lt; x 100) "big" "small")  <span class='arw'>&rarr;</span> "small"
@@ -15185,6 +15220,7 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 </pre>
 
 <br/><br/>
+-->
 
 <a name="ifft"></a>
 <h2><span class="function">ifft</span></h2>
@@ -15229,7 +15265,7 @@ otherwise, the optional <em>exp-2</em> is evaluated.
 <a name="import"></a>
 <h2><span class="function">import</span></h2>
 <h4>syntax: (import <em>str-lib-name</em> <em>str-function-name</em> ["cdecl"])<br/>
-syntax: (import <em>str-lib-name</em> <em>str-function-name</em> <em>str-return-type</em> [<em>str-param-type</em> . . .])<br>
+syntax: (import <em>str-lib-name</em> <em>str-function-name</em> <em>str-return-type</em> [<em>str-param-type</em> . . .])<br/>
 syntax: (import <em>str-lib-name</em>)</h4>
 
 <p>Imports the function specified in <em>str-function-name</em> 
@@ -15424,6 +15460,8 @@ and for function parameters in <em>str-param-type</em>:</p>
 identical inside <tt>libffi</tt>. Depending on the type of arguments passed and the type
 of return values, one or the other is used.</p>
 
+<p>Aggregate types can be composed using the <a href="#struct">struct</a> function.</p>
+
 <p>The following examples show how the extended <tt>import</tt> syntax can
 handle return values of floating point values and strings:</p>
 
@@ -15442,12 +15480,12 @@ handle return values of floating point values and strings:</p>
 (strcpy to from) <span class='arw'>&rarr;</span> "Hello World"
 </pre>
 
-<p>Both, the <tt>"char*"</tt> and the <tt>"void*</tt> type can take either
-a string buffer or an memory address number as input. When using <tt>"void*"</tt>
-as a return type the address of the result bufffer will be returned. This is
+<p>The <tt>char*</tt> type takes a string buffer only. The <tt>"void*</tt> type can take either
+a string buffer or a memory address number as input. When using <tt>"void*"</tt>
+as a return type the address number of the result bufffer will be returned. This is
 useful when returning pointers to data structures. These pointers can then
-be used with <a href="#unpack">unpack</a> for destructuring. In the following
-example the rerturn type is changed to <tt>void*</tt>:</p>
+be used with <a href="#unpack">unpack</a> and <a href="#struct">struct</a> for destructuring. 
+In the following example the return type is changed to <tt>void*</tt>:</p>
 
 <pre>
 (import LIBC "strcpy" "void*" "char*" "char*")
@@ -16367,7 +16405,7 @@ The quote forces the context to be created if it did not exist.
 
 <br/><br/>
 
-<a name="local"></a>
+<!-- <a name="local"></a>
 <h2><span class="function">local</span></h2>
 <h4>syntax: (local (<em>sym-1</em> [<em>sym-2</em> ... ]) <em>body</em>)</h4>
 
@@ -16389,8 +16427,8 @@ to localize variables
 without explicit initialization.
 </p>
 
-
-<br/>
+<br/><br/>
+-->
 
 <a name="log"></a>
 <h2><span class="function">log</span></h2>
@@ -19188,25 +19226,24 @@ depends on the operating system and platform.  On some platforms,
 the last three digits of the <tt>microseconds</tt> field are always 
 <tt>0</tt> (zero).</p>
 
-<p>Since version 10.2.14 the "day of the week" field now starts with 1
-on Monday. This change has been made to comform to the ISO 8601 international
-standard for date and time representation.</p>
+<p>The "day of the week" field starts with 1 on Monday comforming to the 
+ISO 8601 international standard for date and time representation.</p>
 
 <p>On some platforms, the daylight savings time flag is not active and 
 returns <tt>0</tt> (zero) even during daylight savings time (dst).</p>
 
-<p>Depending on the geographical area the daylight time savings type
-has a different value from 1 to 6:</p>
+<p>Depending on the geographical area, the daylight savings time type
+(dst) has a different value from 1 to 6:</p>
 
 <table  width="35%" summary="date formatting">
 <tr align="left"><th>type</th><th>area</th></tr>
 <tr><td>0</td><td>not on dst</td></tr>
 <tr><td>1</td><td>USA style dst</td></tr>
-<tr><td>2</td><td>Australian style ds</td></tr>
+<tr><td>2</td><td>Australian style dst</td></tr>
 <tr><td>3</td><td>Western European dst</td></tr>
 <tr><td>4</td><td>Middle European dst</td></tr>
 <tr><td>5</td><td>Eastern European dst</td></tr>
-<tr><td>6</td><td>Canada</td></tr>
+<tr><td>6</td><td>Canada dst</td></tr>
 </table>
 
 
@@ -24731,6 +24768,59 @@ is returned depending on outcome.</p>
 
 <br/><br/>
 
+<a name="stats"></a>
+<h2><span class="function">stats</span></h2>
+<h4>syntax: (stats <em>list-vector</em>)</h4>
+
+<p>The functions calculates statistical values of central tendency and dsitribution moments
+of values in <em>list-vector</em>. The following values are returned by <tt>stats</tt>
+in a list:</p>
+
+<table>
+<tr align="left"><th>name</th><th>description</th></tr>
+<tr><td>N</td><td>Number of values</td></tr>
+<tr><td>mean</td><td>Mean of values</td></tr>
+<tr><td>avdev</td><td>Average deviation from mean value</td></tr>
+<tr><td>sdev</td><td>Standard deviation (population estimate)</td></tr>
+<tr><td>var</td><td>Variance (population estimate)</td></tr>
+<tr><td>skew</td><td>Skew of distribution</td></tr>
+<tr><td>kurt</td><td>Kurtosis of distribution</td></tr>
+</table>
+<br />
+
+<!-- example -->
+
+<p>The following example uses the list output from the <tt>stats</tt> expression as an
+argument for the <a href="#format">format</a> statement:</p>
+
+<pre>
+(set 'data '(90 100 130 150 180 200 220 300 350 400))
+
+(println (format [text]
+    N        = %5d
+    mean     = %8.2f
+    avdev    = %8.2f
+    sdev     = %8.2f
+    var      = %8.2f
+    skew     = %8.2f
+    kurt     = %8.2f
+[/text] (stats data)))
+
+; outputs the following
+
+    N        =    10
+    mean     =   212.00
+    avdev    =    84.40
+    sdev     =   106.12
+    var      = 11262.22
+    skew     =     0.49
+    kurtosis =    -1.34
+
+</pre>
+
+
+<br/><br/>
+
 <a name="string"></a>
 <h2><span class="function">string</span></h2>
 <h4>syntax: (string <em>exp-1</em> [<em>exp-2</em> ... ])</h4>
@@ -25348,6 +25438,65 @@ after offset 5. This way older source code does not need to change.</p>
 command-line switch. For each megabyte of Lisp cell memory, 
 64k memory cells can be allocated. The maximum call stack depth 
 can be changed using the <tt>-s</tt> command-line switch. </p>
+
+<br/><br/>
+
+<a name="t-test"></a>
+<h2><span class="function">t-test</span></h2>
+<h4>syntax: (t-test <em>list-vector-A</em> <em>list-vecor-B</em> [<tt>true</tt>])</h4>
+
+<p>The functions performs a t-test using the <em>Student's t</em> statistic for
+comparing the means values in <em>list-vector-A</em> and <em>list-vecor-B</em>.
+If the <tt>true</tt> flag is not used, both vectors in A and B can be of
+different length and groups represented by A and B are not related.</p>
+
+<p>When the optional flag is set to <tt>true</tt>, measurements were taken
+from the same group twice, e.g. before and after a procedure.</p>
+
+<p>The following results are returned in a list:</p>
+
+<table>
+<tr align="left"><th>name</th><th>description</th></tr>
+<tr><td>mean-a</td><td>Mean of group A</td></tr>
+<tr><td>mean-b</td><td>Mean of group B</td></tr>
+<tr><td>sdev-a</td><td>Standard deviation in group A</td></tr>
+<tr><td>sdev-b</td><td>Standard deviation in group B</td></tr>
+<tr><td>t</td><td>t between mean values</td></tr>
+<tr><td>df</td><td>Degress of freedom</td></tr>
+<tr><td>p</td><td>Two tailed probablity of t under the null hypothesis</td></tr>
+</table>
+
+<p>The first example studies the effect of different sleep length
+before a test on the SCAT (Sam's Cognitive Ability Test):</p>
+
+<!-- example -->
+<pre>
+; SCAT (Sam's Cognitive Ability Test) 
+(set 'hours-sleep-8 '(5 7 5 3 5 3 3 9))
+(set 'hours-sleep-4 '(8 1 4 6 6 4 1 2))
+
+(t-test hours-sleep-8 hours-sleep-4)
+ <span class='arw'>&rarr;</span> (5 4 2.138 2.563 0.847 14 0.411)
+</pre>
+
+<p>The duration of sleeps before the SCAT does not have a significant
+impact with a probability value of <tt>0.411</tt>.</p>
+
+<p>In the second example, the same group of people get tested twice,
+before and after a treatment with Prosac depression medication:</p>
+
+<!-- example -->
+<pre>
+; Effect of Prozac on a group of depressed people
+(set 'mood-pre '(3 0 6 7 4 3 2 1 4))
+(set 'mood-post '(5 1 5 7 10 9 7 11 8))
+
+(t-test mood-pre mood-post true)
+ <span class='arw'>&rarr;</span> (3.333 7 2.236 3.041 -3.143 8 0.0137)
+</pre>
+
+<p>The effect of the Prosac treatment is moderately significant with a 
+<tt>p</tt> of <tt>0.0137</tt>.</p>
 
 <br/><br/>
 
@@ -26315,7 +26464,7 @@ of the last expression in <em>body</em> is returned or <tt>nil</tt> or the empty
 list <tt>()</tt> if <em>body</em> was not executed.</p>
 
 <p>Because <tt>unless</tt> does not have an <em>else</em> condition as in
-<a href="#if">if</a>, or <a href="#if-not">if-not</a> the statements in <em>body</em> need 
+<a href="#if">if</a>, <!-- or <a href="#if-not">if-not</a> -->the statements in <em>body</em> need 
 not to be grouped with <a href="#begin">begin</a>:</p>
 
 <pre>

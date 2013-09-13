@@ -2,7 +2,7 @@
 #
 # upload.cgi - process uploads from POST multipart/form-data
 #
-# version 1.6
+# version 1.7
 #
 # works on Apache server 1.2 and after and newLISP server 10.3.0 and after
 # works on newLISP CGI with 10.1 and after
@@ -45,7 +45,7 @@
 	(while (!= "" (read-line infile)))
 	(set 'start (seek infile))
 	(set 'end (search infile boundary))
-	(if-not end
+	(if (not end)
 		(throw-error "wrong upload format, did not find boundary string")
 		(set 'size (- end start 2)))
 

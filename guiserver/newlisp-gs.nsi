@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\WinDev\newlisp\newlisp-10402-win-gs-145.exe"
+OutFile "c:\WinDev\newlisp\newlisp-10403-win-gs-146.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.45 and newLISP 10.4.2 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
+DirText "This will install the newLISP-GS 1.46 and newLISP 10.4.3 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3
@@ -328,6 +328,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\modules\macro.lsp"
   File "c:\newlisp\modules\mysql.lsp"
   File "c:\newlisp\modules\odbc.lsp"
+  File "c:\newlisp\modules\plot.lsp"
   File "c:\newlisp\modules\pop3.lsp"
   File "c:\newlisp\modules\postgres.lsp"
   File "c:\newlisp\modules\postscript.lsp"
@@ -457,6 +458,7 @@ Section "Uninstall"
   Delete $INSTDIR\modules\macro.lsp
   Delete $INSTDIR\modules\mysql.lsp
   Delete $INSTDIR\modules\odbc.lsp
+  Delete $INSTDIR\modules\plot.lsp
   Delete $INSTDIR\modules\pop3.lsp
   Delete $INSTDIR\modules\postgres.lsp
   Delete $INSTDIR\modules\postscript.lsp

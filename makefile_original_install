@@ -1,6 +1,6 @@
 #
 
-VERSION=10.4.2
+VERSION=10.4.3
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -63,6 +63,7 @@ install:
 	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
+	-install -m 644 modules/plot.lsp $(datadir)/newlisp/modules/plot.lsp
 	-install -m 644 modules/pop3.lsp $(datadir)/newlisp/modules/pop3.lsp
 	-install -m 644 modules/postgres.lsp $(datadir)/newlisp/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp $(datadir)/newlisp/modules/postscript.lsp
@@ -168,6 +169,7 @@ install_home:
 	-install -m 644 modules/json.lsp $(HOME)/share/newlisp/modules/json.lsp
 	-install -m 644 modules/macro.lsp $(HOME)/share/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(HOME)/share/newlisp/modules/mysql.lsp
+	-install -m 644 modules/plot.lsp $(HOME)/share/newlisp/modules/plot.lsp
 	-install -m 644 modules/odbc.lsp $(HOME)/share/newlisp/modules/odbc.lsp
 	-install -m 644 modules/pop3.lsp $(HOME)/share/newlisp/modules/pop3.lsp
 	-install -m 644 modules/postgres.lsp $(HOME)/share/newlisp/modules/postgres.lsp

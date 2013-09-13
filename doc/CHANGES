@@ -6350,7 +6350,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Protect internally variable $x used in 'curry' and predefined 'module'.
 
-     When extended FFI is compiled, show 'libffi' in banner. 
+     When extended 'import' FFI is compiled, show 'libffi' in banner. 
 
      Added new function 'union' (composed of (unique (append ...))).
 
@@ -6373,7 +6373,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Windows version should cut off trailing CR-LFs in string passed to 'command-event'.
 
-10.4.2
+10.4.2 stable  maintenance release May 2nd, 2012
      In extended ffi "char*" will now only accept strings not integer addresses to
      string buffers. For passing integer addresses use "void*" - internally libffi
      treats them as the same, but the new approach gives automatic type-checking
@@ -6388,6 +6388,13 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     
      New module gsl.lsp with SVD, QR and Cholesky decompositions.
  
-     
+     Added  'corr', 't-test' and 'stats' statistical functions.
 
-          
+     New standard module gsl.lsp for SDV, QR and Cholesky decomp. and solver routines.
+
+     Updated plot.lsp with line and XY plot now a standard module.
+
+10.4.3
+     (seek <file-handle>) after (read-line <file-handle>) was broken in 10.4.0 when
+     introducing faster file stream reading on 'read-line'.
+

@@ -2,7 +2,9 @@
 ;; @description Routines for creating data plots.
 ;; @version 1.1 initial release
 ;; @version 1.2 allow different length data vectors
-;; @author Lutz Mueller, September 2011
+;; @version 2.0 added plotXY for plotting data points -> (x, y)
+;; @version 2.1 added plot:reset for resetting optional labels and settings
+;; @author Lutz Mueller, September 2011, April 2012
 ;;
 ;; In its initial release the <tt>plot.lsp</tt> module can draw
 ;; simple line plots from one to five data sets. In its simplest
@@ -15,8 +17,44 @@
 ;; This module runs the newLISP Java based Guiserver. The file
 ;; <tt>guiserver.jar</tt> is installed by one of the newLISP binary
 ;; installers in a standard location. Executing <tt>(test-plot)</tt>
-;; will generate a test plot which also can be seen 
-;; @link http://newlisp.org/code/example-plot.png here .
+;; will generate a test plots which can be seen here:
+;; @link http://newlisp.org/code/example-line-plot.png line-plot
+;; and 
+;; @link http://newlisp.org/code/example-xy-plot.png XY-plot  .
+;; 
+;; Several variables can be set optionally to change the size,
+;; and positioning of the plot area in the image.
+;; Other variables can be set to control the partioning of the grid,
+;; labeling of the horizontal axis and legend.
+;; The following list shows all parameters with their default
+;; values:
+;; <pre>
+;; ; mandatory and preset with default values
+;; plot:wwidth        640 ; window width in pixels
+;; plot:wheight       420 ; window height in pixels
+;; plot:origin-x       64 ; top left x of plot area
+;; plot:origin-y       64 ; top left y of plot area
+;; plot:pwidth        520 ; width of plot area
+;; plot:pheight       280 ; height of plot area<br/>
+;; ; optional
+;; plot:data-min      nil ; minimum value on the Y axis 
+;; plot:data-max      nil ; maximum value on the Y axis 
+;; plot:title         nil ; top centered main title
+;; plot:sub-title     nil ; sub title under main title
+;; plot:unit-y        nil ; a unit label centered left to the Y axis
+;; plot:labels        nil ; a list of string labels for vertical grid
+;; plot:legend        nil ; a list of string labels<br/>
+;; ; optional for plotXY only
+;; plot:data-x-min    nil ; minimum value on the X axis 
+;; plot:data-x-max    nil ; maximum value on the X axis 
+;; plot:data-y-min    nil ; minimum value on the Y axis 
+;; plot:data-y-max    nil ; maximum value on the Y axis 
+;; plot:unit-x        nil ; a unit label centered under the X axis
+;; </pre>
+;;
+;; Only the the first group of variables is mandatory and preset to
+;; the values shown above. Options in the second group will be either
+;; suppressed or set automatically.
 
 ;; @syntax (plot <list-data> [<list-data> . . . ])
 ;; @param <list-data> One to five lists of data points.
@@ -32,39 +70,6 @@
 ;;
 ;; @example
 ;; (plot (random 10 5 50) (normal 10 0.5 50))
-
-;; Several variables can be set optionally to change the size,
-;; and positioning of the plot area in the image.
-;; Other variables can be set to control the partioning of the grid,
-;; labeling of the horizontal axis and legend.
-;; The following list shows all parameters with their default
-;; values:
-;; <pre>
-;; ; mandatory
-;; plot:wwidth        640 ; window width in pixels
-;; plot:wheight       420 ; window height in pixels<br>
-;; plot:origin-x       64 ; top left x of plot area
-;; plot:origin-y       64 ; top left y of plot area<br>
-;; plot:pwidth        520 ; width of plot area
-;; plot:pheight       280 ; height of plot area<br><br>
-;; ; optional
-;; plot:data-min      nil ; minimum value on the Y axis 
-;; plot:data-max      nil ; maximum value on the Y axis 
-;; plot:title         nil ; top centered main title
-;; plot:sub-title     nil ; sub title under main title<br>
-;; plot:unit          nil ; a unit label centered left to the Y axis
-;; plot:labels        nil ; a list of string labels for vertical grid
-;; plot:legend        nil ; a list of string labels
-;; </pre>
-;;
-;; Only the the first group of variables is mandatory and preset to
-;; the values shown above. Options in the second group will be either
-;; suppressed:
-;; <tt>plot:title</tt>, <tt>plot:sub-title</tt>, <tt>plot:unit</tt>, <tt>plot:legend</tt><br><br>
-;; or set automatically calculating optimal values from the data points:
-;; <tt>plot:data-min</tt>, <tt>plot:data-max</tt>, <tt>plot:labels</tt>.<br><br>
-;; Both, <tt>plot:data-min</tt> and <tt>plot:data-max</tt> values must be set at the same
-;; time. Setting only one will not have any effect.<br><br>
 
 ;; The following example sets several options then plots and 
 ;; exports the image to a PNG graphics file:
@@ -85,6 +90,13 @@
 ;; (plot:export "example-plot.png")
 ;; 
 
+;; @syntax (plot:XY <list-data-X> <list-data-Y>)
+;; @param <list-data-X> List of X coordinates of data points.
+;; @param <list-data-X> List of Y coordinates of data points.
+;; <br>
+;; Draws data points of data in <list-data-X> and <list-data-Y>.
+;;
+
 ;; @syntax (plot:export <str-file-name>)
 ;; @param <str-file-name> The name of the file.
 ;;
@@ -95,6 +107,10 @@
 
 ;; See the example plot
 ;; @link http://newlisp.org/code/example-plot.png here .
+
+;; @syntax (plot:reset)
+;; <br>
+;; Resets all optional labels and sizes to 'nil'.
 
 (define (plot:export file-name)
     (gs:export file-name))
@@ -116,23 +132,30 @@
 
 (set 'title nil)
 (set 'sub-title nil)
-(set 'unit nil)
+
+(set 'unit-x nil)
+(set 'unit-y nil)
 (set 'data-min nil)
 (set 'data-max nil)
 (set 'labels nil)
 (set 'legend nil)
 
 ; colors
-(set 'text-color '(1.0 1.0 1.0))
-(set 'grid-color '(0.4 0.4 0.4))
+(set 'background-color '(0.3 0.3 0.3))
+(set 'text-color '(0.9 0.9 0.9))
+(set 'grid-color '(0.5 0.5 0.5))
+(set 'frame-color '(0.7 0.7 0.7))
 
 (set 'line-color (array 5 '(
-    (1.0 0.35 0.35) ; red
-    (0.0 0.9 0.0)   ; green
-    (0.6 0.6 1.0)   ; blue
-    (0.9 0.7 0.0)   ; orange
-    (0.9 0.3 0.9)   ; purple
+    (1.0 0.35 0.35) ; 0 red
+    (0.0 0.9 0.0)   ; 1 green
+    (0.6 0.6 1.0)   ; 2 blue
+    (0.9 0.7 0.0)   ; 3 orange
+    (0.9 0.3 0.9)   ; 4 purple
 )))
+
+
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; auxiliary functions ;;;;;;;;;;;;;;;;;;;;;;
 
 ; round to 3 digits precision
 ; calculate rounding digits from (sub max min)
@@ -140,20 +163,16 @@
 (define (rnd num)
      (round num (- (log num 10) 2)))
 
-; take one or more date vectors (lists) as arguments
-(define (plot:plot)
+; setup the main window and plot area
+(define (setup-window)
     (gs:init) 
     ;; describe the GUI
     (gs:frame 'PlotWindow 100 100 wwidth wheight "Plot")
     (gs:set-resizable 'PlotWindow nil)
     (gs:canvas 'PlotCanvas)
-    (gs:set-background 'PlotCanvas 0.3 0.3 0.3)
+    (gs:set-background 'PlotCanvas background-color)
     (gs:add-to 'PlotWindow 'PlotCanvas)
-    (gs:set-stroke 1.0)
     (gs:set-translation  origin-x origin-y)
-    (gs:draw-rect 'PlotArea -1 -1  (+ pwidth 3) (+ pheight 3))
-    (gs:color-tag 'PlotArea text-color)
-    (set 'start (time-of-day))
 
     (gs:set-visible 'PlotWindow true)
     ; draw title
@@ -168,7 +187,121 @@
         (gs:draw-text 'title sub-title 
             (/ (- pwidth (* (length sub-title) 7)) 2) -18 text-color)
     )
+)
 
+(define (draw-grid L)
+    ; draw horizontal grid lines
+    (gs:set-stroke 1.0)
+    (for (i 1 4)
+        (let (y (/ (* i pheight) 5) )
+            (gs:draw-line 'Grid 0 y pwidth y grid-color))
+    )
+
+    (if labels
+        (set 'L (- (length labels) 1))
+        (unless L 
+            (set 'L (if (< N 50) (- N 1) 10)))
+    )
+
+    ; draw vertical grid lines
+    (gs:set-stroke 1.0)
+    (for (i 1 (- L 1))
+        (let (x (/ (* i pwidth) L) )
+             (gs:draw-line 'Grid x 0 x pheight grid-color)
+        )
+    )
+
+)
+
+(define (draw-grid-frame)
+    (gs:set-stroke 1.0)
+    (gs:draw-rect 'GridFrame 0 0 pwidth pheight)
+    (gs:color-tag 'GridFrame frame-color)
+    (gs:set-stroke 5.0)
+    (gs:draw-rect 'GridMask -3 -3 (+ pwidth 6) (+ pheight 6))
+    (gs:color-tag 'GridMask background-color)
+)
+
+
+(define (draw-labels) ; only used for line plot
+    ; draw labels for x-range under vertical grid lines
+    (gs:set-font 'PlotCanvas "Monospaced" 12 "plain")
+    (if labels
+      (let (step (div pwidth (- (length labels) 1))
+          cnt 0 )
+         (dolist (t labels)
+           (unless (empty? t)
+             (gs:draw-text 'Grid t (int (sub (mul step cnt) (mul (length t) 3.5)))  
+                (+ pheight 14) text-color))
+           (inc cnt))
+      )
+      ; else if no labels
+      (begin
+        (gs:draw-text 'Grid (format "%5d" 1) -32 (+ pheight 15) text-color)
+        (gs:draw-text 'Grid (format "%5d" N) (- pwidth 26) (+ pheight 15) text-color)
+      )
+    )
+)
+
+(define (draw-y-numbers range, y-format step)
+    ; draw y labels as of y-range left to horizontal grid lines
+    (gs:set-font 'PlotCanvas "Monospaced" 12 "plain")
+    (set 'y-format (if 
+            (< range 1)   "%8.3f"
+            (< range 10)  "%8.2f"  
+            (< range 100) "%8.1f"
+            true            "%8.0f"))
+
+    (set 'step (rnd (div range 5)))
+    (dotimes (i 6)
+        (let (y (- pheight -4 (* i (/ pheight 5))))
+            (gs:draw-text 'Grid 
+            (format y-format (add ymin (mul i step))) 
+                   -64 y text-color))
+    )
+ 
+    ; draw unit label to left center of grid
+    (when unit-y
+        (gs:draw-text 'Grid unit-y -50 (+ (/ pheight 2) 4) text-color))
+)
+
+(define (draw-x-numbers n range xmin, x-format x-offset L step)
+    ; draw numbers for x-range under vertical grid lines
+    (gs:set-font 'PlotCanvas "Monospaced" 12 "plain")
+
+    (set 'x-format (if 
+            (< range 1)   "%8.3f"
+            (< range 10)  "%8.2f"  
+            (< range 100) "%8.1f"
+            true            "%8.0f"))
+
+    (set 'x-offset (if 
+            (< range 1)   20
+            (< range 10)  14  
+            (< range 100)  8 
+            true             2 ))
+
+
+    (set 'L 10)
+    (set 'step (rnd (div range L)))
+    
+    (for (i 0 (- L 1))
+        (let ( x (+ (* i  (/ pwidth L)) x-offset) )
+             (gs:draw-text 'Grid  
+                (format x-format (add xmin (mul (+ i 1) step)))
+                x (+ pheight 15) text-color)
+        )
+    )
+    ; unit label
+    (when unit-x
+        (gs:draw-text 'Grid unit-x (- (/ pwidth 2) 30) (+ pheight 30) text-color))
+)
+
+; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; user functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; take one or more data vectors (lists) as arguments
+(define (plot:plot)
+    (setup-window)
     ; set data min, max and range over all plot vectors
     (set 'M (length (args)))
     (set 'N 0)
@@ -193,60 +326,9 @@
         (set 'ymax data-max))
 
     (set 'y-range (sub ymax ymin))
-
-    ; draw horizontal grid lines
-    (for (i 1 4)
-        (let (y (/ (* i pheight) 5) )
-            (gs:draw-line 'Grid 1 y pwidth y grid-color))
-    )
-
-    ; draw vertical grid lines
-    (if labels
-        (set 'L (- (length labels) 1))
-        (set 'L (if (< N 50) (- N 1) 10)))
-
-    (for (i 1 (- L 1))
-        (let (x (/ (* i pwidth) L) )
-             (gs:draw-line 'Grid x 1 x pheight grid-color)
-        )
-    )
-
-    ; draw labels for x-range under vertical grid lines
-    (gs:set-font 'PlotCanvas "Monospaced" 12 "plain")
-    (if labels
-      (let (step (div pwidth (- (length labels) 1))
-          cnt 0 )
-         (dolist (t labels)
-           (unless (empty? t)
-             (gs:draw-text 'Grid t (int (sub (mul step cnt) (mul (length t) 3.5)))  
-                (+ pheight 14) text-color))
-           (inc cnt))
-      )
-      ; else if no labels
-      (begin
-        (gs:draw-text 'Grid (format "%5d" 1) -32 (+ pheight 15) text-color)
-        (gs:draw-text 'Grid (format "%5d" N) (- pwidth 26) (+ pheight 15) text-color)
-      )
-    )
- 
-                
-    ; draw y labels as of y-range ledt to horizontal grid lines
-    (gs:set-font 'PlotCanvas "Monospaced" 12 "plain")
-    (set 'y-format (if 
-            (< y-range 1)   "%8.3f"
-            (< y-range 10)  "%8.2f"  
-            (< y-range 100) "%8.1f"
-            true            "%8.0f"))
-    (dotimes (i 6)
-        (let (y (- pheight -4 (* i (/ pheight 5))))
-            (gs:draw-text 'Grid 
-            (format y-format (add ymin (mul i (div y-range 5)))) 
-                   -64 y text-color))
-    )
-
-    ; draw unit label to left center of grid
-    (when unit
-        (gs:draw-text 'Grid unit -50 (+ (/ pheight 2) 4) text-color))
+    (draw-grid)
+    (draw-labels)
+    (draw-y-numbers y-range)
 
     ; for each data vector draw data
     (gs:set-stroke 1.5)
@@ -275,30 +357,103 @@
             )
         )
     )
-    ; style to the right
+
+    (draw-grid-frame)
     (gs:set-visible 'PlotWindow true)
 )
+
+(define (plot:XY data-x data-y (idx-color 3) , N, xmin, xmax, ymin, ymax)
+    ; set data min, max and range over the two data vectors
+    (set 'N (length data-x))
+    (when (!= N (length data-y))
+        (throw-error "X vecor and Y vector must be of equal length"))
+
+    (setup-window)
+
+    (set 'xmin (apply min data-x))
+    (set 'xmax (apply max data-x)) 
+    (set 'ymin (apply min data-y))
+    (set 'ymax (apply max data-y)) 
+
+    (when (and data-x-min data-x-max)
+        (set 'xmin data-x-min)
+        (set 'xmax data-x-max))
+    
+    (when (and data-y-min data-y-max)
+        (set 'ymin data-y-min)
+        (set 'ymax data-y-max))
+
+    (set 'x-range (sub xmax xmin))
+    (set 'y-range (sub ymax ymin))
+
+    (draw-grid 10)
+    (draw-y-numbers y-range)
+    (draw-x-numbers N x-range xmin)
+
+    ; draw XY data points in (line-color idx-color)
+    (gs:set-stroke 1.5)
+    (dotimes (i N)
+        (let (x (div (mul (sub (pop data-x) xmin) pwidth) x-range)
+              y (div (mul (sub (pop data-y) ymin) pheight) y-range))
+            (if (and (< x pwidth) (< y pheight) (>= x 0) (>= y 0))
+                (gs:draw-circle 'xy-points (int x) (int (- pheight y)) 3 (line-color idx-color)))
+        )
+    )
+
+    (draw-grid-frame)
+    (gs:set-visible 'PlotWindow true)
+)
+
+(define (plot:reset)
+    (setq
+        data-min      nil ; minimum value on the Y axis 
+        data-max      nil ; maximum value on the Y axis 
+        title         nil ; top centered main title
+        sub-title     nil ; sub title under main title<br>
+        unit-y        nil ; a unit label centered left to the Y axis
+        labels        nil ; a list of string labels for vertical grid
+        legend        nil ; a list of string labels
+        data-x-min    nil ; minimum value on the X axis 
+        data-x-max    nil ; maximum value on the X axis 
+        data-y-min    nil ; minimum value on the Y axis 
+        data-y-max    nil ; maximum value on the Y axis 
+        unit-x        nil ; a unit label centered under the X axis
+    )
+)
+;; </pre>
 
 (context MAIN)
 
 ; test
 (define (test-plot)
-    (set 'plot:title "The Example Plot")
+    ; optional title, sub-title, labels and legend, data min/max for Y
+    (set 'plot:title "The Example Line Plot")
     (set 'plot:sub-title "several random data sets")
     (set 'plot:labels '("1" "" "20" "" "40" "" "60" "" "80" "" "100"))
     (set 'plot:legend  '("first" "second" "third" "fourth"))
     ;(set 'plot:data-min 0 'plot:data-max 20)
 
-    (set 'plot:unit "unit")
-    ; display plot
+    (set 'plot:unit-y "unit y")
+    ; display plot - only required statement
     (plot (random 10 5 100) 
           (normal 10 0.5 100)
           (normal 8 2 100) 
           (normal 5 1 100) )
 
-    ; save the display to a file
-    (plot:export "example-plot.png")
+    ; optionally save the display to a file
+    (plot:export "example-line-plot.png")
+
+    ; test XY plot
+    (plot:reset)
+    (set 'plot:title "The Example XY Plot")
+    (set 'plot:sub-title "1000 normal distributed data points")
+    (set 'plot:unit-x "unit x")
+
+    (plot:XY (normal 10 3 1000) (normal 0 1 1000) )
+    (plot:export "example-xy-plot.png")
+
 )
+
 
 ;(plot (random 10 5 50) (normal 10 0.5 50))
 

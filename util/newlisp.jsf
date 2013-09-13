@@ -34,7 +34,8 @@
 # 28 March 2011, L.M. added write-buffer (like write) to depr functions
 # 23 December 2011, L.M. added struct
 # 2 April 2012, L.M. added union, even?, odd?, crit-f, crit-t, prob-f, prob-t
-# version 1.14
+# 26 April 2012, L.M. added corr, stats, t-test
+# version 1.15
 
 =Idle		
 =Comment 	bold green
@@ -155,6 +156,7 @@
 "context?"	prim
 "copy"	prim
 "copy-file"	prim
+"corr"  prim
 "cos"	prim
 "cosh"	prim
 "count"	prim
@@ -241,6 +243,7 @@
 "global"	prim
 "global?"	prim
 "if"	prim
+"if-not"	prim
 "ifft"	prim
 "import"	prim
 "inc"	prim
@@ -401,6 +404,7 @@
 "spawn"	prim
 "sqrt"	prim
 "starts-with"	prim
+"stats" prim
 "string"	prim
 "string?"	prim
 "struct"	prim
@@ -413,6 +417,7 @@
 "sys"	prim
 "sys-error"	prim
 "sys-info"	prim
+"t-test"    prim
 "tan"	prim
 "tanh"	prim
 "term"	prim

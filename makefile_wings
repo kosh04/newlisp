@@ -68,6 +68,7 @@ win-gui:
 	cp modules/macro.lsp /c/newlisp/modules
 	cp modules/mysql.lsp /c/newlisp/modules
 	cp modules/odbc.lsp /c/newlisp/modules
+	cp modules/plot.lsp /c/newlisp/modules
 	cp modules/pop3.lsp /c/newlisp/modules
 	cp modules/postgres.lsp /c/newlisp/modules
 	cp modules/postscript.lsp /c/newlisp/modules

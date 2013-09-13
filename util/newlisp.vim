@@ -6,7 +6,9 @@
 " Started at:   2007 Nov 07 (The Great Revolution 90th anniversary)
 " Last change:  2011 Dec 23rd, LM added struct
 " Last change:  2012 March 7th, LM added union
-" Last change:  2012 Aprik 2nd, LM added union,odd?,even?,crit-f,cri-t,prob-f,prob-t
+" Last change:  2012 April 2nd, LM added union,odd?,even?,crit-f,cri-t,prob-f,prob-t
+" Last change:  2012 April 19th, LM deprecated if-not and local
+" Last change:  2012 April 26th, added corr, stats, t-test
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.36 2011/12/23 13:55:35 slobin Exp $
@@ -110,7 +112,7 @@ syn keyword newlispFunction add address amb and append append-file apply args ar
 syn keyword newlispFunction array? asin asinh assoc atan atan2 atanh atom? base64-dec base64-enc
 syn keyword newlispFunction bayes-query bayes-train begin beta betai bind binomial bits callback
 syn keyword newlispFunction case catch ceil change-dir char chop clean close command-event cond cons
-syn keyword newlispFunction constant context context? continue copy copy-file cos cosh count cpymem
+syn keyword newlispFunction constant context context? continue copy copy-file corr cos cosh count cpymem
 syn keyword newlispFunction crc32 crit-chi2 crit-f crit-t crit-z current-line curry date date-list date-parse
 syn keyword newlispFunction date-value debug dec def-new default define define-macro delete
 syn keyword newlispFunction delete-file delete-url destroy det device difference directory
@@ -136,8 +138,8 @@ syn keyword newlispFunction reader-event real-path receive ref ref-all regex reg
 syn keyword newlispFunction rename-file replace reset rest reverse rotate round save search seed
 syn keyword newlispFunction seek select self semaphore send sequence series set set-locale set-ref
 syn keyword newlispFunction set-ref-all setf setq sgn share signal silent sin sinh sleep slice sort
-syn keyword newlispFunction source spawn sqrt starts-with string string? struct sub swap sym symbol?
-syn keyword newlispFunction symbols sync sys-error sys-info tan tanh term throw throw-error time
+syn keyword newlispFunction source spawn sqrt starts-with stats string string? struct sub swap sym symbol?
+syn keyword newlispFunction symbols sync sys-error sys-info t-test tan tanh term throw throw-error time
 syn keyword newlispFunction time-of-day timer title-case trace trace-highlight transpose trim true?
 syn keyword newlispFunction unicode unify union unique unless unpack until upper-case utf8 utf8len uuid
 syn keyword newlispFunction wait-pid when while write write-buffer write-char write-file write-line
@@ -154,7 +156,7 @@ syn keyword newlispObsolete name
 syn keyword newlispObsolete error-number error-text
 
 " functions that still exist but are deprecated
-syn keyword newlispDeprecated integer parse-date
+syn keyword newlispDeprecated integer parse-date if-not local
 
 " functions that are not compiled in by default
 syn keyword newlispDebugging dump-symbol continue

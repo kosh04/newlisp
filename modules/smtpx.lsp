@@ -44,7 +44,7 @@
         (set 'socket (net-connect SMTP-server port))
         (confirm-request "2")
         (net-send-get-result (string "HELO " from-hostname) "2")
-        (if (or (null? user-name) (null? password))  ; NOTE: changed unless -> if-not
+        (if (or (null? user-name) (null? password)) 
            true (mail-authorize user-name password))
         (net-send-get-result (string "MAIL FROM: " mail-from ) "2")
         (net-send-get-result (string "RCPT TO: <" mail-to ">") "2")

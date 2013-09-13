@@ -18,7 +18,7 @@
 ;;
 ;; In version 3.0 of 'stat.lsp' the usage for Gnuplot the stat:plot and stat:plotXY 
 ;; functions has been eliminated. Instead use the module 'plot.lsp' shipped with all binary and
-;; source distributions. The F-distribution fucntion 'f-prob' has also been eliminated
+;; source distributions. The F-distribution function 'f-prob' has also been eliminated
 ;; instead use one of new the built-in 'prob-f' or 'crit-f' functions.
 ;;
 ;; The documention contains only the call patterns. See the source for more
@@ -33,7 +33,7 @@
 ;; stat:sdev     - returns the estimated standard deviation of numbers in a vector
 ;; stat:sum-sq   - returns the sum of squares of a data vector
 ;; stat:sum-xy   - returns the sum of products of a two data vectors
-;; stat:corr     - returns the correlation coefficient between two vectors
+;; stat:corr     - returns the correlation coefficient between two vectors (built-in since 10.4.2)
 ;; stat:cov      - returns the covariance of two number vectors
 ;; stat:sum-d2   - returns the sum of squared differences of a vector from its mean
 ;; stat:sum-d2xy - returns sum of squared diffferences of two vectors
@@ -70,6 +70,7 @@
 ;; @param <X> A list of numbers.
 ;; @param <Y> A list of numbers.
 ;; @return Correlation coefficient of lists <X> and <Y>.
+;; A 'corr' native function is built into newLISP since 10.4.2.
 
 ;; @syntax (stat:cov <X> <Y>)
 ;; @param <X> A list of numbers.
@@ -217,7 +218,7 @@
 	(sub (sum-sq X) (div (mul (sum X) (sum X)) (length X))))
 
 ; Pearson r, product moment correlation of data vectors X and Y
-(define (corr X Y)
+(define (stat:corr X Y)
 	(div (cov X Y) (sqrt (mul (sum-d2 X) (sum-d2 Y)))))
 
 ; regression Yest = b0 + b1*X calculates intercept b0 and slope b1
@@ -351,7 +352,7 @@
 ;------------------------- multivariate statistics -----------------------------
 
 ;
-; multiple regression of variables in X onto one of varsiables in X, Y
+; multiple regression of variables in X onto one of variables in X, Y
 ; indicated by column offset offY
 ; 
 ; X is N rows by k columns, the column at offset offY is Y
