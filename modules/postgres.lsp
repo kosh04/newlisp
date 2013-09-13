@@ -3,7 +3,9 @@
 ;; @version 1.02  - feature complete
 ;; @version 1.03  - doc formatting
 ;; @version 2.00  - replaced <tt>inc</tt> with <tt>++</tt>
-;; @author Jeremy Cowgar 2006, Ted Walther 2009, Lutz Mueller 2010
+;; @version 2.10  - new <tt>fnumber</tt> and <tt>fetch-value</tt>
+;; @version 2.11  - new <tt>query</tt> with optional parameters 
+;; @author Jeremy Cowgar 2006, Ted Walther 2009, Lutz Mueller 2010, Unya 2012
 ;;
 ;; <h3>Requirements</h3>
 ;; At the beginning of the program file include a 'load' statement for the module:
@@ -40,6 +42,7 @@
 ;;     PgSQL:query ............... execute a SQL statement
 ;;     PgSQL:num-rows ............ rows in result of query
 ;;     PgSQL:num-fields .......... columns in result of query
+;;     PgSQL:fnumber ............. column number of query
 ;;     PgSQL:fetch-value ......... get value from the query result
 ;;     PgSQL:fetch-row ........... get row from the query result
 ;;     PgSQL:fetch-all ........... get all rows from the last query
@@ -93,6 +96,7 @@
 
 (set 'files '(
 	"/usr/local/lib/libpq.so.5.1" ; OpenBSD 4.6
+	"/usr/lib/libpq.so" ; CentOS or other Linux
 	"/usr/lib/libpq.so.5.1" ; Debian
 	"/usr/local/pgsql/lib/libpq.dylib" ; Mac OS X
 	"c:/Program Files/PostgreSQL/8.3/bin/libpq.dll" ; Win32
@@ -105,6 +109,7 @@
 (import library "PQconnectdb" "cdecl")
 (import library "PQstatus" "cdecl")
 (import library "PQexec" "cdecl")
+(import library "PQexecParams" "cdecl")
 (import library "PQresultStatus" "cdecl")
 (import library "PQresultErrorMessage" "cdecl")
 (import library "PQgetvalue" "cdecl")
@@ -112,6 +117,7 @@
 (import library "PQcmdTuples" "cdecl")
 (import library "PQntuples" "cdecl")
 (import library "PQnfields" "cdecl")
+(import library "PQfnumber" "cdecl")
 (import library "PQclear" "cdecl")
 (import library "PQfinish" "cdecl")
 
@@ -141,8 +147,21 @@
 ;; Connects to a database on server and authenticates a user ID.
 
 (define (connect host user passw dbname)
-  (close-db)
-  (setq POSTGRES (PQconnectdb (string "host=" host " user=" user " password=" passw " dbname=" dbname)))
+  (connectdb (string
+	      (if (> (length host) 0) (string "host=" host) "")
+	      (if (> (length user) 0) (string " user=" user) "")
+	      (if (> (length passw) 0) (string " password=" passw) "")
+	      (if (> (length dbname) 0) (string " dbname=" dbname) "")
+	      )) )
+
+;; @syntax (PgSQL:connectdb <str-conninfo>)
+;; @param <str-conninfo> PostgreSQL Connection Parameters, To write an empty value or a value containing spaces, surround it with single quotes, e.g., keyword = 'a value'. keyword is 'host', 'hostaddr, 'port', 'dbname', 'user', 'password', 'connect_timeout', 'options', 'tty', 'sslmode', 'requiressl', 'krbsrvname', 'gsslib', 'service' in PostgreSQL 8.3.
+;; @return 'true' for success or 'nil' for failure.
+;; Connects to a database on server.
+
+(define (connectdb conninfo)
+    (close-db)
+  (setq POSTGRES (PQconnectdb conninfo))
   (if (NULL? POSTGRES)
     nil
     (if (= (PQstatus POSTGRES) CONNECTION_OK)
@@ -150,8 +169,9 @@
       (PQfinish POSTGRES)
       (setq POSTGRES nil))))
 
-;; @syntax (PgSQL:query <str-sql>)
-;; @param <str-sql> A valid SQL query string.
+;; @syntax (PgSQL:query <str-sql> [<param> ...])
+;; @param <str-sql> A valid SQL query string. If parameters are used, they are referred to in the command string as $1, $2, etc.
+;; @param <param> Specifies the actual values of the parameters.
 ;; @return Returns a numeric status code
 ;; Sends a SQL query string to the database server for evaluation.
 ;; The return value will be one of the following: PGRES_EMPTY_QUERY,
@@ -167,13 +187,46 @@
 ;;     rows (INSERT, UPDATE, etc.). A response of PGRES_EMPTY_QUERY might
 ;;     indicate a bug in the client software. 
 ;; </blockquote>
+;;
+
+;; @example
+;;
+;; (PgSQL:query "select $1||$2" "abc" "def")
+;; (PgSQL:fetch-all) ; -> (("abcdef"))
+;;
+;; (PgSQL:query "select $1 + $2" 10 20)
+;; (PgSQL:fetch-all) ; -> (("30"))
+;;
+;; (PgSQL:query "select $1::timestamp + $2::interval" "2012-10-01 00:00:00" "123456 seconds")
+;; (PgSQL:fetch-all) ; -> (("2012-10-02 10:17:36"))
+;;
+;; (PgSQL:query "create table tbl (a integer, b integer)")
+;; (dotimes (i 10) (PgSQL:query "insert into tbl values ($1, $2)" i (* i 2)))
+;; ;    a | b
+;; ;   ---+----
+;; ;    0 |  0
+;; ;    1 |  2
+;; ;    2 |  4
+;; ;    ...
+;; ;    9 | 18
+;;
+;; (PgSQL:query "select * from tbl where a=$1 or a=$2" 2 9)
+;; (PgSQL:fetch-all) ; -> (("2" "4") ("9" "18"))
 
 (define (query sql)
   (clear-result)
-  (setq POSTGRES_RES (PQexec POSTGRES sql))
-  (if (not (NULL? POSTGRES_RES))
-    (PQresultStatus POSTGRES_RES)
-    PGRES_FATAL_ERROR))
+  (letn ((nParams (length (args)))
+	 (params (map (lambda (argv) (string argv)) (args)))
+	 (ptr-fmt (if (= (& (sys-info 9) 256) 0)
+		      "lu" "Lu"))
+	 (paramValues (if params
+			 (pack (dup ptr-fmt nParams) params)
+			 0)))
+    (setq POSTGRES_RES
+	  (PQexecParams POSTGRES sql nParams 0 paramValues 0 0 0))
+    (if (not (NULL? POSTGRES_RES))
+       (PQresultStatus POSTGRES_RES)
+       PGRES_FATAL_ERROR)) )
 
 ;; @syntax (PgSQL:num-rows)
 ;; @return Number of rows from last query.
@@ -187,19 +240,35 @@
 (define (num-fields)
   (PQnfields POSTGRES_RES))
 
-;; @syntax (PgSQL:fetch-value <row> <col>)
+;; @syntax (PgSQL:fnumber <str-column>)
+;; @param <str-column> The column name.
+;; @return the column number associated with the given column name. return nil when not found column name.
+
+(define (fnumber name)
+  (let (n (PQfnumber POSTGRES_RES name))
+    (if (< n 0)
+	nil
+	n)))
+
+;; @syntax (PgSQL:fetch-value <num-row> <col>)
+;; @param <num-row> row number
+;; @param <col> column number or column name string.
 ;; @return A single value
 ;; Fetches the single value in the row and column specified.  Used by the
 ;; ':fetch-row' and ':fetch-all' functions.  A field containing the 'NULL'
 ;; value will return the symbol 'NULL'
+;;
 
 (define (fetch-value row column)
-  (let (s1 (PQgetvalue POSTGRES_RES row column))
-    (if (NULL? s1)
-      nil
-      (let (s2 (get-string s1))
-	(if (= 1 (PQgetisnull POSTGRES_RES row column))
-	  'NULL s2)))))
+  (if (string? column)
+      (setq column (fnumber column)))
+  (when column
+    (let (s1 (PQgetvalue POSTGRES_RES row column))
+      (if (NULL? s1)
+	  nil
+	  (let (s2 (get-string s1))
+	    (if (= 1 (PQgetisnull POSTGRES_RES row column))
+		'NULL s2))))) )
 
 ;; @syntax (PgSQL:fetch-row)
 ;; @return A list of field elements.

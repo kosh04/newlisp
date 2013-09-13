@@ -65,7 +65,6 @@ extern char ** environ;
 #define fgetc win32_fgetc
 #define random rand
 #define srandom srand
-#include <process.h>
 #include <conio.h>  
 #include <dir.h>
 #define popen  _popen
@@ -77,6 +76,7 @@ Set binary as default file mode for Windows.
 See also http://www.mingw.org/MinGWiki/index.php/binary
 */
 unsigned int _CRT_fmode = _O_BINARY;
+
 
 int setenv (const char *name, const char *value, int replace);
 #ifdef USE_WIN_UTF16PATH
@@ -1092,9 +1092,10 @@ return(argc);
 
 
 #ifdef WIN_32
+int kill(pid_t pid, int sig);
 int winPipe(UINT * inpipe, UINT * outpipe);
 UINT winPipedProcess(char * command, int inpipe, int outpipe, int option);
-CELL * plainProcess(char * command, size_t size);
+UINT plainProcess(char * command, size_t size);
 
 CELL * p_pipe(CELL * params)
 {
@@ -1128,48 +1129,13 @@ if(params != nilCell)
     params = getInteger(params, (UINT *)&outpipe);
     if(params != nilCell)
         getInteger(params, (UINT *)&option);
+	result = winPipedProcess(command, (int)inpipe, (int)outpipe, (int)option);
     }
-else return(plainProcess(command, size));
-
-result = winPipedProcess(command, (int)inpipe, (int)outpipe, (int)option);
+else result = plainProcess(command, size);
 
 if(!result) return(nilCell);
 
 return(stuffInteger(result));
-}
-
-CELL * plainProcess(char * command, size_t len)
-{
-char * cPtr;
-char * argv[16];
-int idx;
-
-cPtr = callocMemory(len + 1);
-memcpy(cPtr, command, len + 1);
-
-init_argv(cPtr, argv);
-
-idx = spawnvp(P_NOWAIT, argv[0], (const char * const *)argv); 
-
-free(cPtr);
-if(idx == -1) return(nilCell);
-
-return(stuffInteger(idx));
-}
-
-
-CELL * p_destroyProcess(CELL * params)
-{
-UINT pid;
-
-getInteger(params, &pid);
-
-/* GetProcessId(handle) */
-
-if(TerminateProcess((HANDLE)pid, 0) == 0)
-    return(nilCell);
-
-return(trueCell);
 }
 
 
@@ -1843,23 +1809,6 @@ return(nilCell);
 /* --------------------------- end Cilk ------------------------------------- */
 
 
-CELL * p_destroyProcess(CELL * params)
-{
-UINT pid;
-UINT sig;
-
-params = getInteger(params, &pid);
-if(params != nilCell)   
-    getInteger(params, &sig);
-else
-    sig = 9;
-
-if(kill(pid, sig) != 0)
-    return(nilCell);
-
-return(trueCell);
-}
-
 extern SYMBOL * symHandler[];
 
 CELL * p_waitpid(CELL * params)
@@ -1888,6 +1837,23 @@ return(stuffIntegerList(2, (UINT)retval, (UINT)result));
 }
 
 #endif
+
+CELL * p_destroyProcess(CELL * params)
+{
+UINT pid;
+UINT sig;
+
+params = getInteger(params, &pid);
+if(params != nilCell)   
+    getInteger(params, &sig);
+else
+    sig = 9;
+
+if(kill(pid, sig) != 0)
+    return(nilCell);
+
+return(trueCell);
+}
 
 /* ------------------------------ semaphores --------------------------------- */
 

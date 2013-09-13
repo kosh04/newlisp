@@ -368,8 +368,8 @@ params = getEvalDefault(params, &next);
 if(!isList(next->type)) return(nilCell);
 
 result = patternMatchL((CELL *)cell->contents, (CELL *)next->contents, getFlag(params));
-if(result) return(result);
-return(getCell(CELL_EXPRESSION));
+
+return(result ? result : getCell(CELL_EXPRESSION));
 }
 
 CELL * linkMatches(CELL * * matchList, CELL * matchPtr, CELL * elmnt)
@@ -1420,6 +1420,8 @@ while(list != nilCell)
             }
         ref(keyCell, (CELL*)list->contents, funcCell, head, next, refStack, mode);
         if(refStack->base) popRef();
+        if(mode == REF_SINGLE && *head != NULL) 
+            return;
         }
 
     idx++;

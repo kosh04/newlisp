@@ -24,10 +24,17 @@
 #include <time.h>
 #include <windows.h>
 #include <io.h>
+#include <process.h>
 
+
+/* from newlisp.c */
+int init_argv(char * ptr, char *argv[]);
+void * callocMemory(size_t nbytes);
+
+WINBASEAPI DWORD WINAPI GetProcessId(HANDLE);
 
 /*
-typedef struct _PROCESS_INFORMATION { // pi  
+typedef struct _PROCESS_INFORMATION {
     HANDLE hProcess; 
     HANDLE hThread; 
     DWORD dwProcessId; 
@@ -35,7 +42,52 @@ typedef struct _PROCESS_INFORMATION { // pi
 } PROCESS_INFORMATION; 
 */
 
+
+/* kill for MinGW
+   by Shigeru Kobayashi for v10.4.5
+   to be used by p_destroyProcess()
+   see also changes in plainProcess() and winPipedProcess() below
+*/
+
+int kill(pid_t pid, int sig)
+{
+int ret;
+HANDLE h;
+
+h = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+if (h == NULL) return -1;
+
+ret = TerminateProcess(h, 0) ? 0 : -1;
+CloseHandle(h);
+return ret;
+}
+
 /* ---------------------------- pipes -------------------------------------- */
+
+
+UINT plainProcess(char * command, size_t len)
+{
+char * cPtr;
+char * argv[16];
+HANDLE hProc;
+DWORD pid;
+
+cPtr = callocMemory(len + 1);
+memcpy(cPtr, command, len + 1);
+
+init_argv(cPtr, argv);
+
+hProc = (HANDLE)_spawnvp(P_NOWAIT, argv[0], (const char * const *)argv); 
+
+free(cPtr);
+if(hProc == INVALID_HANDLE_VALUE) return(0);
+
+pid = GetProcessId(hProc);
+CloseHandle(hProc);
+
+return(pid);
+}
+
 
 UINT winPipedProcess(char * cmd, int inpipe, int outpipe, int option)
 {
@@ -43,6 +95,7 @@ STARTUPINFO si = { 0 };
 PROCESS_INFORMATION process;
 int result;
 long fin, fout; 
+UINT pid;
 
 if(inpipe == -1 && outpipe == -1)
     {
@@ -69,7 +122,10 @@ else
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
     return(0); 
 
-return((UINT)process.hProcess);
+pid = GetProcessId(process.hProcess);
+CloseHandle(process.hProcess);
+
+return(pid);
 }
 
 

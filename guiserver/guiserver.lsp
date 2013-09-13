@@ -7,6 +7,7 @@
 ;; @version 1.44 fixes in newlisp-edit.lsp
 ;; @version 1.45 doc fixes
 ;; @version 1.47 doc fixes
+;; @version 1.48 doc fixes
 ;; @author LM, August 2008, 2009, 2010, 2012
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -2269,7 +2270,7 @@ true
 ;; @param <sym-action> The symbol of the action handler.
 ;; @param <boolean-tags> A 'true' to indicate checking for tags.
 ;;
-;; If <boolean-tags> is 'true', the the action event will carry a list of
+;; If <boolean-tags> is 'true', the action event will carry a list of
 ;; all tags which contained the X,Y coordinates of the mouse.
 
 (define (gs:mouse-released cnvs action flag)

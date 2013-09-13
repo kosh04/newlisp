@@ -32,12 +32,8 @@
 #include "win32-ffi.h" 
 #endif
 
-#ifdef LINUX
-# ifdef NEWLISP64
-#  include <x86_64-linux-gnu/ffi.h>    /* ubuntu_x64 */
-# else
-#  include <i386-linux-gnu/ffi.h>
-# endif
+#ifdef LINUX /* makefiles specify include directory */
+#  include <ffi.h>
 #endif
 
 #define LIBFFI " libffi"

@@ -13,6 +13,7 @@
 ;; @version 2.61 - added function  <tt>sql3:colnames</tt>.
 ;; @version 2.7 - changed deprecated <tt>name</tt> to <tt>term</tt>, <tt>inc</tt> to <tt>++</tt>
 ;; @version 2.71 - minor doc changes
+;; @version 2.72 - add support for CentOS 6 Linux 64Bit
 ;; @author Lutz Mueller 2004-2010, Dmitri Cherniak 2007, Clemens Hintze 2009
 ;;
 ;; <h2>Module for SQLite3 database bindings</h2>
@@ -85,6 +86,7 @@
 	"/usr/pkg/lib/libsqlite3.so" ; NetBSD
 	"/usr/local/lib/libsqlite3.so.13.3" ; OpenBSD 4.6
 	"/usr/lib/libsqlite3.0.dylib" ; Mac OSX Darwin
+	"/usr/lib64/libsqlite3.so" ; for 64Bit CentOS 6 Linux
 	(string (env "PROGRAMFILES") "/sqlite3/sqlite3.dll") ; Win32/MinGW
 ))
 

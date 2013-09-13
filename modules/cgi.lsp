@@ -1,4 +1,4 @@
-;; @module cgi.lsp  
+;; @module cgi.lsp
 ;; @description Basic CGI processing tools for GET and POST requests
 ;; @version v 2.2 - comments redone for automatic documentation
 ;; @version v 2.3 - a fix in CGI:url-translate when translating utf-8 strings
@@ -9,7 +9,8 @@
 ;; @version v 2.8 - check for and use CONTENT_LENGTH when reading POST data
 ;; @version v 2.9 - eliminate deprecated integer -> int
 ;; @version v 2.91 - minor code cleanup in CONTENT_LENGTH handling
-;; @author Lutz Mueller, 2002-2011
+;; @version v 3.0 - handle multipart POST data. Added by Unya, Oct 2012
+;; @author Lutz Mueller, Unya 2002-2012
 ;;
 ;; This module defines basic CGI processing tools for processing
 ;; CGI GET and POST requests and cookies.
@@ -130,14 +131,28 @@
 ; get POST data if present, use CONTENT_LENGTH variable
 ; if available
 (if (env "CONTENT_LENGTH")
-	(when (= (env "REQUEST_METHOD") "POST")
-  		(read (device) post-data (int (env "CONTENT_LENGTH")))
-  		(set 'params (get-vars post-data)))
-	(begin
-		(set 'inline (read-line))
-		(when inline 
-			(set 'params (get-vars inline)))
-	)
+    (when (= (env "REQUEST_METHOD") "POST")
+        (read (device) post-data (int (env "CONTENT_LENGTH")))
+
+        (let (boundary (when (regex "multipart/form-data; boundary=(.*)"
+                (env "CONTENT_TYPE")) (append "--" $1)))
+        ; handle multi part form data
+          (if boundary
+             (let (data (parse (url-translate post-data) boundary))
+                (while data
+                    (let (line (first data))
+                        (setq data (rest data))
+                        (when
+                            (regex "Content-Disposition: form-data; name=\"(.*)\"\r\n\r\n(.*)$" line 4)
+                                (push (list $1 (chop $2 2)) params) )
+                    ) ) )
+              (set 'params (get-vars post-data)))
+		) )
+    (begin
+        (set 'inline (read-line))
+        (when inline 
+        (set 'params (get-vars inline)))
+    )
 )
  
 (if (not params) (set 'params '()))

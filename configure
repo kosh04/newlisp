@@ -72,10 +72,19 @@ if   [ ${os_type} = MAC_OSX ] ; then
     echo on Snow Leopard 32-bit is made even if 64-bit is the detected default
 	cp makefile_darwin_utf8_ffi makefile_build
 elif [ ${os_type} = LINUX ] ; then
-	if [ ${memory_model} = LP64 ] ; then
-		cp makefile_linuxLP64_utf8_ffi makefile_build
+	if [ -f /etc/redhat-release ] ; then
+		libffi_version=$(ls -d /usr/lib*/libffi*/include)
+		if [ ${memory_model} = LP64 ] ; then
+			sed "s,LIBFFI_VERSION,${libffi_version},g" makefile_linuxLP64_redhat_utf8_ffi > makefile_build
+		else
+			sed "s,LIBFFI_VERSION,${libffi_version},g" makefile_linux_redhat_utf8_ffi > makefile_build
+		fi
 	else
-		cp makefile_linux_utf8_ffi makefile_build
+		if [ ${memory_model} = LP64 ] ; then
+			cp makefile_linuxLP64_utf8_ffi makefile_build
+		else
+			cp makefile_linux_utf8_ffi makefile_build
+		fi		
 	fi
 elif [ ${os_type} = _BSD ] ; then
 	if [ ${memory_model} = LP64 ] ; then

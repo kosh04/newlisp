@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.4.4
+VERSION=10.4.5
 
 rm -f config.h makefile_build makefile_install
 
@@ -474,6 +474,7 @@ install:
 	-install -m 644 modules/cgi.lsp \$(pkgdatadir)/modules/cgi.lsp
 	-install -m 644 modules/crypto.lsp \$(pkgdatadir)/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp \$(pkgdatadir)/modules/ftp.lsp
+	-install -m 644 modules/getopts.lsp \$(pkgdatadir)/modules/getopts.lsp
 	-install -m 644 modules/gmp.lsp \$(pkgdatadir)/modules/gmp.lsp
 	-install -m 644 modules/gsl.lsp \$(pkgdatadir)/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp \$(pkgdatadir)/modules/infix.lsp
@@ -481,6 +482,7 @@ install:
 	-install -m 644 modules/macro.lsp \$(pkgdatadir)/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp \$(pkgdatadir)/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp \$(pkgdatadir)/modules/odbc.lsp
+	-install -m 644 modules/plot.lsp \$(pkgdatadir)/modules/plot.lsp
 	-install -m 644 modules/pop3.lsp \$(pkgdatadir)/modules/pop3.lsp
 	-install -m 644 modules/postgres.lsp \$(pkgdatadir)/modules/postgres.lsp
 	-install -m 644 modules/postscript.lsp \$(pkgdatadir)/modules/postscript.lsp

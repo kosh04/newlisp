@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.4.4 Manual and Reference</title>
+   <title>newLISP v.10.4.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.4.4</h2>
+<h2>User Manual and Reference v.10.4.5</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -4624,7 +4624,7 @@ Any other character ends the hexadecimal number.
 </pre>
 
 <p>
-<b>Binaries</b> start with a <tt>0x</tt> (or <tt>0B</tt>),
+<b>Binaries</b> start with a <tt>0b</tt> (or <tt>0B</tt>),
 followed by up to 64 1's or 0s. Any other character ends the binary number.
 </p>
 
@@ -20759,11 +20759,14 @@ and <a href="#read-line">read-line</a>  or <a href="#write">write</a> and
 (map set '(cmdin myout) (pipe))
 
 (process "c:/Program Files/newlisp/newlisp.exe -c" cmdin cmdout)
-<span class='arw'>&rarr;</span> 1932
+<span class='arw'>&rarr;</span> 1284
 
 (write-line myout "(+ 3 4)")
 
 (read-line myin) <span class='arw'>&rarr;</span> "7"
+
+;; destroy the process
+(destroy 1284)
 </pre>
 
 

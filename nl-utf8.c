@@ -125,6 +125,7 @@ return(utf8str);
 
 /* return the number of characters encoded in utf8 string
  * without counting the zero terminator
+ * new limit param in 10.4.5 to avoid overrun on invalid utf8 strings
 */
 
 size_t utf8_wlen(char * utf8str, char * limit)

@@ -48,12 +48,6 @@
 #define fclose win32_fclose
 #endif
 
-/* used only in loadStartup() */
-#ifndef _BSD
-#define strlcpy strncpy
-#define strlcat strncat
-#endif
-
 #ifdef LIBRARY
 extern STREAM libStrStream;
 #endif
@@ -96,26 +90,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10404;
+int version = 10405;
 
 char copyright[]=
-"\nnewLISP v.10.4.4 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.4.5 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.4 on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.5 on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.4 on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.5 on %s IPv4/6%s%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.5 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.4 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.5 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif
 
@@ -469,17 +463,16 @@ if(strncmp(linkOffset, "@@@@", 4) == 0)
     else if(getenv("DOCUMENT_ROOT"))
         strncpy(initFile, getenv("DOCUMENT_ROOT"), MAX_LINE - 16);
 
-    /* for non BSDs strlcat and strlcpy are redefined as strncat and strncpy */
-    strlcat(initFile, "/.", 3);
-    strlcat(initFile, INIT_FILE, 9);
+    strncat(initFile, "/.", 2);
+    strncat(initFile, INIT_FILE, 9);
     if(loadFile(initFile, 0, 0, mainContext) == NULL)
         {
         envPtr = getenv("NEWLISPDIR");
         if(envPtr)
             {
-            strlcpy(initFile, envPtr, MAX_LINE - 16);
-            strlcat(initFile, "/", 2);
-            strlcat(initFile, INIT_FILE, 9);
+            strncpy(initFile, envPtr, MAX_LINE - 16);
+            strncat(initFile, "/", 1);
+            strncat(initFile, INIT_FILE, 9);
             loadFile(initFile, 0, 0, mainContext);      
             }
         }
@@ -631,8 +624,8 @@ initStacks();
 initialize();
 initDefaultInAddr(); 
 
-#if WIN_32
-#if SUPPORT_UTF8
+#ifdef WIN_32
+#ifdef SUPPORT_UTF8
  {
    /*
      command line parameter is MBCS.
@@ -1102,7 +1095,7 @@ if(cmdStream != NULL && batchMode)
             {
             cmd = getCommandLine(TRUE);
             strncpy(buff, cmd, MAX_COMMAND_LINE -2);
-            strlcat(buff, LINE_FEED, LINE_FEED_LEN);
+            strncat(buff, LINE_FEED, LINE_FEED_LEN);
             free(cmd);
             }
         else

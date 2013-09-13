@@ -73,6 +73,4 @@
 
 ;; eof
 
-;; test
-;;(link "newlisp" "qaprog" "qa")
 

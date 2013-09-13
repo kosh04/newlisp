@@ -26,9 +26,10 @@
 ;; @version 3.2 - formatting when view source, new stylesheet newlispdoc.css
 ;; @version 3.3 - allow descriving variables using the @syntax tag. They will be colored red as well.
 ;; @version 3.4 - make sure all @xxxxxx custom tags are title cased
-;; @version 3.4 - added META tag for UTF-8 encoding for html output
+;; @version 3.5 - added META tag for UTF-8 encoding for html output
+;; @version 3.6 - allow trailing spaces on lines in index files
 ;;
-;; @author Lutz Mueller, 2006-2011
+;; @author Lutz Mueller, 2006-2012
 ;; @location http://newlisp.org
 ;;
 ;; <h3>Usage:</h3>
@@ -81,11 +82,10 @@
 ; get list of files from command line
 (set 'files (2 (main-args)))
 
-(if (empty? files)
-    (begin
-        (println "USAGE: newlispdoc [-s] [-d] <file-names>")
-        (println "USAGE: newlispdoc [-s] [-d] -url <file-with-urls>")
-        (exit -1)))
+(when (empty? files)
+    (println "USAGE: newlispdoc [-s] [-d] <file-names>")
+    (println "USAGE: newlispdoc [-s] [-d] -url <file-with-urls>")
+    (exit -1))
 
 
 (set 'prolog1
@@ -283,10 +283,10 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
         (set 'time-out (int (last files) 5000))))
 
 ; if url-file is specified make a list of all urls
-(if url-file
+(when url-file
     (set 'files (parse (read-file url-file) "\\s+" 0)))
 
-(if (= (last files) "") (pop files -1))
+(when (= (last files) "") (pop files -1))
 
 (set 'indexpage "") ; buffer for modules index page
 (write indexpage (format prolog1 "Index"))
@@ -451,13 +451,11 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
     (set 'page (join page "\n"))
 
     ; link to another index page
-    (if (find ";; *@index ([^ ]*?) ([^ ]*?)\n" page 0)
-        (begin
-            (write indexpage 
-                (string {<br /><br /><h2><a href="} $2 {">Index:&nbsp;} $1 "</a></h2>\n"))
-            (if (find ";; *@description (.*?)\n" page 0)
-                (write indexpage (string $1 "<br/>\n")))
-        )
+    (when (find ";; *@index ([^ ]*?) ([^ ]*?)\\s*\n" page 0)
+        (write indexpage 
+            (string {<br /><br /><h2><a href="} $2 {">Index:&nbsp;} $1 "</a></h2>\n"))
+        (when (find ";; *@description (.*?)\n" page 0)
+            (write indexpage (string $1 "<br/>\n")))
     )
         
 

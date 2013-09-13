@@ -1158,9 +1158,8 @@ double value;
 CELL * deflt;
 CELL * cell;
 
-deflt = params->next;
-params = evaluateExpression(params);
 deflt = getEvalDefault(params, &cell);
+symbolCheck = NULL;
 
 if(cell->type == CELL_STRING)
     fltString = (char *)cell->contents;

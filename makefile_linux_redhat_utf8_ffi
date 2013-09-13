@@ -1,0 +1,23 @@
+# makefile for newLISP v.10.x.x on LINUX RedHat CentOS with readline, UTF-8, FFI support
+#
+# don't use this make file directly. Use ./configure to detect and replace the correct
+# libffi version
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX -DFFI -ILIBFFI_VERSION
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lffi -o newlisp # for RedHat CentOS 
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_linux_redhat_utf8_ffi
+
+
+
