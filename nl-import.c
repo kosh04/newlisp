@@ -493,10 +493,10 @@ else
 #endif
     result = (long)cell->contents;
 
-pushResult(cell);
-
 args->contents = (UINT)nilCell;
+
 deleteList(args);
+deleteList(cell);
 
 FINISH_CALLBACK:
 memcpy(errorJump, errorJumpSave, sizeof(errorJump));
@@ -625,6 +625,8 @@ return(stuffInteger(callback[n].func));
    memory managed in an efficient way. This is why FFI functions and structs
    can only be defined once. A repeated definitions will return nil and leave
    the symbol's original definition untouched. 
+
+   Thanks to Stefan Sonnenberg for doing most of the coding in this section.
 */
 
 

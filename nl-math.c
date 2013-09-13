@@ -914,7 +914,6 @@ return(encrypted);
 
 CELL * fft(CELL * params, int isign);
 CELL * makeListFromFloats(double num1, double num2);
-double getFloatFromCell(CELL *);
 void fastFourierTransform(double data[], unsigned int  nn, int isign);
 
 CELL * p_fft(CELL * params)
@@ -949,7 +948,7 @@ for(i = 0; i < n*2; i+=2)
     {
     if(isNumber(list->type))
         {
-        data[i] = getFloatFromCell(list);
+        data[i] = getDirectFloat(list);
         data[i+1] = (double)0.0;
         list = list->next;
         continue;
@@ -962,8 +961,8 @@ for(i = 0; i < n*2; i+=2)
         }
 
     cell = (CELL *)list->contents;
-    data[i] = getFloatFromCell(cell);
-    data[i+1] = getFloatFromCell(cell->next);
+    data[i] = getDirectFloat(cell);
+    data[i+1] = getDirectFloat(cell->next);
     list= list->next;
     }
     
@@ -1004,25 +1003,6 @@ CELL * makeListFromFloats(double num1, double num2)
     }
 
 
-double getFloatFromCell(CELL * cell)
-    {
-    double number;
-#ifndef NEWLISP64
-    if(cell->type == CELL_FLOAT)
-        memcpy((void *)&number, (void *)&cell->aux, sizeof(double));
-    else if(cell->type == CELL_LONG)
-        number = (int)cell->contents;
-    else number = (double)*(INT64 *)&cell->aux;
-#else
-    if(cell->type == CELL_FLOAT)
-        number = *(double *)&cell->contents;
-    else
-        number = (long)cell->contents;
-#endif
-    return(number);
-    }
-
-    
 /* Fast Fourier Transform 
 // algorithm modified for zero-offset data[] and double precision from
 // 
@@ -1728,8 +1708,8 @@ if(isNumber(pCell->type))
     {
     if(!isNumber(cell->type))
         return(errorProcExt(ERR_NUMBER_EXPECTED, cell));
-    fromFlt = getFloatFromCell(cell);
-    factFlt = getFloatFromCell(pCell);
+    fromFlt = getDirectFloat(cell);
+    factFlt = getDirectFloat(pCell);
     cell = copyCell(cell);
     series->contents = (UINT)cell;
     for(i = 1; i < count; i++)
@@ -2012,11 +1992,7 @@ cashFlow = 0.0;
 count = 0;
 while(list !=  nilCell)
     {
-    if(isNumber(list->type))
-        fNum = getFloatFromCell(list);
-    else 
-        fNum = 0.0;
-
+    fNum = getDirectFloat(list);
     cashFlow += fNum / pow((1.0 + rate), (double)++count);
     list = list->next;
     }
@@ -2143,7 +2119,7 @@ for(i = 0; i < N; i++)
     {
     if(isNumber(amounts->type))
         {
-        amountsVec[i] = getFloatFromCell(amounts);
+        amountsVec[i] = getDirectFloat(amounts);
         amounts = amounts->next;
         }
     else 

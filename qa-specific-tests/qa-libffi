@@ -1,7 +1,11 @@
 #!/usr/bin/newlisp
 
-# run this from either the main distribution directory newlisp-x.x.x/
-# or from qa-specific-tests/
+# run this from the main distribution directory:
+#   ./newlisp qa-specific-tests/qa-libffi
+
+# for testing simple and extended ffi on a more complex, real-world library:
+#    use examples/opengl-demo.lsp for simple ffi testing
+#    use examples/opengl-demo-ffi.lsp for extended ffi testing
 
 (when (zero? (& 1024 (sys-info -1)))
     (println "These tests only run on extended FFI enabled versions compiled with ffilib")
@@ -60,6 +64,19 @@
   (println ">>>>> ffilib API testing SUCCESSFUL")
   (println ">>>>> ERR testing libffi API"))
 
+;; test simple import and callback API
+(import "./ffitest.dylib" "register_callback_simple")
+(import "./ffitest.dylib" "trigger_callback_simple")
+(define (callme-simple ptr int-num) 
+    (print (get-string ptr)  int-num)
+    (if (= int-num 1234567890)
+        (println " (simple callback API) SUCCESSFUL")
+        (println "ERR in simple callback API")
+    ))
+
+(register_callback_simple (callback 0 'callme-simple))
+(trigger_callback_simple)
+
 ;; test extended callback API
 (import "./ffitest.dylib" "register_callback" "void" "void*")
 (import "./ffitest.dylib" "trigger_callback" "void")
@@ -68,7 +85,7 @@
     (print (get-string ptr)  int-num " " double-num)
     (if (and (= int-num 1234567890) (= double-num 12345.67890))
         (println " (extended callback API) SUCCESSFUL")
-        (println "ERR in callback API")
+        (println "ERR in extended callback API")
     ))
 
 (set 'is64bit (not (zero? (& 256 (sys-info -1)))))
@@ -94,8 +111,6 @@
         (= (unpack sfoo (useFoo 10)) '(11 12 13 "hello world")) )
     (println ">>>>> struct ptr tested SUCCESSFUL")
     (println ">>>>> ERR in struct ptr testing"))
-
-
 
 
 (delete-file "ffitest.dylib")

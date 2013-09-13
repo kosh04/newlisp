@@ -2,7 +2,12 @@
 ;; @description POP3 mail retrieval routines
 ;; @version 2.0 - eliminated old net-send syntax
 ;; @version 2.1 - changes for 10.0
-;; @author Lutz Mueller et al., 2001, 2002, 2008, 2010
+;; @version 2.3 - three fixes by winger 2012-08-29 (search: winger's fix)
+; Do not fully understand winger's 'net-receive-blank' , couldn't 'net-flush'
+; be used instead? The problem seems to be trailing spaces after "+OK".
+; Can somebody with access to a pop3 server verify?
+;; @author Lutz Mueller et al., 2001, 2002, 2008, 2010, 2012
+;;
 ;;
 ;; <h2>POP3 mail retrieval routines</h2>
 ;; Only the module 'pop3.lsp' is required, not other libraries need to be
@@ -41,7 +46,7 @@
 ;; (POP3:get-error-text)
 ;; </pre>
 ;; All functions return 'nil' on error and 'POP3:get-error-text' can be used to
-;; retrieve the error text. 
+;; retrieve the error text.
 ;;
 ;; The variable 'POP3:debug-flag' can be set to 'true' to display all of the
 ;; dialog with the pop2 mail server.
@@ -57,7 +62,7 @@
 ;; @return On success 'true' else 'nil'.
 
 (define (get-all-mail userName password pop3server mail-dir)
-    (and 
+    (and
         (connect pop3server)
         (logon userName password)
         (set 'status (get-status))
@@ -76,14 +81,17 @@
 ;; the last error which occured.
 
 (define (get-new-mail userName password pop3server mail-dir)
-    (and 
+    (and
         (connect pop3server)
         (logon userName password)
         (set 'status (get-status true))
         (if (<= (first status) (nth 2 status))
-          (get-messages (first status) (nth 2 status) mail-dir)
-          true)
-        (log-off)))
+            ; winger's fix1 "messages are counted from 1"
+            (get-messages (++ (first status)) (nth 2 status) mail-dir)
+            ; (get-messages (first status) (nth 2 status) mail-dir);
+            true)
+        (log-off)
+    ) )
 
 ;; @syntax (POP3:get-mail-status <str-user> <str-password> <str-server>)
 ;; @param <str-user> The user ID.
@@ -93,7 +101,7 @@
 ;; (<totalMessages>, <totalBytes>, <lastRead>)
 
 (define (get-mail-status userName password pop3server)
-    (and 
+    (and
         (connect pop3server)
         (logon userName password)
         (set 'status (get-status true))
@@ -110,7 +118,7 @@
         (connect pop3server)
         (logon userName password)
         (set 'status (get-status true))
-        (if (> (first status) 1) 
+        (if (> (first status) 1)
             (for (msg 1 (- (first status) 1) ) (delete-message msg))
             true)
         (log-off)
@@ -136,18 +144,28 @@
 (define (net-confirm-request)
     (if (net-receive socket rcvbuff 512 "+OK")
         (begin
-	    (if debug-flag (println rcvbuff))
-            (if (find "-ERR" rcvbuff) 
+        (if debug-flag (println rcvbuff))
+            (if (find "-ERR" rcvbuff)
                 (finish rcvbuff)
                 true))
         nil))
 
+; winger's fix2 bypass " " of "+OK "
+(define-macro (net-receive-blank int_socket sym-buffer max-bytes wait-string)
+    (letex (int_socket (eval int_socket)
+            sym-buffer sym-buffer
+            max-bytes max-bytes)
+        (if (and (net-receive int_socket sym-buffer max-bytes) (= " " sym-buffer))
+            (net-receive int_socket sym-buffer max-bytes) )
+    )
+)
+
 (define (net-flush)
-	(if socket
-		(while (> (net-peek socket) 0) 
-			(net-receive socket junk 256)
-			(if debug-flag (println junk) )))
-	true)
+    (if socket
+        (while (> (net-peek socket) 0)
+            (net-receive socket junk 256)
+            (if debug-flag (println junk) )))
+    true)
 
 ; connect to server
 ;
@@ -163,12 +181,12 @@
     (and
         (set 'sndbuff (append "USER " userName "\r\n"))
         (net-send socket sndbuff)
-	(if debug-flag (println "sent: " sndbuff) true)
+        (if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
         (net-flush)
         (set 'sndbuff (append "PASS " password "\r\n"))
         (net-send socket sndbuff)
-	(if debug-flag (println "sent: " sndbuff) true)
+        (if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
         (net-flush)
         (if debug-flag (println "logon successful") true)))
@@ -180,23 +198,25 @@
     (and
         (set 'sndbuff "STAT\r\n")
         (net-send socket sndbuff)
-	(if debug-flag (println "sent: " sndbuff) true)
+        (if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)
-        (net-receive socket status 256)
-	(if debug-flag (println "status: " status) true)
+        ; (net-receive socket status 256) ; old in 2.1 (10.4.3)
+        (net-receive-blank socket status 256) ; new in 2.3 (10.4.4)
+        (if debug-flag (println "status: " status) true)
         (net-flush)
-	(if last-flag 
+        (if last-flag
             (begin
                 (set 'sndbuff "LAST\r\n")
                 (net-send socket sndbuff)
-	        (if debug-flag (println "sent: " sndbuff) true)
+                (if debug-flag (println "sent: " sndbuff) true)
                 (net-confirm-request)
-                (net-receive socket last-read 256)
-	        (if debug-flag (println "last read: " last-read) true)
+                ; (net-receive socket last-read 256) ; old
+                (net-receive-blank socket last-read 256) ; new
+                (if debug-flag (println "last read: " last-read) true)
                 (net-flush))
             (set 'last-read "0"))
         (set 'result (list (int (first (parse status)))))
-	(if debug-flag (println "parsed status: " result) true)
+        (if debug-flag (println "parsed status: " result) true)
         (push (int (nth 1 (parse status))) result)
         (push (int (first (parse last-read))) result)
         result)) ; not necessary starting 9.9.5 because push returns the list
@@ -205,14 +225,14 @@
 ; get a message
 ;
 (define (retrieve-message , message)
-	(set 'finished nil)
-	(set 'message "")
-	(while (not finished)
-		(net-receive socket rcvbuff 16384)
-		(set 'message (append message rcvbuff))
-		(if (find "\r\n.\r\n" message) (set 'finished true)))
-	(if debug-flag (println "received message") true)
-	message)
+    (set 'finished nil)
+    (set 'message "")
+    (while (not finished)
+        (net-receive socket rcvbuff 16384)
+        (set 'message (append message rcvbuff))
+        (if (find "\r\n.\r\n" message) (set 'finished true)))
+    (if debug-flag (println "received message") true)
+    message)
 
 
 ; get all messages
@@ -221,27 +241,26 @@
 ;        file name now created using last SMTP or ESMTP ID from header.
 ; v 1.5: changed file type to ".pop3" to reflect the context that created it.
 ;        (get-messages now forces the directory, if it does not exsist.
-; 
 ; v 1.6: make sure directory? doesn't have trailing slash in arg
 ;
 (define (get-messages from to mail-dir)
    (if (ends-with mail-dir "/") (set 'mail-dir (chop mail-dir)))
    (if (if (not (directory? mail-dir)) (make-dir mail-dir) true)
        (begin
-          (set 'mail-dir (append mail-dir "/"))
+          (set 'mail-dir (append mail-dir "/")) 
           (for (msg from to)
                (if debug-flag (println "getting message " msg) true)
-	       (set 'sndbuff (append "RETR " (string msg) "\r\n"))
-	       (net-send socket sndbuff)
-	       (if debug-flag (println "sent: " sndbuff) true)
-	       (set 'message (retrieve-message))
+               (set 'sndbuff (append "RETR " (string msg) "\r\n"))
+               (net-send socket sndbuff)
+               (if debug-flag (println "sent: " sndbuff) true)
+               (set 'message (retrieve-message))
                (if debug-flag (println (slice message 1 200)) true)
                (set 'istr (get-message-id message))
-	       (set 'istr (append mail-dir "ME-" istr))         
+               (set 'istr (append mail-dir "ME-" istr))
                (if debug-flag (println "saving " istr) true)
                (write-file istr message)
                (if (not (rename-file istr (append istr ".pop3")))
-	           (delete-file istr)))))
+               (delete-file istr)))))
     true) ; other parts of pop3 rely on 'true' return
 
 ; delete messages
@@ -250,7 +269,7 @@
     (and
         (set 'sndbuff (append "DELE " (string msg) "\r\n"))
         (net-send socket sndbuff)
-	(if debug-flag (println "sent: " sndbuff) true)
+        (if debug-flag (println "sent: " sndbuff) true)
         (net-confirm-request)))
 
 ; get-message-date was
@@ -259,9 +278,11 @@
 
 (define (get-message-id message)
     (set 'ipos (+ (find "id <| id |\tid " message 1) 5)
-	 'iend (find "@|;|\n|\r| |\t" (slice message ipos) 1))
-    (if debug-flag 
-	(print "Message ID: " (slice message ipos iend) "\n"))
+         ; winger's fix3 delete char '>'
+         'iend (-- (find "@|;|\n|\r| |\t" (slice message ipos) 1)))
+         ; 'iend (find "@|;|\n|\r| |\t" (slice message ipos) 1));
+    (if debug-flag
+    (print "Message ID: " (slice message ipos iend) "\n"))
     (set 'istr (slice message ipos iend)) )
 
 
@@ -295,10 +316,7 @@
 (context 'MAIN)
 
 
+; test
 ;(if (not(POP3:get-all-mail "user" "password" "my-isp.com" "mail"))
 ;    (print (POP3:get-error-text)) true)
-
-
-;(POP3:get-new-mail "user" "password" "my-isp.com" "mail")
-;(print (POP3:get-mail-status ""user" "password" "my-isp.com"))
 ;(exit)

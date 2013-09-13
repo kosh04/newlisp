@@ -127,7 +127,7 @@ return(utf8str);
  * without counting the zero terminator
 */
 
-size_t utf8_wlen(char * utf8str)
+size_t utf8_wlen(char * utf8str, char * limit)
 {
 int gcaa;
 int c;
@@ -143,7 +143,28 @@ while((c = *utf8str++) != 0)
         }
     }
 
+if(utf8str > limit)
+    errorProc(ERR_INVALID_UTF8);
+
 return(count);
+}
+
+/* return ptr to character at index, added by LM 2012-06-10
+*/
+
+char * utf8_index(char * utf8str, int idx)
+{
+int c;
+
+while((c = *utf8str) != 0 && idx-- != 0)
+    {
+    if ((c & 0xc0) == 0xc0)
+        utf8str += utf8_table4[c & 0x3f] + 1;
+    else    
+        utf8str++;
+    }
+
+return(utf8str);
 }
 
 
@@ -259,10 +280,11 @@ return(makeStringCell(utf8str, size));
 CELL * p_utf8len(CELL * params)
 {
 char * str;
+size_t size;
 
-getString(params, &str);
+getStringSize(params, &str, &size, TRUE);
 
-return(stuffInteger(utf8_wlen(str)));
+return(stuffInteger(utf8_wlen(str, str + size + 1)));
 }
 
 /* reads a UTF-8 character */

@@ -102,6 +102,7 @@ extern int pagesize;
 
 extern char * errorMessage[];
 extern STREAM errorStream;
+extern UINT netErrorIdx;
 
 /* semaphore() function type */
 #define SEM_CREATE 0
@@ -236,9 +237,8 @@ UINT handle;
 getInteger(params, &handle);
 if(handle == 0) return(nilCell);
 if(handle == printDevice) printDevice = 0;
-deleteIOsession(handle);
-if(close((int)handle) == -1) return(nilCell);
-return(trueCell);
+if(deleteIOsession(handle)) return(trueCell);
+return(nilCell);
 }
 
 
@@ -340,9 +340,7 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, HTTP_GET, CONNECT_TIMEOUT);
-    if(memcmp((char *)result->contents, "ERR:", 4) == 0)
-        return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-    return(result);
+    return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
 
 if((size = readFile(fileName, &buffer)) == -1)
@@ -461,9 +459,7 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, 
                 (*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, CONNECT_TIMEOUT);
-    if(memcmp((char *)result->contents, "ERR:", 4) == 0)
-        return(errorProcExt2(ERR_ACCESSING_FILE, stuffString((char *)result->contents)));
-    return(result);
+    return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
 
 getStringSize(params, &buffer, &size, TRUE);
@@ -789,7 +785,7 @@ params = getString(params, &fileName);
 if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, CONNECT_TIMEOUT);
-    return(my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0 ? nilCell : trueCell);
+    return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
 
 fileName = getLocalPath(fileName);
@@ -2406,12 +2402,12 @@ char * ct;
 char * fmt;
 ssize_t offset;
 time_t tme;
+size_t size;
 
 #ifdef SUPPORT_UTF8
 #ifdef WCSFTIME
 int * ufmt;
 int * timeString;
-int size;
 #endif
 char * utf8str;
 #else
@@ -2436,12 +2432,12 @@ else
         
     if(params != nilCell)
         {
-        params = getString(params, &fmt);
+        params = getStringSize(params, &fmt, &size, TRUE);
         ltm = localtime(&t);
 #ifdef SUPPORT_UTF8
     /* some Linux do UTF-8 but don't have wcsftime() or it is buggy */
 #ifdef WCSFTIME
-        size = utf8_wlen(fmt);
+        size = utf8_wlen(fmt, fmt + size + 1);
         ufmt = alloca(UTF8_MAX_BYTES * (size + 1));
         utf8_wstr(ufmt, fmt, size);
 

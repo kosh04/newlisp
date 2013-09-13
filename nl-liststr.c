@@ -324,12 +324,11 @@ if(params->type == CELL_STRING)
     length = length - number;
     return stuffStringN((char *)params->contents, length);
 #else
-    length = utf8_wlen((char *)params->contents);
+    length = utf8_wlen((char *)params->contents, (char *)params->contents + params->aux);
     if(number > length) number = length;
     length = length - number;
     ptr = (char *)params->contents;
-    while(length--)
-        ptr += utf8_1st_len(ptr);
+    ptr = utf8_index(ptr, length);
     return stuffStringN((char *)params->contents, ptr - (char *)params->contents);
 #endif
     }
@@ -616,7 +615,7 @@ CELL * result;
 ptr = (char *)str->contents;
 
 #ifdef SUPPORT_UTF8
-size = utf8_wlen(ptr);
+size = utf8_wlen(ptr, (char *)str->contents + str->aux);
 #else
 size = str->aux - 1;
 #endif
@@ -639,13 +638,15 @@ if((index + len) > size)
     len = size - index;
     
 #ifdef SUPPORT_UTF8
-newPtr = ptr;
-while(index--) /* recalculate index in bytes */
-    newPtr += utf8_1st_len(newPtr);
+newPtr = utf8_index(ptr, index);
 index = newPtr - ptr;
-while(len--) /* recalculate len in bytes */
-    newPtr += utf8_1st_len(newPtr);
-len = (newPtr - ptr) - index;
+
+newPtr = utf8_index(newPtr, len);
+len = newPtr - ptr;
+
+if(len > str->aux - 1)
+    return(errorProc(ERR_INVALID_UTF8));
+len -= index;
 #endif
 
 newPtr = callocMemory(str->aux - len);
@@ -668,7 +669,6 @@ char * newPtr;
 int len;
 #ifdef SUPPORT_UTF8
 char * sptr;
-int wChar;
 #endif
 
 if(idx != nilCell) getInteger(idx, (UINT*)&index);
@@ -686,7 +686,7 @@ if(index == -1)
 #ifndef SUPPORT_UTF8
 len = str->aux - 1;
 #else
-len = utf8_wlen(ptr);
+len = utf8_wlen(ptr, ptr + str->aux);
 #endif
 
 /* convert index into characters to skip before the new one is inserted */
@@ -700,9 +700,7 @@ memcpy(newPtr, ptr, index);
 memcpy(newPtr + index, (char*)newStr->contents, newStr->aux - 1);
 memcpy(newPtr + index + newStr->aux - 1, ptr + index, str->aux - index);
 #else
-sptr = ptr;
-while(index--) /* skip characters to split point) */
-    sptr = utf8_wchar(sptr, &wChar);
+sptr = utf8_index(ptr, index);
 memcpy(newPtr, ptr, sptr - ptr);
 memcpy(newPtr + (sptr - ptr), (char*)newStr->contents, newStr->aux - 1);
 memcpy(newPtr + (sptr - ptr) + newStr->aux - 1, sptr, str->aux - (sptr - ptr)  );

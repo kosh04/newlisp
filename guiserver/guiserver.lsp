@@ -6,6 +6,7 @@
 ;; @version 1.43 bug fix in new table UI action parameters
 ;; @version 1.44 fixes in newlisp-edit.lsp
 ;; @version 1.45 doc fixes
+;; @version 1.47 doc fixes
 ;; @author LM, August 2008, 2009, 2010, 2012
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -2863,9 +2864,9 @@ true
 	(net-send out (string "set-cursor " id " " shape "\n"))
 )
 
-;; @syntax (gs:set-echo-char <sym-id> [<str-covered-text>])
+;; @syntax (gs:set-echo-char <sym-id> [<str-cover-char>])
 ;; @param <sym-id> The name of the component for which text is set.
-;; @param <str-covered-text> Obscured by the first letter for Password Input field.
+;; @param <str-cover-char> Cover character for password entry.
 ;; @example
 ;; (gs:set-echo-char 'TheTextField "*")
 ;; (gs:set-echo-char 'TheTextField)   ; no echo, behave as normal text field
@@ -2876,7 +2877,7 @@ true
   	(net-send out (string "set-echo-char " id "\n")))
 )
 
-;; If no <str-covered-text> is specyfied or the string in <str-covered-text> is of
+;; If no <str-cover-char> is specyfied or the string in <str-cover-char> is of
 ;; 0 length, then the text field behaves as a normal text field.
 
 
@@ -3543,11 +3544,11 @@ true
 		(net-send out (string "text-area " id " " action "\n")))
 )
 
-;; @syntax (gs:text-field <sym-id> <sym-action> <int-columns> [<str-covered-text>])
+;; @syntax (gs:text-field <sym-id> <sym-action> <int-columns> [<str-cover-char>])
 ;; @param <sym-id> The name of the text field.
 ;; @param <sym-action> The name of the event handler.
 ;; @param <int-columns> The number of columns in the text field.
-;; @param <str-covered-text> Obscured by the first letter for Password Input field.
+;; @param <str-cover-char> Cover character for password entry.
 ;; @example
 ;; (gs:text-field 'TheTextField 'textfield-event)
 ;; (gs:text-field 'PasswordTextField 'textfield-event "*")

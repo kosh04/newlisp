@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.4.4 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 250%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #505050;
+	line-height: 140%;
+	}
+
+em {
+	font-family: Courier;
+	color: #202020;
+	line-height: 140%;
+	}
+
+li {
+	margin-bottom: 15px;
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-2>&#174;</font> v.10.4.4 Stable Maintenance Release
+<font color="red" size="-1">2012-9-15</font></h1>
+
+<p>This stable maintenance release fixes minor bugs and adds minor enhancements.</p>
+
+Release 10.4.2 was released on May 2nd, 2012 and version 10.4.3 on May 7th fixing critical bugs in seek and close file operations.
+
+<h3>Changes and additions</h3>
+<ul>
+<li><tt>read-file</tt>, <tt>write-file</tt>, <tt>append-file</tt> and <tt>delete-file</tt>
+when used with <tt>http://</tt> URLs will now return <tt>nil</tt> under error conditions 
+instead of throwing an error. This is consistent with error behavior on local files.  
+When <tt>nil</tt> is returned, <tt>net-error</tt> gives more error information. 
+For remote server-side errors on URLs the server HTTP error page is returned.</li>
+
+<li>Functions which are UTF8 sensitive on the UTF8 enabled versions of newLISP
+now check for the validity of the UTF8 string arguments passed. 
+The error message: <tt>invalid UTF8 string</tt> is issued for invalid UTF8 strings.</li>
+
+<li>Binary number format can be used with either <tt>0b</tt> or <tt>0B</tt> as prefix for 
+up to 64 following 1's and 0's, e.g. <tt>0b101010</tt> for the  number 42.</li>
+
+<li><tt>base64-enc</tt> can use an additional <tt>true</tt> flag to force translation of an
+empty string into <tt>""</tt> instead of <tt>"===="</tt> base64 padding characters.</li> 
+
+<li>Starting with Mac OSX Mountain Lion 10.8 the clang C-compiler can also be used instead
+of gcc to compile newLISP.</li>
+
+</ul>
+
+<h3>Bug fixes</h3>
+<ul>
+<li>A correct error message will now be shown when the closing <tt>[/text]</tt> tag
+is missing when loading a source file.</li>
+
+<li>The widget <tt>gs:text-field</tt> in Guiserver - <tt>guiserver.jar</tt> - now
+handles empty strings correctly when <tt>gs:get-text</tt> is used.</li>
+
+<li>Functions initiated via <tt>callback</tt> could cause a result stack overflow.</li>
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with previous versions in the 10.4 series of newLISP.</p>
+
+<center>&part;</center>
+
+</body>
+</html>

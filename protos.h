@@ -524,7 +524,7 @@ char * getLocalPath(char * fileUrlName);
 char * netLastError(void);
 char * parsePackFormat(char * format, int * length, int * type);
 char * prompt(void);
-char * readStreamText(STREAM * stream, char * limit, int * size);
+char * readStreamText(STREAM * stream, int * size);
 char * replaceString (char * keyStr, int keyLen, char * buff, size_t buffLen, CELL * exprCell, 
     					UINT * cnt, int options, size_t * newLen);
 char * win32_fgets(char * buffer, int  size, FILE * fPtr);
@@ -663,8 +663,9 @@ int utf8_1st_len(char * utf8str);
 int utf8_wstr(int * unicode, char * utf8str, int maxwc);
 int wstr_utf8(char * utf8str, int * unicode, int maxstr);
 char * utf8_wchar(char * utf8str, int * chr);
-size_t utf8_wlen(char * utf8str);
+size_t utf8_wlen(char * utf8str, char * limit);
 int wchar_utf8(int cvalue, char *buffer);
+char * utf8_index(char * utf8str, int idx);
 
 #ifdef USE_WIN_UTF16PATH
 WCHAR *ansi_mbcs_to_utf16(const char *);

@@ -1,4 +1,0 @@
-10.4.3
-     (seek <file-handle>) after (read-line <file-handle>) was broken in 10.4.0 when
-     introducing faster file stream reading on 'read-line'.
-

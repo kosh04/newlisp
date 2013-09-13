@@ -133,7 +133,7 @@ public void getText(StringTokenizer params)
 	else
 		{
 		if(text.length() == 0)
-			guiserver.out.println("(set 'gs:text nil)");
+			guiserver.out.println("(set 'gs:text {})");
 		else
 			guiserver.out.println("(set 'gs:text (base64-dec [text]" + text + "[/text]))");
 		}

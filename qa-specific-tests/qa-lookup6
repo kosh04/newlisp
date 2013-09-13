@@ -1,7 +1,8 @@
 #!/usr/bin/env newlisp
 
-;(net-ipv 6)
-;(net-ping '("maryannemacmini.local" "lutzmacmini.local"))
+(net-ipv 6)
+;(println "net-ping -> " (or (net-ping "officemacmini.local" 1000) (net-error)))
+;(println "net-ping -> " (or (net-ping "lutzmacmini.local" 1000) (net-error)))
 
 ;;;;
 

@@ -172,7 +172,7 @@ char * ptr;
 #ifndef SUPPORT_UTF8
 char str[2];
 #else
-ssize_t i, p;
+ssize_t p;
 #endif
 
 ptr = (char*)cell->contents;
@@ -193,14 +193,14 @@ str[1] = 0;
 stringIndexPtr = ptr + index;
 return(stuffStringN(str, 1));
 #else
-index = adjustNegativeIndex(index, utf8_wlen(ptr));
-for(i = 0; i < index; i++)
-    {
-    p = utf8_1st_len(ptr);
-    ptr += p;
-    }
+index = adjustNegativeIndex(index, utf8_wlen(ptr, ptr + cell->aux));
+ptr = utf8_index(ptr, index);
+p = utf8_1st_len(ptr);
+if(ptr + p > (char *)cell->contents + cell->aux)
+    return(errorProc(ERR_INVALID_UTF8));
+
 stringIndexPtr = ptr;
-return(stuffStringN(ptr, utf8_1st_len(ptr)));
+return(stuffStringN(ptr, p));
 #endif
 }
 
@@ -271,7 +271,7 @@ switch(datCell->type)
         len = (size_t)datCell->aux - 1;
         if(len == 0) return(nilCell);
 #else
-        len = utf8_wlen(string);
+        len = utf8_wlen(string, string + datCell->aux);
         if(len == 0)
             {
             if(datCell->aux - 1 == 0)
@@ -365,7 +365,8 @@ ssize_t size;
 ssize_t len = 1;
 int flag = 0;
 #ifdef SUPPORT_UTF8
-int clen, i;
+int clen;
+char * ptr;
 #endif
 
 params = getEvalDefault(params, &cell);
@@ -405,9 +406,9 @@ while((size -= len) > 0)
     string += len;
     }
 #else
-size = utf8_wlen(string);
-for(i = 0, clen = 0; i < len; i++)
-    clen += utf8_1st_len(string + clen);
+size = utf8_wlen(string, string + size + 1);
+ptr = utf8_index(string, len);
+clen = ptr - string;
 
 if(flag && size < len) return(result);
 
@@ -417,8 +418,8 @@ string += clen;
 while((size -= len) > 0)
     {
     if(flag && size < len) break;
-    for(i = 0, clen = 0; i < len; i++)
-        clen += utf8_1st_len(string + clen);
+    ptr = utf8_index(string, len);
+    clen = ptr - string;
     cell->next = stuffStringN(string, clen);
     cell = cell->next;
     string += clen;
@@ -466,10 +467,10 @@ else
     }
 #else
 
-params = getString(params, &utf8str);
+params = getStringSize(params, &utf8str, &size, TRUE);
 option = getFlag(params);
 
-size =  utf8_wlen(utf8str);
+size =  utf8_wlen(utf8str, utf8str + size + 1);
 
 unicode = allocMemory((size + 1) * sizeof(int));
 size = utf8_wstr(unicode, utf8str, size);
@@ -866,28 +867,30 @@ stream->position = newPosition;
 
 
 /* creates a memory buffer and reads byte into it until  
-   the limiter is found 
+   the [/text] is found 
 */
 
-char * readStreamText(STREAM * stream, char * limit, int * size)
+#define LLEN 7
+#define LIMIT "[/text]"
+
+char * readStreamText(STREAM * stream, int * size)
 {
 STREAM outStream = {0, NULL, NULL, 0, 0};
 ssize_t findPos = -1;
 size_t searchLen;
-size_t llen = strlen(limit);
 char * result;
 
 openStrStream(&outStream, MAX_STRING, 0);
 while(findPos == -1)
     {
-    if((searchLen = strlen(stream->ptr)) < llen)
+    if((searchLen = strlen(stream->ptr)) < LLEN)
         break;
-    findPos = searchBuffer(stream->ptr, searchLen, limit, llen, TRUE);
+    findPos = searchBuffer(stream->ptr, searchLen, LIMIT, LLEN, TRUE);
     if(findPos != -1)
         {
         if(findPos > 0) 
             writeStreamStr(&outStream, stream->ptr, findPos);
-        stream->ptr += findPos + llen;
+        stream->ptr += findPos + LLEN;
         result = allocMemory(outStream.position + 1);
         memcpy(result, outStream.buffer, outStream.position);
         *size = outStream.position;
@@ -896,12 +899,11 @@ while(findPos == -1)
         return(result);
         }
 
-    writeStreamStr(&outStream, stream->ptr, searchLen - llen);
+    writeStreamStr(&outStream, stream->ptr, searchLen - LLEN);
 
-    /* adjustment for the first time, after it will be 0 always */
     stream->position += (stream->ptr - stream->buffer); 
 
-    stream->position += searchLen - llen;
+    stream->position += searchLen - LLEN;
 
     if(stream->handle == 0) /* its not a file */
         {
@@ -910,6 +912,7 @@ while(findPos == -1)
         }
     else
         {
+        if(searchLen == LLEN) break;
         lseek(stream->handle, stream->position, SEEK_SET);
         memset(stream->buffer, 0, stream->size + 1);
         if(read(stream->handle, stream->buffer, stream->size) > 0)
@@ -2002,13 +2005,13 @@ int lchr, rchr;
 CELL * result;
 #endif
 
-params = getString(params, &str);
+params = getStringSize(params, &str, &len, TRUE);
 
 #ifndef SUPPORT_UTF8
 len = strlen(str);
 ptr = str;
 #else
-len = utf8_wlen(str);
+len = utf8_wlen(str, str + len + 1);
 wptr = wstr = allocMemory((len + 1) * sizeof(int));
 len = utf8_wstr(wstr, str, len);
 #endif

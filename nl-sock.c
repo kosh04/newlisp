@@ -216,6 +216,9 @@ while(session)
             ioSessions = session->next;
         else
             previous->next = session->next;
+        if(session->stream != NULL)
+            fclose(session->stream);
+        else close(handle);
         free((char *)session);
         return(TRUE);
         }
@@ -329,9 +332,7 @@ CELL * p_netClose(CELL * params)
 UINT sock; 
  
 getInteger(params, &sock); 
-deleteIOsession((int)sock);
-
-if(close((int)sock) == SOCKET_ERROR)
+if(!deleteIOsession((int)sock))
     return(netError(ERR_INET_NOT_VALID_SOCKET));
 
 netErrorIdx = 0;
@@ -957,7 +958,6 @@ if(bytesReceived == 0 || found == 0)
     { 
     closeStrStream(&netStream); 
     deleteIOsession(sock); 
-    close(sock); 
     return(netError(ERR_INET_CONNECTION_DROPPED)); 
     } 
 
@@ -965,7 +965,6 @@ if(bytesReceived == SOCKET_ERROR)
     { 
     closeStrStream(&netStream);         
     deleteIOsession(sock); 
-    close(sock); 
     return(netError(ERR_INET_READ)); 
     } 
   
@@ -1011,7 +1010,6 @@ if(bytesReceived == SOCKET_ERROR)
     {
     freeMemory(buffer);
     deleteIOsession(sock);
-    close(sock); 
     return(netError(ERR_INET_READ)); 
     }
 
@@ -1029,7 +1027,6 @@ freeMemory(buffer);
 if(closeFlag) 
     {
     deleteIOsession(sock);
-    close(sock);
     }
 
 netErrorIdx = 0;
@@ -1106,7 +1103,6 @@ if(params->type != CELL_NIL)
 if((bytesSent = sendall((int)sock, buffer, size))  == SOCKET_ERROR) 
     { 
     deleteIOsession((int)sock); 
-    close((int)sock); 
     return(netError(ERR_INET_WRITE)); 
     }
 
@@ -1516,7 +1512,6 @@ if(!reconnect)
 else
     {
     deleteIOsession(connection);
-    close(connection); 
     }
 
 if((connection = netAccept(sock)) == SOCKET_ERROR)
@@ -1753,7 +1748,6 @@ while(count)
             
         closeStrStream(netStream);
         deleteIOsession(session->sock);
-        close(session->sock);
         free(netStream);
         session->netStream = NULL;
             
@@ -1833,7 +1827,6 @@ while(base != NULL)
           deleteList(base->result);
         closeStrStream(base->netStream);
         deleteIOsession(base->sock);
-        close(base->sock);
         free(base->netStream);
         base->netStream = NULL;
         }
@@ -1989,7 +1982,7 @@ int broadcast = 0;
 int size, ipNo, startIp = 0, endIp = 0;
 int timeout = 0, tdiff;
 int sendCount = 0, receiveCount = 0;
-size_t len;
+ssize_t len;
 struct timeval tv, tp;
 CELL * result = NULL;
 CELL * link = NULL;

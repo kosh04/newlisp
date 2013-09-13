@@ -223,13 +223,15 @@ CELL * base64(CELL * params, int type)
 char * inPtr;
 char * outPtr;
 size_t sizein, sizeout;
+int emptyFlag = 0;
 
-getStringSize(params, &inPtr, &sizein, TRUE);
+params = getStringSize(params, &inPtr, &sizein, TRUE);
+emptyFlag = getFlag(params);
 
 if(type == BASE64_ENC)
     {
     if(sizein == 0)
-        return(stuffString("===="));
+        return(emptyFlag ? stuffString("") : stuffString("===="));
     if((sizeout = Curl_base64_encode(inPtr, sizein, &outPtr)) == 0)
         return(stuffString(""));
     }
@@ -966,7 +968,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.4.3"
+#define SERVER_SOFTWARE "newLISP/10.4.4"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1330,7 +1332,7 @@ void handleHTTPcgi(char * request, char * query, ssize_t querySize)
 FILE * handle;
 char * command;
 char * content = NULL;
-size_t size;
+ssize_t size;
 char tempfile[32];
 #ifdef WIN_32_BEFORE_SETTING_BINARYMODE
 char * ptr;

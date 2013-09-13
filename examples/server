@@ -13,10 +13,10 @@
 ;;
 
 (define (net-server-accept listenSocket)
-(while online (begin
+  (while online 
     (set 'connect (net-accept listenSocket)) 
 	(net-send connect "Connected!\n")
-	(while (net-server-receive connect)))))
+	(while (net-server-receive connect))))
 
 (define (net-server-receive socket , str)
   (net-receive socket str 256)

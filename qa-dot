@@ -164,7 +164,7 @@ true
 (define (qa)
   (dolist (sm (symbols 'MAIN)) 
    (if (not 
-     (if (and (primitive? (eval sm)) (< sm 'zzzz))
+     (if (and (primitive? (eval sm)) (< sm 'zzz))
        (begin 
           (unless MAIN:testing-cell-leaks (print "  -> " (term sm) "          \r"))
           (set 'func (eval (sym (append "test-" (string sm)))) )
@@ -246,6 +246,8 @@ true
   (and 
     (= 1.23456789 1.23456789) 
     (= 123456789 123456789) 
+    (= 0xFFFFFFFFFFFFFFFF -1)
+    (= 0b1111111111111111111111111111111111111111111111111111111111111111 -1)
     (= '(1 2 3 (4 5) (a b ("CDEFG" "HIJK") 'u 'v 'w)) 
     '(1 2 3 (4 5) (a b ("CDEFG" "HIJK") 'u 'v 'w))) 
     (= "יגהבםףתסÑצע" "יגהבםףתסÑצע")
@@ -3506,6 +3508,7 @@ true
 (delete-file "udptest.lsp")
 (sys-info)
 (unless testing-cell-leaks (exit))
+
 ;; eof
 
 

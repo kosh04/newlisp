@@ -120,6 +120,22 @@ void trigger_callback()
     (*function)(">>>>> callback API ", 1234567890, dnum);
     }
 
+/* test simple ffi */
+
+void (*function_simple)(char * str, int inum);
+
+void register_callback_simple(void * ptr)
+    {
+    function_simple = ptr;
+    }
+
+void trigger_callback_simple() /* only handles strings and integers */
+    {
+    long inum = 1234567890;
+
+    (*function_simple)(">>>>> callback API ", inum);
+    }
+
 /* test struct API */
 
 typedef struct clock

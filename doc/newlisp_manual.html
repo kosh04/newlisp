@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.4.3 Manual and Reference</title>
+   <title>newLISP v.10.4.4 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -135,7 +135,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.4.3</h2>
+<h2>User Manual and Reference v.10.4.4</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -504,6 +504,10 @@ After transition to IPv6 the <tt>-6</tt>
 commandline switch will be changed to <tt>-4</tt> for starting up in IPv4
 mode.</p>
 
+<p>The old writing <tt>parse-date</tt> of <a href="#date-parse">date-parse</a>
+is still recognized but deprecated since version 10.3.0. The old writing will 
+be removed in a future version.</p>
+
 <p>The functions <tt>if-not</tt> and <tt>local</tt> are deprecated and have
 been taken out of the documentation. Both functions will keep on working
 for an indefinite time.</p>
@@ -519,7 +523,7 @@ for an indefinite time.</p>
 <a name="REPL"></a>
 <h2>3. Interactive Lisp mode</h2>
 <p>The best way to experience Lisp and experiment with it, is using interactive 
-mode in a terminal windows or operating system command shell. Since version 10.3, 
+mode in a terminal window or operating system command shell. Since version 10.3, 
 newLISP's read-eval-print-loop (REPL) accepts mult-line statements.</p>
 
 <p>To enter a multi-line statement hit the [enter] key on an empty line after
@@ -1490,11 +1494,12 @@ true   <span class='arw'>&rarr;</span> true
 <p><b>Integers</b> and <b>floating point</b> numbers evaluate to themselves:</p>
 
 <pre>
-123    <span class='arw'>&rarr;</span> 123
-0xE8   <span class='arw'>&rarr;</span> 232    ; hexadecimal prefixed by 0x
-055    <span class='arw'>&rarr;</span> 45     ; octal prefixed by 0 (zero)
-1.23   <span class='arw'>&rarr;</span> 1.23
-123e-3 <span class='arw'>&rarr;</span> 0.123  ; scientific notation
+123      <span class='arw'>&rarr;</span> 123    ; decimal integer
+0xE8     <span class='arw'>&rarr;</span> 232    ; hexadecimal prefixed by 0x
+055      <span class='arw'>&rarr;</span> 45     ; octal prefixed by 0 (zero)
+0b101010 <span class='arw'>&rarr;</span> 42     ; binary prefixed by 0b
+1.23     <span class='arw'>&rarr;</span> 1.23   ; float
+123e-3   <span class='arw'>&rarr;</span> 0.123  ; float in scientific notation
 </pre>		
 <p>
 Integers are 64-bit numbers (including the sign bit, 32-bit before version 8.9.7). 
@@ -1538,6 +1543,13 @@ the following characters escaped with a <tt>\</tt> (backslash):</p>
 <tr><td><tt>\t</tt></td><td>for a TAB character (ASCII 9)</td></tr>
 <tr><td><tt>\nnn</tt></td><td>for a three-digit ASCII number (nnn format between 000 and 255)</td></tr>
 <tr><td><tt>\xnn</tt></td><td>for a two-digit-hex ASCII number (xnn format between x00 and xff)</td></tr>
+<tr>
+<td><tt>\unnnn</tt></td>
+<td>for a unicode character encoded in the four <tt>nnnn</tt> hexadecimal
+digits. newLISP will translate this to a UTF8 character in the UTF8 
+enabled versions of newLISP.</td>
+</tr>
+<tr><td><tt>\\</tt></td><td>for the backslash character (ASCII 92) itself</td></tr>
 </table><br/>
 
 <p>
@@ -4428,11 +4440,14 @@ are forgotten and the environment's symbols are restored to their previous value
 <h2>23. Linking newLISP source and executable</h2>
 
 <p>On MS Windows, source code and the newLISP executable can be linked together 
-to build a self-contained application by using <tt>link.lsp</tt>. This program is 
-located in the <tt>newlisp/util</tt> directory of the distributions.
-As an example, the following code is linked to the newLISP executable
-to form a simple, self-contained application:
+to build a self-contained application by using <tt>link.lsp</tt>. On UNIX, the 
+new linked executable will only work correctly when called with the full pathname.
 </p>
+
+<p>The <tt>link.lsp</tt> program is located in the <tt>newlisp/util</tt> directory 
+of the source distributions. As an example, the following code is linked to the 
+newLISP executable to form a simple, self-contained application:</p>
+
 <pre>
 ;; uppercase.lsp - Link example
 (println (upper-case (main-args 1)))
@@ -4607,6 +4622,18 @@ Any other character ends the hexadecimal number.
 0x10ab  <span class='arw'>&rarr;</span> 4267
 0X10CC  <span class='arw'>&rarr;</span> 4300
 </pre>
+
+<p>
+<b>Binaries</b> start with a <tt>0x</tt> (or <tt>0B</tt>),
+followed by up to 64 1's or 0s. Any other character ends the binary number.
+</p>
+
+<!-- example -->
+
+<pre>
+0b101010   <span class='arw'>&rarr;</span>  42
+</pre>
+
 
 
 <p>
@@ -4846,6 +4873,11 @@ digits to escape them:</p>
 
 <table width="98%"  summary="escaping special characters in strings">
 <tr align="left" valign="bottom"><th>character</th><th>description</th></tr>
+<tr>
+<td><tt>\"</tt></td>
+<td>for a double quote inside a quoted string</td>
+</tr>
+
 <tr>
 <td><tt>\n</tt></td>
 <td>the line-feed character (ASCII 10)</td>
@@ -8152,6 +8184,11 @@ If the file does not exist, it is created (in this case, <tt>append-file</tt>
 works identically to <a href="#write-file">write-file</a>). This function 
 returns the number of bytes written.</p>
 
+<p>On failure the function returns <tt>nil</tt>. For error information, 
+use <a href="#sys-error">sys-error</a> when used on files. When used
+on URLs <a href="#net-error">net-error</a> gives more error
+information.</p>
+
 <!-- example -->
 
 <pre>
@@ -8773,38 +8810,46 @@ absolute value of <em>num-radians</em> is greater than 1,
 
 <a name="base64-enc"></a>
 <h2><span class="function">base64-enc</span></h2>
-<h4>syntax: (base64-enc <em>str</em>)</h4>
+<h4>syntax: (base64-enc <em>str</em> [<em>bool-flag</em>])</h4>
 
 <p>
-	The string in <em>str</em> is encoded into BASE64 format. 
-	This format encodes groups of 3 * 8 = 24 input bits 
-	into 4 * 8 = 32 output bits, 
-	where each 8-bit output group 
-	represents 6 bits from the input string. 
-	The 6 bits are encoded into 64 possibilities
-	from the letters A&ndash;Z and a&ndash;z; 
-	the numbers 0&ndash;9; 
-	and the characters + (plus sign) and / (slash). 
-	The = (equals sign) is used as a filler 
-	in unused 3- to 4-byte translations. 
-	This function is helpful for converting binary content 
-	into printable characters.
+The string in <em>str</em> is encoded into BASE64 format. 
+This format encodes groups of 3 * 8 = 24 input bits 
+into 4 * 8 = 32 output bits, 
+where each 8-bit output group 
+represents 6 bits from the input string. 
+The 6 bits are encoded into 64 possibilities
+from the letters A&ndash;Z and a&ndash;z; 
+the numbers 0&ndash;9; 
+and the characters + (plus sign) and / (slash). 
+The = (equals sign) is used as a filler 
+in unused 3- to 4-byte translations. 
+This function is helpful for converting binary content 
+into printable characters.
+</p>
+
+<p>Without the optional <em>bool-flag</em> parameter the empty string <tt>""</tt> is
+encoded into <tt>"===="</tt>. If <em>bool-flag</em>  evaluates to <tt>true</tt>, the
+the empty string <tt>""</tt> is translated into <tt>""</tt>. Both translations
+result in <tt>""</tt> when using <a href="base64-dec">base64-dec</a>.</p>
+
+<p>
+The encoded string is returned.
 </p>
 
 <p>
-	The encoded string is returned.
-</p>
-
-<p>
-	BASE64 encoding is used with many Internet protocols 
-	to encode binary data for inclusion in text-based messages
-	(e.g., XML-RPC).
+BASE64 encoding is used with many Internet protocols 
+to encode binary data for inclusion in text-based messages
+(e.g., XML-RPC).
 </p>
 
 <!-- example -->
 
 <pre>
 (base64-enc "Hello World")  <span class='arw'>&rarr;</span> "SGVsbG8gV29ybGQ="
+
+(base64-enc "")             <span class='arw'>&rarr;</span> "===="
+(base64-enc "" true)        <span class='arw'>&rarr;</span> ""
 </pre>
 
 
@@ -9415,7 +9460,7 @@ to occur <em>int-k</em> times in <em>int-n</em> trials if that event has a
 probability of <em>float-p</em> and all trials are independent of one another:</p>
 
 
-<em><b>binomial = n! / (k! * (n - k)!) * pow(p, k) * pow(1.0 - p, n - k)</b></em>
+<em><b>binomial = pow(p, k) * pow(1.0 - p, n - k) * n! / (k! * (n - k)!)</b></em>
 
 
 <p>
@@ -9519,7 +9564,7 @@ reassigned to a different callback function.</p>
 The above code is a snippet from the file <tt>opengl-demo.lsp</tt>, 
 in the <tt>examples/</tt> directory of the source distribution of newLISP.</p>
 
-<p>In the second <b>expanded <tt>callback</tt> syntax</b> type specifiers are used to 
+<p>In the second <b>extended <tt>callback</tt> syntax</b> type specifiers are used to 
 describe the functions return and parameter value types when the function is called. 
 An unlimited number of callback functions can be registered with the second syntax, and 
 return values are passed back to the calling function. The symbol in <em>sym-function</em>
@@ -9787,12 +9832,12 @@ is taken as Unicode and a UTF-8 character is returned.
 <!-- example -->
 
 <pre>
-(char "ABC")     <span class='arw'>&rarr;</span> 65  ; ASCII code for "A"
-(char "ABC" 1)   <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
-(char "ABC" -1)  <span class='arw'>&rarr;</span> 67  ; ASCII code for "C"
-(char "B")       <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
-(char "Ω")       <span class='arw'>&rarr;</span> 937 ; UTF-8 code for "Ω"
-(char "Ω" 1)     <span class='arw'>&rarr;</span> 169 ; byte value at offset 1
+(char "ABC")          <span class='arw'>&rarr;</span> 65  ; ASCII code for "A"
+(char "ABC" 1)        <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
+(char "ABC" -1)       <span class='arw'>&rarr;</span> 67  ; ASCII code for "C"
+(char "B")            <span class='arw'>&rarr;</span> 66  ; ASCII code for "B"
+(char "Ω")            <span class='arw'>&rarr;</span> 937 ; UTF-8 code for "Ω"
+(char "Ω" 1 true)     <span class='arw'>&rarr;</span> 169 ; byte value at offset 1
 
 (char 65)  <span class='arw'>&rarr;</span> "A"
 (char 66)  <span class='arw'>&rarr;</span> "B"
@@ -11708,12 +11753,14 @@ or have other unforeseen effects.
 <h2><span class="function">delete-file</span></h2>
 <h4>syntax: (delete-file <em>str-file-name</em>)</h4>
 
-<p>
-Deletes a file given in <em>str-file-name</em>. 
+<p>Deletes a file given in <em>str-file-name</em>. 
 Returns <tt>true</tt> if the file was deleted 
-successfully or <tt>nil</tt> if the file was not deleted.
-</p>
+successfully.</p>
 
+<p>On failure the function returns <tt>nil</tt>. For error information, 
+use <a href="#sys-error">sys-error</a> when used on files. When used
+on URLs <a href="#net-error">net-error</a> gives more error
+information.</p>
 
 <p>The file name can be given as a URL.</p>
 
@@ -19485,16 +19532,18 @@ The predicate <tt>null?</tt> is useful in conjunction with the functions
 <!-- example -->
 
 <pre>
-(map null? '(1 0 0.0 2 NaN "hello" "" (a b c) () nil true))
-<span class='arw'>&rarr;</span> (nil true true true nil true nil true nil true true nil)
+(set 'x (sqrt -1)) <span class='arw'>&rarr;</span> NaN ; or nan on UNIX
+(null? x) <span class='arw'>&rarr;</span> true
 
-(filter null? '(1 0 2 0.0 NaN "hello" "" (a b c) () nil true)) 
-<span class='arw'>&rarr;</span> (0 0 NaN "" () nil)
+(map null? '(1 0 0.0 2 "hello" "" (a b c) () true))
+<span class='arw'>&rarr;</span> (nil true true nil nil true nil true nil) 
 
-(clean null? '(1 0 2 0.0 NaN "hello" "" (a b c) () nil true))
+(filter null? '(1 0 2 0.0 "hello" "" (a b c) () nil true)) 
+<span class='arw'>&rarr;</span> (0 0 "" () nil)
+
+(clean null? '(1 0 2 0.0 "hello" "" (a b c) () nil true))
 <span class='arw'>&rarr;</span> (1 2 "hello" (a b c) true)
 </pre>
-
 
 <p>
 See also the predicates <a href="#emptyp">empty?</a>,
@@ -21491,6 +21540,11 @@ expressions event-driven.</p>
 <p>Reads a file in <em>str-file-name</em> in one swoop and returns a string buffer 
 containing the data.</p>
 
+<p>On failure the function returns <tt>nil</tt>. For error information, 
+use <a href="#sys-error">sys-error</a> when used on files. When used
+on URLs <a href="#net-error">net-error</a> gives more error
+information.</p>
+
 <!-- example -->
 
 <pre>
@@ -21694,14 +21748,15 @@ transformation on the expression before it gets evaluated.</p>
 <p>Specifying a quoted <tt>nil</tt> for the event will disable it.</p>
 
 <p>The following one-liner <tt>reader-event</tt> could be used to enhance
-the interactive shell:</p>
+the interactive shell with a tracer:</p>
 
 <!-- example -->
 <pre>
-<b>&gt;</b>(reader-event (lambda (ex) (print " =&gt; " ) ex))
+<b>&gt;</b>(reader-event (lambda (ex) (print " =&gt; " ex)))
 $reader-event
 <b>&gt; (+ 1 2 3)
- =&gt; 6
+ =&gt; (+ 1 2 3)
+6
 &gt;</b>
 </pre>
 
@@ -24692,10 +24747,7 @@ and child processes is done using the <a href="#send">send</a> and
 <p>With <tt>(fibo 7)</tt> 41 processes will be generated. Although the above
 code shows the working of the Cilk API in a recursive application, 
 it would not be practical, as the overhead required to spawn subtasks 
-is much higher than the time saved through parallelization. The example 
-also shows how code written for the Cilk API will work under Win32, too,
-with <tt>spawn</tt> simply working as a <a href="#set">set</a> and 
-<a href="#sync">sync</a> just returning an empty list or <tt>true</tt>.</p>
+is much higher than the time saved through parallelization.</p>
 
 <p>Since version 10.1 a <a href="#send">send</a> and <a href="#receive">receive</a>
 message functions are available for communications between parent and child processes. 
@@ -27052,6 +27104,11 @@ built-in function called
 <p>Writes a file in <em>str-file-name</em> with contents in <em>str-buffer</em> 
 in one swoop and returns the number of bytes written.</p>
 
+<p>On failure the function returns <tt>nil</tt>. For error information, 
+use <a href="#sys-error">sys-error</a> when used on files. When used
+on URLs <a href="#net-error">net-error</a> gives more error
+information.</p>
+
 <!-- example -->
 
 <pre>
@@ -27644,42 +27701,44 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <tr><td>error number too high</td><td>38</td></tr>
 <tr><td>regular expression</td><td>39</td></tr>
 <tr><td>missing end of text [/text]</td><td>40</td></tr>
- <tr><td>mismatch in number of arguments</td><td>41</td></tr>
+<tr><td>mismatch in number of arguments</td><td>41</td></tr>
 <tr><td>problem in format string</td><td>42</td></tr>
 <tr><td>data type and format don't match</td><td>43</td></tr>
 <tr><td>invalid parameter</td><td>44</td></tr>
 <tr><td>invalid parameter: 0.0</td><td>45</td></tr>
 <tr><td>invalid parameter: NaN</td><td>46</td></tr>
-<tr><td>illegal parameter type</td><td>47</td></tr>
-<tr><td>symbol not in MAIN context</td><td>48</td></tr>
-<tr><td>symbol not in current context</td><td>49</td></tr>
-<tr><td>target cannot be MAIN</td><td>50</td></tr>
-<tr><td>list index out of bounds</td><td>51</td></tr>
-<tr><td>array index out of bounds</td><td>52</td></tr>
-<tr><td>string index out of bounds</td><td>53</td></tr>
-<tr><td>nesting level too deep</td><td>54</td></tr>
-<tr><td>list reference changed</td><td>55</td></tr>
-<tr><td>invalid syntax</td><td>56</td></tr>
-<tr><td>user error</td><td>57</td></tr>
-<tr><td>user reset -</td><td>58</td></tr>
-<tr><td>received SIGINT -</td><td>59</td></tr>
-<tr><td>function is not reentrant</td><td>60</td></tr>
-<tr><td>local symbol is protected</td><td>61</td></tr>
-<tr><td>no reference found</td><td>62</td></tr>
-<tr><td>list is empty</td><td>63</td></tr>
-<tr><td>I/O error</td><td>64</td></tr>
-<tr><td>working directory not found</td><td>65</td></tr>
-<tr><td>invalid PID</td><td>66</td></tr>
-<tr><td>cannot open socket pair</td><td>67</td></tr>
+<tr><td>invalid UTF8 string</td><td>47</td></tr>
+<tr><td>illegal parameter type</td><td>48</td></tr>
+<tr><td>symbol not in MAIN context</td><td>49</td></tr>
+<tr><td>symbol not in current context</td><td>50</td></tr>
+<tr><td>target cannot be MAIN</td><td>51</td></tr>
+<tr><td>list index out of bounds</td><td>52</td></tr>
+<tr><td>array index out of bounds</td><td>53</td></tr>
+<tr><td>string index out of bounds</td><td>54</td></tr>
+<tr><td>nesting level too deep</td><td>55</td></tr>
+<tr><td>list reference changed</td><td>56</td></tr>
+<tr><td>invalid syntax</td><td>57</td></tr>
+<tr><td>user error</td><td>58</td></tr>
+<tr><td>user reset -</td><td>59</td></tr>
+<tr><td>received SIGINT -</td><td>60</td></tr>
+<tr><td>function is not reentrant</td><td>61</td></tr>
+<tr><td>local symbol is protected</td><td>62</td></tr>
+<tr><td>no reference found</td><td>63</td></tr>
+<tr><td>list is empty</td><td>64</td></tr>
+<tr><td>I/O error</td><td>65</td></tr>
+<tr><td>working directory not found</td><td>66</td></tr>
+<tr><td>invalid PID</td><td>67</td></tr>
+<tr><td>cannot open socket pair</td><td>68</td></tr>
+<tr><td>cannot fork process</td><td>69</td></tr>
+<tr><td>no comm channel found</td><td>70</td></tr>
 </table><br/>
 
 <h2>Error codes extended FFI</h2>
 <table summary="Error codes extended FFI">
 <tr align="left"><th>description</th><th>no</th></tr>
-<tr><td>no comm channel found&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>69</td></tr>
-<tr><td>FFI preparation failed</td><td>70</td></tr>
-<tr><td>invalid FFI type</td><td>71</td></tr>
-<tr><td>FFI struct expected</td><td>72</td></tr>
+<tr><td>FFI preparation failed</td><td>71</td></tr>
+<tr><td>invalid FFI type</td><td>72</td></tr>
+<tr><td>FFI struct expected</td><td>73</td></tr>
 </table><br/>
 
 <br/><br/><br/>

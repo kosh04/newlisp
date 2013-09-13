@@ -167,7 +167,8 @@
 	(set 'rotx (mul (div 200 x) PI))
 	(set 'roty (mul (div 150 y) PI))
 	(glutPostRedisplay)
-	(println "x:" x  " y:" y))
+	(println "x:" x  " y:" y)
+    (reset))
 
 (glutInit (address argc) (address argv))
 (glutInitDisplayMode (| GLUT_RGB GLUT_DOUBLE ))

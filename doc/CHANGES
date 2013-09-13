@@ -6169,7 +6169,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Updated newlispdoc now all tags (including custom) are title-case'ed
 
-     Simple ffi calls working on Mac OSX, UBUNTU Linux (Intel) and Win32
+     Simple libffi calls working on Mac OSX, UBUNTU Linux (Intel) and Win32
      three (and more) new ffi makfiles:
         makefile_darwin_utf8_ffi  # std OSX install has libs and headers
         makefile_linux_utf8_ffi   # must install package libffi-dev
@@ -6190,7 +6190,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
         (set 'strtof (import "libc.dylib" "atof" "double" "char*"))
         (strtof "123.456") => 123.456
 
-     The followong types are implemented for LP64, LLP64 and ILP32
+     The following types are implemented for LP64, LLP64 and ILP32
 
          "byte"
          "char"
@@ -6205,10 +6205,9 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
          "void*"
 
       For pointer return values "char*" and "void*", the address
-      is returned as a number. Use 'get-string' or 'unpack' to
-      retrieve contents. This method allows returning binary info.
-      THIS IS CHANGED IN 10.3.9 where "char*" returns a string
-      directly and "void*" a number
+      is returned as a number. Use 'get-string' or 'unpack' to retrieve 
+      contents. This method allows returning binary info. THIS IS CHANGED 
+      IN 10.3.9 where "char*" returns a string directly and "void*" a number.
 
 10.3.8
       Make sure FFIMPORT struct memory gets freed when doing multiple
@@ -6394,7 +6393,38 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
      Updated plot.lsp with line and XY plot now a standard module.
 
-10.4.3
+10.4.3 stable maintenance release May 7th, 2012
      (seek <file-handle>) after (read-line <file-handle>) was broken in 10.4.0 when
-     introducing faster file stream reading on 'read-line'.
+     introducing faster file stream reading on 'read-line' and file closing could
+     leak memory.
+
+10.4.4
+     Eliminated getFloatFromCell() and replaced by getDirectFloat() in nl-math.c
+
+     Fixed error message for missing [/text] -tag when loading source from file.
+
+     read-file, write-file, append-file, delete-file when used with http:// URLs will 
+     now return nil under error conditions instead of throwing an error. This is
+     consistent with error behavior on local files.  When nil is returned, net-error 
+     gives more error information. For remote server-side errors on URLs the server 
+     HTTP error page is returned.
+
+     Check for UTF8 string validity in functions which are UTF8 sensitive. 
+     An error message "invalid UTF8 string" is issued for invalid UTF8 strings.
+
+     Several - and continuing - manual updates, most of them also going into current
+     online version of manual.
+
+     guiserver.jar 1.47 fixes getting text from an empty gs:text-field.
+
+     Binary number format can be used with either 0b or 0B as prefix to up to 64
+     1's and 0's, e.g. 0b101010 for the  number 42.
+
+     A 'true' flag as optional parameter in base64-enc will force the empty string
+     to be translated as "" instead of "====". Both cases translate correctly to
+     the empty string when fed into base64-dec.
+
+     Fixed a result stack overflow problem on callback's.
+
+     On OSX Mountain Lion 10.8.0 compiles also using clang instead of gcc.
 

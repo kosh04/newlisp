@@ -14,6 +14,7 @@ CONTENTS
  (9) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
 (10) RUNNING THE newLISP-GS GRAPHICAL FRONTEND
 (11) INSTRUCTIONS FOR CUSTOMIZED INSTALL AND PACKAGE CREATORS
+(12) COMMENTS ABOUT LIBFFI
 
 
 (1) WIN32 BINARY DISTRIBUTION INSTALLATION
@@ -306,6 +307,31 @@ newLISP is a LISP like, general purpose scripting language
 newLISP is a scripting language for developing web applications and
 programs in general and in the domains of artificial intelligence (AI)
 and statistics.
+
+
+(12) COMMENTS ABOUT LIBFFI
+--------------------------
+
+Here some general comments for usage of libffi in newLISP:
+
+The extended ffi requiring libffi and ffi.h for compiling, was only 
+introduced a short time ago in February of 2012. Except for module/gsl.lsp 
+all other modules shipped in the distributions work with the older simple 
+form of import not requiring libffi.
+
+The configure utility will pick libffi enabled makefiles only for Windows, 
+OSX and Linux. For all other OS it will pick makefiles not requiring libffi.
+
+Ted Walther's configure-alt utility, which automatically configures the 
+memory model (32-bit or 64-bit) never configures for the new extended ffi 
+using libffi.
+
+The path for ffi.h chosen in newlisp.h, is only valid for OSX and UBUNTU 
+Linux, for all other OSs the path might be different and has to be adjusted. 
+
+In any case, libffi from http://sourceware.org/libffi/ is pretty easy to make 
+for most platforms. On Windows, Mac OSX and UBUNTU Linux it is already 
+installed by default.
 
 
                                  +++

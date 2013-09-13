@@ -7,7 +7,8 @@
 ;; @version 1.32 doc formatting, spelling
 ;; @version 1.33 took out license
 ;; @version 1.4 cv:petal was broken (JavaScript change?)
-;; @author Lutz Mueller, March 2009
+;; @version 1.44 doc corrections
+;; @author Lutz Mueller, March 2009, June 2012
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
 ;; the HTML-5 canvas tag. As of March 2009 only the Safari 4.0 Beta
@@ -78,7 +79,7 @@
 ;; (exit)
 
 ;; A package with more demo files can be downloaded from 
-;; @link http://www.newlisp.org/canvas/canvas-14.tgz www.newlisp.org/canvas/canvas-14.tgz .
+;; @link http://www.newlisp.org/canvas/canvas-15.tgz www.newlisp.org/canvas/canvas-15.tgz .
 ;; The demo files assume the Safari (4.0 beta) browser on Mac OS X and Win32 or
 ;; The Firefox browser (3.1. beta 3) on Linux and start the browser automatically.
 ;; Change the last 'cv:render' line in each of the demo file to manually load
@@ -128,6 +129,8 @@
 ;; (exit)
 
 ;; <h2>Differences to the postscript module</h2>
+;; Differences between the <tt>canvas.lsp</tt> and <tt>postscript.lsp</tt> modules
+;; are mainly in the treatment of text colors and fonts.
 ;; <ul>
 ;; <li>The text color for 'cv:text' is set by 'cv:fill-color' with 'canvas.lsp', but
 ;; with 'ps:line-color' when using 'postscript.lsp' and 'ps:text', except for outlined
@@ -146,7 +149,7 @@
 ;; <li>Text drawn with 'cv:textoutline' or 'cv:textarcoutline' cannot be filled
 ;; with color as possible with 'ps:textoutline' and 'ps:textarcoutline' in the postscript
 ;; module.
-;; <li>'canvas.lso' has a 'cv:header' function to specify tags in the 
+;; <li>'canvas.lsp' has a 'cv:header' function to specify tags in the 
 ;; HTML header section.</li>
 ;; </ul>
  
@@ -210,7 +213,7 @@
 ;; @param <num-dg> Angle degrees from 0 to 360.
 ;; <br>
 ;; Set the turtle angle to <num-dg> degrees.
-;; Upwards is 0, right 45, downwards 180 and left 270 degrees.
+;; Upwards is 0, right 90, downwards 180 and left 270 degrees.
 ;; The turtle position is aved on the graphics state stack when using 
 ;; '(cv:gsave)'.
 
@@ -314,8 +317,7 @@
 ;; @param <str-name> The font name.
 ;; <br>
 ;; The current font is set for all subsequent text operations.
-;; Depending on the version of the postscript viewer or device
-;; installed different fonts are available.
+;; Depending on the browser and OS installed, different fonts are available.
 ;;
 ;; @example
 ;; (cv:font "normal 14px sans-serif") ; Helvetica
@@ -494,7 +496,7 @@
 ;; on the page. Previou scaling factors can be saved on the graphics
 ;; state stack using the function 'cv:gsave' and restored using 'cv:grestore'.
 
-;; @syntax (cv:shape <list-of-num-lists> [<num-fill>])
+;; @syntax (cv:shape <list-of-num-lists> [<bool-fill>])
 ;; @param <list-of-num-lists> A list of turtle movements and/or Bezier curves.
 ;; @param <bool-fill> An optional fill flag for color fill.
 ;; <br>

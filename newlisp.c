@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10403;
+int version = 10404;
 
 char copyright[]=
-"\nnewLISP v.10.4.3 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.4.4 Copyright (c) 2012 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.3 on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.4 on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.3 on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.4 on %s IPv4/6%s%s\n\n";
 #endif
 #else
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.4.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.4.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.4.3 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.4.4 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif
 
@@ -2903,33 +2903,34 @@ char * errorMessage[] =
     "invalid parameter",            /* 44 */
     "invalid parameter: 0.0",       /* 45 */
     "invalid parameter: NaN",       /* 46 */
-    "illegal parameter type",       /* 47 */
-    "symbol not in MAIN context",   /* 48 */
-    "symbol not in current context", /* 49 */
-    "target cannot be MAIN",        /* 50 */
-    "invalid list index",           /* 51 */
-    "array index out of bounds",    /* 52 */
-    "invalid string index",         /* 53 */
-    "nesting level to deep",        /* 54 */
-    "list reference changed",       /* 55 */
-    "invalid syntax",               /* 56 */
-    "user error",                   /* 57 */
-    "user reset -",                 /* 58 */
-    "received SIGINT -",            /* 59 */
-    "function is not reentrant",    /* 60 */
-    "not allowed on local symbol",  /* 61 */
-    "no reference found",           /* 62 */
-    "list is empty",                /* 63 */
-    "I/O error",                    /* 64 */
-    "no working directory found",   /* 65 */
-    "invalid PID",                  /* 66 */
-    "cannot open socket pair",      /* 67 */
-    "cannot fork process",          /* 68 */
-    "no comm channel found",        /* 69 */
+    "invalid UTF8 string",          /* 47 */
+    "illegal parameter type",       /* 48 */
+    "symbol not in MAIN context",   /* 49 */
+    "symbol not in current context", /* 50 */
+    "target cannot be MAIN",        /* 51 */
+    "invalid list index",           /* 52 */
+    "array index out of bounds",    /* 53 */
+    "invalid string index",         /* 54 */
+    "nesting level to deep",        /* 55 */
+    "list reference changed",       /* 56 */
+    "invalid syntax",               /* 57 */
+    "user error",                   /* 58 */
+    "user reset -",                 /* 59 */
+    "received SIGINT -",            /* 60 */
+    "function is not reentrant",    /* 61 */
+    "not allowed on local symbol",  /* 62 */
+    "no reference found",           /* 63 */
+    "list is empty",                /* 64 */
+    "I/O error",                    /* 65 */
+    "no working directory found",   /* 66 */
+    "invalid PID",                  /* 67 */
+    "cannot open socket pair",      /* 68 */
+    "cannot fork process",          /* 69 */
+    "no comm channel found",        /* 70 */
 #ifdef FFI
-    "ffi preparation failed",       /* 70 */
-    "invalid ffi type",             /* 71 */
-    "ffi struct expected",          /* 72 */
+    "ffi preparation failed",       /* 71 */
+    "invalid ffi type",             /* 72 */
+    "ffi struct expected",          /* 73 */
 #endif
     NULL
     };
@@ -3168,6 +3169,15 @@ switch(getToken(stream, token, &tklen))
 #endif
         break;
 
+    case TKN_BINARY:
+#ifndef NEWLISP64
+        newCell = stuffInteger64((INT64)strtoull(&token[2],NULL,2));
+#else
+        newCell = stuffInteger(strtoull(&token[2],NULL,2));
+#endif
+        break;
+    
+
     case TKN_DECIMAL:
 #ifndef NEWLISP64
         newCell = stuffInteger64(strtoll(token,NULL,0));
@@ -3211,7 +3221,7 @@ switch(getToken(stream, token, &tklen))
 
         else if(strncmp(token, "[text]", 6) == 0) 
             {
-            newCell = makeCell(CELL_STRING, (UINT)readStreamText(stream, "[/text]", &tklen));
+            newCell = makeCell(CELL_STRING, (UINT)readStreamText(stream, &tklen));
             if(newCell->contents == 0)
                 {
                 deleteList(newCell); 
@@ -3411,6 +3421,15 @@ if(isDigit((unsigned char)*stream->ptr) ||
             *(tkn++) = *(stream->ptr++), tknLen++;
         *tkn = 0;
         return(TKN_HEX);
+        }
+
+    if(toupper(*stream->ptr) == 'B' && token[0] == '0')
+        {
+        *(tkn++) = *(stream->ptr++), tknLen++;
+        while((*stream->ptr == '0' || *stream->ptr == '1') && tknLen < MAX_BIN_NO)
+            *(tkn++) = *(stream->ptr++), tknLen++;
+        *tkn = 0;
+        return(TKN_BINARY);
         }
 
     if(*stream->ptr == lc_decimal_point)
@@ -4917,6 +4936,9 @@ CELL * p_first(CELL * params)
 char str[2];
 CELL * cell;
 CELL * result;
+#ifdef SUPPORT_UTF8
+size_t len;
+#endif
 
 getEvalDefault(params, &cell);
 
@@ -4930,7 +4952,10 @@ if(cell->type == CELL_STRING)
     str[1] = 0;
     result = stuffString(str);
 #else
-    result = stuffStringN((char*)cell->contents, utf8_1st_len((char*)cell->contents));
+    len =  utf8_1st_len((char*)cell->contents);
+    if(len > cell->aux -1)
+        return(errorProc(ERR_INVALID_UTF8));
+    result = stuffStringN((char*)cell->contents, len);
 #endif
 
     stringIndexPtr = (char *)cell->contents;
@@ -4965,6 +4990,9 @@ CELL * p_rest(CELL * params)
 {
 CELL * cell;
 CELL * tail;
+#ifdef SUPPORT_UTF8
+size_t size;
+#endif
 
 /* cell = evaluateExpression(params); */
 getEvalDefault(params, &cell);
@@ -4984,7 +5012,10 @@ else if(cell->type == CELL_STRING)
 #ifndef SUPPORT_UTF8
     return(stuffString((char *)(cell->contents + 1)));
 #else
-    return(stuffString((char *)(cell->contents + utf8_1st_len((char *)cell->contents))));
+    size = utf8_1st_len((char *)cell->contents);
+    if(size > cell->aux - 1)
+        return(errorProc(ERR_INVALID_UTF8));
+    return(stuffString((char *)(cell->contents + size)));
 #endif
     }
 
@@ -5120,10 +5151,6 @@ CELL * cell;
 CELL * listPtr;
 CELL * result;
 char * str;
-#ifdef SUPPORT_UTF8
-char * ptr;
-int len;
-#endif
 
 getEvalDefault(params, &cell);
 
@@ -5136,14 +5163,8 @@ if(cell->type == CELL_STRING)
     str += (cell->aux - 2);
     result = stuffString(str);
 #else
-    ptr = str;
-    while((len = utf8_1st_len(str)) != 0)
-        {
-        ptr = str;
-        str += len;
-        }
-    result = stuffStringN(ptr, utf8_1st_len(ptr));
-    str = ptr;
+    str = utf8_index(str, utf8_wlen(str, str + cell->aux) -1);
+    result = stuffString(str);
 #endif
     stringIndexPtr = (char *)str;
     if(symbolCheck)
@@ -6922,7 +6943,7 @@ UINT idx;
 
 getInteger(params, &idx);
 
-if(idx > 15 || idx < 0) return(nilCell);
+if(idx > 15) return(nilCell);
 
 return(copyCell((CELL*)sysSymbol[idx]->contents));
 }

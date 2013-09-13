@@ -1568,14 +1568,6 @@ void updateCell(CELL * cell, CELL * val)
 {
 CELL * new;
 
-/* deprecate 10.1.6/ then eliminate usage of sysSymbol[0
-    and $it does not need a copy anymore 
-    TAKE OUT AFTER 10.2.00 
-deleteList((CELL*)sysSymbol[0]->contents);
-itSymbol->contents = (UINT)copyCell(cell);
-sysSymbol[0]->contents = itSymbol->contents; 
-*/
-
 itSymbol->contents = (UINT)cell;
 
 if(val != nilCell)

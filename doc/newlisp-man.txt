@@ -163,5 +163,5 @@ AUTHOR
 
 
 
-version 10.4.2                    April 2012                        newlisp(1)
+version 10.4.3                    May 2012                        newlisp(1)
 

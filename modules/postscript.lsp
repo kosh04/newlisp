@@ -1,22 +1,13 @@
 ;; @module postscript.lsp
 ;; @description Routines for creating postscript files
-;; @version 1.0 - comments redone for automatic documentation
-;; @version 1.1 - changed write-line syntax for 10.0
-;; @version 1.2 - documentation fixes, Feb-2009
 ;; @version 2.0 - bugfixes and documentation overhaul.
 ;; @version 2.1 - doc changes
 ;; @version 2.2 - formatting
 ;; @version 2.3 - documentation
 ;; @version 2.4 - replaced if-not with unless
+;; @version 2.42 - doc corrections
 ;; @author Lutz Mueller, July 2006, 2009, 2010, 2012
-;; <h2>Changes and fixes in version 2 </h2>
-;; <ul>
-;; <li>Bugfixes for bezier, which sometimes crashed.
-;; <li>Added ps:rectangle (made with shape).
-;; <li>All functions no in alphabetical order.
-;; <li>'ps:textarc' and 'ps:textoutline' have changed.
-;; <li>'ps:line-cap' and 'ps:line-join' now take descriptive or numbers.
-;; </ul>
+;;
 ;; <h2>Routines for creating postscript files</h2>
 ;; To use this module include the following 'load' statement at
 ;; the beginning of the program file:
@@ -65,7 +56,7 @@
 ;; the documentation.
 ;;
 ;; A package with all demo files can be downloaded at
-;; @link http://www.newlisp.org/postscript/postscript-20.tgz www.newlisp.org/postscript/postscript-20.tgz
+;; @link http://www.newlisp.org/postscript/postscript-24.tgz www.newlisp.org/postscript/postscript-24.tgz
 ;; The demo files in the package assume execution on Mac OS X with automatic preview of PS pages.
 ;; For other platforms chamges the last 'ps:render' statement to include a filename for a postscript
 ;; file.
@@ -128,7 +119,7 @@
 ;; @param <num-dg> Angle degrees from 0 to 360.
 ;; <br>
 ;; Set the turtle angle to <num-dg> degrees.
-;; Upwards is 0, right 45, downwards 180 and left 270 degrees.
+;; Upwards is 0, right 90, downwards 180 and left 270 degrees.
 ;; The turtle position is aved on the graphics state stack when using 
 ;; '(ps:gsave)'.
 
@@ -407,7 +398,7 @@
 ;; on the page. Previou scaling factors can be saved on the graphics
 ;; state stack using the function 'ps:gsave' and restored using 'ps:grestore'.
 
-;; @syntax (ps:shape <list-of-num-lists> [<num-fill>])
+;; @syntax (ps:shape <list-of-num-lists> [<bool-fill>])
 ;; @param <list-of-num-lists> A list of turtle movements and/or Bezier curves.
 ;; @param <bool-fill> An optional fill flag for color fill.
 ;; <br>

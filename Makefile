@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.4.3
-INT_VERSION = 10403
+VERSION = 10.4.4
+INT_VERSION = 10404
 
 default: makefile_build
 	make -f makefile_build
@@ -109,6 +109,9 @@ dpkg_utf8:
 # Note that since Mac OX X update 10.5.6 'PackageMaker -d -o'
 # bombs out in the following script, but is fixed in 10.6.0
 # Snow Leopard.
+# one Mountain Lion use packagemaker productbuild and productsign
+# see also: "Distributing Outside the Mac App Store" on http://developer.apple.com/
+# linked from https://developer.apple.com/resources/developer-id/
 dmg_ppc:
 	make -f makefile_darwin_utf8_leopardPPC_ffi
 	sudo rm -rf ../Package_contents
