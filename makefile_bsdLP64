@@ -2,7 +2,7 @@
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
 # the option -fno-strict-aliasing may not be available on some BSD versions 
 

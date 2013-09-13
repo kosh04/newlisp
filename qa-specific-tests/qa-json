@@ -116,6 +116,8 @@
         )
         ; escaped quotes fixed in 10.5.2
         (= (json-parse [text]{"foo": ["bar", "\"baz\""]}[/text]) '(("foo" ("bar" "\"baz\""))))
+        ; escaped back slashes in 10.5.3
+        (= (json-parse [text]{"a backslash":"\\"}[/text]) '(("a backslash" "\\")))
     )
     (println ">>>>> JSON translation tested SUCESSFUL")
     (println ">>>>> PROBLEM in JSON translation")

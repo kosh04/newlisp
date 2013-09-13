@@ -2,7 +2,7 @@
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
 CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE -D_BSD -DSUPPORT_UTF8
 # or without readline lib

@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.2 Manual and Reference</title>
+   <title>newLISP v.10.5.3 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -141,7 +141,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.2</h2>
+<h2>User Manual and Reference v.10.5.3</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -6544,18 +6544,18 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#crit-z">crit-z</a></td>
+<td>calculates the normal distributed <em>Z</em> for a given probability</td>
+</tr>
+
+<tr>
 <td><a href="#kmeans-query">kmeans-query</a></td>
-<td>calculate distances to cluster centroids or other data points</td>
+<td>calculates distances to cluster centroids or other data points</td>
 </tr>
 
 <tr>
 <td><a href="#kmeans-train">kmeans-train</a></td>
-<td>partion a data set into clusters</td>
-</tr>
-
-<tr>
-<td><a href="#crit-z">crit-z</a></td>
-<td>calculates the normal distributed <em>Z</em> for a given probability</td>
+<td>partions a data set into clusters</td>
 </tr>
 
 <tr>
@@ -9092,12 +9092,11 @@ to encode binary data for inclusion in text-based messages
 </p>
 
 
-<b><em>p(A|tkn) = p(tkn|A) * p(A) / p(tkn|A) * p(A) + p(tkn|B) * p(B)</em></b>
+<b><em>p(A|tkn) = p(tkn|A) * p(A) / ( p(tkn|A) * p(A) + p(tkn|B) * p(B) )</em></b>
 
    
 <p>
-	For <em>N</em> categories, 
-	this formula is used:
+	For <em>N</em> categories, the formula can be generalized to:
 </p>
    
 
@@ -9109,6 +9108,8 @@ to encode binary data for inclusion in text-based messages
 	represent the <em>Bayesian prior probabilities</em>. 
 	<em>p(Mc|tkn)</em> and <em>p(A|tkn)</em> are the 
 	<em>posterior Bayesian</em> probabilities of a category or model.
+    This <i>naive</i> Bayes formula does nor take into account dependencies
+    between different categories. 
 </p>
 
 <p>
@@ -16384,15 +16385,14 @@ of the string when read by newLISP and are suitable to delimit large data sizes 
 <a name="kmeans-query"></a>
 <h2><span class="function">kmeans-query</span></h2>
 <h4>syntax: (kmeans-query <em>list-data</em> <em>matrix-centroids</em>)<br/>
-syntax: (kmeans-query <em>list-data</em> <em>matix-data</em></h4>
+syntax: (kmeans-query <em>list-data</em> <em>matix-data)</em></h4>
 
-<p>In the first usage, <tt>kmeans-query</tt> calculates the Eucledian distances
+<p>In the first usage, <tt>kmeans-query</tt> calculates the Euclidian distances
 from the data vector given in <em>list-data</em> to the centroids given in
-<em>matix-centroids</em>. The data vector in <em>list-data</em> has <b><i>m</i></b> 
+<em>matix-centroids</em>. The data vector in <em>list-data</em> has <i>m</i> 
 elements. The 2-dimensional list in <em>matrix-centroids</em>, result from a previous
-<a href="#kmeans-train">kmeans-train</a> clustering, has <b><i>k</i></b>
-rows and <b><i>m</i></b> columns for <b><i>k</i></b> centroids measuring <b><i>m</i></b>
-features.</p>
+<a href="#kmeans-train">kmeans-train</a> clustering, has <i>k</i> rows and <i>m</i> 
+columns for <i>k</i> centroids measuring <i>m</i> features.</p>
 
 <pre>
 ; centroids from previous kmeans-train
@@ -16408,10 +16408,13 @@ K:centroids <span class='arw'>&rarr;</span>
 <p>The data record <tt>(1 2 3)</tt> shows the smallest distance to the 3rd
 cluster centroid and would be classified as belonging to that cluster.</p>
 
-<p>In the second application <tt>kmeans-query</tt> calculates Eucledian distances to a list
+<p>In the second application <tt>kmeans-query</tt> calculates Euclidian distances to a list
 of other data points which are not centroids. The following example
 calculates distances of the <tt>(1 2 3)</tt> data vector to all original points
 from the original <a href="#kmeans-train">kmeans-train</a> data analysis.</p>
+
+<p>The data in <em>matix-data</em> can be either a nested list or a 2-dimensional
+array.</p>
 
 <p>This vector could be sorted for a subsequent kNN (k Nearest Neighbor)
 analysis:</p>
@@ -16443,9 +16446,9 @@ the 3rd cluster at offset 2.</p>
 
 <p>If the numbers of elements - features - in records of <em>list-data</em> 
 is different from the number of columns in the data or centroid matrix, 
-then the smaller is taken for calculating the Eucledian distances. This 
+then the smaller is taken for calculating the Euclidian distances. This 
 is useful when ther last column of the data matrix does not contain feature 
-data, but labels identifying the cluster of a data point.</p>
+data, but labels identifying the cluster membership of a data point.</p>
 
 <br/><br/>
 
@@ -16454,28 +16457,32 @@ data, but labels identifying the cluster of a data point.</p>
 <h4>syntax: (kmeans-train <em>matrix-data</em> <em>int-k</em> <em>context</em> [<em>matrix-centroids</em>])</h4>
 
 <p>The function performs Kmeans clusteranalysis on <em>matrix-data</em>. 
-All <b><i>n</i></b> data records are partitioned into a number of <em>int-k</em> 
-different groups. The Kmeans algorithm tries to minimize the sum sum of squared 
-inner cluster distances (SSQ). On some data sets, the result can depend on the 
-starting centroid points. When no optional <em>matrix-centroids</em> are given, 
-<tt>kmeans-train</tt> will assign an initial random cluster membership to each 
-data row and calculate starting centroids.</p>
+All <i>n</i> data records in <em>matrix-data</em> are partitioned into a number 
+of <em>int-k</em> different groups. </p>
 
-<p>Both, the <b><i>n * m</i></b> <em>matrix-data</em> and the optional <b><i>k * m</i></b>
+<p>Both, the <i>n * m</i> <em>matrix-data</em> and the optional <i>k * m</i>
 <em>matrix-centroids</em> can be either nested lists or 2-dimensional arrays.</p>
 
-<p>The algorithm then iterates, moving the centroids in to their final result position. 
-Via the optional <em>matrix-centroids</em> parameter, initial start centroids can be 
-specified for more guided Kmeans clustering. The right choice of initial centroids can 
-speed up the process and avoid not wanted local minima.</p>
+<p>The Kmeans algorithm tries to minimize the sum of squared inner cluster 
+distances (SSQ) from the cluster centroid. With each iteration the centroids get 
+moved closer to their final position. On some data sets, the end result can depend 
+on the starting centroid points.  The right choice of initial centroids can speed 
+up the process and avoid not wanted local minima.</p>
+
+<p>When no optional <em>matrix-centroids</em> are given, <tt>kmeans-train</tt> will 
+assign an initial random cluster membership to each data row and calculate starting 
+centroids. </p>
 
 <p><tt>kmeans-train</tt> returns a vector of total SSQs, the sum of squared inner distances
 from the centroid inside the cluster for all clusters. The Iterating algorithm stops when the
 change of SSQ from one to the next iteration is less than 1e-10.</p>
 
+<p>Other results of the analysis are stored as lists in variables of <em>context</em>.</p>
+
 <p>The following example analyses 20 data records measuring <i>m = 3</i> features 
-and tries to partition data into <b><i>k = 3</i></b> clusters. Other numbers than <b><i>k = 3</i></b> 
-could be tried.</p>
+and tries to partition data into <i>k = 3</i> clusters. Other numbers than <i>k = 3</i> 
+could be tried. The target is a result with few clusters of high density measured by the
+everage inner cluster distances.</p>
 
 <pre>
 (set 'data '(
@@ -16511,7 +16518,39 @@ K:centroids <span class='arw'>&rarr;</span>
     ( (6.39 7.188333333 5.935) 
       (7.925714286 3.845714286 9.198571429) 
       (2.207142857 2.881428571 0.8885714286) )
+</pre>
 
+<p>The returned list of SSQs shows how in each iteration the sum of inner squared
+distances decreases. The list in <tt>K:labels</tt> shows the membership fo each
+data point in the same order as in the data.</p>
+
+<p>The centroids in <tt>K:centroids</tt> can be used for later classification
+of new data records using <a href="#kmeans-query">kmeans-query</a>.</p>
+
+<p>The average inner <tt>K:deviations</tt> from cluster members to their centroid
+show how dense a cluster is packed. Formally, deviations are calculated similarly
+to Euclidian distances and to standard deviations in conventional statistics. 
+Squaring the deviations and multiplying each with their cluster size 
+(number of members in the cluster) shows the the inner SSQ of each cluster:</p>
+
+<pre>
+; average inner deviations of cluster members to the centroid
+; deviation = sqrt(ssq-of-cluster / n-of-cluster)
+K:deviations  <span class='arw'>&rarr;</span> (2.457052209 2.260089397 1.240236975)
+
+; calculating inner SSQs from cluster deviations
+(map mul '(6 7 7) (map mul K:deviations K:deviations)) <span class='arw'>&rarr;</span>
+(36.22263333 35.75602857 10.76731429) ; inner SSQs
+
+; SSQ from last iteration as sum of inner SSQs
+(apply add '(36.22263333 35.75602857 10.76731429)) <span class='arw'>&rarr;</span> 82.74597619
+</pre>
+
+<p><tt>K:clusters</tt> gives indices of data records into the original data
+for each cluster. With these, individual clusters can be extracted from the
+data for further analysis:</p>
+ 
+<pre>
 ; ceach of the result clusters with indices into the data set
 K:clusters <span class='arw'>&rarr;</span> 
     ( (4 5 7 8 14 16) 
@@ -16546,7 +16585,13 @@ K:clusters <span class='arw'>&rarr;</span>
       (3.12 3.1 1.4) 
       (1.17 4.46 1.02) 
       (2.11 2.14 0.85) )
+</pre>
 
+
+<p>In the last example the cluster labels (from 1 to 3) are added
+to the data:</p>
+
+<pre>
 ; append a cluster label to each data record
 (set 'labeled-data (transpose (push K:labels (transpose data) -1)))
 
@@ -16560,22 +16605,16 @@ labeled-data: <span class='arw'>&rarr;</span>
       ... ...
       (2.11 2.14 0.85 3) 
       (9.44 2.65 7.37 2) )
-
 </pre>
 
 <p>The result context should be prefixed with <tt>MAIN</tt> when code is
 written in a namespace context. If the context does not exists already, it
 will be created.</p>
 
-<p>Results in <tt>K:labels</tt>, <tt>K:clusters</tt> and <tt>K:centroids</tt>
-will be overwritten, if already present from previous calculations.</p>
+<p>Results in <tt>K:labels</tt>, <tt>K:clusters</tt>, <tt>K:centroids</tt>
+and <tt>K:deviations</tt> will be overwritten, if already present from previous 
+runs of <tt>kmeans-train</tt>.</p>
 
-<p>The returned list of SSQs shows how in each iteration the sum of inner squared
-distances decreases.</p>
-
-<p>The centroids in <tt>K:centroids</tt> can be used for later classification
-of new data records using <a href="#kmeans-query">kmeans-query</a>.</p>
- 
 <br/><br/>
 
 

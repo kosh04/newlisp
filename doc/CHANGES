@@ -6596,7 +6596,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Compiler optimizations are now supressed in part of the big integer 
     division code to make it work on Linux. Does not affect performance.
 
-10.5.2
+10.5.2 development release June 26th, 2013
    Fix for Java 7u21 in guisserver.jar, guiserver.lsp and newlisp-edit.
    function gs:run-shell now takes separate command and args parameters.
 
@@ -6618,8 +6618,9 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
         matrix-centroids -> optional k * m starting centroids (list or array)
 
         ctx:centroids -> k * m matrix of k centroids
+        ctx:deviations -> list of average intra cluster deviations = sqrt(ssq-cluster/n-cluster)
         ctx:clusters  -> list with k sublists each containing indices into data
-        ctx:labels    -> list of n cluster numbers, one for each data record
+        ctx:labels    -> list of n cluster labels, one for each data record
 
         (kmeans-query list-data centroids)
             return => list of k Eucledian distances from the k centroids
@@ -6629,11 +6630,20 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
                      list of data records to calculate Eucledian distances
     
  
-        'kmeans-query' can also be used for KNN (K Nearest Neigbour) analysis,
+        'kmeans-query' can also be used for KNN (K Nearest Neighbour) analysis,
         as it calculates the Eucledean distances for any matrix given in
         the second argument, not only centroids, but e.g. the original
         dataset. If the data-set is pre-labeled, then list-data has less
         columns forcing to not include the label in analysis.
  
    Fixed handling escaped " (quote) in JSON strings.
+
+10.5.3 stable release July 10th, 2013
+
+   fixed escaping of back slashes in json-parse
+
+   file nl-xml.c renamed to nl-xml-json.c and makefiles changed accordingly
+
+   refactored  nl-matrix.c/multiply() to avoid memory leak on wrong parameters
+
 

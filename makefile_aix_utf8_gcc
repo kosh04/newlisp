@@ -2,7 +2,7 @@
 # makefile for newLISP v. 10.x.x on AIX with UTF-8 support on PowerPC CPU 
 # 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-        nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o 
+        nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o 
 
 # use following for UTF-8 support and add nl-utf8.o to the OBJS line 
 CFLAGS = -Wall -pedantic -fno-strict-aliasing -Wno-uninitialized -Wno-long-long -c -O2 -DSUPPORT_UTF8 -DAIX 

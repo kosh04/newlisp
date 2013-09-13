@@ -4,7 +4,7 @@
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o
 
 CFLAGS = -m32 -Wall -O1 -c -DREADLINE -DMAC_OSX
 

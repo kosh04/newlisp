@@ -12,14 +12,13 @@ win-gui:
 	cp util/link.lsp /c/newlisp/util
 	cp util/newlispdoc /c/newlisp/util
 	cp util/newlisp.vim /c/newlisp/util
-	cp util/nanorc /c/newlisp/util
 	cp util/syntax.cgi /c/newlisp/util
 	cp doc/newlisp_manual.html /c/newlisp
 	cp doc/newlisp_index.html /c/newlisp
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-10.5.2-Release.html /c/newlisp
+	cp doc/newLISP-10.5.3-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	

@@ -22,7 +22,7 @@ default: $(OBJS)
 
 newlisp-amal.c:
 	cat newlisp.c nl-symbol.c nl-math.c nl-list.c nl-liststr.c nl-string.c nl-filesys.c \
-    nl-sock.c nl-import.c nl-xml.c nl-web.c nl-matrix.c nl-debug.c nl-utf8.c > newlisp-amal.c
+    nl-sock.c nl-import.c nl-xml-json.c nl-web.c nl-matrix.c nl-debug.c nl-utf8.c > newlisp-amal.c
 
 
 $(OBJS): newlisp.h primes.h protos.h makefile_amal_darwin_utf8_ffi

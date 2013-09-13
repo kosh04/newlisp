@@ -963,7 +963,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.5.2"
+#define SERVER_SOFTWARE "newLISP/10.5.3"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);

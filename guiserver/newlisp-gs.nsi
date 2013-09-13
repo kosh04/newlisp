@@ -6,13 +6,13 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\WinDev\newlisp\newlisp-10502-win-gs-150.exe"
+OutFile "c:\WinDev\newlisp\newlisp-10503-win-gs-150.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install the newLISP-GS 1.50 and newLISP 10.5.2 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT."
+DirText "This will install newLISP v.10.5.3 and Guiserver 1.50 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT AFTER INSTALL."
 
 ;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
 !verbose 3
@@ -278,7 +278,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\manual_frame.html"
   File "c:\newlisp\CodePatterns.html"
   File "c:\newlisp\newLISPdoc.html"
-  File "c:\newlisp\newLISP-10.5.2-Release.html"
+  File "c:\newlisp\newLISP-10.5.3-Release.html"
   File "c:\newlisp\COPYING"
   File "c:\newlisp\guiserver.lsp"
   File "c:\newlisp\guiserver.jar"
@@ -345,7 +345,6 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\util\link.lsp"
   File "c:\newlisp\util\newlispdoc"
   File "c:\newlisp\util\newlisp.vim"
-  File "c:\newlisp\util\nanorc"
   File "c:\newlisp\util\syntax.cgi"
 
   SetOutPath $INSTDIR
@@ -364,7 +363,7 @@ Section "newLISP program (required) and DLL"
   ; make menu in startmenus
   CreateDirectory "$SMPROGRAMS\newLISP"
   CreateShortCut "$SMPROGRAMS\newLISP\newLISP.lnk" "$INSTDIR\newlisp.exe" "" "$INSTDIR\newlisp.exe" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\Release Notes.lnk" "$INSTDIR\newLISP-10.5.2-Release.html" "" "$INSTDIR\newLISP-10.5.2-Release.html" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\Release Notes.lnk" "$INSTDIR\newLISP-10.5.3-Release.html" "" "$INSTDIR\newLISP-10.5.3-Release.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Manual and Reference.lnk" "$INSTDIR\manual_frame.html" "" "$INSTDIR\manual_frame.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Code Patterns.lnk" "$INSTDIR\CodePatterns.html" "" "$INSTDIR\CodePatterns.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\GS Manual and Reference.lnk" "$INSTDIR\guiserver\index.html" "" "$INSTDIR\guiserver\index.html" 0
@@ -401,7 +400,6 @@ Section "Uninstall"
   Delete $INSTDIR\util\link.lsp
   Delete $INSTDIR\util\newlispdoc
   Delete $INSTDIR\util\newlisp.vim
-  Delete $INSTDIR\util\nanorc
   Delete $INSTDIR\util\syntax.cgi
   Delete $INSTDIR\md5-checksums.txt
   Delete $INSTDIR\newlisp_manual.html
@@ -409,7 +407,7 @@ Section "Uninstall"
   Delete $INSTDIR\manual_frame.html
   Delete $INSTDIR\CodePatterns.html
   Delete $INSTDIR\newLISPdoc.html
-  Delete $INSTDIR\newLISP-10.5.2-Release.html
+  Delete $INSTDIR\newLISP-10.5.3-Release.html
   Delete $INSTDIR\COPYING
   Delete $INSTDIR\httpd-conf.lsp
   Delete $INSTDIR\guiserver.lsp

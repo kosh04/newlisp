@@ -1,4 +1,4 @@
-/* nl-xml.c - newLISP XML and JSON interface 
+/* nl-xml-json.c - newLISP XML and JSON interface 
 
     Copyright (C) 2013 Lutz Mueller
 
@@ -822,7 +822,6 @@ while(i < size)
         switch(*(token + i))
             {
             case '\\':
-                *(xlated + j++) = '\\'; 
                 *(xlated + j++) = '\\';
                 break;
             case '"': 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.5.2
+VERSION=10.5.3
 
 rm -f config.h makefile_build makefile_install
 
@@ -51,7 +51,7 @@ WIN32_LDFLAGS="-lws2_32"
 OS2_LDFLAGS="-Zomf -Zmt -lm -ldl"
 
 DEFAULT_OBJS="newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o pcre.o"
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o"
 
 DEFAULT_STRIP="strip"
 WIN32_STRIP="strip"

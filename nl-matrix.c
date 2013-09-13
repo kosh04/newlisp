@@ -342,14 +342,14 @@ double * * C;
 int i, j, s;
 double sum;
 
-if((C = allocateMatrix(n, l)) == NULL)
-    return(NULL);
-
 if(m != k)
     {
     errorProc(ERR_WRONG_DIMENSIONS);
     return(NULL);
     }
+
+if((C = allocateMatrix(n, l)) == NULL)
+    return(NULL);
 
 for(i = 1; i <= n; i++)
     {
@@ -566,14 +566,16 @@ double * * X; /* data */
 double * * C; /* centroids `*/
 int * labels; /* membership */
 int * counts; /* cluster sizes */
-double ssqTotal; /* total sum inner distances */
-double ssqCluster; /* inner ssq of a cluster */
+double * ssqs; /* inner SSQs of clusters */
+double ssqTotal; /* total squared sum inner deviations */
+double ssqRecord; /* inner ssq of a record in a cluster */
 double ssqMin;     /* minimum ssq for one record */
 double ssqPrev = DOUBLE_MAX;
 double dist;
 double crit = 1.0e-10;
 CELL * centroids;
 CELL * clusters;
+CELL * deviations;
 CELL * SSQlist = NULL;
 CELL * membership;
 CELL * * cellArray;
@@ -618,6 +620,7 @@ else
 
 counts = allocMemory((k + 1) * sizeof(int));
 labels = allocMemory((n + 1) * sizeof(int));
+ssqs = callocMemory((k + 1) * sizeof(double));
 
 if(params != nilCell)
     goto ASSIGN_MEMBERSHIP;
@@ -631,6 +634,7 @@ ITERATE_KMEANS:
 for(l = 1; l <= k; l++)     
     {
     counts[l] = 0;
+    ssqs[l] = 0.0;
     for(j = 1; j <= m; j++)
         C[l][j] = 0;
     }
@@ -655,19 +659,20 @@ for(i = 1; i <= n; i++)
     ssqMin = DOUBLE_MAX;
     for(l = 1; l <= k; l++)
         {
-        ssqCluster = 0.0;
+        ssqRecord = 0.0;
         for(j = 1; j <= m; j++)
             {
             dist = X[i][j] - C[l][j];
-            ssqCluster += dist * dist;
+            ssqRecord += dist * dist;
             }
-        if(ssqCluster < ssqMin)
+        if(ssqRecord < ssqMin)
             {
-            ssqMin = ssqCluster;
+            ssqMin = ssqRecord;
             labels[i] = l;
             }
         }
     ssqTotal += ssqMin;
+    ssqs[labels[i]] += ssqMin;
     }
 
 if(fabs(ssqPrev - ssqTotal) > crit)
@@ -682,6 +687,10 @@ if(fabs(ssqPrev - ssqTotal) > crit)
 centroids = matrix2data(C, CELL_EXPRESSION, k, m);
 sPtr = translateCreateSymbol("centroids", CELL_EXPRESSION, ctx, TRUE); 
 assignSymbol(sPtr, centroids);
+/* average intra cluster deviation */
+deviations = getCell(CELL_EXPRESSION);
+sPtr = translateCreateSymbol("deviations", CELL_EXPRESSION, ctx, TRUE); 
+assignSymbol(sPtr, deviations);
 
 /* cluster memberships, for each cluster a list of X data record indices */
 clusters = getCell(CELL_EXPRESSION);
@@ -690,6 +699,8 @@ for(l = 1; l <= k; l++)
     {
     cellArray[l] = getCell(CELL_EXPRESSION);
     addList(clusters, cellArray[l]);
+    dist = sqrt(ssqs[l] / counts[l]);
+    addList(deviations, stuffFloat(&dist)); 
     }
 for(i = 1; i <= n; i++)
     {
@@ -706,8 +717,9 @@ for(i = 1; i <= n; i++)
 freeMatrix(C, k);
 freeMatrix(X, n);
 free(cellArray);
-free(counts);
+free(ssqs);
 free(labels);
+free(counts);
 
 return(SSQlist);
 }
@@ -741,7 +753,9 @@ if(data->type != CELL_EXPRESSION)
     errorProcExt(ERR_LIST_EXPECTED, data);
 
 getEvalDefault(params, &centroids);
-if(centroids->type != CELL_EXPRESSION)
+if(centroids->type == CELL_ARRAY)
+   centroids = arrayList(centroids); 
+else if(centroids->type != CELL_EXPRESSION)
     return(errorProcExt(ERR_NOT_MATRIX, centroids));
 
 row = (CELL *)centroids->contents;

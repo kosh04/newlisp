@@ -7,7 +7,7 @@
 # sb2 is an ARM emulator
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
 CFLAGS = -mcpu=arm1176jzf-s -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DLINUX -DSUPPORT_UTF8
 #CFLAGS = -mcpu=arm1176jzf-s -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DLINUX -DSUPPORT_UTF8  -DREADLINE

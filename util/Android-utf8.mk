@@ -10,6 +10,6 @@ LOCAL_MODULE := newlisp
 LOCAL_CFLAGS := -Wall -Wno-long-long -Wno-strict-aliasing -O2 -c -DLINUX -DANDROID -DSUPPORT_UTF8
 LOCAL_LDLIBS := -lm -ldl
 LOCAL_SRC_FILES := newlisp.c nl-symbol.c nl-math.c nl-list.c nl-liststr.c nl-string.c \
-nl-sock.c nl-import.c nl-xml.c nl-web.c nl-matrix.c nl-debug.c pcre.c nl-filesys.c nl-utf8.c
+nl-sock.c nl-import.c nl-xml-json.c nl-web.c nl-matrix.c nl-debug.c pcre.c nl-filesys.c nl-utf8.c
 include $(BUILD_EXECUTABLE)
 
