@@ -28,6 +28,7 @@
 ;; @version 3.4 - make sure all @xxxxxx custom tags are title cased
 ;; @version 3.5 - added META tag for UTF-8 encoding for html output
 ;; @version 3.6 - allow trailing spaces on lines in index files
+;; @version 3.7 - forgotten * in @example pattern
 ;;
 ;; @author Lutz Mueller, 2006-2012
 ;; @location http://newlisp.org
@@ -462,7 +463,7 @@ and <a href="http://newlisp.org/newLISPdoc.html">newLISPdoc</a>
     (if (find ";; *@module " page 0)
         (begin
             (replace {;;(.*) @link ([^ ]*?) ([^ ]*?)\s} page (string $1 { <a href="} $2 {">} $3 {</a> }) 0)
-            (replace ";; @example *\n(.*?)\n\\s*\n" page (format-example $1) 4)
+            (replace ";; *@example *\n(.*?)\n\\s*\n" page (format-example $1) 4)
             (set 'page (protect-html page))
             (set 'desc "")
             (replace ";; *@description (.*?)\n" page (begin (set 'desc $1) (string "<p>" desc "</p>\n") ) 0)

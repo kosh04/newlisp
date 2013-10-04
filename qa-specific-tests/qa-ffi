@@ -6,18 +6,33 @@
 
 ; some simple libc functions
 
+; when doing "make testall" only text lines starting with ">>>" are printed
+
 (when (zero? (& 1024 (sys-info -1)))
-    (println "These tests only run on extended FFI enabled versions compiled with ffilib")
+    (println ">>>>> qa-ffi: tests only run on extended FFI enabled versions compiled with ffilib")
     (exit))
 
 (set 'is64bit (not (zero? (& 256 (sys-info -1))))) ; used later
 
-(define LIBC (lookup ostype '(
+(define LIBC
+  (case ostype
     ("Win32" "msvcrt.dll")
     ("OSX" "libc.dylib")
-    ("Linux" "/lib/i386-linux-gnu/libc.so.6")
-)))
+    ("Linux"
+     (letn (libc-name (first (exec "gcc -print-file-name=libc.so"))
+            libc-filetype (first (exec (string "file -b " libc-name))))
+       (if (find "ASCII" libc-filetype)
+           (first (regex "[^ \t]+/libc\\.so\\.*[0-9]*" (read-file libc-name)))
+           libc-name)))
+    ))
 
+;(define LIBC (case ostype
+;               ("Win32" "msvcrt.dll")
+;               ("OSX" "libc.dylib")
+;               ("Linux" (if is64bit
+;                            "/lib/x86_64-linux-gnu/libc.so.6"
+;                            "/lib/i386-linux-gnu/libc.so.6"))
+;             ))
 
 (println "\nTesting imports from " LIBC "\n")
 

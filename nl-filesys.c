@@ -1612,7 +1612,7 @@ fd_set thisFdSet;
 tv.tv_sec = 0;
 tv.tv_usec = 892 + random() / 10000000;
 
-#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN)
+#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN) || defined(AIX)
 memcpy(&thisFdSet, &myFdSet, sizeof(fd_set));
 #else
 FD_COPY(&myFdSet, &thisFdSet);
@@ -1626,10 +1626,7 @@ else /* SELECT_WRITE_READY */
 if(ready == 0) return(pidList);
 
 if(ready < 0) 
-    {
-    printf("select failed\n");
     return(pidList);
-    }
 
 child = mySpawnList;
 while (child != NULL)
@@ -2584,8 +2581,10 @@ struct tm *ttm;
 struct tm *ltm;
 #ifndef SUNOS
 #ifndef OS2
+#ifndef AIX
 INT gmtoff;
 UINT isdst;
+#endif
 #endif
 #endif
 #else /* WINDOWS */
@@ -2607,6 +2606,7 @@ if(params != nilCell)
 ltm = localtime((time_t *)&tv.tv_sec);
 #ifndef SUNOS
 #ifndef OS2
+#ifndef AIX
 isdst = ltm->tm_isdst;
 
 #ifdef CYGWIN
@@ -2615,6 +2615,7 @@ gmtoff = _timezone/60;
 gmtoff = ltm->tm_gmtoff/60;
 #endif
 
+#endif
 #endif
 #endif
 #else /* WINDOWS */

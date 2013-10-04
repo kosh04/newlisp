@@ -3,7 +3,7 @@
 
     Copyright (C) 2013 Lutz Mueller
 
-    This program is free software: you can redistribute it and/or modify
+    This program is free software: you cann redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
 
@@ -3432,11 +3432,24 @@ double * X;
 double * Y;
 double svar, cov, t, tprob;
 CELL * cell;
-int dependent, idx;
+int dependent = FALSE, idx;
+double pF = 0.0;
 
 if((X = getVector(evaluateExpression(params), &Nx, &sumx, &meanx, &sd2x)) == NULL)
     return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
 params = params->next;
+
+cell = evaluateExpression(params);
+if(isNumber(cell->type)) /* One sample t-test */
+    {
+    meany = getDirectFloat(cell);
+    sdevx = sqrt(sd2x / (Nx - 1));
+    sdevy = sdevx / sqrt(Nx); /* standard error of difference */
+    t = (meanx - meany) / ( sdevx / sqrt(Nx) );
+    df = Nx - 1;
+    goto TTEST_RESULT;
+    }
+
 if((Y = getVector(evaluateExpression(params), &Ny, &sumy, &meany, &sd2y)) == NULL)
     return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
 
@@ -3447,9 +3460,15 @@ for(idx = 0; idx < Nx; idx++)
 freeMemory(X);
 freeMemory(Y);
 
-dependent = getFlag(params->next);
-if(dependent && Nx != Ny)
-    return(errorProc(ERR_WRONG_DIMENSIONS));
+cell = evaluateExpression(params->next);
+if(cell == trueCell)
+    {
+    dependent = TRUE;
+    if(Nx != Ny)
+        return(errorProc(ERR_WRONG_DIMENSIONS));
+    }
+else if(isNumber(cell->type))
+    pF = getDirectFloat(cell);
 
 varx = sd2x / (Nx - 1);
 vary = sd2y / (Ny - 1);
@@ -3464,16 +3483,27 @@ if(dependent)
     cov /= df;
     t = (meanx - meany) / sqrt((varx + vary - 2.0 * cov) / Nx);
     }
-/* t for different means in independent samples with equal variance */
+/* t for different means in non-related samples */
 else
     {
-    df = Nx + Ny - 2;
-    svar = (sd2x + sd2y) / df;
-    t = (meanx - meany) / sqrt(svar * (1.0/Nx + 1.0/Ny));
+    /* if varx and vary are not equal calc Welch Student's t */
+    if(pF != 0.0 && probF(varx/vary, Nx - 1, Ny - 1) < pF) 
+        {
+        t = (meanx - meany) / sqrt(varx/Nx + vary/Ny);
+        df = ((varx/Nx + vary/Ny) * (varx/Nx + vary/Ny)) / 
+             (((varx/Nx) * (varx/Nx)) / (Nx - 1) + ((vary/Ny) * (vary/Ny))/(Ny - 1));
+        }
+    /* assume varx and vary are equal */
+    else
+        {
+        df = Nx + Ny - 2;
+        svar = (sd2x + sd2y) / df;
+        t = (meanx - meany) / sqrt(svar * (1.0/Nx + 1.0/Ny));
+        }
     }
 
+TTEST_RESULT:
 tprob = 2.0 * (1.0 - probT(fabs(t), df)); /* two tailed */
-
 cell = getCell(CELL_EXPRESSION);
 addList(cell, stuffFloat(&meanx));
 addList(cell, stuffFloat(&meany));
@@ -3486,12 +3516,6 @@ addList(cell, stuffFloat(&tprob));
 return(cell);
 }
 
-/* unequal variances in unpaired t-test 
-
-t = (meanx - meany) / sqrt(sd2x/Nx + sd2y/Ny);
-df = ((sd2x/Nx + sd2y/Ny)^2) / ( ((sd2x/Nx)^2)/(Nx -1) + ((sd2y/Ny)^2)/(Ny - 1))
-
-*/
 
 CELL * p_corr(CELL * params)
 {

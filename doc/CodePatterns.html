@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2013 April 5<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.5.0
+</h1>Version 2013 September 1<sup>st</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.5.4
 </center>
 
 <br/><br/><br/>
@@ -985,6 +985,13 @@ L → (b d f)
 L → (a b (c x d (e f) g) h i)
    
 (pop L 2 1) → x
+
+; the target list is a place reference
+(set 'lst '((a 1) (b 2) (c 3) (d)))
+
+(push 4 (assoc 'd lst) -1) → (d 4)
+
+lst → ((a 1) (b 2) (c 3) (d 4))
 </pre>
 
 <p>Pushing to the end of a list repeatedly is optimized in newLISP and as fast as pushing in front of a list.</p>
@@ -1481,9 +1488,6 @@ E → (x y z)
     exp-2
     ...
 )
-   
-; if-not works like (if (not ...) ...)
-(if-not true-expr false-expr)
    
 ; unless works like (when (not ...) ...)
 (unless condition
@@ -2861,7 +2865,7 @@ See the users manual chapter "18. Functional object-oriented programming" for de
 <p>The functions <tt>assoc</tt> and <tt>setf</tt> can be used to update simple or nested associations:</p>
 
 <pre>
-(setf (assoc ("Anne" address city) persons) '(city "Boston")) → (city "New York")
+(setf (assoc '("Anne" address city) persons) '(city "Boston")) → (city "New York")
 </pre>
 
 <p><tt>setf</tt> always returns the newly set element.</p>

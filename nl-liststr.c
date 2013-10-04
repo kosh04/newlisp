@@ -472,10 +472,10 @@ if(index == -1)
         }
     }
     
-list->aux = (UINT)nilCell; /* undo last element optimization */
 
 while(isList(list->type))
     {
+    list->aux = (UINT)nilCell; /* undo last element optimization */
     cell = list;
     list = (CELL *)list->contents;
 
@@ -568,7 +568,6 @@ if(params == nilCell)
     }
 else
     {
-    list->aux = (UINT)nilCell; /* undo last element optimization */
     cell = (CELL*)params->next;
     params = evaluateExpression(params);
     if(isList(params->type))
@@ -586,6 +585,7 @@ else
 
 while(isList(list->type))
     {
+    list->aux = (UINT)nilCell; /* undo last element optimization */
     cell = list;
     list = (CELL *)list->contents;
 
@@ -599,7 +599,7 @@ while(isList(list->type))
     if(list == nilCell) 
         errorProc(ERR_LIST_INDEX_INVALID);
 
-    if(params == nilCell || !isList(list->type))  break;
+    if(params == nilCell || !isList(list->type)) break;
     params = getIntegerExt(params, (UINT*)&index, evalFlag);
     }
 

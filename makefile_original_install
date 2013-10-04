@@ -1,6 +1,6 @@
 #
 
-VERSION=10.5.3
+VERSION=10.5.4
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -37,8 +37,6 @@ install:
 	-install -m 755 util/newlispdoc $(bindir)/newlispdoc
 	-install -m 644 util/syntax.cgi $(datadir)/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(datadir)/newlisp/util/newlisp.vim
-	-install -m 644 util/link.lsp $(datadir)/newlisp/util/link.lsp
-	-install -m 644 util/httpd-conf.lsp $(datadir)/newlisp/util/httpd-conf.lsp
 	-install -m 644 doc/COPYING $(datadir)/doc/newlisp/COPYING
 	-install -m 644 doc/CREDITS $(datadir)/doc/newlisp/CREDITS
 	-install -m 644 doc/newlisp_manual.html $(datadir)/doc/newlisp/newlisp_manual.html
@@ -46,7 +44,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.5.3-Release.html $(datadir)/doc/newlisp/newLISP-10.5.3-Release.html
+	-install -m 644 doc/newLISP-$(VERSION)-Release.html $(datadir)/doc/newlisp/newlisp-$(Version)-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -138,8 +136,6 @@ install_home:
 	-install -m 755 util/newlispdoc $(HOME)/bin/newlispdoc
 	-install -m 644 util/syntax.cgi $(HOME)/share/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(HOME)/share/newlisp/util/newlisp.vim
-	-install -m 644 util/link.lsp $(HOME)/share/newlisp/util/link.lsp
-	-install -m 644 util/httpd-conf.lsp $(HOME)/share/newlisp/util/httpd-conf.lsp
 	-install -m 644 guiserver/index.html $(HOME)/share/doc/newlisp/guiserver/index.html
 	-install -m 644 guiserver/guiserver.lsp.html $(HOME)/share/doc/newlisp/guiserver/guiserver.lsp.html
 	-install -m 644 doc/COPYING $(HOME)/share/doc/newlisp/COPYING
@@ -150,7 +146,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.5.3-Release.html $(HOME)/share/doc/newlisp/newLISP-10.5.3-Release.html
+	-install -m 644 doc/newLISP-$(VERSION)-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp

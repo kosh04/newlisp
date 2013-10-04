@@ -1,12 +1,13 @@
 #!/usr/bin/env newlisp
 
-; sniff  v.1.22 - net work packet snifffer
+; sniff  v.1.23 - net work packet snifffer
 ; 2010-March-26 added out-commented callback method
 ; 2010-April-10 documentation
 ; 2010-April-27 added 'packet' output format for whole packet
 ;               added output of unknown packets
 ; 2010-April-29 help text improvements
 ; 2010-May-29 added library path for OpenBSD 4.6 
+; 2013-Sep-22 change stats to pstats (stats is function since 10.4.2)
 ;
 ; See also http://www.tcpdump.org/pcap.htm
 ; tested on Mac OS X 10.6 and UBUNTU 9.4 and Win32
@@ -272,9 +273,9 @@ default output mode is no output.
 
 
 ; report pcap status
-(set 'stats (dup "\000" 8))
-(pcap_stats handle stats)
-(map set '(received dropped) (unpack "lu lu" stats))
+(set 'pstats (dup "\000" 8))
+(pcap_stats handle pstats)
+(map set '(received dropped) (unpack "lu lu" pstats))
 (println "\npackages dropped: " dropped)
 
 (exit)

@@ -263,7 +263,7 @@ return(trueCell);
 
 /* ----------------------------- delete a symbol --------------------------- */
 int references(SYMBOL * sPtr, int replaceFlag);
-int externalReferences(SYMBOL * contextPtr, int replaceFlag);
+int externalContextReferences(SYMBOL * contextPtr, int replaceFlag);
 
 CELL * p_deleteSymbol(CELL * params)
 {
@@ -306,7 +306,7 @@ else if(getFlag(params))
     {
     if(cell->type == CELL_CONTEXT)
         {
-        if(externalReferences(sPtr, FALSE) > 0)
+        if(externalContextReferences(sPtr, FALSE) > 1)
             {
             sPtr->flags |= SYMBOL_PROTECTED;
             return(nilCell);
@@ -329,8 +329,7 @@ if(cell->type == CELL_CONTEXT)
     sPtr->contents = (UINT)copyCell(nilCell);
     }
 else 
-    deleteFreeSymbol(sPtr, checkReferences);
-
+    deleteAndFreeSymbol(sPtr, checkReferences);
 return(trueCell);
 }
 
@@ -338,21 +337,23 @@ return(trueCell);
 void deleteContextSymbols(CELL * cell, int checkReferences)
 {
 SYMBOL * context;
+SYMBOL * treePtr;
 CELL * symbolList;
 CELL * nextSymbol;
 
 context = (SYMBOL *)cell->contents;
+treePtr = (SYMBOL *)cell->aux;
 
 if(checkReferences)
-    externalReferences(context, TRUE);
+    externalContextReferences(context, TRUE);
 
 symbolList = getCell(CELL_EXPRESSION);
-collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
+collectSymbols((SYMBOL *)treePtr, symbolList);
 
 nextSymbol = (CELL *)symbolList->contents;
 while(nextSymbol != nilCell)
     {
-    deleteFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
+    deleteAndFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
     nextSymbol = nextSymbol->next;
     }
     
@@ -360,7 +361,7 @@ deleteList(symbolList);
 }
 
 
-void deleteFreeSymbol(SYMBOL * sPtr, int checkReferences)
+void deleteAndFreeSymbol(SYMBOL * sPtr, int checkReferences)
 {
 SYMBOL * context;
 
@@ -454,7 +455,7 @@ while(blockPtr != NULL)
 return(count);
 }
 
-int externalReferences(SYMBOL * contextPtr, int replaceFlag)
+int externalContextReferences(SYMBOL * contextPtr, int replaceFlag)
 {
 CELL * blockPtr;
 int i, count = 0;
@@ -474,6 +475,19 @@ while(blockPtr != NULL)
                 if(replaceFlag) 
                     blockPtr->contents = (UINT)nilSymbol;
                 }
+            }
+        else if (blockPtr->type == CELL_CONTEXT)
+            {
+             if((SYMBOL *)blockPtr->contents == contextPtr)
+                    {
+                    count++;
+                    if(replaceFlag)
+                        {
+                        blockPtr->type = CELL_NIL;
+                        blockPtr->contents = (UINT)nilCell;
+                        blockPtr->aux = 0;
+                        }
+                    }
             }
         blockPtr++;
         }

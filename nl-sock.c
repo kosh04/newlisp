@@ -112,7 +112,7 @@ struct icmp
 #define NO_FLAGS_SET 0
 
 #ifdef WINDOWS
-#define close closesocket
+#define close closesocket /* for file operations on Windows use _close */
 #else
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
@@ -1485,7 +1485,11 @@ handle = open(logFile, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
 if(write(handle, text, strlen(text)) < 0) return;
 if(newLine) 
     if(write(handle, &LINE_FEED, LINE_FEED_LEN) < 0) return;
+#ifdef WINDOWS
+_close(handle);
+#else
 close(handle);
+#endif
 }
 
 

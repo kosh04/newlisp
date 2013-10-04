@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.3
-INT_VERSION = 10503
+VERSION = 10.5.4
+INT_VERSION = 10504
 
 default: makefile_build
 	make -f makefile_build
@@ -109,33 +109,25 @@ dpkg_utf8:
 	mv *.deb ../Desktop
 
 # scripts for making Mac OS X disk image installers
-# Note that since Mac OX X update 10.5.6 'PackageMaker -d -o'
-# bombs out in the following script, but is fixed in 10.6.0
-# Snow Leopard.
-# one Mountain Lion use packagemaker productbuild and productsign
-# see also: "Distributing Outside the Mac App Store" on http://developer.apple.com/
-# linked from https://developer.apple.com/resources/developer-id/
+# makefile_darwin_package needs a previous /Applications/newLISP-GS.app
 dmg_ppc:
-	make -f makefile_darwin_utf8_leopardPPC_ffi
-	sudo rm -rf ../Package_contents
+	make clean
+	make -f makefile_darwin_utf8_leopardPPC_ffi 
 	make -f makefile_darwin_package
-	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
-		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
-		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
-	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-ppc.dmg
-	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
-		~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-ppc.dmg
+	hdiutil create -srcfolder newLISP-image newlisp-$(VERSION)-OSX-ppc.dmg
+	mv newlisp-$(VERSION)-OSX-ppc.dmg ..
+	sudo rm -rf Package_contents
+	sudo rm -rf newLISP-image
 
+# makefile_darwin_package needs a previous /Applications/newLISP-GS.app
 dmg_intel:
+	make clean
 	make -f makefile_darwinLP64_utf8_ffi
-	sudo rm -rf ../Package_contents
 	make -f makefile_darwin_package
-	/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker \
-		-d ~/newlisp/OSX-package/newLISPpackage-project.pmdoc/ -o \
-		~/newlisp/OSX-package/newLISP-image/newLISPpackage.pkg
-	-rm ~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-intel.dmg
-	hdiutil create -srcfolder ~/newlisp/OSX-package/newLISP-image \
-		~/newlisp/OSX-package/newlisp-$(VERSION)-OSX-intel.dmg
+	hdiutil create -srcfolder newLISP-image newlisp-$(VERSION)-OSX-intel.dmg
+	mv newlisp-$(VERSION)-OSX-intel.dmg ..
+	sudo rm -rf Package_contents
+	sudo rm -rf newLISP-image
 
 # this cleans up the distribution directory for a clean build from scratch
 
@@ -310,6 +302,8 @@ version:
 	sed -i.bak -E 's/and newLISP .+ on /and newLISP $(VERSION) on /' guiserver/newlisp-gs.nsi
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' configure-alt
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_original_install 
+	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_darwin_package
+	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_wings
 
 # Prepare the manual file for PDF conversion, by replaceing all <span class="function"></span>
 # with <font color="#DD0000"></font> in the syntax statements and replacing &rarr; (one line

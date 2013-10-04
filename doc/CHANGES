@@ -3654,9 +3654,9 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
      protect stack from overflow when loading huge contexts in sysEvalString()
 
 
-9.1.0 Release February 15th
+9.1.0 Release February 15th, 2007
 
-9.1.1 Release March 15t
+9.1.1 Release March 15t, 2007
      safer memory allocation for net-ping when using wildcard *
 
      new module crypto.lsp with md5 and sha1 hash functions
@@ -6646,4 +6646,34 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
    refactored  nl-matrix.c/multiply() to avoid memory leak on wrong parameters
 
+10.5.4
+   3.7 newlispdoc cleanup ";; *" regex
 
+   New FFI ffi.h include directory in makefile_linux* when installing libffi 
+
+   Fix for last list element optimization in push, pop and pop-assoc when 
+   popping and inserting last element
+
+   Accessing a deleted context will never hang but give an error message
+
+   Some changes in nl-filesys.c for AIX and new makefile for AIX ILP32
+
+   On Windows: a fix for correctly closing logfiles initiated by newlisp -l or 
+   newlisp -L and for closing files created by the HTTP PUT operation.
+
+   Two sample 't-test' when variances are different (independent samples) with
+   new syntax:
+        (t-test <list-vector-A> <list-vector-B> <float-probabilty>)
+   When <float-probabilty> is specified, an internal F-test for variance
+   equality in data A and B is performed. If the probablity of F is
+   smaller than <float-probabilty>, then Welch's variant of the t-test for
+   independent samples is performed. Using 1.0 <float-probabilty>, Welch
+   can be forced even when variances are not significantly different.
+
+   One sample 't-test' using new syntax pattern: 
+        (t-test <list-vector-data> <float-value>)
+   Gives the two-tailed probability that observed mean is differs from <float-value> 
+   Instead of sdev for second list-vector the standard error for the observed mean
+   is reported.
+
+   Some cleanup and changes in scripts (makefiles) for binary installers

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.5.4 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #705040;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #202020;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.5.4 Stable Release
+<font color="red" size="-1">2013-10-1</font></h1>
+
+<p>This stable release fixes bugs and adds two new call patterns 
+to the <tt>t-test</tt> function.</p>
+
+<h3>Additions</h3>
+
+<ul>
+<li>A call pattern for the one sample <tt>t-test</tt> has been added to
+compare the sample mean to a number given as a parameter.</li>
+
+<li>The <em>Welch</em> variant of the <tt>t-test</tt> has been added to 
+be used when variances in the two data samples differ significantly. The 
+new call pattern allows an automatic switch between the normal and <em>Welch</em> 
+method of <em>Student's t</em> when specifying a critical probability value 
+for the null hypothesis of variances being equal.</li> 
+</ul>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li>A fix for last list-element optimization in <tt>pop</tt> and <tt>pop-assoc</tt> 
+when popping and then inserting a last element in nested lists.</li>
+
+<li>Accessing a deleted context will never hang but give an error message.</li>
+</ul>
+
+<h3>Other changes</h3>
+<ul>
+<li>The build process for OSX newLISP binary installers has been simplified.</li>
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous versions in the 10.5.x series.</p>
+
+<center>&part;</center>
+
+</body>
+</html>

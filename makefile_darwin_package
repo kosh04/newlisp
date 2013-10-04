@@ -1,20 +1,22 @@
 # prepare Mac OSX package root directory in ../Package_contents
 
-datadir=../Package_contents/usr/share
-bindir=../Package_contents/usr/bin
-mandir=../Package_contents/usr/share/man
-appdir=../Package_contents/Applications
+VERSION=10.5.4
+
+datadir=Package_contents/usr/share
+bindir=Package_contents/usr/bin
+mandir=Package_contents/usr/share/man
+appdir=Package_contents/Applications
 
 GUISERVER = ../Package_contents/usr/share/newlisp/guiserver
 
 darwin-package:
-	-mkdir ../Package_contents
-	-mkdir ../Package_contents/usr
-	-mkdir ../Package_contents/usr/bin
-	-mkdir ../Package_contents/usr/share
-	-mkdir ../Package_contents/usr/share/man
-	-mkdir ../Package_contents/usr/share/man/man1
-	-mkdir ../Package_contents/Applications
+	-mkdir Package_contents
+	-mkdir Package_contents/usr
+	-mkdir Package_contents/usr/bin
+	-mkdir Package_contents/usr/share
+	-mkdir Package_contents/usr/share/man
+	-mkdir Package_contents/usr/share/man/man1
+	-mkdir Package_contents/Applications
 	# identical from install section in main Makefile except for $(bindir)/newlisp
 	# which installed versioned and linked when installing with 'make install'
 	-install -d $(datadir)/newlisp
@@ -25,8 +27,6 @@ darwin-package:
 	-install -m 755 util/newlispdoc $(bindir)/newlispdoc
 	-install -m 644 util/syntax.cgi $(datadir)/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(datadir)/newlisp/util/newlisp.vim
-	-install -m 644 util/link.lsp $(datadir)/newlisp/util/link.lsp
-	-install -m 644 util/httpd-conf.lsp $(datadir)/newlisp/util/httpd-conf.lsp
 	-install -m 644 doc/COPYING $(datadir)/doc/newlisp/COPYING
 	-install -m 644 doc/CREDITS $(datadir)/doc/newlisp/CREDITS
 	-install -m 644 doc/newlisp_manual.html $(datadir)/doc/newlisp/newlisp_manual.html
@@ -34,7 +34,7 @@ darwin-package:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.4.5-Release.html $(datadir)/doc/newlisp/newLISP-10.4.5-Release.html
+	-install -m 644 doc/newLISP-$(VERSION)-Release.html $(datadir)/doc/newlisp/newLISP-$(VERSION)-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -100,7 +100,13 @@ darwin-package:
 
 	# get OS X applications package
 	sudo cp -R /Applications/newLISP-GS.app/ $(appdir)/newLISP-GS.app
+	# make and fill image directory
+	-mkdir newLISP-image
+	cp doc/newLISP-$(VERSION)-Release.html newLISP-image/
+	cp util/newLISP-OSX-README.rtf newLISP-image/
+	cp util/uninstall.command newLISP-image/
+	pkgbuild --identifier com.nuevatec.newlisp.newlisp.pkg --version $(VERSION) \
+		--root Package_contents newLISP-image/newLISPpackage.pkg
 
-		
 # eof
 

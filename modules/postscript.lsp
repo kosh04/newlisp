@@ -5,8 +5,8 @@
 ;; @version 2.2 - formatting
 ;; @version 2.3 - documentation
 ;; @version 2.4 - replaced if-not with unless
-;; @version 2.42 - doc corrections
-;; @author Lutz Mueller, July 2006, 2009, 2010, 2012
+;; @version 2.43 - doc corrections
+;; @author Lutz Mueller, July 2006, 2009, 2010, 2012, 2013
 ;;
 ;; <h2>Routines for creating postscript files</h2>
 ;; To use this module include the following 'load' statement at
@@ -659,7 +659,7 @@
 
 %% ---------- SHAPES ----------
 
-% shapes are close and do not change the turtle position
+% shapes are closed and do not change the turtle position
 
 % radius sides fillflag -
 /polygon

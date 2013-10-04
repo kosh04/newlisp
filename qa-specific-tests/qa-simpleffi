@@ -1,5 +1,7 @@
 /* qa-simpleffi */
 
+/* nor used normally, use qa-ffi and qa-libffi */
+/* only checks usage of floats and mixed int/floats on 32/64 bit */
 /* use either from main distribution directory or qa-specific-tests directory */
 
 (if (ends-with (real-path) "qa-specific-tests")

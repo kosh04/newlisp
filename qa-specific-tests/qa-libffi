@@ -8,17 +8,30 @@
 #    use examples/opengl-demo-ffi.lsp for extended ffi testing
 
 (when (zero? (& 1024 (sys-info -1)))
-    (println "These tests only run on extended FFI enabled versions compiled with ffilib")
+    (println ">>>>> qa-libffi: tests only run on extended FFI enabled versions compiled with ffilib")
     (exit))
 
-(if (ends-with (real-path) "qa-specific-tests")
-    (if (zero? (& 0x100 (sys-info -1)))
-        (! "gcc -m32 ../util/ffitest.c -shared -o ffitest.dylib")
-        (! "gcc -m64 ../util/ffitest.c -shared -o ffitest.dylib"))
-    (if (zero? (& 0x100 (sys-info -1)))
-        (! "gcc -m32 util/ffitest.c -shared -o ffitest.dylib")
-        (! "gcc -m64 util/ffitest.c -shared -o ffitest.dylib"))
-)
+(define (compile-recover CC-CALL) ; thanks to Rick Hansen
+  ;; Exec the compiler invocation CC-CALL (which is a string) and, on
+  ;; failure, check certain error conditions, amend the invocation and try
+  ;; again. This routine only handles re-compiling with -fPIC, for now.
+  (let (cc-call-output (exec (string CC-CALL " 2>&1")))
+    (if (not (empty? cc-call-output))
+        ;; You can expand the following IF to handle more recovery cases.
+        (if (find "recompile with -fPIC" (join cc-call-output " "))
+            (compile-recover (string CC-CALL " -fPIC"))
+            ;; Default case: if you've exhausted your recovery cases, then
+            ;; just throw out the compiler's error message to the console.
+            (! CC-CALL)))))
+
+    (if (ends-with (real-path) "qa-specific-tests")
+        (if (zero? (& 0x100 (sys-info -1)))
+            (compile-recover "gcc -m32 ../util/ffitest.c -shared -o ffitest.dylib")
+            (compile-recover "gcc -m64 ../util/ffitest.c -shared -o ffitest.dylib"))
+        (if (zero? (& 0x100 (sys-info -1)))
+            (compile-recover "gcc -m32 util/ffitest.c -shared -o ffitest.dylib")
+            (compile-recover "gcc -m64 util/ffitest.c -shared -o ffitest.dylib"))
+    )
 
 (if (and
     (import "./ffitest.dylib" "ret_float" "float" "float")

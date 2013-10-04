@@ -609,7 +609,7 @@ void freeCellBlocks();
 void returnBlockMemory(void);
 void collectSymbols(SYMBOL * context, CELL * list);
 void deleteArray(CELL * cell);
-void deleteFreeSymbol(SYMBOL * sPtr, int checkReferences);
+void deleteAndFreeSymbol(SYMBOL * sPtr, int checkReferences);
 void deleteList(CELL * cell);
 void deleteTagStack(void);
 void encryptPad(char * encrypted, char * data, char * key, size_t dataLen, size_t keyLen);

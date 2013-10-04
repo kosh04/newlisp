@@ -1,6 +1,8 @@
 # this packages the Win32 binary distribution
 # this makefile is executed from a MinGW MSYS shell
 
+VERSION=10.5.4
+
 win-gui:
 	-mkdir /c/newlisp
 	-mkdir /c/newlisp/guiserver
@@ -8,8 +10,6 @@ win-gui:
 	-mkdir /c/newlisp/util
 	cp newlisp.exe /c/newlisp
 	cp newlisp.dll /c/newlisp
-	cp util/httpd-conf.lsp /c/newlisp/util
-	cp util/link.lsp /c/newlisp/util
 	cp util/newlispdoc /c/newlisp/util
 	cp util/newlisp.vim /c/newlisp/util
 	cp util/syntax.cgi /c/newlisp/util
@@ -18,7 +18,7 @@ win-gui:
 	cp doc/manual_frame.html /c/newlisp
 	cp doc/CodePatterns.html /c/newlisp
 	cp doc/newLISPdoc.html /c/newlisp
-	cp doc/newLISP-10.5.3-Release.html /c/newlisp
+	cp doc/newLISP-$(VERSION)-Release.html /c/newlisp
 	cp doc/COPYING /c/newlisp
 	cp guiserver/guiserver.lsp /c/newlisp
 	cp guiserver/guiserver.jar /c/newlisp	

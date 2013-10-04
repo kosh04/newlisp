@@ -96,32 +96,32 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10503;
+int version = 10504;
 
 char copyright[]=
-"\nnewLISP v.10.5.3 Copyright (c) 2013 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.5.4 Copyright (c) 2013 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.3 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.4 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.3 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.4 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.3 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.4 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
 char banner2[]= ", options: newlisp -h";
 
-void linkUnlink(char *, char *, char *);
+void linkSource(char *, char *, char *);
 char linkOffset[] = "&&&&@@@@";
 char preLoad[] = 
     "(define Tree:Tree)"
@@ -838,7 +838,7 @@ for(idx = 1; idx < argc; idx++)
     if(strncmp(argv[idx], "-x", 2) == 0)
         {
         if(argc == 4)
-            linkUnlink(argv[0], argv[idx + 1], argv[idx + 2]);
+            linkSource(argv[0], argv[idx + 1], argv[idx + 2]);
         exit(0);
         }
 
@@ -1704,7 +1704,7 @@ if(pCell->type == CELL_STRING)
         
         if(isNil((CELL *)sPtr->contents))
             {
-            deleteFreeSymbol(sPtr, FALSE);
+            deleteAndFreeSymbol(sPtr, FALSE);
             return(nilCell);
             }
 
@@ -3189,7 +3189,7 @@ if(errorEvent == nilSymbol)
 /* --------------------------- load source file ------------------------- */
 
 
-CELL * loadFile(char * fileName, UINT offset, int encryptFlag, SYMBOL * context)
+CELL * loadFile(char * fileName, UINT offset, int linkFlag, SYMBOL * context)
 {
 CELL * result;
 STREAM stream;
@@ -3202,7 +3202,7 @@ int i;
 
 contextSave = currentContext;
 currentContext = context;
-if(encryptFlag)
+if(linkFlag)
     sourceLen = *((int *) (linkOffset + 4));
 else sourceLen = MAX_FILE_BUFFER;
 
@@ -3249,7 +3249,7 @@ return(result);
 }
 
 
-void linkUnlink(char * pathname, char * source, char * target)
+void linkSource(char * pathname, char * source, char * target)
 {
 int sourceLen;
 char * buffer;
@@ -5530,17 +5530,15 @@ while(isNil(cell) || isEmpty(cell))
     {
     params = params->next;
     if(params->next == nilCell) 
-        {
-        pushResultFlag = FALSE;
-        return(cell);
-        }
+        goto IF_RETURN;
     params = params->next;
     cell = evaluateExpression(params);
     }
 
 if(params->next != nilCell) 
     cell = evaluateExpression(params->next);
-    
+   
+IF_RETURN: 
 pushResultFlag = FALSE;
 return(cell);
 }

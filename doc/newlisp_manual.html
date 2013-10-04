@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.3 Manual and Reference</title>
+   <title>newLISP v.10.5.4 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -141,7 +141,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.3</h2>
+<h2>User Manual and Reference v.10.5.4</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -514,10 +514,6 @@ mode.</p>
 <p>The old writing <tt>parse-date</tt> of <a href="#date-parse">date-parse</a>
 is still recognized but deprecated since version 10.3.0. The old writing will 
 be removed in a future version.</p>
-
-<p>The function <tt>if-not</tt> is deprecated and has
-been taken out of the documentation. The function will keep working
-for an indefinite time.</p>
 
 <p>Since version 10.4.6 newLISP has a built-in function <a href="#json-parse">
 json-parse</a> for translating JSON data into S-expressions. The module
@@ -1379,7 +1375,7 @@ library is used like any other shared library.</p>
 a newLISP expression and stores the result in a string address. The result can 
 be retrieved using <a href="#get-string">get-string</a>.  The returned string 
 is formatted like output from a command-line session. It contains terminating 
-line-feed characters, but but not the prompt string.</p>
+line-feed characters, but not the prompt string.</p>
 
 <p>When calling <tt>newlispEvalStr</tt>, output normally directed to the 
 console (e.g. return values or <a href="#print">print</a> statements) is 
@@ -6610,7 +6606,7 @@ arithmetic">
 
 <tr>
 <td><a href="#t-test">t-test</a></td>
-<td>performs a t-test on dependent or independent data samples</td>
+<td>compares means of data samples using the Student's t statistic</td>
 </tr>
 
 </table><br/>
@@ -11920,6 +11916,10 @@ like <tt>nil</tt> and <tt>true</tt> cannot be deleted.
 successfully or <tt>nil</tt> if the symbol was not deleted.
 </p>
 
+<p>When deleting a context symbol, the first <tt>delete</tt> removes the context 
+namespace contents and demotes the context symbol to a normal mono-variable symbol. 
+A second <tt>delete</tt> will remove the symbol from the symbol table.</p>
+
 <!-- example -->
 
 <pre>
@@ -15509,6 +15509,9 @@ or the empty list <tt>()</tt>, <em>exp-1</em> is evaluated;
 otherwise, the optional <em>exp-2</em> is evaluated.
 </p>	
 
+<p>Contrary to the <a href="#if">if</a> function, <tt>if-not</tt> does
+not permit multiple consequent and alternative clauses.</p>
+
 <pre>
 (set 'x 50)                       <span class='arw'>&rarr;</span> 50 
 (if-not (&lt; x 100) "big" "small")  <span class='arw'>&rarr;</span> "small"
@@ -15579,9 +15582,12 @@ will simply return the same - already allocated - function address.</p>
 imported symbols are protected against change and can only be modified using
 <a href="#constant">constant</a>.</p>
 
-<p>The third syntax - on OSX, Linux and other Unix only -  allows loading libraries 
-without importing functions. This is necessary when other libraries need access 
-to functions they need internally.</p>
+<p>The third syntax - on OSX, Linux and other Unix only -  allows pre-loading libraries 
+without importing functions. This is necessary when other library imports need access 
+internally to other functions from pre-loaded libraries.</p>
+
+<p>Incorrecttly using <tt>import</tt> can cause a system bus error or a segfault can occur 
+and crash newLISP or leave it in an unstable state.</p>
 
 <h3>The simple <tt>import</tt> syntax</h3>
 <p>Most library functions can be imported using the simpler first syntax. The API expects
@@ -15726,12 +15732,16 @@ floating point arguments take up two spaces each
 <h3>The extended <tt>import</tt> syntax</h3>
 
 <p>The extended import API works with the second syntax. It is based on the popular 
-<tt>libffi</tt> library and is pre-installed on most OS platforms. The API works 
-with all atomic C data types for passed parameters and return values. The extended 
-API requires that parameter types are specified in the <tt>import</tt> statement as
-string type labels. Programs written with extended import API will run without change
-on 32-bit and 64-bit newLISP and libraries. Integers, floating point values and strings 
-can be returned without using helper functions.</p>
+<tt>libffi</tt> library which is pre-installed on most OS platforms. The startup banner
+of newLISP should show the word <tt>libffi</tt> indicating the the running version
+of newLISP is compiled to use the extended <tt>import</tt> API. The function
+<a href="#sys-info">sys-info</a> can also be used to check for <tt>libffi</tt>-support.</p>
+
+<p>The API works with all atomic C data types for passed parameters and return values. 
+The extended API requires that parameter types are specified in the <tt>import</tt> 
+statement as string type labels. Programs written with extended import API will run 
+without change on 32-bit and 64-bit newLISP and libraries. Integers, floating point 
+values and strings can be returned without using helper functions.</p>
 
 <p>The following types can be specified for the return value in <em>str-return-type</em>
 and for function parameters in <em>str-param-type</em>:</p>
@@ -21569,6 +21579,14 @@ pList                <span class='arw'>&rarr;</span> (a b c)
 
 (pop pList '(2 2 0))  <span class='arw'>&rarr;</span> x
 
+; the target list is a place reference
+(set 'lst '((a 1) (b 2) (c 3) (d)))
+
+(push 4 (assoc 'd lst) -1) <span class='arw'>&rarr;</span> (d 4)
+
+lst <span class='arw'>&rarr;</span> ((a 1) (b 2) (c 3) (d 4))
+
+
 ; push on un-initialized symbol
 aVar  <span class='arw'>&rarr;</span> nil 
 
@@ -23036,7 +23054,7 @@ depending on the operation's success.
 <a name="replace"></a>
 <h2><span class="function">replace</span>&nbsp;<a href="#destructive">!</a></h2>
 <h4>syntax: (replace <em>exp-key</em> <em>list</em> <em>exp-replacement</em> [<em>func-compare</em>])<br/>
-syntax: (replace <em>exp list</em>)<br/><br/>
+syntax: (replace <em>exp-key</em> <em>list</em>)<br/><br/>
 
 syntax: (replace <em>str-key</em> <em>str-data</em> <em>exp-replacement</em>)<br/>
 syntax: (replace <em>str-pattern</em> <em>str-data</em> <em>exp-replacement</em> <em>int-regex-option</em>)</h4>
@@ -23045,7 +23063,11 @@ syntax: (replace <em>str-pattern</em> <em>str-data</em> <em>exp-replacement</em>
 
 <p>If the second argument is a list, <tt>replace</tt> replaces all elements in
 the list <em>list</em> that are equal to the expression in <em>exp-key</em>. The 
-element is replaced with <em>exp-replacement</em>. Note that <tt>replace</tt> is 
+element is replaced with <em>exp-replacement</em>. If <em>exp-replacement</em>
+is missing, all instances of <em>exp-key</em> will be deleted from <em>list</em>.
+</p>
+
+<p>Note that <tt>replace</tt> is 
 destructive. It changes the list passed to it and returns the changed list. The 
 number of replacements made is contained in the system variable <tt>$count</tt> 
 when the function returns. During executions of the replacement expression, the 
@@ -25676,7 +25698,7 @@ can crash newLISP or make it unstable.</p>
 (struct 'comp "pair" "int")  <span class='arw'>&rarr;</span> comp
 
 ; pack data using the extended pack syntax
-; not the insertion of structure alignment bytes after the pair
+; note the insertion of structure alignment bytes after the pair
 (pack comp (pack pair 1 2) 3) <span class='arw'>&rarr;</span> "\001\002\000\000\003\000\000\000"
 
 ; unpack reverses the process
@@ -25769,10 +25791,9 @@ lst <span class='arw'>&rarr;</span>  ((b 3 20 30) (a 1 2 10))
 
 <a name="sym"></a>
 <h2><span class="function">sym</span></h2>
-<h4>syntax: (sym <em>string</em> [<em>sym-context</em> <em>nil-flag</em>])<br/>
-syntax: (sym <em>number</em> [<em>sym-context</em> <em>nil-flag</em>])<br/>
-
-syntax: (sym <em>symbol</em> [<em>sym-context</em> <em>nil-flag</em>])</h4>
+<h4>syntax: (sym <em>string</em> [<em>sym-context</em> [<em>nil-flag</em>]])<br/>
+syntax: (sym <em>number</em> [<em>sym-context</em> [<em>nil-flag</em>]])<br/>
+syntax: (sym <em>symbol</em> [<em>sym-context</em> [<em>nil-flag</em>]])</h4>
 
 <p>
 	Translates the first argument in <em>string</em>, 
@@ -26133,12 +26154,43 @@ can be changed using the <tt>-s</tt> command-line switch. </p>
 
 <a name="t-test"></a>
 <h2><span class="function">t-test</span></h2>
-<h4>syntax: (t-test <em>list-vector-A</em> <em>list-vecor-B</em> [<tt>true</tt>])</h4>
+<h4>syntax: (t-test <em>list-vector</em> <em>number-value</em>)<br/>
+syntax: (t-test <em>list-vector-A</em> <em>list-vector-B</em> [<tt>true</tt>])<br/>
+syntax: (t-test <em>list-vector-A</em> <em>list-vector-B</em> <em>float-probability</em>)</h4>
 
-<p>The functions performs a t-test using the <em>Student's t</em> statistic for
-comparing the means values in <em>list-vector-A</em> and <em>list-vecor-B</em>.
-If the <tt>true</tt> flag is not used, both vectors in A and B can be of
-different length and groups represented by A and B are not related.</p>
+<p>In the <b>first syntax</b> the function uses a one sample <em>Students's t</em> 
+test to compare the mean value of <em>list-vector</em> to the value in 
+<em>number-value</em>:</p>
+
+<!-- example -->
+<pre>
+; one sample t-test
+(t-test '(3 5 4 2 5 7 4 3) 2.5)
+<span class='arw'>&rarr;</span> '(4.125 2.5 1.552 0.549 2.960 7 0.021)
+</pre>
+
+<p>The following data are returned in a list:</p>
+
+<table>
+<tr align="left"><th>name</th><th>description</th></tr>
+<tr><td>mean</td><td>mean of data in vector</td></tr>
+<tr><td>value</td><td>value to compare</td></tr>
+<tr><td>sdev</td><td>standard deviation in data vector</td></tr>
+<tr><td>mean-error</td><td>standard error of mean</td></tr>
+<tr><td>t</td><td>t between mean and value</td></tr>
+<tr><td>df</td><td>degrees of freedom</td></tr>
+<tr><td>p</td><td>two tailed probablity of t under the null hypothesis</td></tr>
+</table>
+
+<p>In above example the difference of the mean value <tt>4.125</tt> from <tt>2.5</tt> is
+moderatly significant. With a probability <tt>p = 0.021 (2.1%)</tt> the null hypothesis
+that the mean is not significantly different, can be rejected.</p>
+
+<p>In the <b>second syntax</b>, the functions performs a t-test using the 
+<em>Student's t</em> statistic for comparing the means values in <em>list-vector-A</em> 
+and <em>list-vector-B</em>. If the <tt>true</tt> flag is not used, both vectors 
+in A and B can be of different length and groups represented by A and B are 
+not related.</p>
 
 <p>When the optional flag is set to <tt>true</tt>, measurements were taken
 from the same group twice, e.g. before and after a procedure.</p>
@@ -26147,13 +26199,13 @@ from the same group twice, e.g. before and after a procedure.</p>
 
 <table>
 <tr align="left"><th>name</th><th>description</th></tr>
-<tr><td>mean-a</td><td>Mean of group A</td></tr>
-<tr><td>mean-b</td><td>Mean of group B</td></tr>
-<tr><td>sdev-a</td><td>Standard deviation in group A</td></tr>
-<tr><td>sdev-b</td><td>Standard deviation in group B</td></tr>
+<tr><td>mean-a</td><td>mean of group A</td></tr>
+<tr><td>mean-b</td><td>mean of group B</td></tr>
+<tr><td>sdev-a</td><td>standard deviation in group A</td></tr>
+<tr><td>sdev-b</td><td>standard deviation in group B</td></tr>
 <tr><td>t</td><td>t between mean values</td></tr>
-<tr><td>df</td><td>Degress of freedom</td></tr>
-<tr><td>p</td><td>Two tailed probablity of t under the null hypothesis</td></tr>
+<tr><td>df</td><td>degrees of freedom</td></tr>
+<tr><td>p</td><td>two tailed probablity of t under the null hypothesis</td></tr>
 </table>
 
 <p>The first example studies the effect of different sleep length
@@ -26162,6 +26214,7 @@ before a test on the SCAT (Sam's Cognitive Ability Test):</p>
 <!-- example -->
 <pre>
 ; SCAT (Sam's Cognitive Ability Test) 
+; two independent sample t-test
 (set 'hours-sleep-8 '(5 7 5 3 5 3 3 9))
 (set 'hours-sleep-4 '(8 1 4 6 6 4 1 2))
 
@@ -26170,23 +26223,52 @@ before a test on the SCAT (Sam's Cognitive Ability Test):</p>
 </pre>
 
 <p>The duration of sleeps before the SCAT does not have a significant
-impact with a probability value of <tt>0.411</tt>.</p>
+effect with a probability value of <tt>0.411</tt>.</p>
 
 <p>In the second example, the same group of people get tested twice,
 before and after a treatment with Prosac depression medication:</p>
 
 <!-- example -->
 <pre>
-; Effect of Prozac on a group of depressed people
+; Effect of an antidepressant on a group of depressed people
+; two related samples t-test
 (set 'mood-pre '(3 0 6 7 4 3 2 1 4))
 (set 'mood-post '(5 1 5 7 10 9 7 11 8))
 
 (t-test mood-pre mood-post true)
- <span class='arw'>&rarr;</span> (3.333 7 2.236 3.041 -3.143 8 0.0137)
+<span class='arw'>&rarr;</span> (3.333 7 2.236 3.041 -3.143 8 0.0137)
 </pre>
 
-<p>The effect of the Prosac treatment is moderately significant with a 
+<p>The effect of the antidepressant treatment is moderately significant with a 
 <tt>p</tt> of <tt>0.0137</tt>.</p>
+
+<p>In the <b>third syntax</b>, a form of the <em>Student's t</em> called <em>Welch's t-test</em>
+is performed. This method is used when the variances observed in both
+samples are significantly different. The threshold can be set using the 
+<em>float-probability</em> parameter. When this parameter is used the <tt>t-test</tt>
+function will perform a F-test to compare the variances in the two data samples.
+If the probability of the found <em>F-ratio</em> is below the <em>float-probability</em> 
+parameter, the <em>Welch's t-test</em> method will be used. Specifying this value
+as <tt>1.0</tt> effectiviely forces a <em>Welch's t-test</em>:</p>
+
+<!-- example -->
+<pre>
+; two independent sample t-test using the Welch method
+(t-test '(10 4 7 1 1 6 1 8 2 4) '(4 6 9 4 6 8 9 3) 1.0)
+<span class='arw'>&rarr;</span> (4.4 6.125 3.239 2.357 -1.307 15 0.211) 
+
+; two independent sample t-test using the normal method
+(t-test '(10 4 7 1 1 6 1 8 2 4) '(4 6 9 4 6 8 9 3))
+<span class='arw'>&rarr;</span> (4.4 6.125 3.239 2.357 -1.260 16 0.226)
+</pre>
+
+<p>There is no significant difference between the means of the two samples.
+The <em>Welch</em> method of the t-test is slightly more sensitive in this
+case than using the normal t-test method.</p>
+
+<p>Smaller values than <tt>1.0</tt> would trigger the <em>Welch's t-test</em>
+method only when the significance of variance difference in the samples reaches
+certain value.</p>
 
 <br/><br/>
 

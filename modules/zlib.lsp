@@ -6,6 +6,7 @@
 ;; @version 1.4 - doc changes
 ;; @version 1.5 - replaced <tt>write-buffer</tt> with <tt>write</tt>
 ;; @version 1.6 - removed broken <tt>squeeze</tt> and <tt>unsqueeze</tt> functions.
+;; @version 1.7 - added library for CentOS 6 Linux
 ;; @author L.M 2006-2013
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
@@ -29,6 +30,7 @@
 (set 'files '(
 	"/usr/lib/libz.so" ; Linux, BSD, Solaris
 	"/usr/lib/libz.so.4.1" ; OpenBSD 4.6
+    "/usr/lib64/libz.so" ; for 64Bit CentOS 6 Linux
 	"/usr/lib/libz.dylib" ; Mac OSX / Darwin
 	"libz1.dll" ; Win32
 ))

@@ -6,7 +6,7 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
-CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DLINUX -DFFI -I/usr/lib/i386-linux-gnu
+CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DLINUX -DFFI -I/usr/local/lib/libffi-3.0.13/include 
 
 CC = gcc
 

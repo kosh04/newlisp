@@ -860,7 +860,10 @@ while(key != nilCell)
     while(list != nilCell)
         {
         if(isList(list->type))
+            {
+            list->aux = (UINT)nilCell; /* undo last element optimization */
             if(compareCells(key, (CELL *)list->contents) == 0) break;
+            }
         previous = list;
         list = list->next;
         }

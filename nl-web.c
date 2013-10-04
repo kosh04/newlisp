@@ -40,7 +40,7 @@
 #define SOCKET_ERROR -1
 #else
 #define fgets win32_fgets
-#define close closesocket
+#define close closesocket  /* for file operations on Windows use _close */
 #endif
 
 /* from nl-sock.c */
@@ -963,7 +963,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.5.3"
+#define SERVER_SOFTWARE "newLISP/10.5.4"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1183,8 +1183,11 @@ switch(type)
             }
 
         transferred = readPayLoad(size, buff, outFile, request);
+#ifdef WINDOWS
+        _close(outFile);
+#else
         close(outFile);
-
+#endif
         if(transferred != -1)
             {
             snprintf(buff, 255, "%d bytes transferred for %s\r\n", (int)transferred, request);
