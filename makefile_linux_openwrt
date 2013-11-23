@@ -1,0 +1,27 @@
+# makefile for newLISP v.10.x.x on Openwrt LINUX without readline support
+# contributed by dexter (see newLISP Forum)
+# upx is used to compress 
+# no readline support, add -DSUPPORT_UTF8 to CFLAGS for UTF8 support
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -Wall -Wl,--gc-sections  -ffunction-sections -fdata-sections  -c -Os  -fno-threadsafe-statics  -DLINUX -I$(TARGET_DIR)/usr/include/
+LDFLAGS = -L$(TARGET_DIR)/usr/lib/  -W1,--gc-sections -lm -ldl
+CC = mips-openwrt-linux-gcc
+LD = mips-openwrt-linux-ld
+
+
+default: $(OBJS)
+	$(CC) $(OBJS)  -o newlisp $(LDFLAGS)   #for openwrt
+	$(STRIP) newlisp
+	upx --best -o newlisp_s newlisp
+	rm newlisp
+	mv newlisp_s newlisp
+
+.c.o:
+   	$(CC) $(CFLAGS) $<
+	$(OBJS): primes.h protos.h makefile_linux_openwrt
+
+

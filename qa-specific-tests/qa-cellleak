@@ -2,22 +2,37 @@
 ; to discover the source of the cell leak
 ; limit the script changing the line:
 ;   (if (and (primitive? (eval sm)) (< sm 'zzzz))
-; in procedure (qa) defined arounf line 160
+; in procedure (qa) defined around line 160
+
 
 (write-line 2 "Testing for cell leaks, wait ...")
 
+(println [text]
+If this test reports cell leaks, but also shows errors during 
+the execution of the qa-dot script then run again. If qa-dot runs
+fine on its own but shows error during repeated execution in this 
+script, it is because of syncronization errors when freeing resources.
+In this case try running again or test on a less busy, faster system.
+[/text])
+
 (set 'do-not-exit true) ; avoids exit
+(set 'testing-cell-leaks true) ; avoids output to the console
 
-(set 'before (sys-info 0))
-(set 'after (sys-info 0))
-
+(println "loading and runnig qa-dot 1")
 (silent (load "qa-dot"))
 
+(set 'before (sys-info 0)) ; do not delete
+(set 'after (sys-info 0))  ; adjusting cellcount
+
+(println "loading and runnig qa-dot 2")
 (silent (load "qa-dot"))
+
 (println (sys-info))
 (set 'before (sys-info 0))
 
+(println "loading and runnig qa-dot 3")
 (silent (load "qa-dot"))
+
 (println (sys-info))
 (set 'after (sys-info 0))
 

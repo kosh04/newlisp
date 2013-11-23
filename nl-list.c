@@ -32,6 +32,7 @@ CELL * * listToSortedVector(CELL * list, ssize_t * length, CELL * func, int inde
 CELL * resortVectorToList(CELL * * vector, ssize_t length);
 void binsort(CELL * * x, ssize_t n, CELL * pCell);
 
+
 CELL * p_map(CELL * params)
 {
 CELL * argsPtr;
@@ -49,7 +50,9 @@ funcPtr = evaluateExpression(params);
 
 /* get first of argument lists */
 params = getEvalDefault(params->next, &cell);
-argsPtr = cell = copyCell(cell);
+
+argsPtr = cell = (cell->type == CELL_ARRAY) ?  
+    arrayList(cell, FALSE) : copyCell(cell);
 
 if(!isList(cell->type))
     return(errorProcExt(ERR_LIST_EXPECTED, cell));
@@ -58,9 +61,10 @@ if(!isList(cell->type))
 while (params != nilCell)
     {
     params = getEvalDefault(params, &results);
-    cell->next = copyCell(results);
-    cell = cell->next;
+    cell->next = (results->type == CELL_ARRAY) ? 
+        arrayList(results, FALSE) : copyCell(results);
 
+    cell = cell->next;
     if(!isList(cell->type))
         return(errorProcExt(ERR_LIST_EXPECTED, results));
     }
@@ -1777,10 +1781,10 @@ getEvalDefault(params, &array);
 if(array->type != CELL_ARRAY)
     return(errorProcExt(ERR_ARRAY_EXPECTED, params));
 
-return(arrayList(array));
+return(arrayList(array, TRUE));
 }
 
-CELL * arrayList(CELL * array)
+CELL * arrayList(CELL * array, int flag)
 {
 CELL * list = NULL;
 CELL * * addr;
@@ -1794,8 +1798,8 @@ size = (array->aux - 1) / sizeof(UINT);
 while(size--)
     {
     cell = *(addr++);
-    if(cell->type == CELL_ARRAY)
-        new = arrayList(cell);
+    if((cell->type == CELL_ARRAY) && flag)
+        new = arrayList(cell, flag);
     else
         new = copyCell(cell);
     if(list == NULL)
@@ -1991,7 +1995,7 @@ void printArray(CELL * array, UINT device)
 {
 CELL * list;
 
-list = arrayList(array);
+list = arrayList(array, TRUE);
 
 printExpression(list, device);
 

@@ -96,26 +96,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10504;
+int version = 10505;
 
 char copyright[]=
-"\nnewLISP v.10.5.4 Copyright (c) 2013 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.5.5 Copyright (c) 2013 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.4 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.5 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.4 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.5 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.5 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.4 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.5 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -256,7 +256,7 @@ int prettyPrintCurrent = 0;
 int prettyPrintFlags = 0;
 int prettyPrintLength = 0;
 char * prettyPrintTab = " ";
-char * prettyPrintFloat = "%1.10g";
+char * prettyPrintFloat = "%1.15g";
 #define MAX_PRETTY_PRINT_LENGTH 80
 UINT prettyPrintMaxLength =  MAX_PRETTY_PRINT_LENGTH;
 int stringOutputRaw = TRUE;
@@ -725,7 +725,7 @@ mainArgsSymbol->contents = (UINT)getMainArgs(argv);
 
 if((errorReg = setjmp(errorJump)) != 0) 
     {
-    if(errorReg && (errorEvent != nilSymbol) ) 
+    if((errorEvent != nilSymbol) || (errorReg == ERR_USER_RESET)) 
         executeSymbol(errorEvent, NULL, NULL);
     else exit(-1);
     goto AFTER_ERROR_ENTRY;
@@ -1262,18 +1262,17 @@ CELL * evaluateStream(STREAM * stream, UINT outDevice, int flag)
 {
 CELL * program;
 CELL * eval = nilCell;
-UINT * resultIdxSave;
-int result = TRUE;
 CELL * xlate;
+UINT * resultIdxSave = resultStackIdx;
+int result = TRUE;
 
-resultIdxSave = resultStackIdx;
 while(result)
     {
     pushResult(program = getCell(CELL_QUOTE));
     result = compileExpression(stream, program);
     if(readerEvent != nilSymbol && result)
         {
-        --resultStackIdx; /* program gets consumed by executeSymbol() */
+        --resultStackIdx; /* program cell consumed by executeSymbol() */
         executeSymbol(readerEvent, program, &xlate);
         pushResult(program = makeCell(CELL_QUOTE, (UINT)xlate));
         }
@@ -1306,9 +1305,8 @@ int executeSymbol(SYMBOL * symbol, CELL * params, CELL * * result)
 {
 CELL * program;
 CELL * cell;
-UINT * resultIdxSave;
+UINT * resultIdxSave = resultStackIdx;
 
-resultIdxSave = resultStackIdx;
 if(symbol == nilSymbol || symbol == trueSymbol || symbol == NULL)   return(0);
 pushResult(program = getCell(CELL_EXPRESSION));
 cell = makeCell(CELL_SYMBOL, (UINT)symbol);
@@ -1333,10 +1331,10 @@ return((*result)->type);
 
 void initialize()
 {
-int i;
 SYMBOL * symbol;
 CELL * pCell;
 char  symName[8];
+int i;
 
 /* build true and false cells */
 nilCell = getCell(CELL_NIL);
@@ -2797,7 +2795,7 @@ switch(symbolType(sPtr))
             varPrintf(device, "(array ");
             printArrayDimensions(cell, device);
             varPrintf(device, "(flat ");
-            list = cell = arrayList(cell);
+            list = cell = arrayList(cell, TRUE);
             }
 
         cell = (CELL *)cell->contents;
@@ -4627,6 +4625,9 @@ cell = copyCell(func);
 expr = makeCell(CELL_EXPRESSION, (UINT)cell);
 params = getEvalDefault(params->next, &args);
 
+if(args->type == CELL_ARRAY)
+	pushResult(args = arrayList(args, FALSE));
+
 if(args->type != CELL_EXPRESSION)
     {
     if(isNil(args))
@@ -4692,7 +4693,6 @@ for(;;)
     cleanupResults(resultIdxSave);
     }
 }
-
 
 CELL * p_args(CELL * params)
 {
@@ -5431,7 +5431,7 @@ while(params != nilCell)
     {
     cell = evaluateExpression(params);
     if(cell->type == CELL_ARRAY)
-        copy = arrayList(cell);
+        copy = arrayList(cell, TRUE);
     else
         copy = copyCell(cell);
     if(lastCopy == NULL)
@@ -6574,42 +6574,36 @@ CELL * isZero(CELL * cell)
 int * numPtr;
 #endif
 
-#ifndef NEWLISP64
-if(cell->type == CELL_INT64)
+switch(cell->type)
     {
-    if(*(INT64 *)&cell->aux == 0)
-        return(trueCell);
-    else
-        return(nilCell);
-    }
+#ifndef NEWLISP64
+    case CELL_INT64:
+        if(*(INT64 *)&cell->aux == 0)
+            return(trueCell);
+        break;
 #endif
-
-if(cell->type == CELL_FLOAT)
-    {
+    case CELL_FLOAT:
 #ifndef NEWLISP64
-    if(*(double *)&cell->aux == 0.0)
+        if(*(double *)&cell->aux == 0.0)
 #else
-    if(*(double *)&cell->contents == 0.0)
+        if(*(double *)&cell->contents == 0.0)
 #endif
-        return(trueCell);
-    else
-        return(nilCell);
-    }   
-
-if(cell->type == CELL_LONG)
-    {
-    if(cell->contents == 0)
-        return(trueCell);
-    }
-
+            return(trueCell);
+        break;
+    case CELL_LONG:
+        if(cell->contents == 0)
+            return(trueCell);
+        break;
 #ifdef BIGINT
-if(cell->type == CELL_BIGINT)
-    {
-    numPtr = (int *)(UINT)cell->contents;
-    if(cell->aux == 2 && numPtr[1] == 0)
-        return(trueCell);
-    }
+    case CELL_BIGINT:
+        numPtr = (int *)(UINT)cell->contents;
+        if(cell->aux == 2 && numPtr[1] == 0)
+            return(trueCell);
+        break;
 #endif
+    default:
+        break;
+    }
 
 return(nilCell);
 }
@@ -6638,8 +6632,7 @@ return(isZero(cell));
 
 CELL * p_isZero(CELL * params)
 {
-params = evaluateExpression(params);
-return(isZero(params));
+return(isZero(evaluateExpression(params)));
 }
 
 

@@ -1132,9 +1132,11 @@ void ffi_trampoline(ffi_cif *cif, void *ret, void **args, void *data)
         return;
     
     if(cif->nargs)
+		{
         arg = next = ffiTypeToCell(cif->arg_types[0], args[0]);
-    for(c = 1;c < cif->nargs; c++)
-        next = next->next =  ffiTypeToCell(cif->arg_types[c], args[c]);
+		for(c = 1;c < cif->nargs; c++)
+			next = next->next =  ffiTypeToCell(cif->arg_types[c], args[c]);
+		}
 
     executeSymbol(symbol,(CELL *) arg, &result);
     

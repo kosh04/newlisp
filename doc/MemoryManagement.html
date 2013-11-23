@@ -75,7 +75,7 @@ tt {
 <br/>
 <blockquote>
 <center><h2>Automatic Memory Management in newLISP</h2></center>
-<center><font size="-1">Lutz Mueller, 2004-2011. Last edit 2011-09-18<br/>
+<center><font size="-1">Lutz Mueller, 2004-2013. Last edit 2013-11-07<br/>
 </font></center>
 
 <center><blockquote><blockquote><i>
@@ -328,7 +328,7 @@ expression (<tt>expr</tt> is <tt>(foo x y)</tt> than <tt>foo</tt> is a built-in 
 <tt>x</tt> and <tt>y</tt> are the function arguments or parameters.<br/><br/>
 </li>
 <li>
-<tt>evaluateLambda(func, args)</tt> works simlar to <tt>evaluateFunc(func, args)</tt>, applying 
+<tt>evaluateLambda(func, args)</tt> works similar to <tt>evaluateFunc(func, args)</tt>, applying 
 a user-defined function <tt>first(expr)</tt> to its arguments in <tt>rest(expr)</tt>. In case 
 of a user-defined function we have two types of arguments in <tt>rest(expr)</tt>, a list of local 
 parameters followed by one or more body expressions evaluated in sequence.
@@ -350,7 +350,7 @@ arguments. As recursion deepens, the recursion level of the function increases.<
 deleting the <tt>result</tt> values from deeper level of evaluation and returned by one of 
 the two functions, either <tt>evaluateFunc</tt> or <tt>evaluateLambda</tt>.</p>
 
-<p>Any newsly created <tt>result</tt> expression is destined to be destroyed later but its 
+<p>Any newly created <tt>result</tt> expression is destined to be destroyed later but its 
 deletion is delayed until a higher, less deep, level of evaluation is reached. This permits 
 results to be used and/or copied by calling functions.</p>
 
@@ -406,7 +406,7 @@ level 1:   return( 25 )
 <p>The actual C-language implementation is optimized in some places to avoid pushing the 
 <tt>resultStack</tt> and avoid calling <tt>evaluateExpression(expr)</tt>. Only the most 
 relevant steps are shown. The function <tt>evaluateLambda(func, args)</tt> does not need 
-to evaluate its arguments <tt>3</tt> and <tt>4</tt> becuase they are constants, but 
+to evaluate its arguments <tt>3</tt> and <tt>4</tt> because they are constants, but 
 <tt>evaluateLambda(func, args)</tt> will call <tt>evaluateExpression(expr)</tt> twice to 
 evaluate the two body expressions <tt>(+ (* x x)</tt> and <tt>(+ (* x x)</tt>. Lines 
 preceded by the prompt <tt>&gt;</tt> show the command-line entry.</p>
@@ -437,7 +437,7 @@ not including handling of default functors and implicit indexing.
 For more information on expression evaluation see: <a href="http://www.newlisp.org/ExpressionEvaluation.html">Expression evaluation, Implicit Indexing, Contexts and Default Functors in the newLISP Scripting Language</a>.
 </font>
 <br/><br/>
-<center><font size="-1">Copyright &copy; 2004-2012, Lutz Mueller 
+<center><font size="-1">Copyright &copy; 2004-2013, Lutz Mueller 
 <a href="http://newlisp.org">http://newlisp.org</a>. All rights reserved. </font></center>
 </blockquote>
 </body>

@@ -523,6 +523,13 @@ if(*fmt == '%')
     goto PARSE_FORMAT;
     }
 
+/* get optional decimal format spec */
+/* this GNU extension does not work on OS X, FreeBSD, OpenBSD */
+/* works on Linux and Unix with GNU libc */
+#ifdef LINUX
+if(*fmt == '\'') fmt++;
+#endif
+
 /* get width spec */
 
 /* force + before numbers */
@@ -595,7 +602,6 @@ if(*fmt == 's')
     return(++fmt);
     }
 
-#ifndef WINDOWS
 #ifdef TRU64 /* supporting ld, li, lu, lx, lX formats */
 if(*fmt == 'l' &&  
         (*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
@@ -607,7 +613,7 @@ if(*fmt == 'l' &&
 #endif
     return(fmt+2);
     }
-#else /* all other UNIX suporting lld, llu, llx, llX formats */
+#else /* all other UNIX and WINDOWS MINGW suporting lld, llu, llx, llX formats */
 if(*fmt == 'l' && *(fmt + 1) == 'l' && 
         (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' || *(fmt + 2) =='x' || *(fmt + 2) == 'X'))
     {
@@ -619,7 +625,8 @@ if(*fmt == 'l' && *(fmt + 1) == 'l' &&
     return(fmt+3);
     }
 #endif
-#else /* MinGW uses MS conventions */
+
+#ifdef WINDOWS /* on MINGW also support MS conventions */
 if(memcmp(fmt, "I64", 3) == 0 &&
         (*(fmt + 3) == 'd' || *(fmt + 3) == 'u' || *(fmt + 3) =='x' || *(fmt + 3) == 'X'))
     {

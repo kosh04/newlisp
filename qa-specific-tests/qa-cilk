@@ -60,7 +60,7 @@
 
 ; check inlet function
 (define (inlet pid) 
-	(println "pid: " pid " " (lookup pid plist) ":" (eval (lookup pid plist)))
+	(println "inlet pid: " pid " " (lookup pid plist) ":" (eval (lookup pid plist)))
 	(push (list (lookup pid plist) (eval (lookup pid plist))) result6 -1)
 )
 

@@ -20,27 +20,29 @@
 ;(bayes-train '() (parse (lower-case (read-file "Comedy.txt")) "[^a-z]+" 0) 'DoyleDowson)
 ;(bayes-train (parse (lower-case (read-file "Sherlock.txt")) "[^a-z]+" 0) '() 'DoyleDowson)
 
-; training with the Dowson novel
-(println "... Loading from Gutenberg project ...")
-(set 'ComedyOfMasks (read-file (docs 1)))
-(println "training: Comedy of Masks")
-(bayes-train '() (parse (lower-case ComedyOfMasks) "[^a-z]+" 0) 'DoyleDowson)
-
 ; training with the Doyle novel
 (println "Loading from Gutenberg project ...")
 (set 'AdventuresOfSherlockHolmes (read-file (docs 1)))
-(println "training: The Adventures of Sherlock Holmes")
+(println "training: The Adventures of Sherlock Holmes (Doyle)")
 (bayes-train (parse (lower-case AdventuresOfSherlockHolmes) "[^a-z]+" 0) '() 'DoyleDowson)
 
+; training with the Dowson novel
+(println "... Loading from Gutenberg project ...")
+(set 'ComedyOfMasks (read-file (docs 0)))
+(println "training: Comedy of Masks (Dowson)")
+(bayes-train '() (parse (lower-case ComedyOfMasks) "[^a-z]+" 0) 'DoyleDowson)
+
 (setf result (bayes-query (parse "he was putting the last touches to a picture") 'DoyleDowson))
-(if (< (apply add (map sub result '(0.03802079132 0.9619792087))) 0.001)
-	(println ">>>>> 1. Doyle/Dowson SUCCESSFUL")
-	(println ">>>>> PROBLEM in 1. Doyle/Dowson")) 
+(println "result: " result " " '(0.0359554723158327 0.964044527684167))
+(set 'diff (apply add (map abs (map sub result '(0.0359554723158327 0.964044527684167)))))
+(println (format "diff: %10.5f " diff) 
+    (if (< diff 0.001) ">>>>> bayes SUCCESSFUL" ">>>>> ERROR in bayes"))
 
 (setf result (bayes-query (parse "immense faculties and extraordinary powers of observation") 'DoyleDowson))
-(if (< (apply add (map sub result '(0.985108793 0.01489120699))) 0.001)
-	(println ">>>>> 2. Doyle/Dowson SUCCESSFUL")
-	(println ">>>>> PROBLEM in 2. Doyle/Dowson")) 
+(println "result: " result " " ' (0.983569359827141 0.0164306401728594) )
+(set 'diff (apply add (map abs (map sub result ' (0.983569359827141 0.0164306401728594) ))))
+(println (format "diff: %10.5f " diff) 
+    (if (< diff 0.001) ">>>>> bayes SUCCESSFUL" ">>>>> ERROR in bayes"))
 
 (println)
 
@@ -51,18 +53,13 @@
 (set 'Data:total '(10 90))
 
 (setf result (bayes-query '(test-positive) Data true) )
-(if (< (apply add (map sub result '(0.3076923077 0.6923076923))) 0.001)
-	(println ">>>>> 1. Chain Bayes SUCCESSFULL")
-	(println "PROBLEM in 1. Chain Bayes")) 
+(println "result: " result " " '(0.3076923077 0.6923076923))
+
 (setf result (bayes-query '(test-positive test-positive) Data true) )
-(if (< (apply add (map sub result '(0.64 0.36))) 0.001)
-	(println ">>>>> 2. Chain Bayes SUCCESSFULL")
-	(println "PROBLEM in 2. Chain Bayes")) 
+(println "result: " result " " '(0.64 0.36))
 
 (setf result (bayes-query '(test-positive test-positive test-positive) Data true) )
-(if (< (apply add (map sub result '(0.8767123288 0.1232876712))) 0.001)
-	(println ">>>>> 3. Chain Bayes SUCCESSFULL")
-	(println "PROBLEM in 3. Chain Bayes")) 
+(println "result: " result " " '(0.8767123288 0.1232876712))
 
 (exit)
 

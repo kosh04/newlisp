@@ -961,14 +961,15 @@ switch(*jsonStr)
         cell = getJSONobject(jsonStr, &ptr);
         break;
     case '[':
+        GET_ARRAY_ELEMENT:
         ++jsonStr;
         while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr;
         if(*jsonStr == ']')
             {
             *restStr = jsonStr + 1;
+            if(array) return(array);
             return(getCell(CELL_EXPRESSION));
             }
-        GET_ARRAY_ELEMENT:
         if((cell = getJSONvalue(jsonStr, &ptr)) == nilCell)
             {
             if(array) deleteList(array);
@@ -985,13 +986,13 @@ switch(*jsonStr)
         jsonStr = ptr;
         /* whitespace */
         while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr;
-        if(*jsonStr == ',') {++jsonStr; goto GET_ARRAY_ELEMENT;}
+        if(*jsonStr == ',') goto GET_ARRAY_ELEMENT;
         if(*jsonStr == ']')
             {
             *restStr = jsonStr + 1;
             return(array);
             }
-        if(array) deleteList(array);
+        deleteList(array);
         return(setJSONerror(ERR_JSON_INVALID_ARRAY, jsonStr));
     case 't':
         if(strncmp(jsonStr, "true", 4) == 0)

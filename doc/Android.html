@@ -1,14 +1,15 @@
 <body style="font-family: Helvetica, Verdanan, Arial, sans-serif;">
 <h2>Make newLISP for Android Linux</h2>
-<p>Fore the following download: <a href="http://www.newlisp.org/code/newlisp-ndk-10.5.4.tgz">http://www.newlisp.org/code/newlisp-ndk-10.5.4.tgz</a></p>
-<p>This package can also be made starting newLISP v.10.4.6 using the following command from the main distribution directory:</p>
+<p>Download the latest version of the newLISP Android source distribution from the 
+<a href="http://www.newlisp.org/index.cgi?page=Downloads"> downloads page</a></p>
+<p>This package can also be made using the following command from the main distribution directory:</p>
 <pre>
   make android_dist
   # or
   make android_dist_utf8
 </pre>
 <p>This will make a newlisp-ndk-x.x.x.tgz in the parent directory of the distribution directory where x.x.x is the version number.</p>
-<p>It is missing (semaphore), which requires libraries that do not exist on Android. It also does not contain the READLINE compile flavor. UTF8 support can be added by making a source package using <tt>make android_dist_utf8</tt>.</p>
+<p>It is missing the <tt>semaphore</tt>, which requires libraries that do not exist on Android. It also does not contain the READLINE compile flavor. UTF8 support can be added by making a source package using <tt>make android_dist_utf8</tt>.</p>
 
 <p>In order for <tt>share</tt> to work for more than 4072 bytes a <tt>/data/tmp</tt> directory must be created on the Android device. This directory is also required if more than 4072 data are transferred when using the <tt>spawn</tt> function.</p>
 

@@ -85,6 +85,10 @@
     (setq y (get-bignum (rand 30)))
     ;(println "x=" x " y=" y)
     (print i "      \r")
+ 
+    (unless (= (zero? x) (= x 0))
+        (println ">>>>> ERROR in zero? for x = " x)
+        (exit))
 
     (unless (and
         (= (/ x x) 1L)
@@ -98,6 +102,16 @@
 
     (setq x*y (* x y))
     (setq x/y (/ x y))
+
+    (set 'xx x)
+    (unless (= (++ xx y) x+y)
+        (println ">>>>> ERROR in ++ with " x " " y)
+        (exit))
+
+    (set 'xx x)
+    (unless (= (-- xx y) x-y)
+        (println ">>>>> ERROR in -- with " x " " y)
+        (exit))
 
     (unless (and (= (- x+y y) x) (= (- x+y x) y) (= (+ x-y y) x) ) 
             (println ">>>>> ERROR in +, - with " x " " y)
@@ -122,7 +136,37 @@
 
 )
 
-(println ">>>>> abs, float, bigint, +, -, *, /, % big integers tested SUCCESSFUL")
+; gcd for bigint
+; from http://bit-player.org/2013/the-keys-to-the-keydom
+; and: http://en.wikipedia.org/wiki/Euclidean_algorithm
+
+(set 'x  123784517654557044204572030015647643260197571566202790882488143432336664289530131607571273603815008562006802500078945576463726847087638846268210782306492856139635102768022084368721012277184508607370805021154629821395702654988748083875440199841915223400907734192655713097895866822706517949507993107455319103401)
+
+(set 'y  139752806258570179719657334941265463008205415047073349942370461270597321020717639292879992151626413610247750429267916230424010955054750502833517070395986289724237112410816000558148623785411568845517146303421384063525091824898318226175234193815950597041627518140906384889218054867887058429444934835873139133193) 
+
+(define (gcd-big a b)
+	(if (= b 0) a (gcd-big b (% a b))))
+
+(define (gcd-big a b , t)
+	(until (= b 0)
+		(set 't b)
+		(set 'b (% a b))
+		(set 'a t)
+	)) 
+
+(set 'f 10704679319376067064256301459487150226969621912489596482628509800922080318199635726117009340189103336170841315900354200725312700639146605265442630619090531)
+
+(unless (= (gcd x y) f)
+    (println ">>>>> ERROR in big integer gcd") 
+    (exit))
+
+(dotimes (i 1000)
+    (unless (= (gcd i (- 1000 i)) (gcd (bigint i) (- 1000 i)))
+        (println ">>>>> ERROR in gcd to bigint gcd comparison")))
+
+(println ">>> big int gcd benchmark " (time (gcd x y) 1000) " micro secs")
+
+(println ">>>>> abs, bigint, float, gcd, zero?, +, -, *, /, %, ++, -- big ints tested SUCCESSFUL")
 
 (exit)
 

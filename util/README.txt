@@ -10,13 +10,12 @@ newLISP-OSX-README.rtf ............ part of the OSX installer image
 newlisp.jsf ....................... syntax highlighting for the JOE editor
 newlisp.vim ....................... syntax highlighting for the VIM editor
 newlispdoc ........................ doc generator
-newlispdoc.css .................... style sheet fore doc generatoor
+newlispdoc.css .................... style sheet for doc generatoor
 nls ............................... combination newLISP and OS shell
 org.newlisp.newlisp.plist ......... launchd file for OSX
 package.jsn ....................... used for some package maker
 preparepdf ........................ prepare manual for PDF print
-sql.c ............................. find offsets for some MySQL fiels for mysql.lsp module file
-standard.lsp ...................... together with newlispdoc to generate and index entry
+standard.lsp ...................... used with newlispdoc to generate and index entry
 syntax.cgi ........................ generate an syntax hightlighted HTML file from newLISP source
 types.c ........................... check out C-type sizes and behavior an OS platform
-uninstall.command ................. oart of the OSX installer image
+uninstall.command ................. part of the OSX installer image

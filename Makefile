@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.4
-INT_VERSION = 10504
+VERSION = 10.5.5
+INT_VERSION = 10505
 
 default: makefile_build
 	make -f makefile_build
@@ -139,11 +139,15 @@ clean:
 	-chmod 644 *.h *.c Makefile makefile*
 	-chmod 755 configure configure-alt examples/*
 	-chmod 644 doc/* modules/*.lsp examples/*.lsp examples/*.html
+	-chmod 755 doc/index.cgi
 	-chmod 644 guiserver/*
+	-chmod 755 guiserver/index.cgi
 	-chmod 755 guiserver/images
 	-chmod 644 guiserver/images/*
+	-chmod 755 guiserver/images/index.cgi
 	-chmod 755 guiserver/java
 	-chmod 644 guiserver/java/*
+	-chmod 755 guiserver/java/index.cgi
 	-rm -f makefile_build makefile_install config.h test-*
 
 # run test scripts
@@ -232,7 +236,7 @@ dist: clean
 	-mkdir newlisp-$(VERSION)/util
 	-mkdir newlisp-$(VERSION)/qa-specific-tests
 	cp README newlisp-$(VERSION)
-	cp nl*.c newlisp.c *.h pcre*.c newlisp-$(VERSION)
+	cp nl*.c newlisp.c *.h pcre*.c index.cgi newlisp-$(VERSION)
 	cp win3*.* unix*.c newlisp-$(VERSION)
 	cp Makefile configure* makefile* qa-dot qa-comma newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
@@ -248,7 +252,7 @@ dist: clean
 
 
 # this makes a Android source pacage for compilation using the Android NDK
-# may want to change APP_PLOTFORM spec to something different
+# may want to change APP_PLATFORM spec to something different
 android_dist_utf8:
 	-mkdir newlisp-ndk-utf8-$(VERSION)
 	-mkdir newlisp-ndk-utf8-$(VERSION)/jni

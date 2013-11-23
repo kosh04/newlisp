@@ -6638,6 +6638,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
  
    Fixed handling escaped " (quote) in JSON strings.
 
+
 10.5.3 stable release July 10th, 2013
 
    fixed escaping of back slashes in json-parse
@@ -6646,7 +6647,9 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
    refactored  nl-matrix.c/multiply() to avoid memory leak on wrong parameters
 
-10.5.4
+
+10.5.4 stable release October 1st, 2013
+
    3.7 newlispdoc cleanup ";; *" regex
 
    New FFI ffi.h include directory in makefile_linux* when installing libffi 
@@ -6677,3 +6680,50 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
    is reported.
 
    Some cleanup and changes in scripts (makefiles) for binary installers
+
+
+10.5.5
+   Allow trailing , (comma) in JSON arrays. The new JSON ECMA-404 seems not 
+   to allow it but the JavaScript standard ECMA-262 and many browsers do.
+
+   Added makefile_linux_openwrt for for TP-link TL-WR703N travel router
+   contributed by Dexter.
+
+   In arithmetik big integer operations + - * / % more than two operands
+   are allowed as in normal precision integer operations.
+
+   On Windows support UNIX conventions for formatting 64-bit integers.
+   I.e.: %lld %llu %llx %llX additionally to %I64d %I64u %I64x %I64X
+
+   Added ++, -- to qa-bigint. Fixed sign change on second operand of
+   bigint -- when second operand was negative.
+
+   Some cleanup in Cilk API when releasing resources.
+
+   The 'gcd' function now also works on big integers and > 2 operands. 
+
+   On UBUNTU Linux decimal numbers can be formatted using a GNU extension
+   in libc, e.g: (format "%'d" 12345) => 12,345 
+   The optional ' (single quote) after the % character causes thousands
+   to be separated with the appropiate character for the current locale. 
+
+   Fixed a cell leak introduced in 10.5.5 when deleting contexts.
+
+   The default pretty-print float setting has been changed to "%1.15g".
+
+   'reset' now also cancels command line paraneter processing.
+ 
+   A fix in 'round' when number is exacty 0.5.
+
+   'map', 'apply', 'stats', 'corr', 't-test' now also can take arrays
+
+   'bayes-query' with Fisher's Chi2 method calculated wrong probabilities
+   when training in more than two categories. When training in two
+   categories the result probabilities were swapped - reporting the
+   probability for the second category first. 'bayes-query' calculating
+   probabilities with the Chain Bayesian method - using the true flag - 
+   was not affected.
+
+   Many documentation changes and corrections.
+
+   

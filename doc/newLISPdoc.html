@@ -43,7 +43,7 @@ tt {
 
 <center>
 <h1>newLISPdoc - the newLISP documentation program</h1>
-<font size="-1">last edited 2010-01-14</font>
+<font size="-1">last edited 2013-11-07</font>
 </center>
 
 <p>Comments in newLISP source files can be converted
@@ -171,7 +171,7 @@ June 2007, and are not part of the newlispdoc program in the newLISP v. 9.1 rele
 <p>A function may have multiple <tt>@syntax</tt> tags each on consecutive lines.</p>
 
 <p>The following is the only tag, which can be embedded anywhere in
-the text. Between the tag link specificaton and description is exactly one
+the text. Between the tag link specification and description is exactly one
 space:</p>
 
 <blockquote><pre>
@@ -207,7 +207,7 @@ and <tt>&lt;hr&gt;</tt>.</p>
 <p>newLISPdoc generates and index page for all modules documented. A special tag <tt>@index</tt>
 can be used to show a link on the index page to an index of other module collections. This way 
 multilevel indices of modules can be created. To display a link to another module collection
- on the index page, create a file containing a <tt>@index</tt> and a <tt>@descrption</tt> link:</p>
+ on the index page, create a file containing a <tt>@index</tt> and a <tt>@description</tt> link:</p>
 
 <blockquote><pre>
 ; - other-collection.txt -
@@ -245,7 +245,7 @@ followed by the pages generated in HTML:</p>
 
 ;; @syntax (example:foo &lt;num-repeat&gt; &lt;str-message&gt;)
 ;; @param &lt;num-repeat&gt; The number of times to repeat.
-;; @param &lt;str-message&gt; The messsage string to be printed.
+;; @param &lt;str-message&gt; The message string to be printed.
 ;; @return Returns the message in &lt;str-message&gt;
 ;;
 ;; The function 'foo' repeatedly prints a string to 
@@ -287,7 +287,7 @@ documentation.
 <p>&nbsp;</p><center>- &sect; -</center><p>&nbsp;</p>
 <a name="example_foo"></a><h3>Syntax: (<font color=#CC0000>example:foo</font> <em>num-repeat</em> <em>str-message</em>)</h3>
 <b>parameter: </b><em>num-repeat</em> - The number of times to repeat.<br/>
-<b>parameter: </b><em>str-message</em> - The messsage string to be printed.<br/>
+<b>parameter: </b><em>str-message</em> - The message string to be printed.<br/>
 <p><b>return: </b>Returns the message in <em>str-message</em></p>
 <p>&nbsp;</p>
  The function <tt>foo</tt> repeatedly prints a string to 

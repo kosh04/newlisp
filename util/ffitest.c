@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 /*
  testffi.c
@@ -19,7 +20,7 @@
  e.g.: (ret_uint8 -1) => 255
        (ret_int8 255) => -1
 
-/*  user API type  ffi type
+    user API type  ffi type
     -------------  --------
     "byte"         &ffi_type_uint8
     "char"         &ffi_type_sint8

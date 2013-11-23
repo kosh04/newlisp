@@ -90,7 +90,7 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2013 September 1<sup>st</sup><br/>
+</h1>Version 2013 November 7<sup>th</sup><br/>
 <a href="http://newlisp.org">newLISP</a> v.10.5.4
 </center>
 
@@ -717,7 +717,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
     (list x y))              → (1 2)
 </pre>
 
-<p><tt>local</tt> works the same way but variables are intitialized to <tt>nil</tt></p>
+<p><tt>local</tt> works the same way but variables are initialized to <tt>nil</tt></p>
 
 <pre>
 (local (a b c) 
@@ -1823,8 +1823,8 @@ called from user defined function double
 (gen) &rarr; 3
 </pre>
 
-<p>The example uses a default functor &mdash; fuctions name equals names-space name &mdash;
-to give it the appearance of a normal function. Other fuctions could be added to the
+<p>The example uses a default functor &mdash; functions name equals names-space name &mdash;
+to give it the appearance of a normal function. Other functions could be added to the
 namespace, e.g. for initializing the sum.</p>
 
 <pre>
@@ -2597,7 +2597,7 @@ process can be used as a proxy routing messages between child peers.</p>
 
 <p>Internally newLISP uses UNIX local domain sockets for dual message queues
 between parent and child processes. When the receiving side of a queue is empty 
-a <tt>receive</tt> call wil return <tt>nil</tt>. Likewise when a queue is full,
+a <tt>receive</tt> call will return <tt>nil</tt>. Likewise when a queue is full,
 a <tt>send</tt> call will return <tt>nil</tt>. The looping function <tt>until</tt> 
 can be used to make <tt>send</tt> and <tt>receive</tt> statements blocking.</p>
 
@@ -2713,7 +2713,7 @@ call will fail and return <tt>nil</tt>.</p>
 <h3>Evaluating messages</h3>
 
 <p>Messages sent can contain expressions which can be evaluated in the recipient's environment. 
-This way variables can be set in the evaluater's environment, and messages can be routed to other 
+This way variables can be set in the evaluator's environment, and messages can be routed to other 
 processes. The following example implements a message router:</p>
 
 <pre>
@@ -2757,7 +2757,7 @@ processes. The following example implements a message router:</p>
 (until (send B (string "greetings from " A)))
 </pre>
 
-<p>A proramming statement sent from child process ID A to the parent, 
+<p>A programming statement sent from child process ID A to the parent, 
 where it is evaluated, causing a message to be sent to child process B. 
 The parent process acts as a proxy agent for the child process A.</p>
 
@@ -2771,14 +2771,14 @@ evaluated and causes the parent's <tt>until</tt> loop to finish.</p>
 
 <p>The <tt>sleep</tt> statement in the A process ensures that the 
 <tt>"parent exiting ..."</tt> message does not appear
-before all receved messages are reported by process identified with B.</p>
+before all received messages are reported by process identified with B.</p>
 
 <br/><center>&sect;</center><br/>
 <a name="toc-20"></a>
 <h2>20. Databases and lookup tables</h2>
 
-<p>For smaller tables of not more than a few hundered entries association lists can be
-used. For larger databases use dictionaries and hashes as decribed in
+<p>For smaller tables of not more than a few hundred entries association lists can be
+used. For larger databases use dictionaries and hashes as described in
 <a href="#toc-11">chapter 11.</a></p>
 
 <h3>Association lists</h3>
@@ -3670,7 +3670,7 @@ and double precision floating point types and for advanced usage of <tt>pack</tt
 
 <p>Sometimes the simple version of newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on Mac OS X cannot be used.</p>
 
-<p>Since newLISP version 10.4.0, the problem can be solved easiest using the newer extended syntax of <tt>import</tt>, which automatically resolves platform and architectural differences. On very small systems or whenever the needed <tt>libffi</tt> system libray is not present on a platform, a special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
+<p>Since newLISP version 10.4.0, the problem can be solved easiest using the newer extended syntax of <tt>import</tt>, which automatically resolves platform and architectural differences. On very small systems or whenever the needed <tt>libffi</tt> system library is not present on a platform, a special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
 
 <pre>
 /* wrapper.c - demo for wrapping library function
@@ -3856,7 +3856,7 @@ return(0);
 
 <h3>Registering callbacks</h3>
 
-<p>Like many other share libraries, callbacks can be registerd in newLISP library.
+<p>Like many other share libraries, callbacks can be registered in newLISP library.
 The function <tt>newlispCallback</tt> must be imported and is used for registering
 callback functions. The example shows newLISP itself exporting newLISP library and
 registering a callback <tt>callme</tt>:</p>
@@ -3892,7 +3892,7 @@ registering a callback <tt>callme</tt>:</p>
 </pre>
 
 <p>Depending on the type of the return value, different code is used. The program
-shows the folllowing output:</p>
+shows the following output:</p>
 
 <pre>
 p1 =&gt; 123 p2 =&gt; 456 p3 =&gt; 789

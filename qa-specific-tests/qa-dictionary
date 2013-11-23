@@ -63,7 +63,11 @@
 (qa-dictionary)
 (delete-file "Lex.lsp")
 (delete-file "Lex2.lsp")
-(println)
-(exit)
+(delete 'Lex)
+(set 'data nil)
+(set 'ass nil)
+(if (main-args 2) 
+    (println (sys-info))
+    (exit))
 
 

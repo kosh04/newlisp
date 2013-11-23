@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.4 Manual and Reference</title>
+   <title>newLISP v.10.5.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -141,7 +141,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.4</h2>
+<h2>User Manual and Reference v.10.5.5</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -441,7 +441,7 @@ interactive Lisp available. More than any other Lisp, it implements the
 of data types and optional parameters. This greatly reduces the number of 
 functions and syntactic forms necessary to learn and implement.
 High-level functions are available for string and list processing, financial math, 
-statistics, and Artifial Intelligence applications.</p>
+statistics, and Artificial Intelligence applications.</p>
 
 <p>newLISP has functions to modify, insert, or delete elements inside 
 complex <em>nested</em> lists or <em>multi-dimensional</em> array structures.</p>
@@ -534,7 +534,7 @@ integers. This makes the GNU GMP module <tt>gmp.lsp</tt> obsolete.</p>
 <h2>3. Interactive Lisp mode</h2>
 <p>The best way to experience Lisp and experiment with it, is using interactive 
 mode in a terminal window or operating system command shell. Since version 10.3, 
-newLISP's read-eval-print-loop (REPL) accepts mult-line statements.</p>
+newLISP's read-eval-print-loop (REPL) accepts multi-line statements.</p>
 
 <p>To enter a multi-line statement hit the [enter] key on an empty line after
 the system prompt. To exit multi-line mode, hit the [enter] key again on an empty
@@ -555,7 +555,7 @@ line. In the following example computer output is shown in bold letters:</p>
 or command shell. The monitor window in the Java based newLISP-GS IDE will not
 accept multi-line statements.</p>
 
-<p>Intercative Lisp mode can accept operating system shell commands. To hit
+<p>Interactive Lisp mode can accept operating system shell commands. To hit
 an OS command enter the '<tt>!</tt>' character right after the prompt, immediately
 followed by the shell command:</p>
 
@@ -587,7 +587,7 @@ the editor the program could be run using a load statement:</p>
 <p>The program <tt>foo.lsp</tt> is now run. This mode using '<tt>!</tt>' can
 also be used from the newLISP-GS IDE.</p>
 
-<p>When using a Unix teminal or command shell, tab-expansion for built-in newLISP
+<p>When using a Unix terminal or command shell, tab-expansion for built-in newLISP
 functions can be used:</p>
 
 <pre>
@@ -1444,7 +1444,7 @@ mode and evaluate expressions.</p>
 
 <p>As an alternativo to entering empty lines, the <tt>[cmd]</tt> and 
 <tt>[/cmd]</tt> tags are used, each entered on separate lines. This mode is 
-used by some interactive IDEs controllling newLISP and internally by the 
+used by some interactive IDEs controlling newLISP and internally by the 
 <a href="#net-eval">net-eval</a> function. The <tt>[cmd]</tt> and <tt>[/cmd]</tt>
 tags must also be used in the console part of the newLISP-GS Java IDE.</p>
 
@@ -1524,14 +1524,25 @@ of the number.</p>
 <a name="big_int"></a>
 <h3>Big integer, multiple precision arithmetic</h3>
 
-<p>The integer arithmetic operators, <a href="#arithmetic">+ - * / ++ -- %</a> and the
-comparison  operators <a href="#logical">&lt; &gt; = &lt;= &gt;= !=</a> and the
-functions <a href="#abs">abs</a>, <a href="#evenp">even?</a>, 
-<a href="#oddp">odd?</a>, <a href="#length">length</a>,
-<a href="#numberp">number?</a> and <a href="#zerop">zero?</a>
-now accept big integers with unlimited precision. If the first argument in
-any of these operators and functions is a big integer, the calculation
-performed will be in big integer mode.</p>
+<p>The following operators, functions and predicates work on big integers:</p>
+
+<blockquote>
+Arithmetic operators: <a href="#arithmetic">+ - * / ++ -- %</a>.<br/>
+
+Comparison operators: <a href="#logical">&lt; &gt; = &lt;= &gt;= !=</a>.<br/>
+
+Functions: <a href="#abs">abs</a>, <a href="#gcd">gcd</a>, 
+<a href="#length">length</a>.<br/>
+
+Predicates: <a href="#evenp">even?</a>, <a href="#oddp">odd?</a>, 
+<a href="#numberp">number?</a>, <a href="#zerop">zero?</a>.<br/>
+</blockquote>
+
+<p>If the first argument in any of these operators and functions is a big 
+integer, the calculation performed will be in big integer mode. In the
+<a href="#function_ref">Function Reference</a> section of this manual
+these are marked with a <a href="#big_int"><font size="-1">bigint</font></a>
+suffix.</p> 
 
 <p>Literal integer values greater than 9223372036854775807
 or smaller than -9223372036854775808, or integers with an appended letter L,
@@ -1557,19 +1568,22 @@ big integer type.</p>
 
 (bigint (float (* x x))) <span class='arw'>&rarr;</span> 1524157875323883725344000000000000000000000000000L
 
-; only 2 arguments are allowed in big integer operations
-; apply with reduce parameter 2 guarantees 2 args at a time
 ; sequence itself does not take big integers, before using
 ; apply, the sequence is converted with bigint
 
-(apply * (map bigint (sequence 1 100)) 2) ; calculate 100!
+(apply * (map bigint (sequence 1 100))) ; calculate 100!
 <span class='arw'>&rarr;</span> 93326215443944152681699238856266700490715968264381
   62146859296389521759999322991560894146397615651828
   62536979208272237582511852109168640000000000000000
   00000000L
 
+; only the first operand needs to be bigint for apply
+; to work. The following gives the same result
+
+(apply * (cons 1L (sequence 2 100)))
+
 ; length on big integers returns the number of decimal digits
-(length (apply * (map bigint (sequence 1 100)) 2)) 
+(length (apply * (map bigint (sequence 1 100)))) 
 <span class='arw'>&rarr;</span> 158 ; decimal digits
 
 ; all fibonacci numbers up to 200, only the first number 
@@ -1597,8 +1611,8 @@ argument should be a big integer to avoid erratic behaviour.</p>
 (+ 123 123453456735645634565463563546)
 <span class='arw'>&rarr;</span> ERR: number overflows in function +
 
-; now the first argumment converts to big integer and the
-; whole expression is evaluates in big integer mode
+; now the first argument converts to big integer and the
+; whole expression evaluates in big integer mode
 
 (+ 123L 123453456735645634565463563546)
 <span class='arw'>&rarr;</span> 123453456735645634565463563669L
@@ -2032,6 +2046,11 @@ and modifying arrays:</p>
 </tr>
 
 <tr>
+<td><a href="#apply">apply</a></td>
+<td>applies a function to arguments in a vector</td>
+</tr>
+
+<tr>
 <td><a href="#array">array</a></td>
 <td>creates and initializes an array with up to 16 dimensions</td>
 </tr>
@@ -2044,6 +2063,11 @@ and modifying arrays:</p>
 <tr>
 <td><a href="#arrayp">array?</a></td>
 <td>checks if expression is an array</td>
+</tr>
+
+<tr>
+<td><a href="#corr">corr</a></td>
+<td>calculates the <em>product-moment correlation</em> coefficient</td>
 </tr>
 
 <tr>
@@ -2064,6 +2088,12 @@ and modifying arrays:</p>
 <tr>
 <td><a href="#last">last</a></td>
 <td>returns the last row of an array</td>
+</tr>
+
+<tr>
+<td><a href="#map">map</a></td>
+<td>applies a function to vector(s) of arguments
+and returns results in a list.</td>
 </tr>
 
 <tr>
@@ -2099,6 +2129,16 @@ and modifying arrays:</p>
 <tr>
 <td><a href="#sort">sort</a></td>
 <td>sort the elements in an array</td>
+</tr>
+
+<tr>
+<td><a href="#stats">stats</a></td>
+<td>calculates some basic statistics for a data vector</td>
+</tr>
+
+<tr>
+<td><a href="#t-test">t-test</a></td>
+<td>compares means of data samples using the <em>Student's t</em> statistic</td>
 </tr>
 
 <tr>
@@ -2329,7 +2369,7 @@ s <span class='arw'>&rarr;</span> "newLISP"
 Slices or rest parts of lists or arrays as used in implicit resting or slicing cannot
 be substituted at once using <a href="#setf">setf</a>, but would have to be substituted
 element by element. In strings only one character can be replaced at a time, but
-that character can be replaced by a multi-chracacter string.</p> 
+that character can be replaced by a multi-character string.</p> 
 
 <br/>
 
@@ -2732,7 +2772,7 @@ evaluated.</p>
 </li>
 
 <li>
-<p>A symbol is created when newLISP first <em>sees</em> it, when calling the 
+<p>A symbol is created when newLISP first <em>sees</em> it, while calling the 
 <a href="#load">load</a>, <a href="#sym">sym</a>, 
 or <a href="#eval-string">eval-string</a> functions. When newLISP reads 
 a source file, symbols are created <em>before</em> evaluation occurs.</p>
@@ -2752,8 +2792,8 @@ it will belong to that context permanently.</p>
 </li>
 
 <li>
-<p>When a user-defined function is evaluated, the context is switched to the parent
-context of the symbol it is called with.</p>
+<p>When a user-defined function is evaluated, the context is switched 
+to the name-space which owns the that symbol.</p>
 </li>
 
 <li>A context switch only influences symbol creation during 
@@ -3489,7 +3529,7 @@ difference:</p>
 (symbols Foo) <span class='arw'>&rarr;</span> (Foo:Foo Foo:_#1234 Foo:_John Doe Foo:_var)
 </pre>	
 
-<p>In the first line hash symbols are shown as strings without without the preceding
+<p>In the first line hash symbols are shown as strings without the preceding
 underscore characters. The second line shows the internal form of the symbols with
 prepended underscore characters.</p>
 
@@ -4020,10 +4060,10 @@ Examples for correct formatted JSON text can be seen at
 <a href="#assoc">assoc</a>, <a href="#lookup">lookup</a> and <a href="#ref">ref</a>
 functions.</p>
 
-<p>See the decription of <a href="#json-parse">json-parse</a> for a complete example
+<p>See the description of <a href="#json-parse">json-parse</a> for a complete example
 of parsing and processing JSON data.</p>
 
-<b>XML suport</b>
+<b>XML support</b>
 <p>newLISP's built-in support for XML-encoded data or documents
 comprises three functions:
 <a href="#xml-parse">xml-parse</a>,
@@ -6551,7 +6591,7 @@ arithmetic">
 
 <tr>
 <td><a href="#kmeans-train">kmeans-train</a></td>
-<td>partions a data set into clusters</td>
+<td>partitions a data set into clusters</td>
 </tr>
 
 <tr>
@@ -6606,7 +6646,7 @@ arithmetic">
 
 <tr>
 <td><a href="#t-test">t-test</a></td>
-<td>compares means of data samples using the Student's t statistic</td>
+<td>compares means of data samples using the <em>Student's t</em> statistic</td>
 </tr>
 
 </table><br/>
@@ -7009,7 +7049,7 @@ arithmetic">
 
 <tr>
 <td><a href="#json-error">json-error</a></td>
-<td>returns error informaton from a failed JSON translation.</td>
+<td>returns error information from a failed JSON translation.</td>
 </tr>
 
 <tr>
@@ -7620,7 +7660,8 @@ $2  <span class='arw'>&rarr;</span> "80"
 <br/><br/>
 
 <a name="arithmetic"></a>
-<h2><span class="function">+, -, *, / ,%</span></h2>
+<h2><span class="function">+, -, *, / ,%</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (+ <em>int-1</em> [<em>int-2</em> ... ])</h4>
 
 <p>Returns the sum of all numbers in <em>int-1</em> &mdash;.</p>
@@ -7694,7 +7735,8 @@ ar treated as <tt>0</tt> (zero).
 <br/><br/>
 
 <a name="inci"></a>
-<h2><span class="function">++</span>&nbsp;<a href="#destructive">!</a></h2>
+<h2><span class="function">++</span>&nbsp;<a href="#destructive">!</a>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (++ <em>place</em> [<em>num</em> ... ])</h4>
 
 <p>The <tt>++</tt> operator works like <a href="#inc">inc</a>, but performs
@@ -7733,7 +7775,8 @@ See <a href="#inc">inc</a> for incrementing numbers in floating point mode.</p>
 <br/><br/>
 
 <a name="deci"></a>
-<h2><span class="function">--</span>&nbsp;<a href="#destructive">!</a></h2>
+<h2><span class="function">--</span>&nbsp;<a href="#destructive">!</a>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (-- <em>place</em> [<em>num</em> ... ])</h4>
 
 <p>The <tt>--</tt> operator works like <a href="#inc">dec</a>, but performs
@@ -7772,7 +7815,8 @@ See <a href="#dec">dec</a> for decrementing numbers in floating point mode.</p>
 
 <br/><br/>
 <a name="logical"></a>
-<h2><span class="function">&lt;, &gt;, =, &lt;=, &gt;=, !=</span></h2>
+<h2><span class="function">&lt;, &gt;, =, &lt;=, &gt;=, !=</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (&lt; <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
 syntax: (&gt; <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
 syntax: (= <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
@@ -7789,7 +7833,7 @@ and the result is <tt>true</tt>. As soon as one comparison fails,
 </p>
 
 <p>If only one argument is supplied, all comparison operators assume <tt>0</tt> (zero)
-as a second argument. This can be used to check if a numer is negative, positive, zero 
+as a second argument. This can be used to check if a number is negative, positive, zero 
 or not zero.</p>
 
 
@@ -7970,7 +8014,7 @@ and <tt>&gt;&gt;</tt> shift by one bit.
 <h4>syntax: (: <em>sym-function</em> <em>list-object</em> [ ... ])</h4>
 
 <p>The colon is used not only as a syntactic separator between
-between namespace prefix  and the term inside but also as an operator.
+namespace prefix  and the term inside but also as an operator.
 When used as an operator, the colon <tt>:</tt> constructs a 
 context symbol from the context name in the object list and the 
 symbol following the colon. The object list in <em>list-object</em> 
@@ -8066,7 +8110,8 @@ function <a href="#spawn">spawn</a> for a full discussion of the Cilk API.</p>
 <br/><br/>
 
 <a name="abs"></a>
-<h2><span class="function">abs</span></h2>
+<h2><span class="function">abs</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (abs <em>num</em>)</h4>
 
 <p>
@@ -8308,7 +8353,7 @@ In the third form, <tt>append</tt> works on strings.  The strings in
 
 <p>
 <tt>append</tt> is also suitable for processing binary strings containing zeroes.
-The <a href="#string">string</a> function would cut of strings at zero bytes.</p>
+The <a href="#string">string</a> function would cut off strings at zero bytes.</p>
 
 <p>
 Linkage characters or strings can be specified using the 
@@ -8379,11 +8424,9 @@ to transfer files to remote newLISP server nodes.
 <h2><span class="function">apply</span></h2>
 <h4>syntax: (apply <em>func list</em> [<em>int-reduce</em>])</h4>
 
-<p>
-	Applies the contents of <em>func</em> 
-	(primitive, user-defined function, or lambda expression)  
-	to the arguments in <em>list</em>.
-</p>
+<p>Applies the contents of <em>func</em> (primitive, user-defined function, or 
+lambda expression)  to the arguments in <em>list</em>. Since version 10.5.5
+<em>list</em> can also be an array vector.</p>
 
 <!-- example -->
 
@@ -8602,17 +8645,15 @@ myarray <span class='arw'>&rarr;</span> ((1 2 3 4) (a b c d) (9 10 11 99))
 
 (nth 1 myarray)     <span class='arw'>&rarr;</span> (a b c d)  ; access a whole row
                     
-(myarray 0 -1)      <span class='arw'>&rarr;</span> 4
-                    
 ;; use implicit indexing and slicing on arrays
                     
 (myarray 1)     <span class='arw'>&rarr;</span> (a b c d)
                     
 (myarray 0 -1)  <span class='arw'>&rarr;</span> 4
 
-(2 myarray)     <span class='arw'>&rarr;</span> (c d)
+(2 myarray)     <span class='arw'>&rarr;</span> ((9 10 11 99)) 
 
-(-3 2 myarray)  <span class='arw'>&rarr;</span> (b c)
+(-3 2 myarray)  <span class='arw'>&rarr;</span> ((1 2 3 4) (a b c d)) 
 </pre>
 
 
@@ -8976,7 +9017,7 @@ into printable characters.
 </p>
 
 <p>Without the optional <em>bool-flag</em> parameter the empty string <tt>""</tt> is
-encoded into <tt>"===="</tt>. If <em>bool-flag</em>  evaluates to <tt>true</tt>, the
+encoded into <tt>"===="</tt>. If <em>bool-flag</em>  evaluates to <tt>true</tt>, 
 the empty string <tt>""</tt> is translated into <tt>""</tt>. Both translations
 result in <tt>""</tt> when using <a href="base64-dec">base64-dec</a>.</p>
 
@@ -9034,7 +9075,7 @@ to encode binary data for inclusion in text-based messages
 	against all other categories (<em>Mi</em>). 
 	All tokens in <em>list-L</em> 
 	should occur in <em>context-D</em>. 
-	When using the default <em>R.A. Fisher Chi&sup2;</em> mode, 
+	When using the default <em>R.A. Fisher inverse Chi&sup2;&nbsp;</em> mode, 
 	nonexistent tokens will skew results 
 	toward equal probability in all categories.
 </p>
@@ -9065,16 +9106,16 @@ to encode binary data for inclusion in text-based messages
 <p>
 	Depending on the flag specified in <em>bool-probs</em>, 
 	<a href="#bayes-query">bayes-query</a> employs either the 
-	R. A. Fisher Chi&sup2; method of compounding probabilities 
+	R. A. Fisher inverse Chi&sup2; method of compounding probabilities 
 	or the Chain Bayesian method. 
 	By default, when no flag or <tt>nil</tt> is specified in <em>bool-probs</em>,
-	the <em>Chi&sup2;</em> method of compounding probabilities is used. 
+	the inverse Chi&sup2; method of compounding probabilities is used. 
 	When specifying <tt>true</tt> in <em>bool-probs</em>, 
 	the Chain Bayesian method is used.
 </p>
 
 <p>
-	If the R.A. Fisher Chi&sup2; method is used, 
+	If the inverse Chi&sup2; method is used, 
 	the total number of tokens 
 	in the different training set's categories 
 	should be equal or similar. 
@@ -9110,11 +9151,11 @@ to encode binary data for inclusion in text-based messages
 
 <p>
 	Priors are handled differently, 
-	depending on whether the R.A. Fisher Chi&sup2; 
+	depending on whether the R.A. Fisher inverse Chi&sup2; 
 	or the Chain Bayesian method is used. 
 	In Chain Bayesian mode, 
 	posteriors from one token calculation get the priors in the next calculation. 
-	In the default R.A. Fisher method, 
+	In the default inverse Chi&sup2; method, 
 	priors are not passed on via chaining, 
 	but probabilities are compounded using the Chi&sup2; method.
 </p>
@@ -9130,7 +9171,7 @@ to encode binary data for inclusion in text-based messages
 </p>
 
 <p>
-	The default R.A. Fisher Chi&sup2; method 
+	The default inverse Chi&sup2; method 
 	is less sensitive about zero frequencies 
 	and still maintains a low probability for that token. 
 	This may be an important feature in natural language processing 
@@ -9154,16 +9195,12 @@ to encode binary data for inclusion in text-based messages
 <p>
 The return value of <tt>bayes-query</tt> is a list of probability values, 
 one for each category. Following are two examples: the first for the 
-default R.A. Fisher mode, the second for a data set processed with the 
+default inverse Chi&sup2; mode, the second for a data set processed with the 
 Chain Bayesian method.
 </p>
 
-<p>Previous to version 10.3.0 the list of probability values returned
-in Fisher Chi&sup2; mode was normalized by dividing each value by the sum of
-the whole list. This normalization has been dropped in version 10.3.0.</p>
-
 <br/>
-<h3>R.A. Fisher Chi&sup2; method</h3>
+<h3>R.A. Fisher inverse Chi&sup2; method</h3>
 
 <p>
 	In the following example, 
@@ -9210,11 +9247,11 @@ the whole list. This normalization has been dropped in version 10.3.0.</p>
 (load "DoyleDowson.lsp")
 (bayes-query (parse "he was putting the last touches to a picture") 
     'DoyleDowson)
-<span class='arw'>&rarr;</span> (0.03802079132 0.9619792087) 
+<span class='arw'>&rarr;</span> (0.0359554723158327 0.964044527684167) 
 
 (bayes-query (parse "immense faculties and extraordinary powers of observation") 
     'DoyleDowson)
-<span class='arw'>&rarr;</span> (0.985108793 0.01489120699) 
+<span class='arw'>&rarr;</span> (0.983569359827141 0.0164306401728594) 
 </pre>
 
 
@@ -9724,7 +9761,7 @@ indexing and program control switching on the result.</p>
 <h2><span class="function"> callback </span></h2>
 <h4>syntax: (callback <em>int-index</em> <em>sym-function</em>)<br/>
 syntax: (callback <em>sym-function</em> <em>str-return-type</em> [<em>str_param_type</em> ...])<br/>
-stntax: (callback <em>sym-function</em>)</h4>
+syntax: (callback <em>sym-function</em>)</h4>
 
 <p>In the first <b>simple <tt>callback</tt> syntax</b> up to sixteen (0 to 15) <em>callback</em> 
 functions for up to eight parameters can be registered with imported libraries. 
@@ -9782,7 +9819,7 @@ address for that symbol.</p>
 
 <p>While the first simple <tt>callback</tt> syntax only handles integers and pointer
 values, <tt>callback</tt> in the expanded syntax can also handle simple and double precision
-floationg point numbers passed in an out of the <tt>callback</tt> function.</p>
+floating point numbers passed in an out of the <tt>callback</tt> function.</p>
 
 <p>Both the simple and extended syntax can be mixed inside the same program.</p>
 
@@ -10784,7 +10821,7 @@ and  <em>list-vector-Y</em>. Both lists must be of same length.</p>
 <tr><td>b1</td><td>Regression coefficient slope</td></tr>
 <tr><td>t</td><td>t - statistic for significance testing</td></tr>
 <tr><td>df</td><td>Degrees of freedom for t</td></tr>
-<tr><td>p</td><td>Two tailed probability of t under the null hyothesis</td></tr>
+<tr><td>p</td><td>Two tailed probability of t under the null hypothesis</td></tr>
 </table>
 <br />
 <!-- example -->
@@ -10797,7 +10834,7 @@ and  <em>list-vector-Y</em>. Both lists must be of same length.</p>
 </pre>
 
 <p>The negative correlation of <tt>-0.926</tt> between study time and test errors is 
-highly signficant with a two-tailed <tt>p</tt> of about <tt>0.0001</tt> under the null hypothesis.</p>
+highly significant with a two-tailed <tt>p</tt> of about <tt>0.0001</tt> under the null hypothesis.</p>
 
 <p>The regression coefficients <tt>b0 = 29.241</tt> and <tt>b1 = -0.064</tt>
 can be used to estimate values of the Y variable (test errors) from values in X (study time)
@@ -10884,29 +10921,18 @@ if <em>num-radians</em> is too large.</p>
 <h2><span class="function">cpymem</span></h2>
 <h4>syntax: (cpymem <em>int-from-address</em> <em>int-to-address</em> <em>int-bytes</em>)</h4>
 
-<p>
-	Copies <em>int-bytes</em> of memory 
-	from <em>int-from-address</em> 
-	to <em>int-to-address</em>. 
-	This function can be used for 
-	direct memory writing/reading 
-	or for hacking newLISP internals
-	(e.g., type bits in newLISP cells, 
-	or building functions with binary executable code on the fly).
-</p>
+<p>Copies <em>int-bytes</em> of memory from <em>int-from-address</em> 
+to <em>int-to-address</em>. This function can be used for 
+direct memory writing/reading or for hacking newLISP internals
+(e.g., type bits in newLISP cells, or building functions with binary 
+executable code on the fly).</p>
 
-<p>
-	Note that this function should only be used 
-	when familiar with newLISP internals.
-	<tt>cpymem</tt> can crash the system 
-	or make it unstable if used incorrectly.
-</p>
+<p>Note that this function should only be used when familiar with newLISP internals.
+<tt>cpymem</tt> can crash the system or make it unstable if used incorrectly.</p>
 
 <!-- example -->
 
 <pre>
-(cpymem (pack "c c" 0 32) (last (dump 'sym)) 2)
-
 (set 's "0123456789")
 
 (cpymem "xxx" (+ (address s) 5) 3)
@@ -10915,19 +10941,12 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 </pre>
 
 
-<p>
-	The first example would remove 
-	the protection bit in symbol <tt>sym</tt>. 
-	The second example copies a string directly 
-	into a string variable.
-</p>
+<p>The example copies a string directly into a string variable.</p>
 
-<p>
-	The following example creates a new function from scratch, 
-	runs a piece of binary code, and adds up two numbers. 
-	This assembly language snippet shows the x86 (Intel CPU) code 
-	to add up two numbers and return the result:
-</p>
+<p>The following example creates a new function from scratch, 
+runs a piece of binary code, and adds up two numbers. 
+This assembly language snippet shows the x86 (Intel CPU) code 
+to add up two numbers and return the result:</p>
 
 
 <pre>
@@ -10943,10 +10962,8 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 </pre>
 
 
-<p>
-	The binary representation is attached 
-	to a new function created in newLISP:
-</p>
+<p>The binary representation is attached to a new function created 
+in newLISP:</p>
 
 
 <pre>
@@ -10954,7 +10971,7 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
      (pack "bbbbbbbbbb" 0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D)
      (if (= ostype "Win32") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
 (set 'foo print)
-(cpymem (pack "ld" (if (= ostype "Win32") 2312 1288)) (first (dump foo)) 4)
+(cpymem (pack "ld" (if (= ostype "Win32") 8456 4360)) (first (dump foo)) 4)
 (cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
 (set 'foo-name "foo")
 (cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)
@@ -10964,11 +10981,8 @@ s  <span class='arw'>&rarr;</span> "01234xxx89")
 
 <p>The last example will not work on all hardware platforms and OSs.</p>
 
-<p>
-	Use the <a href="#dump">dump</a> function 
-	to retrieve binary addresses 
-	and the contents from newLISP cells.
-</p>
+<p>Use the <a href="#dump">dump</a> function to retrieve binary addresses 
+and the contents from newLISP cells.</p>
 
 
 <br/><br/>
@@ -11030,7 +11044,7 @@ instead of <em>p</em>.</p>
 <h4>syntax: (crit-f <em>num-probability</em> <em>int-df1</em> <em>int-df2</em>)</h4>
 
 <p>Calculates the critical minimum <em>F&nbsp;</em> for a given confidence probability
-<em>num-probability</em> under the null hypothesis and the degrees of freedmom 
+<em>num-probability</em> under the null hypothesis and the degrees of freedom 
 given in <em>int-df1</em> and <em>int-df2</em> for testing the significance of a 
 statistical null hypothesis using the <em>F-test</em>.</p>
 
@@ -13102,10 +13116,11 @@ without evaluating it.</p>
 <br/><br/>
 
 <a name="evenp"></a>
-<h2><span class="function">even?</span></h2>
+<h2><span class="function">even?</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (even? <em>int-number</em>)</h4>
 
-<p>Checks if an integer number is <em>even divisable</em> by <tt>2</tt>, without remainder. 
+<p>Checks if an integer number is <em>even divisible</em> by <tt>2</tt>, without remainder. 
 When a floating point number is passed for <em>int-number</em>, it will be converted to an
 integer by cutting off its fractional part.</p>
 
@@ -13115,7 +13130,7 @@ integer by cutting off its fractional part.</p>
 (even? 8.7)  <span class='arw'>&rarr;</span> true
 </pre>
 
-<p>Use <a href="#oddp">odd?</a> to check if an integer is not divisable by <tt>2</tt>.</p>
+<p>Use <a href="#oddp">odd?</a> to check if an integer is not divisible by <tt>2</tt>.</p>
 
 <br/><br/>
 
@@ -13277,8 +13292,7 @@ and the expanded expression is returned. The original list remains unchanged.
 
 
 <p><tt>expand</tt> is useful when composing lambda expressions 
-or doing variable expansion inside macros.
-</p>
+and doing variable expansion as in rewrite macros.</p>
 
 
 <pre>
@@ -14560,49 +14574,33 @@ synchronize processes and collect results.</p>
 <h4>syntax: (format <em>str-format exp-data-1</em> [<em>exp-data-2</em> ... ])<br/>
 syntax: (format <em>str-format</em> <em>list-data</em>)</h4>
 
-<p>
-	Constructs a formatted string 
-	from <em>exp-data-1</em> 
-	using the format specified
-	in the evaluation of <em>str-format</em>. 
-	The format specified is identical 
-	to the format used for the <tt>printf()</tt> 
-	function in the ANSI C language. 
-	Two or more <em>exp-data</em> arguments 
-	can be specified for more than one 
-	format specifier in <em>str-format</em>.
-</p>
+<p>Constructs a formatted string from <em>exp-data-1</em> 
+using the format specified in the evaluation of <em>str-format</em>. 
+The format specified is identical to the format used for the <tt>printf()</tt> 
+function in the ANSI C language.  Two or more <em>exp-data</em> arguments 
+can be specified for more than one format specifier in <em>str-format</em>.</p>
 
-<p>
-	In an alternative syntax, 
-	the data to be formatted 
-	can be passed inside a list 
-	in <em>list-data</em>.
-</p>
+<p>In an alternative syntax, the data to be formatted 
+can be passed inside a list in <em>list-data</em>.</p>
 
-<p>
-	<tt>format</tt> checks for a valid format string, 
-	matching data type, and the correct number of arguments. 
-	Wrong formats or data types result in error messages. 
-	<a href="#int">int</a>, <a href="#float">float</a>, 
-	or <a href="#string">string</a> can be used 
-	to ensure correct data types and to avoid error messages.
-</p>
+<p><tt>format</tt> checks for a valid format string, 
+matching data type, and the correct number of arguments. 
+Wrong formats or data types result in error messages. 
+<a href="#int">int</a>, <a href="#float">float</a>, 
+or <a href="#string">string</a> can be used 
+to ensure correct data types and to avoid error messages.</p>
 
-<p>
-	The format string has the following general format:
-</p>
-
+<p>The format string has the following general format:</p>
 
 
 <b>"%w.pf"</b>
 
+<p>The <tt>%</tt> (percent sign) starts a format specification. 
+To display a <tt>%</tt> inside a format string, double it: <tt>%%</tt></p>
 
-<p>
-	The <tt>%</tt> (percent sign) 
-	starts a format specification. 
-	To display a <tt>%</tt> inside a 
-	format string, double it: <tt>%%</tt></p>
+<p>On Linux the percent sign can be followed by a single quote <tt>%'</tt>
+to insert thousand's separators in number formats.</p>
+
 
 <p>The <tt>w</tt> represents the width field. Data is right-aligned, except when 
 preceded by a minus sign, in which case it is left-aligned. If preceded by a 
@@ -14629,7 +14627,7 @@ it cannot be omitted.</p>
 <tr><td>u</td><td>unsigned decimal (32-bit)</td></tr>
 <tr><td>x</td><td>hexadecimal lowercase</td></tr>
 <tr><td>X</td><td>hexadecimal uppercase</td></tr>
-<tr><td>o</td><td>octal (32-bits) (not supported on all compilers)</td></tr>
+<tr><td>o</td><td>octal (32-bits) (not supported on all of newLISP flavors)</td></tr>
 <tr><td>f</td><td>floating point</td></tr>
 <tr><td>e</td><td>scientific floating point</td></tr>
 <tr><td>E</td><td>scientific floating point</td></tr>
@@ -14641,8 +14639,7 @@ format the lower 32 bits of the number.
 </p>
 
 <p>For 64-bit numbers use the following format strings on Unix-like 
-operating systems:</p>
-
+operating systems and on MS Windows:</p>
 
 <table summary="format characters">
 <tr align="left"><th>format</th><th>description</th></tr>
@@ -14664,8 +14661,8 @@ strings on Tru64 Unix:
 <tr><td>lX</td><td>hexadecimal uppercase(64-bit)</td></tr>
 </table><br/>
 
-<p>On Win32 platforms the following characters apply for 64 bit numbers:
-</p>
+<p>On Windows platforms only the following characters apply 
+for 64 bit numbers:</p>
 
 <table summary="format characters">
 <tr align="left"><th>format</th><th>description</th></tr>
@@ -14702,6 +14699,14 @@ of <tt>d</tt>.
 (format "%10g" 1.234)  <span class='arw'>&rarr;</span> "     1.234"
 
 (format "Result = %05d" 2)  <span class='arw'>&rarr;</span> "Result = 00002"
+
+(format "%14.2f" 12345678.12)   <span class='arw'>&rarr;</span> "   12345678.12"
+; on Linux only
+ (format "%'14.2f" 12345678.12) <span class='arw'>&rarr;</span> " 12,345,678.12"
+
+(format "%8d" 12345)   <span class='arw'>&rarr;</span> "   12345"
+; on Linux only
+(format "%'8d" 12345)  <span class='arw'>&rarr;</span> "  12,345"
 
 (format "%-15s" "hello")        <span class='arw'>&rarr;</span> "hello          "
 (format "%15s %d" "hello" 123)  <span class='arw'>&rarr;</span> "          hello 123"
@@ -14848,20 +14853,21 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 <br/><br/>
 
 <a name="gcd"></a>
-<h2><span class="function">gcd</span></h2>
+<h2><span class="function">gcd</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (gcd <em>int-1</em> [<em>int-2</em> ... ])</h4>
 
 <p>
-	Calculates the greatest common divisor 
-	of a group of integers.
-	The greatest common divisor of two integers 
-	that are not both zero 
-	is the largest integer that divides both numbers.
-	<tt>gcd</tt> will calculate the greatest common divisor 
-	for the first two integers in <em>int-i</em> 
-	and then further reduce the argument list 
-	by calculating the greatest common divisor of the result 
-	and the next argument in the parameter list.
+Calculates the greatest common divisor 
+of a group of integers.
+The greatest common divisor of two integers 
+that are not both zero 
+is the largest integer that divides both numbers.
+<tt>gcd</tt> will calculate the greatest common divisor 
+for the first two integers in <em>int-i</em> 
+and then further reduce the argument list 
+by calculating the greatest common divisor of the result 
+and the next argument in the parameter list.
 </p>
 
 <!-- example -->
@@ -14876,9 +14882,9 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 
 
 <p>
-	See 
-	<a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia</a>
-	for details and theory about gcd numbers in mathematics.
+See 
+<a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia</a>
+for details and theory about gcd numbers in mathematics.
 </p>
 
 <br/><br/>
@@ -14888,29 +14894,29 @@ of $0.55 after 240 monthly payments at a yearly interest rate of 7 percent.
 <h4>syntax: (get-char <em>int-address</em>)</h4>
 
 <p>
-	Gets an 8-bit character from an address 
-	specified in <em>int-address</em>. 
-	This function is useful when using 
-	imported shared library functions 
-	with <a href="#import">import</a>.
+Gets an 8-bit character from an address 
+specified in <em>int-address</em>. 
+This function is useful when using 
+imported shared library functions 
+with <a href="#import">import</a>.
 </p>
 
 <!-- example -->
 
 <pre>
 char * foo(void)
-        {
-        char * result;
-        result = "ABCDEFG";
-        return(result);
-        }
+{
+char * result;
+result = "ABCDEFG";
+return(result);
+}
 </pre>
 
 
 <p>
-	Consider the above C function 
-	from a shared library, which returns a 
-	character pointer (address to a string).
+Consider the above C function 
+from a shared library, which returns a 
+character pointer (address to a string).
 </p>
 
 
@@ -14923,18 +14929,18 @@ char * foo(void)
 
 
 <p>
-	Note that it is unsafe to use the <tt>get-char</tt> function 
-	with an incorrect address in <em>int-address</em>. Doing so 
-	could result in the system crashing or becoming unstable.
+Note that it is unsafe to use the <tt>get-char</tt> function 
+with an incorrect address in <em>int-address</em>. Doing so 
+could result in the system crashing or becoming unstable.
 </p>
 
 <p>
-	See also the <a href="#address">address</a>, 
-	<a href="#get-int">get-int</a>, 
-    <a href="#get-long">get-long</a>, 
-	<a href="#get-float">get-float</a>, 
-	<a href="#get-string">get-string</a>, 
-	<a href="#pack">pack</a>, and <a href="#unpack">unpack</a> functions.
+See also the <a href="#address">address</a>, 
+<a href="#get-int">get-int</a>, 
+<a href="#get-long">get-long</a>, 
+<a href="#get-float">get-float</a>, 
+<a href="#get-string">get-string</a>, 
+<a href="#pack">pack</a>, and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -14944,30 +14950,30 @@ char * foo(void)
 <h4>syntax: (get-float <em>int-address</em>)</h4>
 
 <p>
-	Gets a 64-bit double float from an address 
-	specified in <em>int-address</em>.
-	This function is helpful when using 
-	imported shared library functions (with <tt>import</tt>)
-	that return an address pointer to a double float 
-	or a pointer to a structure containing double floats.
+Gets a 64-bit double float from an address 
+specified in <em>int-address</em>.
+This function is helpful when using 
+imported shared library functions (with <tt>import</tt>)
+that return an address pointer to a double float 
+or a pointer to a structure containing double floats.
 </p>
 
 <!-- example -->
 
 <pre>
 double float * foo(void)
-        {
-        double float * result;
-        &hellip;
-        *result = 123.456;
-        return(result);
-        }
+{
+double float * result;
+&hellip;
+*result = 123.456;
+return(result);
+}
 </pre>
 
 
 <p>
-	The previous C function is compiled 
-	into a shared library.
+The previous C function is compiled 
+into a shared library.
 </p>
 
 
@@ -14978,21 +14984,21 @@ double float * foo(void)
 
 
 <p>
-	<tt>foo</tt> is imported and returns a pointer 
-	to a double float when called.
-	Note that <tt>get-float</tt> is unsafe when used 
-	with an incorrect address in <em>int-address</em> 
-	and may result in the system crashing or becoming unstable.
+<tt>foo</tt> is imported and returns a pointer 
+to a double float when called.
+Note that <tt>get-float</tt> is unsafe when used 
+with an incorrect address in <em>int-address</em> 
+and may result in the system crashing or becoming unstable.
 </p>
 
 <p>
-	See also the <a href="#address">address</a>, 
-	<a href="#get-int">get-int</a>, 
-    <a href="#get-long">get-long</a>,
-	<a href="#get-char">get-char</a>, 
-	<a href="#get-string">get-string</a>,
-	<a href="#pack">pack</a>, 
-	and <a href="#unpack">unpack</a> functions.
+See also the <a href="#address">address</a>, 
+<a href="#get-int">get-int</a>, 
+<a href="#get-long">get-long</a>,
+<a href="#get-char">get-char</a>, 
+<a href="#get-string">get-string</a>,
+<a href="#pack">pack</a>, 
+and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -15002,38 +15008,38 @@ double float * foo(void)
 <h4>syntax: (get-int <em>int-address</em>)</h4>
 
 <p>
-	Gets a 32-bit integer from 
-	the address specified in <em>int-address</em>.
-	This function is handy when using 
-	imported shared library functions with <tt>import</tt>,
-	a function returning an address pointer 
-	to an integer, or a pointer to a structure containing integers.
+Gets a 32-bit integer from 
+the address specified in <em>int-address</em>.
+This function is handy when using 
+imported shared library functions with <tt>import</tt>,
+a function returning an address pointer 
+to an integer, or a pointer to a structure containing integers.
 </p>
 
 <!-- example -->
 
 <pre>
 int * foo(void)
-        {
-        int * result;
-        &hellip;
-        *result = 123;
-        return(result);
-        }
+{
+int * result;
+&hellip;
+*result = 123;
+return(result);
+}
 
 int foo-b(void)
-        {
-        int result;
-        &hellip;
-        result = 456;
-        return(result);
-        }
+{
+int result;
+&hellip;
+result = 456;
+return(result);
+}
 </pre>
 
 
 <p>
-	Consider the C function <tt>foo</tt> (from a shared library), 
-	which returns an integer pointer (address of an integer).
+Consider the C function <tt>foo</tt> (from a shared library), 
+which returns an integer pointer (address of an integer).
 </p>
 
 
@@ -15045,19 +15051,19 @@ int foo-b(void)
 
 
 <p>
-	Note that using <tt>get-int</tt> with an incorrect address 
-	in <em>int-address</em> is unsafe and could result 
-	in the system crashing or becoming unstable.
+Note that using <tt>get-int</tt> with an incorrect address 
+in <em>int-address</em> is unsafe and could result 
+in the system crashing or becoming unstable.
 </p>
 
 <p>
-	See also the <a href="#address">address</a>, 
-	<a href="#get-char">get-char</a>, 
-	<a href="#get-float">get-float</a>, 
-    <a href="#get-long">get-long</a>,
-	<a href="#get-string">get-string</a>,
-	<a href="#pack">pack</a>, 
-	and <a href="#unpack">unpack</a> functions.
+See also the <a href="#address">address</a>, 
+<a href="#get-char">get-char</a>, 
+<a href="#get-float">get-float</a>, 
+<a href="#get-long">get-long</a>,
+<a href="#get-string">get-string</a>,
+<a href="#pack">pack</a>, 
+and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -15067,38 +15073,38 @@ int foo-b(void)
 <h4>syntax: (get-long <em>int-address</em>)</h4>
 
 <p>
-	Gets a 64-bit integer from 
-	the address specified in <em>int-address</em>.
-	This function is handy when using <tt>import</tt>
-	to import shared library functions, 
-	a function returning an address pointer to a long integer, 
-	or a pointer to a structure containing long integers.
+Gets a 64-bit integer from 
+the address specified in <em>int-address</em>.
+This function is handy when using <tt>import</tt>
+to import shared library functions, 
+a function returning an address pointer to a long integer, 
+or a pointer to a structure containing long integers.
 </p>
 
 <!-- example -->
 
 <pre>
 long long int * foo(void)
-        {
-        int * result;
-        &hellip;
-        *result = 123;
-        return(result);
-        }
+{
+int * result;
+&hellip;
+*result = 123;
+return(result);
+}
 
 long long int foo-b(void)
-        {
-        int result;
-        &hellip;
-        result = 456;
-        return(result);
-        }
+{
+int result;
+&hellip;
+result = 456;
+return(result);
+}
 </pre>
 
 
 <p>
-	Consider the C function <tt>foo</tt> (from a shared library), 
-	which returns an integer pointer (address of an integer).
+Consider the C function <tt>foo</tt> (from a shared library), 
+which returns an integer pointer (address of an integer).
 </p>
 
 
@@ -15110,19 +15116,19 @@ long long int foo-b(void)
 
 
 <p>
-	Note that using <tt>get-long</tt> with an incorrect address 
-	in <em>int-address</em> is unsafe and could result 
-	in the system crashing or becoming unstable.
+Note that using <tt>get-long</tt> with an incorrect address 
+in <em>int-address</em> is unsafe and could result 
+in the system crashing or becoming unstable.
 </p>
 
 <p>
-	See also the <a href="#address">address</a>, 
-	<a href="#get-char">get-char</a>, 
-	<a href="#get-float">get-float</a>, 
-    <a href="#get-int">get-int</a>,
-	<a href="#get-string">get-string</a>,
-	<a href="#pack">pack</a>, 
-	and <a href="#unpack">unpack</a> functions.
+See also the <a href="#address">address</a>, 
+<a href="#get-char">get-char</a>, 
+<a href="#get-float">get-float</a>, 
+<a href="#get-int">get-int</a>,
+<a href="#get-string">get-string</a>,
+<a href="#pack">pack</a>, 
+and <a href="#unpack">unpack</a> functions.
 </p>
 
 <br/><br/>
@@ -15132,28 +15138,28 @@ long long int foo-b(void)
 <h4>syntax: (get-string <em>int-address</em>)</h4>
 
 <p>
-	Gets a character string from the address 
-	specified in <em>int-address</em>.
-	This function is helpful when 
-	using imported shared library functions 
-	with <a href="#import">import</a>.
+Gets a character string from the address 
+specified in <em>int-address</em>.
+This function is helpful when 
+using imported shared library functions 
+with <a href="#import">import</a>.
 </p>
 
 <!-- example -->
 
 <pre>
 char * foo(void)
-        {
-        char * result;
-        result = "ABCDEFG";
-        return(result);
-        }
+{
+char * result;
+result = "ABCDEFG";
+return(result);
+}
 </pre>
 
 
 <p>
-	Consider the above C function from a shared library, 
-	which returns a character pointer (address to a string).
+Consider the above C function from a shared library, 
+which returns a character pointer (address to a string).
 </p>
 
 
@@ -15164,11 +15170,11 @@ char * foo(void)
 
 
 <p>
-	When a string is passed as an argument, 
-	<tt>get-string</tt> will take its address as the argument. 
-	Because <tt>get-string</tt> always breaks off 
-	at the first first <tt>\000</tt> (null character) it encounters, 
-	it can be used to retrieve a string from a buffer:
+When a string is passed as an argument, 
+<tt>get-string</tt> will take its address as the argument. 
+Because <tt>get-string</tt> always breaks off 
+at the first first <tt>\000</tt> (null character) it encounters, 
+it can be used to retrieve a string from a buffer:
 </p>
 
 <!-- example -->
@@ -15190,16 +15196,16 @@ char * foo(void)
 </pre>
 
 <p>
-	See also the <a href="#get-char">get-char</a>, 
-	<a href="#get-int">get-int</a>,
-	<a href="#get-float">get-float</a>,
-	<a href="#pack">pack</a>,
-	and <a href="#unpack">unpack</a> functions.
+See also the <a href="#get-char">get-char</a>, 
+<a href="#get-int">get-int</a>,
+<a href="#get-float">get-float</a>,
+<a href="#pack">pack</a>,
+and <a href="#unpack">unpack</a> functions.
 </p>
 
 <p>
-	Note that <tt>get-string</tt> can crash the system 
-	or make it unstable if the wrong address is specified.
+Note that <tt>get-string</tt> can crash the system 
+or make it unstable if the wrong address is specified.
 </p>
 
 <br/><br/>
@@ -15229,7 +15235,7 @@ of the error.</p>
 in the received header and automatically does a second request.
 <tt>get-url</tt> also understands the <tt>Transfer-Encoding: chunked</tt> 
 format and will unpack data into an unchunked format.</p>
-	
+
 <p><tt>get-url</tt> requests are also understood by newLISP server nodes.
 </p>
 
@@ -15250,41 +15256,41 @@ format and will unpack data into an unchunked format.</p>
 
 
 <p>
-	The index page from the site specified 
-	in <em>str-url</em> is returned as a string.
-	In the third line, 
-	only the HTTP header 
-	is returned in a string. 
-	Lines 2 and 4 show a 
-	timeout value being used.
+The index page from the site specified 
+in <em>str-url</em> is returned as a string.
+In the third line, 
+only the HTTP header 
+is returned in a string. 
+Lines 2 and 4 show a 
+timeout value being used.
 </p>
 
 <p> The second example shows usage of a <tt>file://</tt> URL
 to access <tt>/home/db/data.txt</tt> on the local file system.</p>
 
 <p>
-	The third example illustrates 
-	the use of a proxy server. 
-	The proxy server's URL must be 
-	in the operating system's environment. 
-	As shown in the example, 
-	this can be added using 
-	the <a href="#env">env</a> 
-	function.
+The third example illustrates 
+the use of a proxy server. 
+The proxy server's URL must be 
+in the operating system's environment. 
+As shown in the example, 
+this can be added using 
+the <a href="#env">env</a> 
+function.
 </p>
 
 <p>
-	The <em>int-timeout</em> can be followed 
-	by an optional custom header in <em>str-header</em>:
+The <em>int-timeout</em> can be followed 
+by an optional custom header in <em>str-header</em>:
 </p>
 
 <h3>Custom header</h3>
- 
-	<p>The custom header may contain options 
-	for browser cookies or other directives to the server. 
-	When no <em>str-header</em> is specified, 
-	newLISP sends certain header information by default. 
-	After the following request:
+
+<p>The custom header may contain options 
+for browser cookies or other directives to the server. 
+When no <em>str-header</em> is specified, 
+newLISP sends certain header information by default. 
+After the following request:
 </p>
 
 
@@ -15294,8 +15300,8 @@ to access <tt>/home/db/data.txt</tt> on the local file system.</p>
 
 
 <p>
-	newLISP will configure and send 
-	the request and header below:
+newLISP will configure and send 
+the request and header below:
 </p>
 
 
@@ -15305,23 +15311,23 @@ Host: somehost.com
 User-Agent: newLISP v8800
 Connection: close
 </pre>
- 
+
 
 <p>
-	As an alternative, the <em>str-header</em> 
-	option could be used:
+As an alternative, the <em>str-header</em> 
+option could be used:
 </p>
 
 
 <pre>
 (get-url "http://somehost.com" 5000 
-    "User-Agent: Mozilla/4.0\r\nCookie: name=fred\r\n")
+"User-Agent: Mozilla/4.0\r\nCookie: name=fred\r\n")
 </pre>
 
 
 <p>
-	newLISP will now send the 
-	following request and header:
+newLISP will now send the 
+following request and header:
 </p>
 
 
@@ -15335,25 +15341,25 @@ Connection: close
 
 
 <p>
-	Note that when using a custom header, 
-	newLISP will only supply the <tt>GET</tt> request line, 
-	as well as the <tt>Host:</tt> and <tt>Connection:</tt> header entries. 
-	newLISP inserts all other entries supplied in the custom header 
-	between the <tt>Host:</tt> and <tt>Connection:</tt> entries. 
-	Each entry must end with a carriage return 
-	line-feed pair: <tt>\r\n</tt>.
+Note that when using a custom header, 
+newLISP will only supply the <tt>GET</tt> request line, 
+as well as the <tt>Host:</tt> and <tt>Connection:</tt> header entries. 
+newLISP inserts all other entries supplied in the custom header 
+between the <tt>Host:</tt> and <tt>Connection:</tt> entries. 
+Each entry must end with a carriage return 
+line-feed pair: <tt>\r\n</tt>.
 
 </p>
 
 <p>
-	See an HTTP transactions reference 
-	for valid header entries.
+See an HTTP transactions reference 
+for valid header entries.
 </p>
 
 <p>
-	Custom headers can also be used 
-	in the <a href="#put-url">put-url</a> 
-	and <a href="#post-url">post-url</a> functions.
+Custom headers can also be used 
+in the <a href="#put-url">put-url</a> 
+and <a href="#post-url">post-url</a> functions.
 </p>
 
 <br/><br/>
@@ -15364,11 +15370,11 @@ Connection: close
 <h4>syntax: (global <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <p>
-	One or more symbols in <em>sym-1</em> [<em>sym-2</em> ... ] 
-	can be made globally accessible from contexts other than MAIN. 
-	The statement has to be executed in the MAIN context, 
-	and only symbols belonging to MAIN can be made global. 
-	<tt>global</tt> returns the last symbol made global.
+One or more symbols in <em>sym-1</em> [<em>sym-2</em> ... ] 
+can be made globally accessible from contexts other than MAIN. 
+The statement has to be executed in the MAIN context, 
+and only symbols belonging to MAIN can be made global. 
+<tt>global</tt> returns the last symbol made global.
 </p>
 
 <!-- example -->
@@ -15377,16 +15383,16 @@ Connection: close
 (global 'aVar 'x 'y 'z)  <span class='arw'>&rarr;</span> z
 
 (define (foo x) 
-  (&hellip;))
+(&hellip;))
 
 (constant (global 'foo))
 </pre>
 
 
 <p>
-	The second example shows how <a href="#constant">constant</a> 
-	and <tt>global</tt> can be combined into one statement, 
-	protecting and making a previous function definition global.
+The second example shows how <a href="#constant">constant</a> 
+and <tt>global</tt> can be combined into one statement, 
+protecting and making a previous function definition global.
 </p>
 
 <br/><br/>
@@ -15397,7 +15403,7 @@ Connection: close
 <h4>syntax: (global? <em>sym</em>)</h4>
 
 <p>Checks if symbol in <em>sym</em> is global. Built-in functions, context
- symbols, and all symbols made global using the function <a href="#global">global</a>
+symbols, and all symbols made global using the function <a href="#global">global</a>
 are global:</p>
 
 <!-- example -->
@@ -15421,11 +15427,11 @@ global? 'print)   <span class='arw'>&rarr;</span> true
 
 syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</em> [ ... ])</h4>
 <p>
-	If the value of <em>exp-condition</em> is neither <tt>nil</tt> nor an empty list, 
-	the result of evaluating <em>exp-1</em> is returned; 
-	otherwise, the value of <em>exp-2</em> is returned. 
-	If <em>exp-2</em> is absent, the value of 
-	<em>exp-condition</em> is returned.
+If the value of <em>exp-condition</em> is neither <tt>nil</tt> nor an empty list, 
+the result of evaluating <em>exp-1</em> is returned; 
+otherwise, the value of <em>exp-2</em> is returned. 
+If <em>exp-2</em> is absent, the value of 
+<em>exp-condition</em> is returned.
 </p>
 
 <!-- example -->
@@ -15440,34 +15446,34 @@ syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</e
 ; more than one statement in the true or false
 ; part must be blocked with (begin ...)
 (if (= x y)
-    (begin
-        (some-func x)
-        (some-func y))
-    (begin
-        (do-this x y)
-        (do-that x y))
+(begin
+(some-func x)
+(some-func y))
+(begin
+(do-this x y)
+(do-that x y))
 )
 </pre>
 
 
 <p>
-	The second form of <tt>if</tt> works similarly 
-	to <a href="#cond">cond</a>, except it does not take 
-	parentheses around the condition-body pair of expressions. 
-	In this form, <tt>if</tt> can have 
-	an unlimited number of arguments.
+The second form of <tt>if</tt> works similarly 
+to <a href="#cond">cond</a>, except it does not take 
+parentheses around the condition-body pair of expressions. 
+In this form, <tt>if</tt> can have 
+an unlimited number of arguments.
 </p>
 
 <!-- example -->
 
 <pre>
 (define (classify x)
-    (if
-        (&lt; x 0) "negative"
-        (&lt; x 10) "small"
-        (&lt; x 20) "medium"
-        (&gt;= x 30) "big"
-        "n/a"))
+(if
+(&lt; x 0) "negative"
+(&lt; x 10) "small"
+(&lt; x 20) "medium"
+(&gt;= x 30) "big"
+"n/a"))
 
 (classify 15)   <span class='arw'>&rarr;</span> "medium"
 (classify 100)  <span class='arw'>&rarr;</span> "big"
@@ -15477,21 +15483,21 @@ syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</e
 
 
 <p>
-	The last expression, <tt>"n/a"</tt>, is optional. 
-	When this option is omitted, 
-	the evaluation of <tt>(&gt;= x 30)</tt> 
-	is returned, behaving exactly like a traditional 
-	<a href="#cond">cond</a> but without requiring 
-	parentheses around the condition-expression pairs.
+The last expression, <tt>"n/a"</tt>, is optional. 
+When this option is omitted, 
+the evaluation of <tt>(&gt;= x 30)</tt> 
+is returned, behaving exactly like a traditional 
+<a href="#cond">cond</a> but without requiring 
+parentheses around the condition-expression pairs.
 </p>
 
 <p>
-	In any case, the whole <tt>if</tt> expression 
-	always returns the last expression or condition evaluated.
+In any case, the whole <tt>if</tt> expression 
+always returns the last expression or condition evaluated.
 </p>
 
 <p>
-	See also the <a href="#when">when</a> and <a href="#unless">unless</a> functions.
+See also the <a href="#when">when</a> and <a href="#unless">unless</a> functions.
 </p>
 
 <br/><br/>
@@ -15527,19 +15533,19 @@ not permit multiple consequent and alternative clauses.</p>
 <h4>syntax: (ifft <em>list-num</em>)</h4>
 
 <p>
-	Calculates the inverse discrete Fourier transform 
-	on a list of complex numbers in <em>list-num</em> 
-	using the FFT method (Fast Fourier Transform). 
-	Each complex number is specified by its real part, 
-	followed by its imaginary part. 
-	In case only real numbers are used, 
-	the imaginary part is set to <tt>0.0</tt> (zero). 
-	When the number of elements in <em>list-num</em> 
-	is not an integer power of 2, 
-	<tt>ifft</tt> increases the number of elements 
-	by padding the list with zeroes. 
-	When complex numbers are <tt>0</tt> in the imaginary part, 
-	simple numbers can be used.
+Calculates the inverse discrete Fourier transform 
+on a list of complex numbers in <em>list-num</em> 
+using the FFT method (Fast Fourier Transform). 
+Each complex number is specified by its real part, 
+followed by its imaginary part. 
+In case only real numbers are used, 
+the imaginary part is set to <tt>0.0</tt> (zero). 
+When the number of elements in <em>list-num</em> 
+is not an integer power of 2, 
+<tt>ifft</tt> increases the number of elements 
+by padding the list with zeroes. 
+When complex numbers are <tt>0</tt> in the imaginary part, 
+simple numbers can be used.
 </p>
 
 <!-- example -->
@@ -15556,8 +15562,8 @@ not permit multiple consequent and alternative clauses.</p>
 
 
 <p>
-	The inverse operation of <tt>ifft</tt> 
-	is the <a href="#fft">fft</a> function.
+The inverse operation of <tt>ifft</tt> 
+is the <a href="#fft">fft</a> function.
 </p>
 
 <br/><br/>
@@ -15572,7 +15578,7 @@ syntax: (import <em>str-lib-name</em>)</h4>
 from a shared library named in <em>str-lib-name</em>. Depending on the syntax used, string 
 labels for return and parameter types can be specified</p>
 
-<p>If the libary in <em>str-lib-name</em> is not in the system's library path, the
+<p>If the library in <em>str-lib-name</em> is not in the system's library path, the
 full path name should be specified.</p>
 
 <p>A function can be imported only once. A repeated import of the same function
@@ -15586,11 +15592,12 @@ imported symbols are protected against change and can only be modified using
 without importing functions. This is necessary when other library imports need access 
 internally to other functions from pre-loaded libraries.</p>
 
-<p>Incorrecttly using <tt>import</tt> can cause a system bus error or a segfault can occur 
+<p>Incorrectly using <tt>import</tt> can cause a system bus error or a segfault can occur 
 and crash newLISP or leave it in an unstable state.</p>
 
 <h3>The simple <tt>import</tt> syntax</h3>
-<p>Most library functions can be imported using the simpler first syntax. The API expects
+<p>Most library functions can be imported using the simpler first syntax. 
+This form is present on <u>all</u> compile flavors of newLISP. The API expects
 all function arguments to be passed on the stack in either <em>cdecl</em> or <em>stdcall</em> 
 conventions. On 32-bit platforms, integers, pointers to strings and buffers sometimes floating 
 point values can be passed as parameters. On 64-bit platforms only 
@@ -15632,8 +15639,8 @@ environment use the <a href="#extended_import">extended <tt>import</tt> syntax</
 ;; define LIBC platform independent
 
 (define LIBC (lookup ostype '(
-    ("Win32" "msvcrt.dll")
-    ("OSX" "libc.dylib")
+("Win32" "msvcrt.dll")
+("OSX" "libc.dylib")
 
 (printf "%g %s %d %c\n" 1.23 "hello" 999 65)
 <b>1.23 hello 999 A</b>
@@ -15733,7 +15740,7 @@ floating point arguments take up two spaces each
 
 <p>The extended import API works with the second syntax. It is based on the popular 
 <tt>libffi</tt> library which is pre-installed on most OS platforms. The startup banner
-of newLISP should show the word <tt>libffi</tt> indicating the the running version
+of newLISP should show the word <tt>libffi</tt> indicating the running version
 of newLISP is compiled to use the extended <tt>import</tt> API. The function
 <a href="#sys-info">sys-info</a> can also be used to check for <tt>libffi</tt>-support.</p>
 
@@ -15789,7 +15796,7 @@ handle return values of floating point values and strings:</p>
 
 <p>The <tt>char*</tt> type takes a string buffer only. The <tt>"void*</tt> type can take either
 a string buffer or a memory address number as input. When using <tt>"void*"</tt>
-as a return type the address number of the result bufffer will be returned. This is
+as a return type the address number of the result buffer will be returned. This is
 useful when returning pointers to data structures. These pointers can then
 be used with <a href="#unpack">unpack</a> and <a href="#struct">struct</a> for destructuring. 
 In the following example the return type is changed to <tt>void*</tt>:</p>
@@ -15909,13 +15916,13 @@ for which <em>exp-predicate</em> is true.</p>
 
 
 <p>
-	The predicate may be a built-in predicate, 
-	a user-defined function, or a lambda expression.
+The predicate may be a built-in predicate, 
+a user-defined function, or a lambda expression.
 </p>
 
 <p>
-	Use the <a href="#filter">filter</a> function 
-	to return the elements themselves.
+Use the <a href="#filter">filter</a> function 
+to return the elements themselves.
 </p>
 
 <br/><br/>
@@ -16017,9 +16024,9 @@ to convert arguments to floating point numbers.</p>
 <h4>syntax: (integer? <em>exp</em>)</h4>
 
 <p>
-	Returns <tt>true</tt> only if the value 
-	of <em>exp</em> is an integer; 
-	otherwise, it returns <tt>nil</tt>.
+Returns <tt>true</tt> only if the value 
+of <em>exp</em> is an integer; 
+otherwise, it returns <tt>nil</tt>.
 </p>
 
 <!-- example -->
@@ -16038,10 +16045,10 @@ to convert arguments to floating point numbers.</p>
 syntax: (intersect <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 
 <p>
-	In the first syntax, 
-	<tt>intersect</tt> returns a list 
-	containing one copy of each element 
-	found both in <em>list-A</em> and <em>list-B</em>.
+In the first syntax, 
+<tt>intersect</tt> returns a list 
+containing one copy of each element 
+found both in <em>list-A</em> and <em>list-B</em>.
 </p>
 
 <!-- example -->
@@ -16053,12 +16060,12 @@ syntax: (intersect <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 
 
 <p>
-	In the second syntax, 
-	<tt>intersect</tt> returns a list of all elements 
-	in <em>list-A</em> that are also in <em>list-B</em>, 
-	without eliminating duplicates in <em>list-A</em>. 
-	<em>bool</em> is an expression evaluating to <tt>true</tt> 
-	or any other value not <tt>nil</tt>.
+In the second syntax, 
+<tt>intersect</tt> returns a list of all elements 
+in <em>list-A</em> that are also in <em>list-B</em>, 
+without eliminating duplicates in <em>list-A</em>. 
+<em>bool</em> is an expression evaluating to <tt>true</tt> 
+or any other value not <tt>nil</tt>.
 </p>
 
 <!-- example -->
@@ -16070,9 +16077,9 @@ syntax: (intersect <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 
 
 <p>
-	See also the set functions 
-	<a href="#difference">difference</a>, <a href="#unique">unique</a>
-    and <a href="#union">union</a>.
+See also the set functions 
+<a href="#difference">difference</a>, <a href="#unique">unique</a>
+and <a href="#union">union</a>.
 </p>
 
 <br/><br/>
@@ -16098,7 +16105,7 @@ times the number of elements in the first row.  For missing elements
 in non-rectangular matrices, <tt>0.0</tt> (zero) is assumed.  
 A matrix can either be a nested list or an <a href="#array">array</a>.
 </p> 
-	
+
 <!-- example -->
 
 <pre>
@@ -16120,14 +16127,14 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 
 
 <p>
-	All operations shown here on lists 
-	can be performed on arrays, as well.
+All operations shown here on lists 
+can be performed on arrays, as well.
 </p>
 
 <p>
-	See also the matrix functions <a href="#det">det</a>,
-	<a href="#mat">mat</a>, <a href="#multiply">multiply</a>
-    and <a href="#transpose">transpose</a>.
+See also the matrix functions <a href="#det">det</a>,
+<a href="#mat">mat</a>, <a href="#multiply">multiply</a>
+and <a href="#transpose">transpose</a>.
 </p>
 
 <br/><br/>
@@ -16137,28 +16144,28 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 <h4>syntax: (irr <em>list-amounts</em> [<em>list-times</em> [<em>num-guess</em>]])</h4>
 
 <p>
-	Calculates the internal rate of return 
-	of a cash flow per time period. 
-	The internal rate of return is the interest rate 
-	that makes the present value of a cash flow equal to <tt>0.0</tt> (zero). 
-	In-flowing (negative values) and out-flowing (positive values) 
-	amounts are specified in  <em>list-amounts</em>. 
-	If no time periods are specified in <em>list-times</em>, 
-	amounts in <em>list-amounts</em> correspond to 
-	consecutive time periods increasing by 1 (1, 2, 3&mdash;). 
-	The algorithm used is iterative, 
-	with an initial guess of 0.5 (50 percent). 
-	Optionally, a different 
-	initial guess can be specified. 
-	The algorithm returns when a precision 
-	of 0.000001 (0.0001 percent) is reached. 
-	<tt>nil</tt> is returned if the algorithm 
-	cannot converge after 50 iterations.
+Calculates the internal rate of return 
+of a cash flow per time period. 
+The internal rate of return is the interest rate 
+that makes the present value of a cash flow equal to <tt>0.0</tt> (zero). 
+In-flowing (negative values) and out-flowing (positive values) 
+amounts are specified in  <em>list-amounts</em>. 
+If no time periods are specified in <em>list-times</em>, 
+amounts in <em>list-amounts</em> correspond to 
+consecutive time periods increasing by 1 (1, 2, 3&mdash;). 
+The algorithm used is iterative, 
+with an initial guess of 0.5 (50 percent). 
+Optionally, a different 
+initial guess can be specified. 
+The algorithm returns when a precision 
+of 0.000001 (0.0001 percent) is reached. 
+<tt>nil</tt> is returned if the algorithm 
+cannot converge after 50 iterations.
 </p>
 
 <p>
-	<em>irr</em> is often used to decide 
-	between different types of investments.
+<em>irr</em> is often used to decide 
+between different types of investments.
 </p>
 
 <!-- example -->
@@ -16179,35 +16186,35 @@ and cannot be inverted, and <em>float-pivot</em> is not specified. </p>
 
 
 <p>
-	If an initial investment of 1,000 
-	yields 500 after the first year, 
-	400 after two years, and so on, 
-	finally reaching <tt>0.0</tt> (zero) after five years, 
-	then that corresponds to a yearly return 
-	of about 20.2 percent. 
-	The next line demonstrates the relation 
-	between <tt>irr</tt> and <a href="#npv">npv</a>. 
-	Only 9.9 percent returns are necessary when making 
-	the first withdrawal after three years.
+If an initial investment of 1,000 
+yields 500 after the first year, 
+400 after two years, and so on, 
+finally reaching <tt>0.0</tt> (zero) after five years, 
+then that corresponds to a yearly return 
+of about 20.2 percent. 
+The next line demonstrates the relation 
+between <tt>irr</tt> and <a href="#npv">npv</a>. 
+Only 9.9 percent returns are necessary when making 
+the first withdrawal after three years.
 </p>
 
 <p>
-	In the last example, securities 
-	were initially purchased for 5,000, 
-	then for another 2,000 three months later. 
-	After a year, securities for 5,000 are sold. 
-	Selling the remaining securities 
-	after 18 months renders 6,000. 
-	The internal rate of return is 3.2 percent per month, 
-	or about 57 percent in 18 months.
+In the last example, securities 
+were initially purchased for 5,000, 
+then for another 2,000 three months later. 
+After a year, securities for 5,000 are sold. 
+Selling the remaining securities 
+after 18 months renders 6,000. 
+The internal rate of return is 3.2 percent per month, 
+or about 57 percent in 18 months.
 </p>
 
 <p>
-	See also the <a href="#fv">fv</a>, 
-	<a href="#nper">nper</a>, 
-	<a href="#npv">npv</a>, 
-	<a href="#pmt">pmt</a>, 
-	and <a href="#pv">pv</a> functions.
+See also the <a href="#fv">fv</a>, 
+<a href="#nper">nper</a>, 
+<a href="#npv">npv</a>, 
+<a href="#pmt">pmt</a>, 
+and <a href="#pv">pv</a> functions.
 </p> 
 
 <br/><br/>
@@ -16247,28 +16254,28 @@ from JSON object data can be processed using <a href="#assoc">assoc</a>,
 
 <pre>
 {
-    "name": "John Smith",
-    "age": 32,
-    "employed": true,
-    "address": {
-        "street": "701 First Ave.",
-        "city": "Sunnyvale, CA 95125",
-        "country": "United States"
-    },
-    "children": [
-        {
-            "name": "Richard",
-            "age": 7
-        },
-        {
-            "name": "Susan",
-            "age": 4
-        },
-        {
-            "name": "James",
-            "age": 3
-        }
-    ]
+"name": "John Smith",
+"age": 32,
+"employed": true,
+"address": {
+"street": "701 First Ave.",
+"city": "Sunnyvale, CA 95125",
+"country": "United States"
+},
+"children": [
+{
+    "name": "Richard",
+    "age": 7
+},
+{
+    "name": "Susan",
+    "age": 4
+},
+{
+    "name": "James",
+    "age": 3
+}
+]
 }
 </pre>
 <p>The file is read, parsed and the resulting S-expression stored in <tt>jsp</tt>:</p>
@@ -16277,15 +16284,15 @@ from JSON object data can be processed using <a href="#assoc">assoc</a>,
 (set 'jsp (json-parse (read-file "person.json")))
 <span class='arw'>&rarr;</span>
 ( ("name" "John Smith") 
-  ("age" 32) 
-  ("employed" true) 
-  ("address" ( ("street" "701 First Ave.") 
-               ("city" "Sunnyvale, CA 95125") 
-               ("country" "United States")) ) 
-  ("children" (
-      (("name" "Richard") ("age" 7)) 
-      (("name" "Susan") ("age" 4)) 
-      (("name" "James") ("age" 3))) )
+("age" 32) 
+("employed" true) 
+("address" ( ("street" "701 First Ave.") 
+       ("city" "Sunnyvale, CA 95125") 
+       ("country" "United States")) ) 
+("children" (
+(("name" "Richard") ("age" 7)) 
+(("name" "Susan") ("age" 4)) 
+(("name" "James") ("age" 3))) )
 )
 </pre>
 
@@ -16321,7 +16328,7 @@ or <a href="#ref">ref</a>:</p>
 </pre>
 
 <p>Although most of the time JSON object types are parsed, all JSON data
-types can be parsed directly, without ocurring as part of a JSON object.
+types can be parsed directly, without occurring as part of a JSON object.
 The following examples show parsing of a JSON array:</p>
 
 <pre>
@@ -16339,6 +16346,10 @@ gets translated into UTF-8:</p>
 ; the inner {,} are JSON object delimiters
 
 (json-parse { {"greek letters" : "\u03b1\u03b2\u03b3\u03b4"} }) <span class='arw'>&rarr;</span> (("greek letters" "αβγδ"))
+
+; strings longer than 2047 bytes should be delimted with [text], [/text] tags
+
+(json-parse [text]{"greek letters" : "\u03b1\u03b2\u03b3\u03b4"}[/text]) <span class='arw'>&rarr;</span> (("greek letters" "αβγδ"))
 </pre>
 
 <p>The hex-code representation of Unicoder characters in JSON is the same as can be used in
@@ -16352,19 +16363,19 @@ of the string when read by newLISP and are suitable to delimit large data sizes 
 2047 bytes.</p>
 
 <br/><br/>
- 
+
 <a name="join"></a>
 <h2><span class="function">join</span></h2>
 <h4>syntax: (join <em>list-of-strings</em> [<em>str-joint</em> [<em>bool-trail-joint</em>]])</h4>
 
 <p>
-	Concatenates the given   
-	list of strings 
-	in <em>list-of-strings</em>. 
-	If <em>str-joint</em> is present, 
-	it is inserted between each string in the join.
-	If <em>bool-trail-joint</em> is <tt>true</tt>
-	then a joint string is also appended to the last string.
+Concatenates the given   
+list of strings 
+in <em>list-of-strings</em>. 
+If <em>str-joint</em> is present, 
+it is inserted between each string in the join.
+If <em>bool-trail-joint</em> is <tt>true</tt>
+then a joint string is also appended to the last string.
 </p>
 
 <!-- example -->
@@ -16384,10 +16395,10 @@ of the string when read by newLISP and are suitable to delimit large data sizes 
 
 
 <p>
-	See also the <a href="#append">append</a>, 
-	<a href="#string">string</a>, 
-	and <a href="#explode">explode</a> functions, 
-	which are the inverse of the <tt>join</tt> operation.
+See also the <a href="#append">append</a>, 
+<a href="#string">string</a>, 
+and <a href="#explode">explode</a> functions, 
+which are the inverse of the <tt>join</tt> operation.
 </p>
 
 <br/><br/>
@@ -16395,11 +16406,11 @@ of the string when read by newLISP and are suitable to delimit large data sizes 
 <a name="kmeans-query"></a>
 <h2><span class="function">kmeans-query</span></h2>
 <h4>syntax: (kmeans-query <em>list-data</em> <em>matrix-centroids</em>)<br/>
-syntax: (kmeans-query <em>list-data</em> <em>matix-data)</em></h4>
+syntax: (kmeans-query <em>list-data</em> <em>matrix-data)</em></h4>
 
 <p>In the first usage, <tt>kmeans-query</tt> calculates the Euclidian distances
 from the data vector given in <em>list-data</em> to the centroids given in
-<em>matix-centroids</em>. The data vector in <em>list-data</em> has <i>m</i> 
+<em>matrix-centroids</em>. The data vector in <em>list-data</em> has <i>m</i> 
 elements. The 2-dimensional list in <em>matrix-centroids</em>, result from a previous
 <a href="#kmeans-train">kmeans-train</a> clustering, has <i>k</i> rows and <i>m</i> 
 columns for <i>k</i> centroids measuring <i>m</i> features.</p>
@@ -16407,12 +16418,12 @@ columns for <i>k</i> centroids measuring <i>m</i> features.</p>
 <pre>
 ; centroids from previous kmeans-train
 K:centroids <span class='arw'>&rarr;</span>
-    ( (6.39 7.188333333 5.935) 
-      (7.925714286 3.845714286 9.198571429) 
-      (2.207142857 2.881428571 0.8885714286) )
+( (6.39 7.188333333 5.935) 
+(7.925714286 3.845714286 9.198571429) 
+(2.207142857 2.881428571 0.8885714286) )
 
 (kmeans-query '(1 2 3) K:centroids) <span class='arw'>&rarr;</span>
-    (8.036487279 9.475994267 2.58693657) ; distances to cluster 1, 2 and 3
+(8.036487279 9.475994267 2.58693657) ; distances to cluster 1, 2 and 3
 </pre>
 
 <p>The data record <tt>(1 2 3)</tt> shows the smallest distance to the 3rd
@@ -16423,7 +16434,7 @@ of other data points which are not centroids. The following example
 calculates distances of the <tt>(1 2 3)</tt> data vector to all original points
 from the original <a href="#kmeans-train">kmeans-train</a> data analysis.</p>
 
-<p>The data in <em>matix-data</em> can be either a nested list or a 2-dimensional
+<p>The data in <em>matrix-data</em> can be either a nested list or a 2-dimensional
 array.</p>
 
 <p>This vector could be sorted for a subsequent kNN (k Nearest Neighbor)
@@ -16431,24 +16442,24 @@ analysis:</p>
 
 <pre>
 (kmeans-query '(1 2 3) data) <span class='arw'>&rarr;</span>
-    (10.91671196 3.190626898 9.19723328 3.014415366 9.079763213 
-     6.83130295 8.533111976 9.624816881 6.444261013 2.013107051 
-     3.186549858 9.475199206 9.32936761 2.874786949 7.084638311 
-     10.96221237 10.50080473 3.162419959 2.423674896 9.526436899)
+(10.91671196 3.190626898 9.19723328 3.014415366 9.079763213 
+6.83130295 8.533111976 9.624816881 6.444261013 2.013107051 
+3.186549858 9.475199206 9.32936761 2.874786949 7.084638311 
+10.96221237 10.50080473 3.162419959 2.423674896 9.526436899)
 
 ; show distances to members in each cluster
 
 ; for cluster labeled 1
 (select (kmeans-query '(1 2 3) data) (K:clusters 0)) <span class='arw'>&rarr;</span> 
-    (9.079763213 6.83130295 9.624816881 6.444261013 7.084638311 10.50080473)
+(9.079763213 6.83130295 9.624816881 6.444261013 7.084638311 10.50080473)
 
 ; for cluster labeled 2
 (select (kmeans-query '(1 2 3) data) (K:clusters 1)) <span class='arw'>&rarr;</span>
-    (10.91671196 9.19723328 8.533111976 9.475199206 9.32936761 10.96221237 9.526436899)
+(10.91671196 9.19723328 8.533111976 9.475199206 9.32936761 10.96221237 9.526436899)
 
 ; for cluster labeled 3
 (select (kmeans-query '(1 2 3) data) (K:clusters 2)) <span class='arw'>&rarr;</span>
-    (3.190626898 3.014415366 2.013107051 3.186549858 2.874786949 3.162419959 2.423674896)
+(3.190626898 3.014415366 2.013107051 3.186549858 2.874786949 3.162419959 2.423674896)
 </pre>
 
 <p>We see that the smallest distances are shown for the data points in
@@ -16457,7 +16468,7 @@ the 3rd cluster at offset 2.</p>
 <p>If the numbers of elements - features - in records of <em>list-data</em> 
 is different from the number of columns in the data or centroid matrix, 
 then the smaller is taken for calculating the Euclidian distances. This 
-is useful when ther last column of the data matrix does not contain feature 
+is useful when the last column of the data matrix does not contain feature 
 data, but labels identifying the cluster membership of a data point.</p>
 
 <br/><br/>
@@ -16466,7 +16477,7 @@ data, but labels identifying the cluster membership of a data point.</p>
 <h2><span class="function">kmeans-train</span></h2>
 <h4>syntax: (kmeans-train <em>matrix-data</em> <em>int-k</em> <em>context</em> [<em>matrix-centroids</em>])</h4>
 
-<p>The function performs Kmeans clusteranalysis on <em>matrix-data</em>. 
+<p>The function performs Kmeans cluster analysis on <em>matrix-data</em>. 
 All <i>n</i> data records in <em>matrix-data</em> are partitioned into a number 
 of <em>int-k</em> different groups. </p>
 
@@ -16492,30 +16503,30 @@ change of SSQ from one to the next iteration is less than 1e-10.</p>
 <p>The following example analyses 20 data records measuring <i>m = 3</i> features 
 and tries to partition data into <i>k = 3</i> clusters. Other numbers than <i>k = 3</i> 
 could be tried. The target is a result with few clusters of high density measured by the
-everage inner cluster distances.</p>
+average inner cluster distances.</p>
 
 <pre>
 (set 'data '(
-  (6.57 4.96 11.91) 
-  (2.29 4.18 1.06) 
-  (8.63 2.51 8.11) 
-  (1.85 1.89 0.11) 
-  (7.56 7.93 5.06) 
-  (3.61 7.95 5.11) 
-  (7.18 3.46 8.7) 
-  (8.17 6.59 7.49) 
-  (5.44 5.9 5.57) 
-  (2.43 2.14 1.59) 
-  (2.48 2.26 0.19) 
-  (8.16 3.83 8.93) 
-  (8.49 5.31 7.47) 
-  (3.12 3.1 1.4) 
-  (6.77 6.04 3.76) 
-  (7.01 4.2 11.9) 
-  (6.79 8.72 8.62) 
-  (1.17 4.46 1.02) 
-  (2.11 2.14 0.85) 
-  (9.44 2.65 7.37)))
+(6.57 4.96 11.91) 
+(2.29 4.18 1.06) 
+(8.63 2.51 8.11) 
+(1.85 1.89 0.11) 
+(7.56 7.93 5.06) 
+(3.61 7.95 5.11) 
+(7.18 3.46 8.7) 
+(8.17 6.59 7.49) 
+(5.44 5.9 5.57) 
+(2.43 2.14 1.59) 
+(2.48 2.26 0.19) 
+(8.16 3.83 8.93) 
+(8.49 5.31 7.47) 
+(3.12 3.1 1.4) 
+(6.77 6.04 3.76) 
+(7.01 4.2 11.9) 
+(6.79 8.72 8.62) 
+(1.17 4.46 1.02) 
+(2.11 2.14 0.85) 
+(9.44 2.65 7.37)))
 
 (kmeans-train data 3 'MAIN:K) <span class='arw'>&rarr;</span> 
 (439.7949357 90.7474276 85.06633163 82.74597619)
@@ -16525,9 +16536,9 @@ K:labels <span class='arw'>&rarr;</span> (2 3 2 3 1 1 2 1 1 3 3 2 2 3 1 2 1 3 3 
 
 ; the centroid for each cluster
 K:centroids <span class='arw'>&rarr;</span>
-    ( (6.39 7.188333333 5.935) 
-      (7.925714286 3.845714286 9.198571429) 
-      (2.207142857 2.881428571 0.8885714286) )
+( (6.39 7.188333333 5.935) 
+(7.925714286 3.845714286 9.198571429) 
+(2.207142857 2.881428571 0.8885714286) )
 </pre>
 
 <p>The returned list of SSQs shows how in each iteration the sum of inner squared
@@ -16541,7 +16552,7 @@ of new data records using <a href="#kmeans-query">kmeans-query</a>.</p>
 show how dense a cluster is packed. Formally, deviations are calculated similarly
 to Euclidian distances and to standard deviations in conventional statistics. 
 Squaring the deviations and multiplying each with their cluster size 
-(number of members in the cluster) shows the the inner SSQ of each cluster:</p>
+(number of members in the cluster) shows the inner SSQ of each cluster:</p>
 
 <pre>
 ; average inner deviations of cluster members to the centroid
@@ -16559,42 +16570,42 @@ K:deviations  <span class='arw'>&rarr;</span> (2.457052209 2.260089397 1.2402369
 <p><tt>K:clusters</tt> gives indices of data records into the original data
 for each cluster. With these, individual clusters can be extracted from the
 data for further analysis:</p>
- 
+
 <pre>
 ; ceach of the result clusters with indices into the data set
 K:clusters <span class='arw'>&rarr;</span> 
-    ( (4 5 7 8 14 16) 
-      (0 2 6 11 12 15 19) 
-      (1 3 9 10 13 17 18) )
+( (4 5 7 8 14 16) 
+(0 2 6 11 12 15 19) 
+(1 3 9 10 13 17 18) )
 
 ; cluster of data records labeled 1 at offset 0
 (select data (K:clusters 0)) <span class='arw'>&rarr;</span>
-    ( (7.56 7.93 5.06) 
-      (3.61 7.95 5.11) 
-      (8.17 6.59 7.49) 
-      (5.44 5.9 5.57) 
-      (6.77 6.04 3.76) 
-      (6.79 8.72 8.62) )
+( (7.56 7.93 5.06) 
+(3.61 7.95 5.11) 
+(8.17 6.59 7.49) 
+(5.44 5.9 5.57) 
+(6.77 6.04 3.76) 
+(6.79 8.72 8.62) )
 
 ; cluster of data records labeled 2 at offset 1
 (select data (K:clusters 1)) <span class='arw'>&rarr;</span>
-    ( (6.57 4.96 11.91) 
-      (8.63 2.51 8.11) 
-      (7.18 3.46 8.7) 
-      (8.16 3.83 8.93) 
-      (8.49 5.31 7.47) 
-      (7.01 4.2 11.9) 
-      (9.44 2.65 7.37) )
+( (6.57 4.96 11.91) 
+(8.63 2.51 8.11) 
+(7.18 3.46 8.7) 
+(8.16 3.83 8.93) 
+(8.49 5.31 7.47) 
+(7.01 4.2 11.9) 
+(9.44 2.65 7.37) )
 
 ; cluster of data records labeled 3 at offset 2
 (select data (K:clusters 2)) <span class='arw'>&rarr;</span>
-    ( (2.29 4.18 1.06) 
-      (1.85 1.89 0.11) 
-      (2.43 2.14 1.59) 
-      (2.48 2.26 0.19) 
-      (3.12 3.1 1.4) 
-      (1.17 4.46 1.02) 
-      (2.11 2.14 0.85) )
+( (2.29 4.18 1.06) 
+(1.85 1.89 0.11) 
+(2.43 2.14 1.59) 
+(2.48 2.26 0.19) 
+(3.12 3.1 1.4) 
+(1.17 4.46 1.02) 
+(2.11 2.14 0.85) )
 </pre>
 
 
@@ -16606,15 +16617,15 @@ to the data:</p>
 (set 'labeled-data (transpose (push K:labels (transpose data) -1)))
 
 labeled-data: <span class='arw'>&rarr;</span>
-    ( (6.57 4.96 11.91 2) 
-      (2.29 4.18 1.06 3) 
-      (8.63 2.51 8.11 2) 
-      (1.85 1.89 0.11 3) 
-      (7.56 7.93 5.06 1) 
-      (3.61 7.95 5.11 1) 
-      ... ...
-      (2.11 2.14 0.85 3) 
-      (9.44 2.65 7.37 2) )
+( (6.57 4.96 11.91 2) 
+(2.29 4.18 1.06 3) 
+(8.63 2.51 8.11 2) 
+(1.85 1.89 0.11 3) 
+(7.56 7.93 5.06 1) 
+(3.61 7.95 5.11 1) 
+... ...
+(2.11 2.14 0.85 3) 
+(9.44 2.65 7.37 2) )
 </pre>
 
 <p>The result context should be prefixed with <tt>MAIN</tt> when code is
@@ -16748,7 +16759,7 @@ text is returned.</p>
 given for the error text.</p>
 
 <p>Errors can be trapped by <a href="#error-event">error-event</a> 
-and userdefined error handlers.</p>
+and user defined error handlers.</p>
 
 <p>See also <a href="#net-error">net-error</a> for errors generated by
 networking conditions and <a href="#sys-error">sys-error</a> for errors
@@ -16789,7 +16800,8 @@ variable.
 <br/><br/>
 
 <a name="length"></a>
-<h2><span class="function">length</span></h2>
+<h2><span class="function">length</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (length <em>exp</em>)</h4>
 
 <p>Returns the number of elements in a list, the number of rows in
@@ -16799,7 +16811,7 @@ an array, or the number of bytes in a string.
 <p><tt>length</tt> applied to a symbol returns the length of the symbol name.
 Applied to a number, <tt>length</tt> returns the number of bytes needed in 
 memory to store that number: 4 or 8 for integers and 8 for floating point numbers.
-</p>
+On big integers the number of digits is returned.</p>
 
 <!-- example -->
 
@@ -16820,6 +16832,9 @@ memory to store that number: 4 or 8 for integers and 8 for floating point number
 (length 1.23)      <span class='arw'>&rarr;</span> 8
 
 (length (get-int "\000\000\000\001")) <span class='arw'>&rarr;</span> 4
+
+(length 1234567890123456789012345L) <span class='arw'>&rarr;</span> 25 
+(length (bigint 67890))             <span class='arw'>&rarr;</span> 5 
 </pre>
 
 <p>Use <a href="#utf8len">utf8len</a> to calculate the number of UTF-8 characters 
@@ -16969,13 +16984,13 @@ the new local binding of <tt>x</tt>.
 
 <pre>
 (letn  (x 1 y x) 
-(+ x y))             <span class='arw'>&rarr;</span>  2
+    (+ x y))     <span class='arw'>&rarr;</span>  2
 
 ;; same as nested let's
 
 (let (x 1)
-(let (y x)
-(+ x y)))       <span class='arw'>&rarr;</span>  2
+    (let (y x)
+      (+ x y)))  <span class='arw'>&rarr;</span>  2
 </pre>
 
 
@@ -17385,12 +17400,10 @@ in the current directory with an access mode of
 <h2><span class="function">map</span></h2>
 <h4>syntax: (map <em>exp-functor</em> <em>list-args-1</em> [<em>list-args-2</em> ... ])</h4>
 
-<p>
-Successively applies the primitive function, 
-defined function, or lambda expression 
-<em>exp-functor</em> to the arguments specified in 
-<em>list-args-1, list-args-2&mdash;</em>, 
-returning all results in a list. </p>
+<p>Successively applies the primitive function, defined function, or lambda expression 
+<em>exp-functor</em> to the arguments specified in <em>list-args-1 list-args-2&mdash;</em>, 
+returning all results in a list. Since version 10.5.5 <em>list-args</em>
+can also be array vectors, but the returned result will always be a list.</p>
 
 <!-- example -->
 
@@ -17977,10 +17990,10 @@ otherwise, returns <tt>nil</tt>.</p>
 <p>If successful, the <tt>net-connect</tt> function returns a socket
 number which can be used to send and receive information from the host.
 In the example a HTTP GET request is sent and subsequently a web page
-received. Note that newLISP has already a buit-in function 
+received. Note that newLISP has already a built-in function 
 <a href="#get-url">get-url</a> offering the same functionality.</p>
 
-<p>Optionally a timeout value <em>int-timeout</em> in milli seconds
+<p>Optionally a timeout value <em>int-timeout</em> in milliseconds
 can be specified. Without a timeout value the function will wait up
 to 10 seconds for an open port. With a timeout value the function can
 be made to return on an unavailable port much earlier or later. The
@@ -17999,14 +18012,14 @@ following example shows a port scanner looking for open ports:</p>
 
 <p>The programs takes the host string from the shell command line as
 either a domain name or an IP number in dot notation then tries to 
-open each port from 1 to 1024. For each openport the port number and 
+open each port from 1 to 1024. For each open port the port number and 
 the service description string is printed. If no description is available,
 an empty string "" is output. For closed ports the function outputs 
 numbers in the shell window staying on the same line.</p>
 
-<p>On Unix <tt>net-connnect</tt> may return with <tt>nil</tt> before
+<p>On Unix <tt>net-connect</tt> may return with <tt>nil</tt> before
 the timeout expires, when the port is not available. On Win32 
-<tt>net-connect</tt> will always wait for the timout to expire before
+<tt>net-connect</tt> will always wait for the timeout to expire before
 failing with <tt>nil</tt>.</p>
 
 <h3>UDP communications</h3>
@@ -18391,7 +18404,7 @@ takes the host name as the file path to the local-domain Unix socket.</p>
 <p>Note that definitions of <tt>foo</tt> and <tt>myfunc</tt> must both
 exist in the target environment. This can be done using a <tt>net-eval</tt>
 sending <tt>define</tt> statements before. It also can be done by
-preloading code when starting remode nodes.</p>
+preloading code when starting remote nodes.</p>
 
 <p>When nodes are inetd or xinetd-controlled, several nodes may have the 
 same IP address and port number. In this case, the Unix 
@@ -18756,7 +18769,7 @@ and <a href="#net-receive-from">net-receive-from</a>.
 <p>If <em>str-mode</em> is specified as <tt>"divert"</tt>, a divert socket 
 can be created for a divert port in <em>int-port</em> on BSD like platforms.
 The content of IP address in <em>str-ip-addr</em> is ignored 
-and can be specifed as an empty string. Only the <em>int-port</em> is
+and can be specified as an empty string. Only the <em>int-port</em> is
 relevant and will be bound to the raw socket returned.</p>
 
 <p>To use the divert option in <tt>net-listen</tt>, newLISP must run in
@@ -18865,13 +18878,13 @@ a TCP, UDP or ICMP header and optional data. newLISP must be run with
 super user privileges, and this function is only available on Mac OS X,
 Linux and other Unix operating systems and only for IPv4.
 Currently <tt>net-packet</tt> is IPv4 only and has been tested on
-MAC OS X, Linux and OpenBSD.</p> 
+Mac OS X, Linux and OpenBSD.</p> 
 
 <p>On success the function returns the number of bytes sent. On failure
 the function returns <tt>nil</tt> and both, <a href="#net-error">net-error</a>
 and <a href="#sys-error">sys-error</a>, should be inspected.</p>
 
-<p>When custom configured packets contains zeros in the checksum fields,
+<p>When custom configured packets contain zeros in the checksum fields,
 <tt>net-packet</tt> will calculate and insert the correct checksums. 
 Already existing checksums stay untouched.</p>
 
@@ -19434,7 +19447,7 @@ and continue accepting and servicing connections:
 (set 'listen-list '(1001 1002))
 
 ; accept-connection, read-connection and write-connection
-; are userdefined functions
+; are user defined functions
 
 (while (not (net-error))
     (dolist (conn (net-select listen-list "r" 1000))
@@ -19916,7 +19929,7 @@ depends on the operating system and platform.  On some platforms,
 the last three digits of the <tt>microseconds</tt> field are always 
 <tt>0</tt> (zero).</p>
 
-<p>The "day of the week" field starts with 1 on Monday comforming to the 
+<p>The "day of the week" field starts with 1 on Monday conforming to the 
 ISO 8601 international standard for date and time representation.</p>
 
 <p>On some platforms, the daylight savings time flag is not active and 
@@ -20197,7 +20210,8 @@ and <a href="#zerop">zero?</a>.
 <br/><br/>
 
 <a name="numberp"></a>
-<h2><span class="function">number?</span></h2>
+<h2><span class="function">number?</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (number? <em>exp</em>)</h4>
 
 <p>
@@ -20224,10 +20238,11 @@ See the functions <a href="#floatp">float?</a> and <a href="#integerp">integer?<
 <br/><br/>
 
 <a name="oddp"></a>
-<h2><span class="function">odd?</span></h2>
+<h2><span class="function">odd?</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (odd? <em>int-number</em>)</h4>
 
-<p>Checks the parity of an integer number. If the number is not <em>even divisable</em> by <tt>2</tt>, 
+<p>Checks the parity of an integer number. If the number is not <em>even divisible</em> by <tt>2</tt>, 
 it has <em>odd</em> parity.  When a floating point number is passed for <em>int-number</em>, 
 it will be converted first to an integer by cutting off its fractional part.</p>
 
@@ -20237,7 +20252,7 @@ it will be converted first to an integer by cutting off its fractional part.</p>
 (odd? 8.7)  <span class='arw'>&rarr;</span> nil
 </pre>
 
-<p>Use <a href="#evenp">even?</a> to check if an integer is even, divisable by <tt>2</tt>.</p>
+<p>Use <a href="#evenp">even?</a> to check if an integer is even, divisible by <tt>2</tt>.</p>
 
 <br/><br/>
 
@@ -22538,7 +22553,7 @@ with pending messages for the parent process:</p>
 <p>The list of child process IDs returned by <tt>(receive)</tt> only
 contains PIDs of processes which have unread messages in their 
 send queues. The <tt>(receive pid msg)</tt> statement now can
-be issued non-blocking, because it always is guarenteed to find
+be issued non-blocking, because it always is guaranteed to find
 a pending message in a child's message queue.</p>
 
 <p>The <tt>receive</tt> function is not available on Win32.</p>
@@ -23277,9 +23292,10 @@ syntax: (reset true)</h4>
 In the first syntax, <tt>reset</tt> returns to the top level of evaluation,
 switches the <a href="#trace">trace</a> mode off, and switches to the MAIN 
 context/namespace. <tt>reset</tt> restores the top-level variable environment 
-using the saved variable environments on the stack. It also fires an error 
-"user reset - no error". This behavior can be used when writing error handlers.
-</p>
+using the saved variable environments on the stack. It also throws an error 
+"user reset - no error" which can be reported with user defined error handlers.
+Since version 10.5.5 <tt>reset</tt> also interrupts command line parameter
+processing.</p>
 
 <p><tt>reset</tt> may return memory that was claimed by newLISP
 to the operating system. <tt>reset</tt> walks through the entire cell space, 
@@ -24136,7 +24152,7 @@ pid:53181->6   pid:53180->56  pid:53179->96  pid:53178->78  pid:53177->18
 
 <p>The <tt>(sync)</tt> expression returns a list of all child PIDs,
 and <tt>(until (receive cpid msg))</tt> is used to force a wait
-until status messages are recived for each of the child processes.</p>
+until status messages are received for each of the child processes.</p>
 
 <p>A timeout mechanism could be part of an <tt>until</tt> or <tt>while</tt>
 loop to stop waiting after certain time has expired.</p>
@@ -24839,10 +24855,10 @@ or sets to a function expression in <em>func-event-handler</em>.</p>
 
 <p>A parameter following <em>int-signal</em> is not evaluated.</p>
 
-<p>If no signal handler is speified any of the string constants <tt>"ignore"</tt>,
+<p>If no signal handler is specified any of the string constants <tt>"ignore"</tt>,
 <tt>"default"</tt> or <tt>"reset"</tt> can be specified in either lower or upper case
-or simply using the the first letter of the option string. When signal setup with any
-of these three options has been successfull <tt>true</tt> is returned.</p>
+or simply using the first letter of the option string. When signal setup with any
+of these three options has been successful, <tt>true</tt> is returned.</p>
 
 <p>Using <tt>"ignore"</tt> will make newLISP ignore the signal. Using <tt>"default"</tt>
 will set the handler to the default handler of the underlying platform OS. The <tt>"reset"</tt>
@@ -24876,7 +24892,7 @@ This behavior may also be different on different platforms.</p>
 
 ctrl-C has been pressed
 
-; reset tratment of signal 2 to startup conditions
+; reset treatment of signal 2 to startup conditions
 
 (signal SIGINT "reset")
 </pre>
@@ -25484,7 +25500,7 @@ is returned depending on outcome.</p>
 <h2><span class="function">stats</span></h2>
 <h4>syntax: (stats <em>list-vector</em>)</h4>
 
-<p>The functions calculates statistical values of central tendency and dsitribution moments
+<p>The functions calculates statistical values of central tendency and distribution moments
 of values in <em>list-vector</em>. The following values are returned by <tt>stats</tt>
 in a list:</p>
 
@@ -25498,7 +25514,7 @@ in a list:</p>
 <tr><td>skew</td><td>Skew of distribution</td></tr>
 <tr><td>kurt</td><td>Kurtosis of distribution</td></tr>
 </table>
-<br />
+<br/>
 
 <!-- example -->
 
@@ -25671,7 +25687,7 @@ struct tm {
 
 (set 'ptr (localtime (address today))) <span class='arw'>&rarr;</span> 2896219696
 
-; unpack the the tm struct  (7:15:13 on the 17th etc.)
+; unpack the tm struct  (7:15:13 on the 17th etc.)
 (unpack tm ptr) <span class='arw'>&rarr;</span> (13 15 7 17 11 111 6 350 0 -28800 "PST")
 
 ; transform to readable form
@@ -25688,7 +25704,7 @@ struct tm {
 or when passing address pointers to <a href="#unpack">unpack</a>. Invalid address pointers
 can crash newLISP or make it unstable.</p>
 
-<p><tt>struct</tt> defininitions can be nested:</p>
+<p><tt>struct</tt> definitions can be nested:</p>
 
 <pre>
 ; the pair aggregate type
@@ -26158,7 +26174,7 @@ can be changed using the <tt>-s</tt> command-line switch. </p>
 syntax: (t-test <em>list-vector-A</em> <em>list-vector-B</em> [<tt>true</tt>])<br/>
 syntax: (t-test <em>list-vector-A</em> <em>list-vector-B</em> <em>float-probability</em>)</h4>
 
-<p>In the <b>first syntax</b> the function uses a one sample <em>Students's t</em> 
+<p>In the <b>first syntax</b> the function uses a one sample <em>Student's t</em> 
 test to compare the mean value of <em>list-vector</em> to the value in 
 <em>number-value</em>:</p>
 
@@ -26179,14 +26195,14 @@ test to compare the mean value of <em>list-vector</em> to the value in
 <tr><td>mean-error</td><td>standard error of mean</td></tr>
 <tr><td>t</td><td>t between mean and value</td></tr>
 <tr><td>df</td><td>degrees of freedom</td></tr>
-<tr><td>p</td><td>two tailed probablity of t under the null hypothesis</td></tr>
+<tr><td>p</td><td>two tailed probability of t under the null hypothesis</td></tr>
 </table>
 
 <p>In above example the difference of the mean value <tt>4.125</tt> from <tt>2.5</tt> is
-moderatly significant. With a probability <tt>p = 0.021 (2.1%)</tt> the null hypothesis
+moderately significant. With a probability <tt>p = 0.021 (2.1%)</tt> the null hypothesis
 that the mean is not significantly different, can be rejected.</p>
 
-<p>In the <b>second syntax</b>, the functions performs a t-test using the 
+<p>In the <b>second syntax</b>, the function performs a t-test using the 
 <em>Student's t</em> statistic for comparing the means values in <em>list-vector-A</em> 
 and <em>list-vector-B</em>. If the <tt>true</tt> flag is not used, both vectors 
 in A and B can be of different length and groups represented by A and B are 
@@ -26205,7 +26221,7 @@ from the same group twice, e.g. before and after a procedure.</p>
 <tr><td>sdev-b</td><td>standard deviation in group B</td></tr>
 <tr><td>t</td><td>t between mean values</td></tr>
 <tr><td>df</td><td>degrees of freedom</td></tr>
-<tr><td>p</td><td>two tailed probablity of t under the null hypothesis</td></tr>
+<tr><td>p</td><td>two tailed probability of t under the null hypothesis</td></tr>
 </table>
 
 <p>The first example studies the effect of different sleep length
@@ -26226,7 +26242,7 @@ before a test on the SCAT (Sam's Cognitive Ability Test):</p>
 effect with a probability value of <tt>0.411</tt>.</p>
 
 <p>In the second example, the same group of people get tested twice,
-before and after a treatment with Prosac depression medication:</p>
+before and after a treatment with Prozac depression medication:</p>
 
 <!-- example -->
 <pre>
@@ -26249,7 +26265,7 @@ samples are significantly different. The threshold can be set using the
 function will perform a F-test to compare the variances in the two data samples.
 If the probability of the found <em>F-ratio</em> is below the <em>float-probability</em> 
 parameter, the <em>Welch's t-test</em> method will be used. Specifying this value
-as <tt>1.0</tt> effectiviely forces a <em>Welch's t-test</em>:</p>
+as <tt>1.0</tt> effectively forces a <em>Welch's t-test</em>:</p>
 
 <!-- example -->
 <pre>
@@ -26891,27 +26907,20 @@ Most systems use UTF-8 encoding only.</p>
 <h2><span class="function">unify</span></h2>
 <h4>syntax: (unify <em>exp-1</em> <em>exp-2</em> [<em>list-env</em>])</h4>
 
-<p>
-	Evaluates and matches 
-	<em>exp-1</em> and <em>exp-2</em>.
-	Expressions match if they are equal 
-	or if one of the expressions is 
-	an unbound variable 
-	(which would then be bound to the other expression).
-	If expressions are lists,
-	they are matched by comparing subexpressions.
-	Unbound variables start with an uppercase character 
-	to distinguish them from symbols.
-	<tt>unify</tt> returns <tt>nil</tt> 
-	when the unification process fails,
-	or it returns a list of variable associations on success.
-	When no variables were bound, 
-	but the match is still successful,
-	<tt>unify</tt> returns an empty list.
-    newLISP uses a modified <em>J. Alan Robinson</em> unification algorithm
-    with correctly applied <em>occurs check</em>. 
+<p>Evaluates and matches <em>exp-1</em> and <em>exp-2</em>.
+Expressions match if they are equal or if one of the expressions is 
+an unbound variable (which would then be bound to the other expression).
+If expressions are lists, they are matched by comparing subexpressions.
+Unbound variables start with an uppercase character 
+to distinguish them from symbols.  <tt>unify</tt> returns <tt>nil</tt> 
+when the unification process fails,
+or it returns a list of variable associations on success.
+When no variables were bound, but the match is still successful,
+<tt>unify</tt> returns an empty list.
+newLISP uses a modified <em>J. Alan Robinson</em> unification algorithm
+with correctly applied <em>occurs check</em>. 
 See also <em>Peter Norvig</em>'s paper about a common 
-<a href="http://norvig.com/unify-bug.pdf">unifcation algorithm bug</a>, which 
+<a href="http://norvig.com/unify-bug.pdf">unification algorithm bug</a>, which 
 is not present in this implementation.
 </p>
 
@@ -28223,7 +28232,7 @@ formatted output can be generated:
     (FRUIT (NAME "banana") (COLOR "yellow") (PRICE "0.60"))))
 </pre>
 
-<p>If the original XML tags contain a namspace part separated by a <tt>:</tt>,
+<p>If the original XML tags contain a namespace part separated by a <tt>:</tt>,
 that colon will be translated into a <tt>.</tt> dot in the resulting newLISP
 symbol.</p>
 
@@ -28340,7 +28349,8 @@ and shows <tt>cdata</tt> and <tt>!--</tt> instead of
 <br/><br/>
 
 <a name="zerop"></a>
-<h2><span class="function">zero?</span></h2>
+<h2><span class="function">zero?</span>&nbsp;
+<a href="#big_int"><font size="-1">bigint</font></a></h2>
 <h4>syntax: (zero? <em>exp</em>)</h4>
 
 <p>
@@ -28356,6 +28366,8 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 (zero? var)    <span class='arw'>&rarr;</span> true
 
 (map zero? '(0 0.0 3.4 4))  <span class='arw'>&rarr;</span> (true true nil nil)
+
+(map zero? '(nil true 0 0.0 "" ()))  <span class='arw'>&rarr;</span> (nil nil true true nil nil)
 </pre>
 
 
@@ -28613,7 +28625,7 @@ variable, the <tt>module</tt> function loads automatically from
 </pre>
 
 <p>These symbols are not protected and can be redefined by the user.
-The <tt>$x</tt> variable is built-in and proteced against deletion.
+The <tt>$x</tt> variable is built-in and protected against deletion.
 This <tt>$x</tt> variable is also used in <a href="#curry">curry</a> expressions.</p>
 
 <br/><br/>

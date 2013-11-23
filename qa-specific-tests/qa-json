@@ -118,6 +118,8 @@
         (= (json-parse [text]{"foo": ["bar", "\"baz\""]}[/text]) '(("foo" ("bar" "\"baz\""))))
         ; escaped back slashes in 10.5.3
         (= (json-parse [text]{"a backslash":"\\"}[/text]) '(("a backslash" "\\")))
+        ; trailing , (comma) in arrays for ECMA-404 compliance
+        (= (json-parse {[1,2,3,]}) '(1 2 3))
     )
     (println ">>>>> JSON translation tested SUCESSFUL")
     (println ">>>>> PROBLEM in JSON translation")

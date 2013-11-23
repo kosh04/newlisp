@@ -24,7 +24,7 @@ CELL * appendNode(CELL * node, CELL * newNode);
 CELL * appendString(CELL * cell, CELL * params, char * joint, size_t jointLen, int trailJoint, int evalFlag);
 CELL * appendWriteFile(CELL * params, char * type);
 CELL * arithmetikOp(CELL * params, int operand);
-CELL * arrayList(CELL * params);
+CELL * arrayList(CELL * params, int flag);
 CELL * arrayTranspose(CELL * params);
 CELL * assignSymbol(SYMBOL * sPtr, CELL * content);
 CELL * associationsFromTree(SYMBOL * context);

@@ -85,7 +85,7 @@
 	(println " >>>> net-connect -> ERROR")
 	(println "net-connect to wrong port ->OK"))
 
-(if (find "server code 404:" (get-url (string "http://" host ":" port)))
+(if (find "server code 404:" (get-url (string "http://" host ":" port "/xyz.xyz")))
 	(println "get-url ->OK")
 	(println " >>>> get-url problem ->ERROR"))
 

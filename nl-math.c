@@ -154,10 +154,12 @@ if(!isNil(cell))
         else
             freePtr = adjustPtr = intToBigint(1, &adjlen);
 
-        *adjustPtr = *adjustPtr * type;
         reslen = (lvlen > adjlen) ? lvlen + 2 : adjlen + 2;
         resultPtr = calloc(reslen, sizeof(int));
-        addBigint(lvaluePtr, lvlen, adjustPtr, adjlen, resultPtr, &reslen);
+        if(type < 0)
+            subBigint(lvaluePtr, lvlen, adjustPtr, adjlen, resultPtr, &reslen);
+        else
+            addBigint(lvaluePtr, lvlen, adjustPtr, adjlen, resultPtr, &reslen);
         if(freePtr) freeMemory(freePtr);
         /* update old cell */
         freeMemory((void *)cell->contents);
@@ -241,6 +243,7 @@ int * numy;
 int * freePtr = NULL;
 #endif
 CELL * cell;
+CELL * next;
 
 if(params == nilCell)
     {
@@ -272,19 +275,21 @@ if(cell->type == CELL_BIGINT)
             }
         return(cell);
         }
+
+    NEXT_FIRST_BIGINT:
     /* first OP is CELL_BIGINT */
     numx = (int*)cell->contents;
     sizex = cell->aux - 1;
 
     /* if 2nd OP is not CELL_BIGINT memory is allocated */
-    params = evaluateExpression(params);
-    if(params->type == CELL_BIGINT)
+    next = evaluateExpression(params);
+    if(next->type == CELL_BIGINT) /* speedup */
         {
-        numy = (int*)params->contents;
-        sizey = params->aux - 1;
+        numy = (int*)next->contents;
+        sizey = next->aux - 1;
         }
     else
-        freePtr = getBigintSizeDirect(params, &numy, &sizey); 
+        freePtr = getBigintSizeDirect(next, &numy, &sizey); 
 
     if(op == OP_MULTIPLY)
         n = sizex + sizey + 2; 
@@ -312,10 +317,20 @@ if(cell->type == CELL_BIGINT)
             return(errorProc(ERR_BIGINT_NOT_ALLOWED));
         }    
 
-    if(freePtr) freeMemory(freePtr); 
+    if(freePtr) 
+        {
+        freeMemory(freePtr);
+        freePtr = NULL;
+        } 
     cell = getCell(CELL_BIGINT);
     cell->contents = (UINT)num;
     cell->aux = n + 1; 
+    if(params->next != nilCell)
+        {
+        pushResult(cell);
+        params = params->next;
+        goto NEXT_FIRST_BIGINT;
+        }
     return(cell);
     }
 #endif
@@ -717,7 +732,7 @@ params = getFloat(params, &fNum);
 if(params != nilCell)
     getInteger(params, (UINT*)&digits);
 
-if(digits > 0)
+if(digits >= 0)
     {
     precision = pow(10.0, (double)(digits > 20 ? 20 : digits));
     fNum = precision * floor(fNum/precision + 0.5);
@@ -1998,32 +2013,101 @@ if (n > 1)
 return(factList);
 }
 
+/* see http://en.wikipedia.org/wiki/Euclidean_algorithm */
+
+CELL * gcdBig(CELL * a, CELL * b);
+CELL * isZero(CELL * cell);
+
 CELL * p_gcd(CELL * params)
 { 
-INT64 m, n;
-INT64 t, r;
+INT64 m, n, r; 
+CELL * cell;
+CELL * x;
+CELL * y;
+UINT * resultIdxSave = resultStackIdx;
 
-params = getInteger64Ext(params, &m, TRUE);
-if(m < 0) m = -m;
-n = m;
+cell = evaluateExpression(params);
+params = params->next;
 
+#ifdef BIGINT
+if(cell->type == CELL_BIGINT)
+    {
+    x = copyCell(cell);
+    NEXT_BIG_GCD:
+    y = p_bigInt(params);
+    cell = gcdBig(x, y);
+    cleanupResults(resultIdxSave);  
+    deleteList(x);
+    deleteList(y);
+    if(params->next != nilCell)
+        {
+        params = params->next;
+        x = cell;
+        goto NEXT_BIG_GCD;
+        }
+    *(int*)cell->contents = 1; /* abs */
+    return(cell);
+    }
+#endif
+
+cell = getInteger64Ext(cell, &m, FALSE);
 while(params != nilCell)
     {
     params = getInteger64Ext(params, &n, TRUE);
-    if(n < 0) n = -n;
-
-    ITERATE_GCD:
-    if (m < n) { t = m; m = n; n = t; }
-    if(n == 0) {n = m; continue; } /* for (gcd x 0) => x */
-    r = m % n;
-    if (r == 0) { m = n; continue; }
-    m = n; n = r;
-    goto ITERATE_GCD;
+    while (n != 0)
+        {
+        r = n;
+        n = m % n;
+        m = r;
+        } 
     }
 
-return(stuffInteger64(n));
+if(m < 0) m = -m;
+return(stuffInteger64(m));
 } 
 
+
+/* for bigint use 
+(define (gcd-big a b)
+	(if (= b 0) a (gcd-big b (% a b))))
+*/
+
+#define NEW_BIG_GCD
+#ifdef NEW_BIG_GCD 
+CELL * gcdBig(CELL * a, CELL * b)
+{
+CELL * cell;
+
+while (isZero(b) == nilCell)
+    {
+    a->next = b;
+    cell = arithmetikOp(a, OP_MODULO);
+    a->next = nilCell;
+    pushResult(cell);
+    a = b;
+    b = cell; 
+    }
+
+return(copyCell(a));
+}
+
+#else
+
+CELL * gcdBig(CELL * a, CELL * b)
+{
+CELL * cell;
+if(isZero(b) == trueCell) return(copyCell(a));
+
+a->next = b;
+b->next = nilCell;
+
+cell = arithmetikOp(a, OP_MODULO);
+a->next = nilCell;
+pushResult(cell);
+
+return(gcdBig(b, cell));
+}
+#endif
 
 /* ------------------------------- financial functions ---------------------- */
 
@@ -2600,7 +2684,6 @@ double * p_tkn_and_cat;
 double p_tkn_and_all_cat;
 double * Pchi2 = NULL;
 double * Qchi2 = NULL;
-/* double sumS = 1.0; */
 INT countNum, totalNum;
 
 CELL * result = NULL;
@@ -2676,8 +2759,12 @@ for(idx = 0; idx < maxIdx; idx++)
 #endif                                    
 
     total = total->next;
-    /* initialize Fisher's Chi-2 probs */
-    if(!chainBayes) Pchi2[idx] = Qchi2[idx] = 0.0;
+    /* initialize Fisher's Chi-2 probs and priors */
+    if(!chainBayes) 
+        {
+        Pchi2[idx] = Qchi2[idx] = 0.0;
+        priorP[idx] = 1.0 / maxIdx;
+        }
     }
 
 token = alloca(MAX_SYMBOL + 1);
@@ -2749,23 +2836,21 @@ for(i = 0; i < nTkn; i++)
             {
             postP[idx] = p_tkn_and_cat[idx] / p_tkn_and_all_cat;
             
-            priorP[idx] = 1.0 / maxIdx; /* will cancel out */
-            
             /* handle probability limits of 0 and using very small value */
             if(postP[idx] == 0.0)
                 Qchi2[idx] += log(3e-308) * -2.0;
             else
                 Qchi2[idx] += log(postP[idx]) * -2.0;
-                        
-            if(postP[idx] == 1.0)
-                Pchi2[idx] += log(3e-308) * -2.0;
-            else
-                Pchi2[idx] += log(1.0 - postP[idx]) * -2.0;                                                            
-            }
-        else
+                       
+            if(postP[idx] == 1.0) 
+                Pchi2[idx] += log(3e-308) * -2.0; 
+            else 
+                Pchi2[idx] += log(1.0 - postP[idx]) * -2.0;
+            } 
+        else 
             {
-            postP[idx] = p_tkn_and_cat[idx] / p_tkn_and_all_cat;
-            priorP[idx] = postP[idx];
+            postP[idx] = p_tkn_and_cat[idx] / p_tkn_and_all_cat; 
+            priorP[idx] = postP[idx]; 
             }
 #ifdef BAYES_DEBUG
         printf("postP[%d] = p_tkn_and_cat[%d] / p_tkn_and_all_cat = %lf / %lf = %lf\n", 
@@ -2778,23 +2863,19 @@ for(i = 0; i < nTkn; i++)
     
 if(!chainBayes)
     {
-/*  sumS = 0.0; */
     for(idx = 0; idx < maxIdx; idx++)
       {
-      postP[idx] = (probChi2(Qchi2[idx],  2 * nTkn) - probChi2(Pchi2[idx],  2 * nTkn) + 1.0) / 2.0;
-/*    sumS += postP[idx]; */
+#ifdef BAYES_DEBUG
+        printf("Qchi2[%d] = %f, Pchi2[%d] = %f, nTkn = %d\n", idx, Qchi2[idx], idx, Pchi2[idx], nTkn);
+#endif
+      /* corrected swapped Pchi2[idx] and Qchi2[idx] in 10.5.5 */
+      postP[idx] = (probChi2(Pchi2[idx],  2 * nTkn) - probChi2(Qchi2[idx],  2 * nTkn)  + 1.0) / 2.0;
       }
     }
                                                 
     
 for(idx = 0; idx < maxIdx; idx++)
     {
-    /* normalize probs from Fisher's Chi-2 */
-    /* taken out for 10.3, leads to misinterpretation of propbablities and NaNs
-    if(!chainBayes) 
-        postP[idx] /= sumS;
-    */
-
     if(idx == 0)
         {
         result = getCell(CELL_EXPRESSION);
@@ -3342,18 +3423,18 @@ CELL * cell;
 UINT idx, n;
 double * vector = NULL;
 double value, sum, ssq, sd2;
+CELL * * addr;
 
 n = sum = ssq = 0;
 if(data->type == CELL_EXPRESSION)
     {
     if((data = cell = (CELL *)data->contents) == nilCell)
         return(NULL);
-    idx = 1;
+    n = 1;
     while(cell->next != nilCell) 
-        { cell = cell->next; idx++; }
+        { cell = cell->next; n++; }
     cell = data;
-    vector = callocMemory(sizeof(double) * idx);
-    n = idx;
+    vector = callocMemory(sizeof(double) * n);
     for (idx = 0; idx < n; idx++)
         {
         value = getDirectFloat(cell);
@@ -3364,6 +3445,22 @@ if(data->type == CELL_EXPRESSION)
         }
     }
 
+else if(data->type == CELL_ARRAY)
+    {
+    addr = (CELL * *)data->contents;
+    n = (data->aux - 1) / sizeof(CELL *);
+    vector = callocMemory(sizeof(double) * n);
+    for (idx = 0; idx < n; idx++)
+        {
+        cell = *(addr + idx);
+        value = getDirectFloat(cell);
+        *(vector + idx) = value;
+        sum += value;
+        ssq += value * value;
+        }
+    }
+else return(NULL);
+	
 sd2 = ssq - sum * sum / n;
 
 *N = n;
@@ -3384,7 +3481,7 @@ double * vector;
 int idx;
 
 if((vector = getVector(evaluateExpression(params), &N, &sum, &mean, &sd2)) == NULL)
-    return(errorProc(ERR_LIST_EXPECTED));
+    return(errorProc(ERR_LIST_OR_ARRAY_EXPECTED));
 
 var = sd2 / (N - 1);    /* pop variance */
 sdev = sqrt(var);       /* standard deviation */
@@ -3607,7 +3704,7 @@ return(cell);
 */
 int * getBigintSizeDirect(CELL * cell, int * * numPtr, int * len)
 {
-int size;
+int size = 0;
 int * num = NULL;
 
 #ifndef NEWLISP64

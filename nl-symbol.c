@@ -38,6 +38,7 @@ extern SYMBOL * orSymbol;
 SYMBOL * findInsertSymbol(char * key, int forceCreation);
 int deleteSymbol(char * key);
 void deleteContextSymbols(CELL * cell, int checkReferences);
+void changeContextCells(SYMBOL * contextPtr);
 CELL dumpSymbol(char * name);
 void collectSymbols(SYMBOL * sPtr, CELL * symbolList);
 void collectSymbolAssocs(SYMBOL * sPtr, CELL * assocList);
@@ -324,8 +325,7 @@ else if(getFlag(params))
 if(cell->type == CELL_CONTEXT)
     {
     deleteContextSymbols(cell, checkReferences);
-    cell->type = CELL_SYMBOL; /* demote */
-    deleteList((CELL *)sPtr->contents);
+    deleteList((CELL *)sPtr->contents); 
     sPtr->contents = (UINT)copyCell(nilCell);
     }
 else 
@@ -337,15 +337,42 @@ return(trueCell);
 void deleteContextSymbols(CELL * cell, int checkReferences)
 {
 SYMBOL * context;
+CELL * symbolList;
+CELL * nextSymbol;
+
+context = (SYMBOL *)cell->contents;
+
+if(checkReferences)
+    externalContextReferences(context, TRUE);
+
+symbolList = getCell(CELL_EXPRESSION);
+collectSymbols((SYMBOL *)((CELL *)context->contents)->aux, symbolList);
+
+nextSymbol = (CELL *)symbolList->contents;
+while(nextSymbol != nilCell)
+    {
+    deleteAndFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
+    nextSymbol = nextSymbol->next;
+    }
+
+if(checkReferences)
+    changeContextCells(context);
+
+deleteList(symbolList);
+}
+
+
+
+/*
+void deleteContextSymbols(CELL * cell, int checkReferences)
+{
+SYMBOL * context;
 SYMBOL * treePtr;
 CELL * symbolList;
 CELL * nextSymbol;
 
 context = (SYMBOL *)cell->contents;
 treePtr = (SYMBOL *)cell->aux;
-
-if(checkReferences)
-    externalContextReferences(context, TRUE);
 
 symbolList = getCell(CELL_EXPRESSION);
 collectSymbols((SYMBOL *)treePtr, symbolList);
@@ -357,9 +384,12 @@ while(nextSymbol != nilCell)
     nextSymbol = nextSymbol->next;
     }
     
+if(checkReferences)
+    externalContextReferences(context, TRUE);
+
 deleteList(symbolList);
 }
-
+*/
 
 void deleteAndFreeSymbol(SYMBOL * sPtr, int checkReferences)
 {
@@ -380,23 +410,6 @@ freeMemory(sPtr->name);
 freeMemory(sPtr);
 }
 
-/*
-There is more stuff then below to free for callback closures.
-At the moment not used instead overwriting is disabled.
-*/
-/*
-void deleteFFImemory(CELL * pCell)
-{
-FFIMPORT * ffi;
-
-if(cell->type == CELL_IMPORT_FFI)
-    {
-    ffi = (FFIMPORT *)pCell->aux;
-    free(ffi->cif.arg_types);
-    free(ffi);
-    }
-}
-*/
 
 void makeContextFromSymbol(SYMBOL * symbol, SYMBOL * treePtr)
 {
@@ -476,18 +489,10 @@ while(blockPtr != NULL)
                     blockPtr->contents = (UINT)nilSymbol;
                 }
             }
-        else if (blockPtr->type == CELL_CONTEXT)
+        if(blockPtr->type == CELL_CONTEXT)
             {
-             if((SYMBOL *)blockPtr->contents == contextPtr)
-                    {
-                    count++;
-                    if(replaceFlag)
-                        {
-                        blockPtr->type = CELL_NIL;
-                        blockPtr->contents = (UINT)nilCell;
-                        blockPtr->aux = 0;
-                        }
-                    }
+            if((SYMBOL *)blockPtr->contents == contextPtr)
+                count++;
             }
         blockPtr++;
         }
@@ -495,6 +500,31 @@ while(blockPtr != NULL)
     }
 
 return(count);
+}
+
+void changeContextCells(SYMBOL * contextPtr)
+{
+CELL * blockPtr;
+int i; 
+
+blockPtr = cellMemory;
+while(blockPtr != NULL)
+    {
+    for(i = 0; i < MAX_BLOCK; i++)
+        {
+        if (blockPtr->type == CELL_CONTEXT)
+            {
+            if((SYMBOL *)blockPtr->contents == contextPtr)
+                {
+                blockPtr->type = CELL_NIL;
+                blockPtr->contents = (UINT)nilCell;
+                blockPtr->aux = (UINT)nilCell;
+                }
+            }
+        blockPtr++;
+        }
+    blockPtr = blockPtr->next;
+    }
 }
 
 /* renamed to 'term' in v.10.1.11 */

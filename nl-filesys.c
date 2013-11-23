@@ -1400,7 +1400,9 @@ while(pidSpawn)
             snprintf(str, 32, "%s %d", ABEND, result);
             sPtr->contents = (UINT)stuffString(str);
             }
-            
+           
+	/* close parent socket */
+        if(pidSpawn->socket) close(pidSpawn->socket); 
         checkDeleteShareFile(pidSpawn->result_addr);
         /* unmap shared result memory */
         munmap(pidSpawn->result_addr, pagesize);
@@ -1454,8 +1456,8 @@ if(getFlag(params->next))
     {
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == -1) 
         {
-        purgeSpawnList(TRUE);
-        errorProc(ERR_CANNOT_OPEN_SOCKETPAIR); 
+        munmap(address, pagesize);
+        return(errorProc(ERR_CANNOT_OPEN_SOCKETPAIR)); 
         }
 
     /* add the parent socket to myFdSet */ 
@@ -1466,6 +1468,8 @@ if(getFlag(params->next))
 
 if((forkPid = fork()) == -1)
     {
+    if(sockets[0]) close(sockets[0]);
+    if(sockets[1]) close(sockets[1]);
     munmap(address, pagesize);
     return(nilCell);
     }
@@ -1482,6 +1486,8 @@ if(forkPid == 0) /* the child process */
     purgeSpawnList(FALSE);
     /* evaluate and write result to shared memory */
     readWriteShared(address, params, TRUE);
+    /* close child socket */
+    if(thisSocket) close(thisSocket);
     exit(0);
     }
 
@@ -2109,10 +2115,10 @@ return(stuffInteger(handle));
 }
 #endif /* no OS2 */
 
-/* evaluate the expression in params ans the write the result
+/* evaluate the expression in params and the write the result
    to shared memory. If size > pagesize use files tmp files
    for transfer. For atomic datatypes are xlation into message
-   id ptimized for speed (but doesn't bring much in overall
+   optimized for speed (but doesn't bring much in overall
    performance, should perhaps be taken out and only use
    readWriteSharedExpression() */
 CELL * readWriteShared(UINT * address, CELL * params, int flag)
@@ -2125,7 +2131,7 @@ int errNo;
 /* write to shared memory */
 if(params != nilCell) 
     {
-    if(flag)
+    if(flag) /* in spawned process */
         {
         if((cell = evaluateExpressionSafe(params, &errNo)) == NULL)
             cell = stuffString(errorStream.buffer);
@@ -2139,7 +2145,7 @@ if(params != nilCell)
     if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
         checkDeleteShareFile(address);
 
-    /* write list types */
+    /* write anything not bool, number or string */
     if((cell->type & COMPARE_TYPE_MASK) > (CELL_STRING & COMPARE_TYPE_MASK))
         return(copyCell(readWriteSharedExpression(address, cell)));
 

@@ -22,7 +22,7 @@
 
 ; one windows run this alone, not as part of 'make testall'
 ; remove the file qa-junk.txt manually before running
-(when (find ostype '("OS/2" "SunOS" "Win32"))
+(when (find ostype '("OS/2" "SunOS"))
 	(println "disabled for " ostype " - must exit -")
 	(exit))
 
@@ -91,7 +91,7 @@
 	(println "net-connect to wrong port ->OK"))
 
 
-(if (find "server code 404:" (get-url "http://[::1]:10001/"))
+(if (find "server code 404:" (get-url "http://[::1]:10001/xyz.xyz"))
 	(println "get-url ->OK")
 	(println " >>>> get-url problem ->ERROR"))
 

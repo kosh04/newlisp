@@ -542,7 +542,7 @@ for (i = n; i >= 1; i--)
    the m of optional centroids may be smaller than m in data to force
    reduction of dimension, e.g. when the last column of date is pre-labeled
 
-   date and optional centroids as either array or list
+   data and optional centroids as either array or list
 
    if no centroids are given, they are calculated from
    inital random membership
@@ -754,7 +754,11 @@ if(data->type != CELL_EXPRESSION)
 
 getEvalDefault(params, &centroids);
 if(centroids->type == CELL_ARRAY)
-   centroids = arrayList(centroids); 
+    {
+    centroids = arrayList(centroids, TRUE); 
+    pushResult(centroids);
+    }
+   
 else if(centroids->type != CELL_EXPRESSION)
     return(errorProcExt(ERR_NOT_MATRIX, centroids));
 

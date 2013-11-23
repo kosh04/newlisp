@@ -1698,6 +1698,8 @@ true
        (= '(2 4 6) (map (lambda (x) (+ x x)) '(1 2 3)))
 	   (set 'D:D '(1 2 3 4 5))
        (= (map pow D) '(1 4 9 16 25))
+       (= (map (fn (x) (apply + x)) '((1 2 3) (1 2 3))) 
+          (map (fn (x) (apply + x)) (array 2 3 '(1 2 3 1 2 3)) ))
 ))
 
 (define (test-mat)
@@ -2222,7 +2224,7 @@ true
 ))
 
 (define (test-pretty-print)
-  (= (pretty-print) '(80 " " "%1.10g")))
+  (= (pretty-print) '(80 " " "%1.15g")))
 
 (define (test-primitive? )
   (primitive? primitive?))
@@ -2665,7 +2667,11 @@ true
 		(= (round 123,49 -2) 123,49)
 		(= (round 123,49 -3) 123,49)
 		(!= (round 123,49 -2) 123,49000000000001)
-		(= (round 123,49 3)  0)))
+		(= (round 123,49 3)  0)
+        (= (round 0,05 -1) 0,1)
+		(= (round 0,5) 1)
+        (= (round 5 1) 10)    
+))
 
 (define (test-save )
   (and (save "all") (save "save.lsp" 'test-save) (delete-file "all") 
