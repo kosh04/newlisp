@@ -26,7 +26,7 @@
    makefiles.
 */
 #define XML_SUPPORT
-#define BIGINT 
+#define BIGINT
 #define KMEANS 
 
 
@@ -35,6 +35,11 @@
 #include "config.h"
 #else
 #define NEWLISPDIR "/usr/share/newlisp"
+#endif
+
+/* force ISO_C90 restrictions */
+#if defined(CYGWN) || defined(OS2) || defined(SOLARIS) || defined(AIX)
+#define ISO_C90
 #endif
 
 #ifdef LINUX
@@ -184,7 +189,6 @@ This is for 64bit large file support (LFS),
 #include <stdarg.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <sys/timeb.h>
 #include <sys/types.h>
 
 #if defined(LINUX) || defined(WINDOWS) || defined(OS2)
@@ -356,7 +360,6 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_PROTECTED 0x10
 #define SYMBOL_GLOBAL 0x20
 #define SYMBOL_BUILTIN 0x40
-#define SYMBOL_PRIMITIVE 0x80
 #define SYMBOL_FFI 0x100
 
 /* cell masks */

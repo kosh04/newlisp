@@ -147,6 +147,16 @@ printf("%%d     0xffffffff             %d\n", 0xffffffff);
 printf("%%u     0x7fffffff             %u\n", 0x7fffffff);
 printf("%%u     0x80000000             %u\n", 0x80000000);
 printf("%%u     0xffffffff             %u\n", 0xffffffff);
+#ifndef TRUE64
+/* will handle either 32bit or 64bit depending on platform
+printf("%%ld   0x7fffffffffffffffL    %ld\n", 0x7FFFFFFFL);
+printf("%%ld   0x8000000000000000L    %ld\n", 0x80000000L);
+printf("%%ld   0xffffffffffffffffL    %ld\n", 0xFFFFFFFFL);
+printf("%%lu   0x7fffffffffffffffL    %lu\n", 0x7FFFFFFFL);
+printf("%%lu   0x8000000000000000L    %lu\n", 0x80000000L);
+printf("%%lu   0xffffffffffffffffL    %ld\n", 0xFFFFFFFFL);
+*/
+#endif
 printf("%%llx   0x7FFFFFFFFFFFFFFFLL   %llx\n", 0x7FFFFFFFFFFFFFFFLL);
 printf("%%llx   0x8000000000000000LL   %llx\n", 0x8000000000000000LL);
 printf("%%llx   0xFFFFFFFFFFFFFFFFLL   %llx\n", 0xFFFFFFFFFFFFFFFFLL);

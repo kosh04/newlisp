@@ -5,7 +5,9 @@
 ;; @version 0.3 alpha - added diferent libc.so library path for UBUNTU 9.04
 ;; @version 0.4 alpha - take care of overwrite protection of imports in ffilib versions
 ;; @version 0.5 alpha - precautions for multiple load of module because of overwritten symbols
-;; @author L.M. 2006-Sep-12, March-2012 lutz@nuevatec.com
+;; @version 0.6 alpha - libc library path for Linux UBUNTU
+;; @version 0.7 alpha - libc library path for several OS
+;; @author L.M. 2006-Sep-12, 2012, 2013 lutz@nuevatec.com
 ;; 
 ;;
 ;; <h2>UNIX libc function support</h2>
@@ -38,10 +40,14 @@
 (context 'unix)
 
 (set 'files (list
-	"/usr/lib/libc.dylib" ; MacOS/Darwin
-	"/usr/lib/libc.so.51.0" ; OpenBSD 4.6
-	"/lib/libc.so.6" ; UBUNTU Linux 9.04
-	"/usr/lib/libc.so" ; Linux, BSD, Solaris
+    "/usr/lib/libc.dylib" ; MacOS/Darwin
+    "/usr/lib/libc.so.51.0" ; OpenBSD 4.6
+    "/lib/x86_64-linux-gnu/libc.so.6" ; Ubuntu 12.04 LTS
+    "/lib/i386-linux-gnu/libc.so.6" ; UBUNTU Linux
+    "/lib/i686-linux-gnu/libc.so.6" ; UBUNTU Linux
+    "/lib/libc.so.6" ; UBUNTU Linux 9.04
+    "/usr/lib/libc.so" ; Linux, BSD, Solaris
+    "/lib64/libc.so.6" ; CentOS 6.x
 ))
 
 (set 'library (files (or

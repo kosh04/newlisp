@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.5.6 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #705040;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #202020;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.5.6 Development Release
+<font color="red" size="-1">2013-12-10</font></h1>
+
+<p>This development release continues with numerous small improvements in
+several areas. Additions and changes for versions 10.5.5 and 10.5.6 are reported
+together.</p>
+
+<h3>Additions and changes</h3>
+<ul>
+<li>In <tt>json-parse</tt> the last element in JSON arrays may have a trailing 
+comma.</li>
+
+<li>In arithmetic big integer operators: <tt>+ - * / %</tt>, now more than
+two operands are allowed as in normal precision integer operations.</li>
+
+<li>The <tt>gcd</tt> function now supports big integer operations.</li>
+
+<li>On Windows <tt>format</tt> now supports UNIX format characters for 64-bit
+integers, i.e.: <tt>%lld %llu %llx %llX</tt>, additionally to: 
+<tt>%I64d %I64u %I64x %I64X</tt>.</li>
+
+<li>The <tt>pretty-print</tt> default float setting has been changed to 
+<tt>"%1.15g"</tt>.</li>
+
+<li>On Linux and MacOS X 10.9+ the <tt>%</tt> format character can be followed 
+by a single quote <tt>'</tt> when using the <tt>format</tt> function. This causes 
+thousand's separators to be inserted in decimal integer and floating point number formats, 
+e.g.: <tt>(format "%'d" 12345) ;=&gt; 12,345</tt>. Not working on all locale
+settings.</li>
+
+<li><tt>reset</tt> now also cancels command line parameter processing.</li>
+
+<li><tt>apply</tt>, <tt>corr</tt>, <tt>map</tt>, <tt>reverse</tt>, <tt>stats</tt> 
+and <tt>t-test</tt> can now be used on arrays.</li>
+
+<li>When making hash trees using the predefined context <tt>Tree</tt>, 
+the default symbol in the new context is protected as is <tt>Tree:Tree</tt>.
+Default symbols in hash trees must always be <tt>nil</tt> for the hash 
+statement syntax for namespaces to work.</li>
+
+<li>When copying symbols with <tt>new</tt> or <tt>def-new</tt>, the <tt>protected?</tt>
+property is copied too.</li>
+
+<li>An empty list as index vector for a list or array yields the original list 
+or array as return value:<br/>
+<pre>
+       (set 'L '(1 2 (3 4)))
+       (L '())     =&gt; (1 2 (3 4))
+       (nth '() L) =&gt; (1 2 (3 4))
+</pre></li>
+
+<li>The <tt>int</tt> function handles binary numbers in strings as in <tt>"0b101010"</tt>
+for the number <tt>42</tt>. This number format was introduced in v.10.4.4.</li> 
+
+<li>Integers are accepted as hash keys. This allows creating sparse vectors:<br/>
+<pre>
+       (new Tree 'V) 
+       (V 123 "hello")
+       (V 123) =&gt; "hello"
+</pre></li>
+
+<li>Anaphoric system variable <tt>$it</tt> is now also set to the value of the conditional 
+expression in <tt>if</tt>.</li>
+
+<li><tt>length</tt> now returns the number of digits when used on integers as it does
+already on big integers. On floats the number of digits before the decimal separator
+is returned.</li>
+
+</ul> 
+
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li>The big integer version of the <tt>--</tt> operator left the sign of the 
+second operand changed.</li>
+
+<li><tt>bayes-query</tt> with <em>Fisher's inverse Chi&sup2;</em> method calculated 
+wrong probabilities when training in more than two categories. When training in two 
+categories, the result probabilities were swapped, reporting the probability for the 
+second category first. When using the <em>Chain Bayesian</em> method, results were 
+always correct.</li>
+
+<li>Fixed a cell leak introduced in version 10.5.4 when deleting contexts.</li> 
+
+<li>A fix in <tt>round</tt> when the value is <tt>0.5</tt>.</li>
+
+</ul> 
+
+
+<h3>Other changes</h3>
+<ul>
+<li>Documentarion changes.</li>
+<li>Additions and changes to qa scripts.</li>
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with previous versions in the 10.5.x series except
+for the changes in the <tt>length</tt> function when applied to integers and floats.</p>
+
+<center>&part;</center>
+
+</body>
+</html>
+

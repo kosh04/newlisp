@@ -90,8 +90,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2013 November 7<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.5.4
+</h1>Version 2013 December 3<sup>rd</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.5.6
 </center>
 
 <br/><br/><br/>
@@ -2057,9 +2057,9 @@ str &rarr; "ABCD"
 (new Tree 'Myhash)
 </pre>
 
-<p>Both methods produce the same result.</p>
+<p>Both methods produce the same result, but the second method also protects the default functor <tt>Myhash:Myhash</tt> from change.</p>
 
-<p>A <tt>default functor</tt> is the symbol with the same name as the namespace (context) it belongs to. If this default functor symbol does not contain anything except <tt>nil</tt>, it works like a hash function:</p>
+<p>A <em>default functor</em> is the symbol with the same name as the namespace (context) it belongs to. If this default functor symbol does not contain anything except <tt>nil</tt>, it works like a hash function:</p>
 
 <pre>
 (Myhash "var" 123) ; create and set variable/value pair
@@ -2071,6 +2071,12 @@ str &rarr; "ABCD"
 (Myhash "bar" '(q w e r t y))
  
 (Myhash "!*@$" '(a b c))
+
+; numbers can be used too and will be converted to strings internally
+
+(Myhash 555 42)
+
+(Myhash 555) → 42
 </pre>
 
 <p>Setting a hash symbol to <tt>nil</tt> will effectively erase it:</p>

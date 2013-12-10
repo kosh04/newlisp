@@ -3,6 +3,7 @@
 *.exe
 *.dll
 *.o
+newlisp
 qa-junk.txt
 \#*\#
 /modules/SQLITE3-TEST

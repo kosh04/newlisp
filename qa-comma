@@ -373,6 +373,10 @@ true
        (= (apply append '("a" "b" "c")) "abc")
        (= (apply (fn (x y) (+ x y)) '(3 4)) 7)
        (= (apply list '(a b c d e f) 2) '(((((a b) c) d) e) f))
+       (= (inc (apply set '(x 123))) 124 x)
+       (= (apply + (array 100 (sequence 1 100))) 
+          (apply + (sequence 1 100)) 
+          (apply + (0 100 (array 100 (sequence 1 100)))))
 ))
 
 (define (test-args )
@@ -1419,6 +1423,8 @@ true
    (= (if true '() '()) '())
    (= (if nil 1 nil 2 nil 3 true 4 3) 4)
    (= (if nil 1 nil 2 nil 3 nil 4 3) 3)
+   ; anaphoric $it
+   (if 123 (= $it 123))
    ))
 
 (define (test-if-not )
@@ -1479,6 +1485,8 @@ true
 	(= (int "gg" 99) 99)
 	(= (int "ff" 99 16) 255)
 	(= (int "-ff" 99 16) -255)
+    (= (int "0b101010") 42)
+    (= (int "101010" 0 2) 42)
 ))
 
 (define (test-integer) (test-int))
@@ -1596,7 +1604,13 @@ true
 
 (define (test-length )
   (> (length (symbols)) 100)
-  (- 7 (length "newlisp")))
+  (- 7 (length "newlisp"))
+  (= 3 (length 123))
+  (= 3 (length 123,456))
+  (= 1 (length 0))
+  (= 1 (length 0,789))
+  (= 7 (length 10e5))
+)
 
 (define (test-let )
   (set 'a 123)
@@ -1698,8 +1712,7 @@ true
        (= '(2 4 6) (map (lambda (x) (+ x x)) '(1 2 3)))
 	   (set 'D:D '(1 2 3 4 5))
        (= (map pow D) '(1 4 9 16 25))
-       (= (map (fn (x) (apply + x)) '((1 2 3) (1 2 3))) 
-          (map (fn (x) (apply + x)) (array 2 3 '(1 2 3 1 2 3)) ))
+       (= (map pow (array 5 D))  '(1 4 9 16 25))
 ))
 
 (define (test-mat)
@@ -1992,6 +2005,7 @@ true
 		(set 'myarray (array 3 2 (sequence 1 6)))
 		(= (array 2 '(3 4)) (myarray 1))
 		(= 6 (myarray -1 -1))
+        (= (myarray '()) myarray)
 
 		(= (array 2 '(3 4)) (myarray '(1)))
 		(= 6 (myarray '(-1 -1)))
@@ -2004,6 +2018,7 @@ true
 		(= (nth '(1 2) constL) 'c)
 		(= (nth (list (- 2 1) (+ 1 1)) constL) 'c)
 		(= (nth aref constL) 'c)
+         (= (nth '() constL) constL)
 
 		; default functor
 		(set 'D:D '(a b (c d) (e f)))
@@ -2639,6 +2654,9 @@ true
 	(= (reverse D) '(3 2 1))
 	(set 'D:D "newLISP")
 	(= (reverse D) "PSILwen")
+    (set 'a (array 2 3 '(1 2 3 4 5 6)))
+    (reverse a)
+    (= a (array 2 3 '(4 5 6 1 2 3)))
 ))
 
 (define (test-rotate )
@@ -3335,7 +3353,8 @@ true
 (context 'ACCOUNT)
     (set 'ACCOUNT:term "")      ; force creation of local symbol with
     (define balance 0,0)  	; same name as built in primitive
-    (constant 'phone "")     
+    (set 'phone "")     
+    (constant 'const "foo")  ; a protected variable
 
     (define (deposit amount)
         (inc balance amount))
@@ -3371,6 +3390,9 @@ true
 
 (set 'John:name "John Doe")
 (set 'John:phone "555-123-456")
+
+(unless (protected? 'John:const)
+    (QA:failed ">>>> symbol protection has not been copied"))
 
 (John:deposit 100,00)
 (John:withdraw 60)
@@ -3563,6 +3585,8 @@ true
 	(= (Foo '(("var" 123) ("bar" 456) ("baz" 789))) 'Foo)
 	(= (Foo) '(("bar" 456) ("baz" 789) ("var" 123)))
 	(= (Foo "var" (* 2 (Foo "var"))) 246)
+    (= (Foo 123 "hello") "hello" (Foo 123))
+    (nil? (Foo 123 nil))
 	)) (QA:failed " >>>> problem with hash functions for namespaces") true)
 
 		

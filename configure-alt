@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.5.5
+VERSION=10.5.6
 
 rm -f config.h makefile_build makefile_install
 
@@ -30,14 +30,14 @@ WIN32_CC="gcc"
 OS2_CC="${DEFAULT_CC}"
 
 DEFAULT_CFLAGS=" -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c"
-DARWIN_CFLAGS=" -Wall -pedantic -Wno-long-long -Wno-strict-aliasing -O2 -c"
-LINUX_CFLAGS=" -Wall -pedantic -Wno-long-long -Wno-strict-aliasing -O2 -c"
-BSD_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
+DARWIN_CFLAGS=" -Wall -Wno-long-long -Wno-strict-aliasing -O2 -c"
+LINUX_CFLAGS=" -Wall -Wno-long-long -Wno-strict-aliasing -O2 -c"
+BSD_CFLAGS=" -Wall -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
 SUNOS_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
 AIX_XLCFLAGS=" -O2 -c"
 AIX_GCCFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing -O2 -c"
 TRU64_CFLAGS=" -ieee -pedantic -O3 -c -D_POSIX_PII_SOCKET"
-WIN32_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -O1 -c"
+WIN32_CFLAGS=" -Wall -Wno-uninitialized -Wno-long-long -O1 -c"
 OS2_CFLAGS=" -Wall -pedantic -Wno-uninitialized -Wno-long-long -Wno-strict-aliasing -O2 -c -s"
 
 DEFAULT_LDFLAGS="-lm"
@@ -206,6 +206,47 @@ done
 true ${enable_readline:=no};
 rm -f test-readline*
 
+# If we can't compile with ffi, and the environment variables don't
+# specify otherwise, we will disable it.
+cat > test-ffi.c <<EOF
+/* test-ffi.c Fri Jul 10 14:57:33 PDT 2009 Ted Walther <ted@reactor-core.org>
+ *
+ * code for testing the compiler options to use for libffi
+ */
+
+#include <stdio.h>
+#include <ffi.h>
+
+int main(int argc, char** argv) {
+       ffi_cif cif;
+       ffi_type *args[1];
+       void *values[1];
+       char *s;
+       int rc;
+     
+       args[0] = &ffi_type_pointer;
+       values[0] = &s;
+     
+       if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
+     		       &ffi_type_uint, args) == FFI_OK)
+         {
+           s = "Hello World!";
+           ffi_call(&cif, puts, &rc, values);
+         }
+     
+       return 0;
+}
+EOF
+for cclibffi in "-lffi"; do
+	if ${CC:-${DEFAULT_CC}} test-ffi.c ${DEFAULT_LDFLAGS} ${cclibffi} -o test-ffi 2>/dev/null ; then
+		true ${enable_ffi:=yes};
+		DEFAULT_FFIFLAGS="${cclibffi}";
+		echo "Detected ffi flags: ${cclibffi}";
+		break;
+	fi
+done
+true ${enable_ffi:=no};
+rm -f test-ffi*
 
 # Safe defaults; 
 true ${enable_utf8:=yes};
@@ -229,6 +270,8 @@ case "${nlc_arg}" in
 	--disable-utf8) enable_utf8=no; ;;
 	--enable-readline) enable_readline=yes; ;;
 	--disable-readline) enable_readline=no; ;;
+        --enable-ffi) enable_ffi=yes; ;;
+        --disable-ffi) enable_ffi=no; ;;
 	--enable-static) enable_static=yes; ;;
 	--disable-static) enable_static=no; ;;
 	--enable-debug) enable_debug=yes; ;;
@@ -268,6 +311,8 @@ Usage: ./configure-alt [options]
      --disable-utf8      # Disable UTF8 support
      --enable-readline   # (default) Enable readline support
      --disable-readline  # Disable readline support
+     --enable-ffi        # (default) Enable foreign function interface
+     --disable-ffi       # Disable foreign function interface
      --enable-static     # Link newlisp statically, suitable for use in chroot jails
      --disable-static    # (default) Link newlisp dynamically
      --enable-debug      # Include debugging information in the newlisp binary
@@ -351,7 +396,26 @@ readline support is disabled
 To enable readline support, use the --enable-readline option, and specify the
 proper libraries to link by setting the RLFLAGS variable when running
 configure.  Also if necessary, use the INCLUDES variable to specify where the
-readline header files are."
+readline header files are.
+
+EOF
+fi
+
+if [ $enable_ffi = yes ] ; then
+	cat >> config.h <<EOF
+/* FFI support was chosen */
+#define FFI
+
+EOF
+	echo "ffi support is enabled"
+else
+	cat <<EOF
+ffi support is disabled
+
+To enable ffi support, use the --enable-ffi option, and specify the proper
+libraries to link by setting the FFIFLAGS variable when running configure.
+Also if necessary, use the INCLUDES variable to specify where the ffi header
+files are.
 
 EOF
 fi
@@ -397,13 +461,13 @@ fi
 rm -f test-archflag*
 
 STRIPBINARY="	\$(STRIP) \$(TARG)"
-LINKSTAGE="	\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+LINKSTAGE="	\$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) \$(FFIFLAGS) -o \$(TARG)"
 COMPILEOBJS="	\$(CC) \$(ARCHFLAGS) \$(CFLAGS) -DNEWCONFIG $<"
 
 if [ $os_type = OS2 ] ; then
 	STRIPBINARY=""
 elif [ $os_type = AIX -a $memory_model = LP64 ] ; then
-	LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) -o \$(TARG)"
+	LINKSTAGE=" OBJECT_MODE=64 \$(CC) \$(OBJS) \$(ARCHFLAGS) \$(LDFLAGS) \$(RLFLAGS) \$(FFIFLAGS) -o \$(TARG)"
 fi
 
 # Now let us make the Makefile (makefile_build)
@@ -416,6 +480,7 @@ OBJS = ${OBJS:-${DEFAULT_OBJS}}
 STRIP = ${STRIP:-${DEFAULT_STRIP}}
 TARG = ${TARG:-${DEFAULT_TARG}}
 RLFLAGS = ${RLFLAGS:-${DEFAULT_RLFLAGS}}
+FFIFLAGS = ${FFIFLAGS:-${DEFAULT_FFIFLAGS}}
 ARCHFLAGS = ${ARCHFLAGS:-${DEFAULT_ARCHFLAGS}}
 
 default: \$(OBJS)
@@ -453,13 +518,9 @@ install:
 	-rm -f \$(bindir)/newlisp
 	-install -m 755  newlisp \$(bindir)/\$(package)-\$(version)
 	-cd \$(bindir); ln -s \$(package)-\$(version) newlisp
-	-install -m 644 examples/init.lsp.example \$(pkgdatadir)/init.lsp.example
 	-install -m 755 util/newlispdoc \$(bindir)/newlispdoc
 	-install -m 644 util/syntax.cgi \$(pkgdatadir)/util/syntax.cgi
 	-install -m 644 util/newlisp.vim \$(pkgdatadir)/util/newlisp.vim
-	-install -m 644 util/nanorc \$(pkgdatadir)/util/nanorc
-	-install -m 644 util/link.lsp \$(pkgdatadir)/util/link.lsp
-	-install -m 644 util/httpd-conf.lsp \$(pkgdatadir)/util/httpd-conf.lsp
 	-install -m 644 doc/COPYING \$(docdir)/COPYING
 	-install -m 644 doc/CREDITS \$(docdir)/CREDITS
 	-install -m 644 doc/newlisp_manual.html \$(docdir)/newlisp_manual.html
@@ -467,7 +528,7 @@ install:
 	-install -m 644 doc/manual_frame.html \$(docdir)/manual_frame.html
 	-install -m 644 doc/CodePatterns.html \$(docdir)/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html \$(docdir)/newLISPdoc.html
-	-install -m 644 doc/newLISP-10.4.0-Release.html \$(docdir)/newLISP-10.4.0-Release.html
+	-install -m 644 doc/newLISP-${version}-Release.html \$(docdir)/newLISP-${version}-Release.html
 	-install -m 644 doc/newlisp.1 \$(man1dir)/newlisp.1
 	-install -m 644 doc/newlispdoc.1 \$(man1dir)/newlispdoc.1
 	-install -m 644 modules/canvas.lsp \$(pkgdatadir)/modules/canvas.lsp
@@ -525,6 +586,8 @@ install:
 	-install -m 644 guiserver/sound-demo.lsp \$(pkgdatadir)/guiserver/sound-demo.lsp
 	-install -m 644 guiserver/stroke-demo.lsp \$(pkgdatadir)/guiserver/stroke-demo.lsp
 	-install -m 644 guiserver/tabs-demo.lsp \$(pkgdatadir)/guiserver/tabs-demo.lsp
+	-install -m 644 guiserver/table-demo.lsp \$(pkgdatadir)/guiserver/table-demo.lsp
+	-install -m 644 guiserver/textfield-demo.lsp \$(pkgdatadir)/guiserver/textfield-demo.lsp
 	-install -m 644 guiserver/textrot-demo.lsp \$(pkgdatadir)/guiserver/textrot-demo.lsp
 	-install -m 644 guiserver/widgets-demo.lsp \$(pkgdatadir)/guiserver/widgets-demo.lsp
 	-install -m 644 guiserver/word-count.lsp \$(pkgdatadir)/guiserver/word-count.lsp

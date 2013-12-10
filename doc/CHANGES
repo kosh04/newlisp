@@ -6682,7 +6682,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
    Some cleanup and changes in scripts (makefiles) for binary installers
 
 
-10.5.5
+10.5.5 2013 November 20th, development release
    Allow trailing , (comma) in JSON arrays. The new JSON ECMA-404 seems not 
    to allow it but the JavaScript standard ECMA-262 and many browsers do.
 
@@ -6726,4 +6726,45 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
    Many documentation changes and corrections.
 
-   
+10.5.6
+   Since OSX 10.9 Maverick (format "%'d" 12345) => 12,345 will work too.
+   Will not work on any locale but works on en_US.UTF-8.
+
+   Fixed 'apply' for arrays introduced in 10.5.5 for a cell/memory leak.
+
+   When making hash trees using the predefined context 'Tree', 
+   the default symbol in the new context is protected as is 'Tree:Tree'.
+   Default symbols in hash trees must be 'nil' in order for the hash 
+   statement syntax for namespaces to work.  
+
+   When copying symbols from a source context to a target contest using 'new'
+   or 'def-new', the 'protected?' property is copied too.
+
+   An empty list as index vector for a list or array yields the original
+   list or array as return value: 
+       (set 'L '(1 2 (3 4)))
+       (L '())    => (1 2 (3 4))
+       (nth '() L) => (1 2 (3 4))
+
+   Many document changes, additions and corrections.
+
+   'int' can convert binarys numbers like (int "0b11111") => 31
+   This format is recognized by the code reader/loader since v.10.4.4.
+
+   Integers are accepted as hash keys. This allows creating sparse vectors: 
+       (new Tree 'V) 
+       (V 123 "hello") 
+       (V 123) => "hello"
+
+   'reverse' can be used on arrays.
+  
+   Anaphoric system variable $it is now set to the value of the conditional 
+   expression in 'if'.
+
+   Speed improvements in evaluateExpression().  For this The -pendatic option 
+   has been turned off in Linux to avoid ISO C90 mixed declaration warnings.
+
+   'length' on integers will return the number of digits, just like it already
+   does on bigint numbers, on floats returns the number of decimal digits before
+   the decimal separator.
+

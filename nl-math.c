@@ -241,9 +241,9 @@ int * num = NULL;
 int * numx;
 int * numy;
 int * freePtr = NULL;
+CELL * next;
 #endif
 CELL * cell;
-CELL * next;
 
 if(params == nilCell)
     {
@@ -1371,22 +1371,15 @@ CELL * p_randomize(CELL * params)
 {
 CELL * list;
 CELL * cell;
-size_t length, i, j;
 CELL * * vector;
-int repetition = 0;
+size_t length, i, j;
 INT rnum;
 double scale;
 
 getListHead(params, &list);
 
 if((length = listlen(list)) <= 1) 
-  {
-  cell = getCell(CELL_EXPRESSION);
-  cell ->contents = (UINT)copyList(list);
-  return(cell);
-  }
-  
-repetition = getFlag(params->next);
+  return(makeCell(CELL_EXPRESSION, (UINT)copyList(list)));
  
 /* build index vector */
 cell = list; 
@@ -1411,8 +1404,9 @@ for(i = 0; i < (length - 1); i++)
     vector[j] = cell;
     }
 
-/* check that new sequence is different */
-if(!repetition)
+/* check that new sequence is different 
+   for default no flag or nil flag */
+if(!getFlag(params->next))
     {
     for(i = 0; i < length; i++)
         if(vector[i]->next != (void *)i) break;
@@ -2022,9 +2016,11 @@ CELL * p_gcd(CELL * params)
 { 
 INT64 m, n, r; 
 CELL * cell;
+#ifdef BIGINT
 CELL * x;
 CELL * y;
 UINT * resultIdxSave = resultStackIdx;
+#endif
 
 cell = evaluateExpression(params);
 params = params->next;
@@ -4239,7 +4235,7 @@ int minInt[4] = {-1, 9, 223372036, 854775808};
 numPtr = (int *)(UINT)cell->contents;
 if(cmpBigint((int *)(UINT)cell->contents, cell->aux -1, maxInt, 3) == 1 ||
             cmpBigint((int *)(UINT)cell->contents, cell->aux - 1, minInt, 3) == -1)
-    errorProc(ERR_CANNOT_CONVERT);
+    errorProc(ERR_NUMBER_OUT_OF_RANGE);
 
 num = numPtr[1];
 for(i = 2; i < cell->aux; i++)

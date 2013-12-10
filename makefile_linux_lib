@@ -6,7 +6,7 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o unix-lib.o
 
-CFLAGS = -m32 -Wall -pedantic -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -DLINUX -DLIBRARY
+CFLAGS = -m32 -Wall -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -DLINUX -DLIBRARY
 
 CC = gcc
 

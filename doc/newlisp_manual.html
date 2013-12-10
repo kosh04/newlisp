@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.5 Manual and Reference</title>
+   <title>newLISP v.10.5.6 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -141,7 +141,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.5</h2>
+<h2>User Manual and Reference v.10.5.6</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -1425,7 +1425,7 @@ mode on the command-line.</p>
 
 <p>Multiline expressions can be entered by entering an empty line first. 
 Once in multiline mode, another empty line returns from entry mode 
-and evaluates the statement(s) entered:</p>
+and evaluates the statement(s) entered (ouput in boldface):</p>
 
 <pre>
 &gt;
@@ -1526,17 +1526,49 @@ of the number.</p>
 
 <p>The following operators, functions and predicates work on big integers:</p>
 
-<blockquote>
-Arithmetic operators: <a href="#arithmetic">+ - * / ++ -- %</a>.<br/>
+<table  summary="functions working on big integers">
+<tr align="left"><th>function</th><th>description</th></tr>
 
-Comparison operators: <a href="#logical">&lt; &gt; = &lt;= &gt;= !=</a>.<br/>
+<tr>
+<td width="16%"><a href="#arithmetic">+ - * / ++ -- %</a></td>
+<td width="80%">arithmetic operators</td>
+</tr>
 
-Functions: <a href="#abs">abs</a>, <a href="#gcd">gcd</a>, 
-<a href="#length">length</a>.<br/>
+<tr>
+<td><a href="#logical">&lt; &gt; = &lt;= &gt;= !=</a></td>
+<td>logical operators</td>
+</tr>
 
-Predicates: <a href="#evenp">even?</a>, <a href="#oddp">odd?</a>, 
-<a href="#numberp">number?</a>, <a href="#zerop">zero?</a>.<br/>
-</blockquote>
+<tr>
+<td><a href="#abs">abs</a></td>
+<td>returns the absolute value of a number</td>
+</tr>
+
+<tr>
+<td><a href="#gcd">gcd</a></td>
+<td>calculates the greatest common divisor of a group of integers</td>
+</tr>
+
+<tr>
+<td><a href="#evenp">even?</a></td>
+<td>checks the parity of an integer number</td>
+</tr>
+
+<tr>
+<td><a href="#oddp">odd?</a></td>
+<td>checks the parity of an integer number</td>
+</tr>
+
+<tr>
+<td><a href="#numberp">number?</a></td>
+<td>checks if an expression is a float or an integer</td>
+</tr>
+
+<tr>
+<td><a href="#zerop">zero?</a></td>
+<td>checks if an expression is 0 or 0.0</td>
+</tr>
+</table>
 
 <p>If the first argument in any of these operators and functions is a big 
 integer, the calculation performed will be in big integer mode. In the
@@ -2047,7 +2079,7 @@ and modifying arrays:</p>
 
 <tr>
 <td><a href="#apply">apply</a></td>
-<td>applies a function to arguments in a vector</td>
+<td>apply a function or operator to a list of arguments.</td>
 </tr>
 
 <tr>
@@ -2114,6 +2146,11 @@ and returns results in a list.</td>
 <tr>
 <td><a href="#rest">rest</a></td>
 <td>returns all but the first row of an array</td>
+</tr>
+
+<tr>
+<td><a href="#reverse">reverse</a></td>
+<td>reverses the elements or rows in an array</td>
 </tr>
 
 <tr>
@@ -2228,6 +2265,10 @@ vectors, such as <a href="#push">push</a>, <a href="#pop">pop</a>,
 (lst '(3 1))                <span class='arw'>&rarr;</span> e
 (set 'vec (ref 'e lst))     <span class='arw'>&rarr;</span> (3 1)
 (lst vec)                   <span class='arw'>&rarr;</span> e
+
+; an empty index vector yields the original list or array
+
+(lst '())  <span class='arw'>&rarr;</span> (set 'lst '(a b c (d e) (f g)))
 </pre>		
 
 <p>Note that implicit indexing is not breaking newLISP
@@ -2793,7 +2834,7 @@ it will belong to that context permanently.</p>
 
 <li>
 <p>When a user-defined function is evaluated, the context is switched 
-to the name-space which owns the that symbol.</p>
+to the name-space which owns that symbol.</p>
 </li>
 
 <li>A context switch only influences symbol creation during 
@@ -3404,24 +3445,28 @@ uninitialized <a href="#default_function">default functor</a>:</p>
 <pre>
 (define Myhash:Myhash) ; create namespace and default functor
 
-; or as an alternative use
+; or as a safer alternative
 
 (new Tree 'MyHash) ; create from built-in template
 </pre>		
 
 <p>Either method can be used to make the  <tt>MyHash</tt> dictionary space and default
-functor. Creating key-value pairs and retrieving a value is easy:</p>
+functor. The second method is safer, as it will protect the default functor 
+<tt>MyHash:MyHash</tt> from change. The <em>default functor</em> in a namespace must 
+contain <tt>nil</tt> to be used as a dictionary. Creating key-value pairs and retrieving 
+a value is easy:</p>
 
 <pre>
 (Myhash "var" 123) ; create and set variable/value pair
 
-(Myhash "var") ; <span class='arw'>&rarr;</span> 123 ; retrieve value
-</pre>		
+(Myhash "var")  <span class='arw'>&rarr;</span> 123 ; retrieve value
 
-<p>Note that the <em>default functor</em> should not be initialized to any
-value other than <tt>nil</tt>. The default functor works like a dictionary
-hash function creating the symbols in the string following it and setting it
-to the value if specified.</p>
+; keys can be integers and will be converted to strings internally
+
+(Myhash 456 "hello")
+
+(Myhash 456)    <span class='arw'>&rarr;</span> "hello"
+</pre>		
 
 <p>Symbol variables created this way can contain spaces or other characters
 normally not allowed in newLISP symbol names:</p>
@@ -4555,7 +4600,9 @@ in UTF-8 enabled versions of newLISP.
 The <a href="#reverse">reverse</a> function reverses
 a byte vector, not a character vector. The last three functions can still 
 be used to manipulate binary non-textual data in the UTF-8&ndash;enabled 
-version of newLISP.</p>
+version of newLISP. To make <a href="#slice">slice</a> and <a href="#reverse">reverse</a>
+work with UTF-8 strings, combine them with <a href="#explode">explode</a> and
+<a href="#join">join</a>.</p>
 
 <p>To enable UTF-8 in Perl Compatible Regular Expressions (PCRE)
 &mdash; used by <a href="#directory">directory</a>, <a href="#find">find</a>, 
@@ -8422,11 +8469,11 @@ to transfer files to remote newLISP server nodes.
 
 <a name="apply"></a>
 <h2><span class="function">apply</span></h2>
-<h4>syntax: (apply <em>func list</em> [<em>int-reduce</em>])</h4>
+<h4>syntax: (apply <em>func</em> <em>list</em> [<em>int-reduce</em>])</h4>
 
 <p>Applies the contents of <em>func</em> (primitive, user-defined function, or 
-lambda expression)  to the arguments in <em>list</em>. Since version 10.5.5
-<em>list</em> can also be an array vector.</p>
+lambda expression)  to the arguments in <em>list</em>. Only functions and
+operators with standard evaluation of their arguments can be applied.</p>
 
 <!-- example -->
 
@@ -9157,7 +9204,7 @@ to encode binary data for inclusion in text-based messages
 	posteriors from one token calculation get the priors in the next calculation. 
 	In the default inverse Chi&sup2; method, 
 	priors are not passed on via chaining, 
-	but probabilities are compounded using the Chi&sup2; method.
+	but probabilities are compounded using the inverse Chi&sup2; method.
 </p>
 
 <p>
@@ -14618,7 +14665,6 @@ it cannot be omitted.</p>
 
 <p>Below are the types in <tt>f</tt>:</p>
 
-
 <table summary="format characters">
 <tr align="left"><th>format</th><th>description</th></tr>
 <tr><td>s</td><td>text string</td></tr>
@@ -14634,12 +14680,24 @@ it cannot be omitted.</p>
 <tr><td>g</td><td>general floating point</td></tr>
 </table><br/>
 
-<p>Formatting 64-bit numbers using 32-bit format specifiers will truncate and
-format the lower 32 bits of the number.
-</p>
+<p>Formatting 64-bit numbers using the 32-bit format specifiers from above table 
+will truncate and format the lower 32 bits of the number on 64-bit systerms and overflow to
+<tt>0xFFFFFFFF</tt> on 32-bit systems.</p>
+
+<p>For 32-bit and 64-bit numbers use the following format 
+strings. 64-bit numbers will be truncated to 32-bit on
+32-bit platforms:</p>
+
+<table summary="format characters">
+<tr align="left"><th>format</th><th>description</th></tr>
+<tr><td>ld</td><td>decimal (32/64-bit)</td></tr>
+<tr><td>lu</td><td>unsigned decimal (32/64-bit)</td></tr>
+<tr><td>lx</td><td>hexadecimal (32/64-bit)</td></tr>
+<tr><td>lX</td><td>hexadecimal uppercase (32/64-bit)</td></tr>
+</table><br/>
 
 <p>For 64-bit numbers use the following format strings on Unix-like 
-operating systems and on MS Windows:</p>
+operating systems and on MS Windows (not supported on TRU64):</p>
 
 <table summary="format characters">
 <tr align="left"><th>format</th><th>description</th></tr>
@@ -14647,18 +14705,6 @@ operating systems and on MS Windows:</p>
 <tr><td>llu</td><td>unsigned decimal (64-bit)</td></tr>
 <tr><td>llx</td><td>hexadecimal (64-bit)</td></tr>
 <tr><td>llX</td><td>hexadecimal uppercase(64-bit)</td></tr>
-</table><br/>
-
-<p>For 64-bit numbers (since version 8.9.7) use the following format 
-strings on Tru64 Unix:
-</p>
-
-<table summary="format characters">
-<tr align="left"><th>format</th><th>description</th></tr>
-<tr><td>ld</td><td>decimal (64-bit)</td></tr>
-<tr><td>lu</td><td>unsigned decimal (64-bit)</td></tr>
-<tr><td>lx</td><td>hexadecimal (64-bit)</td></tr>
-<tr><td>lX</td><td>hexadecimal uppercase(64-bit)</td></tr>
 </table><br/>
 
 <p>On Windows platforms only the following characters apply 
@@ -14701,11 +14747,11 @@ of <tt>d</tt>.
 (format "Result = %05d" 2)  <span class='arw'>&rarr;</span> "Result = 00002"
 
 (format "%14.2f" 12345678.12)   <span class='arw'>&rarr;</span> "   12345678.12"
-; on Linux only
- (format "%'14.2f" 12345678.12) <span class='arw'>&rarr;</span> " 12,345,678.12"
+; on UNIX glibc compatible platforms only (Linux, MAC OS X 10.9) on some locales
+(format "%'14.2f" 12345678.12) <span class='arw'>&rarr;</span> " 12,345,678.12"
 
 (format "%8d" 12345)   <span class='arw'>&rarr;</span> "   12345"
-; on Linux only
+; on UNIX glibc compatible platforms only (Linux, MAC OS X 10.9) on some locales
 (format "%'8d" 12345)  <span class='arw'>&rarr;</span> "  12,345"
 
 (format "%-15s" "hello")        <span class='arw'>&rarr;</span> "hello          "
@@ -15426,13 +15472,14 @@ global? 'print)   <span class='arw'>&rarr;</span> true
 <h4>syntax: (if <em>exp-condition</em> <em>exp-1</em> [<em>exp-2</em>])<br/>
 
 syntax: (if <em>exp-cond-1</em> <em>exp-1</em>  <em>exp-cond-2</em> <em>exp-2</em> [ ... ])</h4>
-<p>
-If the value of <em>exp-condition</em> is neither <tt>nil</tt> nor an empty list, 
-the result of evaluating <em>exp-1</em> is returned; 
-otherwise, the value of <em>exp-2</em> is returned. 
-If <em>exp-2</em> is absent, the value of 
-<em>exp-condition</em> is returned.
-</p>
+
+<p>If the value of <em>exp-condition</em> is neither <tt>nil</tt> nor an empty list, 
+the result of evaluating <em>exp-1</em> is returned; otherwise, the value of 
+<em>exp-2</em> is returned.  If <em>exp-2</em> is absent, the value of 
+<em>exp-condition</em> is returned.</p>
+
+<p><tt>if</tt> also sets the anaphoric syztem variable <tt>$it</tt> to the value
+of the conditional expression in <tt>if</tt>.</p>
 
 <!-- example -->
 
@@ -15453,6 +15500,10 @@ If <em>exp-2</em> is absent, the value of
 (do-this x y)
 (do-that x y))
 )
+
+; if also sets the anaphoric system variable $it
+(set 'lst '(A B C))
+(if lst (println (last $it)))  <span class='arw'>&rarr;</span> C
 </pre>
 
 
@@ -15482,19 +15533,13 @@ an unlimited number of arguments.
 </pre>
 
 
-<p>
-The last expression, <tt>"n/a"</tt>, is optional. 
-When this option is omitted, 
-the evaluation of <tt>(&gt;= x 30)</tt> 
-is returned, behaving exactly like a traditional 
-<a href="#cond">cond</a> but without requiring 
-parentheses around the condition-expression pairs.
-</p>
+<p>The last expression, <tt>"n/a"</tt>, is optional. When this option 
+is omitted, the evaluation of <tt>(&gt;= x 30)</tt> is returned, behaving 
+exactly like a traditional <a href="#cond">cond</a> but without requiring 
+parentheses around the condition-expression pairs.</p>
 
-<p>
-In any case, the whole <tt>if</tt> expression 
-always returns the last expression or condition evaluated.
-</p>
+<p> In any case, the whole <tt>if</tt> expression 
+always returns the last expression or condition evaluated.</p>
 
 <p>
 See also the <a href="#when">when</a> and <a href="#unless">unless</a> functions.
@@ -15987,6 +16032,7 @@ is converted to <tt>0</tt> (zero).</p>
 (int "a123" 0)       <span class='arw'>&rarr;</span> 0
 (int (trim " 123"))  <span class='arw'>&rarr;</span> 123
 (int "0xFF")         <span class='arw'>&rarr;</span> 255
+(int "0b11111")      <span class='arw'>&rarr;</span> 31
 (int "055")          <span class='arw'>&rarr;</span> 45
 (int "1.567")        <span class='arw'>&rarr;</span> 1
 (int 1.567)          <span class='arw'>&rarr;</span> 1
@@ -16805,36 +16851,41 @@ variable.
 <h4>syntax: (length <em>exp</em>)</h4>
 
 <p>Returns the number of elements in a list, the number of rows in
-an array, or the number of bytes in a string.
-</p>
+an array and the number of bytes in a string or in a symbol name.</p>
 
-<p><tt>length</tt> applied to a symbol returns the length of the symbol name.
-Applied to a number, <tt>length</tt> returns the number of bytes needed in 
-memory to store that number: 4 or 8 for integers and 8 for floating point numbers.
-On big integers the number of digits is returned.</p>
+<p>Applied to a number, <tt>length</tt> returns the number of digits for 
+normal and big integers and the number of digits before the decimal 
+separator for floats.</p>
+
+<p>Before version 10.5.6 <tt>length</tt> returned the storage size in bytes
+for integers (4 or 8) and floats (8).</p>
 
 <!-- example -->
 
 <pre>
+; number of top level elements in a list
 (length '(a b (c d) e))         <span class='arw'>&rarr;</span> 4
 (length '())                    <span class='arw'>&rarr;</span> 0
 (set 'someList '(q w e r t y))  <span class='arw'>&rarr;</span> (q w e r t y)
 (length someList)               <span class='arw'>&rarr;</span> 6
 
+; number of top level elements in an array
 (set 'ary (array 2 4 '(0)))  <span class='arw'>&rarr;</span> ((1 2 3 4) (5 6 7 8))
 (length ary)                 <span class='arw'>&rarr;</span> 2
 
+; number of bytes in a string or byte buffer
 (length "Hello World")  <span class='arw'>&rarr;</span> 11
 (length "")             <span class='arw'>&rarr;</span> 0
+(length "\000\001\003") <span class='arw'>&rarr;</span> 3
 
+; number of bytes in a symbol name string
 (length 'someVar)  <span class='arw'>&rarr;</span> 7
-(length 123)       <span class='arw'>&rarr;</span> 8
-(length 1.23)      <span class='arw'>&rarr;</span> 8
 
-(length (get-int "\000\000\000\001")) <span class='arw'>&rarr;</span> 4
-
+; number of int digits in a number
+(length 0)         <span class='arw'>&rarr;</span> 0
+(length 123)       <span class='arw'>&rarr;</span> 3
+(length 1.23)      <span class='arw'>&rarr;</span> 1
 (length 1234567890123456789012345L) <span class='arw'>&rarr;</span> 25 
-(length (bigint 67890))             <span class='arw'>&rarr;</span> 5 
 </pre>
 
 <p>Use <a href="#utf8len">utf8len</a> to calculate the number of UTF-8 characters 
@@ -18310,11 +18361,8 @@ newlisp -l -c -d 4711 &amp;
 newlisp -c /tmp/mysocket
 </pre>
 
-
-<p>Instead of <tt>4711</tt>, any other port number can be used. 
-Multiple nodes can be started on different hosts and with the same 
-or different port numbers.  The <tt>-l</tt> or <tt>-L</tt> logging options
-can be specified to log connections and remote commands.</p>
+<p>The <tt>-c</tt> option is necessary to suppress newLISP emitting
+prompts.</p>
 
 <p>The <tt>-d</tt> daemon mode allows newLISP to maintain state between 
 connections.  When keeping state between connections is not desired, 
@@ -18326,6 +18374,12 @@ In <tt>-d</tt> daemon mode, each new client request
 would have to wait for the previous request to be finished. 
 See the chapter <a href="#inetd_daemon">inetd daemon mode</a> 
 on how to configure this mode correctly.</p>
+
+<p>Instead of <tt>4711</tt>, any other port number can be used. 
+Multiple nodes can be started on different hosts and with the same 
+or different port numbers.  The <tt>-l</tt> or <tt>-L</tt> logging options
+can be specified to log connections and remote commands.</p>
+
 
 <p>In the first syntax, <tt>net-eval</tt> talks to only one 
 remote newLISP server node, sending the host in <em>str-host</em>
@@ -23372,45 +23426,49 @@ than byte boundaries when the UTF-8&ndash;enabled version of newLISP is used.</p
 <a name="reverse"></a>
 <h2><span class="function">reverse</span>&nbsp;<a href="#destructive">!</a></h2>
 <h4>syntax: (reverse <em>list</em>)<br/>
-
+syntax: (reverse <em>array</em>)<br/>
 syntax: (reverse <em>string</em>)</h4>
 
-<p>
-	In the first form, 
-	<tt>reverse</tt> reverses and returns the <em>list</em>.
-	Note that <tt>reverse</tt> is destructive and 
-	changes the original list.
-</p>
+<p>In the first and second form, <tt>reverse</tt> reverses and returns the 
+<em>list</em> or <em>array</em>. Note that <tt>reverse</tt> is destructive 
+and changes the original list or array.</p>
 
 <!-- example -->
 
 <pre>
-(set 'l '(1 2 3 4 5 6 7 8 9))
+; reverse a list
+(set 'l '(a b c d e f))
 
-(reverse l)  <span class='arw'>&rarr;</span> (9 8 7 6 5 4 3 2 1)
-l            <span class='arw'>&rarr;</span> (9 8 7 6 5 4 3 2 1)
+(reverse l)  <span class='arw'>&rarr;</span> (f e d c b a)
+l            <span class='arw'>&rarr;</span> (f e d c b a)
+i
+; reverse an array
+(set 'a (array 3 2 '(1 2 3 4 5 6))) <span class='arw'>&rarr;</span> ((1 2) (3 4) (5 6))
+
+(reverse a)                         <span class='arw'>&rarr;</span> ((5 6) (3 4) (1 2))
+a                                   <span class='arw'>&rarr;</span> ((5 6) (3 4) (1 2))
 </pre>
 
 
-<p>
-	In the second form, 
-	<tt>reverse</tt> is used to reverse the order 
-	of characters in a string.
-</p>
+<p>In the third form, <tt>reverse</tt> is used to reverse the order 
+of characters in a string.</p>
 
 <!-- example -->
 
 <pre>
+; reverse byte character string
+
 (set 'str "newLISP")
 
 (reverse str)  <span class='arw'>&rarr;</span> "PSILwen"
 str            <span class='arw'>&rarr;</span> "PSILwen"
+
+; reverse a multibyte character UTF-8 string, explode is UTF-8 sensitive
+
+(join (reverse (explode "ΑΒΓΔΕΖΗΘ")))  <span class='arw'>&rarr;</span> "ΘΗΖΕΔΓΒΑ"
 </pre>
 
-
-<p>
-	See also the <a href="#sort">sort</a> function.
-</p>
+<p>See also the <a href="#sort">sort</a> function.</p>
 
 <br/><br/>
 
@@ -23419,21 +23477,13 @@ str            <span class='arw'>&rarr;</span> "PSILwen"
 <h4>syntax: (rotate <em>list</em> [<em>int-count</em>])<br/>
 syntax: (rotate <em>str</em> [<em>int-count</em>])</h4>
 
-<p>
-	Rotates and returns
-	the <em>list</em> or string in <em>str</em>.
-	A count can be optionally specified in <em>int-count</em> 
-	to rotate more than one position.
-	If <em>int-count</em> is positive, 
-	the rotation is to the right;
-	if <em>int-count</em> is negative, 
-	the rotation is to the left.
-	If no <em>int-count</em> is specified, 
-	<tt>rotate</tt> rotates 1 to the right.
-	<tt>rotate</tt> is a destructive function 
-	that changes the contents of 
-	the original list or string. 
-</p>
+<p>Rotates and returns the <em>list</em> or string in <em>str</em>.
+A count can be optionally specified in <em>int-count</em> 
+to rotate more than one position.  If <em>int-count</em> is positive, 
+the rotation is to the right; if <em>int-count</em> is negative, 
+the rotation is to the left.  If no <em>int-count</em> is specified, 
+<tt>rotate</tt> rotates 1 to the right.  <tt>rotate</tt> is a destructive function 
+that changes the contents of the original list or string.</p>
 
 <!-- example -->
 
@@ -23447,19 +23497,22 @@ l  <span class='arw'>&rarr;</span> (7 8 9 1 2 3 4 5 6)
 
 (rotate l -3)  <span class='arw'>&rarr;</span> (1 2 3 4 5 6 7 8 9)
 
+; rotate a byte character string
+
 (set 'str "newLISP")
 
 (rotate str)     <span class='arw'>&rarr;</span> "PnewLIS"
 (rotate str 3)   <span class='arw'>&rarr;</span> "LISPnew"
 (rotate str -4)  <span class='arw'>&rarr;</span> "newLISP"
+
+; rotate a multibyte character UTF-8 string on character boundaries
+
+(join (rotate (explode "ΑΒΓΔΕΖΗΘ")))  <span class='arw'>&rarr;</span> "ΘΑΒΓΔΕΖΗ"
 </pre>
 
 
-<p>
-	When working on a string, 
-	<tt>rotate</tt> works on byte boundaries 
-	rather than character boundaries.
-</p>
+<p>When working on a string, <tt>rotate</tt> works on byte boundaries 
+rather than character boundaries.</p>
 
 <br/><br/>
 
@@ -24466,12 +24519,10 @@ be performed.</p>
 (add 1,234 1,234)  <span class='arw'>&rarr;</span> 2,468
 </pre>
 
-
 <p>By default, newLISP &ndash; if not enabled for UTF-8 &ndash; starts up with the POSIX C 
 default locale. This guarantees that newLISP's behavior will be identical on any 
 platform locale. On UTF-8 enabled versions of newLISP the locale of
 the current platform is chosen.</p>
-
 
 <pre>
 ; after non-UTF-8 newLISP start up
@@ -24479,19 +24530,35 @@ the current platform is chosen.</p>
 (set-locale)  <span class='arw'>&rarr;</span> ("C" ".")
 </pre>
 
+<p>In <em>int-category</em> integer numbers may be specified as <em>category options</em> 
+for fine-tuning certain aspects of the locale, such as number display, date display, 
+and so forth. The options valid on your platform can be found in the C include file 
+<tt>locale.h</tt> and may be different on each platform. When no <em>int-category</em>
+is specified, <tt>LC_ALL</tt> is used to turn on all options for that locale.</p>
 
-<p>In <em>int-category</em>, integer numbers may be specified 
-as <em>category options</em> for fine-tuning certain aspects 
-of the locale, such as number display, date display, and so forth.
-The numbers used vary from system-to-system. The options valid on your 
-platform can be found in the C include file <tt>locale.h</tt>.
-This file defines constants like  <tt>LC_ALL, LC_NUMERIC,</tt> and 
-<tt>LC_MONETARY</tt>. When <tt>set-locale</tt> is used without the option 
-number, it assumes the <tt>LC_ALL</tt> option, which turns on all options 
-for that locale.</p>
+<table>
+<tr align="left"><th>Category</th><th>Mac OS X, BSDs<br/>&amp; MS Windows</th></tr>
+<tr><td>LC_ALL</td><td>0</td></tr>
+<tr><td>LC_COLLATE</td><td>1</td></tr>
+<tr><td>LC_CTYPE</td><td>2</td></tr>
+<tr><td>LC_MONETARY</td><td>3</td></tr>
+<tr><td>LC_NUMERIC</td><td>4</td></tr>
+<tr><td>LC_TIME</td><td>5</td></tr>
+</table>
+<br/>
 
-<p>Note that the locale also controls the decimal separator in numbers.
-The default C locale uses the decimal dot, but most others use a decimal comma.</p>
+<p>The default C locale uses the decimal dot, but most others use a decimal comma.</p>
+
+<pre>
+; with the current locale "en_US.UTF-8", only change the decimal separator 
+; to German locale comma on  Mac OS X. LC_NUMERIC is 4 on most platforms 
+
+(set-locale) <span class='arw'>&rarr;</span> ("en_US.UTF-8" ".") 
+(set-locale "de_DE.UTF-8" 4) <span class='arw'>&rarr;</span> ("de_DE.UTF-8" ",") 
+
+; mixed locale shows country setting for each category, 4 has changed
+(set-locale) <span class='arw'>&rarr;</span> ("en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/de_DE.UTF-8/en_US.UTF-8/en_US.UTF-8" ",")
+</pre>
 
 <p>Note that using <tt>set-locale</tt> does not change the behavior 
 of regular expressions in newLISP. To localize the behavior of PCRE 
@@ -25138,6 +25205,10 @@ offset and length numbers, even when running the UTF-8 enabled version of newLIS
 (slice "Hello World" 0 5)  <span class='arw'>&rarr;</span> "Hello"
 (slice "Hello World" 6)    <span class='arw'>&rarr;</span> "World"
 (slice "newLISP" -4 2)     <span class='arw'>&rarr;</span> "LI"
+
+; UTF-8 strings are converted to a list, then joined again
+
+(join (slice (explode "ΩΨΧΦΥΤΣΣΡΠΟΞΝΜΛΚΙΘΗΖΕΔΓΒΑ") 3 5))  <span class='arw'>&rarr;</span> "ΦΥΤΣΣ" 
 </pre>
 
 
@@ -25161,49 +25232,37 @@ offset and length numbers, even when running the UTF-8 enabled version of newLIS
 
 <a name="sort"></a>
 <h2><span class="function">sort</span>&nbsp;<a href="#destructive">!</a></h2>
-<h4>syntax: (sort <em>list</em> [<em>func-compare</em>])</h4>
+<h4>syntax: (sort <em>list</em> [<em>func-compare</em>])<br/>
+syntax: (sort <em>array</em> [<em>func-compare</em>])</h4>
 
-<p>
-	All members in <em>list</em> 
-	are sorted in ascending order.
-	Anything may be sorted, 
-	regardless of the types.
-	When members are themselves lists,
-	each list element 
-	is recursively compared.
-	If two expressions 
-	of different types are compared,
-	the lower type is sorted 
-	before the higher type 
-	in the following order:
-</p>
+<p>All members in <em>list</em> are sorted in ascending order.
+Anything may be sorted, regardless of the types.
+When members are themselves lists, each list element 
+is recursively compared. Arrays in <em>array</em> are
+sorted as if they were lists. If two expressions 
+of different types are compared, the lower type is sorted 
+before the higher type in the following order:</p>
+
+<p>When sorting an <em>array</em> sort works as if sorting
+a list.</p>
 
 <pre>
 Atoms: nil, true, integer or float, string, symbol, primitive
 Lists: quoted expression, list, lambda, lambda-macro
 </pre>
 
-<p>
-	The sort is destructive,
-	changing the order of the elements in the original list.
-	The return value of <tt>sort</tt> is a copy of the sorted list.
-</p>
+<p>The <tt>sort</tt> is destructive, changing the order of the elements in the 
+original list or array and returning the sorted list or array.</p>
 
-<p>
-	An optional comparison operator, 
-	user-defined function, 
-	or anonymous function 
-	can be supplied.
-	The functor or operator 
-	can be given with or without 
-	a preceding quote.
-</p>
+<p>An optional comparison operator, user-defined function, 
+or anonymous function can be supplied. The functor or operator 
+can be given with or without a preceding quote.</p>
 
 <!-- example -->
 
 <pre>
 (sort '(v f r t h n m j))     <span class='arw'>&rarr;</span> (f h j m n r t v)
-(sort '((3 4) (2 1) (1 10)))  <span class='arw'>&rarr;</span> ((1 10) (2 1) (3 4))
+(sort '((2 4) (1 10) (2 1)))  <span class='arw'>&rarr;</span> ((1 10) (2 1) (2 4))
 (sort '((3 4) "hi" 2.8 8 b))  <span class='arw'>&rarr;</span> (2.8 8 "hi" b (3 4))
 
 (set 's '(k a l s))
@@ -28476,6 +28535,13 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <tr><td>FFI struct expected</td><td>73</td></tr>
 </table><br/>
 
+<h2>Big Integers</h2>
+<table summary="Error codes big Integers">
+<tr align="left"><th>description</th><th>no</th></tr>
+<tr><td>bigint type not applicable</td><td>74</td></tr>
+<tr><td>not a number or infinitive</td><td>75</td></tr>
+</table><br/>
+
 <br/><br/><br/>
 
 <a name="tcpip_error_codes"></a>
@@ -28557,6 +28623,7 @@ the first iteration.</td>
 result inside an executing expression, i.e. in self referential assignments. 
 <tt>$it</tt> is only available inside the function expression setting it, and
 is set to <tt>nil</tt> on exit of that expression. The following functions use it:
+<a href="#if">if</a>,
 <a href="#hash">hashes</a>, <a href="#find-all">find-all</a>,
 <a href="#replace">replace</a>, <a href="#set-ref">set-ref</a>, 
 <a href="#set-ref-all">set-ref-all</a> and <a href="#setf">setf setq</a>.</td>
@@ -28614,7 +28681,9 @@ variable, the <tt>module</tt> function loads automatically from
 
 ; built-in template for hashes
 ; usage: (new Tree 'MyHash)
-(define Tree:Tree) 
+(context 'Tree) 
+  (constant 'Tree:Tree) 
+(context MAIN)"
 
 ; load modules from standard path
 ; usage (module "mymodule.lsp")

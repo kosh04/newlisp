@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.5
-INT_VERSION = 10505
+VERSION = 10.5.6
+INT_VERSION = 10506
 
 default: makefile_build
 	make -f makefile_build
@@ -170,7 +170,7 @@ test:
 	make check | grep '>>>'
 
 checkall:
-	./newlisp qa-dot
+	./newlisp qa-dot ; echo qa-dot
 	./newlisp qa-specific-tests/qa-dictionary
 	./newlisp qa-specific-tests/qa-xml
 	./newlisp qa-specific-tests/qa-json

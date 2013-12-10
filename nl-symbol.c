@@ -133,10 +133,20 @@ return(findInsertSymbol(token, LOOKUP_ONLY));
 SYMBOL * makeSafeSymbol(CELL * cell, SYMBOL * context, int flag)
 {
 char * token;
+UINT number;
 
-token = alloca(cell->aux + 1);
-*token = '_';
-memcpy(token + 1, (char *)cell->contents, cell->aux);
+if(isNumber(cell->type))
+    {
+    token = alloca(32);
+    getIntegerExt(cell, &number, FALSE);
+    snprintf(token, 31, "_%ld", number);
+    }
+else
+    {
+    token = alloca(cell->aux + 1);
+    *token = '_';
+    memcpy(token + 1, (char *)cell->contents, cell->aux);
+    }
     
 if(flag)
         return(translateCreateSymbol(token, CELL_NIL, context, TRUE));

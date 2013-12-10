@@ -101,7 +101,7 @@ between evaluation steps. This form of automatic memory management is called
 <i>Garbage Collection</i>.</p>
 
 <p>Traditional garbage collection schemes developed for LISP employed one of two 
-algorithms&sup1;:</p>
+algorithms: &sup1;</p>
 
 <p>(1) The <i>mark-and-sweep</i> algorithm registers each allocated memory object. A mark 
 phase periodically flags each object in the allocated memory pool. A named object 
@@ -189,7 +189,7 @@ the target object of a method call by reference.</p>
 the speed of ORO memory management more than compensates for the overhead required to
 copy and delete objects.</p>
 
-<h3>Optimizations to ORO memory management <font size="-1">&sup2;</font></h3>
+<h3>Optimizations to ORO memory management &sup2;</h3>
 
 <p>Since newLISP version 10.1, all lists, arrays and strings are passed in and out of
 built-in functions by reference. All built-in functions work directly on memory
@@ -253,7 +253,7 @@ Small objects like numbers are stored directly. In this paper function
 <tt>popResultStack()</tt> also implies that the popped object gets deleted.</p> 
 
 <p>The two <tt>resultStack</tt> management functions described are called by newLISP's 
-<tt>evaluateExpression</tt> function:&sup3;</p>
+<tt>evaluateExpression</tt> function: &sup3;</p>
 
 <blockquote><pre>
 function evaluateExpression(expr)

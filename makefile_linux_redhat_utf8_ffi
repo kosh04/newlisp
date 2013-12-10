@@ -6,7 +6,7 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
-CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX -DFFI -ILIBFFI_VERSION
+CFLAGS = -m32 -Wall -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DLINUX -DFFI -ILIBFFI_VERSION
 
 CC = gcc
 

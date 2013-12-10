@@ -163,6 +163,8 @@ Richard M. Stallman
   software for many OSs and hardware platforms. The GNU Public License is the 
   strongest force in the open source movement from which newLISP has benefitted.
 
+Shigeru Kobayashi contributed newLISP modules for Emacs, Curl and fixed a few
+  bugs in the newLISP C-source code.
 
 My apologies to anybody, who has been forgotten on this list (let me know).
 

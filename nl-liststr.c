@@ -107,24 +107,55 @@ CELL * p_length(CELL * params)
 {
 size_t length;
 SYMBOL * symbol;
+#ifdef BIGINT
+int * bigintPtr;
+int * result;
+int len;
+#else
+INT64 number;
+double fnum;
+#endif
 
 params = evaluateExpression(params);
 length = 0;
 switch(params->type)
     {
+#ifdef BIGINT
     case CELL_LONG:
-        length = sizeof(UINT); break;
 #ifndef NEWLISP64
     case CELL_INT64:
-        length = sizeof(INT64); break;
-#endif
-#ifdef BIGINT
-    case CELL_BIGINT:   
-        length = lengthBigint((int *)params->contents, params->aux - 1);
-        break;
 #endif
     case CELL_FLOAT:
-        length = sizeof(double); break;
+    case CELL_BIGINT:   
+        result = getBigintSizeDirect(params, &bigintPtr, &len);
+        length = lengthBigint(bigintPtr, len);
+        if(result) free(result);
+        break; 
+#else /* not BIGINT */
+    case CELL_LONG:
+#ifndef NEWLISP64
+    case CELL_INT64:
+#endif
+        getInteger64Ext(params, &number, FALSE);
+        if(number == 0)
+            length = 1;
+        else
+            {
+            if(number < 0) number = - number;
+            length = log(number) / log(10) + 1.5;
+            }
+        break;
+    case CELL_FLOAT:
+        getFloat(params, &fnum);
+        if(fnum == 0.0)
+            length = 1;
+        else
+            {
+            if(fnum < 0.0) fnum = - fnum;
+            length = log(fnum) / log(10) + 1.5;
+            }
+        break;
+#endif /* not BIGINT */
     case CELL_STRING:
         length = params->aux - 1; break;
     case CELL_CONTEXT:
@@ -153,6 +184,7 @@ switch(params->type)
     default:
         break;
     }
+
 return(stuffInteger(length));
 }
 
@@ -902,9 +934,12 @@ CELL * list;
 CELL * previous;
 CELL * next;
 char * str;
-size_t len, tmp;
 char * left;
 char * right;
+CELL * * addr;
+CELL * * leftA;
+CELL * * rightA;
+size_t len, tmp;
 
 cell = params;
 getEvalDefault(params, &list);
@@ -943,7 +978,24 @@ else if(list->type == CELL_STRING)
         right--;
         }
     }
-else return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, cell));
+
+else if(list->type == CELL_ARRAY)
+    {
+    addr = (CELL * *)list->contents;
+    len = (list->aux - 1) / sizeof(UINT);
+    leftA = addr;
+    rightA = leftA + len - 1;
+    while(leftA < rightA)
+        {
+        cell = *leftA;
+        *leftA = *rightA;
+        *rightA = cell;
+        leftA++;
+        rightA--;
+        }
+    }
+    
+else return(errorProcExt(ERR_ARRAY_LIST_OR_STRING_EXPECTED, cell));
 
 pushResultFlag = FALSE;
 return(list);

@@ -737,103 +737,6 @@ return(result);
 }
 
 
-#ifdef TSEARCH_COUNT
-
-/* not used anymore because of memory leaks,
-   because tree cannot be properly destroyed 
-*/
-void freeTnode(void * node) {};
-
-typedef struct 
-    {
-    UINT type;
-    UINT next;
-    UINT aux;
-    UINT contents;
-    } COUNTCELL;
-
-CELL * p_count(CELL * params)
-{
-CELL * items;
-CELL * list;
-CELL * result;
-CELL * * counts;
-ssize_t lengthItems;
-ssize_t i = 0; 
-int flag = FALSE;
-CELL * cell;
-COUNTCELL * count;
-void * root = NULL;
-void * key;
-
-params = getListHead(params, &items);
-getListHead(params, &list);
-
-result = getCell(CELL_EXPRESSION);
-
-if(items == nilCell)
-    return(result);
-    
-if(items == list)
-    {
-    flag = TRUE;
-    items = copyList(list);
-    }
-    
-lengthItems = listlen(items);
-counts = (CELL * *)callocMemory(lengthItems * sizeof(CELL *));
-
-cell = items;
-for(i = 0; i < lengthItems; i++)
-    {
-    counts[i] = copyCell(cell); 
-    counts[i]->next = NULL;
-    key = tsearch(counts[i], &root, (int (*)(const void *, const void *))compareCells);
-    if(key == NULL)
-        {
-        freeMemory(counts);
-        errorProc(ERR_NOT_ENOUGH_MEMORY);
-        }
-    cell = cell->next;
-    }
-
-cell = list;
-while(cell != nilCell)
-    {
-    key = tfind(cell, &root, (int (*)(const void *, const void *))compareCells);
-    if(key != NULL)
-        { 
-        count = (COUNTCELL *)*(CELL * *)key;
-        count->next++;
-        }
-    cell = cell->next;
-    }
-
-cell = stuffInteger((UINT)counts[0]->next);
-result->contents = (UINT)cell;
-for(i = 1; i < lengthItems; i++)
-    {
-    cell->next = stuffInteger((UINT)counts[i]->next);
-    cell = cell->next;
-    }
-
-for(i = 0; i < lengthItems; i++)
-    {
-    counts[i]->next = nilCell;
-    deleteList(counts[i]);
-    }
-
-freeMemory(counts);
-if(flag) deleteList(items);
-
-tdestroy(root, freeTnode);
-
-return(result);
-}
-
-#endif
-
-
 CELL * p_popAssoc(CELL * params)
 {
 CELL * key;
@@ -1123,6 +1026,7 @@ if(isNumber(cell->type))
 else if(isList(cell->type))
     {
     params = (CELL*)cell->contents;
+    if(params == nilCell) return(list);
     params = getIntegerExt(params, (UINT *)&index, FALSE);
     evalFlag = FALSE;
     }
@@ -2023,6 +1927,7 @@ ssize_t size, index;
 int evalFlag;
 
 list = evaluateExpression(params);
+
 if(isNumber(list->type))
     {
     getIntegerExt(list, (UINT *)&index, FALSE);
@@ -2032,6 +1937,7 @@ if(isNumber(list->type))
 else if(isList(list->type))
     {
     params = (CELL*)list->contents;
+    if(params == nilCell) return(cell);
     params = getIntegerExt(params, (UINT *)&index, FALSE);
     evalFlag = FALSE;
     }

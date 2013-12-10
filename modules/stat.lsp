@@ -1,9 +1,10 @@
 ;; @module stat.lsp
 ;; @description Basic statistics and plotting library
 ;; @version 3.0 - Eliminated plot functions and f-prob which now is built-in as prob-f
+;; @version 3.1 - Documentation changes
 ;;
-;; @author Lutz Mueller, 2001-2012
-;; <h2>Functions for statistics and plotting with GNU plot</h2>
+;; @author Lutz Mueller, 2001-2013
+;; <h2>Functions for statistics</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
 ;; <pre>

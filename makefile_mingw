@@ -4,7 +4,7 @@
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o nl-sock.o \
 	nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o win32-util.o win32-path.o
 
-CFLAGS = -Wall -pedantic -Wno-long-long -c -O1 -g -DWIN_32
+CFLAGS = -Wall -Wno-long-long -c -O1 -g -DWIN_32
 
 CC = /MinGW/bin/gcc
 STRIP = /MinGW/bin/strip

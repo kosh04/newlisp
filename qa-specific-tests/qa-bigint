@@ -160,13 +160,17 @@
     (println ">>>>> ERROR in big integer gcd") 
     (exit))
 
+(unless (= (length 1234567890123456789012345) 25)
+    (println ">>>>> ERROR in big integer length") 
+    (exit))
+
 (dotimes (i 1000)
     (unless (= (gcd i (- 1000 i)) (gcd (bigint i) (- 1000 i)))
         (println ">>>>> ERROR in gcd to bigint gcd comparison")))
 
-(println ">>> big int gcd benchmark " (time (gcd x y) 1000) " micro secs")
+;;(println ">>> big int gcd benchmark " (time (gcd x y) 1000) " micro secs")
 
-(println ">>>>> abs, bigint, float, gcd, zero?, +, -, *, /, %, ++, -- big ints tested SUCCESSFUL")
+(println ">>>>> abs bigint float gcd length zero? + - * / % ++ -- big ints tested SUCCESSFUL")
 
 (exit)
 

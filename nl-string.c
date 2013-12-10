@@ -175,10 +175,7 @@ ssize_t p;
 
 ptr = (char*)cell->contents;
 
-params = evaluateExpression(params);
-if(!isNumber(params->type))
-    errorProcExt(ERR_STRING_INDEX_INVALID, params);
-getIntegerExt(params, (UINT *)&index, FALSE);
+getInteger(params, (UINT *)&index);
 
 stringCell = cell;
 if(cell->aux == 1 && (index == 0 || index == -1)) 
@@ -524,11 +521,9 @@ if(*fmt == '%')
     }
 
 /* get optional decimal format spec */
-/* this GNU extension does not work on OS X, FreeBSD, OpenBSD */
-/* works on Linux and Unix with GNU libc */
-#ifdef LINUX
+/* this GNU extension does not work on FreeBSD, OpenBSD */
+/* works on OSX 10.9, Linux and Unix with GNU libc or alike */
 if(*fmt == '\'') fmt++;
-#endif
 
 /* get width spec */
 
@@ -602,9 +597,8 @@ if(*fmt == 's')
     return(++fmt);
     }
 
-#ifdef TRU64 /* supporting ld, li, lu, lx, lX formats */
-if(*fmt == 'l' &&  
-        (*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
+/* supporting ld, li, lu, lx, lX formats */
+if(*fmt == 'l' &&  (*(fmt + 1) == 'd' || *(fmt + 1) == 'i' || *(fmt + 1) == 'u' || *(fmt + 1) =='x' || *(fmt + 1) == 'X'))
     {
 #ifndef NEWLISP64
     *type = CELL_INT64;
@@ -613,9 +607,9 @@ if(*fmt == 'l' &&
 #endif
     return(fmt+2);
     }
-#else /* all other UNIX and WINDOWS MINGW suporting lld, llu, llx, llX formats */
-if(*fmt == 'l' && *(fmt + 1) == 'l' && 
-        (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' || *(fmt + 2) =='x' || *(fmt + 2) == 'X'))
+
+#ifndef TRUE64 /* UNIX except TRUE64 and WINDOWS MINGW suporting lld, llu, llx, llX formats */
+if(*fmt == 'l' && *(fmt + 1) == 'l' && (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' || *(fmt + 2) =='x' || *(fmt + 2) == 'X'))
     {
 #ifndef NEWLISP64
     *type = CELL_INT64;
@@ -1148,7 +1142,12 @@ else if(!isDigit((unsigned char)*intString))
         goto INT_DEFAULT;
     }
 
-
+else if(*intString == '0' && (*(intString + 1) == 'b' || *(intString + 1) == 'B'))
+    {
+    intString += 2;
+    base = 2;
+    }
+     
 #ifdef TRU64 
 result = strtoul(intString, NULL, base); 
 #else 
