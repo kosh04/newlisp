@@ -1,8 +1,8 @@
 CREDITS
 -------
 
-Over the years many users have contributed to newLISP with, suggestions,
-critiques and code. They where crucial in making newLISP what it is today.
+Over the years many users have contributed to newLISP with suggestions,
+critiques and code. They were crucial in making newLISP what it is today.
 I want to thank everybody and encourage them to continue
 to contribute with code and comments. My special thanks go to
 (in historical order):
@@ -31,7 +31,7 @@ Hans Peter Wickern
   Many usability suggestions and newlisp-tk.tcl improvements. Hans-Peter
   also introduced newLISP to many NeoBook and PowerBasic users and has
   written various DLLs which can be imported by newLISP on the Win32
-  platform http://hpwickern.bei.t-online.de/anmeldung/html1/newLISP/newLISP.html.
+  platform: http://hpwsoft.de/anmeldung/html1/newLISP/newLISP.html .
 
 Nigel Brown
   Helped making floating point behaviour consistent across platforms, 
@@ -40,8 +40,8 @@ Nigel Brown
   helped to improve newLISP.
 
 Keith Trenton
-  Helps initiated the documentation thread on the discussion board, since
-  then many useres have pointed out errors in the documentation and
+  Helped initiating the documentation thread on the discussion board. Since
+  that time many useres have pointed out errors in the documentation and
   suggested improvements.
 
 Samuel CoX
@@ -81,7 +81,7 @@ Lucas Wix
   now part of the newLISP source distribution
 
 Tim Johnson
-  developed a syntax file for Emacs http://www.johnsons-web.com/demo/newlisp/ 
+  developed the first syntax file for Emacs.
 
 John DeSanto, Gordon Fischer, John Flowers, Martin Quiroga (alphabetical order)
   from Kozoru.com for their ideas and suggestions for improvements and enhancements
@@ -137,6 +137,9 @@ Stefan Sonnenberg implemented the extended libffi based API for the import
   and callback functions starting version 10.3.8. This has opened the door
   to connect to many C-libraries, which were not accessible before.
   
+Shigeru Kobayashi contributed newLISP modules for Emacs, Curl and fixed various
+  bugs in the newLISP C-source code.
+
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel
   wrote the PCRE (Perl Regular Expressions) library, it is an essential
@@ -161,10 +164,7 @@ Sourceforge.net
 Richard M. Stallman
   GCC and many other GNU - tools make it possible to write platform independent
   software for many OSs and hardware platforms. The GNU Public License is the 
-  strongest force in the open source movement from which newLISP has benefitted.
-
-Shigeru Kobayashi contributed newLISP modules for Emacs, Curl and fixed a few
-  bugs in the newLISP C-source code.
+  strongest force in the open source movement from which newLISP has benefited.
 
 My apologies to anybody, who has been forgotten on this list (let me know).
 

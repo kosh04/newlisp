@@ -2,9 +2,10 @@
 // TableWidget.java
 //
 //  Created by Unya (see http://newlispfanclub.alh.net/forum/)
+//  Functions for row and column removal by Ferry de Bruin (FdB)
 //
 //
-//    Copyright (C) 2013 Lutz Mueller
+//    Copyright (C) 2014 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -293,6 +294,34 @@ public class TableWidget extends gsObject {
 		DefaultTableModel tm = (DefaultTableModel)(mainTable.getModel()) ;
 		tm.addRow(v) ;
 	}
+	
+	//FdB
+	// (gs:table-remove-row ID row)
+	public void tableRemoveRow(StringTokenizer params) {
+		int row = Integer.parseInt(params.nextToken()) ;
+		
+		DefaultTableModel tm = (DefaultTableModel)(mainTable.getModel()) ;
+		tm.removeRow(row) ;
+	}
+	
+	//FdB
+	// (gs:table-set-row-count ID row)
+	public void tableSetRowCount(StringTokenizer params) {
+		int count = Integer.parseInt(params.nextToken()) ;
+		
+		DefaultTableModel tm = (DefaultTableModel)(mainTable.getModel()) ;
+		tm.setRowCount(count) ;
+	}
+		
+	//FdB
+	// (gs:table-set-column-name ID)
+	// (gs:table-set-column-name ID ColumnName ColumnName ...)
+	public void tableSetColumnIdentifiers(StringTokenizer params) {
+		Vector v = params2vector(params) ;
+		
+		DefaultTableModel tm = (DefaultTableModel)(mainTable.getModel()) ;
+		tm.setColumnIdentifiers(v) ;
+	}
 
 	// (gs:table-add-column ID)
 	// (gs:table-add-column ID ColumnName0 ColumnName1 ...)
@@ -306,8 +335,9 @@ public class TableWidget extends gsObject {
 			else
 				name = Base64Coder.decodeString(token) ;
 
-			if (name.length() == 0)
-				name = String.format("%d", mainTable.getColumnCount() + 1) ;
+// outcommented for 10.5.7 GS v.1.51, allows to do headerless tables
+//			if (name.length() == 0)
+//				name = String.format("%d", mainTable.getColumnCount() + 1) ;
 			DefaultTableModel tm = (DefaultTableModel)(mainTable.getModel()) ;
 			tm.addColumn(name);
 		}
@@ -338,7 +368,7 @@ public class TableWidget extends gsObject {
 		}
 	}
 
-	public void tableSetRowNumber(StringTokenizer params) {
+	public void tableShowRowNumber(StringTokenizer params) {
 		boolean bHeader = params.nextToken().equals("true") ;
 
 		if (bHeader)

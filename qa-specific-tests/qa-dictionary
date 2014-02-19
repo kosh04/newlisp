@@ -1,5 +1,6 @@
 #!/usr/bin/newlisp
 
+
 ; qa-dictionary
 ; check dictionary creation
 
@@ -11,8 +12,8 @@
 (if (main-args 2)
 	(set 'N (int (main-args 2))))
 
-; define name-space
-(define Lex:Lex)
+; define name-space, force creation, stay in MAIN
+(context 'Lex) (context MAIN)
 
 (define (qa-dictionary)
     (set 'data (randomize (sequence 1 N)))
@@ -55,7 +56,7 @@
 	(println "number of cells after loading Lex: " (sys-info 0))
 	(println "time to save Lex2: " (time (save "Lex2.lsp" 'Lex)) " ms")
 	(println)
-	(if (and (not read-error) (not (exec "cmp Lex.lsp Lex2.lsp")))
+	(if (and (not read-error) (= (read-file "Lex.lsp") (read-file "Lex2.lsp")))
 		(println ">>>>> Dictionary API tested SUCCESSFUL")
 		(println ">>>>> PROBLEM in dictionary API"))
 )

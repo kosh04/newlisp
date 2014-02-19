@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -653,7 +653,7 @@ char * format;
 char * fmt;
 char * nextfmt;
 CELL * cell;
-STREAM fmtStream = {0, NULL, NULL, 0, 14};
+STREAM fmtStream = {NULL, NULL, 0, 14, 0};
 int fType;
 double floatNum;
 UINT intNum;
@@ -810,7 +810,7 @@ if(stream->handle != 0)
 
 char * cellToString(CELL * cell, size_t * size, int quoteFlag)
 {
-static STREAM strStream = {0, NULL, NULL, 0, 0};
+static STREAM strStream = {NULL, NULL, 0, 0, 0};
 
 if(cell->type == CELL_STRING)
     {
@@ -873,7 +873,7 @@ stream->position = newPosition;
 
 char * readStreamText(STREAM * stream, int * size)
 {
-STREAM outStream = {0, NULL, NULL, 0, 0};
+STREAM outStream = {NULL, NULL, 0, 0, 0};
 ssize_t findPos = -1;
 size_t searchLen;
 char * result;
@@ -1277,7 +1277,7 @@ return(stuffSymbol(sPtr));
 
 CELL * p_symbolSource(CELL * params)
 {
-STREAM strStream = {0, NULL, NULL, 0, 0};
+STREAM strStream = {NULL, NULL, 0, 0, 0};
 CELL * cell;
 
 openStrStream(&strStream, MAX_STRING, 0);
@@ -1291,7 +1291,7 @@ return(cell);
 CELL * p_string(CELL * params)
 {
 CELL * cell;
-STREAM strStream = {0, NULL, NULL, 0, 14};
+STREAM strStream = {NULL, NULL, 0, 14, 0};
 
 strStream.buffer = strStream.ptr = callocMemory(15);
 prettyPrintFlags |= PRETTYPRINT_STRING;
@@ -1495,7 +1495,7 @@ CELL * result;
 char * string;
 char * separator;
 char token[MAX_STRING];
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream = {NULL, NULL, 0, 0, 0};
 int tklen;
 size_t srclen;
 /* PCRE stuff */
@@ -2089,6 +2089,7 @@ return(result);
 /* ------- PRCE Perl Compatible Regular Expressions for all platforms ------- */
 /*                    see also http://www.pcre.org/                           */
 
+/* currently PCRE v.5.0 from 13-Sep-2004  -> pcre.h */
 
 /* additional regex option */
 #define REPLACE_ONCE 0x8000

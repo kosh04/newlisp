@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,7 +55,11 @@
 #endif
 
 #ifdef MAC_OSX
+#ifdef EMSCRIPTEN
+#define OSTYPE "JS"
+#else
 #define OSTYPE "OSX"
+#endif
 #endif
 
 #ifdef SOLARIS
@@ -107,7 +111,7 @@
 #include "win-ffi.h" 
 #endif
 
-#if defined(LINUX) || defined(BSD) /* makefiles specify include directory */
+#if defined(LINUX) || defined(_BSD) /* makefiles specify include directory */
 #  include <ffi.h>
 #endif
 
@@ -128,6 +132,21 @@
 #else
 #define MY_RAND_MAX RAND_MAX
 #endif
+
+#ifdef LIBRARY
+#define NO_FORK
+#define NO_SPAWN
+#define NO_DEBUG
+#define NO_TIMER
+#endif
+
+#ifdef EMSCRIPTEN
+#define MY_RANDOM
+#define NO_DEBUG
+#define NO_NET_FUNCTIONS
+#define NO_WEB_FUNCTIONS
+#endif
+
 
 /* 
 This is for 64bit large file support (LFS),
@@ -199,10 +218,13 @@ This is for 64bit large file support (LFS),
 #include <alloca.h>
 #endif
 
-
 #ifdef OS2
 #define vasprintf my_vasprintf 
 #define MY_VASPRINTF 
+#define NO_SPAWN
+#define NO_FORK
+#define NO_SHARE
+#define NO_PACKET
 #endif
 
 #if defined(SOLARIS) || defined(TRU64) || defined(AIX)
@@ -216,18 +238,23 @@ This is for 64bit large file support (LFS),
 #endif
 
 #ifdef WINDOWS
-#define LITTLE_ENDIAN
 #define MY_VASPRINTF
 #define MY_SETENV
+#define NO_SPAWN
+#define NO_FORK
+#define NO_NET_PACKET
+#define NO_NET_PING
+
+#define LITTLE_ENDIAN
 #define LINE_FEED "\r\n"
 #define LINE_FEED_LEN 2
-
 #define getSocket(A) ((A)->_file)
-
 #define vasprintf my_vasprintf
 #define setenv my_setenv
+#ifndef MY_RANDOM
 #define random rand
 #define srandom srand
+#endif
 #define ioctl ioctlsocket
 #define off_t off64_t
 #define lseek lseek64
@@ -252,7 +279,6 @@ This is for 64bit large file support (LFS),
 #define unlink unlink_utf16
 #define chdir chdir_utf16
 #define opendir opendir_utf16
-
 #define DIR _WDIR
 #define lstat _wstat
 #define dirent _wdirent
@@ -265,10 +291,7 @@ This is for 64bit large file support (LFS),
 #ifndef WINDOWS
 #define LINE_FEED "\n"
 #define LINE_FEED_LEN 1
-#define NET_PING
-#define NET_PACKET
 #define NANOSLEEP
-#define HAVE_FORK 
 #endif
 
 #ifndef O_BINARY
@@ -375,10 +398,11 @@ This is for 64bit large file support (LFS),
 #define BIGINT_MASK 0x0400
 #define CALL_CDECL_MASK 0x1000
 #define CALL_DLL_MASK 0x2000
-
+#define CALL_FFI_MASK 0x4000
+#define IMPORT_MASK (CALL_CDECL_MASK | CALL_DLL_MASK | CALL_FFI_MASK)
 /* only used for type ids used in shared memory
    to indicate translation from string */
-#define SHARED_MEMORY_EVAL 0x8000
+#define SHARED_MEM_EVAL_MASK 0x8000
 
 /* cell types, do not change these without changing newlisp.c/cellCopy() */
 #define CELL_NIL (0 | EVAL_SELF_TYPE_MASK)
@@ -400,7 +424,7 @@ This is for 64bit large file support (LFS),
 #define CELL_PRIMITIVE (7 | EVAL_SELF_TYPE_MASK)
 #define CELL_IMPORT_CDECL (8 | EVAL_SELF_TYPE_MASK | CALL_CDECL_MASK)
 #define CELL_IMPORT_DLL (8 | EVAL_SELF_TYPE_MASK | CALL_DLL_MASK)
-#define CELL_IMPORT_FFI (9 | EVAL_SELF_TYPE_MASK)
+#define CELL_IMPORT_FFI (9 | EVAL_SELF_TYPE_MASK | CALL_FFI_MASK)
 #define CELL_QUOTE (10 | ENVELOPE_TYPE_MASK)
 #define CELL_EXPRESSION (11 | ENVELOPE_TYPE_MASK | LIST_TYPE_MASK)
 #define CELL_LAMBDA (12 | ENVELOPE_TYPE_MASK | LIST_TYPE_MASK | EVAL_SELF_TYPE_MASK)
@@ -409,17 +433,18 @@ This is for 64bit large file support (LFS),
 #define CELL_DYN_SYMBOL (15 | SYMBOL_TYPE_MASK)
 #define CELL_FREE 0xFF
 
+/* cell type classes */
 #define isEnvelope(A) ((A) & ENVELOPE_TYPE_MASK)
 #define isList(A) ((A) & LIST_TYPE_MASK)
-#define isArray(A) ((A) == CELL_ARRAY)
-#define isString(A) ((A) == CELL_STRING)
 #define isNumber(A) ((A) & NUMBER_TYPE_MASK)
 #define isSymbol(A) ((A) & SYMBOL_TYPE_MASK)
 #define isSelfEval(A) ((A) & EVAL_SELF_TYPE_MASK)
+
+/* symbol classes */
 #define isProtected(A) ((A) & SYMBOL_PROTECTED)
 #define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
-#define isFFI(A) ((A) & SYMBOL_FFI)
+#define isFFIsymbol(A) ((A) & SYMBOL_FFI)
 
 #define isDigit(A) isdigit((int)(A))
 #define isHexDigit(A) isxdigit((int)(A))
@@ -598,17 +623,17 @@ extern int vasprintf (char **, const char *, va_list);
 
 typedef struct
 	{
-	int handle;
 	char *ptr;
 	char *buffer;
 	size_t position;
 	size_t size;
+	int handle;
 	} STREAM;
 
 typedef struct tagSYMBOL
 	{
-	short int flags;
-	short int color;
+	int flags;
+	int color;
 	char * name;
 	UINT contents; 
 	struct tagSYMBOL * context;
@@ -653,7 +678,6 @@ typedef struct {
 
 typedef struct
     {
-    short int type;
     char *name;
     void (*func)(void);
     ffi_cif cif;
@@ -661,6 +685,7 @@ typedef struct
     ffi_closure *clos;
     ffi_closure_data *data;
     ffi_type *cstruct;
+    short int type;
     } FFIMPORT;
 #endif
 

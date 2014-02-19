@@ -1,6 +1,6 @@
-/* nl-debug.c --- debugging functions for newLISP
+/* nl-debug.c --- debugging functions, and functions to trap signals and timers 
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ extern int evalSilent;
 
 int matchString(char * buffer,  char * string, int * length);
 int stringComp(char * buffer, char * string);
-int printFunction(CELL * cell);
+int debugPrintFunction(CELL * cell);
 void getDebuggerInput(char * msg);
 
 extern SYMBOL * currentFunc;
@@ -43,8 +43,10 @@ int currentLevel = 0;
 int debugStackIdx = 0;
 UINT * debugStack;
 
-char preStr[8] = "#";
-char postStr[8] = "#";
+char debugPreStr[8] = "#";
+char debugPostStr[8] = "#";
+CELL * debugPrintCell = NULL;
+
 char headerStr[16] = "\n-----\n\n";
 char footerStr[32] = " s|tep n|ext c|ont q|uit > ";
 
@@ -70,7 +72,7 @@ void closeTrace(void)
     debugStack = NULL;
     }
 
-
+#ifndef NO_DEBUG
 CELL * p_debug(CELL * params)
 {
 CELL * result;
@@ -107,10 +109,10 @@ char * pre, * post, * header, * footer;
 params = getString(params, &pre);
 params = getString(params, &post);
 
-strncpy(preStr, pre, 8);
-strncpy(postStr, post, 8);
-*(preStr + 7) = 0;
-*(postStr + 7) = 0;
+strncpy(debugPreStr, pre, 8);
+strncpy(debugPostStr, post, 8);
+*(debugPreStr + 7) = 0;
+*(debugPostStr + 7) = 0;
 
 if(params != nilCell)
     {
@@ -129,11 +131,13 @@ if(params != nilCell)
 
 return(trueCell);
 }
-
+#endif /* NO_DEBUG */
 
 void traceEntry(CELL * cell, CELL * pCell, CELL * args)
 {
+#ifndef NO_DEBUG
 int defaultFuncFlag = FALSE;
+#endif
 
 if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_DEBUG_NEXT)) return;
 traceFlag |= TRACE_IN_ENTRY;
@@ -160,9 +164,10 @@ if(traceFlag & TRACE_TIMER)
     return;
     }
 
+#ifndef NO_DEBUG
 if(debugStackIdx > 1)
     {
-    if(printFunction(cell))
+    if(debugPrintFunction(cell))
         getDebuggerInput(DEBUG_ENTRY);
     if(!traceFlag) return;
     }
@@ -196,6 +201,7 @@ if((pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
     pushDebugStack(recursionCount);
     pushDebugStack(currentFunc);
     }
+#endif /* no_DEBUG */
 
 traceFlag &= ~TRACE_IN_ENTRY;
 }
@@ -206,6 +212,7 @@ void traceExit(CELL * result, CELL * cell, CELL * pCell, CELL * args)
 if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_SIGNAL | TRACE_SIGINT | TRACE_TIMER)) return;
 traceFlag |= TRACE_IN_EXIT;
 
+#ifndef NO_DEBUG
 if(traceFlag & TRACE_DEBUG_NEXT)
     {
     if(currentLevel >= recursionCount)
@@ -230,7 +237,7 @@ if( (pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
         }
     }
 
-if(printFunction(cell))
+if(debugPrintFunction(cell))
     {
     varPrintf(OUT_CONSOLE, "\nRESULT: ");
     printCell(result, TRUE, OUT_CONSOLE);
@@ -245,6 +252,7 @@ if(printFunction(cell))
 
 if(traceFlag & TRACE_DEBUG_NEXT)
     currentLevel = recursionCount;
+#endif /* NO_DEBUG */
 
 traceFlag &= ~TRACE_IN_EXIT;
 }
@@ -273,26 +281,30 @@ while(TRUE)
     if(fgets(command, MAX_LINE - 1, IOchannel) == NULL)
         fatalError(ERR_IO_ERROR, 0, 0);
 
-    if( (strcmp(command, "n\n") == 0) || (strcmp(command, "n\r\n") == 0))
+    /* client and server could have different line-termination */
+    if(*(command + 1) == '\n' || *(command + 1) == '\r')
         {
-        traceFlag |= TRACE_DEBUG_NEXT;
-        currentLevel = recursionCount;
-        break;
-        }
-    else if( (strcmp(command, "s\n") == 0) || (strcmp(command, "s\r\n") == 0))
-        {
-        traceFlag &= ~TRACE_DEBUG_NEXT;
-        break;
-        }
-    else if( (strcmp(command, "q\n") == 0) || (strcmp(command, "q\r\n") == 0))
-        {
-        closeTrace();
-        longjmp(errorJump, ERR_USER_RESET);
-        }
-    else if( (strcmp(command, "c\n") == 0) || (strcmp(command, "c\r\n") == 0))
-        {
-        closeTrace();
-        break;
+        if(*command == 'n')
+            {
+            traceFlag |= TRACE_DEBUG_NEXT;
+            currentLevel = recursionCount;
+            break;
+            }
+        if(*command == 's')
+            {
+            traceFlag &= ~TRACE_DEBUG_NEXT;
+            break;
+            }
+        if(*command == 'q')
+            {
+            closeTrace();
+            longjmp(errorJump, ERR_USER_RESET);
+            }
+        if(*command == 'c')
+            {
+            closeTrace();
+            break;
+            }
         }
 
     resultStackIdxSave = resultStackIdx;
@@ -314,106 +326,38 @@ while(TRUE)
 }
 
 
-int printFunction(CELL * cell)
+int debugPrintFunction(CELL * cell)
 {
-char * funcStr;
-char * expStr;
-int start, length;
-STREAM strStream = {0, NULL, NULL, 0, 0};
+int preLen, pos = 0;
+char * strPos;
+
+STREAM strStream = {NULL, NULL, 0, 0, 0};
 
 if(currentFunc == nilSymbol) return FALSE;
 
+debugPrintCell = cell;
 openStrStream(&strStream, MAX_STRING, 0);
 printSymbol(currentFunc, (UINT)&strStream);
-length = strlen(strStream.buffer);
-funcStr = allocMemory(length + 1);
-memcpy(funcStr, strStream.buffer, length + 1);
-*(funcStr + length) = 0;
+debugPrintCell = NULL;
 
-openStrStream(&strStream, MAX_STRING, 0);
-printCell((CELL *)cell, TRUE, (UINT)&strStream);
-expStr = strStream.buffer;
-start = matchString(funcStr, expStr, &length);
-closeStrStream(&strStream);
-
-if(start == -1 || length == 0)
+strPos = strstr(strStream.buffer, debugPreStr);
+if(strPos != NULL)
     {
-    free(funcStr);
-    return FALSE;
-    }
-
-varPrintf(OUT_CONSOLE, headerStr);
-
-expStr = allocMemory(length + 1);
-strncpy(expStr, funcStr + start, length + 1);
-*(expStr + length) = 0;
-*(funcStr + start) = 0;
-
-varPrintf(OUT_CONSOLE, "%s%s%s%s%s", 
-    funcStr, preStr, expStr, postStr, funcStr + start + length);
-
-free(funcStr);
-
-return TRUE;
-}
-
-
-/* search for a string skipping white space
-*/
-int matchString(char * buffer,  char * string, int * length)
-{
-int position, flag;
-
-/* strip leading white space */
-while(*string <= ' ' && *string > 0) string++;
-
-position = flag = 0;
-
-while(*buffer)
-    {
-    if(*buffer > ' ')
-        if((*length = stringComp(buffer, string)) > 0)
-            {
-            flag = TRUE;
-            break;
-            }
-    position++;
-    buffer++;
-    }
-
-if(!flag) return(-1);
-return(position);
-}
-
-
-/* compare strings skipping white space
-*/
-int stringComp(char * buffer, char * string)
-{
-char * start;
-
-start = buffer;
-while(*string && *buffer)
-    {
-    if(*string > ' ')
+    preLen = strlen(debugPreStr);
+    while(*(strPos + preLen + pos) <= ' ' && *(strPos + preLen + pos) != 0) ++pos;
+    if(pos) /* if there is white space */
         {
-        if(*buffer > ' ')
-            {
-            if(*string != *buffer) return(0);
-            string++;
-            buffer++;
-            }
-        else buffer++;
+        /* swap whitespace and debugPreStr */
+        strncpy(strPos, strPos + preLen, pos);
+        strncpy(strPos + pos, debugPreStr, preLen);
         }
-    else string++;
+    varPrintf(OUT_CONSOLE, headerStr);
+    varPrintf(OUT_CONSOLE, strStream.buffer);
     }
-    
-if(*string == 0)
-    return(buffer - start);
-    
-return(0);
-}
 
+closeStrStream(&strStream);
+return (strPos != NULL);
+}
 
 /* eof */
 

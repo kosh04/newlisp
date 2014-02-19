@@ -5,13 +5,13 @@
 ;; @version 1.42 new table UI
 ;; @version 1.43 bug fix in new table UI action parameters
 ;; @version 1.44 fixes in newlisp-edit.lsp
-;; @version 1.45 doc fixes
-;; @version 1.47 doc fixes
-;; @version 1.48 doc fixes
 ;; @version 1.50 doc fixes
 ;; @version 1.51 return value for gs:export
 ;; @version 1.52 fix in run-shell for Java 7 update 21
-;; @author LM, August 2008, 2009, 2010, 2012, 2013
+;; @version 1.53 doc fixes
+;; @version 1.60 new table functions, new naming gs:table-show-row-number
+;; @version 1.61 more options for gs:scroll-pane added by FdB
+;; @author LM, 2008, 2009, 2010, Unya 2012, FdB 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -505,9 +505,13 @@
 ;;    (gs:table-get <sym-id>)
 ;;    (gs:table-get-cell <sym-id> <int-row> <int-column>)
 ;;    (gs:table-get-size <sym-id>)
+;;    (gs:table-remove-row <sym-id> <int-row>
 ;;    (gs:table-set-cell <sym-id> <int-row> <int-column> <str-value>)
 ;;    (gs:table-set-column <sym-id> <int-column-number> <int-width> [<str-justification>])
-;;    (gs:table-set-row-number <sym-id> <bool-row-number>)
+;;    (gs:table-set-column-name <sym-id> [<str-name1> [<str-name2> ...])
+;;    (gs:table-set-row-count <sym-id> <int-count>
+;;    (gs:table-set-row-number <sym-id> <bool-row-number>) DEPRECATED use gs:table-show-row-number
+;;    (gs:table-show-row-number <sym-id> <bool-row-number>)
 ;; </pre>
 ;; </li>
 ;; <li><b>Special dialogs</b><br>
@@ -1167,6 +1171,9 @@ true
 
 ;; @syntax (gs:dispose <sym-id>)
 ;; @param <sym-id> The name of the component to dispose of.
+;;
+;; Only objects created with 'gs:dialog', 'gs:frame' or 'gs:window' can be
+;; deleted with 'gs:dispose'.
 
 (define (dispose id)
 	(net-send out (string "dispose " id "\n"))
@@ -2677,16 +2684,25 @@ true
 		(net-send out (string "select-text " id " " from "\n")))
 )
 
-;; @syntax (gs:scroll-pane <sym-id> <sym-widget> [<int-width> <int-height>])
+;; @syntax (gs:scroll-pane <sym-id> <sym-widget> [<int-width> <int-height> <sym-w-col> <sum-w-row> <sym-w-corner>])
 ;; @param <sym-id> The name of the scroll pane.
 ;; @param <sym-widget> The component in the scroll pane to be scrolled.
 ;; @param <int-width> The optional width of the scroll pane.
 ;; @param <int-height> The optional height of the scroll pane.
+;; @param <sym-col> The optional table widget for a custom column header.
+;; @param <sym-row> The optional table widget for a custom row header
+;; @param <sym-corner> The optional widget component in the upper left corner.
+;;
+;; @example
+;; (gs:scroll-pane 'scroll 'data-table 700 600 'col-table 'row-table 'Canvas)
+;;
 
-(define (scroll-pane id widget width height)
-	(if (and width height)
-		(net-send out (string "scroll-pane " id " " widget " " width " " height "\n"))
-		(net-send out (string "scroll-pane " id " " widget "\n")))
+(define (scroll-pane id widget width height col-table row-table upper-left-corner )
+	(if (and col-table row-table upper-left-corner)
+		(net-send out (string "scroll-pane " id " " widget " " width " " height " " col-table " " row-table " " upper-left-corner "\n"))
+		(if (and width height)
+			(net-send out (string "scroll-pane " id " " widget " " width " " height "\n"))
+			(net-send out (string "scroll-pane " id " " widget "\n"))))
 )
 
 ;; @syntax (gs:set-accelerator <sym-menu-item> <str-keystroke>)
@@ -3331,12 +3347,15 @@ true
 ;; @param <str-column-header-name> The optional column header name. 
 ;;
 ;; Creates a table with <str-column-header-name> specified column and empty row.
-;; For empty strings specified as column headers, the column number will be used.
-;; If there are no columns, an empty table (0 x 0) is created.
+;; For empty strings specified as column headers, the header will be left empty.
+;; If all header in a table are specified as empty, the table will be created
+;; without a header row. If there are no columns at all, an empty table (0 x 0) 
+;; is created. 
 ;;
-;; When a cell is selected, the function in <sym-action> gets called with the
-;; table id, row, column and cell-contents. See the file 'table-demo.lsp'
-;; for an example. Cells can be edited  by either selecting or double clicking a cell.
+;; When a cell is selected, the function in <sym-action> gets called with the table 
+;; id, row, column and cell-contents. See the file 'table-demo.lsp' for an example. 
+;; Cells can be edited  by either selecting or double clicking a cell.
+
 
 (define (table id action)
   (let (s (string "table " id " " action)
@@ -3353,8 +3372,10 @@ true
 ;; @param <sym-id> The name of the table.
 ;; @param <str-column-header-name> Add column header name(s). 
 ;;
-;; When a column header name is empty, the name is set to the column number. 
-;; The table size grows.
+;; More than one <str-column-header-name> can be specified to add more
+;; than one column. A column header can be set empty using and empty string <tt>""</tt>.
+;; When all headers in a table are empty, the
+;; table will be displayed without a header row.
 
 (define (table-add-column id)
   (let (s (string "table-add-column " id)
@@ -3388,36 +3409,6 @@ true
     (write-buffer s "\n")
     (net-send out s) ) )
 
-
-;; @syntax (gs:table-get <sym-id>)
-;; @return table cells. stored in 'gs:table-full'.
-;;
-;; Get full table as a list of row lists.
-;; <pre>
-;; ( ("column0" "column1" ... ) ; 1'st row
-;;   ("column0" "column1" ... ) ; 2'nd row
-;;   ...
-;;   ... )
-;; </pre>
-;;
-;; The entire table contents is stored as a list of row lists in the 
-;; return value of 'gs:table-get', and is also stored in the variable 
-;; 'gs:table-full'. 
-
-(define (table-get id)
-	(set 'gs:table-full nil)
-	(let (s (string "table-get " id))
-		(write-buffer s "\n")
-		;(println "gs:table-get " s)
-		(net-send out s)
-		(while (not gs:table-full) (check-event 10000))
-		; decode base64 cell contents for each row in each cell
-		(set 'gs:table-full
-			(map (lambda (x) (map (lambda (s) 
-					(if (nil? s) nil (base64-dec s))
-						) x ) ) gs:table-full))
-	)
-)
 
 ;; @syntax (gs:table-get-cell <sym-id> <int-row> <int-column>)
 ;; @param <sym-id> The name of the table.
@@ -3458,6 +3449,19 @@ true
     (while (not gs:table-size) (check-event 10000))
     gs:table-size
     ) )
+
+; FdB
+;; @syntax (gs:table-remove-row <sym-id> <int-rownumber>)
+;; @param <sym-id> The name of the table.
+;; @param <int-row> The row to remove
+;; 
+;; Removes a row See also 'gs:table-set-row-count'.
+
+	(define (table-remove-row id row)
+	  (let (s (string "table-remove-row " id " " row))
+	    ;(println "gs:table-remove-row " s)
+	    (write-buffer s "\n")
+	    (net-send out s) ) )
 
 
 ;; @syntax (gs:table-set-cell <sym-id> <int-row> <int-column> <str-value>)
@@ -3504,20 +3508,90 @@ true
     (write-buffer s "\n")
     (net-send out s) ) )
 
+; FdB
+;; @syntax (gs:table-set-column-name <sym-id> [<str-columns> ... ])
+;; @syntax (gs:table-set-column-name <sym-id> ([<str-columns> ...))
+;; @param <sym-id> The name of the table.
+;; @param <str-columns> Set column names with contents in <str-columns>	
+;; 
+;; Replaces the column names in the table. If the number of names 
+;; is greater than the current number of columns, new columns are added to the end 
+;; of each row in the table. If the number of columnnames is less than the current
+;; number of columns, all the extra columns at the end of a row are discarded.
+	
+	(define (table-set-column-name id)
+	   (let (s (string "table-set-column-name " id)
+		  columns (if (null? (args)) '()
+			      (if (list? (args 0)) (args 0) (args))))
+		  (dolist (col columns)
+		    (write-buffer s (string " " (base64-enc col))))
+		  ;(println "gs:table-set-column-name " s)
+		  (write-buffer s "\n")
+		  (net-send out s)))
+	  
+; FdB
+;; @syntax (gs:table-set-row-count <sym-id> <int-row-count>)
+;; @param <sym-id> The name of the table.
+;; @param <int-row> Set the numbers of rows in the table with <int-row-count>	  
+;;
+;; Sets the number of rows in the table. If the new size is greater than the 
+;; current size, new rows are added to the end of the table. If the new size is 
+;; less than the current size, all rows at index rownumber and greater are discarded.
+	  
+	(define (table-set-row-count id num)
+	  (let (s (string "table-set-row-count " id " " num))
+		(write-buffer s " \n")
+		(net-send out s)) )
 
-;; @syntax (gs:table-set-row-number <sym-id> <bool-row-number>)
+;; @syntax (gs:table-get <sym-id>)
+;; @return table cells. stored in 'gs:table-full'.
+;;
+;; Get full table as a list of row lists.
+;; <pre>
+;; ( ("column0" "column1" ... ) ; 1'st row
+;;   ("column0" "column1" ... ) ; 2'nd row
+;;   ...
+;;   ... )
+;; </pre>
+;;
+;; The entire table contents is stored as a list of row lists in the 
+;; return value of 'gs:table-get', and is also stored in the variable 
+;; 'gs:table-full'. 
+
+(define (table-get id)
+	(set 'gs:table-full nil)
+	(let (s (string "table-get " id))
+		(write-buffer s "\n")
+		;(println "gs:table-get " s)
+		(net-send out s)
+		(while (not gs:table-full) (check-event 10000))
+		; decode base64 cell contents for each row in each cell
+		(set 'gs:table-full
+			(map (lambda (x) (map (lambda (s) 
+					(if (nil? s) nil (base64-dec s))
+						) x ) ) gs:table-full))
+	)
+)
+
+;; @syntax (gs:table-set-row-number <sym-id> <bool-row-number>) DEPRECATED
+;;
+;; Use 'gs:table-show-row-number'. The old naming is deprecated but will 
+;; still work.
+
+(define table-set-row-number table-show-row-number)
+
+;; @syntax (gs:table-show-row-number <sym-id> <bool-row-number>)
 ;; @param <sym-id> The name of the table.
 ;; @param <bool-row-number> 'true' if rows should carry a row number; default 'nil'.
 ;;
 ;; Show or hide the row number headers. The default is hiding row numbers.
 
-(define (table-set-row-number id boolRowheader)
-  (let (s (string "table-set-row-number " id
+(define (table-show-row-number id boolRowheader)
+  (let (s (string "table-show-row-number " id
 		  " " boolRowheader))
-    ;(println "gs:table-set-row-number " s)
+    ;(println "gs:table-show-row-number " s)
     (write-buffer s "\n")
     (net-send out s) ) )
-
 
 ;; @syntax (gs:text-area <sym-id> <sym-action> <int-width> <int-height>)
 ;; @param <symid> The name of the text area.

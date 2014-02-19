@@ -8,7 +8,8 @@
 ;; @version 1.33 took out license
 ;; @version 1.4 cv:petal was broken (JavaScript change?)
 ;; @version 1.44 doc corrections
-;; @author Lutz Mueller, March 2009, June 2012
+;; @version 1.45 cv:render works on Emscripten newLISP
+;; @author Lutz Mueller, March 2009, June 2012, January 2014
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
 ;; the HTML-5 canvas tag. As of March 2009 only the Safari 4.0 Beta
@@ -1065,8 +1066,12 @@ function drawAllCanvas() { try
 				body-html
 				body-close)) 
 		(cond 	
-			( 	(nil? mode) (show-in-browser))
-				
+			( 	(nil? mode) 
+                ; on Emscripten open tab 
+                (if eval-string-js 
+                    (display-html page true)
+                    (show-in-browser)))
+
 	 		( 	(= (upper-case mode) "CGI") 
 				(println page))
 

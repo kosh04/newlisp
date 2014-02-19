@@ -24,8 +24,8 @@
 #define EXPORT __declspec(dllexport) __stdcall
 
 extern int bigEndian;
-char preLoad[3];
-CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
+extern char preLoad[];
+extern CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern char linkOffset[];
 extern LPSTR getLibname(void);
 extern int evalSilent;

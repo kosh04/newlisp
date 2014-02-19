@@ -5488,7 +5488,8 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     A 'sql3:colnames' function has been added to the sqlite3.lsp module.
 
 
-10.1.8 This development version starts the v.10.2 generation of newLISP
+Dec 6, 2009
+10.1.8 This development version starts the v.10.2 generation of newLISP 
 
     Fixed a bug when replicating primitives with 'new'.
 
@@ -5518,7 +5519,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     of having mutable objects compensates for that incompatibility. Destructive
     methods was the FOOP feature most asked for ind newLISP.
 
-10.1.9
+10.1.9 Jan 12, 2010
     Fixed executeCommandLine() for 64-bit UBUNTU, which could cause writeStreamStr()
     related functions to crash.
 
@@ -5547,7 +5548,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     New smtpx.lsp module for (multiple) attachements and UTF-8 safe encoding
 
 
-10.1.10
+10.1.10 Jan 26, 2010
     New 'extend' works like 'append' but modifies first list or string
     parameter.
 
@@ -6711,7 +6712,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
    The default pretty-print float setting has been changed to "%1.15g".
 
-   'reset' now also cancels command line paraneter processing.
+   'reset' now also cancels command line parameter processing.
  
    A fix in 'round' when number is exacty 0.5.
 
@@ -6726,7 +6727,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
    Many documentation changes and corrections.
 
-10.5.6
+10.5.6 December 10th, 2013, development release
    Since OSX 10.9 Maverick (format "%'d" 12345) => 12,345 will work too.
    Will not work on any locale but works on en_US.UTF-8.
 
@@ -6768,3 +6769,75 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
    does on bigint numbers, on floats returns the number of decimal digits before
    the decimal separator.
 
+
+10.5.7
+   Fixes for deprecated CYGWIN compile. See also makefile_cygwin for more info.
+
+   Clear potential error condition when doing 'import'.
+
+   In guiserver.jar: When adding columns with empty string headers, this will not 
+   any more put the column number as header. This allows to add columns to 
+   headerless tables, as possible when supplying empty string headers in the 
+   initial gs:table statement.
+
+   Debugger will now always highlight the correct expression, not highlight
+   the first one if multiple instances exist.
+
+   Eliminated strncat() for BSD and better speed with memcpy() in most places.
+
+   Delay signal-behavior change in spawn after getting parameters. Makes better
+   error recovery.
+
+   In guiserver.jar: New table functions. Thanks to Ferry de Bruin.
+     gs:table-remove-row, gs:table-set-column-name and gs:table-set-row-count. 
+   To avoid API naming confusions, the naming of old gs:table-set-row-number 
+   is deprecated and should be called as gs:table-show-row-number. 
+   The old naming will continue to work. Three new optional parameters for 
+   'gs:scroll-pane' can specify colun header, row headers and a widget
+   for the top left corner of a table used in the scroll pane.
+
+   'find-all' should return an empty list as documented when nothing is found
+   on strings too.
+
+   Some renaming of functions and constants for better code readability and
+   some small refactoring in several files.
+ 
+   qa-bench has been redone with changes for Emscripten compiled newLISP.
+   Now calibrates for comparison with Mac OSX 9.1 on 2.3GHz Intel Core i5.
+
+   Fixed a crash bug when colon operator has missing or wrong-type args
+   on 64-bit compiles.
+
+   newLISP compiled to JavaSript with Emscripten
+   ---------------------------------------------
+   Added makefile_emscripten_lib_utf8. For this
+   Must download and install the Emscripten-SDK from here: 
+       https://github.com/kripken/emscripten/wiki/Emscripten-SDK
+   Tested on OSX 10.9 installing emsdk-portable.tar.gz v.1.7.8
+
+   The newlisp-js-lib.js is made using makefile_emscripten_lib_utf8.
+
+   The new function 'eval-string-js' takes a JavaSript string.
+   New 'display-html' can either replace the current page or display 
+   a page in a new tab of the host browser. 'display-html' must be
+   defined in Emscripten appplication .html
+
+   Some functions (filter, index, clean, exists, forl-all) will not show
+   error messages under certain circumstanmces in the monitor, although
+   newLISP behaves correctly throwing the exception (setjmp/longjmp), they 
+   just don't reach the Emscripten console (log). In this case, if the error 
+   is not 'catch'ed newLISP exits without advising why. This problem goes away
+   when compiling with Emscriptem without any optimizations, but slows
+   everything down by a factor of 40 to 50. Normal performance is around
+   1.5 of native on Mac OSX when excluding all time/date related functions 
+   and a few other outliers. Including outliers about 2.65.
+   See also here: https://github.com/kripken/emscripten/issues/810
+   (volatile declaration did not help)
+
+   All file and directory functions work (almost all did all the time),
+   but changes are lost after leaving the page or reloading the page.
+   Storage is 'session storage' only. No URLs are in allowed in file
+   functions as is on native compiled newLISP.
+
+   As editor, CodeMirror from codemirror.net is used and mode/newlisp.js
+   was created for syntax high-lighting.

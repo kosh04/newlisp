@@ -18,13 +18,13 @@
 <b>Version: </b>1.42 new table UI<br/>
 <b>Version: </b>1.43 bug fix in new table UI action parameters<br/>
 <b>Version: </b>1.44 fixes in newlisp-edit.lsp<br/>
-<b>Version: </b>1.45 doc fixes<br/>
-<b>Version: </b>1.47 doc fixes<br/>
-<b>Version: </b>1.48 doc fixes<br/>
 <b>Version: </b>1.50 doc fixes<br/>
 <b>Version: </b>1.51 return value for gs:export<br/>
 <b>Version: </b>1.52 fix in run-shell for Java 7 update 21<br/>
-<b>Author: </b>LM, August 2008, 2009, 2010, 2012, 2013<br/>
+<b>Version: </b>1.53 doc fixes<br/>
+<b>Version: </b>1.60 new table functions, new naming gs:table-show-row-number<br/>
+<b>Version: </b>1.61 more options for gs:scroll-pane added by FdB<br/>
+<b>Author: </b>LM, 2008, 2009, 2010, Unya 2012, FdB 2013<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -516,9 +516,13 @@
     (gs:table-get <em>sym-id</em>)
     (gs:table-get-cell <em>sym-id</em> <em>int-row</em> <em>int-column</em>)
     (gs:table-get-size <em>sym-id</em>)
+    (gs:table-remove-row <em>sym-id</em> <em>int-row</em>
     (gs:table-set-cell <em>sym-id</em> <em>int-row</em> <em>int-column</em> <em>str-value</em>)
     (gs:table-set-column <em>sym-id</em> <em>int-column-number</em> <em>int-width</em> [<em>str-justification</em>])
-    (gs:table-set-row-number <em>sym-id</em> <em>bool-row-number</em>)
+    (gs:table-set-column-name <em>sym-id</em> [<em>str-name1</em> [<em>str-name2</em> ...])
+    (gs:table-set-row-count <em>sym-id</em> <em>int-count</em>
+    (gs:table-set-row-number <em>sym-id</em> <em>bool-row-number</em>) DEPRECATED use gs:table-show-row-number
+    (gs:table-show-row-number <em>sym-id</em> <em>bool-row-number</em>)
  </pre>
  </li>
  <li><b>Special dialogs</b><br>
@@ -1035,6 +1039,9 @@
 <a name="gs_dispose"></a><h3><font color=#CC0000>gs:dispose</font></h3>
 <b>syntax: (<font color=#CC0000>gs:dispose</font> <em>sym-id</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the component to dispose of.<br/>
+<br/><br/>
+ Only objects created with <tt>gs:dialog</tt>, <tt>gs:frame</tt> or <tt>gs:window</tt> can be
+ deleted with <tt>gs:dispose</tt>.
 
 
 <br/><br/><center>&sect;</center><br/>
@@ -2150,13 +2157,17 @@
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_scroll-pane"></a><h3><font color=#CC0000>gs:scroll-pane</font></h3>
-<b>syntax: (<font color=#CC0000>gs:scroll-pane</font> <em>sym-id</em> <em>sym-widget</em> [<em>int-width</em> <em>int-height</em>])</b><br/>
+<b>syntax: (<font color=#CC0000>gs:scroll-pane</font> <em>sym-id</em> <em>sym-widget</em> [<em>int-width</em> <em>int-height</em> <em>sym-w-col</em> <em>sum-w-row</em> <em>sym-w-corner</em>])</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the scroll pane.<br/>
 <b>parameter: </b><em>sym-widget</em> - The component in the scroll pane to be scrolled.<br/>
 <b>parameter: </b><em>int-width</em> - The optional width of the scroll pane.<br/>
 <b>parameter: </b><em>int-height</em> - The optional height of the scroll pane.<br/>
-
-
+<b>parameter: </b><em>sym-col</em> - The optional table widget for a custom column header.<br/>
+<b>parameter: </b><em>sym-row</em> - The optional table widget for a custom row header<br/>
+<b>parameter: </b><em>sym-corner</em> - The optional widget component in the upper left corner.<br/>
+<br/><br/>
+<b>Example:</b><blockquote><pre> (gs:scroll-pane 'scroll 'data-table 700 600 'col-table 'row-table 'Canvas)
+</pre></blockquote>
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_set-accelerator"></a><h3><font color=#CC0000>gs:set-accelerator</font></h3>
 <b>syntax: (<font color=#CC0000>gs:set-accelerator</font> <em>sym-menu-item</em> <em>str-keystroke</em>)</b><br/>
@@ -2692,12 +2703,15 @@
 <b>parameter: </b><em>str-column-header-name</em> - The optional column header name. <br/>
 <br/><br/>
  Creates a table with <em>str-column-header-name</em> specified column and empty row.
- For empty strings specified as column headers, the column number will be used.
- If there are no columns, an empty table (0 x 0) is created.
+ For empty strings specified as column headers, the header will be left empty.
+ If all header in a table are specified as empty, the table will be created
+ without a header row. If there are no columns at all, an empty table (0 x 0) 
+ is created. 
 <br/><br/>
- When a cell is selected, the function in <em>sym-action</em> gets called with the
- table id, row, column and cell-contents. See the file <tt>table-demo.lsp</tt>
- for an example. Cells can be edited  by either selecting or double clicking a cell.
+ When a cell is selected, the function in <em>sym-action</em> gets called with the table 
+ id, row, column and cell-contents. See the file <tt>table-demo.lsp</tt> for an example. 
+ Cells can be edited  by either selecting or double clicking a cell.
+
 
 
 
@@ -2707,8 +2721,10 @@
 <b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
 <b>parameter: </b><em>str-column-header-name</em> - Add column header name(s). <br/>
 <br/><br/>
- When a column header name is empty, the name is set to the column number. 
- The table size grows.
+ More than one <em>str-column-header-name</em> can be specified to add more
+ than one column. A column header can be set empty using and empty string <tt>""</tt>.
+ When all headers in a table are empty, the
+ table will be displayed without a header row.
 
 
 
@@ -2725,24 +2741,6 @@
  Multiple column content can be specified as either a list
  of strings or as additional parameters of <tt>gs:table-add-row</tt>. 
 
-
-
-<br/><br/><center>&sect;</center><br/>
-<a name="gs_table-get"></a><h3><font color=#CC0000>gs:table-get</font></h3>
-<b>syntax: (<font color=#CC0000>gs:table-get</font> <em>sym-id</em>)</b><br/>
-<p><b>return: </b>table cells. stored in <tt>gs:table-full</tt>.</p>
-<br/><br/>
- Get full table as a list of row lists.
- <pre>
- ( ("column0" "column1" ... ) ; 1'st row
-   ("column0" "column1" ... ) ; 2'nd row
-   ...
-   ... )
- </pre>
-<br/><br/>
- The entire table contents is stored as a list of row lists in the 
- return value of <tt>gs:table-get</tt>, and is also stored in the variable 
- <tt>gs:table-full</tt>. 
 
 
 <br/><br/><center>&sect;</center><br/>
@@ -2767,6 +2765,15 @@
  Note, that adding columns or row will not automatically update
  the <tt>gs:table-size</tt> variable. Use <tt>gs:table-get-size</tt> to update
  this variable.
+
+
+<br/><br/><center>&sect;</center><br/>
+<a name="gs_table-remove-row"></a><h3><font color=#CC0000>gs:table-remove-row</font></h3>
+<b>syntax: (<font color=#CC0000>gs:table-remove-row</font> <em>sym-id</em> <em>int-rownumber</em>)</b><br/>
+<b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
+<b>parameter: </b><em>int-row</em> - The row to remove<br/>
+<br/><br/>
+ Removes a row See also <tt>gs:table-set-row-count</tt>.
 
 
 
@@ -2798,15 +2805,60 @@
  by default.
 
 
+<br/><br/><center>&sect;</center><br/>
+<a name="gs_table-set-column-name"></a><h3><font color=#CC0000>gs:table-set-column-name</font></h3>
+<b>syntax: (<font color=#CC0000>gs:table-set-column-name</font> <em>sym-id</em> [<em>str-columns</em> ... ])</b><br/>
+<b>syntax: (<font color=#CC0000>gs:table-set-column-name</font> <em>sym-id</em> ([<em>str-columns</em> ...))</b><br/>
+<b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
+<b>parameter: </b><em>str-columns</em> - Set column names with contents in <em>str-columns</em>	<br/>
+<br/><br/>
+ Replaces the column names in the table. If the number of names 
+ is greater than the current number of columns, new columns are added to the end 
+ of each row in the table. If the number of columnnames is less than the current
+ number of columns, all the extra columns at the end of a row are discarded.
+<br/><br/><center>&sect;</center><br/>
+<a name="gs_table-set-row-count"></a><h3><font color=#CC0000>gs:table-set-row-count</font></h3>
+<b>syntax: (<font color=#CC0000>gs:table-set-row-count</font> <em>sym-id</em> <em>int-row-count</em>)</b><br/>
+<b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
+<b>parameter: </b><em>int-row</em> - Set the numbers of rows in the table with <em>int-row-count</em>	  <br/>
+<br/><br/>
+ Sets the number of rows in the table. If the new size is greater than the 
+ current size, new rows are added to the end of the table. If the new size is 
+ less than the current size, all rows at index rownumber and greater are discarded.
+
+<br/><br/><center>&sect;</center><br/>
+<a name="gs_table-get"></a><h3><font color=#CC0000>gs:table-get</font></h3>
+<b>syntax: (<font color=#CC0000>gs:table-get</font> <em>sym-id</em>)</b><br/>
+<p><b>return: </b>table cells. stored in <tt>gs:table-full</tt>.</p>
+<br/><br/>
+ Get full table as a list of row lists.
+ <pre>
+ ( ("column0" "column1" ... ) ; 1'st row
+   ("column0" "column1" ... ) ; 2'nd row
+   ...
+   ... )
+ </pre>
+<br/><br/>
+ The entire table contents is stored as a list of row lists in the 
+ return value of <tt>gs:table-get</tt>, and is also stored in the variable 
+ <tt>gs:table-full</tt>. 
+
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_table-set-row-number"></a><h3><font color=#CC0000>gs:table-set-row-number</font></h3>
-<b>syntax: (<font color=#CC0000>gs:table-set-row-number</font> <em>sym-id</em> <em>bool-row-number</em>)</b><br/>
+<b>syntax: (<font color=#CC0000>gs:table-set-row-number</font> <em>sym-id</em> <em>bool-row-number</em>) DEPRECATED</b><br/>
+<br/><br/>
+ Use <tt>gs:table-show-row-number</tt>. The old naming is deprecated but will 
+ still work.
+
+
+<br/><br/><center>&sect;</center><br/>
+<a name="gs_table-show-row-number"></a><h3><font color=#CC0000>gs:table-show-row-number</font></h3>
+<b>syntax: (<font color=#CC0000>gs:table-show-row-number</font> <em>sym-id</em> <em>bool-row-number</em>)</b><br/>
 <b>parameter: </b><em>sym-id</em> - The name of the table.<br/>
 <b>parameter: </b><em>bool-row-number</em> - <tt>true</tt> if rows should carry a row number; default <tt>nil</tt>.<br/>
 <br/><br/>
  Show or hide the row number headers. The default is hiding row numbers.
-
 
 
 <br/><br/><center>&sect;</center><br/>

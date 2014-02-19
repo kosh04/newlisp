@@ -24,13 +24,15 @@
 body, h4, p {
     font-family: Lucida Sans, Helvetica, sans-serif;
     line-height: 120%;
+	color: #404040;
 	}
 
 h1, h2, h3 {
 	margin-top: 3%;
     font-family: Lucida Sans, Helvetica, sans-serif;
     line-height: 120%;
-	color: #404040;
+    font-weight: 300;
+	color: #202020;
     }
 
 table {
@@ -90,8 +92,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2013 December 3<sup>rd</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.5.6
+</h1>Version 2014 January 1<sup>st</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.5.7
 </center>
 
 <br/><br/><br/>
@@ -130,7 +132,7 @@ newLISP is a registered trademark of Lutz Mueller.
 <li><a href="#toc-4">4. Local variables</a>
   <ul>
   <li>Locals in looping functions</li>
-  <li>Locals in <tt>let</tt> and <tt>letn</tt></li>
+  <li>Locals in <tt>let</tt>, <tt>letn</tt>, <tt>local</tt> and <tt>letex</tt></li>
   <li>Unused parameters as locals</li>
   <li>Default variable values</li>
   <li><tt>args</tt> as local substitute</li>
@@ -686,7 +688,7 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 
 <p>All looping functions like <tt>doargs</tt>, <tt>dolist</tt>, <tt>dostring</tt>, <tt>dotimes</tt>, <tt>dotree</tt> and <tt>for</tt> use local variables. During loop execution, the variable takes different values. But after leaving the looping function, the variable regains its old value. <tt>let</tt>, <tt>define</tt>, and <tt>lambda</tt> expressions are another method for making variables local:</p>
 
-<h3>Locals in <tt>let</tt> and <tt>letn</tt></h3>
+<h3>Locals in <tt>let</tt>, <tt>letn</tt>, <tt>local</tt> and <tt>letex</tt></h3>
 
 <p><tt>let</tt> is the usual way in newLISP to declare symbols as local to a block.</p>
 
@@ -725,8 +727,22 @@ db:db         → (99 "B" (c d) 1 2.2 3 x y)
 )
 </pre>
 
-<p>After exiting the <tt>local</tt> expression <tt>a</tt>, <tt>b</tt> and <tt>c</tt> are
-restored to their old values, similar when using <tt>let</tt> or <tt>letn</tt> and <tt>letex</tt>.</p>
+<p><tt>letex</tt> works similar to <tt>let</tt> but variables are expanded in the body to
+values assigned.</p>
+
+<pre>
+; assign to local variable and expand in body
+
+(letex ( (x 1) (y '(a b c)) (z "hello") ) '(x y z))
+→ (1 (a b c) "hello")
+
+; as in let, parentheses around the initializers can be omitted
+
+(letex (x 1 y 2 z 3) '(x y z))    → (1 2 3)
+</pre>
+
+<p>Afte exiting any of the <tt>let</tt>, <tt>letn</tt>, <tt>local</tt> or <tt>letex</tt>
+expressions, the variable symbols used as locals get their old values back.</p> 
 
 
 <h3>Unused parameters as locals</h3>
@@ -930,7 +946,7 @@ and <tt>height</tt> at higher dynamic scoping levels.</p>
 ; walks a disk directory and prints all path-file names
 ;
 (define (show-tree dir)
-    (if (directory dir)
+    (when (directory? dir)
         (dolist (nde (directory dir))
             (if (and (directory? (append dir "/" nde))
                      (!= nde ".") (!= nde ".."))
@@ -1153,7 +1169,7 @@ L → '(0 3 0)
 </pre>
 
 <p>The following functions use the anaphoric <tt>$it</tt>:&nbsp;
-<tt>find-all</tt>, <tt>replace</tt>, <tt>set-ref</tt>, <tt>set-ref-all</tt> and <tt>setf setq</tt>.</p>
+<tt>find-all</tt>, <tt>if</tt>, <tt>replace</tt>, <tt>set-ref</tt>, <tt>set-ref-all</tt> and <tt>setf setq</tt>.</p>
 
 <h3>Replace in simple lists</h3>
 

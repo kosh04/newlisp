@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.6 Manual and Reference</title>
+   <title>newLISP v.10.5.7 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -52,7 +52,7 @@ h4	{
 
 b	{
 	font-family: Verdana, Lucida Sans, Helvetica,  sans-serif;
-    color: #404040;
+    color: #606060;
 	font-weight: 600;
 	}
 
@@ -63,9 +63,16 @@ body, h1, h2, h3 {
 	line-height: 120%;
  	}
 
+h1, h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #101010;
+	line-height: 120%;
+    font-weight: 100;
+ 	}
+
 p {
 	font-family: Lucida Sans, Helvetica,  sans-serif;
-	color: #000000;
+	color: #404040;
 	line-height: 120%;
  	}
 
@@ -141,14 +148,14 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.6</h2>
+<h2>User Manual and Reference v.10.5.7</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2013 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2014 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -205,6 +212,10 @@ newLISP is a registered trademark of Lutz Mueller.
 
 <li><a href="#shared-lib">Extending newLISP with shared libraries</a></li>
 <li><a href="#newlisp-lib">newLISP as a shared library</a></li>
+  <ul>
+  <li><a href="#newlisp-lib">newLISP as a C library</a></li>
+  <li><a href="#newlisp-js-lib">newLISP as a JavaScript library</a></li>
+  </ul>
 <li><a href="#expressions">Evaluating newLISP expressions</a>
   <ul>
   <li><a href="#multiline">Interactive multiline expressions</a></li>
@@ -318,6 +329,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li><a href="#directory_management">File and directory management</a></li>
   <li><a href="#http_api">HTTP networking API</a></li>
   <li><a href="#socket_tcpip">Socket TCP/IP, UDP and ICMP network API</a></li>
+  <li><a href="#JS">API for newLISP in a web browser</a></li>
   <li><a href="#reflection">Reflection and customization</a></li>
   <li><a href="#system_functions">System functions</a></li>
   <li><a href="#importing_libraries">Importing libraries</a></li>
@@ -409,7 +421,7 @@ called <em>contexts</em>.</p>
 
 <p>The result is an easier-to-learn Lisp that is even smaller than most Scheme 
 implementations, but which still has about 350 built-in functions.
-Not much over 200k in size, newLISP is built for high portability
+Not much over 200k in size on BSD systems, newLISP is built for high portability
 using only the most common Unix system C-libraries. It loads quickly and has 
 a small memory footprint. newLISP is as fast or faster than other popular 
 scripting languages and uses very few resources.</p>
@@ -463,9 +475,12 @@ newLISP can be run a as a CGI capable web server using its built-in http mode op
 <p>newLISP has built-in support for distributed processing on networks and parallel,
 concurrent processing on the same CPU with one or more processing cores.</p>
 
-<p>The source distribution can be compiled for Linux, Mac OS X/Darwin, BSDs
-Solaris, and Win32. newLISP can be compiled as a 64-bit LP64 application for 
-full 64-bit memory addressing.</p>
+<p>The source distribution can be compiled for Linux, Mac OS X/Darwin, BSDs, many 
+other Unix flavors and Win32. newLISP can be compiled as a 64-bit LP64 application 
+for full 64-bit memory addressing.</p>
+
+<p>Since version 10.5.7, newLISP also can be compiled to JavaScript and run in
+a <a href="http://www.newlisp.org/newlisp-js/">web browser</a>.</p>
 
 <br/>
 
@@ -1365,7 +1380,9 @@ Code Patterns in newLISP</a> document.</p>
 <a name="newlisp-lib"></a>
 <h2>7. newLISP as a shared library</h2>
 
-<p>newLISP can be compiled as a shared library. On Linux, BSDs and other Unix 
+<h3>newLISP as C library</h3>
+
+<p>newLISP can be compiled as a shared C library. On Linux, BSDs and other Unix 
 flavors the library is called <tt>newlisp.so</tt>. On Windows it is called 
 <tt>newlisp.dll</tt> and <tt>newlisp.dylib</tt> on Mac OS X. A newLISP shared 
 library is used like any other shared library.</p>
@@ -1401,6 +1418,28 @@ different line:</p>
 24. newLISP compiled as a shared library</a> in the 
 <a href="http://www.newlisp.org/downloads/CodePatterns.html">
 Code Patterns in newLISP</a> document.</p>
+
+
+<a name="newlisp-js-lib"></a>
+<h3>newLISP as a JavaScript library</h3>
+
+<p>Since version 10.5.7, newLISP can be compile to JavaScript using the
+<a href="https://github.com/kripken/emscripten/wiki">Emscripten</a>
+toolset. The library can be used to run newLISP clientr-side in a web 
+browser, just like JavaScript or HTML. An HTML page can host both,
+newLISP code and JavaScript code together. Both languages can call
+each other. For more information see the <tt>newlisp-js-x.x.x.zip</tt>
+distribution package which contains the library <tt>newlisp-js-lib.js</tt>,
+documentaion and example applications. A small newLISP development
+environment hosted in a browser can also be accessed here:
+<a href="http://www.newlisp.org/newlisp-js/">newlisp-js</a>
+The application contains links to another example application,
+documentation and a download link for the whole package.</p>
+
+<p>newLISP compiled as a JavaScript library adds new functions linked 
+from <a href="newlisp_manual.html#JS">API for newLISP in a web browser</a>.
+</p>
+ 
 
 <br/>
 <center>
@@ -7264,9 +7303,26 @@ arithmetic">
 
 </table><br/>
 
+<a name="JS"></a>
+<h3>API for newLISP in a web browser</h3>
+
+<table border="0" cellpadding="1" width="95%" align="center" summary="API for newLISP in a web browser">
+
+<tr>
+<td width="16%"><a href="#display-html">display-html</a></td>
+<td width="84%">display an HTML page in a web browser</td>
+</tr>
+
+<tr>
+<td><a href="#eval-string-js">eval-string-js</a></td>
+<td>evaluate JavaScript in the current web browser page</td>
+</tr>
+
+</table><br/>
+
+
 <a name="reflection"></a>
 <h3>Reflection and customization</h3>
-
 
 <table border="0" cellpadding="1" width="95%" align="center" summary="Reflection and customization">
 
@@ -9113,41 +9169,28 @@ to encode binary data for inclusion in text-based messages
 <h4>syntax: (bayes-query <em>list-L</em> <em>context-D</em> [<em>bool-chain</em> [<em>bool-probs</em>]])</h4>
 
 <p>
-	Takes a list of tokens (<em>list-L</em>) 
-	and a trained dictionary (<em>context-D</em>) 
-	and returns a list of the combined probabilities 
-	of the tokens in one category 
-	(<em>A</em> or <em>Mc</em>)
-	versus a category (<em>B</em>) 
-	against all other categories (<em>Mi</em>). 
-	All tokens in <em>list-L</em> 
-	should occur in <em>context-D</em>. 
-	When using the default <em>R.A. Fisher inverse Chi&sup2;&nbsp;</em> mode, 
-	nonexistent tokens will skew results 
-	toward equal probability in all categories.
+Takes a list of tokens (<em>list-L</em>) and a trained dictionary (<em>context-D</em>) 
+and returns a list of the combined probabilities of the tokens in one category 
+(<em>A</em> or <em>Mc</em>) versus a category (<em>B</em>) or
+against all other categories (<em>Mi</em>).  All tokens in <em>list-L</em> 
+should occur in <em>context-D</em>. 
+When using the default <em>R.A. Fisher inverse Chi&sup2;&nbsp;</em> mode, 
+nonexistent tokens will skew results toward equal probability in all categories.
 </p>
 
 <p>
-	Non-existing tokens will not have any influence 
-	on the result when using the true <em>Chain Bayesian</em> mode 
-	with <em>bool-chain</em> set to <tt>true</tt>. 
-	The optional last flag, <em>bool-probs</em>, 
-	indicates whether frequencies or probability values 
-	are used in the data set.
-	The <a href="#bayes-train">bayes-train</a> function
-	is typically used to generate
-	a data set's frequencies.
+Non-existing tokens will not have any influence on the result when using the 
+true <em>Chain Bayesian</em> mode with <em>bool-chain</em> set to <tt>true</tt>.  
+The optional last flag, <em>bool-probs</em>, indicates whether frequencies or 
+probability values are used in the data set. The <a href="#bayes-train">bayes-train</a> 
+function is typically used to generate a data set's frequencies.
 </p>
 
 <p>
-	Tokens can be strings or symbols. 
-	If strings are used, 
-	they are prepended with an underscore 
-	before being looked up in <em>context-D</em>. 
-	If <a href="#bayes-train">bayes-train</a> was used 
-	to generate <em>context-D</em>'s frequencies, 
-	the underscore was automatically prepended 
-	during the learning process.
+Tokens can be strings or symbols.  If strings are used, they are prepended 
+with an underscore before being looked up in <em>context-D</em>.  If 
+<a href="#bayes-train">bayes-train</a> was used to generate <em>context-D</em>'s 
+frequencies, the underscore was automatically prepended during the learning process.
 </p>
 
 <p>
@@ -12318,6 +12361,44 @@ syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>int-regex-option<
 
 <br/><br/>
 
+<a name="display-html"></a>
+<h2><span class="function">display-html
+<a href="#JS"><font size="-1">JS</font></a></span></h2>
+<h4>syntax: (display-html <em>str-html</em>)<br/>
+syntax: (display-html <em>str-html</em> <em>bool-flag</em>)</h4>
+
+<p>Using the first syntax, the function replaces the current page in 
+the browser with the HTML page found in <em>str-html</em>.</p> 
+
+<p>If <em>bool-flag</em> evaluates to <tt>true</tt>, the page gets
+opened in a new browser tab and the current page is not affected.</p>
+
+<p>This function is only available on newLISP compiled to JavaScript.</p>
+
+<pre>
+(set 'page [text]
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Hello App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h2&gt;Hello World&lt;/h2&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+[/text])
+
+; open the page in a new browser tab
+(display-html page true) <span class='arw'>&rarr;</span> "92"
+</pre>
+
+<p>The function returns the length of the HTML document displayed as a string.
+</p>
+
+<p>See also the function <a href="#eval-string-js">eval-string-js</a> for
+evaluation of JavaScript in the current page.</p>
+
+<br/><br/>
+
 <a name="div"></a>
 <h2><span class="function">div</span></h2>
 <h4>syntax: (div <em>num-1</em> <em>num-2</em> [<em>num-3</em> ... ])<br/>
@@ -13162,6 +13243,37 @@ without evaluating it.</p>
 
 <br/><br/>
 
+<a name="eval-string-js"></a>
+<h2><span class="function">eval-string-js
+<a href="#JS"><font size="-1">JS</font></a></span></h2>
+<h4>syntax: (eval-string-js <em>str-JavaScript-source</em>)</h4>
+<p>The function takes a program source in <em>str-JavaScript-source</em>
+and returns the result in a string.</p>
+
+<p>This function is only available on newLISP compiled to JavaScript.</p>
+
+<pre>
+(eval-string-js "window.prompt('Enter some text:', '')")
+
+; for single and double quotes inside a string passed to a
+; JavaScropt function, single and double quotes must be
+; preceded by a backslash \ and the whole string passed
+; to eval-string-js limited by [text], [/text] tags.
+
+(eval-string-js [text]alert('A double quote: \" and a single quote: \' ')[/text])
+
+(eval-string-js "6 * 7")
+</pre>
+
+<p>The first expression will pop up a dialog box to enter text. The function
+will return the text string entered. The second expression will return the
+string <tt>42</tt>.</p>
+
+<p>See also the function <a href="#display-html">display-html</a> for displaying
+an HTML page in the browser.</p>
+
+<br/><br/>
+
 <a name="evenp"></a>
 <h2><span class="function">even?</span>&nbsp;
 <a href="#big_int"><font size="-1">bigint</font></a></h2>
@@ -13180,7 +13292,6 @@ integer by cutting off its fractional part.</p>
 <p>Use <a href="#oddp">odd?</a> to check if an integer is not divisible by <tt>2</tt>.</p>
 
 <br/><br/>
-
 
 <a name="exec"></a>
 <h2><span class="function">exec</span></h2>
@@ -15478,7 +15589,7 @@ the result of evaluating <em>exp-1</em> is returned; otherwise, the value of
 <em>exp-2</em> is returned.  If <em>exp-2</em> is absent, the value of 
 <em>exp-condition</em> is returned.</p>
 
-<p><tt>if</tt> also sets the anaphoric syztem variable <tt>$it</tt> to the value
+<p><tt>if</tt> also sets the anaphoric system variable <tt>$it</tt> to the value
 of the conditional expression in <tt>if</tt>.</p>
 
 <!-- example -->
@@ -17537,12 +17648,9 @@ Special forms which use parentheses as syntax cannot be mapped
 <h4>syntax: (mat <em>+</em> | <em>-</em> | <em>*</em> | <em>/</em> <em>matrix-A matrix-B</em>)<br/>
 syntax: (mat <em>+</em> | <em>-</em> | <em>*</em> | <em>/</em> <em>matrix-A number</em>)</h4>
 
-<p>Using the first syntax, 
-this function performs fast floating point 
-scalar operations on two-dimensional matrices 
-in <em>matrix-A</em> or <em>matrix-B</em>. 
-The type of operation is specified 
-by one of the four arithmetic operators 
+<p>Using the first syntax, this function performs fast floating point 
+scalar operations on two-dimensional matrices in <em>matrix-A</em> or <em>matrix-B</em>. 
+The type of operation is specified by one of the four arithmetic operators 
 <tt>+</tt>, <tt>-</tt>, <tt>*</tt>, or <tt>/</tt>. 
 This type of arithmetic operator is typically used for integer 
 operations in newLISP. In the case of <tt>mat</tt>, however,
@@ -20410,7 +20518,7 @@ ostype  <span class='arw'>&rarr;</span> "Win32"
 
 
 <p>One of the following strings is returned: 
-<tt>"Linux", "BSD", "OSX", "Tru64Unix", "Solaris", "SunOS", "Win32", or "OS/2"</tt>.
+<tt>"Linux", "BSD", "OSX", "Tru64Unix", "Solaris", "SunOS", "Win32", "Cygwin", or "OS/2"</tt>.
 </p>
 
 
@@ -21890,10 +21998,10 @@ for payment at the beginning of each period, <em>int-type</em> is 1.</p>
 <h2><span class="function">quote</span></h2>
 <h4>syntax: (quote <em>exp</em>)</h4>
 
-<p>
-	Returns <em>exp</em> without evaluating it.
-	The same effect can be obtained by prepending a <tt>'</tt> (single quote) to <em>exp</em>.
-</p>
+<p>Returns <em>exp</em> without evaluating it. The same effect can be obtained by 
+prepending a <tt>'</tt> (single quote) to <em>exp</em>. The function <tt>quote</tt> 
+is resolved during runtime, the prepended <tt>'</tt> quote is translated into a 
+protective envelope (quote cell) during code translation.</p>
 
 <!-- example -->
 
@@ -25235,24 +25343,25 @@ offset and length numbers, even when running the UTF-8 enabled version of newLIS
 <h4>syntax: (sort <em>list</em> [<em>func-compare</em>])<br/>
 syntax: (sort <em>array</em> [<em>func-compare</em>])</h4>
 
-<p>All members in <em>list</em> are sorted in ascending order.
+<p>All members in <em>list</em> or <em>array</em> are sorted in ascending order.
 Anything may be sorted, regardless of the types.
-When members are themselves lists, each list element 
-is recursively compared. Arrays in <em>array</em> are
-sorted as if they were lists. If two expressions 
+When members are themselves lists or arrays, each element 
+is recursively compared.  If two expressions 
 of different types are compared, the lower type is sorted 
-before the higher type in the following order:</p>
-
-<p>When sorting an <em>array</em> sort works as if sorting
-a list.</p>
+before the higher type in the following order:
+</p>
 
 <pre>
 Atoms: nil, true, integer or float, string, symbol, primitive
 Lists: quoted expression, list, lambda, lambda-macro
 </pre>
 
-<p>The <tt>sort</tt> is destructive, changing the order of the elements in the 
-original list or array and returning the sorted list or array.</p>
+<p>The <tt>sort</tt> is destructive, changing the order of the elements in the
+original list or array and returning the sorted list or array. It is a stable
+binary merge-sort with approximately <em>O(n log2 n)</em> performance
+preserving the order of adjacent elements which are equal. When  
+<em>func-compare</em> is used it must work with either <tt>&lt;=</tt> or
+<tt>&gt;=</tt> operators to be stable.</p>
 
 <p>An optional comparison operator, user-defined function, 
 or anonymous function can be supplied. The functor or operator 
@@ -25262,7 +25371,7 @@ can be given with or without a preceding quote.</p>
 
 <pre>
 (sort '(v f r t h n m j))     <span class='arw'>&rarr;</span> (f h j m n r t v)
-(sort '((2 4) (1 10) (2 1)))  <span class='arw'>&rarr;</span> ((1 10) (2 1) (2 4))
+(sort '((3 4) (2 1) (1 10)))  <span class='arw'>&rarr;</span> ((1 10) (2 1) (3 4))
 (sort '((3 4) "hi" 2.8 8 b))  <span class='arw'>&rarr;</span> (2.8 8 "hi" b (3 4))
 
 (set 's '(k a l s))
@@ -25276,14 +25385,14 @@ s           <span class='arw'>&rarr;</span> (s l k a)
 
 ;; define a comparison function
 (define (comp x y) 
-    (&gt; (last x) (last y)))
+    (&gt;= (last x) (last y)))
     
 (set 'db '((a 3) (g 2) (c 5)))
 
 (sort db comp)  <span class='arw'>&rarr;</span>  ((c 5) (a 3) (g 2))
 
 ;; use an anonymous function
-(sort db (fn (x y) (&gt; (last x) (last y))))
+(sort db (fn (x y) (&gt;= (last x) (last y))))
 </pre>
 
 <br/><br/>
@@ -26698,26 +26807,15 @@ newLISP goes into debugging mode after entering the next user defined function,
 displaying the function and highlighting the current expression 
 upon entry and exit.</p>
 
-<p>
-	Highlighting is done by bracketing the expression 
-	between two # (number sign) characters.
-	This can be changed to a different character 
-	using <a href="#trace-highlight">trace-highlight</a>. 
-	Upon exit from the expression, 
-	the result of its evaluation 
-	is also reported.
-</p>
+<p>Highlighting is done by bracketing the expression 
+between two # (number sign) characters.
+This can be changed to a different character 
+using <a href="#trace-highlight">trace-highlight</a>. 
+Upon exit from the expression, the result of its evaluation 
+is also reported.</p>
 
-<p>
-	If an expression occurs more than once in a function, 
-	the first occurrence of the executing function 
-	will always be highlighted (bracketed).
-</p>
-
-<p>
-	newLISP execution stops with a prompt line 
-	at each entry and exit of an expression.
-</p>
+<p> newLISP execution stops with a prompt line 
+at each entry and exit of an expression.</p>
 
 
 <pre>
@@ -26748,20 +26846,17 @@ or set to different values.
 (trace nil)  <span class='arw'>&rarr;</span> nil 
 </pre>
 
-<p>
-	To set break points 
-	where newLISP should interrupt 
-	normal execution 
-	and go into debugging mode,
-	put <tt>(trace true)</tt> statements 
-	into the newLISP code where execution 
-	should switch on the debugger.
-</p>
+<p>To set break points where newLISP should interrupt 
+normal execution and go into debugging mode,
+put <tt>(trace true)</tt> statements into the newLISP 
+code where execution should switch on the debugger.</p>
 
-<p>
-	Use the <a href="#debug">debug</a> function
-	as a shortcut for the above example.
-</p>
+<p>Use the <a href="#debug">debug</a> function as a shortcut 
+for the above example:</p>
+
+<pre>
+(debug (my-func a b c))
+</pre>
 
 <br/><br/>
 

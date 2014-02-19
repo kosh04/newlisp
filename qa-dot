@@ -1265,6 +1265,7 @@ true
 ))
 
 
+; use qa-pipe, qa-pipefork, qa-setsig in qa-specific-test/ to test fork
 (define (test-fork) (integer? (fork (exit))))
 
 (define (test-format )
@@ -2521,7 +2522,8 @@ true
     )
  ))
 
-(define (test-receive) true) ; tested with qa-message
+; tested with qa-specific-tests/qa-message
+(define (test-receive) true) 
 
 (define (test-ref)
   (and 
@@ -2789,7 +2791,8 @@ true
 		(= (semaphore sid) 1) true) ;; no semaphore status on Win32
     (semaphore sid 0)))
 
-(define (test-send) true) ; tested with qa-message
+; tested with qa-specific-tests/qa-message
+(define (test-send) true) 
 
 (define (test-sequence )
   (= (sequence 1 10 3) '(1 4 7 10)))
@@ -3332,6 +3335,7 @@ true
 		(abort)
 ))
 
+; more testing can be found in qa-specific-test/qa-cilk
 (define (test-spawn)
 	(and 
         (set 'pw (spawn 'w (list 'a 'b 'c 'd 'e 'f))) ; list

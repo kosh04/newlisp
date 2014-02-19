@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2013 Lutz Mueller
+//    Copyright (C) 2014 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -80,7 +80,9 @@ static Color numberColor = new Color(192,128, 0);
 static Color parenColor = new Color(192, 0, 0);
 static Color quotedColor = new Color(96, 96, 192);
 
-static String numberPattern = "^-?\\d+$|^-?\\d+\\.\\d+$|^0x[0-9a-fA-F]+$|^0b[01]+$";
+static String numberPattern = "^[+-]?\\d+$|^[+-]?\\d+\\.\\d+$|^0x[0-9a-fA-F]+$|^0b[01]+$|^(\\d*(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?$";
+/*                                    lead     hex            octal      decimal                                scientific       binary */
+/* static String numberPattern = "{^(\\s+|\\(|\\))(0x[0-9a-fA-F]+|[+-]?0\\d+|([+-]?(0|[1-9]\\d*)(\\.\\d*)?|\\.\\d+)([eE][+-]?\\d+)?)|0[bB][01]+$} ";*/
 static Pattern compiledPattern;
 
 static StyledDocument doc;

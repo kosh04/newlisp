@@ -1,6 +1,6 @@
 /* nl-matrix.c --- matrix functions for newLISP
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ return(stuffFloat(&d));
 
 CELL * p_matScalar(CELL * params)
 {
-CELL * param;
+CELL * op;
 double * * A = NULL;
 double * * B = NULL;
 double * * M = NULL;
@@ -249,13 +249,13 @@ int type;
 int n, m, k, l, err = 0;
 
 CELL * result;
-param = params;
-param = evaluateExpression(param);
+op = params;
+op = evaluateExpression(op);
 
-if(param->type == CELL_SYMBOL)
-    type = *((SYMBOL *)param->contents)->name;
-else if(param->type == CELL_PRIMITIVE)
-    type = *(char *)param->aux;
+if(op->type == CELL_SYMBOL)
+    type = *((SYMBOL *)op->contents)->name;
+else if(op->type == CELL_PRIMITIVE)
+    type = *(char *)op->aux;
 else
     return(errorProcExt(ERR_ILLEGAL_TYPE, params));
 
@@ -307,17 +307,8 @@ else
             case '-': M[k][l] = A[k][l] - B[k][l]; break;
             case '*': M[k][l] = A[k][l] * B[k][l]; break;
             case '/': M[k][l] = A[k][l] / B[k][l]; break;
-/* before 10.2.0
-                { 
-                if(B[k][l] == 0)
-                    return(errorProc(ERR_MATH));
-                else
-                    M[k][l] = A[k][l] / B[k][l];
-                }
-                break;
-*/
             default:
-            return(errorProcExt(ERR_ILLEGAL_TYPE, params));
+            return(errorProcExt(ERR_ILLEGAL_TYPE, op));
             }
         }
 }

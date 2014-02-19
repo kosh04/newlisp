@@ -1,6 +1,6 @@
 #
 
-VERSION=10.5.6
+VERSION=10.5.7
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -98,6 +98,7 @@ install:
 	-install -m 644 guiserver/pinballs-demo.lsp $(datadir)/newlisp/guiserver/pinballs-demo.lsp
 	-install -m 644 guiserver/properties-demo.lsp $(datadir)/newlisp/guiserver/properties-demo.lsp
 	-install -m 644 guiserver/rotation-demo.lsp $(datadir)/newlisp/guiserver/rotation-demo.lsp
+	-install -m 644 guiserver/scroll-pane-demo.lsp $(datadir)/newlisp/guiserver/scroll-pane-demo.lsp
 	-install -m 644 guiserver/shapes-demo.lsp $(datadir)/newlisp/guiserver/shapes-demo.lsp
 	-install -m 644 guiserver/sound-demo.lsp $(datadir)/newlisp/guiserver/sound-demo.lsp
 	-install -m 644 guiserver/stroke-demo.lsp $(datadir)/newlisp/guiserver/stroke-demo.lsp

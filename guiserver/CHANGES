@@ -962,3 +962,24 @@
 
 1.50 fixed gs:run-shell in newlisp-edit.lsp and TextAreaWidget.java for different
      handling of Runtime.getRuntime().exec(cmdArray) in Java 7 update 21.
+
+1.51 
+   When adding columns with empty string headers, this will not any more put the 
+   column number as header. This allows to add columns to headerless tables, as 
+   possible when supplying empty string headers in the initial gs:table statement.
+
+1.60
+   New table functions igs:table-remove-row, gs:table-set-column-name and 
+   gs:table-set-row-count. Thanks to Ferry de Bruin. 
+   The nameing of gs:table-set-row-number is deprecated and should be called
+   as gs:table-show-row-number. The old naming will continue to work.
+
+1.60
+   Addtions to the table interface.
+
+1.62
+   Make +123 and +1.23 work in syntax highlighter.
+   Make sicentific notation e.g. 1.23e-4 work in syntax highlighter.
+
+   
+

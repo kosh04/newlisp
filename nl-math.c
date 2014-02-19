@@ -1,7 +1,7 @@
 /* nl-math.c
 
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you cann redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2890,7 +2890,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2013 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2014 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,
@@ -3411,6 +3411,22 @@ CELL * p_isOdd(CELL * params)
 CELL * p_isEven(CELL * params)
 { return(isOddEven(params, BOOL_EVEN)); }
 
+/* used when passing 32bit floats to library routines */
+CELL * p_flt(CELL * params)
+{
+double dfloatV;
+float floatV;
+unsigned int number;
+
+getFloat(params, &dfloatV);
+
+floatV = dfloatV;
+memcpy(&number, &floatV, 4);
+
+return(stuffInteger(number));
+}
+
+
 /* ------------------------------ basic statistics ------------------------- */
 
 double * getVector(CELL * data, UINT * N, double * Sum, double * Mean, double * Sd2)
@@ -3661,6 +3677,12 @@ return(cell);
 }
 
 /* ============================= Big Integer support ============================= */
+
+/* other big int libs:
+    GNU GMP https://gmplib.org/
+    MPIR http://www.mpir.org/ 
+    BSDNT https://github.com/wbhart/bsdnt 
+*/
 
 #ifdef BIGINT
 

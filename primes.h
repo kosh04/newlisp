@@ -1,6 +1,6 @@
 /* primes.h - table of primitives
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 
 #ifndef PRIMES_H
 #define PRIMES_H
-
 
 PRIMITIVE primitive[] =
 	{
@@ -220,6 +219,9 @@ PRIMITIVE primitive[] =
 	
 	/* ------------ string ops ------------- */
 	{"eval-string",	p_evalString,	0},
+#ifdef EMSCRIPTEN
+    {"eval-string-js", p_evalStringJS, 0},
+#endif
 	{"read-expr",	p_readExpr,		0},
 	{"join",		p_join,	        0},
 	{"chop",		p_chop,	        0},
@@ -278,6 +280,7 @@ PRIMITIVE primitive[] =
 	{"save",		p_save,		0},
 	{"source",		p_symbolSource,	0},
 	{"open",		p_open,		0},
+	{"seek",		p_seek,		0},
 	{"close",		p_close,	0},
 	{"read-char",	p_readChar,	0},
 #ifdef SUPPORT_UTF8
@@ -292,6 +295,7 @@ PRIMITIVE primitive[] =
 	{"append-file",	p_appendFile,	0},
 	{"read-file",	p_readFile, 0},
 	{"read-key",	p_readKey,	0},
+#ifndef EMSCRIPTEN
 	{"get-url",		p_getUrl,	0},
 	{"put-url",		p_putUrl, 	0},
 	{"post-url",	p_postUrl,	0},
@@ -300,31 +304,29 @@ PRIMITIVE primitive[] =
 	{"exec",        p_exec,     0},
 	{"process",		p_process,	0},
 	{"pipe",		p_pipe,		0}, 
-#ifdef HAVE_FORK /* defined in newlisp.h */
+#ifndef NO_FORK
 	{"fork",		p_fork,		0},
 	{"wait-pid",	p_waitpid,	0},
 #endif
-#ifndef OS2
-#ifndef WINDOWS
-#ifndef LIBRARY
+#ifndef NO_SPAWN
 	{"spawn",		p_spawn,	0},
 	{"sync",		p_sync,		0},
 	{"abort",		p_abort,	0},
 	{"send",		p_send,		0},
 	{"receive",		p_receive,	0},
 #endif
-#endif
-#ifndef LIBRARY
+#ifndef NO_SHARE
 	{"share",		p_share,	0},
 #endif
-#endif
-#ifdef SEMAPHORE
+#ifndef NO_SEMAPHORE
 	{"semaphore",	p_semaphore,0},
 #endif
-	{"seek",		p_seek,		0},
 #ifndef WINDOWS
 	{"peek",		p_peek,		0},
 #endif
+
+#endif /* ifndef EMSCRIPTEN */
+
 	
 	/* ---------  system --------- */
 	{"set-locale",		p_setLocale,	0},
@@ -332,9 +334,11 @@ PRIMITIVE primitive[] =
 	{"exists",		p_exists,	0},
 	{"symbols",		p_symbols,	0},
 	{"exit",		p_exit,		0},
+#ifndef NO_DEBUG
 	{"debug",		p_debug,	0},
 	{"trace",		p_trace,	0},
 	{"trace-highlight", 	p_traceHighlight,0},
+#endif
 	{"reset",		p_reset,	0},
 	{"throw-error",	p_throwError,	0},
 	{"error-event",	p_errorEvent,	0},
@@ -343,7 +347,11 @@ PRIMITIVE primitive[] =
 	{"xfer-event", 	p_transferEvent, 0},
 	{"reader-event", 	p_readerEvent, 0},
 	{"last-error", 	p_lastError, 0},
+#ifndef EMSCRIPTEN
+#ifndef NO_SIGNAL
 	{"signal",		p_signal,	0},
+#endif
+#endif
 	{"sys-info",	p_systemInfo,	0},
 	{"sys-error",	p_systemError,	0},
 	{"!",			p_system,	0},
@@ -364,14 +372,14 @@ PRIMITIVE primitive[] =
 	{"self",		p_self,		0},
 	{"prefix",		p_prefix,	0},
 	{"default",		p_default,	0},
+#ifndef EMSCRIPTEN
 	{"timer",       p_timerEvent,	0},
-#ifndef NOIMPORT
 	{"import",		p_importLib,	0},
 	{"callback",	p_callback,		0},
 #ifdef FFI
     {"struct",      p_struct,       0},
 #endif
-#endif
+#endif /* ifndef EMSCRIPTEN */
 	{"delete",		p_deleteSymbol,	0},
 	{"new",			p_new,		0},
 	{"def-new",		p_defineNew,	0},
@@ -427,6 +435,7 @@ PRIMITIVE primitive[] =
 	{"date-value",  p_dateValue,	0},
 
 	/* ------------ net working ------------ */
+#ifndef EMSCRIPTEN
 	{"net-close",		p_netClose,	0},
 	{"net-service",		p_netService,	0},
 	{"net-connect",		p_netConnect,	0},
@@ -442,18 +451,17 @@ PRIMITIVE primitive[] =
 	{"net-send-to",		p_netSendTo,	0},
 	{"net-send-udp",	p_netSendUDP,	0},
 	{"net-listen",		p_netListen,	0},
-#ifdef NET_PACKET
+#ifndef WINDOWS
 	{"net-packet",		p_netPacket,	0},
+	{"net-ping",		p_netPing,	0},
 #endif
 	{"net-peek",		p_netPeek,	0},
 	{"net-select",		p_netSelect,	0},
 	{"net-sessions",	p_netSessions,	0},
 	{"net-eval",		p_netEval,	0},
 	{"net-interface",	p_netInterface, 0},
-#ifdef NET_PING
-	{"net-ping",		p_netPing,	0},
-#endif
  	{"net-error",		p_netLastError,	0},
+#endif
 	{NULL,NULL,0},
 };
 

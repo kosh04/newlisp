@@ -6,13 +6,13 @@
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.42 new table UI</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.43 bug fix in new table UI action parameters</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.44 fixes in newlisp-edit.lsp</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.45 doc fixes</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.47 doc fixes</font>
-<font color='#555555'>;; <font color='#308080'>@version</font> 1.48 doc fixes</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.50 doc fixes</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.51 return value for gs:export</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.52 fix in run-shell for Java 7 update 21</font>
-<font color='#555555'>;; <font color='#308080'>@author</font> LM, August 2008, 2009, 2010, 2012, 2013</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.53 doc fixes</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.60 new table functions, new naming gs:table-show-row-number</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.61 more options for gs:scroll-pane added by FdB</font>
+<font color='#555555'>;; <font color='#308080'>@author</font> LM, 2008, 2009, 2010, Unya 2012, FdB 2013</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the</font>
 <font color='#555555'>;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on</font>
@@ -506,9 +506,13 @@
 <font color='#555555'>;;    (gs:table-get &lt;sym-id&gt;)</font>
 <font color='#555555'>;;    (gs:table-get-cell &lt;sym-id&gt; &lt;int-row&gt; &lt;int-column&gt;)</font>
 <font color='#555555'>;;    (gs:table-get-size &lt;sym-id&gt;)</font>
+<font color='#555555'>;;    (gs:table-remove-row &lt;sym-id&gt; &lt;int-row&gt;</font>
 <font color='#555555'>;;    (gs:table-set-cell &lt;sym-id&gt; &lt;int-row&gt; &lt;int-column&gt; &lt;str-value&gt;)</font>
 <font color='#555555'>;;    (gs:table-set-column &lt;sym-id&gt; &lt;int-column-number&gt; &lt;int-width&gt; [&lt;str-justification&gt;])</font>
-<font color='#555555'>;;    (gs:table-set-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;)</font>
+<font color='#555555'>;;    (gs:table-set-column-name &lt;sym-id&gt; [&lt;str-name1&gt; [&lt;str-name2&gt; ...])</font>
+<font color='#555555'>;;    (gs:table-set-row-count &lt;sym-id&gt; &lt;int-count&gt;</font>
+<font color='#555555'>;;    (gs:table-set-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;) DEPRECATED use gs:table-show-row-number</font>
+<font color='#555555'>;;    (gs:table-show-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;)</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; &lt;/li&gt;</font>
 <font color='#555555'>;; &lt;li&gt;&lt;b&gt;Special dialogs&lt;/b&gt;&lt;br&gt;</font>
@@ -1168,6 +1172,9 @@
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:dispose &lt;sym-id&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the component to dispose of.</font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; Only objects created with 'gs:dialog', 'gs:frame' or 'gs:window' can be</font>
+<font color='#555555'>;; deleted with 'gs:dispose'.</font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>dispose id<font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"dispose "</font> id <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
@@ -2678,16 +2685,25 @@
 		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"select-text "</font> id <font color='#008800'>" "</font> from <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
-<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:scroll-pane &lt;sym-id&gt; &lt;sym-widget&gt; [&lt;int-width&gt; &lt;int-height&gt;])</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:scroll-pane &lt;sym-id&gt; &lt;sym-widget&gt; [&lt;int-width&gt; &lt;int-height&gt; &lt;sym-w-col&gt; &lt;sum-w-row&gt; &lt;sym-w-corner&gt;])</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the scroll pane.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-widget&gt; The component in the scroll pane to be scrolled.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-width&gt; The optional width of the scroll pane.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-height&gt; The optional height of the scroll pane.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-col&gt; The optional table widget for a custom column header.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-row&gt; The optional table widget for a custom row header</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-corner&gt; The optional widget component in the upper left corner.</font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; <font color='#308080'>@example</font></font>
+<font color='#555555'>;; (gs:scroll-pane 'scroll 'data-table 700 600 'col-table 'row-table 'Canvas)</font>
+<font color='#555555'>;;</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>scroll-pane id widget width height<font color='#AA0000'>)</font>
-	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> width height<font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"scroll-pane "</font> id <font color='#008800'>" "</font> widget <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"scroll-pane "</font> id <font color='#008800'>" "</font> widget <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>scroll-pane id widget width height col-table row-table upper-left-corner <font color='#AA0000'>)</font>
+	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> col-table row-table upper-left-corner<font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"scroll-pane "</font> id <font color='#008800'>" "</font> widget <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>" "</font> col-table <font color='#008800'>" "</font> row-table <font color='#008800'>" "</font> upper-left-corner <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> width height<font color='#AA0000'>)</font>
+			<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"scroll-pane "</font> id <font color='#008800'>" "</font> widget <font color='#008800'>" "</font> width <font color='#008800'>" "</font> height <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+			<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"scroll-pane "</font> id <font color='#008800'>" "</font> widget <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 <font color='#AA0000'>)</font>
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:set-accelerator &lt;sym-menu-item&gt; &lt;str-keystroke&gt;)</font>
@@ -3332,12 +3348,15 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-column-header-name&gt; The optional column header name. </font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; Creates a table with &lt;str-column-header-name&gt; specified column and empty row.</font>
-<font color='#555555'>;; For empty strings specified as column headers, the column number will be used.</font>
-<font color='#555555'>;; If there are no columns, an empty table (0 x 0) is created.</font>
+<font color='#555555'>;; For empty strings specified as column headers, the header will be left empty.</font>
+<font color='#555555'>;; If all header in a table are specified as empty, the table will be created</font>
+<font color='#555555'>;; without a header row. If there are no columns at all, an empty table (0 x 0) </font>
+<font color='#555555'>;; is created. </font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; When a cell is selected, the function in &lt;sym-action&gt; gets called with the</font>
-<font color='#555555'>;; table id, row, column and cell-contents. See the file 'table-demo.lsp'</font>
-<font color='#555555'>;; for an example. Cells can be edited  by either selecting or double clicking a cell.</font>
+<font color='#555555'>;; When a cell is selected, the function in &lt;sym-action&gt; gets called with the table </font>
+<font color='#555555'>;; id, row, column and cell-contents. See the file 'table-demo.lsp' for an example. </font>
+<font color='#555555'>;; Cells can be edited  by either selecting or double clicking a cell.</font>
+
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table id action<font color='#AA0000'>)</font>
   <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table "</font> id <font color='#008800'>" "</font> action<font color='#AA0000'>)</font>
@@ -3354,8 +3373,10 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-column-header-name&gt; Add column header name(s). </font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; When a column header name is empty, the name is set to the column number. </font>
-<font color='#555555'>;; The table size grows.</font>
+<font color='#555555'>;; More than one &lt;str-column-header-name&gt; can be specified to add more</font>
+<font color='#555555'>;; than one column. A column header can be set empty using and empty string &lt;tt&gt;""&lt;/tt&gt;.</font>
+<font color='#555555'>;; When all headers in a table are empty, the</font>
+<font color='#555555'>;; table will be displayed without a header row.</font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-add-column id<font color='#AA0000'>)</font>
   <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-add-column "</font> id<font color='#AA0000'>)</font>
@@ -3389,36 +3410,6 @@
     <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font> <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
 
-
-<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-get &lt;sym-id&gt;)</font>
-<font color='#555555'>;; <font color='#308080'>@return</font> table cells. stored in 'gs:table-full'.</font>
-<font color='#555555'>;;</font>
-<font color='#555555'>;; Get full table as a list of row lists.</font>
-<font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;; ( ("column0" "column1" ... ) ; 1'st row</font>
-<font color='#555555'>;;   ("column0" "column1" ... ) ; 2'nd row</font>
-<font color='#555555'>;;   ...</font>
-<font color='#555555'>;;   ... )</font>
-<font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;;</font>
-<font color='#555555'>;; The entire table contents is stored as a list of row lists in the </font>
-<font color='#555555'>;; return value of 'gs:table-get', and is also stored in the variable </font>
-<font color='#555555'>;; 'gs:table-full'. </font>
-
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-get id<font color='#AA0000'>)</font>
-	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'gs:table-full <font color='#0000AA'>nil</font><font color='#AA0000'>)</font>
-	<font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-get "</font> id<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
-		<font color='#555555'>;(println "gs:table-get " s)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>while</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> gs:table-full<font color='#AA0000'>)</font> <font color='#AA0000'>(</font>check-event <font color='#665500'>10000</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-		<font color='#555555'>; decode base64 cell contents for each row in each cell</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'gs:table-full
-			<font color='#AA0000'>(</font><font color='#0000AA'>map</font> <font color='#AA0000'>(</font>lambda <font color='#AA0000'>(</font>x<font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>map</font> <font color='#AA0000'>(</font>lambda <font color='#AA0000'>(</font>s<font color='#AA0000'>)</font> 
-					<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>nil?</font> s<font color='#AA0000'>)</font> <font color='#0000AA'>nil</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-dec</font> s<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-						<font color='#AA0000'>)</font> x <font color='#AA0000'>)</font> <font color='#AA0000'>)</font> gs:table-full<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-	<font color='#AA0000'>)</font>
-<font color='#AA0000'>)</font>
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-get-cell &lt;sym-id&gt; &lt;int-row&gt; &lt;int-column&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
@@ -3459,6 +3450,19 @@
     <font color='#AA0000'>(</font><font color='#0000AA'>while</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> gs:table-size<font color='#AA0000'>)</font> <font color='#AA0000'>(</font>check-event <font color='#665500'>10000</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
     gs:table-size
     <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
+
+<font color='#555555'>; FdB</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-remove-row &lt;sym-id&gt; &lt;int-rownumber&gt;)</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-row&gt; The row to remove</font>
+<font color='#555555'>;; </font>
+<font color='#555555'>;; Removes a row See also 'gs:table-set-row-count'.</font>
+
+	<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-remove-row id row<font color='#AA0000'>)</font>
+	  <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-remove-row "</font> id <font color='#008800'>" "</font> row<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+	    <font color='#555555'>;(println "gs:table-remove-row " s)</font>
+	    <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
+	    <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font> <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
 
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-cell &lt;sym-id&gt; &lt;int-row&gt; &lt;int-column&gt; &lt;str-value&gt;)</font>
@@ -3505,20 +3509,90 @@
     <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font> <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
 
+<font color='#555555'>; FdB</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-column-name &lt;sym-id&gt; [&lt;str-columns&gt; ... ])</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-column-name &lt;sym-id&gt; ([&lt;str-columns&gt; ...))</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-columns&gt; Set column names with contents in &lt;str-columns&gt;	</font>
+<font color='#555555'>;; </font>
+<font color='#555555'>;; Replaces the column names in the table. If the number of names </font>
+<font color='#555555'>;; is greater than the current number of columns, new columns are added to the end </font>
+<font color='#555555'>;; of each row in the table. If the number of columnnames is less than the current</font>
+<font color='#555555'>;; number of columns, all the extra columns at the end of a row are discarded.</font>
+	
+	<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-set-column-name id<font color='#AA0000'>)</font>
+	   <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-set-column-name "</font> id<font color='#AA0000'>)</font>
+		  columns <font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>null?</font> <font color='#AA0000'>(</font><font color='#0000AA'>args</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font> '<font color='#AA0000'>(</font><font color='#AA0000'>)</font>
+			      <font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>list?</font> <font color='#AA0000'>(</font><font color='#0000AA'>args</font> <font color='#665500'>0</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>args</font> <font color='#665500'>0</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>args</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		  <font color='#AA0000'>(</font><font color='#0000AA'>dolist</font> <font color='#AA0000'>(</font>col columns<font color='#AA0000'>)</font>
+		    <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>" "</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-enc</font> col<font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		  <font color='#555555'>;(println "gs:table-set-column-name " s)</font>
+		  <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
+		  <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+	  
+<font color='#555555'>; FdB</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-row-count &lt;sym-id&gt; &lt;int-row-count&gt;)</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
+<font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-row&gt; Set the numbers of rows in the table with &lt;int-row-count&gt;	  </font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; Sets the number of rows in the table. If the new size is greater than the </font>
+<font color='#555555'>;; current size, new rows are added to the end of the table. If the new size is </font>
+<font color='#555555'>;; less than the current size, all rows at index rownumber and greater are discarded.</font>
+	  
+	<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-set-row-count id num<font color='#AA0000'>)</font>
+	  <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-set-row-count "</font> id <font color='#008800'>" "</font> num<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>" &#092;n"</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font><font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
 
-<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;)</font>
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-get &lt;sym-id&gt;)</font>
+<font color='#555555'>;; <font color='#308080'>@return</font> table cells. stored in 'gs:table-full'.</font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; Get full table as a list of row lists.</font>
+<font color='#555555'>;; &lt;pre&gt;</font>
+<font color='#555555'>;; ( ("column0" "column1" ... ) ; 1'st row</font>
+<font color='#555555'>;;   ("column0" "column1" ... ) ; 2'nd row</font>
+<font color='#555555'>;;   ...</font>
+<font color='#555555'>;;   ... )</font>
+<font color='#555555'>;; &lt;/pre&gt;</font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; The entire table contents is stored as a list of row lists in the </font>
+<font color='#555555'>;; return value of 'gs:table-get', and is also stored in the variable </font>
+<font color='#555555'>;; 'gs:table-full'. </font>
+
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-get id<font color='#AA0000'>)</font>
+	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'gs:table-full <font color='#0000AA'>nil</font><font color='#AA0000'>)</font>
+	<font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-get "</font> id<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
+		<font color='#555555'>;(println "gs:table-get " s)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>while</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> gs:table-full<font color='#AA0000'>)</font> <font color='#AA0000'>(</font>check-event <font color='#665500'>10000</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+		<font color='#555555'>; decode base64 cell contents for each row in each cell</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'gs:table-full
+			<font color='#AA0000'>(</font><font color='#0000AA'>map</font> <font color='#AA0000'>(</font>lambda <font color='#AA0000'>(</font>x<font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>map</font> <font color='#AA0000'>(</font>lambda <font color='#AA0000'>(</font>s<font color='#AA0000'>)</font> 
+					<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>nil?</font> s<font color='#AA0000'>)</font> <font color='#0000AA'>nil</font> <font color='#AA0000'>(</font><font color='#0000AA'>base64-dec</font> s<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+						<font color='#AA0000'>)</font> x <font color='#AA0000'>)</font> <font color='#AA0000'>)</font> gs:table-full<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
+	<font color='#AA0000'>)</font>
+<font color='#AA0000'>)</font>
+
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-set-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;) DEPRECATED</font>
+<font color='#555555'>;;</font>
+<font color='#555555'>;; Use 'gs:table-show-row-number'. The old naming is deprecated but will </font>
+<font color='#555555'>;; still work.</font>
+
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> table-set-row-number table-show-row-number<font color='#AA0000'>)</font>
+
+<font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-show-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;bool-row-number&gt; 'true' if rows should carry a row number; default 'nil'.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; Show or hide the row number headers. The default is hiding row numbers.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-set-row-number id boolRowheader<font color='#AA0000'>)</font>
-  <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-set-row-number "</font> id
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>table-show-row-number id boolRowheader<font color='#AA0000'>)</font>
+  <font color='#AA0000'>(</font><font color='#0000AA'>let</font> <font color='#AA0000'>(</font>s <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"table-show-row-number "</font> id
 		  <font color='#008800'>" "</font> boolRowheader<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-    <font color='#555555'>;(println "gs:table-set-row-number " s)</font>
+    <font color='#555555'>;(println "gs:table-show-row-number " s)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font> <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
-
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:text-area &lt;sym-id&gt; &lt;sym-action&gt; &lt;int-width&gt; &lt;int-height&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;symid&gt; The name of the text area.</font>

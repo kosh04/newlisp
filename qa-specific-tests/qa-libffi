@@ -8,7 +8,7 @@
 #    use examples/opengl-demo-ffi.lsp for extended ffi testing
 
 (when (zero? (& 1024 (sys-info -1)))
-    (println ">>>>> qa-libffi: tests only run on extended FFI enabled versions compiled with ffilib")
+    (println ">>>>> qa-libffi: tests only run on extended FFI enabled versions compiled with libffi")
     (exit))
 
 (define (compile-recover CC-CALL) ; thanks to Rick Hansen
@@ -74,7 +74,7 @@
     (println "copy char* => " to " => " (= "hello" to) )
     (println "return => " ret)
     )
-  (println ">>>>> ffilib API testing SUCCESSFUL")
+  (println ">>>>> libffi API testing SUCCESSFUL")
   (println ">>>>> ERR testing libffi API"))
 
 ;; test simple import and callback API
@@ -85,7 +85,7 @@
     (if (= int-num 1234567890)
         (println " (simple callback API) SUCCESSFUL")
         (println "ERR in simple callback API")
-    ))
+    )) ; without return value
 
 (register_callback_simple (callback 0 'callme-simple))
 
@@ -131,7 +131,4 @@
 (delete-file "ffitest.dylib")
 
 (exit)
-
-
-
 

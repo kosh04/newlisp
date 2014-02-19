@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -218,6 +218,9 @@ CELL * p_errorText(CELL * params);
 CELL * p_eval(CELL * params);
 CELL * p_evalBlock(CELL * params);
 CELL * p_evalString(CELL * params);
+#ifdef EMSCRIPTEN
+CELL * p_evalStringJS(CELL * params);
+#endif
 CELL * p_exec(CELL * params);
 CELL * p_exists(CELL * params);
 CELL * p_exit(CELL * params);

@@ -1,7 +1,7 @@
 /* nl-liststr.c --- newLISP primitives handling lists and strings
 
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -238,7 +238,7 @@ return(list);
 CELL * appendString(CELL * cell, CELL * list, char * joint, size_t jointLen, int trailJoint, int evalFlag)
 { 
 CELL * result;
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream = {NULL, NULL, 0, 0, 0};
 char * sPtr;
 size_t len;
 
@@ -1067,8 +1067,8 @@ if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
 else
     {
     /* list mode with optional functor */
-
-    if(!isList(next->type)) return(nilCell);
+    if(!isList(next->type)) 
+        return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, next));
     next = (CELL *)next->contents;
     found = 0;
 
@@ -1187,6 +1187,7 @@ while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &l
 
     FINDALL_CONTINUE:
     offset = (findPos + len);
+    if(findPos > size) break;
     cleanupResults(resultIdxSave);
     }
 
@@ -1195,7 +1196,7 @@ itSymbol->contents = (UINT)nilCell;
 if(exprCell != nilCell)
     memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
 
-return(result);
+return(result == nilCell ? getCell(CELL_EXPRESSION) : result);
 }
 
 

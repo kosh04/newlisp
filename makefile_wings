@@ -1,7 +1,7 @@
 # this packages the Win32 binary distribution
 # this makefile is executed from a MinGW MSYS shell
 
-VERSION=10.5.6
+VERSION=10.5.7
 
 win-gui:
 	-mkdir /c/newlisp
@@ -46,6 +46,7 @@ win-gui:
 	cp guiserver/pinballs-demo.lsp /c/newlisp/guiserver
 	cp guiserver/properties-demo.lsp /c/newlisp/guiserver
 	cp guiserver/rotation-demo.lsp /c/newlisp/guiserver
+	cp guiserver/scroll-pane-demo.lsp /c/newlisp/guiserver
 	cp guiserver/shapes-demo.lsp /c/newlisp/guiserver
 	cp guiserver/sound-demo.lsp /c/newlisp/guiserver
 	cp guiserver/stroke-demo.lsp /c/newlisp/guiserver

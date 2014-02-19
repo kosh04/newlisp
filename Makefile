@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.6
-INT_VERSION = 10506
+VERSION = 10.5.7
+INT_VERSION = 10507
 
 default: makefile_build
 	make -f makefile_build
@@ -133,8 +133,10 @@ dmg_intel:
 
 # this cleans the tree for a rebuild using the same configuration as before
 clean:
-	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz guiserver/java/._* TEST newlisp-universal
-	-rm -f guiserver/*.class doc/*~ util/*~ examples/*~ modules/*~
+	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz *.txt TEST newlisp-universal
+	-rm -f newlisp-js*.*
+	-rm -rf newlisp-js-$(VERSION)
+	-rm -f guiserver/*.class */*~ */._*
 	-rm -f doc/*.bak util/*.bak examples/*.bak modules/*.bak
 	-chmod 644 *.h *.c Makefile makefile*
 	-chmod 755 configure configure-alt examples/*
@@ -189,7 +191,6 @@ checkall:
 	./newlisp qa-specific-tests/qa-inplace
 	./newlisp qa-specific-tests/qa-utf16path
 	./newlisp qa-specific-tests/qa-pipefork
-	./newlisp qa-specific-tests/qa-ffi
 	./newlisp qa-specific-tests/qa-libffi
 	./newlisp qa-specific-tests/qa-bigint 10000
 	./newlisp qa-specific-tests/qa-longnum
@@ -237,7 +238,7 @@ dist: clean
 	-mkdir newlisp-$(VERSION)/qa-specific-tests
 	cp README newlisp-$(VERSION)
 	cp nl*.c newlisp.c *.h pcre*.c index.cgi newlisp-$(VERSION)
-	cp win3*.* unix*.c newlisp-$(VERSION)
+	cp win3*.* unix*.c emscripten*.c newlisp-$(VERSION)
 	cp Makefile configure* makefile* qa-dot qa-comma newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
 	cp examples/* newlisp-$(VERSION)/examples
@@ -290,6 +291,18 @@ android_dist:
 	rm -rf newlisp-ndk-$(VERSION)
 	mv newlisp-ndk-$(VERSION).tgz ..
 
+# this makes the emscripten distribution
+# ../newlisp-js-$(VERSION)/ must contain codemirror/
+js_dist:
+	make clean
+	cp ../newlisp-js-$(VERSION)/index.html newlisp-js
+	cp ../newlisp-js-$(VERSION)/app.html newlisp-js
+	cp ../newlisp-js-$(VERSION)/README.html newlisp-js
+	make -f makefile_emscripten_lib_utf8
+	cp newlisp-js-lib.js ../newlisp-js-$(VERSION)/
+	cp doc/newlisp_manual.html ../newlisp-js-$(VERSION)
+	cp doc/newlisp_index.html ../newlisp-js-$(VERSION)
+	cp doc/manual_frame.html ../newlisp-js-$(VERSION)
 
 # this changes to the current version number in several files
 #

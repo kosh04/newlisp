@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -937,7 +937,7 @@ if(isList(cell->type))
     cell->contents = (UINT)vector[0];
     freeMemory(vector);
     }
-else if(isArray(cell->type))
+else if(cell->type == CELL_ARRAY)
     {
     vector = (CELL **)cell->contents;
     length = (cell->aux - 1) / sizeof(UINT);
@@ -1124,51 +1124,119 @@ return(sequence);
 #define FILTER_FOR_ALL 3
 #define FILTER_EXISTS 4
 
+/* on EMSCRIPTEN, when compiling with -O1 or -O2, this is necessary
+   optimization messes up setjmp/longjmp
+*/
+
+#ifdef EMSCRIPTEN
+CELL * filterIndex(CELL * pCell, CELL * args, int mode);
+#else
 CELL * filterIndex(CELL * params, int mode);
+#endif
+
 
 CELL * p_filter(CELL * params)
 {
+#ifdef EMSCRIPTEN
+CELL * pCell;
+CELL * args;
+pCell = evaluateExpression(params);
+getEvalDefault(params->next, &args);
+if(!isList(args->type))
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+return filterIndex(pCell, args, FILTER_FILTER);
+#else
 return filterIndex(params, FILTER_FILTER);
+#endif
 }
 
 CELL * p_index(CELL * params)
 {
+#ifdef EMSCRIPTEN
+CELL * pCell;
+CELL * args;
+pCell = evaluateExpression(params);
+getEvalDefault(params->next, &args);
+if(!isList(args->type))
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+return filterIndex(pCell, args, FILTER_INDEX);
+#else
 return filterIndex(params, FILTER_INDEX);
+#endif
 }
 
 CELL * p_clean(CELL * params)
 {
+#ifdef EMSCRIPTEN
+CELL * pCell;
+CELL * args;
+pCell = evaluateExpression(params);
+getEvalDefault(params->next, &args);
+if(!isList(args->type))
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+return filterIndex(pCell, args, FILTER_CLEAN);
+#else
 return filterIndex(params, FILTER_CLEAN);
+#endif
 }
 
 CELL * p_exists(CELL * params)
 {
+#ifdef EMSCRIPTEN
+CELL * pCell;
+CELL * args;
+pCell = evaluateExpression(params);
+getEvalDefault(params->next, &args);
+if(!isList(args->type))
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+return filterIndex(pCell, args, FILTER_EXISTS);
+#else
 return filterIndex(params, FILTER_EXISTS);
+#endif
 }
 
 CELL * p_forAll(CELL * params)
 {
-return filterIndex(params, FILTER_FOR_ALL);
-}
-
-CELL * filterIndex(CELL * params, int mode)
-{
-CELL * expr;
+#ifdef EMSCRIPTEN
 CELL * pCell;
 CELL * args;
+pCell = evaluateExpression(params);
+getEvalDefault(params->next, &args);
+if(!isList(args->type))
+    return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+return filterIndex(pCell, args, FILTER_FOR_ALL);
+#else
+return filterIndex(params, FILTER_FOR_ALL);
+#endif
+}
+
+#ifdef EMSCRIPTEN
+CELL * filterIndex(CELL * pCell, CELL * args, int mode)
+#else
+CELL * filterIndex(CELL * params, int mode)
+#endif
+{
+CELL * expr;
+#ifndef EMSCRIPTEN
+CELL * pCell;
+CELL * args;
+#endif
 CELL * resultList = NULL;
 CELL * result;
 CELL * cell;
-ssize_t count;
 UINT * resultIndexSave;
 jmp_buf errorJumpSave;
+ssize_t count;
 int errNo, trueFlag;
 
+#ifndef EMSCRIPTEN
 pCell = evaluateExpression(params);
 getEvalDefault(params->next, &args);
 
 if(!isList(args->type))
     return(errorProcExt(ERR_LIST_EXPECTED, params->next));
+#endif
+
 args = (CELL *)args->contents;
 
 result = NULL;

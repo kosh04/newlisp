@@ -36,7 +36,8 @@ public ScrollPaneWidget(StringTokenizer params)
 	id = params.nextToken();
 	JComponent client  = ((gsObject)gsObject.widgets.get(params.nextToken())).jcomponent;
 	
-	jscrollpane = new JScrollPane(client);
+	jscrollpane = new JScrollPane();
+	jscrollpane.setViewportView(client);
 	jcomponent = jscrollpane;
 	component = jscrollpane;
 	container = jscrollpane;
@@ -50,7 +51,18 @@ public ScrollPaneWidget(StringTokenizer params)
 		int width = Integer.parseInt(params.nextToken());
 		int height = Integer.parseInt(params.nextToken());
 		jscrollpane.setPreferredSize(new Dimension(width, height));
-		}
+		
+		// FdB added
+		if(params.hasMoreTokens())
+			{
+				JComponent customColumnHeader = ((gsObject)gsObject.widgets.get(params.nextToken())).jcomponent;
+				JComponent customRowHeader = ((gsObject)gsObject.widgets.get(params.nextToken())).jcomponent;
+				JComponent customCorner = ((gsObject)gsObject.widgets.get(params.nextToken())).jcomponent;
+				jscrollpane.setColumnHeaderView(customColumnHeader);
+				jscrollpane.setRowHeaderView(customRowHeader);
+				jscrollpane.setCorner(JScrollPane.UPPER_LEFT_CORNER,customCorner);
+			}
+	}
 
 	gsObject.widgets.put(id, this);
 	}

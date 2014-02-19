@@ -1,6 +1,6 @@
 /* nl-import.c --- shared library interface for newLISP
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ if(options != NULL && strcmp(options, "cdecl") ==  0)
 	type = CELL_IMPORT_CDECL;
 
 symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
-if(isFFI(symbol->flags)) /* don't redefine */
+if(isFFIsymbol(symbol->flags)) /* don't redefine */
         return (copyCell((CELL *)symbol->contents));
 
 if(isProtected(symbol->flags))
@@ -142,8 +142,8 @@ if(params != nilCell)
         }
 #ifdef FFI
     else type = CELL_IMPORT_FFI;
-    }
 #endif
+    }
 #else
 if(params->next != nilCell)
     type = CELL_IMPORT_FFI;
@@ -162,7 +162,7 @@ if(funcName == NULL)
     return(trueCell);
 
 symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
-if(isFFI(symbol->flags)) /* don't redefine */
+if(isFFIsymbol(symbol->flags)) /* don't redefine */
         return (copyCell((CELL *)symbol->contents));
 
 if(isProtected(symbol->flags))
@@ -172,6 +172,7 @@ pCell = getCell(type);
 deleteList((CELL *)symbol->contents);
 symbol->contents = (UINT)pCell;
 
+dlerror(); /* clear potential error */
 pCell->contents = (UINT)dlsym(hLibrary, funcName);
 
 if((error = (char *)dlerror()) != NULL)
@@ -389,22 +390,6 @@ return(0);
 #endif
 
 
-/* used when passing 32bit floats to library routines */
-CELL * p_flt(CELL * params)
-{
-double dfloatV;
-float floatV;
-unsigned int number;
-
-getFloat(params, &dfloatV);
-
-floatV = dfloatV;
-memcpy(&number, &floatV, 4);
-
-return(stuffInteger(number));
-}
-
-
 /* 16 callback functions for up to 8 parameters */
 
 INT template(INT n, INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8);
@@ -496,7 +481,13 @@ else
 args->contents = (UINT)nilCell;
 
 deleteList(args);
-deleteList(cell);
+/* before 10.4.4 this was pushResult(cell) but caused resultStack overflow
+   in 10.4.4 changed to deleteList(cell), but now return value on
+   simple callback not available anymore, use callback with libffi instead
+   available on -DFFI compiled versions. See also:
+       qa-specific-tests/qa-simplecallback
+*/
+deleteList(cell); 
 
 FINISH_CALLBACK:
 memcpy(errorJump, errorJumpSave, sizeof(errorJump));
@@ -533,11 +524,15 @@ else
 #ifdef FFI
 len = strlen(sPtr->name);
 cb_name = calloc(sizeof(char) * (len + 6), 1);
+/*
 strncpy(cb_name, "$ffi-", 6);
 strncat(cb_name, sPtr->name, len);
+*/
+memcpy(cb_name, "$ffi-", 5);
+memcpy(cb_name + 5, sPtr->name, len + 1);
 
 symbol = translateCreateSymbol(cb_name, CELL_NIL, mainContext, TRUE);
-if(isFFI(symbol->flags)) /* already defined */
+if(isFFIsymbol(symbol->flags)) /* already defined */
     {
     ffiCell = (CELL *)symbol->contents;
     ffi = (FFIMPORT *) ffiCell->aux;
@@ -683,7 +678,7 @@ FFIMPORT * ffi;
 int i;
 
     params = getSymbol(params, &symbol);
-    if(isFFI(symbol->flags)) /* don't redefine */
+    if(isFFIsymbol(symbol->flags)) /* don't redefine */
         return(stuffSymbol(symbol));
 
     if(isProtected(symbol->flags))
@@ -932,7 +927,7 @@ CELL * ffiPreparation(CELL * pCell, CELL * params, int type)
     if(type != FFI_STRUCT)
         {
         arg = evaluateExpression(params);
-        if(isString(arg->type))
+        if(arg->type == CELL_STRING)
             rtype = getFFIType((char *) arg->contents);
         else
             errorProcExt(ERR_STRING_EXPECTED, arg);
@@ -942,7 +937,7 @@ CELL * ffiPreparation(CELL * pCell, CELL * params, int type)
     nargs=0;
     while((arg = evaluateExpression(params)) != nilCell)
         {
-        if(isString(arg->type))
+        if(arg->type == CELL_STRING)
             {
             /* skip void arguments */
             if(strcmp((char *)arg->contents,"void") != 0)

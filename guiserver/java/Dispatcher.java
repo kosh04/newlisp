@@ -5,7 +5,7 @@
 //  Created by Lutz Mueller on 5/14/07.
 //
 //
-//    Copyright (C) 2013 Lutz Mueller
+//    Copyright (C) 2014 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -253,8 +253,12 @@ public static void init()
 	// text table
 	methods.put("table-add-column", "tableAddColumn") ;
 	methods.put("table-add-row", "tableAddRow");
+	methods.put("table-remove-row", "tableRemoveRow"); // FdB
 	methods.put("table-set-column", "tableSetColumn");
-	methods.put("table-set-row-number", "tableSetRowNumber");
+	methods.put("table-set-column-name", "tableSetColumnIdentifiers"); // FdB
+	methods.put("table-show-row-number", "tableShowRowNumber");
+	methods.put("table-set-row-number", "tableShowRowNumber"); // deprecated
+	methods.put("table-set-row-count", "tableSetRowCount"); // FdB
 	methods.put("table-set-cell", "tableSetCell");
 	methods.put("table-get-cell", "tableGetCell");
 	methods.put("table-get", "tableGetValueAll");

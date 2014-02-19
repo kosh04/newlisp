@@ -61,10 +61,12 @@
     (set 'N (int (main-args -1)))
     (set 'N 100000))
 
+(if eval-string-js (set 'N 1000)) ; for JavaScript compiled newLISP
+
 (dotimes (i N)
     (set 'f (pow (random 10 100) (+ 15 (rand 50))))
     (set 'f1 (float (bigint f)))
-    (print i "      \r")
+    (unless eval-string-js (print i "       \r"))
     (unless (< (abs (sub (abs (div f f1)) 1)) 0.000000000000001)
        (println f "   " f1 " " (abs (sub (abs (div f f1)) 1)))
        (println ">>>>> ERROR in big integer/float conversion")
@@ -84,8 +86,7 @@
     (setq x (get-bignum (rand 30)))
     (setq y (get-bignum (rand 30)))
     ;(println "x=" x " y=" y)
-    (print i "      \r")
- 
+    (unless eval-string-js (print i "       \r"))
     (unless (= (zero? x) (= x 0))
         (println ">>>>> ERROR in zero? for x = " x)
         (exit))

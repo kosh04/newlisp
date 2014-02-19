@@ -6,7 +6,7 @@
 ;; @version 0.4 alpha - take care of overwrite protection of imports in ffilib versions
 ;; @version 0.5 alpha - precautions for multiple load of module because of overwritten symbols
 ;; @version 0.6 alpha - libc library path for Linux UBUNTU
-;; @version 0.7 alpha - libc library path for several OS
+;; @version 0.71 alpha - libc library path for several OS
 ;; @author L.M. 2006-Sep-12, 2012, 2013 lutz@nuevatec.com
 ;; 
 ;;
@@ -45,9 +45,9 @@
     "/lib/x86_64-linux-gnu/libc.so.6" ; Ubuntu 12.04 LTS
     "/lib/i386-linux-gnu/libc.so.6" ; UBUNTU Linux
     "/lib/i686-linux-gnu/libc.so.6" ; UBUNTU Linux
+    "/lib64/libc.so.6" ; CentOS 6.x
     "/lib/libc.so.6" ; UBUNTU Linux 9.04
     "/usr/lib/libc.so" ; Linux, BSD, Solaris
-    "/lib64/libc.so.6" ; CentOS 6.x
 ))
 
 (set 'library (files (or

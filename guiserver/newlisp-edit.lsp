@@ -42,7 +42,7 @@
 
 ;; init guiserver
 
-(gs:init) 
+(gs:init 2000 "localhost") 
 ;(gs:set-trace true)
 
 

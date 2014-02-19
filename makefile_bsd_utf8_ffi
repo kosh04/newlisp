@@ -1,17 +1,18 @@
-# makefile for newLISP v. 10.x.x on BSDs: FreeBSD, OpenBSD and NetBSD with UTF8 support
+# makefile for newLISP v. 10.x.x on BSDs: FreeBSD, OpenBSD and NetBSD with UTF8 and libffi support
+# must have $(HOME)/include/ffi.h $(HOME)/include/ffitarget.h and $(HOME)/lib/libffi.a
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
-CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE -D_BSD -DSUPPORT_UTF8 -DFFI
+CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -I$(HOME)include -DREADLINE -D_BSD -DSUPPORT_UTF8 -DFFI
 # or without readline lib
 #CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -D_BSD -DSUPPORT_UTF8
 
 CC = gcc
 
 default: $(OBJS)
-	$(CC) $(OBJS) -m32 -g -lm -lreadline -lncurses -lffi -o newlisp
+	$(CC) $(OBJS) -m32 -g -lm -lreadline -lncurses -L$(HOME)lib -lffi -o newlisp
 # or without readline lib
 #	$(CC) $(OBJS) -m32 -g -lm -o newlisp
 	strip newlisp

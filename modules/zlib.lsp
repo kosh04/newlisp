@@ -1,4 +1,4 @@
-;; @module zlisp.lsp
+;; @module zlib.lsp
 ;; @description Functions for compression/decompression with zlib
 ;; @version 1.1 - comments redone for automatic documentation
 ;; @version 1.2 - new library detection routine
@@ -8,6 +8,7 @@
 ;; @version 1.6 - removed broken <tt>squeeze</tt> and <tt>unsqueeze</tt> functions.
 ;; @version 1.7 - added library for CentOS 6 Linux
 ;; @version 1.71 - added library for Ubuntu Linux 12.04 and 13.04
+;; @version 1.72 - swap else-less 'if' for 'when'
 ;; @author L.M 2006-2013
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
@@ -39,8 +40,8 @@
 ))
 
 (set 'library (files (or
-		       (find true (map file? files))
-		       (throw-error "cannot find zlib compression library"))))
+    (find true (map file? files))
+    (throw-error "cannot find zlib compression library"))))
 
 (import library "compress")
 (import library "uncompress")
@@ -57,15 +58,15 @@
 ;; (set 'buff (zlib:gz-read-file "myfile.gz"))
 
 (define (gz-read-file file-name)
-	(let ( (fno (gzopen file-name "rb"))
-	       (buff (dup "\000" 0x1000))
-	       (result ""))
-		(if (!= fno 0)
-			(begin
-				(while (> (set 'bytes (gzread fno buff 0x1000)) 0)
-					(write result buff bytes))
-				(gzclose fno)
-				result))))
+    (let (  (fno (gzopen file-name "rb"))
+            (buff (dup "\000" 0x1000))
+            (result ""))
+        (when (!= fno 0)
+            (while (> (set 'bytes (gzread fno buff 0x1000)) 0)
+            (write result buff bytes))
+            (gzclose fno)
+            result)
+))
 
 ;; @syntax (zlib:gz-write-file <str-file-name> <str-buffer>)
 ;; @return The number of bytes in <str-buffer>.
@@ -76,13 +77,13 @@
 ;; (zlib:gz-write-file "myfile.gz" buff) 
 
 (define (gz-write-file file-name buff)
-    (let ( (fno (gzopen file-name "wb"))
-		   (result nil))
-    	(if (!= fno 0)	
-			(begin
-				(set 'result (gzwrite fno buff (length buff)))
-				(gzclose fno)
-				result))))
+    (let (  (fno (gzopen file-name "wb"))
+            (result nil))
+        (when (!= fno 0)	
+            (set 'result (gzwrite fno buff (length buff)))
+            (gzclose fno)
+            result)
+))
 	
 (context MAIN) 
 

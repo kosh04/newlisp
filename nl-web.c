@@ -1,6 +1,6 @@
 /* nl-web.c --- HTTP network protocol routines for newLISPD
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ void trimTrailing(char * ptr);
 CELL * webError(int no);
 CELL * base64(CELL * params, int type);
 
+#ifndef EMSCRIPTEN
 jmp_buf socketTimeoutJump;
 INT socketTimeout = 0;
 struct timeval socketStart;
@@ -189,7 +190,6 @@ va_end(argptr);
 return(result);
 }
 
-
 CELL * p_getUrl(CELL * params)
 {
 return(getPutPostDeleteUrl(NULL, params, HTTP_GET, CONNECT_TIMEOUT));
@@ -210,46 +210,6 @@ return(getPutPostDeleteUrl(NULL, params, HTTP_POST, CONNECT_TIMEOUT));
 CELL * p_deleteUrl(CELL * params)
 {
 return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, CONNECT_TIMEOUT));
-}
-
-#define BASE64_ENC 0
-#define BASE64_DEC 1
-
-CELL * p_base64Enc(CELL * params) { return(base64(params, BASE64_ENC)); }
-CELL * p_base64Dec(CELL * params) { return(base64(params, BASE64_DEC)); }
-
-CELL * base64(CELL * params, int type)
-{
-char * inPtr;
-char * outPtr;
-size_t sizein, sizeout;
-int emptyFlag = 0;
-
-params = getStringSize(params, &inPtr, &sizein, TRUE);
-emptyFlag = getFlag(params);
-
-if(type == BASE64_ENC)
-    {
-    if(sizein == 0)
-        return(emptyFlag ? stuffString("") : stuffString("===="));
-    if((sizeout = Curl_base64_encode(inPtr, sizein, &outPtr)) == 0)
-        return(stuffString(""));
-    }
-else    /* BASE64_DEC */
-    {
-    outPtr = allocMemory((sizein * 3) / 4 + 9);
-    sizeout = Curl_base64_decode(inPtr, outPtr);
-    *(outPtr + sizeout) = 0;
-    }
-    
-/*
-strCell = getCell(CELL_STRING);
-strCell->contents = (UINT)outPtr;
-strCell->aux = sizeout + 1;
-return(strCell);
-*/
-
-return(makeStringCell(outPtr, sizeout));
 }
 
 int transfer(int sock, char * buff, int len)
@@ -350,7 +310,7 @@ if(isNumber(result->type))
     timeout = socketTimeout;
     }
 
-else if(isString(result->type))
+else if(result->type == CELL_STRING)
     {
     option = (char *)result->contents;    
     if(my_strnicmp(option, "header", 6) == 0)
@@ -773,7 +733,7 @@ snprintf(msg, 64, "ERR: %s", netErrorMsg[errorNo]);
 
 return(stuffString(msg));
 }
-
+#endif /* ifndef EMSCRIPTEN */
 
 /***************************************************************************
  *                                  _   _ ____  _
@@ -874,6 +834,46 @@ size_t Curl_base64_decode(const char *src, char *dest)
   return rawlen;
 }
 
+#define BASE64_ENC 0
+#define BASE64_DEC 1
+
+CELL * p_base64Enc(CELL * params) { return(base64(params, BASE64_ENC)); }
+CELL * p_base64Dec(CELL * params) { return(base64(params, BASE64_DEC)); }
+
+CELL * base64(CELL * params, int type)
+{
+char * inPtr;
+char * outPtr;
+size_t sizein, sizeout;
+int emptyFlag = 0;
+
+params = getStringSize(params, &inPtr, &sizein, TRUE);
+emptyFlag = getFlag(params);
+
+if(type == BASE64_ENC)
+    {
+    if(sizein == 0)
+        return(emptyFlag ? stuffString("") : stuffString("===="));
+    if((sizeout = Curl_base64_encode(inPtr, sizein, &outPtr)) == 0)
+        return(stuffString(""));
+    }
+else    /* BASE64_DEC */
+    {
+    outPtr = allocMemory((sizein * 3) / 4 + 9);
+    sizeout = Curl_base64_decode(inPtr, outPtr);
+    *(outPtr + sizeout) = 0;
+    }
+    
+/*
+strCell = getCell(CELL_STRING);
+strCell->contents = (UINT)outPtr;
+strCell->aux = sizeout + 1;
+return(strCell);
+*/
+
+return(makeStringCell(outPtr, sizeout));
+}
+
 /* ---- Base64 Encoding --- */
 static const char table64[]=
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -953,6 +953,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 /* ---- End of Base64 Encoding ---- */
 
 
+#ifndef EMSCRIPTEN
 /* --------------------------- HTTP server mode -----------------------------
    Handles GET, POST, PUT and DELETE requests
    handles queries in GET requests and sets environment variables 
@@ -961,9 +962,9 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
    and HTTP_COOKIE. REMOTE_ADDR is set when the client connects.
    Subset HTTP/1.0 compliant.
 */
-
+#ifndef LIBRARY
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.5.6"
+#define SERVER_SOFTWARE "newLISP/10.5.7"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1486,5 +1487,7 @@ while(*src)
 *dest = 0;
 }
 
+#endif /* ifndef EMSCRIPTEN */
+#endif /* ifndef LIBRARY */
 /* eof */
 

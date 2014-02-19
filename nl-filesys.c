@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -269,21 +269,19 @@ CELL * p_readBuffer(CELL * params)
 UINT handle;
 size_t size, length;
 ssize_t bytesRead = 0;
-int found = 0;
 char * waitFor;
-char chr;
-STREAM stream = {0, NULL, NULL, 0, 0};
+STREAM stream = {NULL, NULL, 0, 0, 0};
 CELL * strCell;
 SYMBOL * readSptr;
+int found = 0;
+char chr;
 
 params = getInteger(params, &handle);
 params = getEvalDefault(params, &strCell);
-if(!symbolCheck)
+if(!symbolCheck || symbolCheck->contents != (UINT)strCell)
     return(errorProc(ERR_IS_NOT_REFERENCED));
 if(isProtected(symbolCheck->flags))
     return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolCheck)));
-if(symbolCheck->contents != (UINT)strCell)
-    return(errorProc(ERR_IS_NOT_REFERENCED));
 
 readSptr = symbolCheck;
 params = getInteger(params, (UINT *)&size);
@@ -327,7 +325,8 @@ if(bytesRead == 0)
     return(nilCell);
     } 
 
-stream.buffer = reallocMemory(stream.buffer, bytesRead + 1);
+if(stream.size > bytesRead)
+    stream.buffer = reallocMemory(stream.buffer, bytesRead + 1);
 readSptr->contents = (UINT)makeStringCell(stream.buffer, bytesRead);
 
 if(found) return(stuffInteger(bytesRead));
@@ -340,15 +339,18 @@ CELL * p_readFile(CELL * params)
 char * fileName;
 char * buffer = NULL;
 ssize_t size;
+#ifndef EMSCRIPTEN
 CELL * result;
+#endif
 
 params = getString(params, &fileName);
+#ifndef EMSCRIPTEN
 if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, HTTP_GET, CONNECT_TIMEOUT);
     return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
-
+#endif
 if((size = readFile(fileName, &buffer)) == -1)
     return(nilCell);
 
@@ -457,16 +459,20 @@ CELL * appendWriteFile(CELL * params, char * type)
 char * fileName;
 char * buffer;
 size_t size;
+#ifndef EMSCRIPTEN
 CELL * result;
+#endif
 
 params = getString(params, &fileName);
 
+#ifndef EMSCRIPTEN
 if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, 
                 (*type == 'w') ? HTTP_PUT : HTTP_PUT_APPEND, CONNECT_TIMEOUT);
     return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
+#endif
 
 getStringSize(params, &buffer, &size, TRUE);
 
@@ -700,6 +706,9 @@ return(fileName);
 int openFile(char * fileName, char * accessMode, char * option)
 {
 int blocking = 0;
+#ifndef WINDOWS
+int handle;
+#endif
 
 fileName = getLocalPath(fileName);
 
@@ -727,8 +736,17 @@ else if(*accessMode == 'a')
 #ifdef WINDOWS
        return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE));
 #else
-       return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
-          S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH)); /* rw-rw-rw */
+       handle = open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
+          S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH); /* rw-rw-rw */
+#ifdef EMSCRIPTEN
+       /* oppen append is broken on Emscripten, open for update but filepointer
+          stays at the beginning and old contents is overwritten */
+       if(lseek(handle, 0, SEEK_END) != -1)
+                return(handle);
+#else
+       return(handle);
+#endif
+
 #endif
        }
 
@@ -785,14 +803,18 @@ return(rename(oldName, newName) == 0 ? trueCell : nilCell);
 CELL * p_deleteFile(CELL * params)
 {
 char * fileName;
+#ifndef EMSCRIPTEN
 CELL * result;
+#endif
 
 params = getString(params, &fileName);
+#ifndef EMSCRIPTEN
 if(my_strnicmp(fileName, "http://", 7) == 0)
     {
     result = getPutPostDeleteUrl(fileName, params, HTTP_DELETE, CONNECT_TIMEOUT);
     return((my_strnicmp((char *)result->contents, (char *)"ERR:", 4) == 0) && netErrorIdx ? nilCell : result);
     }
+#endif
 
 fileName = getLocalPath(fileName);
 return(unlink(fileName) == 0 ? trueCell : nilCell);
@@ -802,9 +824,7 @@ return(unlink(fileName) == 0 ? trueCell : nilCell);
 CELL * p_makeDir(CELL * params)
 {
 char * dirString;
-UINT mode;
-
-mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
+UINT mode = 0777; /* drwxrwxrwx  gets user masked to drwxr-xr-x on most UNIX */
 
 /* consume param regardless of OS */
 params = getString(params, &dirString);
@@ -1111,7 +1131,7 @@ return(argc);
 }
 
 
-
+#ifndef EMSCRIPTEN
 #ifdef WINDOWS
 int kill(pid_t pid, int sig);
 int winPipe(UINT * inpipe, UINT * outpipe);
@@ -1252,6 +1272,7 @@ freeMemory(cmd);
 return(stuffInteger(forkResult));
 }
 
+#ifndef NO_FORK
 CELL * p_fork(CELL * params)
 {
 int forkResult;
@@ -1268,7 +1289,7 @@ if(forkResult == 0)
 
 return(stuffInteger(forkResult));
 }
-
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -1289,8 +1310,7 @@ int thisSocket = 0;
 fd_set myFdSet;             /* set of all child sockets */
 
 
-#ifdef HAVE_FORK
-#ifndef OS2
+#ifndef NO_SPAWN
 
 typedef struct 
     {
@@ -1414,7 +1434,6 @@ while(pidSpawn)
     }
 }
 
-
 /* spawn (fork) a process and assign result to the symbol given
      (spawn <quoted-symbol> <epxression>) => pid
    creates a memory share and passes it to the spawned process
@@ -1433,9 +1452,6 @@ int pid;
 void * address; /* share memory area for result */
 SYMBOL * symPtr;
 int sockets[2] = {0, 0};
-
-/* make signals processable by waitpid() in p_sync() */
-signal(SIGCHLD, SIG_DFL);
 
 if((address = mmap( 0, pagesize, 
     PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0)) == (void*)-1)
@@ -1465,6 +1481,9 @@ if(getFlag(params->next))
         FD_ZERO(&myFdSet);
     FD_SET(sockets[0], &myFdSet);
     }
+
+/* make signals processable by waitpid() in p_sync() */
+signal(SIGCHLD, SIG_DFL);
 
 if((forkPid = fork()) == -1)
     {
@@ -1618,7 +1637,7 @@ fd_set thisFdSet;
 tv.tv_sec = 0;
 tv.tv_usec = 892 + random() / 10000000;
 
-#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN) || defined(AIX)
+#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN) || defined(AIX) 
 memcpy(&thisFdSet, &myFdSet, sizeof(fd_set));
 #else
 FD_COPY(&myFdSet, &thisFdSet);
@@ -1747,7 +1766,7 @@ CELL * readWriteSocket(int socket, CELL * params)
 {
 char * buffer;
 CELL * cell;
-STREAM strStream = {0, NULL, NULL, 0, 0};
+STREAM strStream = {NULL, NULL, 0, 0, 0};
 UINT length;
 ssize_t size, bytesReceived;
 struct timeval tv;
@@ -1825,9 +1844,7 @@ if(ready == 1)
 return(nilCell);
 }
 
-#endif /* not OS 2 */
-
-#endif /* HAVE_FORK */
+#endif /* NO_SPAWN */
 
 /* --------------------------- end Cilk ------------------------------------- */
 
@@ -1879,6 +1896,7 @@ return(trueCell);
 }
 
 /* ------------------------------ semaphores --------------------------------- */
+#ifndef NO_SEMAPHORE
 #ifdef WINDOWS
 
 UINT winCreateSemaphore(void);
@@ -1929,11 +1947,7 @@ if(params != nilCell)
 if((sem_id = winCreateSemaphore()) == 0) return(nilCell);
 return(stuffInteger(sem_id));
 }
-#endif
-
-#ifdef SEMAPHORE
-#ifndef WINDOWS
-/* Mac OS X, Linux/UNIX */
+#else /* Mac OS X, Linux/UNIX */
 
 CELL * p_semaphore(CELL * params)
 {
@@ -2043,16 +2057,16 @@ if(semctl(sem_id, 0, SETVAL, 0) == -1) /* LINUX, BSD, TRU64 */
 return(sem_id);
 }
 
-#endif  /* Mac OS X, Linux, UNIX - not WINDOWS */
+#endif /* MAC OSX, Unix, Linux */
+#endif /* NO_SEMAPHORE */
 
-#endif /* SEMAPHORE */
+
+#ifndef NO_SHARE
 
 #ifdef WINDOWS
 UINT winSharedMemory(int size);
 UINT * winMapView(UINT handle, int size);
 #endif
-
-#ifndef OS2
 
 /* since 10.1.0 also can share object > pagesize
    in this case transfer is done using /tmp/nls-*
@@ -2113,7 +2127,7 @@ memset((char *)address, 0, pagesize);
 return(stuffInteger(handle));
 #endif
 }
-#endif /* no OS2 */
+#endif /* NO_SHARE  */
 
 /* evaluate the expression in params and the write the result
    to shared memory. If size > pagesize use files tmp files
@@ -2142,7 +2156,7 @@ if(params != nilCell)
     /* if a previous share mem file is still present, delete it
        when *address == 0 when called from Cilk then file is
        deleted p_message(). Here only used from p_share() */
-    if(*address == (CELL_STRING | SHARED_MEMORY_EVAL))
+    if(*address == (CELL_STRING | SHARED_MEM_EVAL_MASK))
         checkDeleteShareFile(address);
 
     /* write anything not bool, number or string */
@@ -2235,7 +2249,7 @@ switch(*address & RAW_TYPE_MASK)
 #endif
         break;
     case CELL_STRING:
-        if(*address & SHARED_MEMORY_EVAL)
+        if(*address & SHARED_MEM_EVAL_MASK)
             return(readWriteSharedExpression(address, nilCell));
         size = *(address + 1);
         cell = makeStringCell(allocMemory(size + 1), size);
@@ -2261,7 +2275,7 @@ return(cell);
 CELL * readWriteSharedExpression(UINT * address, CELL * params)
 {
 ssize_t size;
-STREAM strStream = {0, NULL, NULL, 0, 0};
+STREAM strStream = {NULL, NULL, 0, 0, 0};
 CELL * cell;
 char * buffer = NULL;
 /* int errNo; */
@@ -2320,13 +2334,13 @@ else
     }
 closeStrStream(&strStream);
 
-*address = (CELL_STRING | SHARED_MEMORY_EVAL);
+*address = (CELL_STRING | SHARED_MEM_EVAL_MASK);
 return(cell);
 }
 
 void checkDeleteShareFile(UINT * address)
 {
-if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
+if(     (*address == (CELL_STRING | SHARED_MEM_EVAL_MASK)) &&
 #ifndef WINDOWS
 #ifdef ANDROID
         (strncmp((char *)(address + 2), "/data/tmp/nls-", 9) == 0) &&
@@ -2340,6 +2354,7 @@ if(     (*address == (CELL_STRING | SHARED_MEMORY_EVAL)) &&
 #endif
     unlink((char *)(address + 2)); 
 }
+#endif /* ifndef EMSCRIPTEN */
 
 extern int ADDR_FAMILY;
 CELL * p_systemInfo(CELL * params)
@@ -3000,6 +3015,27 @@ while(TRUE)
     }
 
 return((int)pSize);
+}
+
+#endif
+
+
+#ifdef MY_RANDOM /* used with #define EMSCRIPTEN */
+
+int  m_w = 0x12345678;    /* must not be zero, nor 0x464fffff */
+int  m_z = 0x23456789;    /* must not be zero, nor 0x9068ffff */
+ 
+long int random(void)
+{
+m_z = 36969 * (m_z & 65535) + (m_z >> 16);
+m_w = 18000 * (m_w & 65535) + (m_w >> 16);
+return (((m_z << 16) + m_w)  & 0x7fffffff);  /* 31-bit result */
+}
+
+void srandom(unsigned int init)
+{
+m_z = init;
+m_w = 3 * init;
 }
 
 #endif

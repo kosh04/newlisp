@@ -1,6 +1,6 @@
 /* nl-sock.c
 
-    Copyright (C) 2013 Lutz Mueller
+    Copyright (C) 2014 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -125,6 +125,7 @@ IO_SESSION * ioSessions = NULL;
 int isSessionSocket(int sock);
 int getSocketFamily(int sock);
 
+#ifndef EMSCRIPTEN
 #define READY_READ 0
 #define READY_WRITE 1
 
@@ -177,6 +178,7 @@ else
     }
 
 }
+#endif /* ifndef EMSCRIPTEN */
 
 /********************** IO session functions *******************/
 
@@ -253,7 +255,6 @@ while(session)
 return(FALSE);
 }
 
-
 int getSocketFamily(int sock)
 {
 IO_SESSION * session;
@@ -288,7 +289,7 @@ return(NULL);
 }
 
 /* ========================= IO session functions end ===================== */
-
+#ifndef EMSCRIPTEN
 #ifdef WINDOWS
 int ipstrFromSockAddr(struct sockaddr * addr, char * host, int len)
 {
@@ -403,7 +404,6 @@ if(isNumber(cell->type))
 
 return(errorProcExt(ERR_NUMBER_OR_STRING_EXPECTED, cell));
 } 
-
 
 CELL * p_netConnect(CELL * params)
 {
@@ -530,7 +530,7 @@ int netConnect(char * remoteHostName, int portNo, int type, char * prot, int top
 struct addrinfo hints, *res, *res0;
 char portStr[10];
 int sock, opt;
-#ifdef WINDOWS
+#if defined(WINDOWS) || defined(EMSCRIPTEN)
 u_long arg = 1;
 #else
 int arg, value;
@@ -922,7 +922,7 @@ char * waitFor;
 ssize_t bytesReceived;
 size_t length;
 int found;
-STREAM netStream = {0, NULL, NULL, 0, 0};
+STREAM netStream = {NULL, NULL, 0, 0, 0};
 char chr;
 CELL * cell;
 
@@ -1929,13 +1929,12 @@ snprintf(str, 40, "%s", (numError > MAX_NET_ERROR) ? UNKNOWN_ERROR : netErrorMsg
 return(result);
 }
 
-#ifdef NET_PING
+#ifndef NO_NET_PING
 /* net-ping 
 
    Undocumented boolean flag parameter (after count) puts error info
    into the result list when a packet could not be sent.
 */
-
 
 CELL * p_netPing(CELL * params)
 {
@@ -2231,7 +2230,7 @@ answer = ~sum;
 return (answer);
 }
 
-#endif /* NET_PING */
+#endif /* NO_NET_PING */
 
 
 /* check socket for readability or error 
@@ -2278,7 +2277,7 @@ struct pseudohdr
     };
 
 
-#ifndef WINDOWS
+#ifndef NO_NET_PACKET
 unsigned short pseudo_chks( struct ip * iph, char * packet, char * header, int data_offset);
 /* (net-packet str-packeA [int-config-flags]) */
 
@@ -2403,8 +2402,7 @@ checksum = in_cksum((unsigned short *)pseudoh, sizeof(struct pseudohdr) + segmen
 #endif
 return(checksum);
 }
-#endif
-
+#endif /* NO_NET_PACKET */
 
 /* ------------------ socket->filestream stuff for win32 ------------------------*/
 
@@ -2478,7 +2476,7 @@ return(chr);
 }
 
 
-char * win32_fgets(char * buffer, int  size, FILE * fPtr)
+char * win32_fgets(char * buffer, int size, FILE * fPtr)
 {
 int bytesReceived = 0;
 char chr;
@@ -2504,6 +2502,11 @@ while(bytesReceived < size)
 return(buffer);
 }
 
-#endif
+#endif /* WINDOWS */
 
+#else /* for EMSCRIPTEN define dummy writeLog() */
+
+void writeLog(char * text, int newLine) { return; }
+
+#endif /* ifndef EMSCRIPTEN */
 /* eof */

@@ -1,4 +1,4 @@
-i#!/usr/bin/newlisp
+#!/usr/bin/newlisp
 
 (unless bigint
     (println "this version is not enabled for big integers")
