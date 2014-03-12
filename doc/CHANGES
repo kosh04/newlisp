@@ -6841,3 +6841,15 @@ Dec 6, 2009
 
    As editor, CodeMirror from codemirror.net is used and mode/newlisp.js
    was created for syntax high-lighting.
+
+10.5.8
+   'macro' is now a built-in primitive function working exactly as described
+   in the macro.lsp module, which is now obsolete. Macros cannot be redefined
+   using 'macro'. Macros can be nested. A symbol used as a macro can only be
+   used as a macro, even if changing the definition of it.
+
+   Another speed improvement for 'read-line' on file handles (the first speed
+   improvement happend in 10.3.10).
+
+   Eliminated emscripten-lib.c, gets handled by unix-lib.c.
+

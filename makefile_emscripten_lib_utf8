@@ -21,7 +21,7 @@
 # this makefile has been tested on a MAC OSX 10.9 platform
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o emscripten-lib.o
+	nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o unix-lib.o
 
 CFLAGS = -m32 -Wall -c -DMAC_OSX -DLIBRARY -DEMSCRIPTEN  -DSUPPORT_UTF8
 

@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+   <meta name="author" content="Lutz Mueller"/>
+   <meta name="keywords" 
+         content="newLISP LISP SCHEME programming language manual reference Artificial Intelligence AI NUEVATEC"/>
+   <meta name="description" content="Info newLISP in a web browser"/>
+   <title>Info about newLISP in a web browser</title>
+
+<style type="text/css" media="screen">
+
+<!--
+
+.title {
+    font-family:Optima, Georgia, Times New Roman, Times, serif; 
+    font-size:300%;
+    font-weight: 500;
+	color: #404040;
+    }
+
+.footer {
+   text-align: center;
+   margin: 0 10%;
+   max-width: 752px;
+   font-family: Helvetica, Verdanan, Arial, sans-serif;
+   font-size: 10px;
+   line-height: 12px;
+ }
+
+body, h4, p {
+    font-family: Lucida Sans, Helvetica, sans-serif;
+    line-height: 120%;
+    max-width: 752px;
+	}
+
+h1, h2, h3 {
+	margin-top: 3%;
+    font-family: Helvetica, Lucida Sans sans-serif;
+    line-height: 120%;
+	color: #404040;
+    }
+
+table {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: solid;
+	border-width: 0px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+	font-size: 95%;
+    }
+    
+th {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #eeeeee;
+    font-size: 100%;
+    }
+    
+td {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 3px;
+	background: #f8ffff;
+    font-size: 100%;
+    }
+    
+pre {
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	border-style: dashed;
+	border-width: 1px;
+	border-color: #888888;
+	padding: 4px;
+    font-family: Andale Mono, Monaco, Courier;
+    font-size: 100%;
+	background: #f8ffff;
+    }
+
+tt {
+    font-family: Andale Mono, Monaco, Courier;
+    font-size: 100%;
+    }
+    
+-->
+</style>
+</head>
+<body style="margin: 0 auto;" text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
+
+<h2>What is 'newLISP in a web browser'</h2>
+
+<p>newLISP can be compiled to JavaScript and then run in a web browser like any other JavaScript program.
+<tt>newlisp-js-lib.js</tt> is newLISP compiled to a JavaScript library using the Emscripten SDK tool chain:</p>
+
+<blockquote>
+<p><a href="https://github.com/kripken/emscripten/wiki">https://github.com/kripken/emscripten/wiki</a></p>
+</blockquote>
+
+<p>This application implements an editor and development environment (IDE) for 
+newLISP, HTML and JavaScript code. Any other Application could be built this way.
+To run newLISP code from JavaSript a <tt>newlispEvalStr(<em>string</em>)</tt> 
+JavaScript function is available after loading the <tt>newlisp-js-lib.js</tt> 
+library and using a line of JavaScript to import this function.</p>
+
+<p>Likewise newLISP can call back into JavaScript code using the 
+<tt>(eval-string-js <em>string</em>)</tt> function. Both languages can be hosted 
+by an HTML page.</p>
+
+<p>The <a href="app.html">app.html</a> demo file shows how to do this. Everything 
+necessary to write your own application is contained in a 3k part of this file. 
+Only <tt>app.html</tt> and the <tt>newlisp-js-lib.js</tt> library are required 
+to run this newLISP application client-side in a web browser.</p>
+
+<p>For a tutorial in to the basics of newLISP type <tt>(load "newlisp-js/tutorial.lsp")</tt>
+in to the editor then click the <tt>eval</tt> button. This tutorial is best 
+used in two-column layout and copies some material from the WikiBooks tutorial:
+<a href="http://en.wikibooks.org/wiki/Introduction_to_newLISP">Introduction to newLISP</a>.</p>
+
+<p>The editor control with syntax highlighting and themes is from the CodeMirror
+project at: <a href="http://codemirror.net/">codemirror.net/</a>.</p>
+
+<h2>Installation</h2>
+
+<p>Download and unzip the <a href="http://www.newlisp.org/newlisp-js/newlisp-js-10.5.7.zip">
+newlisp-js-10.5.7.zip</a>  package in the document directory of a web server or do
+a serverless installation on an individual computer and load the <tt>index.html</tt>
+file directly into your web browser. This file contains the editor.</p>
+
+<p>When running on a webserver, the <tt>newlisp-js-lib.js</tt> library can be 
+compressed to a <tt>.gz</tt> file for faster delivery. Compress using the Unix 
+<tt>gzip</tt> or other zip compression utilities. Full HTTP 1.1 webserver 
+installations can serve these files and they are automatically decompressed by 
+most web browsers. The compressed <tt>newlisp-js-lib.js.gz</tt> is only about 200K
+in size. When using a compressed library, the library name in <tt>index.html</tt> 
+and <tt>app.html</tt> has to be changed to reflect the name change of 
+<tt>newlisp-js-lib.js</tt>. There is only one place at the end of the file where 
+<tt>.gz</tt> has to be appended to the library name.</p>
+
+<p>The CodeMirror editor library <tt>codemirror/lib/codemirror.js</tt> can
+also be compressed and is only referenced at the beginning of <tt>index.html</tt>.
+</p>
+
+<h2>How to use 'newLISP in a web browser'</h2>
+
+<p>Wait for "Downloading ..." to finish. newLISP expressions can now be entered in
+the editor input window and be evaluated pushing the red <tt>eval</tt> button.
+Output is shown in the log window.</p>
+
+<p>The editor can also be used to edit JavaScript content or HTML content. The
+red <tt>JS</tt> button will evaluate JavaScript content and the red <tt>HTML</tt>
+button will open a page in a new browser tab containing the rendered HTML.
+Code from all three languages can be mixed on the same oage and interact with each
+other.</p>
+
+<h4>Buttons on top and keyboard short-cuts:</h4>
+<ul>
+<li><tt>eval</tt> - evaluates newLISP source in edit box (Ctrl-enter)</li>
+<li><tt>silent</tt> - evaluates newLISP source in edit box silently (Shift-Ctrl-enter)</li>
+<li><tt>JS</tt> - evaluates JavaScript in  edit box</li>
+<li><tt>htlml</tt> - opens a new tab with HTML from the editor</li>
+<li><tt>x-edit</tt> - clears the editor box (Ctrl-L)</li>
+<li><tt>x-log</tt> - clears log box (Shift-Ctrl-L)</li>
+<li><tt>layout</tt> - switches between three layouts</li>
+<li><tt>#</tt> - toggle line numbers on / off - (Ctrl-1)</li>
+<li><tt>theme</tt> - switches between seven color themes</li>
+<li><tt>info</tt> - shows this page in a new browser tab</li>
+<li><tt>doc</tt> - shows and searches the reference manual</li>
+<li><tt><font size="+1">&#8635;</font></tt> - reload newLISP and local browser storage (Ctrl-R)</li>
+</ul>
+
+<p>The <tt>eval</tt> button will show all  top-level return values in the log
+window. The <tt>silent</tt> button only shows text output by <tt>print</tt> 
+or <tt>println</tt> or other functions writing to standard out.</p>
+
+<p><tt>htlml</tt> is the preferred button for web development, as HTML,
+JavaScript and newLISP source can be mixed on the same page (see 
+<a href="app.html">app.html</a> demo as an example.</p>
+
+<p>Different themes set by the <tt>theme</tt> button also change the
+way matching parentheses are shown.</p>
+
+<p>The input box to the right of the <tt>doc</tt> button can be either filled
+manually using the keyboard or a text selection can be made anywhere in the editor
+or log box. On computer devicers with a mouse, the text gets put into the 
+search box on mouse-up. On mobile touch devices the selecton must be copy/pasted
+manually.</p>
+
+<h4>Buttons at the bottom and keyboard short-cuts:</h4>
+<ul>
+<li><tt>save</tt> - save edit box content to browser local storage (Ctrl-S)</li>
+<li><tt>open</tt> - load edit content from a file on the local file system (Ctrl-O)</li>
+</ul>
+
+<p>The <tt>save</tt> button saves the current edit content to the 
+local storage system of the browser. On startup this content will be restored 
+automatically. This storage is owned by the inidividual browser (IE, Firefox, 
+Chrome, Safari, Opera). There are no browser cookies set and no internet 
+connection is necessary for this private storage. For saving files to the local
+file system <em>copy</em> and <em>paste</em> must be used to transfer files 
+out of the browser.</p>
+
+<p>The <tt>save</tt> button also saves the layout and color theme.</p>
+
+<p>The <tt>open file</tt> button is disabled on mobile devices.</p>
+
+<p>Note, that all browser local storage is tied to the domain from which the
+editor is loaded. Allthough storage is local to your device, the same content
+can only be accessed using the editor from the same internet domain location.
+If using Firefox, distinction is also made for different places on the local
+disk. Safari and Chrome don't forget local storage even if the browser gets
+shut down and the editor was loaded from a remote site. Firefox behavior is
+different in this respect depending on the platform it is running on.</p>
+
+<p>Red buttons delete or replace existing content. Blue buttons act on 
+content in the edit box. <tt>x-edit</tt>, <tt>x-log</tt> and <tt>open</tt>
+can be undone using <tt>Ctrl-Z</tt> or <tt>Command-Z</tt> on Mac OS X.
+<tt><font size="+1">&#8635;</font></tt> cannot be undone.</p>
+
+
+<h4>Keyboard commands without buttons</h4>
+
+<p>In the editor <tt>Alt-up/down</tt> or <tt>Option-up/down</tt> moves the current
+line or all lines in a selection. Select with a mouse or <tt>Shift-right/down</tt>.
+</p>
+
+<p>Fontsize can be adjusted on Mac OS X using the <tt>command+</tt> and <tt>command-</tt>
+keys. On Windows and Unix systems use <tt>Ctrl+</tt> and <tt>Ctrl-</tt>.</p>
+
+<p>Changes of the editor content can be undone using <tt>Command-Z</tt> on Mac OS X
+or using <tt>Ctrl-Z</tt> on Windows and Linux.</p>
+
+<p>On Mac OS X the <tt>Ctrl-B,F,P,N,H,D</tt> keys can be used for cursor movement in
+all for directions and deletion of characters before and after the caret.</p>
+
+<h2>Performance considerations</h2>
+
+<p>In this sandboxed JavaScript environment, most File and network I/O functions 
+will not work or work in different ways. Memory is also constrained for 
+applications in a web browser. Bigger newLISP applications for the web should
+run server-side in native compiled newLISP to use all of its File, network and 
+distributed and parallel processing functions.</p>
+
+<p>The following functions are not available in newlisp-js-lib.js:</p>
+
+<blockquote>
+<tt>debug, trace, trace-highlight<br/>
+semaphore, share, signal, timer<br/>
+abort, exec, fork, process, receive, send, spawn, sync<br/>
+net-packet, net-ping, net-service<br/>
+get-url, put-url, post-url, delete-url<br/>
+net-accept, net-close, net-connect, net-error, net-eval<br/>
+net-interface, net-ipv, net-listen, net-local, net-lookup<br/> 
+net-packet, net-peek, net-peer, net-ping, net-receive<br/> 
+net-receive-from, net-receive-udp, net-select, net-send<br/>
+net-send-to, net-send-udp, net-sessions</tt>
+</blockquote>
+
+<p>The following functions are available but will have limited functonality.
+<tt>file://</tt> and <tt>http://</tt> URLs cannot be used, as is possible
+on native compiled newLISP with the last line of functions below. All functions 
+work on a <em>session filesystem</em>.  All contents of this filesystem is 
+forgotten when closing or reloading the browser page. Still, for learning 
+purpose or testing code, it can be useful.</p>
+
+<blockquote>
+<tt>load, save</tt><br/>
+<tt>directory, make-dir, change-dir, remove-dir</tt><br/>
+<tt>open, close, read, write</tt><br/>
+<tt>read-char, write-char, read-line, write-line, read-utf8</tt><br/>
+<tt>read-file, write-file, append-file, delete-file, rename-file</tt>
+</blockquote>
+
+<p>Some functions can work on <tt>stdin</tt>. E.g.: <tt>(read-line)</tt> will
+pop up two JavaScript <tt>window.prompt()</tt> dialogs one after the other 
+to enter a string:</p>
+
+<pre>
+(add (int (read-line)) (int (read-line)))
+</pre>
+
+<p>To write to <tt>stdout</tt> open the device <tt>dev/stdout</tt>:</p>
+
+<pre>
+(set 'out (open "dev/stdout" "w"))
+(write out "hello\n")
+(close out)
+</pre>
+
+<p>This would add the two numbers entered in dialog windows and show the 
+result in the log window.</p>
+
+<h2>Re-defining existing built-in functions using JavaScript</h2>
+
+<p>The browser version of newLISP adds a function <tt>eval-string-js</tt> 
+to call JavaScript int the host browser. This way libraries like jQuery or 
+Bootstrap can be used to replace some of the web and network functions:</p>
+
+<pre>
+    (constant 'get-url (lambda (url) 
+        (eval-string-js (string "GetUrl('" url "')")) )
+    )
+</pre>
+
+<p><tt>GetUrl()</tt> would be a JavaScript function implementing the functionality
+of newLISP's <tt>get-url</tt>. The <tt>constant</tt> function allows
+to redefine protected symbols from built-in functions. Primitives redefined this way 
+will still be <tt>protected?</tt> and <tt>global?</tt>.</p>
+
+<h2>Replacing the editor page with a new page</h2>
+
+<p>Another new builtin function is <tt>display-html</tt>. The function
+can be used to replace the current page containing the editor with a
+new webpage. When evaluating the following snippet in the editor box,
+the new content will apear:</p>
+
+<pre>
+(display-html "&lt;html&gt;Hello World&lt;/html&gt;")
+</pre>
+
+<p>To get back to the newLISP environment, hit the back-key in the browser.</p>
+
+<h2>Displaying an HTML page in a new browser tab</h2>
+
+<pre>
+(display-html "&lt;html&gt;Hello World&lt;/html&gt;" true)
+</pre>
+
+<p>The <tt>true</tt> parameter causes a new tab to be opened. This is the
+same function as used by the <tt>html</tt> button.</p>
+
+<h2>Developing HTML in the browser</h2>
+
+<p>Without using <tt>display-html</tt>, HTML can be written in the editor
+box, intermixed with JavaScript, if required. The <tt>html</tt> button will then 
+open a page in a new tab of the web browser with HTML content of the editor
+box:</p>
+
+<pre>
+&lt;html&gt;Hello World&lt;/html&gt;
+</pre>
+
+<p>See also the <a href="app.html">app.html</a> page.</p>
+
+
+<h2>License</h2>
+<p>The JavaScript Emscripten library <tt>newlisp-js-lib.js</tt> is licensed under
+GNU General Public License Version 3, June 2007 - (GPL v.3).</p>
+<br/>
+<div class="footer" align="center">
+Copyright &copy; 2014, Lutz Mueller 
+<a href="http://www.newlisp.org">newlisp.org</a>. All rights reserved.
+</div>
+
+<br/><center>&sect;</center><br/>
+</body>
+</html>
+

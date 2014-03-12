@@ -66,6 +66,7 @@ PRIMITIVE primitive[] =
 	{"index",		p_index,	0},
 	{"define",		p_define,	2},
 	{"define-macro",	p_defineMacro,	2},
+    {"macro",       p_macro,    2},
 	{"expand",		p_expand,	0},
 	{"constant",	p_constant,	0},
 	{"global",		p_global,	0},

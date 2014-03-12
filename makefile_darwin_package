@@ -1,6 +1,6 @@
 # prepare Mac OSX package root directory in ../Package_contents
 
-VERSION=10.5.7
+VERSION=10.5.8
 
 datadir=Package_contents/usr/share
 bindir=Package_contents/usr/bin
@@ -45,7 +45,6 @@ darwin-package:
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/gsl.lsp $(datadir)/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
-	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/plot.lsp $(datadir)/newlisp/modules/plot.lsp

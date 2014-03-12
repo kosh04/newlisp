@@ -411,7 +411,7 @@ switch(pattern->type)
 
     case CELL_QUOTE:
     case CELL_EXPRESSION:
-    case CELL_MACRO:
+    case CELL_FEXPR:
     case CELL_LAMBDA:
         /* compare subexpressions */
         if(list->type == pattern->type)

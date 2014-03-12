@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>newLISP in a browser</title>
+<!-- codemirror stuff -->
+    <link rel=stylesheet href="codemirror/lib/codemirror.css">
+    <link rel=stylesheet href="codemirror/addon/dialog/dialog.css"> 
+    <link rel="stylesheet" href="codemirror/theme/newlisp.css">
+    <link rel="stylesheet" href="codemirror/theme/lesser-dark.css">
+    <link rel="stylesheet" href="codemirror/theme/solarized.css">
+    <link rel="stylesheet" href="codemirror/theme/ambiance.css">
+    <link rel="stylesheet" href="codemirror/theme/xq-light.css">
+    <link rel="stylesheet" href="codemirror/theme/no-color.css">
+    <script src="codemirror/lib/codemirror.js"></script>
+<!-- does not work, don't know why, not caused by newlisp-keymap.js -->
+    <script src="codemirror/dialog/dialog.js"></script>
+    <script src="codemirror/search/searchcursor.js"></script>
+    <script src="codemirror/search/search.js"></script>
+    <script src="codemirror/keymap/newlisp-keymap.js"></script>
+    <script src="codemirror/mode/newlisp/newlisp.js"></script>
+    <script src="codemirror/addon/selection/active-line.js"></script>
+    <script src="codemirror/addon/edit/closebrackets.js"></script>
+    <script src="codemirror/addon/edit/matchbrackets.js"></script>
+    <style title="cm-main-style">
+    .CodeMirror { height: 540px; }
+    .CodeMirror { border: 1px solid #AAA; margin-bottom: 5px; border-radius: 5px;}
+    .CodeMirror pre { padding-left: 7px; line-height: 1.25; }
+    .CodeMirror-scroll { overflow: scroll; }
+    </style>
+<!-- end codemirror stuff -->
+    <style type="text/css" media="screen">
+    .emscripten {
+        padding-right: 0; margin-left: auto; margin-right: auto; display: block;
+        }
+    .button {
+        color: #000000;
+        background-color: #B0B0B0;
+        font-size: 1.0em;
+        border: 0px;
+        border-radius: 5px;
+        right: 0px;
+        padding-left: 6px;
+        padding-right: 6px;
+        margin-top: 3px;
+        margin-bottom: 4px;
+        }
+    .blue-button {
+        color: #0000AA;
+        background-color: #B0B0B0;
+        font-size: 1.0em;
+        border: 0px;
+        border-radius: 5px;
+        padding-left: 6px;
+        padding-right: 6px;
+        margin-top: 3px;
+        margin-bottom: 4px;
+        }
+    .red-button {
+        color: #AA0000;
+        background-color: #B0B0B0;
+        font-size: 1.0em;
+        border: 0px;
+        border-radius: 5px;
+        padding-left: 6px;
+        padding-right: 6px;
+        margin-top: 3px;
+        margin-bottom: 4px;
+        }
+    .filesbutton {
+        color: #000000;
+        font-size: 0.1em;
+        margin-bottom: 2px;
+        opacity: 0.0;
+        }
+    .keyword {
+        font-family: Helvetica, sans-serif;
+        font-size: 1.0em;
+        color: #000000;
+        background-color: #E0E0E0;
+        border: 2px solid #5080B0;
+        border-radius: 5px;
+        margin-right: 0px;
+        }
+    .menu {
+        margin-top: 6px;
+        margin-left: 1%;
+        margin-bottom: 2px;
+        }
+    body, p {
+        font-family: Helvetica, sans-serif;
+        color: #C0C0C0;
+        }
+    body {
+        overflow:hidden;
+        background-color: #7080B0;
+        margin: 0;
+        padding: 0;
+        }
+    a {
+        background-color: transparent;
+        color: #c0c0c0;
+        text-decoration: underline;
+        }
+
+    </style>
+    <style name="layout-style">
+    .left {
+        margin-left: 1%;
+        margin-bottom: 2px;
+        float: left;
+        }
+    .right {
+        margin-left: 1%;
+        margin-bottom: 2px;
+        float: left;
+        }
+    .upper {
+        position: relative;
+        margin-left: 1%;
+        margin-right: 1%;
+        margin-bottom: 2px;
+        }
+    .lower {
+        position: relative;
+        margin-left: 1%;
+        margin-right: 1%;
+        margin-bottom: 2px;
+        }
+     </style>
+    <script language="Javascript">
+<!--
+        var editor = false;
+        var cmlog = false;
+
+        // globalarray for width percentages edito and log in 4 layouts
+        var LayoutWidth = [["48.5%", "48.5%"],["65%", "32%"], ["97%", "97%"]];
+        var LayoutClass = [["left", "right"],["left","right"], ["upper", "lower"]];
+        var LayoutIdx = 0;
+
+        // these two functions must be in all 'newLISP in a browser' apps
+        function displayHTML(content) { 
+              document.write(content); document.close(); 
+              return content.length;
+              }
+        function displayHTMLnew(content) { 
+              var newWindow = window.open('');
+              newWindow.document.write(content); newWindow.document.close();
+              return content.length;
+              }
+
+        // the following functions are specific to the editor IDE application
+         var isMobile = {
+            Android: function() { return navigator.userAgent.match(/Android/i);},
+            iOS: function() { return navigator.userAgent.match(/iPhone|iPad|iPod/i);},
+            Windows: function() { return navigator.userAgent.match(/IEMobile/i);},
+            any: function() { return (isMobile.Android() || isMobile.iOS() || isMobile.Windows());}
+            };
+        
+         function detectIPadOrientation () {
+            resizeTextarea();
+            window.scrollTo(0, 0);
+            //if ( orientation == 0 ) { alert ('Portrait Mode, Home Button bottom');
+            }
+
+        function writeLog(content) {
+            cmlog.setValue(cmlog.getValue() + content + "\n");
+            cmlog.setCursor(99999, 0);
+            }
+
+        function evaluateInput() {
+            var result = newlispEvalStr(editor.getValue());
+            writeLog(result);
+            flashBackground(300);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function evaluateInputSilent() {
+            var result = newlispEvalStr('(silent)' + editor.getValue());
+            writeLog(result);
+            flashBackground(300);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function evaluateInputJS() {
+            var result = newlispEvalStr ('(eval-string-js {' + editor.getValue() + '})');
+            writeLog(result);
+            editor.setOption("mode", "text/html");
+            flashBackground(300);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function reload() {
+            location.reload();
+            }
+
+        function clearEditor() {
+            editor.setValue('');
+            if(!isMobile.any()) editor.focus();
+            editor.setCursor(0, 0);
+            }
+
+        function clearLog() {
+            cmlog.setValue('');
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function clearAll() {
+            editor.setValue('');
+            cmlog.setValue('');
+            document.getElementById('keywordtext').value = '';
+            if(!isMobile.any()) editor.focus();
+            editor.setCursor(0, 0);
+            }
+
+        function switchLayout() {
+            LayoutIdx = (LayoutIdx += 1) % 3;
+            resizeTextarea();
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function openFile() {
+            document.getElementById('files').click();
+            }
+
+        function lineNumbers() {
+            editor.setOption('lineNumbers', editor.getOption('lineNumbers') == false);
+            if(!isMobile.any()) editor.focus();
+            }
+                
+
+        // for CodeMirror
+        function switchTheme() {
+            var newTheme;
+
+            switch(editor.getOption("theme"))
+                {
+                case "newlisp":
+                    newTheme = "lesser-dark"; break;
+                case "lesser-dark":
+                    newTheme = "solarized light"; break;
+                case "solarized light":
+                    newTheme = "xq-light"; break;
+                case "xq-light":
+                    newTheme = "solarized dark"; break;
+                case "solarized dark":
+                    newTheme = "ambiance"; break;
+                case "ambiance":
+                    newTheme = "no-color"; break;
+                case "no-color":
+                    newTheme = "newlisp"; break;
+                default:
+                    newTheme = "newlisp"; break;
+                }
+            writeLog("# set theme: " + newTheme);
+            editor.setOption("theme", newTheme);
+            cmlog.setOption("theme", newTheme);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function flashBackground(duration) {
+            document.body.style.background = "#68b";
+            var myTimer = setInterval(function() {
+                clearInterval(myTimer);
+                document.body.style.background = "#7080B0";
+                }, duration);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function restoreLayoutAndTheme() {
+            var theme = localStorage.theme;	
+
+	        if(!isMobile.any()) {
+                var allInputs = document.getElementsByTagName("input");
+                for(var i = 0; i < allInputs.length; i++) {
+                    allInputs[i].setAttribute('style', "font-size: 1.1em");
+                    }
+            	document.getElementById('keywordtext').setAttribute('size', '12');
+		        }
+
+            editor.setOption('lineNumbers', localStorage.lineNumbers == "true");
+
+            LayoutIdx = localStorage.layout;
+            if(LayoutIdx != 0 && LayoutIdx != 1 && LayoutIdx  != 2)
+                LayoutIdx = 0;
+            resizeTextarea();
+
+            if(!theme) { 
+                if(isMobile.any()) { theme = "newlisp"; } 
+                else { theme = "newlisp"; }
+                }
+            editor.setOption("theme", theme);
+            cmlog.setOption("theme", theme);
+
+            var elem = document.getElementById("files");
+            if(isMobile.any()) { elem.style.marginLeft = "-200px"; }
+            else { elem.style.marginLeft = "0px"; }
+            writeLog("# set theme: " + theme);
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function resizeTextarea() {
+            var styleSheet;
+            var offset = 0;
+
+            // set width
+            document.getElementById('editdiv').className = LayoutClass[LayoutIdx][0];
+            document.getElementById('logdiv').className = LayoutClass[LayoutIdx][1];
+            document.getElementById('editdiv').style.width = LayoutWidth[LayoutIdx][0];
+            document.getElementById('logdiv').style.width = LayoutWidth[LayoutIdx][1];
+
+            // set height
+            for(var i = 0; i < document.styleSheets.length; i++) {
+                var sheet = document.styleSheets[i];
+                if(sheet.title == 'cm-main-style') { styleSheet = sheet; }
+                }
+
+            styleSheet.deleteRule(0);
+    	    if(isMobile.any()) { offset = 10; }
+            if(LayoutIdx < 2) {
+                var vertical = window.innerHeight - 80 - offset;
+                } else {
+                var vertical = (window.innerHeight - 120) / 2;
+                } 
+
+            styleSheet.insertRule('.CodeMirror { height: ' + vertical + 'px; }', 0);
+            }
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            var textFile = files[0];
+
+            // textFile.name textFile.type textFile.size
+            // textFile.lastModifiedDate[.toLocaleDateString()]
+
+            //Only process text files.
+            if(textFile.type.match('image.*')) {
+                alert(textFile.type + 'is an invalid file type');
+                return;
+                }
+ 
+            var reader = new FileReader();
+ 
+            // read file asynchronous and fill editor box
+            reader.onload = (function(theFile) {
+                return function(e) {
+                    editor.setCursor(0, 0);
+                    editor.setValue('');
+                    editor.setValue(e.target.result);
+                    };
+                })(textFile);
+ 
+            // Read in the text file
+            reader.readAsText(textFile);
+            writeLog('# loaded ' + textFile.name + ' -', textFile.size + ' bytes');
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function GetSelectedText() {
+            var selText = "";
+            if (window.getSelection) {  // all browsers, except IE before version 9
+                if (document.activeElement &&
+                    document.activeElement.tagName.toLowerCase () == "textarea")
+                    {
+                    var text = document.activeElement.value;
+                    selText = text.substring (document.activeElement.selectionStart,
+                                              document.activeElement.selectionEnd);
+                    } else {
+                    var selRange = window.getSelection ();
+                    selText = selRange.toString ();
+                    }
+                } else {
+                    if (document.selection.createRange) {  // Internet Explorer
+                        var range = document.selection.createRange ();
+                        selText = range.text;
+                        }
+                    }
+                if (selText !== "") {
+                    document.getElementById('keywordtext').value = selText;
+                    //alert(selText);
+                    }
+            }   
+ 
+        function searchKeyPress(e) {
+            // look for window.event in case event isn't passed in
+            if(typeof e == 'undefined' && window.event) { e = window.event; }
+            if(e.keyCode == 13) { document.getElementById('doc').click(); }
+            }       
+
+        //function cmeditorKeyPress () { alert(' key pressed '); } 
+
+        function sleep(ms){
+            var startTime = new Date().getTime();
+            while (new Date().getTime() < startTime + ms) {}
+            }
+
+        function getCaretPosition (field) {
+            var caretPos = 0;
+            // IE 9 and after
+            if (document.selection) {
+                field.focus ();
+                var sel = document.selection.createRange ();
+                sel.moveStart ('character', - field.value.length);
+                caretPos = sel.text.length;
+                }
+            // Firefox, Safari, Chrome
+            else if (field.selectionStart || field.selectionStart == '0') {
+                caretPos = field.selectionStart; }
+            return (caretPos);
+            }
+
+        function OpenDoc () {
+            var selText = document.getElementById('keywordtext').value.trim();
+             
+            if(selText.charAt(selText.length - 1) == "?") {
+                 selText = selText.substring(0, selText.length - 1) + 'p';
+                }
+            if(selText !== '') {
+                //window.open('http://www.newlisp.org/downloads/newlisp_manual.html#'+selText,'MsgWindow');
+                window.open('newlisp_manual.html#'+selText,'MsgWindow');
+                }
+            else {
+                //window.open('http://www.newlisp.org/downloads/manual_frame.html','MsgWindow');
+                window.open('manual_frame.html','MsgWindow');
+                }
+            }
+
+        function saveEdit() {
+            localStorage.userEdits = editor.getValue();
+            localStorage.log = cmlog.getValue();
+            localStorage.theme = editor.getOption("theme");
+            localStorage.layout = LayoutIdx;
+            localStorage.lineNumbers = editor.getOption('lineNumbers');
+            writeLog("# saved to local browser storage");
+            if(!isMobile.any()) editor.focus();
+            }
+
+        function restoreLocalStorage() {
+            var log = document.getElementById('output');
+            if(localStorage.log != null) {
+                cmlog.setValue(localStorage.log);
+                }
+            if(localStorage.userEdits != null) {
+                //content.value = localStorage.userEdits;
+                editor.setValue(localStorage.userEdits);
+                if(editor.getValue().length > 0)
+                     { writeLog("# local browser storage recovered"); }
+                else
+                     { writeLog("# local browser storage is empty"); }
+                }
+            else { 
+                clearLog();
+                writeLog("# no local browser storage found"); 
+                }
+            }
+
+        function insertEdit(text) {
+            editor.setValue(text);
+            }
+
+        function changeSaveOpenButton() {
+            document.getElementById('files').disabled = true;
+            document.getElementById('browse').disabled = false; // for mobile
+            // make prev button
+            document.getElementById('save').value= 'prev';
+            document.getElementById('save').setAttribute('style', 'color: green;');
+            var action = "Module.print(newlispEvalStr('(Tutorial:prev)'))";
+            document.getElementById('save').setAttribute('onclick', action);
+            // make next button
+            document.getElementById('browse').value= 'next';
+            document.getElementById('browse').setAttribute('style', 'color: green;');
+            action = "Module.print(newlispEvalStr('(Tutorial:next)'))";
+            document.getElementById('browse').setAttribute('onclick', action);
+            }
+
+        function enableButtons() {
+            var allInputs = document.getElementsByTagName('input');
+            for(var i = 0; i < allInputs.length; i++) {
+                allInputs[i].disabled = false;
+                }
+            // leave file selection button disabled on Android, IOS and mobile Windows
+            if(isMobile.any()) {
+                document.getElementById('files').disabled = true;
+                document.getElementById('browse').disabled = true;
+                }
+            }
+
+        function initCoderMirrorWidgets() {
+            editor = CodeMirror.fromTextArea(document.getElementById('input'), { 
+                mode: "newlisp",
+                theme: "lesser-dark",
+                lineNumbers: false,
+                styleActiveLine: false,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                lineWrapping: true,
+                autofocus: true
+                });
+
+            cmlog = CodeMirror.fromTextArea(document.getElementById('output'), { 
+                mode: "text/html",
+                theme: "lesser-dark",
+                readOnly: true,
+                lineWrapping: true
+                });    
+
+            //editor.on("keypress",  function() { cmeditorKeyPress(); });
+            }
+
+-->
+    </script>
+  </head>
+
+  <body onmouseup="GetSelectedText();">
+    <!-- this hidden text area contains code which is preloaded into newLISP. -->
+    <textarea id="code" style="display: none;">
+; insert newLISP code for preload here
+    (set (global 'display-html) (fn (x y)
+        (replace {\} x {\\}) 
+        (replace "\n" x "\\n") 
+        (replace {'} x {\'})
+        (replace {"} x {\"})
+        (eval-string-js (if (true? y)
+        (string {displayHTMLnew('} x {')})
+        (string {displayHTML('} x {')})))))
+; eof
+    </textarea>
+    <div class="emscripten" id="status">Downloading...</div>
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress> 
+    </div>
+    <div class="menu">
+    <input type="button" value="eval" id="evalinput" class="blue-button" title="eval newLISP - Ctl-enter"
+         onclick="evaluateInput();" disabled />
+    <input type="button" value="silent" id="evalsilent" class="blue-button"
+         title="eval silent - Shift-Ctrl-enter" onclick="evaluateInputSilent();" disabled />
+    <input type="button" value="JS" id="evalinputJS" class="blue-button" title="eval JavaScript"
+         onclick="evaluateInputJS();" disabled />
+    <input type="button" value="html" id="evalinputHTML" class="blue-button" title="display HTML"
+         onclick="displayHTMLnew(editor.getValue())" disabled />
+    <input type="button" value="x-edit" id="clearinput" class="red-button" title="clear editor - Ctrl-L" i
+      onclick="clearEditor();" disabled />
+    <input type="button" value="x-log" id="clearoutput" class="red-button" title="clear log - Shift-Ctrl-L"
+         onclick="clearLog();"  disable />
+    <input type="button" value="layout" id="switchlayout" class="button" title="change layout"
+         onclick="switchLayout();" disabled />
+    <input type="button" value='#' id="linenumbers" class="button" title="line numbers - Ctrl-1"
+         onclick="lineNumbers();" disabled />
+    <input type="button" value="theme" id="theme" class="button" title="change color scheme"
+         onclick="switchTheme();" disabled />
+    <input type="button" value='&#8635' id="reload" class="red-button" title="reload newLISP - Ctrl-R"
+         onclick="reload();" />
+    <input type="button" value="info" id="info" class="button" title="about this program"
+         onclick="window.open('README.html','MsgWindow');" disabled />
+    <input type="button" value="doc" id="doc" class="button" title="reference manual"
+         onclick="OpenDoc();"/>
+    <input type="text" class="keyword" id="keywordtext" size="10" 
+         title="search keyword" onkeypress="searchKeyPress(event);" />
+    </div>
+<!--  EDITOR -->
+    <div class="left" id="editdiv" style="width: 49%">
+    <form><textarea id="input" display="none" disabled >; Welcome to newLISP running in a browser.
+;
+; Click [eval]
+
+(println "Hello World")
+
+(define (double x)
+   (+ x x))
+
+(println "=> " (double 123))
+
+; [eval] shows all the return values from
+; evaluated expressions plus the effect from
+; 'println'. Now click [silent]. It only shows
+; the effect from the 'println' expression.
+
+; To find out more about how to use this 
+; editor, click the [info] button.
+
+; The best introduction to newLISP can be found
+; here:
+; en.wikibooks.org/wiki/Introduction_to_newLISP
+;
+; More documentation can be found here:
+; www.newlisp.org/index.cgi?Documentation
+; or by clicking the [doc] button.
+</textarea></form>
+     <input  type="button" value="save" id="save" class="button" title="save to local storage - Ctrl-S"
+        onclick="saveEdit();" disabled />
+     <input  type="button" value="open" id="browse" class="red-button" title="open disk file - Ctrl-O"
+        onclick="openFile()" disabled />
+     <input type="file" class="filesbutton" id="files" name="load" disabled />
+    </div>
+<!-- LOG MONITOR -->
+    <div class="right" id="logdiv" style="width: 48%">
+    <textarea  id="output"  disabled ></textarea>
+    <center><font size="-1">Copyright &copy; 2014, <a href="http://newlisp.org">newlisp.org</a>
+    </font></center>
+    </div>
+
+    <script type='text/javascript'>
+<!--
+        // EMSCRIPTEN loading newlisp-js-lib.js showing progress of downloading
+        // importing newlispEvalStr and output to the console
+        var Module = {
+          preRun: [],
+          postRun: [(function() {
+            newlispEvalStr = Module.cwrap('newlispEvalStr', 'string', ['string']); 
+            // preload newLISP functions from code textarea id='code'
+            newlispEvalStr(document.getElementById('code').value);
+          })],
+          print: (function() {
+            //var element = document.getElementById('output');
+            //element.value = ''; // clear browser cache
+            return function(text) {
+              text = Array.prototype.slice.call(arguments).join(' ');
+              writeLog(text);
+              //element.value += text + "\n";
+              //element.scrollTop = 99999; // focus on bottom
+            };
+          })(),
+          printErr: function(text) {
+            text = Array.prototype.slice.call(arguments).join(' ');
+            console.log(text);
+          },
+          canvas: document.getElementById('canvas'),
+          setStatus: function(text) {
+            if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+            if (text === Module.setStatus.text) return;
+            var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+            var now = Date.now();
+            if (m && now - Date.now() < 30) return; // if progress update, skip it if too soon
+            var statusElement = document.getElementById('status');
+            var progressElement = document.getElementById('progress');
+            if (m) {
+              text = m[1];
+              progressElement.value = parseInt(m[2])*100;
+              progressElement.max = parseInt(m[4])*100;
+              progressElement.hidden = false;
+            } else {
+              progressElement.value = null;
+              progressElement.max = null;
+              progressElement.hidden = true;
+
+              // start application, start CodeMirror, restore local storage and layout
+              if(editor == false) {
+                enableButtons();
+                initCoderMirrorWidgets();
+                restoreLocalStorage();
+                restoreLayoutAndTheme();
+                window.onresize = resizeTextarea;
+                //file browser
+                document.getElementById('files').addEventListener('change', handleFileSelect, false);
+                }
+
+              if(isMobile.any()) { 
+                // settings for mobile device orientation discovery
+                window.onorientationchange = detectIPadOrientation;
+                // on mobile scroll page into position when keyboard closes
+                document.addEventListener('focusout', function(e) {window.scrollTo(0, 0);});
+                }
+            }
+            statusElement.innerHTML = text;
+          },
+          totalDependencies: 0,
+          monitorRunDependencies: function(left) {
+            this.totalDependencies = Math.max(this.totalDependencies, left);
+            Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) +
+                          '/' + this.totalDependencies + ')' : 'All downloads complete.');
+          }
+        };
+        Module.setStatus('Downloading...');
+-->
+      </script>
+      <script async type="text/javascript" src="newlisp-js-lib.js"></script>
+  </body>
+</html>
+
+<!-- eof -->
+

@@ -1,8 +1,12 @@
 #!/usr/bin/newlisp
 
-
 ; qa-dictionary
 ; check dictionary creation
+
+;(macro (double X) (+ x x))
+;(macro (triple X) (+ x x x))
+;(macro (bar X) (+ x x x))
+
 
 (println)
 (println "Testing and benchmarking namespaces")

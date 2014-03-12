@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title>newLISP  v.10.5.7 Release Notes </title>
+<title>newLISP  v.10.5.8 Release Notes </title>
 
 <style type="text/css" media="screen">
 
@@ -49,16 +49,18 @@ li {
 </head>
 
 <body>
-<h1>newLISP<font size=-1>&#174;</font> v.10.5.7 Development Release
-<font color="red" size="-1">2014-02-18</font></h1>
+<h1>newLISP<font size=-1>&#174;</font> v.10.5.8 Development Release
+<font color="red" size="-1">2014-03-11</font></h1>
 
-<p>This development release continues with numerous small improvements in
-several areas. Additions, changes and bug fixes for versions 10.5.5, 10.5.6 
-and 10.5.7 are reported together.</p>
+<p>This development adds <tt>macro</tt> as a native function and continues with 
+numerous small improvements in several areas.</p>
+
+<p>Additions, changes and bug fixes for versions 10.5.5, 10.5.6,
+10.5.7 and 10.5.8 are reported together.</p>
 
 <h3>Additions and changes</h3>
 <ul>
-<li>In <tt>json-parse</tt> the last element in JSON arrays may inow have a 
+<li>In <tt>json-parse</tt> the last element in JSON arrays may now have a 
 trailing comma.</li>
 
 <li>In arithmetic big integer operators: <tt>+ - * / %</tt>, now more than
@@ -120,6 +122,11 @@ is returned.</li>
 <li>newLISP can now be compiled to JavaScript and run in a web browser. The compile
 is done using the <a href="https://github.com/kripken/emscripten">Emscripten</a>
 tool set. A complete package to run newLISP in a web browser will be released.</li>
+
+<li>The <tt>macro</tt> function is now a built-in native primitive. The module 
+<tt>macro.lsp</tt>, which implemented <tt>macro</tt> using <tt>reader-event</tt>,
+is now obsolete. The new native <tt>macro</tt> works like the old, but does not
+increase the load or reading time of source.</li>
 
 </ul> 
 

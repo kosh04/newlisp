@@ -176,7 +176,7 @@ switch(params->type)
         break;
     case CELL_EXPRESSION:
     case CELL_LAMBDA:
-    case CELL_MACRO:
+    case CELL_FEXPR:
             length = listlen((CELL *)params->contents);
         break;
     case CELL_ARRAY:

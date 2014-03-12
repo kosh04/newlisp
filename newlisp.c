@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10507;
+int version = 10508;
 
 char copyright[]=
-"\nnewLISP v.10.5.7 Copyright (c) 2014 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.5.8 Copyright (c) 2014 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.7 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.8 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.7 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.8 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.5.7 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.5.8 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.5.7 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.5.8 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -196,6 +196,8 @@ SYMBOL * listIdxSymbol;
 SYMBOL * itSymbol;
 SYMBOL * sysxSymbol;
 SYMBOL * countSymbol;
+SYMBOL * beginSymbol;
+SYMBOL * expandSymbol;
 
 SYMBOL * sysSymbol[MAX_REGEX_EXP];
 
@@ -1403,6 +1405,8 @@ listIdxSymbol = translateCreateSymbol("$idx", CELL_NIL, mainContext, TRUE);
 itSymbol = translateCreateSymbol("$it", CELL_NIL, mainContext, TRUE);
 countSymbol = translateCreateSymbol("$count", CELL_NIL, mainContext, TRUE);
 sysxSymbol = translateCreateSymbol("$x", CELL_NIL, mainContext, TRUE);
+beginSymbol = translateCreateSymbol("begin", CELL_NIL, mainContext, TRUE);
+expandSymbol = translateCreateSymbol("expand", CELL_NIL, mainContext, TRUE);
 
 symbol = translateCreateSymbol("ostype", CELL_STRING, mainContext, TRUE);
 symbol->flags = SYMBOL_GLOBAL | SYMBOL_BUILTIN | SYMBOL_PROTECTED;
@@ -1559,7 +1563,7 @@ switch(cell->type)
             break; 
             }
         
-        if(pCell->type == CELL_MACRO)
+        if(pCell->type == CELL_FEXPR)
             { 
             pushLambda(args);
             result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext);
@@ -2616,7 +2620,7 @@ switch(cell->type)
     
     case CELL_EXPRESSION:
     case CELL_LAMBDA:
-    case CELL_MACRO:
+    case CELL_FEXPR:
         printExpression(cell, device);
         break;
 
@@ -2690,7 +2694,7 @@ if(cell->type == CELL_LAMBDA)
     varPrintf(device, "(lambda ");
     ++prettyPrintPars;
     }
-else if(cell->type == CELL_MACRO) 
+else if(cell->type == CELL_FEXPR) 
     {
     varPrintf(device, "(lambda-macro ");
     ++prettyPrintPars;
@@ -2831,7 +2835,7 @@ switch(symbolType(sPtr))
             }
         break;
     case CELL_LAMBDA:
-    case CELL_MACRO:
+    case CELL_FEXPR:
         if(isProtected(sPtr->flags))
             {
             varPrintf(device, "%s%s%s", LINE_FEED, LINE_FEED, setStr);
@@ -2941,7 +2945,7 @@ if(isGlobal(sPtr->flags))
     {
     varPrintf(device, "(global '");
     printSymbolName(device, sPtr);
-    if(symbolType(sPtr) == CELL_LAMBDA || symbolType(sPtr) == CELL_MACRO)
+    if(symbolType(sPtr) == CELL_LAMBDA || symbolType(sPtr) == CELL_FEXPR)
         varPrintf(device, ")");
     else varPrintf(device, ") ");
     }
@@ -3326,7 +3330,9 @@ char token[MAX_STRING + 4];
 double floatNumber;
 CELL * newCell;
 CELL * contextCell;
+CELL * preCell;
 SYMBOL * contextPtr;
+SYMBOL * sPtr;
 int listFlag, tklen;
 char * lastPtr;
 int errnoSave;
@@ -3342,11 +3348,11 @@ switch(getToken(stream, token, &tklen))
     case TKN_ERROR:
         errorProcExt2(ERR_EXPRESSION, stuffStringN(lastPtr, 
             (strlen(lastPtr) < 60) ? strlen(lastPtr) : 60));
-        return(0);
+        return(FALSE);
 
     case TKN_EMPTY:
         if(parStackCounter != 0) errorMissingPar(stream);
-        return(0);
+        return(FALSE);
 
     case TKN_CHARACTER:
         newCell = stuffInteger((UINT)token[0]);
@@ -3409,7 +3415,7 @@ switch(getToken(stream, token, &tklen))
             if(cell->type != CELL_EXPRESSION)
                 {
                 errorProcExt2(ERR_INVALID_LAMBDA, stuffString(lastPtr));
-                return(0);
+                return(FALSE);
                 }
             cell->type =  CELL_LAMBDA;
             cell->aux = (UINT)nilCell;
@@ -3420,13 +3426,12 @@ switch(getToken(stream, token, &tklen))
             if(cell->type != CELL_EXPRESSION)
                 {
                 errorProcExt2(ERR_INVALID_LAMBDA, stuffString(lastPtr));
-                return(0);
+                return(FALSE);
                 }
-            cell->type =  CELL_MACRO;
+            cell->type =  CELL_FEXPR;
             cell->aux = (UINT)nilCell;
             goto GETNEXT;
             }
-
         else if(strncmp(token, "[text]", 6) == 0) 
             {
             newCell = makeCell(CELL_STRING, (UINT)readStreamText(stream, &tklen));
@@ -3490,15 +3495,24 @@ switch(getToken(stream, token, &tklen))
 
     case TKN_QUOTE:
         newCell = getCell(CELL_QUOTE);
-        linkCell(cell, newCell, listFlag);
         compileExpression(stream, newCell);
         break;
 
     case TKN_LEFT_PAR:
         ++parStackCounter;
         newCell = getCell(CELL_EXPRESSION);
-        linkCell(cell, newCell, listFlag);
         compileExpression(stream, newCell);
+        if(((CELL *)newCell->contents)->type == CELL_SYMBOL)
+            {
+            sPtr = (SYMBOL *)((CELL *)newCell->contents)->contents;
+            /* macro expansion */
+            if(sPtr->flags & SYMBOL_MACRO)     
+                {
+                preCell = copyCell(evaluateExpression(newCell));
+                deleteList(newCell);
+                newCell = preCell;
+                }
+            }
         break;
 
     case TKN_RIGHT_PAR:
@@ -3509,7 +3523,7 @@ switch(getToken(stream, token, &tklen))
 
     default:
         errorProcExt2(ERR_EXPRESSION, stuffString(lastPtr));
-        return(0);
+        return(FALSE);
 
     }
 
@@ -3518,7 +3532,7 @@ linkCell(cell, newCell, listFlag);
 if(cell->type == CELL_QUOTE && listFlag == TRUE)
     return(TRUE);
 
-listFlag = 0;
+listFlag = FALSE;
 cell = newCell;
 
 if(parStackCounter != 0)
@@ -3527,7 +3541,7 @@ if(parStackCounter != 0)
     else errorMissingPar(stream);
     }
 
-return(0);
+return(FALSE);
 }
 
 
@@ -4217,7 +4231,7 @@ if(cell->type != CELL_SYMBOL)
     cellForDelete = (CELL *)(*symbol)->contents;
     if(isNil(cell)) 
         *symbol = nilSymbol;
-    else if(cell->type != CELL_LAMBDA && cell->type != CELL_MACRO && cell->type != CELL_PRIMITIVE)
+    else if(cell->type != CELL_LAMBDA && cell->type != CELL_FEXPR && cell->type != CELL_PRIMITIVE)
         {
         *symbol = nilSymbol;
         deleteList(cellForDelete);
@@ -4725,7 +4739,7 @@ int wchar;
 if(isList(expr->type) || expr->type == CELL_QUOTE)
     cell = (CELL*)expr->contents;
 else if(expr->type == CELL_SYMBOL && expr->contents == (UINT)symbol)
-    expandSymbol(expr, symbol);
+    expandExprSymbol(expr, symbol);
 
 while(cell != nilCell)
     {   
@@ -4746,7 +4760,7 @@ while(cell != nilCell)
             }
 
         if(symbol || enable)
-            expandSymbol(cell, sPtr);
+            expandExprSymbol(cell, sPtr);
         }
 
     else if(isEnvelope(cell->type)) expand(cell, symbol);
@@ -4757,7 +4771,7 @@ return(expr);
 }
 
 
-void expandSymbol(CELL * cell, SYMBOL * sPtr)
+void expandExprSymbol(CELL * cell, SYMBOL * sPtr)
 {
 CELL * rep;
 
@@ -4770,6 +4784,9 @@ rep->aux = 0;
 rep->contents = 0;
 deleteList(rep);
 }
+
+
+/* expands one or a chain of expressions */
 
 CELL * blockExpand(CELL * block, SYMBOL * symbol)
 {
@@ -4854,12 +4871,14 @@ return(copyCell(expr));
 }
 
 
-CELL * defineOrMacro(CELL * params, UINT cellType)
+CELL * defineOrMacro(CELL * params, UINT cellType, int flag)
 {
 SYMBOL * symbol;
 CELL * argsPtr;
-CELL * args;
 CELL * lambda;
+CELL * args;
+CELL * body;
+CELL * cell;
 
 if(params->type != CELL_EXPRESSION)
     return(errorProcExt(ERR_LIST_OR_SYMBOL_EXPECTED, params));
@@ -4876,7 +4895,7 @@ if(argsPtr->type != CELL_SYMBOL)
 else symbol = (SYMBOL *)argsPtr->contents;
 
 if(isProtected(symbol->flags))
-    return(errorProcExt(ERR_SYMBOL_PROTECTED, params));
+    return(errorProc(ERR_SYMBOL_PROTECTED));
 
 /* local symbols */
 argsPtr = copyList(argsPtr->next);
@@ -4884,12 +4903,29 @@ argsPtr = copyList(argsPtr->next);
 args = getCell(CELL_EXPRESSION);
 args->contents = (UINT)argsPtr;
 /* body expressions */
-args->next = copyList(params->next);
+body = copyList(params->next);
 
+/* if expansion macro insert expand symbol for body expansion
+   (expand 'body) */
+if(flag)
+    {
+    if(body->next != nilCell)
+        {
+        /* body has multiple expressions (expand '(begin ...)) */
+        cell = stuffSymbol(beginSymbol);
+        cell->next = body;
+        body = makeCell(CELL_EXPRESSION, (UINT)cell);
+        }
+    cell = stuffSymbol(expandSymbol);
+    cell->next = makeCell(CELL_QUOTE, (UINT)body);
+    body = makeCell(CELL_EXPRESSION, (UINT)cell);
+    symbol->flags |= SYMBOL_MACRO;
+    }
+
+args->next = body;
 lambda = makeCell(cellType, (UINT)args);
 
 deleteList((CELL *)symbol->contents);
-
 symbol->contents = (UINT)lambda;
 
 pushResultFlag = FALSE;
@@ -4902,19 +4938,22 @@ CELL * p_define(CELL * params)
 if(params->type != CELL_SYMBOL)
     {
     if(params->type != CELL_DYN_SYMBOL)
-        return(defineOrMacro(params, CELL_LAMBDA));
+        return(defineOrMacro(params, CELL_LAMBDA, FALSE));
     return(setDefine(getDynamicSymbol(params), params->next, SET_SET));
     }
 
 return(setDefine((SYMBOL *)params->contents, params->next, SET_SET));
 }
 
-
 CELL * p_defineMacro(CELL * params)
 {
-return(defineOrMacro(params, CELL_MACRO));
+return(defineOrMacro(params, CELL_FEXPR, FALSE));
 }
 
+CELL * p_macro(CELL * params)
+{
+return(defineOrMacro(params, CELL_FEXPR, TRUE));
+}
 
 /* also called from setq */
 CELL * p_setf(CELL *params)
@@ -6753,7 +6792,7 @@ CELL * p_isLambda(CELL * params)
     { return(isType(params, CELL_LAMBDA)); }
 
 CELL * p_isMacro(CELL * params)
-    { return(isType(params, CELL_MACRO)); }
+    { return(isType(params, CELL_FEXPR)); }
 
 CELL * p_isArray(CELL * params)
     { return(isType(params, CELL_ARRAY)); }

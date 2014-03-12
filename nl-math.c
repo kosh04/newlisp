@@ -966,7 +966,6 @@ return (comp > 0 ? 1 : -1);
 int compareCells(CELL * left, CELL * right)
 {
 int comp;
-
 if(left->type != right->type)
     {
     if(left->type == CELL_FLOAT && ((right->type & COMPARE_TYPE_MASK) == CELL_INT))
@@ -1045,7 +1044,7 @@ switch(left->type)
     case CELL_QUOTE:
     case CELL_EXPRESSION:
     case CELL_LAMBDA:
-    case CELL_MACRO:
+    case CELL_FEXPR:
         return(compareLists((CELL*)left->contents, (CELL*)right->contents));
     case CELL_ARRAY:
         return(compareArrays((CELL*)left, (CELL*)right));

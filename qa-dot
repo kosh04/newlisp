@@ -1715,6 +1715,11 @@ true
 (define (test-lower-case )
    (= "abcdefghijklmnopqrstuvwxyz" (lower-case "ABCDEFGHIJKLMNOPQRSTUVWXYZ")))
 
+(define (test-macro)
+    (= (unless testmacro (macro (testmacro x) (+ x x))) 
+        (lambda-macro (x) (expand '(+ x x))))
+)
+
 (define (test-macro? )
   (macro? 
    (define-macro (foo-macro))))

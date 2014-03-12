@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.7
-INT_VERSION = 10507
+VERSION = 10.5.8
+INT_VERSION = 10508
 
 default: makefile_build
 	make -f makefile_build
@@ -236,9 +236,10 @@ dist: clean
 	-mkdir newlisp-$(VERSION)/doc
 	-mkdir newlisp-$(VERSION)/util
 	-mkdir newlisp-$(VERSION)/qa-specific-tests
+	-mkdir newlisp-$(VERSION)/newlisp-js
 	cp README newlisp-$(VERSION)
 	cp nl*.c newlisp.c *.h pcre*.c index.cgi newlisp-$(VERSION)
-	cp win3*.* unix*.c emscripten*.c newlisp-$(VERSION)
+	cp win3*.* unix*.c newlisp-$(VERSION)
 	cp Makefile configure* makefile* qa-dot qa-comma newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
 	cp examples/* newlisp-$(VERSION)/examples
@@ -246,6 +247,8 @@ dist: clean
 	cp util/* newlisp-$(VERSION)/util
 	cp qa-specific-tests/* newlisp-$(VERSION)/qa-specific-tests
 	cp -R guiserver/* newlisp-$(VERSION)/guiserver
+	cp -R newlisp-js/* newlisp-$(VERSION)/newlisp-js
+
 
 	tar czvf newlisp-$(VERSION).tgz newlisp-$(VERSION)/*
 	rm -rf newlisp-$(VERSION)
@@ -290,19 +293,6 @@ android_dist:
 	tar czvf newlisp-ndk-$(VERSION).tgz newlisp-ndk-$(VERSION)/*
 	rm -rf newlisp-ndk-$(VERSION)
 	mv newlisp-ndk-$(VERSION).tgz ..
-
-# this makes the emscripten distribution
-# ../newlisp-js-$(VERSION)/ must contain codemirror/
-js_dist:
-	make clean
-	cp ../newlisp-js-$(VERSION)/index.html newlisp-js
-	cp ../newlisp-js-$(VERSION)/app.html newlisp-js
-	cp ../newlisp-js-$(VERSION)/README.html newlisp-js
-	make -f makefile_emscripten_lib_utf8
-	cp newlisp-js-lib.js ../newlisp-js-$(VERSION)/
-	cp doc/newlisp_manual.html ../newlisp-js-$(VERSION)
-	cp doc/newlisp_index.html ../newlisp-js-$(VERSION)
-	cp doc/manual_frame.html ../newlisp-js-$(VERSION)
 
 # this changes to the current version number in several files
 #

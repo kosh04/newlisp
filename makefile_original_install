@@ -1,6 +1,6 @@
 #
 
-VERSION=10.5.7
+VERSION=10.5.8
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -55,7 +55,6 @@ install:
 	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/gsl.lsp $(datadir)/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
-	-install -m 644 modules/macro.lsp $(datadir)/newlisp/modules/macro.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
 	-install -m 644 modules/odbc.lsp $(datadir)/newlisp/modules/odbc.lsp
 	-install -m 644 modules/plot.lsp $(datadir)/newlisp/modules/plot.lsp

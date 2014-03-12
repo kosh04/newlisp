@@ -11,6 +11,7 @@
 ;; @version 1.10 - added SHA256
 ;; @version 1.11 - added  path for UBUNTU Linux 13.04
 ;; @version 1.12 - added  path for UBUNTU Linux 12.04 and CentOS, removed old
+;; @version 1.13 - fix for crypto:hmac. Thanks Cormullion, March 2014
 ;; @author Lutz Mueller 2007, Martin Quiroga 2007, Norman Deppenbroek 2009, 
 ;; @author Marc Hildman, 2011
 ;;
@@ -44,6 +45,7 @@
               "C:/Program Files/gnuwin32/bin/libeay32.dll" ; XP
               "C:/Program Files (x86)/gnuwin32/bin/libeay32.dll" ; 7
               "/usr/lib/x86_64-linux-gnu/libcrypto.so" ; Ubuntu 12.04 LTS
+              "/usr/lib/i386-linux-gnu/libcrypto.so"; Ubuntu 12.04
               "/lib/i386-linux-gnu/libcrypto.so.1.0.0" ; UBUNTU Linux 13.04
               "/usr/lib64/libcrypto.so" ; CentOS 6.x
               "/usr/lib/libcrypto.so"
@@ -142,7 +144,8 @@
   (set 'opad (dup "\x5c" blocksize))
   (set 'ipad (dup "\x36" blocksize))
   (if (> (length key_str) blocksize)
-      (set 'key_str (get-true-str (hash_fn key_str)))
+      ;; (set 'key_str (get-true-str (hash_fn key_str))) 
+      (set 'key_str (hash_fn key_str true))
     )
   (set 'key_str (append key_str (dup "\000" (- blocksize (length key_str))))) ;; padding key with binary zeros
   (set 'opad (encrypt opad key_str))

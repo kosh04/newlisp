@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.7 Manual and Reference</title>
+   <title>newLISP v.10.5.8 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,7 +148,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.7</h2>
+<h2>User Manual and Reference v.10.5.8</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -1680,7 +1680,7 @@ argument should be a big integer to avoid erratic behaviour.</p>
 ; and overflows the capacity of a 64-bit integer
 
 (+ 123 123453456735645634565463563546)
-<span class='arw'>&rarr;</span> ERR: number overflows in function +
+<span class='arw'>&rarr;</span> <span class="err">ERR: number overflows in function +</span>
 
 ; now the first argument converts to big integer and the
 ; whole expression evaluates in big integer mode
@@ -7342,6 +7342,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#macro">macro</a></td>
+<td>create a reader expansion macro</td>
+</tr>
+
+<tr>
 <td><a href="#ostype">ostype</a></td>
 <td>contains a string describing the OS platform</td>
 </tr>
@@ -8571,7 +8576,7 @@ operators with standard evaluation of their arguments can be applied.</p>
         (if (= r 0) a (gcd_ r a))))
 
 (define-macro (my-gcd)
-    (apply gcd_ (args) 2))
+    (apply gcd_ (map eval (args)) 2))
 
 (my-gcd 12 18 6)    <span class='arw'>&rarr;</span> 6
 (my-gcd 12 18 6 4)  <span class='arw'>&rarr;</span> 2
@@ -10054,7 +10059,7 @@ syntax: (catch <em>exp</em> <em>symbol</em>)</h4>
 <pre>
 (catch (func 3 4) 'result)  <span class='arw'>&rarr;</span> nil
 result  
-<span class='arw'>&rarr;</span> "ERR: invalid function in function catch : (func 3 4)"
+<span class='arw'>&rarr;</span> <span class='err'>"ERR: invalid function in function catch : (func 3 4)"</span>
 
 (constant 'func +)          <span class='arw'>&rarr;</span> + &lt;4068A6&gt;
 (catch (func 3 4) 'result)  <span class='arw'>&rarr;</span> true
@@ -10071,7 +10076,7 @@ result                      <span class='arw'>&rarr;</span> 7
 
 <pre>
 (catch (dotimes (x 100) 
-  (if (= x 50) (throw "fin")) 'result)  <span class='arw'>&rarr;</span> true
+  (if (= x 50) (throw "fin"))) 'result)  <span class='arw'>&rarr;</span> true
 
 result  <span class='arw'>&rarr;</span> "fin"
 </pre>
@@ -11848,12 +11853,14 @@ syntax: (define <em>sym-name</em> <em>exp</em>)</h4>
 <h4>syntax: (define-macro (<em>sym-name</em> [<em>sym-param-1</em> ... ]) <em>body</em>)<br/>
 syntax: (define-macro (<em>sym-name</em> [(<em>sym-param-1</em> <em>exp-default</em>) ... ]) <em>body</em>)</h4>
 
-<p>Functions defined using <tt>define-macro</tt> are called <i>fexpr</i>s
+<p>Functions defined using <tt>define-macro</tt> are called <i>fexpr</i>
 in other LISPs as they don't do variable expansion. In newLISP they are still
 called macros, because they are written with the same purpose of creating
 special syntax forms with non-standard evaluation patterns of arguments. 
 Functions created using <tt>define-macro</tt> can be combined with template 
 expansion using <a href="#expand">expand</a> or <a href="#letex">letex</a>.</p>
+
+<p>Since v.10.5.8, newLISP also as expansion macros using <a href="#macro">macro</a>.</p>
 
 <p>Defines the new fexpr <em>sym-name</em>, with optional arguments <em>sym-param-1</em>. 
 <tt>define-macro</tt> is equivalent to assigning a lambda-macro expression to a symbol. 
@@ -11981,6 +11988,9 @@ x                <span class='arw'>&rarr;</span> 123
 
 (define-macro (my-setq) (set (args 0) (eval (args 1))))
 </pre>
+
+<p>See also the <a href="#macro">macro</a> expansion function not
+susceptible to variable capture.</p>
 
 <br/><br/>
 
@@ -17412,12 +17422,132 @@ See also the <a href="#upper-case">upper-case</a> and
 
 <br/><br/>
 
+<a name="macro"></a>
+<h2><span class="function">macro</span></h2>
+<h4>syntax: (macro (<em>sym-name</em> [<em>sym-param-1</em> ... ]) [<em>body-1</em> ... ])</h4>
+
+<p>The <tt>macro</tt> function is used to define expansion macros. The syntax 
+of <tt>macro</tt> is identical to the syntax of <a href="#define">define-macro</a>.
+But while <tt>define-macro</tt> defines are <em>fexprs</em> functions to be evaluated 
+at run-time, <tt>macro</tt> defines a function to be used during the source loading 
+and reading process to transform certain expression call patterns into different call 
+patterns.</p>
+
+<pre>
+(macro (double X) (+ X X)) <span class='arw'>&rarr;</span> (lambda-macro (X) (expand '(+ X X)))
+
+(double 123) <span class='arw'>&rarr;</span> 246
+</pre>
+
+<p>Internally all <tt>macro</tt> defined symbol call patterns are translated using
+the <a href="#expand">expand</a> expression during source reading. This can be shown using
+the <a href="#read-expr">read-expr</a> function:</p>
+
+<pre>
+(read-expr "(double 123)") <span class='arw'>&rarr;</span> (+ 123 123)
+</pre>
+
+<p>All variable names to be expanded must start in upper-case. Macros can be nested containing 
+other macros defined earlier. But <tt>macro</tt> definitions cannot be repeated for the same 
+symbol during the same newLISP session. To redefine a macro, e.g. for reading source with a 
+different definition of an exisiting <tt>macro</tt> definition, use the 
+<a href="#define">define</a> function in the following way:</p>
+
+<pre>
+; change existing macro 'double' to allow floating point parameters
+; use upper-case for variables for expansion
+
+(define double (lambda-macro (X) (expand '(add X X))))
+<span class='arw'>&rarr;</span> (lambda-macro (X) (expand '(add X X)))
+
+(double 1.23) <span class='arw'>&rarr;</span> 2.46
+</pre>
+
+<p>Note, that <a href="#define">define</a> can be used only to re-define macros, not
+to create new macros. Internally newLISP knows that <tt>macro</tt> defined symbols
+are executed during source reading, not evaluation.</p>
+
+<h3>Using <tt>map</tt> and <tt>apply</tt> with <tt>macro</tt></h3>
+
+<p>When mapping macros using <a href="#map">map</a> or <a href="#apply">apply</a>
+the expansion function is mapped:</p>
+
+<pre>
+<b>&gt;</b> (macro (double X) (+ X X))
+<b>(lambda-macro (X) (expand '(+ X X)))</b>
+
+<b>&gt;</b> (map double '(1 2 3 4 5))
+<b>((+ 1 1) (+ 2 2) (+ 3 3) (+ 4 4) (+ 5 5))
+
+&gt;</b> (map eval (map double '(1 2 3 4 5)))
+<b>(2 4 6 8 10)</b>
+
+<b>&gt;</b> (apply double '(10))
+<b>(+ 10 10)
+&gt;</b>
+</pre>
+<p>This is useful to find out how the expansion mechanism of our <tt>macro</tt>
+definition works during source load time.</p>
+
+<h3>Differences between <tt>macro</tt> and <tt>define-macro</tt> and potential problems.</h3>
+
+<p><tt>macro</tt> definitions are not susceptible to <em>variable capture</em> as 
+are fexprs made with <a href="define-macro">define-macro</a>:</p>
+
+<pre>
+(define-macro (fexpr-add A B) 
+    (+ (eval A) (eval B)))
+
+(macro (mac-add A B) 
+    (+ A B))
+
+(set 'A 11 'B 22)
+
+; variable capture when using the same symbols 
+; used as locals in define-macro for callling
+
+(fexpr-add A B) <span class='arw'>&rarr;</span>
+; or
+(fexpr-add B A) <span class='arw'>&rarr;</span>
+<span class="err">ERR: value expected : A
+called from user defined function fexpr-add</span>
+
+; no variable capture when doing the same with 
+; expansion macros
+
+(mac-add A B) <span class='arw'>&rarr;</span> 33
+
+(mac-add B A) <span class='arw'>&rarr;</span> 33
+</pre>
+
+<p>But expansion macros using <tt>macro</tt> are susceptible to unwanted double
+evaluation, just like <tt>define-macro is</tt>:</p>
+
+<pre>
+(define-macro (fexpr-double X) 
+    (+ (eval X) (eval X)))
+
+(macro (mac-double X) 
+    (+ X X))
+
+(set 'a 10)
+(fexpr-double (inc a)) <span class='arw'>&rarr;</span> 23 ; not 22 as expected
+
+(set 'a 10)
+(mac-double (inc a)) <span class='arw'>&rarr;</span> 23 ; not 22 as expected
+</pre>
+
+<p>In both cases the incoming expression <tt>(inc a)</tt> gets evaulated twice.
+This must be considered when writing both, <tt>macro</tt> or <tt>define-macro</tt>
+expressions and symbols occur more than once in the body of the definition.</p> 
+
+<br/><br/>
+
 <a name="macrop"></a>
 <h2><span class="function">macro?</span></h2>
 <h4>syntax: (macro? <em>exp</em>)</h4>
 
-<p>
-returns <tt>true</tt> if <em>exp</em> evaluates 
+<p>Returns <tt>true</tt> if <em>exp</em> evaluates 
 to a lambda-macro expression; 
 otherwise, <tt>nil</tt> is returned.
 </p>
@@ -17428,6 +17558,10 @@ otherwise, <tt>nil</tt> is returned.
 (define-macro (mysetq lv rv) (set lv (eval rv)))
 
 (macro? mysetq)  <span class='arw'>&rarr;</span> true
+
+(macro (my-setq Lv Rv) (set 'Lv Rv))
+
+(macro? my-setq) <span class='arw'>&rarr;</span> true
 </pre>
 
 <br/><br/>
@@ -22571,66 +22705,13 @@ $reader-event
 <p>The expression intercepted passes through unchanged, but output
 is enhanced.</p>
 
-
-<p>The following example shows the core of a simple macro rewrite pre-processor.
-A full version is installed in the standard location as module file <tt>macro.lsp</tt>.
-</p>
-
-
-<!-- example -->
-<pre>
-(context 'macro)
-
-; initialize macro list
-(setf macro-list '())
-
-; registers a macro
-(define-macro (macro:macro callp body)
-    (push (list (first callp) '*) macro-list -1)
-    (eval (expand '(define-macro callp (expand 'body)) 'callp 'body))
-)
-
-; the event handler translating expressions
-(define (rewrite expr)
-    (if (list? expr)
-        (dolist (pattern macro-list)
-            (if (match pattern expr)
-                (setf expr (eval expr))
-                (set-ref-all pattern expr (eval $it) match)) )
-    )
-    expr
-)
-
-; register event handler
-(reader-event rewrite)
-
-(context MAIN)
-</pre>
-
 <p>The reader event function will be called after each reading of an s-expression
 by the <a href="#load">load</a> or <a href="#eval-string">eval-string</a> function.</p>
 
-<p>Register a function macro for pre-processing:</p>
-
-<!-- example -->
-
-<pre>
-(macro (square X) (pow X 2)) ; must use uppercase vars
-
-; use the macro
-(square 3) <span class='arw'>&rarr;</span> 9
-</pre>
-
-<p>After registering the macro <tt>square</tt> newLISP will expand each
-occurrence of a <tt>(square ...)</tt> to a <tt>(pow ... 2)</tt> expression.</p>
-
-<p>Note, that variables in the macro definition must be upper-case. The macro 
-registering function uses a syntax form of <tt>expand</tt> working only on 
-upper-case variables.
-</p>
-
-<p>For a more detailed description see the documentation for <tt>macro.lsp</tt>.
-</p>
+<p>In versions previous to 10.5.8 <tt>reader-event</tt> was used to define a 
+<tt>macro</tt> expansion function in the module file <tt>macro.lsp</tt>. Starting 
+version 10.5.8, newLISP has <a href="#macro">macro</a> as a built-in function 
+behaving the same, but much faster when loading files and reading source.</p>
 
 <br/><br/>
 

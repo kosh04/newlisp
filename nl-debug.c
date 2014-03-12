@@ -190,7 +190,7 @@ if(pCell->type == CELL_CONTEXT)
     pCell = (CELL *)currentFunc->contents;
     }
 
-if((pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
+if((pCell->type == CELL_LAMBDA || pCell->type == CELL_FEXPR)
     && args->type == CELL_SYMBOL)
     {
     if(debugStackIdx == 0) /* startup */
@@ -224,7 +224,7 @@ if(traceFlag & TRACE_DEBUG_NEXT)
         }
     }
 
-if( (pCell->type == CELL_LAMBDA || pCell->type == CELL_MACRO)
+if( (pCell->type == CELL_LAMBDA || pCell->type == CELL_FEXPR)
         && args->type == CELL_SYMBOL)
     {
     if((UINT)recursionCount == *(debugStack + debugStackIdx - 2) )

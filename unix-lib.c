@@ -28,19 +28,26 @@ extern int evalSilent;
 extern int opsys;
 extern SYMBOL * mainArgsSymbol;
 extern char linkOffset[];
+extern FILE * IOchannel;
 
 int libInitialized = 0;
 
 #ifdef MAC_OSX
+#ifdef EMCSRIPTEN
+#define LIBNAME "newlisp-js-lib.js"
+#else
 #define LIBNAME "newlisp.dylib"
+#endif
 #else
 #define LIBNAME "newlisp.so"
 #endif
 
 void initializeMain(void)
 {
+#ifndef EMSCRIPTEN
 char name[MAX_LINE];
 char * initFile;
+#endif
 
 opsys += 64;
 
@@ -58,13 +65,20 @@ initFFI();
 #endif
 
 bigEndian = (*((char *)&bigEndian) == 0);
+
+
 initLocale();
 initStacks();
 initialize();
 mainArgsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)stuffString(LIBNAME));
 /* setupAllSignals(); taken out for LIBRARY in 10.5.7 */
-initDefaultInAddr(); 
 sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
+
+
+#ifdef EMSCRIPTEN
+IOchannel = stdin;
+#else
+initDefaultInAddr(); 
 
 initFile = getenv("NEWLISPLIB_INIT");
 if(initFile)
@@ -73,13 +87,14 @@ if(initFile)
     name[MAX_LINE - 1] = 0;
     loadFile(name, 0, 0, mainContext);
     }
+#endif
 
 libInitialized = 1;
 reset();
 }
 
 extern STREAM errorStream;
-STREAM libStrStream = {0, NULL, NULL, 0, 0};
+STREAM libStrStream = {NULL, NULL, 0, 0, 0};
 
 /* ---- imported and called from a client using newlisp.so ---- */
 
@@ -100,7 +115,7 @@ if(setjmp(errorJump))
         return(libStrStream.buffer);
         }
     else
-    return(errorStream.buffer);
+        return(errorStream.buffer);
     }
 
 openStrStream(&libStrStream, MAX_STRING, 1);
@@ -111,8 +126,9 @@ if(evalSilent) evalSilent = 0;
 return(libStrStream.buffer);
 }
 
-
-
+#ifdef EMSCRIPTEN
+/* for callbacks 'eval-string-js' is used see p_evalStringJS in newlisp.c */
+#else
 /* callbacks from newlisp library into caller 
 
 currently only tested with newLISP as caller:
@@ -154,5 +170,5 @@ pCell->aux = (UINT)symbol->name;
 
 return(funcAddr);
 }
-
+#endif
 /* eof */

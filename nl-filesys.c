@@ -611,7 +611,12 @@ return(stuffInteger(paramPosition));
 
 char * readStreamLine(STREAM * stream, FILE * inStream)
 {
+#ifdef OLD_READ_STREAM /* pre 10.5.8 */
 int chr;
+#else
+char buff[MAX_STRING];
+size_t l;
+#endif
 
 openStrStream(stream, MAX_STRING, 1);
 
@@ -619,6 +624,7 @@ openStrStream(stream, MAX_STRING, 1);
 do {
 errno = 0;
 #endif
+#ifdef TRUE64 /* pre 10.5.8 also all other OS */
 while((chr = fgetc(inStream)) != EOF)
     {
     if(chr == '\n') break;
@@ -629,12 +635,34 @@ while((chr = fgetc(inStream)) != EOF)
         }
     writeStreamChar(stream, chr);
     }
+#else
+while(fgets(buff, MAX_STRING, inStream) != NULL)
+    {
+    l=strlen(buff);
+    if(buff[l-1] == 0x0A)
+        {
+        buff[--l] = 0;
+        if(buff[l-1] == 0x0D)
+            buff[--l] = 0;
+        writeStreamStr(stream, buff, l);
+        break;
+        }
+    writeStreamStr(stream, buff, l);
+    }
+#endif /* pre 10.5.8 also all other OS */
 #ifdef TRU64
 } while (errno == EINTR);
 #endif
 
-if(feof(inStream)) clearerr(inStream);
+#ifdef TRU64 /* and pre 10.5.8 on all other OS */
 if(chr == EOF && stream->position == 0) return(NULL);
+#else
+if(feof(inStream)) 
+    {
+    clearerr(inStream);
+    if(stream->position == 0) return(NULL);
+    }
+#endif
 return(stream->buffer);
 }
 
@@ -661,8 +689,8 @@ if(fstream != NULL)
     return(stuffString(line));
     }
 
-/* do raw handle input only happens when using read-line on sockets on UNIX
-   and pipes on Windows  */
+/* do raw handle input, only happens when using read-line on 
+   sockets on UNIX and pipes on Windows  */
 openStrStream(&readLineStream, MAX_STRING, 1);
 while(TRUE)
     {
