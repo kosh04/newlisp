@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 #
 # xmlrpc.cgi - CGI script to handle XML-RPC requests
 #

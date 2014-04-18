@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp 
+#!/usr/bin/env newlisp 
 # OpenGL and GLUT demo - opengl-demo-ffi.lsp
 # Using extended import and callback API based on libffi
 # tested on Win32 and OS X 32/64-bit (Intel) minimum version newLISP 10.3.10

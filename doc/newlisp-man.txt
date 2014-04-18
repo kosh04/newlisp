@@ -168,5 +168,5 @@ AUTHOR
 
 
 
-version 10.5.0                     May 2013                         newlisp(1)
+version 10.6.0                    April 2014                        newlisp(1)
 

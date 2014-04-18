@@ -1,5 +1,27 @@
 #!/usr/bin/newlisp
 
+;
+; qa-bench - benchmarks most non-I/O functions
+;
+
+; USAGE
+; =====
+; from the newlisp-x.x.x/ directory:
+;
+; Run all benchmakrs and output one number comparing to the
+; calibaration platform:
+;       ./newlisp /qa-specific-tests/qa-bench
+;
+; Calibrate for a specific platform:
+;       ./newlisp /qa-specific-tests/qa-bench calibrate
+; ... this generates a file primes.lsp in the current directory
+; the contents replaces the (set 'QA:primes ...) statement in qa-bench
+;
+; Report inividual results for each primitive tested:
+;       ./newlisp /qa-specific-tests/qa-bench report
+; ... on the calibration platform is will output apprxomately 10 ms
+; for each function.
+
 (unless xml-parse
     (println ">>>>> qa-bench needs needs XML support compiled")
     (exit)
@@ -337,31 +359,26 @@
   (| 30089) 
   (~ 2820)))
 
-;; run all test-xxx functions the number of times it would take to pass
+;; run each test function once and collect errors
 (define (qa)
     (dolist (sm primes)
         (set 'func (eval (sym (append "test-" (string (first sm))))))
         (unless (apply func) (push (sm 0) errors))
-        (if report-flag 
-            (println (format "%-14s" (string (first sm)) ))
-        )
-    )   
+    )
 )
 
-(define (bench)
-    (set 'total-time 0);
+;; run all test-xxx functions the number of times it would take to pass
+;; 10 ms on the calibration platform
+(define (bench (total-time 0))
     (dolist (sm primes)
-        (if (and 
+        (when (and 
               (set 'func (eval (sym (append "test-" (string (first sm))))))
               (set 'result (time (apply func) (mul (last sm) multiplier))))
-            (if report-flag
-                (begin
-                    (println (format "%-14s %5.1f ms" 
-                             (string (first sm)) result))
-                    (inc total-time result))
-                (inc total-time result))
-        )
+            (inc total-time result))
+        (when report-flag 
+            (println (format "%-14s %5.1f ms" (string (first sm)) result)))
     )   
+    total-time
 )
 
 
@@ -2705,34 +2722,34 @@
 (println)
 (set 'report-flag nil)
 (set 'errors '())
-(set 'start (time-of-day))
-(qa)
+(set 'result (time (qa)))
 (if errors
     (dolist (f errors) (println "->" f))
-    (println "All non I/O functions performed SUCCESSFUL in " (- (time-of-day) start) " ms")
+    (println (length primes) " non I/O functions performed SUCCESSFUL in " result  " ms")
 )
 
 
 ;; benchmark
 (println)
 (println ">>>>> Benchmarking all non I/O primitives ... (may take a while)")
-(set 'report-flag Emscripten)
-(set 'total-time 0)
+(set 'report-flag (or Emscripten (find "report" (main-args))))
 (if Emscripten
     (set 'multiplier 0.2 'adjust  1.22)
     (set 'multiplier 1 'adjust  1.02)
 )
 
-(bench)
+(set 'total-time (bench))
 
 (println ">>>>> total time: " total-time)
 (inc total-time (mul 0.5 (length primes)))
-(println (format ">>>>> Performance ratio:%5.2f (1.0 on MacOSX 10.9, 2.3GHz Intel Core i5, newLISP v10.5.7-64-bit)"
+(println (format 
+">>>>> Performance ratio:%5.2f (1.0 on MacOSX 10.9, 2.3GHz Intel Core i5, newLISP v10.6.0-64-bit)"
     (round (div (div total-time adjust) (mul 10 (length primes)) multiplier) -2)))
 
 (context 'MAIN)
 (sys-info)
-(exit)
+; don't exit when  running Emscrypten
+(if (zero? (& (sys-info -1) 0x800)) (exit))
 ;; eof
 
 

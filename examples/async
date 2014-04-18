@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; demo use spawn and sync for
 ; aysnchronous HTTP get-url requests

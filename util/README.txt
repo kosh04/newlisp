@@ -14,7 +14,6 @@ newlispdoc.css .................... style sheet for doc generatoor
 nls ............................... combination newLISP and OS shell
 org.newlisp.newlisp.plist ......... launchd file for OSX
 package.jsn ....................... used for some package maker
-preparepdf ........................ prepare manual for PDF print
 standard.lsp ...................... used with newlispdoc to generate and index entry
 syntax.cgi ........................ generate an syntax hightlighted HTML file from newLISP source
 types.c ........................... check out C-type sizes and behavior an OS platform

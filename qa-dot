@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 (set 'start-of-qa (time-of-day))
 ;;
 ;; General test suite testing functioning of all built in primitives.
@@ -722,8 +722,8 @@ true
 (define (test-current-line , handle)
   (and
     (set 'handle (open "qa-dot" "r"))
-    (= (read-line handle) "#!/usr/bin/newlisp") 
-    (= (current-line) "#!/usr/bin/newlisp") 
+    (= (read-line handle) "#!/usr/bin/env newlisp") 
+    (= (current-line) "#!/usr/bin/env newlisp") 
     (close handle)))
 
 (define (test-curry)
@@ -1411,7 +1411,7 @@ true
 
 (define (test-get-url )
   (and
-    (starts-with (get-url "file://qa-dot") "#!/usr/bin/newlisp")
+    (starts-with (get-url "file://qa-dot") "#!/usr/bin/env newlisp")
     (= "ERR: HTTP bad formed URL" (get-url ""))
 ))
 
@@ -2488,7 +2488,7 @@ true
 
 (define (test-read-file )
   (read-file "qa-dot")
-  (starts-with (read-file "file://qa-dot") "#!/usr/bin/newlisp")
+  (starts-with (read-file "file://qa-dot") "#!/usr/bin/env newlisp")
 )
 
 (define (test-read-key) true)

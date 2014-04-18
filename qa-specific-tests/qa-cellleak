@@ -18,19 +18,19 @@ In this case try running again or test on a less busy, faster system.
 (set 'do-not-exit true) ; avoids exit
 (set 'testing-cell-leaks true) ; avoids output to the console
 
-(println "loading and runnig qa-dot 1")
+(println "loading and running qa-dot 1")
 (silent (load "qa-dot"))
 
 (set 'before (sys-info 0)) ; do not delete
 (set 'after (sys-info 0))  ; adjusting cellcount
 
-(println "loading and runnig qa-dot 2")
+(println "loading and running qa-dot 2")
 (silent (load "qa-dot"))
 
 (println (sys-info))
 (set 'before (sys-info 0))
 
-(println "loading and runnig qa-dot 3")
+(println "loading and running qa-dot 3")
 (silent (load "qa-dot"))
 
 (println (sys-info))

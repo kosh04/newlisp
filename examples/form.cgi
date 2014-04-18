@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 #
 # Demo of CGI 1.1 interface 
 #

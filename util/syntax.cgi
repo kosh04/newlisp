@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 # - syntax.cgi - this utility formats a newLISP source file as an HTML 
 # file with syntax highlighting

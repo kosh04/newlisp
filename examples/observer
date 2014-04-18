@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 (define (count-down-proc x channel)
   (while (!= x 0)

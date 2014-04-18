@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.5.8 Manual and Reference</title>
+   <title>newLISP v.10.6.0 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,7 +148,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.5.8</h2>
+<h2>User Manual and Reference v.10.6.0</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -12208,24 +12208,31 @@ specified, <tt>nil</tt> is returned.</p>
 
 <a name="device"></a>
 <h2><span class="function">device</span></h2>
-<h4>syntax: (device [<em>int-handle</em>])</h4>
+<h4>syntax: (device [<em>int-io-handle</em>])</h4>
 
-<p><em>int-handle</em> is an I/O device number, which is set to 0 (zero)
+<p><em>int-io-handle</em> is an I/O device number, which is set to 0 (zero)
 for the default STD I/O pair of handles, 0 for <i>stdin</i> and 1
-for <i>stdout</i>. <em>int-handle</em> may also be a file handle 
+for <i>stdout</i>. <em>int-io-handle</em> may also be a file handle 
 previously obtained using <a href="#open">open</a>. In this case
 both, input and output are channeled through this handle.
 When no argument is supplied, the current I/O device number is returned. 
 </p>
 
 <p>The I/O channel specified by <tt>device</tt> is used internally 
-by the functions <a href="#print">print</a> and <a href="#read-line">read-line</a>. 
+by the functions <a href="#print">print</a>, <a href="#println">println</a>,
+<a href="#write">write</a>, <a href="#write-line">write-line</a> and
+<a href="#read-char">read-char</a>, <a href="#read-line">read-line</a>. 
 When the current I/O device is 0 or 1, <a href="#print">print</a> 
 sends output to the console window and <a href="#read-line">read-line</a> 
 accepts input from the keyboard. If the current I/O device has been set 
 by opening a file, then <a href="#print">print</a> and <a href="#read-line">read-line</a> 
 work on that file.</p>
 
+<p>Note, that on Unix like operating systems, stdin channel 0 can also be used
+for output and stdout channel 1 can also be used for reading input. This is
+not the case on Windows, where 0 is strictly for input and stdout 1 strictly
+for output.</p>
+ 
 <!-- example -->
 
 <pre>
@@ -12235,10 +12242,8 @@ work on that file.</p>
 </pre>
 
 
-<p>
-	Note that using <a href="#close">close</a> on <tt>device</tt> 
-	automatically resets <tt>device</tt> to 0 (zero).
-</p>
+<p>Note that using <a href="#close">close</a> on <tt>device</tt> 
+automatically resets <tt>device</tt> to 0 (zero).</p>
 
 <br/><br/>
 
@@ -17427,7 +17432,7 @@ See also the <a href="#upper-case">upper-case</a> and
 <h4>syntax: (macro (<em>sym-name</em> [<em>sym-param-1</em> ... ]) [<em>body-1</em> ... ])</h4>
 
 <p>The <tt>macro</tt> function is used to define expansion macros. The syntax 
-of <tt>macro</tt> is identical to the syntax of <a href="#define">define-macro</a>.
+of <tt>macro</tt> is identical to the syntax of <a href="#define-macro">define-macro</a>.
 But while <tt>define-macro</tt> defines are <em>fexprs</em> functions to be evaluated 
 at run-time, <tt>macro</tt> defines a function to be used during the source loading 
 and reading process to transform certain expression call patterns into different call 
@@ -19520,7 +19525,7 @@ IP number and remote port used. On failure it returns <tt>nil</tt>.</p>
 <!-- example -->
 
 <pre>
-;; listen on port 1001 on the default address
+;; bind port 1001 and the default address
 (net-listen 1001 "" "udp")  <span class='arw'>&rarr;</span> 1980 
 
 ;; optionally poll for arriving data with 100ms timeout
@@ -19535,14 +19540,17 @@ IP number and remote port used. On failure it returns <tt>nil</tt>.</p>
 </pre>
 
 
-<p>
-The second line in this example is optional. 
-Without it, the <tt>net-receive-from</tt> call 
-would block until data arrives. 
-A UDP server could be set up 
-by listening and polling several ports, 
-serving them as they receive data.
-</p>
+<p>The second line in this example is optional.  Without it, the 
+<tt>net-receive-from</tt> call would block until data arrives. 
+A UDP server could be set up by listening and polling several ports, 
+serving them as they receive data.</p>
+
+<p>Both, the sender and the receiver have to issue 
+<a href="#net-listen">net-listen</a> commands for UDP mode. Not for listening
+as in TCP/IP protocol communications, but to create the socket bound to
+the port and address. For a complete example see the files
+<tt>udp-server.lsp</tt> and <tt>udp-client.lsp</tt> in the 
+<tt>newlisp-x.x.x/examples/</tt> directory of the source distribution.</p>
 
 <p>
 Note that <tt>net-receive</tt> 
@@ -21381,13 +21389,13 @@ returns the current settings or the new settings when parameters are specified.
 <!-- example -->
 
 <pre>
-(pretty-print)  <span class='arw'>&rarr;</span> (80 " " "&#037;1.10g")  ; default setting
+(pretty-print)  <span class='arw'>&rarr;</span> (80 " " "&#037;1.15g")  ; default setting
 
 (pretty-print 90 "\t")  <span class='arw'>&rarr;</span> (90 "\t")
 
 (pretty-print 100)  <span class='arw'>&rarr;</span> (100 "\t") 
 
-(sin 1)    <span class='arw'>&rarr;</span> 0.8414709848
+(sin 1)    <span class='arw'>&rarr;</span> 0.841470984807897 
 (pretty-print 80 " " "&#37;1.3f")
 (sin 1)    <span class='arw'>&rarr;</span> 0.841
 
@@ -27981,16 +27989,19 @@ Use the <a href="#do-while">do-while</a> function to evaluate the condition
 <a name="write"></a>
 
 <h2><span class="function">write</span>&nbsp;<a href="#destructive">!</a></h2>
-<h4>syntax: (write <em>int-file</em> <em>str-buffer</em> [<em>int-size</em>])<br/>
+<h4>syntax: (write)<br/>
+syntax: (write <em>int-file</em> <em>str-buffer</em> [<em>int-size</em>])<br/>
 syntax: (write <em>str</em> <em>str-buffer</em> [<em>int-size</em>])</h4>
 
 
-<p>
-The function <tt>write</tt> writes <em>int-size</em> bytes 
+<p>In the second syntax <tt>write</tt> writes <em>int-size</em> bytes 
 from a buffer in <em>str-buffer</em> to a file specified in <em>int-file</em>, 
 previously obtained from a file <tt>open</tt> operation. If <em>int-size</em> 
 is not specified, all data in <em>sym-buffer</em> or <em>str-buffer</em> is written.
 <tt>write</tt> returns the number of bytes written or <tt>nil</tt> on failure.</p>
+
+<p>If all parameters are omitted, <tt>write</tt> writes the contents from the
+last <a href="#read-line">read-line</a> to standard out (STDOUT).</p>
 
 <p><tt>write</tt> is a shorter writing of <tt>write-buffer</tt>. The longer
 form still works but is deprecated and should be avoided in new code.</p>
@@ -28006,7 +28017,7 @@ form still works but is deprecated and should be avoided in new code.</p>
 <p>The code in the example writes 100 bytes to the file <tt>myfile.ext</tt> 
 from the contents in <tt>data</tt>.</p>
 
-<p>In the second syntax, <tt>write</tt> can be used for destructive
+<p>In the third syntax, <tt>write</tt> can be used for destructive
 string appending:</p>
 
 <pre>

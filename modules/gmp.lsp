@@ -153,6 +153,7 @@
     "/usr/local/lib/libgmp.dylib" ;Mac OSX
     "/usr/local/lib/libgmp.so.8.0" ; OpenBSD 4.6
     "/usr/lib/libgmp.so.3" ; Linux, BSDs
+    "/usr/lib64/libgmp.so"
     "/usr/local/lib/libgmp.so" ; Linux, BSDs
     "/WINDOWS/system32/libgmp-3.dll" ; Win32 DLL path on current drive
     "libgmp-3.dll" ; Win32 in path for current directory

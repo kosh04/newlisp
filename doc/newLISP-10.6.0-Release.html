@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title>newLISP  v.10.5.8 Release Notes </title>
+<title>newLISP  v.10.6.0 Release Notes </title>
 
 <style type="text/css" media="screen">
 
@@ -49,14 +49,12 @@ li {
 </head>
 
 <body>
-<h1>newLISP<font size=-1>&#174;</font> v.10.5.8 Development Release
-<font color="red" size="-1">2014-03-11</font></h1>
+<h1>newLISP<font size=-1>&#174;</font> v.10.6.0 Development Release
+<font color="red" size="-1">2014-04-08</font></h1>
 
-<p>This development adds <tt>macro</tt> as a native function and continues with 
-numerous small improvements in several areas.</p>
-
-<p>Additions, changes and bug fixes for versions 10.5.5, 10.5.6,
-10.5.7 and 10.5.8 are reported together.</p>
+<p>This stable release adds <tt>macro</tt> as a native function, fixes
+an old debugger highlighting problem and adds many other improvements 
+in several areas.</p>
 
 <h3>Additions and changes</h3>
 <ul>
@@ -121,7 +119,7 @@ is returned.</li>
 
 <li>newLISP can now be compiled to JavaScript and run in a web browser. The compile
 is done using the <a href="https://github.com/kripken/emscripten">Emscripten</a>
-tool set. A complete package to run newLISP in a web browser will be released.</li>
+tool set. A complete package to run newLISP in a web browser is available.</li>
 
 <li>The <tt>macro</tt> function is now a built-in native primitive. The module 
 <tt>macro.lsp</tt>, which implemented <tt>macro</tt> using <tt>reader-event</tt>,
@@ -171,6 +169,9 @@ of <tt>nil</tt> when nothing is found and as described in the manual.</li>
 
 <li>Fixed a crash bug when the colon operator has missing or wrong-type args on
 64-bit compiles.</li>
+
+<li>A fix for <tt>directory?</tt> and <tt>file?</tt> when applied to root directories
+on Windows.</li>
 
 </ul> 
 

@@ -103,7 +103,7 @@ extern STREAM errorStream;
 extern UINT netErrorIdx;
 
 /* semaphore() function type */
-#ifdef SEMAPHORE
+#ifndef NO_SEMAPHORE
 #define SEM_CREATE 0
 #define SEM_STATUS 1
 #define SEM_SIGNAL 2
@@ -140,7 +140,7 @@ size_t len;
 
 len = strlen(fileName);
 slash = *(fileName + len - 1);
-if(slash == '\\' || slash == '/')
+if((slash == '\\' || slash == '/') && (!(len >= 2 && *(fileName + len - 2) == ':')))
     *(fileName + len - 1) = 0;
 
 #ifdef USE_WIN_UTF16PATH
@@ -180,7 +180,7 @@ size_t len;
 
 len = strlen(fileName);
 slash = *(fileName + len - 1);
-if(slash == '\\' || slash == '/')
+if((slash == '\\' || slash == '/') && (!(len >= 2 && *(fileName + len - 2) == ':')))
     *(fileName + len - 1) = 0;
 #endif
 
@@ -257,6 +257,11 @@ if(params != nilCell)
     getInteger(params, &handle);
 else 
     handle = printDevice;
+
+#ifdef WINDOWS
+/* make it work as on Unix */
+if(printDevice == 1 || printDevice == 2) handle = 0;
+#endif
 
 if(read((int)handle, &chr, 1) <= 0) return(nilCell);
 
@@ -679,6 +684,11 @@ if(params != nilCell)
     getInteger(params, &handle);
 else 
     handle = printDevice;
+
+#ifdef WINDOWSXXX
+/* make it work as on Unix */
+if(printDevice == 1 || printDevice == 2) handle = 0;
+#endif
 
 /* check if stream input can be done */
 fstream = (handle == 0) ? IOchannel : getIOstream(handle);
@@ -3210,6 +3220,9 @@ symbolCheck = sPtr;
 
 return sPtr;
 }
+
+
+/* eof */
 
 
 /* eof */

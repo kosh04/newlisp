@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp 
+#!/usr/bin/env newlisp 
 # OpenGL and GLUT demo - opengl-demo.lsp
 # using simple import and callback API
 # tested on Win32 and OS X (Intel) 32-bit only!

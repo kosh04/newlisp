@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; Retrieves a page with 20 links via Google containing 
 ; the search word, then spawns 20 child processes, each

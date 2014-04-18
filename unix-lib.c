@@ -64,6 +64,10 @@ opsys += 1024;
 initFFI();
 #endif
 
+#ifdef EMSCRIPTEN
+opsys += 2048;
+#endif
+
 bigEndian = (*((char *)&bigEndian) == 0);
 
 

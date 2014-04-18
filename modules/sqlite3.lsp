@@ -95,7 +95,7 @@
     "/usr/pkg/lib/libsqlite3.so" ; NetBSD
     "/usr/local/lib/libsqlite3.so.13.3" ; OpenBSD 4.6
     "/usr/lib/libsqlite3.0.dylib" ; Mac OSX Darwin
-    "/usr/lib64/libsqlite3.so" ; for 64Bit CentOS 6 Linux
+    "/usr/lib64/libsqlite3.so" ; for 64Bit Fedora CentOS 6 Linux
     "/usr/lib/x86_64-linux-gnu/libsqlite3.so" ; for UBUNTU 64-bit
     "/usr/lib/x86_64-linux-gnu/libsqlite3.so.0"
     "/usr/lib/i386-linux-gnu/libsqlite3.so" ; for UBUNTU 32-bit

@@ -100,7 +100,7 @@
     "/usr/local/lib/libmysqlclient.so.20.0" ; OpenBSD 4.9
     "/usr/lib/libmysqlclient.so" ; Linux, UNIX
     "/usr/lib/mysql/libmysqlclient.so" ; Linux Fedora
-    "/usr/lib64/mysql/libmysqlclient.so" ; Linux CentOS 6.x
+    "/usr/lib64/mysql/libmysqlclient.so" ; Linux Fedora CentOS 6.x
     "/usr/lib/x86_64-linux-gnu/libmysqlclient.so" ; Ubuntu 12.04 LTS
     "/usr/local/mysql/lib/libmysqlclient.so" ; Linux, UNIX
     "/usr/local/mysql/lib/libmysqlclient.dylib" ; MacOS X

@@ -6851,5 +6851,11 @@ Dec 6, 2009
    Another speed improvement for 'read-line' on file handles (the first speed
    improvement happend in 10.3.10).
 
+10.6.0
    Eliminated emscripten-lib.c, gets handled by unix-lib.c.
+
+   A fix for 'file?' and 'directory?' predicates when applied to root 
+   directories on Windows.
+
+   Updated examples/udp-server.lsp to nmake it work on Windows.
 

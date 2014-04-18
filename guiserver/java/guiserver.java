@@ -45,7 +45,7 @@ public class guiserver extends gsObject
 	static boolean connected = false;
 	static SplashWindow splash = null;
 	static Frame frame = null;
-	static double version = 1.62;
+	static double version = 1.63;
 
     public static void main (String args[]) throws IOException, InterruptedException 
 		{

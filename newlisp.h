@@ -38,7 +38,7 @@
 #endif
 
 /* force ISO_C90 restrictions */
-#if defined(CYGWN) || defined(OS2) || defined(SOLARIS) || defined(AIX)
+#if defined(CYGWN) || defined(OS2) || defined(SOLARIS) || defined(AIX) || defined(SUNOS)
 #define ISO_C90
 #endif
 
@@ -46,8 +46,8 @@
 #define OSTYPE "Linux"
 #endif
 
-#ifndef ANDROID
-#define SEMAPHORE 
+#ifdef ANDROID
+#define NO_SEMAPHORE 
 #endif
 
 #ifdef _BSD

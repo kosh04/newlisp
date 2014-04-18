@@ -47,7 +47,7 @@
               "/usr/lib/x86_64-linux-gnu/libcrypto.so" ; Ubuntu 12.04 LTS
               "/usr/lib/i386-linux-gnu/libcrypto.so"; Ubuntu 12.04
               "/lib/i386-linux-gnu/libcrypto.so.1.0.0" ; UBUNTU Linux 13.04
-              "/usr/lib64/libcrypto.so" ; CentOS 6.x
+              "/usr/lib64/libcrypto.so" ; Fedora, CentOS 6.x
               "/usr/lib/libcrypto.so"
               "/usr/lib/libcrypto.so.4"
               "/usr/lib/libcrypto.so.18.0" ; OpenBSD 4.6

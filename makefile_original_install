@@ -1,6 +1,6 @@
 #
 
-VERSION=10.5.8
+VERSION=10.6.0
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,

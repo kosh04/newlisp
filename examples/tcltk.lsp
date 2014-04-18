@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/nev newlisp
 ;
 ; demo how to write Tcl/Tk GUIs controlled from newLISP
 ;

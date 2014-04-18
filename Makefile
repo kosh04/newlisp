@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.5.8
-INT_VERSION = 10508
+VERSION = 10.6.0
+INT_VERSION = 10600
 
 default: makefile_build
 	make -f makefile_build
@@ -255,7 +255,7 @@ dist: clean
 	mv newlisp-$(VERSION).tgz ..
 
 
-# this makes a Android source pacage for compilation using the Android NDK
+# this makes a Android source package for compilation using the Android NDK
 # may want to change APP_PLATFORM spec to something different
 android_dist_utf8:
 	-mkdir newlisp-ndk-utf8-$(VERSION)

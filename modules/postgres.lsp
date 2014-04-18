@@ -97,6 +97,7 @@
 (set 'files '(
 	"/usr/local/lib/libpq.so.5.1" ; OpenBSD 4.6
 	"/usr/lib/libpq.so" ; CentOS or other Linux
+    "/usr/lib64/libpq.so" ; Linux 64bit
 	"/usr/lib/libpq.so.5.1" ; Debian
 	"/usr/local/pgsql/lib/libpq.dylib" ; Mac OS X
 	"c:/Program Files/PostgreSQL/8.3/bin/libpq.dll" ; Win32
