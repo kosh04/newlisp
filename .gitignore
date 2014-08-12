@@ -1,12 +1,30 @@
+# backup
 *.bak
 *~
+
+# executable
 *.exe
 *.dll
 *.o
+*.so
+*.dylib
 newlisp
+
+# test files
 qa-junk.txt
 \#*\#
 /modules/SQLITE3-TEST
 /modules/test.gz
 ._*
+
+# guiserver
+*.class
+
+# NetBeans
+.cproject
+.project
+nbproject
+
+# misc
+TAGS
 XTAGS
