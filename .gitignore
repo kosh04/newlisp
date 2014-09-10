@@ -1,6 +1,7 @@
 # backup
 *.bak
 *~
+*.tmp
 
 # executable
 *.exe
@@ -20,6 +21,9 @@ qa-junk.txt
 # guiserver
 *.class
 
+# eclipse
+.settings
+
 # NetBeans
 .cproject
 .project
@@ -28,3 +32,4 @@ nbproject
 # misc
 TAGS
 XTAGS
+*.stackdump
