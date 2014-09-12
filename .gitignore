@@ -12,6 +12,8 @@
 newlisp
 
 # test files
+junk
+junk2
 qa-junk.txt
 \#*\#
 /modules/SQLITE3-TEST
