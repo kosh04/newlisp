@@ -32,7 +32,13 @@
 #include <readline/readline.h>
 /* take following line out on Slackware Linux */
 #include <readline/history.h>
+
+#ifndef MAC_OSX /* needed for UBUNTU 14.04 */
+typedef char **CPPFunction ();
+typedef char *CPFunction ();
 #endif
+
+#endif /* end READLINE */
 
 #ifdef SUPPORT_UTF8
 #include <wctype.h>
@@ -101,26 +107,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10600;
+int version = 10601;
 
 char copyright[]=
-"\nnewLISP v.10.6.0 Copyright (c) 2014 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.6.1 Copyright (c) 2014 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.0 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.1 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.0 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.1 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.0 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.1 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.0 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.1 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -1578,7 +1584,6 @@ switch(cell->type)
             break;
             }
 #endif
-
         /* implicit indexing or resting for list, array or string i
         */
         if(args->next != nilCell)
@@ -3035,7 +3040,7 @@ char * errorMessage[] =
     "matrix expected",              /* 30 */ 
     "wrong dimensions",             /* 31 */
     "matrix is singular",           /* 32 */
-    "syntax in regular expression", /* 33 */
+    "invalid option",               /* 33 */
     "throw without catch",          /* 34 */
     "problem loading library",      /* 35 */
     "import function not found",    /* 36 */
@@ -4969,6 +4974,7 @@ if(params->next == nilCell)
     return(errorProc(ERR_MISSING_ARGUMENT));
         
 cell = evaluateExpression(params);
+
 if(cell == nilCell || cell == trueCell)
     errorProcExt(ERR_IS_NOT_REFERENCED, cell);
             
@@ -4985,6 +4991,7 @@ itSymbol->contents = (UINT)nilCell;
     
 params = params->next; 
 params = params->next; 
+
 
 if(stringRef && indexRefPtr)
     {
@@ -6064,9 +6071,18 @@ pushResultFlag = FALSE;
 return(cell);
 }
 
+extern UINT getAddress(CELL * params);
+
 CELL * p_copy(CELL * params)
 {
 CELL * copy;
+
+/* experimental: copy a cell from address, from:
+   http://www.newlispfanclub.alh.net/forum/viewtopic.php?f=5&t=4548
+   June 14, 2014 "get-cell function patch"
+*/
+if(params->next != nilCell && getFlag(params->next))
+    return(copyCell((CELL *)getAddress(params)));
 
 copy = copyCell(evaluateExpression(params));
 symbolCheck = NULL;
@@ -6792,7 +6808,22 @@ CELL * p_isLambda(CELL * params)
     { return(isType(params, CELL_LAMBDA)); }
 
 CELL * p_isMacro(CELL * params)
-    { return(isType(params, CELL_FEXPR)); }
+{ 
+SYMBOL * sPtr;
+
+if(params == nilCell)
+    return(errorProc(ERR_MISSING_ARGUMENT));
+params = evaluateExpression(params);
+if(params->type == CELL_FEXPR) /* lambda-macro */
+    return(trueCell);
+if(params->type == CELL_SYMBOL)
+    {
+    sPtr = (SYMBOL *)params->contents;
+    if(sPtr->flags & SYMBOL_MACRO)
+        return(trueCell);
+    }
+return(nilCell);
+}
 
 CELL * p_isArray(CELL * params)
     { return(isType(params, CELL_ARRAY)); }

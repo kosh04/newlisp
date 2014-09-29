@@ -111,7 +111,7 @@
 (if (and
 		(= (struct 'clock "char" "int" "short int") 'clock)
 		(= (struct 'foo "char" "int" "short int") 'foo)
-		(= (unpack clock (pack clock 1 2 3)) '(1 2 3))
+		(= (unpack foo (pack clock 1 2 3)) '(1 2 3))
 		(import "./ffitest.dylib" "addClock" "clock" "clock")
 		(= (addClock (pack clock 1 2 3)) '(2 3 4)) )
 	(println ">>>>> struct tested SUCCESSFUL")

@@ -166,6 +166,8 @@ switch(params->type)
             length = params->aux - 1;
         else if(isList(params->type))
             length = listlen((CELL *)params->contents);
+        else if(params->type == CELL_ARRAY)
+            length = (params->aux -1) / sizeof(UINT);
         break;
     case CELL_SYMBOL:
         symbol = (SYMBOL *)params->contents;
@@ -405,11 +407,9 @@ else if(list->type == CELL_ARRAY)
 else if(list->type == CELL_STRING)
     {
     list = implicitIndexString(list, params);
-    if((symbolCheck = symbolRef))
-        {
-        pushResult(list);
-        pushResultFlag = FALSE;
-        }
+    symbolCheck = symbolRef;
+    pushResult(list);
+    pushResultFlag = FALSE;
     return(list);
     }
         
@@ -1055,7 +1055,8 @@ if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
         if(offset > size) offset = size;
         params = evaluateExpression(params);
         if(!isNil(params))
-            getIntegerExt(params, (UINT *)&options, FALSE);
+            /* 10.6.1 also accept string for options */
+            parseRegexOptions(params, (UINT *)&options, FALSE);
         }
 
     if(options == -1)
@@ -1077,9 +1078,12 @@ else
     else funcCell = NULL;
 
     /* do regex when first arg is string and option# is present */
-    if(funcCell && isNumber(funcCell->type) && keyCell->type == CELL_STRING)
+    if(funcCell && 
+        (isNumber(funcCell->type) || funcCell->type == CELL_STRING) &&
+        keyCell->type == CELL_STRING)
         {
-        getIntegerExt(funcCell, (UINT*)&options, FALSE);
+        /* 10.6.1 also accept string for options */
+        parseRegexOptions(funcCell, (UINT *)&options, FALSE);
         key = (char *)keyCell->contents;
         while(next != nilCell)
             {
@@ -1136,7 +1140,8 @@ int offset = 0;
 
 exprCell = params;
 if((params = params->next) != nilCell)
-    getInteger(params, (UINT *)&options);
+    /* 10.6.1 also accept string for options */
+    parseRegexOptions(params, (UINT *)&options, TRUE);
 
 resultIdxSave = resultStackIdx;
 countCell->contents = 0;
@@ -1214,11 +1219,6 @@ funcCell = evaluateExpression(exprCell->next);
 resultIdxSave = resultStackIdx;
 countCell->contents = 0;
 
-/* 10.4.7
-if(funcCell == nilCell && !isList(pattern->type))
-    return(errorProcExt(ERR_LIST_EXPECTED, pattern));
-*/
-  
 result = getCell(CELL_EXPRESSION);
 
 memcpy(errorJumpSave, errorJump, sizeof(jmp_buf));
@@ -1435,7 +1435,8 @@ else
 if(cell->next != nilCell)
     {
     cell = evaluateExpression(cell->next);
-    getIntegerExt(cell, (UINT*)&options, FALSE);
+    /* 10.6.1 also accept string for options */
+    parseRegexOptions(cell, (UINT *)&options, FALSE);
     }
 
 klen = strlen(key);
@@ -1599,7 +1600,8 @@ if(cell->type == CELL_STRING)
             
     options = -1;
     if(repCell->next != nilCell)
-            getInteger(repCell->next, (UINT*)&options);
+            /* 10.6.1 also accept string for options */
+            parseRegexOptions(repCell->next, (UINT *)&options, TRUE);
 
     newBuff = replaceString(keyStr, keyCell->aux - 1, 
                            buff, (size_t)cell->aux -1, repCell, &countCell->contents, options, &newLen);
@@ -1626,6 +1628,7 @@ CELL * cell;
 CELL * list;
 CELL * previous;
 CELL * last = NULL;
+char * str;
 size_t length, index;
 size_t count;
 
@@ -1641,16 +1644,14 @@ if(symbolCheck && isProtected(symbolCheck->flags))
 if(list->type == CELL_STRING)
     {   
     length = list->aux - 1;
-    if((count = adjustCount(count, length)) == 0) 
+    if((count = adjustCount(count, length)) != 0) 
         {
-        pushResultFlag = FALSE;
-        return(list);
+    	str = allocMemory(list->aux);  
+    	memcpy(str, (char *)(list->contents + length - count), count);
+    	memcpy(str + count, (char *)list->contents, length - count);
+    	memcpy((char*)list->contents, str, length);
+    	free(str);
         }
-    cell = copyCell(list);  
-    memcpy((char*)cell->contents, (char *)(list->contents + length - count), count);
-    memcpy((char*)(cell->contents + count), (char *)list->contents, length - count);
-    memcpy((char*)list->contents, (char*)cell->contents, length);
-    deleteList(cell);
     pushResultFlag = FALSE;
     return(list);
     }   

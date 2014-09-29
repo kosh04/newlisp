@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.6.0
-INT_VERSION = 10600
+VERSION = 10.6.1
+INT_VERSION = 10601
 
 default: makefile_build
 	make -f makefile_build
@@ -93,7 +93,7 @@ wings:
 dpkg:
 	make clean
 	cp makefile_original_install makefile_install
-	make -f makefile_linux_ffi
+	make -f makefile_linuxLP64_ffi
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease 1 --default
 	rm description-pak
@@ -102,7 +102,7 @@ dpkg:
 dpkg_utf8:
 	make clean
 	cp makefile_original_install makefile_install
-	make -f makefile_linux_utf8_ffi
+	make -f makefile_linuxLP64_utf8_ffi
 	cp util/description-pak .
 	sudo checkinstall --nodoc --maintainer "lutz@nuevatec.com" --pkgrelease utf8 --default
 	rm description-pak
@@ -189,7 +189,7 @@ checkall:
 	./newlisp qa-specific-tests/qa-foop
 	./newlisp qa-specific-tests/qa-local-domain
 	./newlisp qa-specific-tests/qa-inplace
-	./newlisp qa-specific-tests/qa-utf16path
+#	./newlisp qa-specific-tests/qa-utf16path
 	./newlisp qa-specific-tests/qa-pipefork
 	./newlisp qa-specific-tests/qa-libffi
 	./newlisp qa-specific-tests/qa-bigint 10000

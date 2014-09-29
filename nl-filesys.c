@@ -36,8 +36,10 @@
 #ifndef WINDOWS
 #include <sys/types.h>
 #ifndef ANDROID
+#ifndef EMSCRIPTEN
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#endif
 #endif
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -915,7 +917,8 @@ if(params != nilCell)
         {
         params = getString(params, &pattern);
         if(params != nilCell)
-            getInteger(params, &options);
+            /* 10.6.1 also accept string for options */
+            parseRegexOptions(params, (UINT *)&options, TRUE);
         }
     }
 else dirPath = ".";
@@ -2454,7 +2457,8 @@ struct tm * ltm;
 char * ct;
 char * fmt;
 ssize_t offset;
-time_t tme;
+/* time_t tme; 10.6.1. */
+UINT tme;
 size_t size;
 
 #ifdef SUPPORT_UTF8
@@ -2474,8 +2478,9 @@ if(params == nilCell)
     }
 else
     {
-    params = getInteger(params, (UINT *)&tme);
-    t = tme;
+    /* 10.6.1 */
+    params = getInteger(params, &tme);
+    t = (time_t)tme;
     
     if(params != nilCell)
         {
@@ -2524,10 +2529,13 @@ INT64 microSecTime(void)
 {
 struct timeval tv;
 struct tm * ttm;
+time_t sec;
 
 gettimeofday(&tv, NULL);
 
-ttm = localtime((time_t *)&tv.tv_sec);
+/* ttm = localtime((time_t *)&tv.tv_sec); 10.6.1 */
+sec = tv.tv_sec;
+ttm = localtime(&sec);
 
 return (ttm->tm_hour * 3600000000LL + 
        ttm->tm_min * 60000000LL + ttm->tm_sec * 1000000 + 
@@ -2650,9 +2658,10 @@ UINT isdst;
 TIME_ZONE_INFORMATION timeZone;
 #endif
 ssize_t offset = 0;
+time_t sec;
 CELL * cell;
 
-gettimeofday(&tv, NULL); /* get secs and microsecs */
+gettimeofday(&tv, NULL);
 
 if(params != nilCell)
     {
@@ -2681,7 +2690,9 @@ gmtoff = ltm->tm_gmtoff/60;
 GetTimeZoneInformation(&timeZone);
 #endif
 
-ttm = gmtime((time_t *)&tv.tv_sec);
+/* ttm = gmtime((time_t *)&tv.tv_sec); 10.6.1 */
+sec = tv.tv_sec;
+ttm = gmtime(&sec);
 
 cell = stuffIntegerList(
     11,
@@ -2731,10 +2742,13 @@ CELL * p_dateList(CELL * params)
 {
 struct tm *ttm;
 ssize_t timeValue;
+time_t timer;
 CELL * cell;
 
 params = getInteger(params, (UINT*)&timeValue);
-ttm = gmtime((time_t *)&timeValue);
+/* ttm = gmtime((time_t *)&timeValue); 10.6.1 */
+timer = (time_t)timeValue;
+ttm = gmtime(&timer);
 
 cell = stuffIntegerList(
     8,
@@ -2793,23 +2807,27 @@ return(stuffInteger((UINT)dateValue));
 #endif
 }
 
-
+/* changed for 10.6.1 where time_t can be 64-bit on 32-bit Windows */
 time_t calcDateValue(int year, int month, int day, int hour, int min, int sec)
 {
 time_t dateValue;
+INT64 value;
 
-dateValue = 367 * year - (7 * (year + ((month + 9) / 12)))/4 
+value = 367 * year - (7 * (year + ((month + 9) / 12)))/4 
             + (275 * month)/9 + day + 1721013;
 
-dateValue = dateValue * 24 * 3600 + hour * 3600 + min * 60 + sec 
+value = value * 24 * 3600 + hour * 3600 + min * 60 + sec 
             - 413319296; /* correction for 1970-1-1 */
 
-#ifdef NEWLISP64
-if(dateValue & 0x80000000)
-    dateValue = dateValue | 0xFFFFFFFF00000000;
+if(sizeof(time_t) == 8)
+    {
+    if(value & 0x80000000)
+        dateValue = value | 0xFFFFFFFF00000000LL;
+    else
+        dateValue = value & 0x00000000FFFFFFFF; 
+    }
 else
-    dateValue = dateValue & 0xffffffff;
-#endif
+    dateValue = value;
 
 return(dateValue);
 }
@@ -3225,5 +3243,4 @@ return sPtr;
 /* eof */
 
 
-/* eof */
 

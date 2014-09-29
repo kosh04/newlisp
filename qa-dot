@@ -600,13 +600,20 @@ true
     (set 'fno (open "qa-dot" "read")) 
     (close fno)))
 
+(define (test-collect)
+    (= (let (x 0) (collect (if (<= (inc x) 5) x))) '(1 2 3 4 5))
+)
+
 (define (test-corr)
     (< (apply add (map sub (corr '(1 3 5 8 9 9) '(2 2 3 4 6 8)) 
         '(0.868724789 0.5571847507 0.6187683284 3.507907832 4 0.0247186268))) 0.000000001)
 )
 
 (define (test-crc32)
-    (= (crc32 "abcdefghijklmnopqrstuvwxyz") 1277644989))
+    (and
+        (= (crc32 "abcdefghijklmnopqrstuvwxyz") 1277644989)
+        (= (crc32 "HELLO") 3242484790))
+)
 
 (define (test-select-collect )
   (and
@@ -661,6 +668,7 @@ true
 	(= (replace 'b (copy aList)) '(a c))
 	(= aList '(a b c))
 	(find-all "12" "12345" (replace "1" (copy $0) "N"))
+	(= (rotate (copy "abcdefg")) "gabcdef")
 ))
 
 (define (test-copy-file ) 
@@ -752,6 +760,7 @@ true
 	(let (value (date-value) vlist (now))
 		(= (apply date-value (date-list value)) value)
         (= (vlist -4) ((date-list (apply date-value vlist)) -2))
+        (= (date-list 0) '(1970 1 1 0 0 0 1 4))
     )
 )
 
@@ -1237,7 +1246,9 @@ true
   (float? (float "1.234")))
 
 (define (test-flt)
-	(= (flt 1.23) 1067282596))
+	(= (flt 1.23) 1067282596)
+	(= (flt 0.8) 1061997773)
+	(= (flt -0.8) 3209481421))
 
 (define (test-float? )
   (float? 1.234))
@@ -2818,17 +2829,18 @@ true
 
 (define (test-setf)
  (and
-	(setf l '(a b c d e f g))
-	(setf (nth 3 l) 999)
-	(= l '(a b c 999 e f g))
+    (setf l '(a b c d e f g))
+    (setf (nth 3 l) 999)
+    (= l '(a b c 999 e f g))
     (set 's "abcdefg")
     (setf (s 3) (upper-case $it))
     (= s "abcDefg")
-	(set 's "a-b-c-d-e-f-g")
-	(setf (first (replace "-" s "")) (upper-case $it))
+    (set 's "a-b-c-d-e-f-g")
+    (setf (first (replace "-" s "")) (upper-case $it))
     (= s "Abcdefg")    
-	(setf (s 2) "CCC")
-	(= s "AbCCCdefg")
+    (setf (s 2) "CCC")
+    (= s "AbCCCdefg")
+    (= (setf ((copy '(a b c)) 1) 'B) 'B)
 ))
 
 

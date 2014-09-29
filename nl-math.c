@@ -65,9 +65,11 @@
 #define BIGINT_BASE2 1000000000000000000LL
 #endif
 
+/* eliminated in 10.6.1
 #ifdef WINDOWS
 int _matherr(struct _exception *e) {return 1;}
 #endif
+*/
 
 #ifdef DEBUG
 void debug(int * x, int n, char * txt)
@@ -2433,9 +2435,11 @@ CELL * p_crc32(CELL * params)
 {
 char * data;
 size_t len;
+unsigned int crc;
 
-params = getStringSize(params, &data, &len, TRUE);
-return(stuffInteger(update_crc(0xffffffffL, (unsigned char *)data, (int)len) ^ 0xffffffffL));
+getStringSize(params, &data, &len, TRUE);
+crc = update_crc(0xffffffffL, (unsigned char *)data, (int)len) ^ 0xffffffffL;
+return(stuffInteger64(crc));
 }
 
 /* Update a running CRC with the bytes buf[0..len-1]--the CRC
@@ -3422,7 +3426,7 @@ getFloat(params, &dfloatV);
 floatV = dfloatV;
 memcpy(&number, &floatV, 4);
 
-return(stuffInteger(number));
+return(stuffInteger64(number));
 }
 
 

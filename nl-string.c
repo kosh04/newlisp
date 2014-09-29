@@ -111,13 +111,15 @@ if(params != nilCell)
     {
     next = params->next;
     params = evaluateExpression(params);
-    if(isNumber(params->type))
-        getIntegerExt(params, (UINT *)&options, FALSE); 
+    if(isNumber(params->type) || params->type == CELL_STRING)
+        /* 10.6.1 also accept string for options */
+        parseRegexOptions(params, (UINT *)&options, FALSE);
     else
         {
         flag = (params->type != CELL_NIL);
         if(next != nilCell)
-            getInteger(next, (UINT *)&options);
+            /* 10.6.1 also accept string for options */
+            parseRegexOptions(next, (UINT *)&options, TRUE);
         }
     }
 
@@ -1356,7 +1358,36 @@ return(stuffInteger((UINT)*(char*)getAddress(params)));
 
 CELL * p_getString(CELL * params)
 {
-return(stuffString((char *)getAddress(params)));
+UINT size, len;
+UINT address;
+UINT offset = 0;
+int inc = 1;
+char * limit;
+char zeros[4] = {0,0,0,0};
+
+address = getAddress(params);
+/* (get-string <address>) ; get zero terminated ASCII or UTF-8 */ 
+if(params->next == nilCell) 
+    return(stuffString((char *)address));
+
+params = getInteger(params->next, &size);
+/* (get-string <address> <int-bytes>) ; get no bytes binary data */
+if(params == nilCell) 
+    return(stuffStringN((char *)address, size));
+
+getStringSize(params, &limit, (size_t *)&len, TRUE);
+/* (get-string <address> <int-bytes> <str-limit>) ; get until limit or bytes read */
+if(len == 4 || len == 2) if(memcmp(limit, zeros, len) == 0) inc = len;
+while(offset < size)
+    {
+    if(offset < (size - len) &&
+        memcmp((char *)(address + offset), limit, len) == 0) break;
+    offset += inc;
+    }
+
+/* printf("size: %ld, len: %ld, inc: %d, offset: %ld\n", size, len, inc, offset); */
+
+return(stuffStringN((char *)address, offset));
 }
 
 CELL * p_getInteger(CELL * params)
@@ -1509,7 +1540,8 @@ else
     params = getString(params, &separator);
     if(params != nilCell) 
         {
-        getInteger(params, (UINT *)&options);
+        /* 10.6.1 also accept string for options */
+        parseRegexOptions(params, (UINT *)&options, TRUE);
         /* Compile the regular expression in separator */
         re = pcreCachedCompile(separator, options); 
         }
@@ -2105,7 +2137,10 @@ pcre *re;
 int ovector[OVECCOUNT];
 int rc, idx;
 char * pattern;
+char * subject;
+#ifdef SUPPORT_UTF8
 char * string;
+#endif
 INT options = 0;
 UINT offset = 0;
 int len;
@@ -2113,11 +2148,12 @@ size_t size;
 CELL * cell, * result, * strCell;
 
 params = getString(params, &pattern);
-params = getStringSize(params, &string, &size, TRUE);
+params = getStringSize(params, &subject, &size, TRUE);
 
 if(params != nilCell)
     {
-    params = getInteger(params, (UINT *)&options);
+    /* 10.6.1 also accept string for options */
+    params = parseRegexOptions(params, (UINT *)&options, TRUE);
     if(params != nilCell)
         getInteger(params, &offset);
     }
@@ -2129,7 +2165,7 @@ re = pcreCachedCompile(pattern, (int)options);
 rc = pcre_exec(
     re,            /* the compiled pattern */
     NULL,          /* no extra data - we didn't study the pattern */
-    string,        /* the subject string */
+    subject,       /* the subject string */
     size,          /* the length of the subject */
     (int)offset,   /* start at offset 0 in the subject */
     0,             /* default options */
@@ -2151,7 +2187,7 @@ result = cell = getCell(CELL_EXPRESSION);
 for(idx = 0; idx < rc; idx++)
     {
     len = ovector[2*idx+1] - ovector[2*idx];
-    strCell = stuffStringN(string + ovector[2*idx], len);
+    strCell = stuffStringN(subject + ovector[2*idx], len);
 
     deleteList((CELL*)sysSymbol[idx]->contents);
     sysSymbol[idx]->contents = (UINT)copyCell(strCell);
@@ -2167,8 +2203,21 @@ for(idx = 0; idx < rc; idx++)
         cell = cell->next;
         }
 
+#ifdef SUPPORT_UTF8
+    if(2048 & options)
+        cell->next = stuffInteger(utf8_wlen(subject, subject + ovector[2*idx] + 1));
+    else
+#endif
     cell->next = stuffInteger(ovector[2*idx]);
     cell = cell->next;
+#ifdef SUPPORT_UTF8
+    if(2048 & options)
+        {
+        string = (char *)strCell->contents;
+        cell->next = stuffInteger(utf8_wlen(string, string + len + 1));
+        }
+    else
+#endif
     cell->next = stuffInteger(len);
     cell = cell->next;
     }
@@ -2188,7 +2237,8 @@ CELL * result;
 
 params = getString(params, &pattern);
 if(params != nilCell)
-    params = getInteger(params, (UINT *)&options);
+    /* 10.6.1 also accept string for options */
+    params = parseRegexOptions(params, (UINT *)&options, TRUE);
 
 /* Compile the regular expression in the first argument */
 re = pcreCachedCompile(pattern, (int)options);
@@ -2437,6 +2487,48 @@ while(regex != NULL)
     regex = regex->next;
     free(oldRegex);
     }
+}
+
+
+/* support strings in the integer-options field of:
+    directory, ends-with, find, find-all, parse, regex, replace, search, starts-with
+   instead of: (find "xyz" buff (| 1 4 2048))
+   example: (find "x.z" "abcX\nZ" "is") => 3
+   for PCRE_CASELESS, PCRE_DOTALL
+*/
+
+CELL* parseRegexOptions(CELL* params, UINT * options, int evalFlag)
+{
+CELL* cell;
+int i;
+char* buffer;
+
+if (evalFlag)
+    cell = evaluateExpression(params);
+else
+    cell = params;
+
+*options = 0;
+
+if (cell->type == CELL_STRING) 
+    {
+    buffer = (char*)cell->contents;
+    for (i = 0; i < cell->aux - 1; i ++) {
+        switch (buffer[i]) {
+            case 'i': *options |= 1; break;         /* PCRE_CASELESS */
+            case 'm': *options |= 2; break;         /* PCRE_MULTILINE */
+            case 's': *options |= 4; break;         /* PCRE_DOTALL */
+            case 'x': *options |= 8; break;         /* PCRE_EXTENDED */
+            case 'A': *options |= 16; break;        /* PCRE_ANCHORED */
+            case 'D': *options |= 32; break;        /* PCRE_DOLLAR_ENDONLY */
+            case 'U': *options |= 512; break;       /* PCRE_UNGREEDY */
+            case 'u': *options |= 2048; break;      /* PCRE_UTF8 */
+            default: return(errorProcExt(ERR_INVALID_OPTION, cell));
+            }
+        }
+    } else { getIntegerExt(cell, options, FALSE); }
+
+return (params->next);
 }
 
 /* eof */

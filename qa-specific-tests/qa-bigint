@@ -4,6 +4,8 @@
     (println "big integers not enabled in this version")
     (exit))
 
+(set-locale "C")
+
 ;; check embedded bigint 0's
 
 (set 'nums '(
@@ -67,7 +69,8 @@
     (set 'f (pow (random 10 100) (+ 15 (rand 50))))
     (set 'f1 (float (bigint f)))
     (unless eval-string-js (print i "       \r"))
-    (unless (< (abs (sub (abs (div f f1)) 1)) 0.000000000000001)
+    ;(println "=>" (sub (abs (div f f1)) 1.0))
+    (unless (<= (abs (sub (abs (div f f1)) 1.0)) 0.000000001)
        (println f "   " f1 " " (abs (sub (abs (div f f1)) 1)))
        (println ">>>>> ERROR in big integer/float conversion")
        (exit))

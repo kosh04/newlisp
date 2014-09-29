@@ -84,10 +84,11 @@
 (println "support of subnormals: " (0 2 result) " => (0 4.940656458e-324)")
 
 
-(set 'result '())
-(set 'u 1.0)
-(while (!= 1.0 (add 1.0 u)) (set 'u (mul u 0.5)) (push u result))
-(println "machine epsilon: " (result 0) " => 1.110223025e-16")
+(set 'epsilon 1.0)
+(while (!= 1.0 (add 1.0 epsilon)) 
+    (set 'epsilon (mul epsilon 0.5))
+)
+(println "machine epsilon: " epsilon  " => 1.110223025e-16")
 
 (println)
 (if 
