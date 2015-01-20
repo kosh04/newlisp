@@ -2,26 +2,17 @@ newLISP mirror
 ==============
 
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg)](https://travis-ci.org/kosh04/newlisp)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
-NOTE: This repository is unofficial mirror.
+## newLISP with Git(Hub)
 
-## Abount newLISP
+NOTE: This repository is *unofficial* mirror.
 
-[newLISP](http://newlisp.org) is LISP like scripting language
-for general programming artificial intelligence and statistics.
+This is newLISP experimental repository introduced DVCS (Distributed Version Control System) by using Git.
+All source files are fetch from [SourceForge](http://sourceforge.net/projects/newlisp/files/).
+Mainly available to easy browsing source code, view history, create a patch, etc.
 
-## About this repo
-
-このリポジトリは、公式から配布されているnewLISPのソースアーカイブを利用して、
-VCS(バージョン管理システム)を[試験的に導入したもの](http://www.newlispfanclub.alh.net/forum/viewtopic.php?f=2&t=4403&p=22835)です。
-
-元となるファイル一式は以下から取得しています: (今のところ更新は手動)
-
-- [SourceForge.net](http://sourceforge.net/projects/newlisp/files/)
-
-最終的には、公式パッケージにGitやMercurialなどの何らかの
-バージョン管理システム(とホスティングサーバ)が導入されることを目標にしています。
+The final goal is newLISP development introduces DVCS (Git, Mercurial, etc) in official.
 
 ### branch
 
@@ -31,8 +22,9 @@ VCS(バージョン管理システム)を[試験的に導入したもの](http:/
 
 ### features
 
-- Source archive [here](https://github.com/kosh04/newlisp/releases)
-- Continuous Integration using [Travis CI](https://travis-ci.org/kosh04/newlisp)
+- [Source Archives](https://github.com/kosh04/newlisp/releases)
+- [Travis CI](https://travis-ci.org/kosh04/newlisp) : Continuous Integration
+- [Gitter](https://gitter.im/kosh04/newlisp) : Chat about this repo
 
 ## License
 
