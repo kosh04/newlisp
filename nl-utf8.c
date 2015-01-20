@@ -134,7 +134,7 @@ int gcaa;
 int c;
 size_t count = 0;
 
-while((c = *utf8str++) != 0)
+while((c = *utf8str++) != 0 && utf8str < limit)
     {
     count++;
     if ((c & 0xc0) == 0xc0)
@@ -144,8 +144,10 @@ while((c = *utf8str++) != 0)
         }
     }
 
+/* now handled by while loop 10.6.1
 if(utf8str > limit)
     errorProc(ERR_INVALID_UTF8);
+*/
 
 return(count);
 }

@@ -370,7 +370,7 @@ if(sock)
     close(sock);
 
 
-if((sock = netConnect(pHost, pPort, SOCK_STREAM, NULL, timeout)) == SOCKET_ERROR)
+if((sock = netConnect(pHost, pPort, SOCK_STREAM, 0, timeout)) == SOCKET_ERROR)
     return(webError(netErrorIdx));
 
 if(type == HTTP_GET)
@@ -964,7 +964,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 #ifndef LIBRARY
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.6.0"
+#define SERVER_SOFTWARE "newLISP/10.6.1"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);

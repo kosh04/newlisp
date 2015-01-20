@@ -112,7 +112,7 @@
 #endif
 
 #if defined(LINUX) || defined(_BSD) /* makefiles specify include directory */
-#  include <ffi.h>
+#include <ffi.h>
 #endif
 
 
@@ -159,6 +159,16 @@ This is for 64bit large file support (LFS),
 #define _FILE_OFFSET_BITS 64
 #endif
 
+#ifdef WINDOWS
+/* NOTE:
+ * Windows XP [0x0501] end of support on 2014/04/08
+ * WIndows Vista [0x0600] support ends on 2017/04/11
+ */
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#endif
+
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
@@ -188,9 +198,6 @@ This is for 64bit large file support (LFS),
 #endif
 
 #ifdef WINDOWS
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501 
-#endif
 #include <windef.h>
 #include <winbase.h>
 #else
@@ -442,7 +449,7 @@ This is for 64bit large file support (LFS),
 #define isSelfEval(A) ((A) & EVAL_SELF_TYPE_MASK)
 
 /* symbol classes */
-#define isProtected(A) ((A) & SYMBOL_PROTECTED)
+#define isProtected(A) ((A) & (SYMBOL_PROTECTED | SYMBOL_MACRO))
 #define isBuiltin(A) ((A) & SYMBOL_BUILTIN)
 #define isGlobal(A) ((A) & SYMBOL_GLOBAL)
 #define isFFIsymbol(A) ((A) & SYMBOL_FFI)
@@ -516,7 +523,7 @@ This is for 64bit large file support (LFS),
 #define ERR_NOT_MATRIX 30
 #define ERR_WRONG_DIMENSIONS 31
 #define ERR_SINGULAR 32
-#define ERR_REGULAR_EXPRESSION 33
+#define ERR_INVALID_OPTION 33
 #define ERR_THROW_WO_CATCH 34
 #define ERR_IMPORT_LIB_NOT_FOUND 35
 #define ERR_IMPORT_FUNC_NOT_FOUND 36

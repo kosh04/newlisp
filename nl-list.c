@@ -1628,7 +1628,27 @@ flat(list, result, &next, recursion);
 return(result);
 }
 
+/* 
+    (collect <expr>) 
+    collect results of evaluating <expr> while not nil
+*/
+CELL * p_collect(CELL * params)
+{
+CELL * result;
+CELL * cell;
+UINT * resultIdxSave = resultStackIdx;
 
+result = getCell(CELL_EXPRESSION);
+for(;;)
+    {
+    cell = evaluateExpression(params);
+    if(isNil(cell)) break;
+    addList(result, copyCell(cell));
+    cleanupResults(resultIdxSave);
+    }
+
+return(result);
+}
 
 
 /* --------------------------------- array routines ------------------------- */

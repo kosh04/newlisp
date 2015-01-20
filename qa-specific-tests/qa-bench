@@ -27,7 +27,7 @@
     (exit)
 )
 
-(set-locale "en_US")
+(set-locale "C")
 
 
 (context 'Lex)  ; predeclare/create context for bayes-train
@@ -37,7 +37,9 @@
 (global 'global-myvar)
 (set 'global-myvar 123)
 (set '$0 "abcdefg")
-        
+       
+(delete (sym "double")) ;; avoid error when running Emscripten intro before
+
 (define (double:double x) (+ x x))
 
 (define (test-default-functor)

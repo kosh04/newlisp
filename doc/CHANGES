@@ -6859,3 +6859,73 @@ Dec 6, 2009
 
    Updated examples/udp-server.lsp to nmake it work on Windows.
 
+10.6.1
+   Added typedefs for CPPFunction and CPFuncition to compile on UBUNTU 14.04
+   with libreadline v.6.1.
+
+   Make qa-bigint and qa-bench work for UTF8 versions on all platform locales 
+   by forcing the "C" "." locale  at the beginning.
+
+   Report the result of the 'flt' function on all platforms as an unsigned
+   integer. Previously on 32bit newLISP versions a signed integer was
+   reported and an unsigned integer on 64bit versions.
+
+   'rotate' on (copy str) corrupted memory when using optimized copyCell().
+
+   Delay cell deletion for indexed strings if not referenced by a symbol; 
+   already happens for lists.
+
+   In 'regex' in utf8 versions and when specifying the PCRE_UTF8 parameter
+   - 2048 or "u" - give offset and length in number utf8 characters:
+        (regex "Ω" "ΨΩ") => ("Ω" 2 2)
+        (regex "Ω" "ΨΩ" "u") => ("Ω" 1 1)
+        (regex "Ω" "ΨΩ" 2048) => ("Ω" 1 1)
+
+   An second call pattern for 'copy'
+        (copy <s-expr>)        ; <- original syntax
+        (copy <int-addr> true) ; <- new syntax
+   The new syntax marked by the true 'flag' takes a memory address of a cell 
+   and copies it. The following expressions are equivalent:
+        (copy cell) <=> (copy (first (dump cell)) true)
+
+
+   'get-string' now can take one or two additional optional parameters:
+        (get-string <address>) ; gets an zero terminated ASCII or UTF-8 string
+        (get-string <address> <bytes>) ; gets a buffer of <bytes> of binary data
+        (get-string <address> <max-bytes> <str-limit) ; reads to <str-limit> or max
+
+        The second pattern would work for UTF-32/UCS-4 this way:
+
+        (get-string <address> <max-bytes> "\000\000\000\000")
+
+        Any other string in <str-limit> can be specified to stop reading
+
+        If comparing with \000\000 or \000\000\000\000 comparison is aligned
+        to 2 or 4 byte boundary for specifying UCS-2 or UCS-4 string limits.
+
+    Highest bit of crc32 does should not get sign extended in 32-bit newLISP.
+
+    New function (collect <exp>) collects in a list while <exp> evaluates to
+    not nil:
+        (let (x 0) (collect (if (<= (inc x) 5) x))) => (1 2 3 4 5)
+
+    the int-option parameter in functions using regular expressiona can now be
+    a string for PCRE_CASELESS, PCRE_MULTILINE, PCRE_DOTALL, PCRE_EXTENDED
+    PCRE_UTF8, PRECOMPILED using the letters i,m,s,x,u,p.
+    example:    (find "x.z" "abcX\nZ" "is") => 3
+    in functions: directory, ends-with, find, find-all, parse, regex, regex-comp,
+    replace, search and starts-with 
+
+    The protected? function did not recognize macro symbols as protected.
+
+    Cleanup for 64-bit time_t on 32-bit Windows. Thanks Kosh!
+
+    The 'macro?' function also works on 'macro' symbols.
+
+    A wrong UDP option in net-connect and net-listen now throws an error.
+
+    Distribution packages for Linux are now with a newLISP executable compiled
+    for 64-bit.
+
+    In Emscripten v.1.22.0 compiled newLISP exception handling now works.
+

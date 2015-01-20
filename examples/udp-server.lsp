@@ -22,7 +22,6 @@
 	(println "->" msg)
 	(net-send-to 
 		(first (parse (nth 1 msg) ":")) (nth 2 msg) (upper-case (first msg)) socket))
-
 (exit)
 ;; eof
 

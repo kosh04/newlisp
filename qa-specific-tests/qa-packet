@@ -1,5 +1,7 @@
 #!/usr/bin/newlisp
 
+(println "run with superuser permissions only")
+
 
 ; set source and destination IP addresses for all test packages
 

@@ -84,7 +84,7 @@
 (constant 'myc (list (Circle 1 2) (Circle 4 5)))
 
 (if (catch (:move (myc 0) 10 ) 'result)
-	(println "ERROR in FOOP symbol protection")
+	(println ">>>>> ERROR in FOOP symbol protection")
 	(if (starts-with result "ERR: symbol is protected : MAIN:container of (self)")
 		(println ">>>>> FOOP symbol protection SUCCESSFUL")
 		(println ">>>>> ERROR in FOOP symbol protection")))

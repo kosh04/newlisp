@@ -411,9 +411,9 @@ CELL * cell;
 char * remoteHostName; 
 UINT portNo;
 UINT topt = CONNECT_TIMEOUT; /* default ms timeout from newlisp.h */
-char * protocol = NULL;
 int sock;
 int type; 
+int protocol = 0;
 
 params = getString(params, &remoteHostName); 
 #ifndef WINDOWS
@@ -434,10 +434,11 @@ if(params != nilCell)
     cell = evaluateExpression(params);
     if(cell->type == CELL_STRING)
         {
-        protocol = (char *)cell->contents;
-        *protocol = toupper(*protocol);
+        protocol = toupper(*(char *)cell->contents);
+        if(!(protocol == 'M' || protocol == 'B' || protocol == 'U'))
+            return(errorProc(ERR_INVALID_OPTION));
         type = SOCK_DGRAM;
-        if(*protocol == 'M') /* get ttl */
+        if(protocol == 'M') /* get ttl */
             {
             if(params->next != nilCell)
                 /* topt is ttl in this case */
@@ -525,7 +526,7 @@ return(fcntl(sock, F_SETFL, arg));
 /* create internet socket
    if prot = NULL then topt is timeout in ms, else topt is ttl (time to live)
 */
-int netConnect(char * remoteHostName, int portNo, int type, char * prot, int topt)
+int netConnect(char * remoteHostName, int portNo, int type, int prot, int topt)
 {
 struct addrinfo hints, *res, *res0;
 char portStr[10];
@@ -546,7 +547,7 @@ if((sock = socket(ADDR_FAMILY, type, 0)) == INVALID_SOCKET)
     return(SOCKET_ERROR);
     }
 
-if(prot == NULL) /* topt is timeout in millisecs */
+if(prot == 0) /* topt is timeout in millisecs */
     {
 #ifdef WINDOWS
     if(ioctlsocket(sock, FIONBIO, &arg) != 0)
@@ -563,18 +564,18 @@ if(prot == NULL) /* topt is timeout in millisecs */
         }
 #endif
     }
-else if(*prot == 'M' || *prot == 'B') 
+else if(prot == 'M' || prot == 'B') 
     {
     sinlen = (ADDR_FAMILY == AF_INET6) ? sizeof(struct in6_addr) : sizeof(struct in_addr);
 
-    if(*prot == 'M')
+    if(prot == 'M')
         {
         setsockopt(sock, 0, IP_MULTICAST_IF, (const void *)defaultInAddr, sinlen);
         opt = topt; /* ttl time to live */
         setsockopt(sock, 0, IP_MULTICAST_TTL, (const void *)&opt, sizeof(opt));
         }
 
-    if(*prot == 'B')
+    if(prot == 'B')
         {
         opt = 1;
         setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (const void *)&opt, sizeof(opt));
@@ -1201,6 +1202,7 @@ char * option = NULL;
 char * mcAddr = NULL;
 int sock, type; 
 int sockopt = 0;
+int opt;
 CELL * cell;
  
 type = SOCK_STREAM;
@@ -1226,23 +1228,26 @@ if(params != nilCell)
     if(params != nilCell)
         {
         params = getString(params, &option);
-        *option = toupper(*option);
-        if(*option == 'U')
+        opt = toupper(*option);
+        if(opt == 'U')
             type = SOCK_DGRAM;
 #ifndef WINDOWS
-        else if(*option == 'D')
+        else if(opt == 'D')
             {
             type = SOCK_RAW;
             sockopt = IPPROTO_DIVERT;
             }
 #endif
-        else if(*option == 'M')
+        else if(opt == 'M')
             {
             type = SOCK_DGRAM;
             mcAddr = ifAddr;
             ifAddr = NULL;
             }
+        else
+            errorProc(ERR_INVALID_OPTION);
         }
+            
     }
     
 
@@ -1643,11 +1648,11 @@ else
 
 #ifndef WINDOWS
 if(port != 0)
-    sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
+    sock = netConnect(host, (int)port, SOCK_STREAM, 0, timeOut);
 else
     sock = netConnectLocal(host);
 #else
-sock = netConnect(host, (int)port, SOCK_STREAM, NULL, timeOut);
+sock = netConnect(host, (int)port, SOCK_STREAM, 0, timeOut);
 #endif
 
 if(sock == SOCKET_ERROR)

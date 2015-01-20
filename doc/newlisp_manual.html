@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.6.0 Manual and Reference</title>
+   <title>newLISP v.10.6.1 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,7 +148,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.6.0</h2>
+<h2>User Manual and Reference v.10.6.1</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -5363,6 +5363,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#collect">collect</a></td>
+<td>repeat evaluating an expression and collect results in a list</td>
+</tr>
+
+<tr>
 <td><a href="#cond">cond</a></td>
 <td>branches conditionally to expressions</td>
 </tr>
@@ -10289,6 +10294,7 @@ lst  <span class='arw'>&rarr;</span> (a b (c d) e)
 
 <br/><br/>
 
+
 <a name="close"></a>
 <h2><span class="function">close</span></h2>
 <h4>syntax: (close <em>int-file</em>)</h4>
@@ -10314,6 +10320,19 @@ lst  <span class='arw'>&rarr;</span> (a b (c d) e)
 	automatically resets it to 0 (zero, the screen device).
 </p>
 	
+<br/><br/>
+
+<a name="collect"></a>
+<h2><span class="function">collect</span></h2>
+<h4>syntax: (collect <em>exp</em>)</h4>
+
+<p>Evaluates the expression in <em>exp</em>  and collects the results in a list
+until evaluation of <em>exp</em> returns <tt>nil</tt>:</p>
+
+<pre>
+(collect (if (&lt;= (inc x) 5) x)) <span class='arw'>&rarr;</span> (1 2 3 4 5)
+</pre>
+
 <br/><br/>
 
 <a name="command-event"></a>
@@ -10853,12 +10872,13 @@ syntax: (context? <em>exp</em> <em>str-sym</em>)</h4>
 
 <a name="copy"></a>
 <h2><span class="function">copy</span></h2>
-<h4>syntax: (copy <em>exp</em>)</h4>
+<h4>syntax: (copy <em>exp</em>)<br/>
+syntax: (copy <em>int-addr</em> [<em>bool-flag</em>])</h4>
 
-<p>Make a copy from evaluating expression in <em>exp</em>. Some built-in
-functions are <a href="#destructice">destructive</a>, changing the original 
-contents of a list, array or string they are working on. With <tt>copy</tt> 
-their behavior can be made non-destructive.</p>
+<p>The first syntax makes a copy from evaluating expression in <em>exp</em>. 
+Some built-in functions are <a href="#destructice">destructive</a>, changing 
+the original contents of a list, array or string they are working on. 
+With <tt>copy</tt> their behavior can be made non-destructive.</p>
 
 <pre>
 (set 'aList '(a b c d e f))
@@ -10877,6 +10897,20 @@ str <span class='arw'>&rarr;</span> "newLISP"
 <p>Using <tt>copy</tt> the functions <a href="#replace">replace</a> and
 <a href="#rotate">rotate</a> are prevented from changing the data.
 A modified version of the data is returned.</p>
+
+<p>The second syntax, marked by the <tt>true</tt> in <em>bool-flag</em>,
+copies a newLISP expression from a memory address.The following two
+expressions are equivalent:</p>
+
+<pre>
+(set 'x "hello world")
+(copy x)  <span class='arw'>&rarr;</span> "hello world"
+(copy (first (dump x)) true) <span class='arw'>&rarr;</span> "hello world"
+</pre>
+
+<p>The second syntax can be useful when interfacing with C-code generating
+newLISP expressions.</p>
+
 
 <br/><br/>
 
@@ -12295,7 +12329,7 @@ syntax: (difference <em>list-A</em> <em>list-B</em> <em>bool</em>)</h4>
 <a name="directory"></a>
 <h2><span class="function">directory</span></h2>
 <h4>syntax: (directory [<em>str-path</em>])<br/>
-syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>int-regex-option</em>])</h4>
+syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>regex-option</em>])</h4>
 
 <p>
 	A list of directory entry names is returned 
@@ -12329,7 +12363,7 @@ syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>int-regex-option<
 	a regular expression pattern in <em>str-pattern</em>. 
 	Only filenames matching the pattern will be returned 
 	in the list of directory entries. 
-	In <em>int-regex-options</em>, special regular expression options 
+	In <em>regex-options</em>, special regular expression options 
 	can be specified; see <a href="#regex">regex</a> for details.
 </p>
 
@@ -13800,8 +13834,8 @@ their integer part first.</p>
 (ifft (fft '((1 0) (2 0) (3 0) (4 0)))) 
 <span class='arw'>&rarr;</span> ((1 0) (2 0) (3 0) (4 0))
 
-;; when imaginary part is 0, plain numbers work, too
-;; complex numbers can be intermixed
+;; when imaginary part is 0, plain numbers work too
+;; plain numbers and complex numbers can be intermixed
 
 (fft '(1 2 3 4))      <span class='arw'>&rarr;</span> ((10 0) (-2 -2) (-2 0) (-2 2))
 (fft '(1 2 (3 0) 4))  <span class='arw'>&rarr;</span> ((10 0) (-2 -2) (-2 0) (-2 2))
@@ -13940,8 +13974,8 @@ which returns all elements of a list for which a predicate is false.
 
 <a name="find"></a>
 <h2><span class="function">find</span></h2>
-<h4>syntax: (find <em>exp-key</em> <em>list</em> [<em>func-compare</em> | <em>int-regex-option</em>])<br/>
-syntax: (find <em>str-key</em> <em>str-data</em> [<em>int-regex-option</em> [<em>int-offset</em>]])</h4>
+<h4>syntax: (find <em>exp-key</em> <em>list</em> [<em>func-compare</em> | <em>regex-option</em>])<br/>
+syntax: (find <em>str-key</em> <em>str-data</em> [<em>regex-option</em> [<em>int-offset</em>]])</h4>
 
 
 <h3>Find an expression in a list</h3>
@@ -13952,7 +13986,7 @@ the index position (offset) of the element derived from evaluating <em>exp-key</
 <p>
 Optionally, an operator or user-defined function can be specified in <em>func-compare</em>. 
 If the <em>exp-key</em> is a string, a regular expression option
-can be specified with the <em>int-regex-option</em> parameter.</p>
+can be specified with the <em>regex-option</em> parameter.</p>
 
 <p>When using regular expressions or comparison functors the system
 variable <tt>$0</tt> is set to the last element found.</p>
@@ -13967,6 +14001,8 @@ variable <tt>$0</tt> is set to the last element found.</p>
 (find "hi" '("hello" "world"))          <span class='arw'>&rarr;</span> nil
 
 (find "newlisp" '("Perl" "Python" "newLISP") 1)  <span class='arw'>&rarr;</span> 2
+; same with string option
+(find "newlisp" '("Perl" "Python" "newLISP") "i")  <span class='arw'>&rarr;</span> 2
 
 ; use the comparison functor
 (find 3 '(8 4 3  7 2 6) &gt;)  <span class='arw'>&rarr;</span> 4
@@ -14012,16 +14048,16 @@ even when running the UTF-8 enabled version of newLISP.</p>
 
 <p>The presence of a third parameter specifies a search 
 using the regular expression pattern specified in <em>str-pattern</em>, 
-as well as an option number specified in <em>int-regex-option</em>
+as well as an option number specified in <em>regex-option</em>
 (i.e., 1 (one) for case-insensitive search or <tt>0</tt> (zero) 
-for no special options). If <em>int-regex-option</em> is specified
+for no special options). If <em>regex-option</em> is specified
 an optional <em>int-offset</em> argument can be specified too
 to start the search not at the beginning but at the offset given.
 In any case the position returned by <tt>find</tt> is calculated
 relative to the beginning of the string.</p>
 
 <p>To specify <em>int-offset</em> in a simple string search without regular
-expressions, specify <tt>nil</tt> for <em>int-regex-option</em>.</p>
+expressions, specify <tt>nil</tt> for <em>regex-option</em>.</p>
 
 <p>In newLISP, regular expressions are standard 
 Perl Compatible Regular Expression (PCRE) searches. 
@@ -14050,6 +14086,8 @@ option numbers and more information on regular expression searching.
 ; case-insensitive regex
 
 (find "WorlD" "Hello woRLd" 1)  <span class='arw'>&rarr;</span> 6   
+; or
+(find "WorlD" "Hello woRLd" "i")  <span class='arw'>&rarr;</span> 6   
                                 
 (find "hi" "hello world")       <span class='arw'>&rarr;</span> nil
 (find "Hello" "Hello world")    <span class='arw'>&rarr;</span> 0
@@ -14105,7 +14143,7 @@ $2  <span class='arw'>&rarr;</span> "80"
 
 <a name="find-all"></a>
 <h2><span class="function">find-all</span></h2>
-<h4>syntax: (find-all <em>str-regex-pattern</em> <em>str-text</em> [<em>exp</em> [<em>int-regex-option</em>]])<br/>
+<h4>syntax: (find-all <em>str-regex-pattern</em> <em>str-text</em> [<em>exp</em> [<em>regex-option</em>]])<br/>
 syntax: (find-all <em>list-match-pattern</em> <em>list</em> [<em>exp</em>])<br/>
 syntax: (find-all <em>exp-key</em> <em>list</em> [<em>exp</em> [<em>func-compare</em>]])</h4>
 
@@ -14114,12 +14152,12 @@ In the first syntax, <tt>find-all</tt> finds all occurrences of <em>str-regex-pa
 in the text <em>str-text</em>, returning a list containing all matching strings. 
 The empty list <tt>()</tt> is returned if no matches are found. In the first syntax
 string searches are always done using regular expression patterns, even if no
-<em>int-regex-option</em> is specified. The system variable <tt>$count</tt> is updated
+<em>regex-option</em> is specified. The system variable <tt>$count</tt> is updated
 with the number of matches found.</p>
 
 <p>
 Optionally, an expression can be specified to process the found string or regular subexpressions 
-before placing them into the returned list. An additional option, <em>int-option</em>, 
+before placing them into the returned list. An additional option, <em>regex-option</em>, 
 specifies special regular expression options 
 (see <a href="#regex">regex</a> for further details).
 </p>
@@ -14160,7 +14198,7 @@ into a unique and sorted list.
 
 <p>
 Note that <tt>find-all</tt> with strings always performs a regular expression search, 
-even if the option in <em>int-option</em> is omitted.
+even if the option in <em>regex-option</em> is omitted.
 </p>
 
 <p>In the second syntax, <tt>find-all</tt> searches for all list 
@@ -15307,15 +15345,11 @@ and <a href="#unpack">unpack</a> functions.
 
 <a name="get-string"></a>
 <h2><span class="function">get-string</span></h2>
-<h4>syntax: (get-string <em>int-address</em>)</h4>
+<h4>syntax: (get-string <em>int-address</em> [<em>int-bytes</em> [<em>str-limit</em>])</h4>
 
-<p>
-Gets a character string from the address 
-specified in <em>int-address</em>.
-This function is helpful when 
-using imported shared library functions 
-with <a href="#import">import</a>.
-</p>
+<p>Copies a character string from the address specified in <em>int-address</em>.
+This function is helpful when using imported shared library functions with 
+<a href="#import">import</a> and a C-function returns the address to a memory buffer.</p>
 
 <!-- example -->
 
@@ -15344,10 +15378,9 @@ which returns a character pointer (address to a string).
 <p>
 When a string is passed as an argument, 
 <tt>get-string</tt> will take its address as the argument. 
-Because <tt>get-string</tt> always breaks off 
-at the first first <tt>\000</tt> (null character) it encounters, 
-it can be used to retrieve a string from a buffer:
-</p>
+Without the optional <em>int-bytes</em> argument <tt>get-string</tt> breaks off 
+at the first first <tt>\000</tt> (null character) it encounters. This works for
+retrieving ASCII strings from raw memory addresses:</p>
 
 <!-- example -->
 
@@ -15362,10 +15395,58 @@ it can be used to retrieve a string from a buffer:
 
 ; get a string from offset into a buffer
 (get-string (+ (address buff) 6)) <span class='arw'>&rarr;</span> "DEF"
-
-; use unpack to get the whole buffer
-(unpack "s9" buff)  <span class='arw'>&rarr;</span> ("ABC\000\000\000DEF")
 </pre>
+
+<p>When specifyung the number of bytes in the optional <em>int-bytes</em>
+parameter, reading does not stpop at the first zero byte found, but
+copies exactly <em>int-bytes</em> number of bytes from the address or string
+buffer:</p>
+
+<pre>
+(set 'buff "ABC\000\000\000DEF")  <span class='arw'>&rarr;</span> "ABC\000\000\000DEF"
+
+; without specifying the number of bytes
+; buff is equivalent to (address buff)
+(get-string buff)  <span class='arw'>&rarr;</span> "ABC"
+
+; specifying the number of bytes to get
+(get-string buff 9) <span class='arw'>&rarr;</span> "ABC\000\000\000DEF"
+</pre>
+
+<p>The addtional <em>str-limit</em> parameter can be used to limit reading
+the buffer at a certain string. If <em>int-bytes</em> are read before
+<em>str-limit</em> is found, only <em>int-bytes</em> are read:</p>
+
+<pre>
+(set 'buff "ABC\000\000EFG\000DQW") <span class='arw'>&rarr;</span> "ABC\000\000EFG\000DQW"
+
+; buff is eqivalent to (address buff)
+(get-string buff 4 "FG") <span class='arw'>&rarr;</span> "ABC\000"
+
+(get-string buff 10) <span class='arw'>&rarr;</span> "ABC\000\000EFG\000D"
+
+(get-string buff 10 "FG") <span class='arw'>&rarr;</span> "ABC\000\000E"
+</pre>
+ 
+<p>Although UTF-16 and UTF-32 encoding does not specify string termination characters,
+the sequences "\000\000" and "\000\000\000\000" are used often to terminate UTF-16
+and UTF-32 encodings. The additional optional  <em>str-limit</em> can be used to limit
+the string when reading from the buffer address:</p>
+<pre>
+(set 'utf32 (unicode "我能吞下玻璃而不伤身体。"))
+
+(set 'addr (address utf32)) <span class='arw'>&rarr;</span> 140592856255712
+
+; get-string automatically takes the address when a buffer is passed
+; utf32 is equivalent to (address utf32) for get-string
+
+(get-string utf32 80 "\000\000\000\000")
+<span class='arw'>&rarr;</span> "\017b\000\000??\000\000\030T\000\000\011N\ 000\000?s\
+000\000?t\000\000\f?\000\000\rN\000\000$O\000\000??\000\000SO\000\000\0020\000\000"
+</pre>
+
+<p>When using  "\000\000" or "\000\000\000\000" as limit strings, the search for these
+limits is aligned to a 2-byte or 4-byte border.</p>
 
 <p>
 See also the <a href="#get-char">get-char</a>, 
@@ -15755,7 +15836,7 @@ full path name should be specified.</p>
 <p>A function can be imported only once. A repeated import of the same function
 will simply return the same - already allocated - function address.</p>
 
-<p>On <em>libffi</em> enabled versions - capable of the second extended syntax -
+<p>Note, that the first simple syntax is available on <u>all</u> versions of newLISP, even those compiled without <em>libffi</em> support. On <em>libffi</em> enabled versions - capable of the second extended syntax -
 imported symbols are protected against change and can only be modified using
 <a href="#constant">constant</a>.</p>
 
@@ -15856,7 +15937,7 @@ reserved beforehand.</p>
 
 str  <span class='arw'>&rarr;</span> "C:\\WINDOWS\000\000\000 ... "
 
-;; use trim or get-string to cut of binary zeros
+;; use trim or get-string to cut of trailing binary zeros
 (get-string str)  <span class='arw'>&rarr;</span> "C:\\WINDOWS"
 (trim str)        <span class='arw'>&rarr;</span> "C:\\WINDOWS"
 
@@ -15926,7 +16007,7 @@ and for function parameters in <em>str-param-type</em>:</p>
 
 <table summary="data types">
 <tr align="left"><th>label</th><th>C type for return value and arguments</th><th>newLISP return and argument type</th></tr>
-<tr><td>"void"</td><td>void (only as return type)</td><td><tt>nil</tt> is returned</td></tr>
+<tr><td>"void"</td><td>void</td><td><tt>nil</tt> is returned for return type</td></tr>
 <tr><td>"byte"</td><td>byte unsigned 8 bit</td><td>integer</td></tr>
 <tr><td>"char"</td><td>char signed 8 bit</td><td>integer</td></tr>
 <tr><td>"unsigned short int"</td><td>unsigned short int 16 bit</td><td>integer</td></tr>
@@ -15945,7 +16026,8 @@ and for function parameters in <em>str-param-type</em>:</p>
 identical inside <tt>libffi</tt>. Depending on the type of arguments passed and the type
 of return values, one or the other is used.</p>
 
-<p>Aggregate types can be composed using the <a href="#struct">struct</a> function.</p>
+<p>Aggregate types can be composed using the <a href="#struct">struct</a> function and 
+can be used for arguments and return values.</p>
 
 <p>The following examples show how the extended <tt>import</tt> syntax can
 handle return values of floating point values and strings:</p>
@@ -16718,7 +16800,11 @@ distances decreases. The list in <tt>K:labels</tt> shows the membership fo each
 data point in the same order as in the data.</p>
 
 <p>The centroids in <tt>K:centroids</tt> can be used for later classification
-of new data records using <a href="#kmeans-query">kmeans-query</a>.</p>
+of new data records using <a href="#kmeans-query">kmeans-query</a>. When the
+number of clusters specified in <em>int-k</em> is too big, <tt>kmeans-train</tt>
+will produce unused centroids with <tt>nan</tt> or <tt>NaN</tt> data. When
+unused cluster centroids are present, the number in <em>int-k</em> should be
+reduced. </p>
 
 <p>The average inner <tt>K:deviations</tt> from cluster members to their centroid
 show how dense a cluster is packed. Formally, deviations are calculated similarly
@@ -16982,6 +17068,8 @@ an array and the number of bytes in a string or in a symbol name.</p>
 <p>Applied to a number, <tt>length</tt> returns the number of digits for 
 normal and big integers and the number of digits before the decimal 
 separator for floats.</p>
+
+<p><tt>length</tt> returns <tt>0</tt> on all other types.</p>
 
 <p>Before version 10.5.6 <tt>length</tt> returned the storage size in bytes
 for integers (4 or 8) and floats (8).</p>
@@ -17438,10 +17526,14 @@ at run-time, <tt>macro</tt> defines a function to be used during the source load
 and reading process to transform certain expression call patterns into different call 
 patterns.</p>
 
+<p>Symbols defined with <tt>macro</tt> are protected from re-definition.</p>
+
 <pre>
 (macro (double X) (+ X X)) <span class='arw'>&rarr;</span> (lambda-macro (X) (expand '(+ X X)))
 
 (double 123) <span class='arw'>&rarr;</span> 246
+
+(protected? 'double) <span class='arw'>&rarr;</span> true
 </pre>
 
 <p>Internally all <tt>macro</tt> defined symbol call patterns are translated using
@@ -17552,10 +17644,10 @@ expressions and symbols occur more than once in the body of the definition.</p>
 <h2><span class="function">macro?</span></h2>
 <h4>syntax: (macro? <em>exp</em>)</h4>
 
-<p>Returns <tt>true</tt> if <em>exp</em> evaluates 
-to a lambda-macro expression; 
-otherwise, <tt>nil</tt> is returned.
-</p>
+<p>Returns <tt>true</tt> if <em>exp</em> evaluates to a lambda-macro expression.
+If <em>exp</em> evaluates to a symbol and the symbol contains
+a macro-expansion expression made with the <a href="#macro">macro</a> function,
+<tt>true</tt> is also returned. In all other cases <tt>nil</tt> is returned.</p>
 
 <!-- example -->
 
@@ -17564,9 +17656,14 @@ otherwise, <tt>nil</tt> is returned.
 
 (macro? mysetq)  <span class='arw'>&rarr;</span> true
 
-(macro (my-setq Lv Rv) (set 'Lv Rv))
+(macro (my-setq Lv Rv) (set 'Lv Rv)) 
+<span class='arw'>&rarr;</span> (lambda-macro (Lv Rv) (expand '(set 'Lv Rv)))
 
-(macro? my-setq) <span class='arw'>&rarr;</span> true
+; my-setq contains a lambda-macro expression
+(macro? my-setq)   <span class='arw'>&rarr;</span> true
+
+; my-setq symbol was created with macro function
+(macro? 'my-setq)   <span class='arw'>&rarr;</span> true
 </pre>
 
 <br/><br/>
@@ -19067,11 +19164,11 @@ and <a href="#net-receive-from">net-receive-from</a>.
 
 <h3>Packet divert sockets and ports</h3>
 
-<p>If <em>str-mode</em> is specified as <tt>"divert"</tt>, a divert socket 
-can be created for a divert port in <em>int-port</em> on BSD like platforms.
-The content of IP address in <em>str-ip-addr</em> is ignored 
-and can be specified as an empty string. Only the <em>int-port</em> is
-relevant and will be bound to the raw socket returned.</p>
+<p>If <em>str-mode</em> is specified as <tt>"divert"</tt> or <tt>"d"</tt>, 
+a divert socket can be created for a divert port in <em>int-port</em> on 
+BSD like platforms.  The content of IP address in <em>str-ip-addr</em> is 
+ignored and can be specified as an empty string. Only the <em>int-port</em> 
+is relevant and will be bound to the raw socket returned.</p>
 
 <p>To use the divert option in <tt>net-listen</tt>, newLISP must run in
 super-user mode. This option is only available on Unix like platforms.</p>
@@ -20903,7 +21000,7 @@ and <a href="#unpack">unpack</a> functions.
 <a name="parse"></a>
 
 <h2><span class="function">parse</span></h2>
-<h4>syntax: (parse <em>str-data</em> [<em>str-break</em>  [<em>int-option</em>]])</h4>
+<h4>syntax: (parse <em>str-data</em> [<em>str-break</em>  [<em>regex-option</em>]])</h4>
 
 <p>
 Breaks the string that results from evaluating <em>str-data</em> into string tokens,
@@ -20911,7 +21008,7 @@ which are then returned in a list.
 When no <em>str-break</em> is given,
 <tt>parse</tt> tokenizes according to newLISP's internal parsing rules.
 A string may be specified in <em>str-break</em> for tokenizing only at the occurrence of a string.
-If an <em>int-option</em> number is specified,
+If an <em>regex-option</em> number or string is specified,
 a regular expression pattern may be used in <em>str-break</em>.
 </p>
 
@@ -21146,7 +21243,7 @@ The popped element is returned.
 pList        <span class='arw'>&rarr;</span> (b c "hello" d e 10)
 
 (pop pList 3)    <span class='arw'>&rarr;</span> d
-(pop pList 100)  <span class='arw'>&rarr;</span> 10
+(pop pList -1)   <span class='arw'>&rarr;</span> 10
 pList            <span class='arw'>&rarr;</span> (b c "hello" e)
 
 (pop pList -1)  <span class='arw'>&rarr;</span> e
@@ -22846,7 +22943,7 @@ is returned instead of the index vector.</p>
 
 (set 'p '(c d (x) e))
 
-(ref p pList p)     <span class='arw'>&rarr;</span> (2)
+(ref p pList)   <span class='arw'>&rarr;</span> (2)
 
 ; indexing using the vector returned from ref
 
@@ -23044,7 +23141,7 @@ for strings.
 <a name="regex"></a>
 
 <h2><span class="function">regex</span></h2>
-<h4>syntax: (regex <em>str-pattern</em> <em>str-text</em> [<em>int-option</em> [<em>int-offset</em>]])</h4>
+<h4>syntax: (regex <em>str-pattern</em> <em>str-text</em> [<em>regex-option</em> [<em>int-offset</em>]])</h4>
 
 <p>Performs a Perl Compatible Regular Expression (PCRE) search 
 on <em>str-text</em> with the pattern specified in <em>str-pattern</em>. 
@@ -23062,13 +23159,18 @@ If no match is found, it returns <tt>nil</tt>.
 The offset numbers can be used for subsequent processing.
 </p>
 
-<p>Additionally an <em>int-option</em> can be specified to control certain
-regular expression options explained later. The additional <em>int-offset</em>
+<p>Additionally a <em>regex-option</em> can be specified to control certain
+regular expression options explained later. Options can be given either by
+numbers or letters in a string.</p>
+
+<p>The additional <em>int-offset</em>
 parameter tells <tt>regex</tt> to start searching for a match not at the
 beginning of the string but at an offset.</p>
 
-<p>The offset and length numbers in the <tt>regex</tt> results are given based 
-on single bytes even when running the UTF-8 enabled version of newLISP.</p>
+<p>When no <em>regex-option</em> is present, the offset and length numbers in 
+the <tt>regex</tt> results are given based bytes even when running the UTF-8 
+enabled version of newLISP. When specifying the PCRE_UTF8 option in <em>regex-option</em>
+only offset and length are reported in UTF8 characters.</p>
 
 <p>
 <tt>regex</tt> also sets the variables <tt>$0, $1,</tt> 
@@ -23090,6 +23192,8 @@ variables to <tt>nil</tt> when no match is found.</p>
 
 ; case-insensitive search option 1
 (regex "b+" "AAAABBBAAAA" 1)  <span class='arw'>&rarr;</span> ("BBB" 4 3) 
+; same option given as a string
+(regex "b+" "AAAABBBAAAA" "i")  <span class='arw'>&rarr;</span> ("BBB" 4 3) 
 
 (regex "[bB]+" "AAAABbBAAAA" )  <span class='arw'>&rarr;</span> ("BbB" 4 3)
 
@@ -23178,30 +23282,34 @@ nuevatec.com
 
 
 <p>
-	 The following constants can be used for <em>int-option</em>.
-	Several options can be combined using a binary or <tt>|</tt> (pipe) operator. 
-    E.g. <tt>(| 1 4)</tt> would combine options <tt>1</tt> and <tt>4</tt>.
-	The uppercase names are used in the PCRE regex documentation and could be predefined in <tt>init.lsp</tt>.
-	The last option is a newLISP custom option only to be used in <a href="#replace">replace</a>;
-	it can be combined with PCRE options.
+The following constants can be used for <em>regex-option</em>.
+Several options can be combined using a binary or <tt>|</tt> (pipe) operator. 
+E.g. <tt>(| 1 4)</tt> would combine options <tt>1</tt> and <tt>4</tt> or <tt>"is"</tt>
+when using letters for the two options.</p>
+
+<p>The last two options are specific for newLISP. The REPLACE_ONCE option is only 
+to be used in <a href="#replace">replace</a>; it can be combined with other PCRE options.</p>
+
+<p>Multiple options can be combined using a <tt>+</tt> (plus) or <tt>|</tt> (or) operator,
+e.g.: <tt>(| PCRE_CASELESS PCRE_DOTALL)</tt> or <tt>"is"</tt> when using letters as options.
 </p>
 
 <table width="98%" summary="regex options">
 <tr align="left"><th>PCRE name</th><th>no</th><th>description</th></tr>
-<tr><td>PCRE_CASELESS</td><td>1</td><td>treat uppercase like lowercase</td></tr>
-<tr><td>PCRE_MULTILINE</td><td>2</td><td>limit search at a newline like Perl's /m</td></tr>
-<tr><td>PCRE_DOTALL</td><td>4</td><td>. (dot) also matches newline</td></tr>
-<tr><td>PCRE_EXTENDED</td><td>8</td><td>ignore whitespace except inside char class</td></tr>
-<tr><td>PCRE_ANCHORED</td><td>16</td><td>anchor at the start</td></tr>
-<tr><td>PCRE_DOLLAR_ENDONLY</td><td>32</td><td>$ matches at end of string, not before newline</td></tr>
+<tr><td>PCRE_CASELESS</td><td>1 or i</td><td>treat uppercase like lowercase</td></tr>
+<tr><td>PCRE_MULTILINE</td><td>2 or m</td><td>limit search at a newline like Perl's /m</td></tr>
+<tr><td>PCRE_DOTALL</td><td>4 or s</td><td>. (dot) also matches newline</td></tr>
+<tr><td>PCRE_EXTENDED</td><td>8 or x</td><td>ignore whitespace except inside char class</td></tr>
+<tr><td>PCRE_ANCHORED</td><td>16 or A</td><td>anchor at the start</td></tr>
+<tr><td>PCRE_DOLLAR_ENDONLY</td><td>32 or D</td><td>$ matches at end of string, not before newline</td></tr>
 <tr><td>PCRE_EXTRA</td><td>64</td><td>additional functionality currently not used</td></tr>
 <tr><td>PCRE_NOTBOL</td><td>128</td><td>first ch, not start of line; ^ shouldn't match</td></tr>
 <tr><td>PCRE_NOTEOL</td><td>256</td><td>last char, not end of line; $ shouldn't match</td></tr>
-<tr><td>PCRE_UNGREEDY</td><td>512</td><td>invert greediness of quantifiers</td></tr>
+<tr><td>PCRE_UNGREEDY</td><td>512i or U</td><td>invert greediness of quantifiers</td></tr>
 <tr><td>PCRE_NOTEMPTY</td><td>1024</td><td>empty string considered invalid</td></tr>
-<tr><td>PCRE_UTF8</td><td>2048</td><td>pattern and strings as UTF-8 characters</td></tr>
+<tr><td>PCRE_UTF8</td><td>2048 or u</td><td>pattern and strings as UTF-8 characters</td></tr>
 <tr><td>REPLACE_ONCE</td><td>0x8000</td><td>replace only one occurrence only for use in <a href="#replace">replace</a></td></tr>
-<tr><td>PRECOMPILED</td><td>0x10000</td><td>pattern is pre-compiled, can only be combined with RREPLACE_ONCE 0x8000</td></tr>
+<tr><td>PRECOMPILED</td><td>0x10000 or p</td><td>pattern is pre-compiled, can only be combined with RREPLACE_ONCE 0x8000</td></tr>
 </table><br/>
 
 <p>The settings of the PCRE_CASELESS, PCRE_MULTILINE, PCRE_DOTALL, and PCRE_EXTENDED 
@@ -23323,7 +23431,7 @@ depending on the operation's success.
 syntax: (replace <em>exp-key</em> <em>list</em>)<br/><br/>
 
 syntax: (replace <em>str-key</em> <em>str-data</em> <em>exp-replacement</em>)<br/>
-syntax: (replace <em>str-pattern</em> <em>str-data</em> <em>exp-replacement</em> <em>int-regex-option</em>)</h4>
+syntax: (replace <em>str-pattern</em> <em>str-data</em> <em>exp-replacement</em> <em>regex-option</em>)</h4>
 
 <h3>List replacement</h3>
 
@@ -23452,9 +23560,9 @@ $count <span class='arw'>&rarr;</span> 1
 <p>
 The presence of a fourth parameter indicates that a regular expression search 
 should be performed with a regular expression pattern specified in <em>str-pattern</em> 
-and an option number specified in <em>int-option</em> (e.g., <tt>1</tt> (one) for 
+and an option number specified in <em>regex-option</em> (e.g., <tt>1</tt> (one) or "i" for 
 case-insensitive searching or <tt>0</tt> (zero) for a standard Perl Compatible Regular 
-Expression (PCRE) search). See <a href="#regex">regex</a> above for details.
+Expression (PCRE) search without options). See <a href="#regex">regex</a> above for details.
 </p>
 
 <p>
@@ -23852,7 +23960,7 @@ syntax: (save <em>str-file</em> <em>sym-1</em> [<em>sym-2</em> ... ])</h4>
 
 <a name="search"></a>
 <h2><span class="function">search</span></h2>
-<h4>syntax: (search <em>int-file</em> <em>str-search</em> [<em>bool-flag</em> [<em>int-options</em>]])</h4>
+<h4>syntax: (search <em>int-file</em> <em>str-search</em> [<em>bool-flag</em> [<em>regex-options</em>]])</h4>
 
 <p>
 Searches a file specified by its handle in <em>int-file</em> for a string in <em>str-search</em>.
@@ -23864,9 +23972,9 @@ of the file if nothing is found.</p>
 of the searched string. If <em>bool-flag</em> evaluates to <tt>true</tt>,
 then the file pointer is positioned at the end of the searched string.</p>
 
-<p> In <em>int-options</em>,  the options flags can be specified to perform 
+<p> In <em>regex-options</em>,  the options flags can be specified to perform 
 a PCRE regular expression search.  See the function <a href="#regex">regex</a> for details.
-If <em>int-options</em> is not specified a faster, plain string search is performed.
+If <em>regex-options</em> is not specified a faster, plain string search is performed.
 <tt>search</tt> returns the new file position or <tt>nil</tt> if nothing is found.
 </p>
 
@@ -26388,7 +26496,7 @@ resource statistics. Ten integers report the following status:</p>
 <tr><td>7</td><td>Pid of running newLISP process</td></tr>
 <tr><td>8</td><td>Version number as an integer constant</td></tr>
 <tr><td>9</td><td>Operating system constant:<br/>
-linux=1, bsd=2, osx=3, solaris=4,  win32=6, os/2=7, cygwin=8, tru64, unix=9, aix=10, android=11
+linux=1, bsd=2, osx=3, solaris=4,  win32=6, os/2=7, cygwin=8, tru64 unix=9, aix=10, android=11
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 11 will be set for ffilib (extended import/callback API) versions (add 1024)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;bit 10 will be set for IPv6 versions (add 512)<br/>

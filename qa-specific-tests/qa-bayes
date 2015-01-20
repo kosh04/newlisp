@@ -52,15 +52,17 @@
 (set 'Data:test-negative '(2 72))
 (set 'Data:total '(10 90))
 
+(pretty-print 80 " " "%1.15f")
 (setf result (bayes-query '(test-positive) Data true) )
-(println "result: " result " " '(0.3076923077 0.6923076923))
+(println "result: " result "  difference: " (map sub result '(0.3076923077 0.6923076923)))
 
 (setf result (bayes-query '(test-positive test-positive) Data true) )
-(println "result: " result " " '(0.64 0.36))
+(println "result: " result " difference: " (map sub result '(0.64 0.36)))
 
 (setf result (bayes-query '(test-positive test-positive test-positive) Data true) )
-(println "result: " result " " '(0.8767123288 0.1232876712))
+(println "result: " result " difference: " (map sub result '(0.8767123288 0.1232876712)))
 
+(pretty-print 80 " " "%1.15g")
 (exit)
 
 ; eof

@@ -66,6 +66,11 @@ int ret_sint32(int number)
     return(number);
     }
 
+int ret_sint32_void(void)
+    {
+    return(-1);
+    }
+
 unsigned int ret_uint32(unsigned int number)
     {
     return(number);

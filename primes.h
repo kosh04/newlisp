@@ -91,6 +91,7 @@ PRIMITIVE primitive[] =
 	{"set-ref",		p_setRef,	0},
 	{"set-ref-all",	p_setRefAll,0},
 	{"select",		p_select,	0},
+	{"collect",		p_collect,	0},
 	{"swap",		p_swap,		0}, 
 	{"slice",		p_slice,	0},
 	{"length",		p_length,	0},

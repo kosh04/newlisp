@@ -12,6 +12,7 @@
 ;; @version 3.43  - library load path upgraded for CentOS 6.x 
 ;; @version 3.44  - library load path upgraded for CentOS 6.x 
 ;; @version 3.45  - library load path upgraded for UBUNTU Linux 12.04
+;; @version 3.46  - add UTF-8 handling in documentation (Csfreebird July/2014)
 ;; @author Lutz Mueller 2003-2010, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
@@ -57,28 +58,29 @@
 ;;
 ;; <h3>Functions available</h3>
 ;; <pre>
-;;     MySQL:init ................ get a database handle MYSQL
-;;     MySQL:connect ............. connect to a database
-;;     MySQL:query ............... execute a SQL statement
-;;     MySQL:num-rows ............ rows in result of query
-;;     MySQL:num-fields .......... columns in result of query
-;;     MySQL:fetch-row ........... get row from the query result
-;;     MySQL:fetch-all ........... get all rows from the last query
-;;     MySQL:database ............ return all database names
-;;     MySQL:tables .............. return all tables names
-;;     MySQL:fields .............. return all fields in a table
-;;     MySQL:data-seek ........... position in result for fetching
-;;     MySQL:affected-rows ....... number of affected rows from operation
-;;     MySQL:inserted-id ......... last value of auto increment id operation
-;;     MySQL:escape .............. escapes SQL input string using mysql_real_escape_string
-;;     MySQL:error ............... get error message
-;;     MySQL:close-db ............ close database connection
+;; MySQL:init ................ get a database handle MYSQL
+;; MySQL:connect ............. connect to a database
+;; MySQL:query ............... execute a SQL statement
+;; MySQL:num-rows ............ rows in result of query
+;; MySQL:num-fields .......... columns in result of query
+;; MySQL:fetch-row ........... get row from the query result
+;; MySQL:fetch-all ........... get all rows from the last query
+;; MySQL:database ............ return all database names
+;; MySQL:tables .............. return all tables names
+;; MySQL:fields .............. return all fields in a table
+;; MySQL:data-seek ........... position in result for fetching
+;; MySQL:affected-rows ....... number of affected rows from operation
+;; MySQL:inserted-id ......... last value of auto increment id operation
+;; MySQL:escape .............. escapes SQL input string using mysql_real_escape_string
+;; MySQL:error ............... get error message
+;; MySQL:close-db ............ close database connection
 ;; </pre>
 ;; <h3>A typical MySQL session</h3>
 ;; The following code piece outlines a typical MySQL session:
+;;
 ;; @example
 ;; (module "mysql.lsp) ; load the module file
-;;
+;; 
 ;; (MySQL:init)       ; initialize
 ;; (MySQL:connect "192.168.1.10" "auser" "secret" "mydb") ; logon
 ;; (MySQL:query "select ...;") ; SQL query
@@ -90,6 +92,21 @@
 ;; connects with username '"auser"' password '"secret"' to a database with 
 ;; the name '"mydb"'. After connecting SQL statements are performed and
 ;; finally the program disconnects from the server.
+
+;; <h3>UTF-8 character encoding</h3>
+;; When using newLISP compiled for UTF-8, the following statements
+;; may be necessary at the beginning:
+;; <pre>
+;; (MySQL:query "SET character_set_client = utf8;")
+;; (MySQL:query "SET character_set_connection = utf8;")
+;; (MySQL:query "SET character_set_results = utf8;")
+;; </pre>
+;; To see all MySQL character variables:
+;; <pre>
+;; (MySQL:query "SHOW VARIABLES LIKE 'character%';")
+;; (dotimes (x (MySQL:num-rows)) (println (MySQL:fetch-row)))
+;; </pre>
+
 
 (context 'MySQL)
 
