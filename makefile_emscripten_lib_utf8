@@ -1,9 +1,7 @@
-# makefile for newLISP v. 10.5.x with UTF8 support for the Emscripten SDK
+# makefile for newLISP v. 10.5.x and after with UTF8 support for the Emscripten SDK
 #
-# As Jan 20, 2014 there are still problems with isome portions of -O1 
-# optimized code when handling certain setjmp code.
-# When taking out all -O1 everything runs fine, but 20 to 30 times
-# slower.
+# With Emscripten version v1.22.0 all execption handling related problems
+# known have been solved. (November 2014)
 #
 # see also: https://github.com/kripken/emscripten/wiki
 #
@@ -12,13 +10,13 @@
 # Does not implement the newLISP functions:
 #   semaphore, net-packet, net-service, fork, spawn, sync, abort
 #
-# Generates newlisp-js-lib.js and newlisp-js-lib.html.
-# The html file can be discarded use newlisp-x.x.x/util/newlisp-js.html instead
-#
 # Will not do file and network I/O functions in the sandboxed JavaScript 
 # environment
 #
-# this makefile has been tested on a MAC OSX 10.9 platform
+# Generates newlisp-js-lib.js and newlisp-js-lib.html.
+# The html file can be discarded use newlisp-x.x.x/util/newlisp-js.html instead
+#
+# this makefile has been tested on a MAC OSX 10.9/10 platforms
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o unix-lib.o
@@ -29,18 +27,11 @@ CC = emcc
 
 default: $(OBJS)
 	cp qa-specific-tests/qa-bench newlisp-js
+	cp modules/canvas.lsp newlisp-js
 	$(CC) $(OBJS) -m32 -O2 -o newlisp-js-lib.html -s EXPORTED_FUNCTIONS="['_newlispEvalStr']" \
 	-s MAX_SETJMPS=100 -s TOTAL_MEMORY=33554432 --closure 1 \
-	--embed-file newlisp-js/readme.txt --embed-file newlisp-js/qa-bench
-	rm newlisp-js/qa-bench
-
-
-# -s DISABLE_EXCEPTION_CATCHING=0
-# -s MAX_SETJMPS=100 
-# -s MAX_MEMORY=33554432 <- not known in 1.22.0
-# also: FAST_MEMORY, TOTAL_MEMORY, UNALIGNED_MEMORY
-# --embed-file path-to-mydir # for session file system
-# --closure 1 # minifies JS code extracting spaces, about 25% smaller
+	--embed-file newlisp-js/readme.txt --embed-file newlisp-js/qa-bench --embed-file newlisp-js/canvas.lsp
+	rm newlisp-js/qa-bench newlisp-js/canvas.lsp
 
 .c.o:
 	$(CC) -O2 --closure 1 $(CFLAGS) $<

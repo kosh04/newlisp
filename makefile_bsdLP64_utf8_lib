@@ -1,0 +1,18 @@
+# makefile for newLISP v. 10.x.x on BSD as a 64-bit shared library - newlisp.so -
+#
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o unix-lib.o
+
+CFLAGS = -m64 -fPIC -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -D_BSD -DNEWLISP64 -DSUPPORT_UTF8 -DLIBRARY
+
+CC = cc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m64 -lm -shared -o newlisp.so
+	strip newlisp.so
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_bsdLP64_utf8_lib
+

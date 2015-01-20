@@ -1,6 +1,6 @@
 /* newlisp.h - header file for newLISP
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -358,10 +358,10 @@ This is for 64bit large file support (LFS),
 /* following limits are only for parsing */
 #define MAX_COMMAND_LINE 1024 /* buffer length */
 #define MAX_SYMBOL 255 /* strlen() */
-#define MAX_HEX_NO 68 /* 16 + 0x */
-#define MAX_BIN_NO 66 /* 64 + 0B */
-#define MAX_DECIMALS 32 /* numbers with decimal point */
 #define MAX_DIGITS 1001 /* 1000 + sign, limitation only for parsing source */
+#define MAX_HEX_NO MAX_DIGITS /* 16 + 0x */
+#define MAX_BIN_NO MAX_DIGITS /* 64 + 0B */
+#define MAX_DECIMALS MAX_DIGITS /* 32, numbers with decimal point */
 
 #define MAX_FILE_BUFFER 0x40000
 #define MAX_BLOCK 4095
@@ -392,6 +392,7 @@ This is for 64bit large file support (LFS),
 #define SYMBOL_BUILTIN 0x40
 #define SYMBOL_FFI 0x100
 #define SYMBOL_MACRO 0x200
+#define SYMBOL_DESTRUCTIVE 0x400
 
 /* cell masks */
 

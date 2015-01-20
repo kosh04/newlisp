@@ -1,6 +1,6 @@
 /* nl-import.c --- shared library interface for newLISP
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ if(options != NULL && strcmp(options, "cdecl") ==  0)
 	type = CELL_IMPORT_CDECL;
 
 symbol = translateCreateSymbol(funcName, type, currentContext, TRUE);
-if(isFFIsymbol(symbol->flags)) /* don't redefine */
+if(isFFIsymbol(symbol->flags)) /* don't redefine return current def */
         return (copyCell((CELL *)symbol->contents));
 
 if(isProtected(symbol->flags))
@@ -1079,11 +1079,11 @@ CELL * ffiTypeToCell(ffi_type *type, void * result)
     else if(type == &ffi_type_pointer)
         return stuffInteger(*((UINT  *)result));
     else if(type == &ffi_type_double)
-        return stuffFloat((double *)result);
+        return stuffFloat(*(double *)result);
     else if(type == &ffi_type_float)
         {
         valueDouble = *(float *)result;
-        return stuffFloat(&valueDouble);
+        return stuffFloat(valueDouble);
         }
     else if(type == &ffi_type_sint8)
         return stuffInteger(*((char *)result));

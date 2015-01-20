@@ -8,7 +8,7 @@ CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE
 # or without readline lib
 #CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -D_BSD -DSUPPORT_UTF8
 
-CC = gcc
+CC = cc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m32 -g -lm -lreadline -lncurses -o newlisp

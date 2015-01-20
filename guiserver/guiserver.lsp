@@ -11,6 +11,7 @@
 ;; @version 1.53 doc fixes
 ;; @version 1.60 new table functions, new naming gs:table-show-row-number
 ;; @version 1.61 more options for gs:scroll-pane added by FdB
+;; @version 1.62 doc corrections
 ;; @author LM, 2008, 2009, 2010, Unya 2012, FdB 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -126,12 +127,12 @@
 ;; A second method to start a newLISP-GS application starts the 'guiserver.jar' first, which then
 ;; starts the newLISP application:
 ;; <pre>
-;;     Java -jar /usr/share/newlisp/guiserver.jar 47011 /usr/home/aUser/MyApplication.lsp
+;;     java -jar /usr/share/newlisp/guiserver.jar 47011 /usr/home/aUser/MyApplication.lsp
 ;; </pre>
 ;; A different port number can be used. Port numbers below 1024 need administrator
 ;; permissions. Optionally a splash screen can be specified as the last parameter:
 ;; <pre>
-;;     Java -jar /usr/share/newlisp/guiserver.jar 47011 /home/apps/myapp.lsp /local/newLISP128.png
+;;     java -jar /usr/share/newlisp/guiserver.jar 47011 /home/apps/myapp.lsp /local/newLISP128.png
 ;; </pre>
 ;; The example specifies an image inside 'guiserver.jar'. Any other image path on the local file system
 ;; can be used.

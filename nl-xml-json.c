@@ -1,6 +1,6 @@
 /* nl-xml-json.c - newLISP XML and JSON interface 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -895,6 +895,7 @@ size_t len;
 int isFloat = FALSE;
 double floatNumber;
 SYMBOL * falseSymbol;
+SYMBOL * nullSymbol;
 
 while((unsigned char)*jsonStr <= ' ' && *jsonStr != 0) ++jsonStr; /* whitespace */
 
@@ -946,7 +947,7 @@ number[len] = 0;
 if(isFloat)
     {
     floatNumber = atof(number);
-    return(stuffFloat(&floatNumber));
+    return(stuffFloat(floatNumber));
     }
 else
     return(stuffInteger(atol(number)));
@@ -1012,8 +1013,9 @@ switch(*jsonStr)
     case 'n':
         if(strncmp(jsonStr, "null", 4) == 0)
             {
+            nullSymbol = translateCreateSymbol("null", CELL_SYMBOL, mainContext, TRUE);
+            cell = stuffSymbol(nullSymbol);
             ptr = jsonStr + 4;
-            cell = stuffSymbol(nilSymbol);
             break;
             }
     default:

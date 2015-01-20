@@ -1,6 +1,6 @@
 {
   "name": "newLISP",
-  "version": "10.5.4",
+  "version": "10.6.2",
   "repo": "newlisp.org",
   "description": "Lisp-like scripting language",
   "keywords": ["statistics", "AI", "networking", "multicore", "distributed processing"],

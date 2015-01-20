@@ -1,7 +1,7 @@
 /* nl-math.c
 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you cann redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ if(cell->type == CELL_FLOAT)
     {
     floatValue = getDirectFloat(cell);
     if(floatValue < 0.0) floatValue = floatValue * -1.0;
-    return(stuffFloat(&floatValue));
+    return(stuffFloat(floatValue));
     }
 
 getInteger64Ext(cell, &intValue, FALSE);
@@ -748,7 +748,7 @@ else
     fNum = atof(result);
     }
 
-return(stuffFloat(&fNum)); 
+return(stuffFloat(fNum)); 
 }
 
 
@@ -1217,9 +1217,9 @@ CELL * makeListFromFloats(double num1, double num2)
     CELL * list;
 
     list = getCell(CELL_EXPRESSION);
-    list->contents = (UINT)stuffFloat(&num1);
+    list->contents = (UINT)stuffFloat(num1);
     cell = (CELL *)list->contents;
-    cell->next = stuffFloat(&num2);
+    cell->next = stuffFloat(num2);
     return(list);
     }
 
@@ -1340,17 +1340,17 @@ if(params->type != CELL_NIL)
 if( n == 0)
     {
     randnum = getRandom(offset, scale, type);
-    return(stuffFloat(&randnum));
+    return(stuffFloat(randnum));
     }
 
 dist = getCell(CELL_EXPRESSION);
 randnum = getRandom(offset, scale, type);
-dist->contents = (UINT)stuffFloat(&randnum);
+dist->contents = (UINT)stuffFloat(randnum);
 cell = (CELL*)dist->contents;
 for(i = 1; i < n; i++)
     {
     randnum = getRandom(offset, scale, type);
-    cell->next = stuffFloat(&randnum);
+    cell->next = stuffFloat(randnum);
     cell = cell->next;
     }
 
@@ -1453,7 +1453,7 @@ getFloat(params, &z);
 
 p = 0.5 + erf(z/SQRT2) / 2.0;
 
-return(stuffFloat((double *)&p));
+return(stuffFloat(p));
 }
 
 
@@ -1485,7 +1485,7 @@ while ((maxZ - minZ) > Z_EPSILON)
 
 Z = (Zval > 5.999999) ? sign * 6.0 : Zval * sign;
 
-return(stuffFloat(&Z));
+return(stuffFloat(Z));
 }
 
 
@@ -1540,7 +1540,7 @@ CELL * probability_x(CELL * params, int type)
 double x;
 UINT df1;
 UINT df2;
-double prob;
+double prob = 0.0;
 
 params = getFloat(params, &x);
 params = getInteger(params, &df1);
@@ -1562,7 +1562,7 @@ switch(type)
         break;
     }
 
-return(stuffFloat(&prob));
+return(stuffFloat(prob));
 }
 
 
@@ -1618,7 +1618,7 @@ x = critical_value((1.0 - p), df1, df2, 99999.0, type);
 
 if(x < NEWTON_EPSILON) x = 0.0;
 
-return(stuffFloat(&x));
+return(stuffFloat(x));
 }
 
 
@@ -1653,7 +1653,7 @@ getFloat(params, &b);
 
 beta = exp(gammaln(a) + gammaln(b) - gammaln(a+b));
 
-return(stuffFloat(&beta));
+return(stuffFloat(beta));
 }
 
 CELL * p_betai(CELL * params)
@@ -1671,7 +1671,7 @@ result = betai(a,b,x);
 if(paramError)
     return(nilCell);
     
-return(stuffFloat(&result));
+return(stuffFloat(result));
 }
 
 
@@ -1688,7 +1688,7 @@ result = gammaln(x);
 if(paramError)
     return(nilCell);
     
-return(stuffFloat(&result));
+return(stuffFloat(result));
 }
 
 
@@ -1705,7 +1705,7 @@ result = gammap(a, x);
 printf("in p_gammai() result = %f\n", result);
 */
 
-return(stuffFloat(&result));
+return(stuffFloat(result));
 }
 
 
@@ -1893,7 +1893,7 @@ bico = exp(gammaln(n + 1.0) - gammaln(k + 1.0) - gammaln(n - k + 1.0));
 
 binomial = bico * pow(p, (double)k) * pow(1.0 - p, (double)(n - k));
 
-return(stuffFloat(&binomial));
+return(stuffFloat(binomial));
 }
 
 /* -------------------------------------------------------------------------------- */
@@ -1930,7 +1930,7 @@ if(isNumber(pCell->type))
     for(i = 1; i < count; i++)
         {
         fromFlt *= factFlt;
-        cell->next = stuffFloat(&fromFlt);
+        cell->next = stuffFloat(fromFlt);
         cell = cell->next;
         }
     }
@@ -2135,7 +2135,7 @@ else
     pmt = - (pv * inc + fv) / ((1 + rate * type) * ((inc - 1) / rate));
     }
   
-return stuffFloat(&pmt);
+return stuffFloat(pmt);
 }
 
 
@@ -2166,7 +2166,7 @@ else
     pv = (-pmt * (1 + rate * type) * ((inc - 1) / rate) - fv) / inc;
     }
   
-return stuffFloat(&pv);
+return stuffFloat(pv);
 }
 
 
@@ -2193,7 +2193,7 @@ else
     fv = -pmt * (1 + rate * type) * ((inc - 1) / rate) - pv * inc;
     }
   
-return stuffFloat(&fv);
+return stuffFloat(fv);
 }
 
 
@@ -2225,7 +2225,7 @@ else if(rate > -1.0)
 else nper = sqrt(-1.0);   /* NaN */
 
 
-return stuffFloat(&nper);
+return stuffFloat(nper);
 }
 
 
@@ -2250,7 +2250,7 @@ while(list !=  nilCell)
     list = list->next;
     }
 
-return stuffFloat(&cashFlow);
+return stuffFloat(cashFlow);
 }
 
 
@@ -2405,10 +2405,14 @@ freeMemory(timesVec);
 if(result == IRR_ERROR)
     return(nilCell);
 
-return(stuffFloat(&result));
+return(stuffFloat(result));
 }
 
 /* ----------------------------------- CRC32 ----------------------- */
+
+/* see also https://github.com/mattsta/crcspeed/blob/master/crc64speed.c
+   for fast 64-bt crc and here: https://matt.sh/redis-crcspeed
+*/
 
 #ifdef CRC16
 unsigned short crc16(unsigned char * buff, int len)
@@ -2450,23 +2454,28 @@ return(stuffInteger64(crc));
    
 unsigned int update_crc(unsigned int crc, unsigned char *buf, int len)
 {
-unsigned int crc_table[256];
+/* unsigned int crc_table[256]; */
+static unsigned int * crc_table = NULL; 
 unsigned int c;
 int n, k;
- 
-/* make crc table */  
-for (n = 0; n < 256; n++) 
-    {
-    c = (unsigned int) n;
-    for (k = 0; k < 8; k++) 
-       {
-       if (c & 1)
-           c = 0xedb88320L ^ (c >> 1);
-       else
-           c = c >> 1;
-       }
-   crc_table[n] = c;
-   }
+
+if(crc_table == NULL)
+    { 
+    /* make crc table */  
+    crc_table = (unsigned int *)malloc(sizeof(unsigned int) * 256);
+    for (n = 0; n < 256; n++) 
+        {
+        c = (unsigned int) n;
+        for (k = 0; k < 8; k++) 
+            {
+            if (c & 1)
+                c = 0xedb88320L ^ (c >> 1);
+            else
+            c = c >> 1;
+            }
+        crc_table[n] = c;
+        }
+    }
 
 c = crc;   
 
@@ -2878,12 +2887,12 @@ for(idx = 0; idx < maxIdx; idx++)
     if(idx == 0)
         {
         result = getCell(CELL_EXPRESSION);
-        result->contents = (UINT)stuffFloat(postP + idx);
+        result->contents = (UINT)stuffFloat(*(postP + idx));
         cell = (CELL *)result->contents;
         }
     else
         {
-        cell->next = stuffFloat(postP + idx);
+        cell->next = stuffFloat(*(postP + idx));
         cell = cell->next;
         }
     }
@@ -2893,7 +2902,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2014 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2015 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,
@@ -3522,12 +3531,12 @@ else skew = curt = 0.0;
 
 cell = getCell(CELL_EXPRESSION);
 addList(cell, stuffInteger(N));
-addList(cell, stuffFloat(&mean));
-addList(cell, stuffFloat(&avdev));
-addList(cell, stuffFloat(&sdev));
-addList(cell, stuffFloat(&var));
-addList(cell, stuffFloat(&skew));
-addList(cell, stuffFloat(&curt));
+addList(cell, stuffFloat(mean));
+addList(cell, stuffFloat(avdev));
+addList(cell, stuffFloat(sdev));
+addList(cell, stuffFloat(var));
+addList(cell, stuffFloat(skew));
+addList(cell, stuffFloat(curt));
 
 return(cell);
 }
@@ -3617,13 +3626,13 @@ else
 TTEST_RESULT:
 tprob = 2.0 * (1.0 - probT(fabs(t), df)); /* two tailed */
 cell = getCell(CELL_EXPRESSION);
-addList(cell, stuffFloat(&meanx));
-addList(cell, stuffFloat(&meany));
-addList(cell, stuffFloat(&sdevx));
-addList(cell, stuffFloat(&sdevy));
-addList(cell, stuffFloat(&t));
+addList(cell, stuffFloat(meanx));
+addList(cell, stuffFloat(meany));
+addList(cell, stuffFloat(sdevx));
+addList(cell, stuffFloat(sdevy));
+addList(cell, stuffFloat(t));
 addList(cell, stuffInteger(df));
-addList(cell, stuffFloat(&tprob));
+addList(cell, stuffFloat(tprob));
 
 return(cell);
 }
@@ -3669,12 +3678,12 @@ df = Nx - 2;
 tprob = 2 * (1.0 - probT(fabs(t), df)); /* two tailed */
 
 cell = getCell(CELL_EXPRESSION);
-addList(cell, stuffFloat(&corr));
-addList(cell, stuffFloat(&b0)); /* y = b0 + b1*x */
-addList(cell, stuffFloat(&b1));
-addList(cell, stuffFloat(&t));
+addList(cell, stuffFloat(corr));
+addList(cell, stuffFloat(b0)); /* y = b0 + b1*x */
+addList(cell, stuffFloat(b1));
+addList(cell, stuffFloat(t));
 addList(cell, stuffInteger(df));
-addList(cell, stuffFloat(&tprob));
+addList(cell, stuffFloat(tprob));
 
 return(cell);
 }
@@ -4354,7 +4363,7 @@ int * numPtr;
 #else
         if(isinf(fnum))
 #endif
-    errorProcExt2(ERR_CANNOT_CONVERT, stuffFloat(&fnum));
+    errorProcExt2(ERR_CANNOT_CONVERT, stuffFloat(fnum));
         
 sign = fnum < 0 ? -1 : 1;
 fnum = fnum * sign;

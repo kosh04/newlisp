@@ -1,6 +1,6 @@
 /* n-list.c
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1092,7 +1092,7 @@ else
     step = (fromFlt > toFlt) ? -step : step;
     cntFlt = (fromFlt < toFlt) ? (toFlt - fromFlt)/step : (fromFlt - toFlt)/step;
     stepCnt = (cntFlt > 0.0) ? floor(cntFlt + 0.0000000001) : floor(-cntFlt + 0.0000000001);
-    cell = stuffFloat(&fromFlt);
+    cell = stuffFloat(fromFlt);
     }
 sequence = makeCell(CELL_EXPRESSION, (UINT)cell);
 
@@ -1108,7 +1108,7 @@ for(i = 1; i <= stepCnt; i++)
     else
         {
         interval = fromFlt + i * step;
-        cell->next = stuffFloat(&interval);
+        cell->next = stuffFloat(interval);
         }
     cell = cell->next;
     }
@@ -1629,21 +1629,27 @@ return(result);
 }
 
 /* 
-    (collect <expr>) 
+    (collect <expr> [int-max-count]) 
     collect results of evaluating <expr> while not nil
+    and optional max count is not reached
 */
 CELL * p_collect(CELL * params)
 {
 CELL * result;
 CELL * cell;
 UINT * resultIdxSave = resultStackIdx;
+UINT count = MAX_LONG;
 
 result = getCell(CELL_EXPRESSION);
-for(;;)
+if(params->next != nilCell)
+    getInteger(params->next, &count);
+
+while(count > 0)
     {
     cell = evaluateExpression(params);
     if(isNil(cell)) break;
     addList(result, copyCell(cell));
+    --count;
     cleanupResults(resultIdxSave);
     }
 

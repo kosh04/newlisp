@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.6.1 Manual and Reference</title>
+   <title>newLISP v.10.6.2 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -58,20 +58,20 @@ b	{
 
 
 body, h1, h2, h3 {
-	font-family: Lucida Sans, Helvetica,  sans-serif;
+	font-family: Helvetica, sans-serif;
 	color: #404040;
 	line-height: 120%;
  	}
 
 h1, h2, h3 {
-	font-family: Lucida Sans, Helvetica,  sans-serif;
+	font-family: Helvetica,  sans-serif;
 	color: #101010;
 	line-height: 120%;
     font-weight: 100;
  	}
 
 p {
-	font-family: Lucida Sans, Helvetica,  sans-serif;
+	font-family: Helvetica Neue, Verdana, Lucida Sans, sans-serif;
 	color: #404040;
 	line-height: 120%;
  	}
@@ -148,14 +148,14 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.6.1</h2>
+<h2>User Manual and Reference v.10.6.2</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2014 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2015 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -530,12 +530,16 @@ mode.</p>
 is still recognized but deprecated since version 10.3.0. The old writing will 
 be removed in a future version.</p>
 
+<p>Since version 10.4.2 <tt>if-not</tt> is deprecated and will be removed in a
+future version.</p>
+
 <p>Since version 10.4.6 newLISP has a built-in function <a href="#json-parse">
 json-parse</a> for translating JSON data into S-expressions. The module
 file <tt>json.lsp</tt> is removed from the distribution.</p>
 
 <p>Since version 10.4.8 newLISP has built-in support for unlimited precision
 integers. This makes the GNU GMP module <tt>gmp.lsp</tt> obsolete.</p>
+
 
 <br/>
 
@@ -2506,8 +2510,28 @@ variable, list, array, or string:</p>
 </tr>
 
 <tr>
+<td><a href="#define-macro">define-macro</a></td>
+<td>sets the contents of a variable</td>
+</tr>
+
+<tr>
 <td><a href="#inc">inc</a></td>
 <td>increments a number referenced by a variable, list or array</td>
+</tr>
+
+<tr>
+<td><a href="#let">let</a></td>
+<td>declares and initializes local variables</td>
+</tr>
+
+<tr>
+<td><a href="#letn">letn</a></td>
+<td>initializes local variables incrementally, like nested lets</td>
+</tr>
+
+<tr>
+<td><a href="#letex">letex</a></td>
+<td>expands local variables into an expression, then evaluates</td>
 </tr>
 
 <tr>
@@ -4846,6 +4870,14 @@ since <tt>1</tt> is still parsed as the number one.
 
 <h3>Numbers</h3>
 
+<p>When parsing binary, hex, decimal, float and integer numbers, up to
+1000 digits are parsed when present. The rest will be read as new token(s).
+Note that IEEE 754 64-bit doubles distinguish only up to 16 significant
+digits. If more than 308 digits are present before the decimal point, the
+number will convert to <tt>inf</tt> (infinity). For big integers the 1000 
+limitation exists only when parsing source. There is no limit when a result 
+of big integers math exceeds 1000 digits.</p>
+
 <p>
 newLISP recognizes the following number formats:
 </p>
@@ -4887,7 +4919,8 @@ letter L.</p>
 <b>Hexadecimals</b> start with a <tt>0x</tt> (or <tt>0X</tt>),  
 followed by any combination of the hexadecimal digits: 
 <tt>0123456789abcdefABCDEF</tt>. 
-Any other character ends the hexadecimal number.
+Any other character ends the hexadecimal number. Only up to 16 hexadecimal digits
+are valid and any more digits are ignored.
 </p>
 
 <!-- example -->
@@ -4900,7 +4933,8 @@ Any other character ends the hexadecimal number.
 
 <p>
 <b>Binaries</b> start with a <tt>0b</tt> (or <tt>0B</tt>),
-followed by up to 64 1's or 0s. Any other character ends the binary number.
+followed by up to 64 bits coded with 1's or 0s. Any other character ends the binary number.
+Only up to 64 bits are valid and any more bits are ignored.
 </p>
 
 <!-- example -->
@@ -4914,7 +4948,8 @@ followed by up to 64 1's or 0s. Any other character ends the binary number.
 <p>
 <b>Octals</b> start with an optional <tt>+</tt> (plus) or <tt>-</tt> (minus) sign and a <tt>0</tt> (zero), 
 followed by any combination of the octal digits: <tt>01234567</tt>. 
-Any other character ends the octal number.
+Any other character ends the octal number. Only up to 21 octal digits are valid
+and any more digits are ignored.
 </p>
 
 <!-- example -->
@@ -4936,6 +4971,8 @@ this would make them octal numbers instead of floating points.
 A single <tt>.</tt> (decimal point) can appear anywhere within
 a floating point number, including at the beginning.
 </p>
+
+<p>Only 16 digits are siginificant and any more digits are ignored.</p>
 
 <!-- example -->
 
@@ -5132,9 +5169,11 @@ or a place referenced by functions like <a href="#first">first</a>, <a href="#la
 
 
 <h3>str</h3>
-<p>
-A string or an expression that evaluates to a string.
-</p>
+
+<p>A string or an expression that evaluates to a string.</p>
+
+<p>Depending on the length and processing of special characters, strings are delimited
+by either quotes <tt>""</tt>, braces <tt>{}</tt> or <tt>[text][/text]</tt> tags</p>
 
 <pre>
 "Hello", (append first-name  " Miller")
@@ -5560,7 +5599,7 @@ arithmetic">
 
 <tr>
 <td><a href="#letn">letn</a></td>
-<td>initializes local variables incrementally, like <em>nested lets</em></td>
+<td>initializes local variables incrementally, like nested lets</td>
 </tr>
 
 <tr>
@@ -7746,14 +7785,14 @@ after the <tt>!</tt>:</p>
 
 <p>
 The functions that use regular expressions 	(<a href="#directory">directory</a>,
-<a href="#ends-with">ends-with</a>, <a href="#find">find</a>, <a href="#parse">parse</a>, 
-<a href="#regex">regex</a>, <a href="#search">search</a>, <a href="#starts-with">starts-with</a> 
-and <a href="#replace">replace</a>) all bind their results to the predefined system variables 
-<tt>$0</tt>, <tt>$1</tt>, <tt>$2</tt>&ndash;<tt>$15</tt> after or during the function's 
-execution. System variables can be treated the same as any other symbol. As an alternative, 
-the contents of these variables may also be accessed by using <tt>($ 0)</tt>, <tt>($ 1)</tt>, 
-<tt>($ 2)</tt>, etc. This method allows indexed access (i.e., <tt>($ i)</tt>, where <tt>i</tt> 
-is an integer).</p>
+<a href="#ends-with">ends-with</a>, <a href="#find">find</a>, <a href="#find-all">find-all</a>, 
+<a href="#parse">parse</a>, <a href="#regex">regex</a>, <a href="#search">search</a>, 
+<a href="#starts-with">starts-with</a> and <a href="#replace">replace</a>) 
+all bind their results to the predefined system variables <tt>$0</tt>, <tt>$1</tt>, 
+<tt>$2</tt>&ndash;<tt>$15</tt> after or during the function's execution. System variables 
+can be treated the same as any other symbol. As an alternative, the contents of these 
+variables may also be accessed by using <tt>($ 0)</tt>, <tt>($ 1)</tt>, <tt>($ 2)</tt>, 
+etc. This method allows indexed access (i.e., <tt>($ i)</tt>, where <tt>i</tt> is an integer).</p>
 
 <!-- example -->
 
@@ -8535,11 +8574,15 @@ to transfer files to remote newLISP server nodes.
 
 <a name="apply"></a>
 <h2><span class="function">apply</span></h2>
-<h4>syntax: (apply <em>func</em> <em>list</em> [<em>int-reduce</em>])</h4>
+<h4>syntax: (apply <em>func</em> <em>list</em> [<em>int-reduce</em>])<br/>
+syntax: (apply <em>func</em>)</h4>
 
 <p>Applies the contents of <em>func</em> (primitive, user-defined function, or 
 lambda expression)  to the arguments in <em>list</em>. Only functions and
 operators with standard evaluation of their arguments can be applied.</p>
+
+<p>In the second syntax <tt>apply</tt> is used on functions without any 
+arguments.</p>
 
 <!-- example -->
 
@@ -10324,13 +10367,21 @@ lst  <span class='arw'>&rarr;</span> (a b (c d) e)
 
 <a name="collect"></a>
 <h2><span class="function">collect</span></h2>
-<h4>syntax: (collect <em>exp</em>)</h4>
+<h4>syntax: (collect <em>exp</em> [<em>int-max-count</em>])</h4>
 
 <p>Evaluates the expression in <em>exp</em>  and collects the results in a list
-until evaluation of <em>exp</em> returns <tt>nil</tt>:</p>
+until evaluation of <em>exp</em> returns <tt>nil</tt>.</p>
+
+<p>Optionally a maximum count of elements can be specified in <em>int-max-count</em>.</p>
 
 <pre>
-(collect (if (&lt;= (inc x) 5) x)) <span class='arw'>&rarr;</span> (1 2 3 4 5)
+; collect results until nil is returned
+(set 'x 0)
+(collect (if (&lt;= (inc x) 10) x)) <span class='arw'>&rarr;</span> (1 2 3 4 5 6 7 8 9 10)
+
+; collect results until nil is returned or 6 results are collected
+(set 'x 0)
+(collect (if (&lt;= (inc x) 10) x) 6) <span class='arw'>&rarr;</span> (1 2 3 4 5 6)
 </pre>
 
 <br/><br/>
@@ -11096,16 +11147,26 @@ in newLISP:</p>
 
 
 <pre>
+; set up 32-bit version of machine code
 (set 'foo-code (append
      (pack "bbbbbbbbbb" 0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D)
      (if (= ostype "Win32") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
-(set 'foo print)
-(cpymem (pack "ld" (if (= ostype "Win32") 8456 4360)) (first (dump foo)) 4)
-(cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
-(set 'foo-name "foo")
-(cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)
 
-(foo 3 4)  <span class='arw'>&rarr;</span>  7
+; put a function cell template into foo, protect symbol from deletion
+(constant 'foo print)
+
+; put the correct type, either 'stdcall' or 'cdecl'
+(cpymem (pack "ld" (if (= ostype "Win32") 8456 4360)) (first (dump foo)) 4)
+
+; put the address of foo-code into the new function cell
+(cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
+
+; take the name address from the foo symbol, copy into function cell
+(set 'sym-name (first (unpack "lu" (+ (address 'foo) 8))))
+(cpymem (pack "ld" sym-name) (+ (first (dump foo)) 8) 4)
+
+; test the new function
+(println "3 * 4 -> " (foo 3 4))
 </pre>
 
 <p>The last example will not work on all hardware platforms and OSs.</p>
@@ -11894,7 +11955,7 @@ special syntax forms with non-standard evaluation patterns of arguments.
 Functions created using <tt>define-macro</tt> can be combined with template 
 expansion using <a href="#expand">expand</a> or <a href="#letex">letex</a>.</p>
 
-<p>Since v.10.5.8, newLISP also as expansion macros using <a href="#macro">macro</a>.</p>
+<p>Since v.10.5.8, newLISP also has expansion macros using <a href="#macro">macro</a>.</p>
 
 <p>Defines the new fexpr <em>sym-name</em>, with optional arguments <em>sym-param-1</em>. 
 <tt>define-macro</tt> is equivalent to assigning a lambda-macro expression to a symbol. 
@@ -14496,17 +14557,18 @@ the recursion level when flattening the list:</p>
 <h4>syntax: (fn (<em>list-parameters</em>) <em>exp-body</em>)</h4>
 
 <p>
-	<tt>fn</tt> is used to define anonymous functions, 
-	which are frequently used in <a href="#map">map</a>,
-	<a href="#sort">sort</a>, 
-	and many other functions where functions can be used as arguments.
+<tt>fn</tt> or <tt>lambda</tt> are used to define anonymous functions, 
+which are frequently used in <a href="#map">map</a>, <a href="#sort">sort</a>, 
+and all other expressions where functions can be used as arguments.
+The <tt>fn</tt> or <tt>lambda</tt> word does not exist on its own as a symbol,
+but indicates a special list type: the <em>lambda list</em>. Together with <tt>fn-macro</tt>
+and <tt>lambda-macro</tt> these terms are recognized during source parsing. They indicate a 
+specialized type of list which can be used and applied like a function or operator. 
 </p>
 
 <p>
-	Using an anonymous function 
-	eliminates the need to define 
-	a new function with <a href="#define">define</a>.
-	Instead, a function is defined on the fly:
+Using an anonymous function eliminates the need to define a new function with 
+<a href="#define">define</a>. Instead, a function is defined on the fly:
 </p>
 
 <!-- example -->
@@ -14520,17 +14582,15 @@ the recursion level when flattening the list:</p>
 
 
 <p>
-	The example defines the function <em>fn(x)</em>, 
-	which takes an integer (<em>x</em>) and doubles it. 
-	The function is <em>mapped</em> onto a list of arguments 
-	using <a href="#map">map</a>. 
-	The second example shows strings being sorted by length.
+The example defines the function <em>fn(x)</em>, which takes an integer 
+(<em>x</em>) and doubles it.  The function is <em>mapped</em> onto a list of 
+arguments using <a href="#map">map</a>. The second example shows strings being 
+sorted by length.
 </p>
 
 <p>
-	The <a href="#lambda">lambda</a> function 
-	(the longer, traditional form)
-	can be used in place of <tt>fn</tt>.
+The <a href="#lambda">lambda</a> function (the longer, traditional form of writing)
+can be used in place of <tt>fn</tt>.
 </p>
 
 <br/><br/>
@@ -16483,11 +16543,9 @@ description and the last scan position of the parser.</p>
 
 <pre>
 ; failed parse returns nil
-
 (json-parse [text]{"address" "http://example.com"}[/text]) <span class='arw'>&rarr;</span> nil
 
 ; inspect the error information
-
 (json-error) <span class='arw'>&rarr;</span> ("missing : colon" 11)
 </pre>
 
@@ -16497,10 +16555,16 @@ description and the last scan position of the parser.</p>
 <h2><span class="function">json-parse</span></h2>
 <h4>syntax: (json-parse <em>str-json-data</em>)</h4>
 
-<p>This function parses JSON formatted text and translated it to newLISP S-expressions.
-All data types conforming to the ECMA-262 standard are translated. The resulting lists
-from JSON object data can be processed using <a href="#assoc">assoc</a>, 
-<a href="#lookup">lookup</a> and <a href="#ref">ref</a>.</p>
+<p>This function parses JSON formatted text and translates it to newLISP S-expressions.
+All data types conforming to the ECMA-262 standard are translated. The JSON values 
+<tt>false</tt> and <tt>null</tt> will be represented by the symbols <tt>false</tt> 
+and <tt>null</tt> in the symbolic newLISP expressions. Arrays in JSON will be represented 
+by lists in newLISP. The resulting lists from JSON object data can be processed using 
+<a href="#assoc">assoc</a>, <a href="#lookup">lookup</a> and <a href="#ref">ref</a>.</p>
+
+<p>For JSON attribute values not recognized or wrong JSON syntax, <tt>json-parse</tt> 
+returns <tt>nil</tt> and <a href="#json-error">json-error</a> can be used to retrieve
+the error text.</p>
 
 <p>The following example shows a nested JSON object from a file <tt>person.json</tt>:</p>
 
@@ -21488,9 +21552,9 @@ returns the current settings or the new settings when parameters are specified.
 <pre>
 (pretty-print)  <span class='arw'>&rarr;</span> (80 " " "&#037;1.15g")  ; default setting
 
-(pretty-print 90 "\t")  <span class='arw'>&rarr;</span> (90 "\t")
+(pretty-print 90 "\t")  <span class='arw'>&rarr;</span> (90 "\t" "&#037;1.15g")
 
-(pretty-print 100)  <span class='arw'>&rarr;</span> (100 "\t") 
+(pretty-print 100)  <span class='arw'>&rarr;</span> (100 "\t" "&#037;1.15g") 
 
 (sin 1)    <span class='arw'>&rarr;</span> 0.841470984807897 
 (pretty-print 80 " " "&#37;1.3f")
@@ -23645,7 +23709,8 @@ be used to change elements in a list.</p>
 <a name="reset"></a>
 <h2><span class="function">reset</span></h2>
 <h4>syntax: (reset)<br/>
-syntax: (reset true)</h4>
+syntax: (reset true)<br/>
+syntax: (reset <em>int-max-cells</em>)</h4>
 
 <p>
 In the first syntax, <tt>reset</tt> returns to the top level of evaluation,
@@ -23656,8 +23721,7 @@ using the saved variable environments on the stack. It also throws an error
 Since version 10.5.5 <tt>reset</tt> also interrupts command line parameter
 processing.</p>
 
-<p><tt>reset</tt> may return memory that was claimed by newLISP
-to the operating system. <tt>reset</tt> walks through the entire cell space, 
+<p><tt>reset</tt> walks through the entire cell space, 
 which may take a few seconds in a heavily loaded system.</p>
 
 <p><tt>reset</tt> occurs automatically after an error condition.</p>
@@ -23667,6 +23731,28 @@ and start a new clean newLISP process with the same command-line parameters.
 This mode will only work when newLISP was started using its full path-name, 
 e.g. <tt>/usr/bin/newlisp</tt> instead of only <tt>newlisp</tt>. This mode is 
 not available on Win32.</p>
+
+<p>In the third syntax. <tt>reset</tt> will change the maximum cell count allowed
+in the system. This number is also reported as the second number in the list 
+by <a href="#sys-info">sys-info</a>. On 64-bit newLISP one lisp cell occupies
+32 bytes, or 16 bytes on the 32-bit version. This does not include
+string memory, which may be pointed to by cells.</p>
+
+<p>The minimum cell count is 4095, trying to specify less will set it to 4095.
+The program will exit when trying to allocate more.</p>
+
+<pre>
+(sys-info)  <span class='arw'>&rarr;</span> (437 576460752303423488 409 1 0 2048 0 60391 10602 1411)
+
+; allocate about 1 Mbyte of cell memory on 64-bit newlisp
+(reset 32768) <span class='arw'>&rarr;</span> true
+
+(sys-info)  <span class='arw'>&rarr;</span> (437 32768 409 1 0 2048 0 60392 10602 1411)
+</pre>
+
+<p>Resetting the maximum cell count will not restart the system and can be done at any point
+in a program. Cell memory is allocated in blocks of 4095 cells, which is also initial 
+minimum configuration.</p>
 
 <br/><br/>
 
@@ -25452,10 +25538,12 @@ milliseconds specified in <em>num-milli-seconds</em>.
 </pre>
 
 
-<p>On some platforms, <tt>sleep</tt> is only available 
-with a resolution of one second. In this case,
-the parameter <em>int-milli-seconds</em> 
+<p>On some platforms, <tt>sleep</tt> is only available with a resolution 
+of one second. In this case, the parameter <em>int-milli-seconds</em> 
 will be rounded to the nearest full second.</p>
+
+<p>A <tt>sleep</tt> may be cut short by a finishing child process started
+with <a href="#fork">fork</a> or <a href="#spawn">spawn</a>.</p>
 
 <br/><br/>
 
@@ -27325,7 +27413,7 @@ list or unbound variable and never binds.</p>
 
 (unify '(A b _) '(x G (x y z))) <span class='arw'>&rarr;</span> ((A x) (G b)) ; _ matches list (x y z)
 
-;; some examples taken from <a href="http://en.wikipedia.org/wiki/Unification">http://en.wikipedia.org/wiki/Unification</a>
+;; some examples taken from <a href="http://en.wikipedia.org/wiki/Unification_(computer_science)">http://en.wikipedia.org/wiki/Unification_(computer_science)</a>
 </pre>
 
 
@@ -27455,12 +27543,12 @@ E <span class='arw'>&rarr;</span> (x y z)
 
 
 (define (query trm)
-    (or  (if (find trm facts) true) (catch (prove-rule trm))))
+    (or  (when (find trm facts) true) (catch (prove-rule trm))))
 
 (define (prove-rule trm)
     (dolist (r rules)
-        (if (list? (set 'e (unify trm (first r))))
-            (if (query (expand (last r) e))
+        (when (list? (set 'e (unify trm (first r))))
+            (when (query (expand (last r) e))
                 (throw true))))
     nil
 )
@@ -28825,16 +28913,16 @@ Checks the evaluation of <em>exp</em> to see if it equals <tt>0</tt> (zero).
 <h2>Error codes extended FFI</h2>
 <table summary="Error codes extended FFI">
 <tr align="left"><th>description</th><th>no</th></tr>
-<tr><td>FFI preparation failed</td><td>71</td></tr>
-<tr><td>invalid FFI type</td><td>72</td></tr>
-<tr><td>FFI struct expected</td><td>73</td></tr>
+<tr><td>ffi preparation failed</td><td>71</td></tr>
+<tr><td>invalid ffi type</td><td>72</td></tr>
+<tr><td>ffi struct expected</td><td>73</td></tr>
 </table><br/>
 
 <h2>Big Integers</h2>
 <table summary="Error codes big Integers">
 <tr align="left"><th>description</th><th>no</th></tr>
 <tr><td>bigint type not applicable</td><td>74</td></tr>
-<tr><td>not a number or infinitive</td><td>75</td></tr>
+<tr><td>not a number or infinite</td><td>75</td></tr>
 </table><br/>
 
 <br/><br/><br/>

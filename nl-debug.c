@@ -1,6 +1,6 @@
 /* nl-debug.c --- debugging functions, and functions to trap signals and timers 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -351,8 +351,8 @@ if(strPos != NULL)
         strncpy(strPos, strPos + preLen, pos);
         strncpy(strPos + pos, debugPreStr, preLen);
         }
-    varPrintf(OUT_CONSOLE, headerStr);
-    varPrintf(OUT_CONSOLE, strStream.buffer);
+    varPrintf(OUT_CONSOLE, "%s", headerStr);
+    varPrintf(OUT_CONSOLE, "%s", strStream.buffer);
     }
 
 closeStrStream(&strStream);

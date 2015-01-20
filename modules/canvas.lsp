@@ -227,7 +227,7 @@
 ;; The Bezier curve starts at point <p0> which is the current
 ;; turtle position and stops at point <p3> which is at offset
 ;; <num-x3> and <num-y3> relative to starting point. The turtle orientation
-;; after the drwaing the Bezier curve is perpendicular
+;; after the drawing the Bezier curve is perpendicular
 ;; to the Bezier curve baseline <p0> to <p3> and the position is <p3>.
 
 ;; @syntax (cv:circle <num-rad> [<bool-fill>])

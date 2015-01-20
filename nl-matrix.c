@@ -1,6 +1,6 @@
 /* nl-matrix.c --- matrix functions for newLISP
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -234,7 +234,7 @@ for(i = 1; i <= n; i++)
 free(indx);
 freeMatrix(M, n);
 
-return(stuffFloat(&d));
+return(stuffFloat(d));
 }
 
 
@@ -670,7 +670,7 @@ if(fabs(ssqPrev - ssqTotal) > crit)
     {
     ssqPrev = ssqTotal;
     if(SSQlist == NULL) SSQlist = getCell(CELL_EXPRESSION);
-    addList(SSQlist, stuffFloat(&ssqTotal));
+    addList(SSQlist, stuffFloat(ssqTotal));
     goto ITERATE_KMEANS;
     }
             
@@ -691,7 +691,7 @@ for(l = 1; l <= k; l++)
     cellArray[l] = getCell(CELL_EXPRESSION);
     addList(clusters, cellArray[l]);
     dist = sqrt(ssqs[l] / counts[l]);
-    addList(deviations, stuffFloat(&dist)); 
+    addList(deviations, stuffFloat(dist)); 
     }
 for(i = 1; i <= n; i++)
     {
@@ -771,7 +771,7 @@ while(row != nilCell) /* for each centroid */
         dat = dat->next;
         }
     dist = sqrt(ssq);
-    addList(result, stuffFloat(&dist));
+    addList(result, stuffFloat(dist));
     row = row->next;
     }
 
@@ -1019,7 +1019,7 @@ else /* type is CELL_ARRAY */
         for(j = 1; j <= m; j++)
             {
             fnum = matrix[i][j];
-            *(rowAddr + j - 1) = stuffFloat(&fnum);
+            *(rowAddr + j - 1) = stuffFloat(fnum);
             }
         }
     }

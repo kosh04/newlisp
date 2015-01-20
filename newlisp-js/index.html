@@ -171,7 +171,7 @@
             }
 
         function evaluateInput() {
-            var result = newlispEvalStr(editor.getValue());
+            var result = newlispEvalStr(' ' + editor.getValue());
             writeLog(result);
             flashBackground(300);
             if(!isMobile.any()) editor.focus();

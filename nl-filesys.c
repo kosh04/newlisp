@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2629,14 +2629,14 @@ while(N--)
 gettimeofday(&end, NULL);
 
 diff = (1.0 * timediff64_us(end, start)) / 1000;
-return(stuffFloat(&diff));
+return(stuffFloat(diff));
 }
 
 
 CELL * p_timeOfDay(CELL * params)
 {
 double microSecs = microSecTime()/1000.0;
-return(stuffFloat(&microSecs));
+return(stuffFloat(microSecs));
 }
 
 
@@ -2884,7 +2884,7 @@ nanoSecsInt = (milliSecsFloat - (int)milliSecsFloat) * 1000000;
 if(nanoSecsInt) myNanoSleep(nanoSecsInt);
 #endif
 
-return(stuffFloat(&milliSecsFloat));
+return(stuffFloat(milliSecsFloat));
 }
 
 /* -------------------------------- environment functions ------------------- */

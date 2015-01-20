@@ -6,6 +6,7 @@
 " Started at:   2007 Nov 07 (The Great Revolution 90th anniversary)
 " Last change:  2013 Jun 02
 " Last change:  2013 Jun 18 L.M. added kmeans-query, kmeans-train
+" Last change:  2014 Dec 31 L.M. added collect
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.37 2013/06/02 22:30:55 slobin Exp $
@@ -105,8 +106,8 @@ syn keyword newlispFunction ! != $ % & * + ++ - -- / < << <= = > >= >> NaN? ^ ab
 syn keyword newlispFunction add address amb and append append-file apply args array array-list
 syn keyword newlispFunction array? asin asinh assoc atan atan2 atanh atom? base64-dec base64-enc
 syn keyword newlispFunction bayes-query bayes-train begin beta betai bigint bigint? bind binomial
-syn keyword newlispFunction bits callback case catch ceil change-dir char chop clean close
-syn keyword newlispFunction command-event cond cons constant context context? continue copy
+syn keyword newlispFunction bits callback case catch ceil change-dir char chop clean close collect
+syn keyword newlispFunction command-event cond cons constant context context? copy
 syn keyword newlispFunction copy-file corr cos cosh count cpymem crc32 crit-chi2 crit-f crit-t
 syn keyword newlispFunction crit-z current-line curry date date-list date-parse date-value debug dec
 syn keyword newlispFunction def-new default define define-macro delete delete-file delete-url
@@ -157,7 +158,7 @@ syn keyword newlispObsolete error-number error-text
 syn keyword newlispDeprecated integer parse-date if-not
 
 " functions that are not compiled in by default
-syn keyword newlispDebugging dump-symbol continue
+syn keyword newlispDebugging dump-symbol 
 
 syn match newlispColon ":"
 syn match newlispComma ","

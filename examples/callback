@@ -1,0 +1,30 @@
+#!/usr/bin/newlisp
+
+; path-name of the library depending on platform
+; on Mac OSX use newlisp.dylib
+(set 'LIBRARY (if (= ostype "Win32") "newlisp.dll" "./newlisp.so"))
+
+; import functions from the newLISP shared library
+(import LIBRARY "newlispEvalStr")
+(import LIBRARY "newlispCallback")
+
+; set calltype platform specific
+(set 'CALLTYPE (if (= ostype "Win32") "stdcall" "cdecl"))
+
+; the callback function
+(define (callme p1 p2 p3 result)
+    (println "p1 => " p1 " p2 => " p2 " p3 => " p3)
+    result)
+
+; register the callback with newLISP library
+(newlispCallback "callme" (callback 0 'callme) CALLTYPE)
+
+; the callback returns a string
+(println (get-string (newlispEvalStr
+    {(get-string (callme 123 456 789 "hello world"))})))
+
+; the callback returns a number
+(println (get-string (newlispEvalStr
+    {(callme 123 456 789 99999)})))
+
+

@@ -1,6 +1,6 @@
 /* nl-string.c
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 extern SYMBOL * sysSymbol[];
 extern CELL * countCell;
 extern int bigEndian;
+extern int pagesize;
 
 #define OVECCOUNT (MAX_REGEX_EXP * 3)    /*  max sub expressions in PCRE */
 
@@ -158,7 +159,7 @@ if(position == -1) return(nilCell);
 lseek((int)fileHandle, foundPosition, SEEK_SET);
 #ifdef LFS
 result = foundPosition;
-return(stuffFloat(&result));
+return(stuffFloat(result));
 #else
 return(stuffInteger(foundPosition));
 #endif
@@ -1181,7 +1182,7 @@ else if(isNumber(cell->type))
     else
 #endif
     getFloat(cell, &value);
-    return(stuffFloat(&value));
+    return(stuffFloat(value));
     }
 else
     return(copyCell(evaluateExpression(deflt)));
@@ -1196,7 +1197,7 @@ if(!isDigit((unsigned char)*fltString))
     }
 
 value = atof(fltString);
-return( stuffFloat(&value) );
+return( stuffFloat(value) );
 }
 
 
@@ -1348,7 +1349,6 @@ if(params->type == CELL_FLOAT)
 #endif
 
 return(params->contents);
-
 }
 
 CELL * p_getChar(CELL * params)
@@ -1402,9 +1402,8 @@ return(stuffInteger64(*(INT64 *)getAddress(params)));
 
 CELL * p_getFloat(CELL * params)
 {
-return(stuffFloat((double*)getAddress(params)));
+return(stuffFloat(*(double*)getAddress(params)));
 }
-
 
 CELL * p_address(CELL * params)
 {
@@ -2001,13 +2000,13 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
             memcpy(&floatV, pPtr, 4);
                 if(endianSwitch) swapEndian((char*)&floatV, 4);
             doubleV = floatV;
-            cell = stuffFloat(&doubleV);
+            cell = stuffFloat(doubleV);
             break;
 
         case PACK_DOUBLE:
             memcpy(&doubleV, pPtr, 8);
             if(endianSwitch) swapEndian((char*)&doubleV, 8);
-            cell = stuffFloat(&doubleV);
+            cell = stuffFloat(doubleV);
             break;
             
         case PACK_STRING:

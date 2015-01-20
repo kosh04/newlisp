@@ -1,6 +1,6 @@
 /* protos.h function prototypes fo6 newLISP
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -503,7 +503,7 @@ CELL * setDefine(SYMBOL * symbol, CELL * params, int force);
 CELL * setInterDiff(CELL * params, int mode);
 CELL * setRef(CELL * params, int mode);
 CELL * strUpperLower(CELL * params, int type);
-CELL * stuffFloat(double * floatPtr);
+CELL * stuffFloat(double floatPtr);
 CELL * stuffInteger(UINT contents);
 #ifndef NEWLISP64
 CELL * stuffInteger64(INT64 contents);

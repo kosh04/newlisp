@@ -92,8 +92,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2014 August 25<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.6.1
+</h1>Version 2014 November 3<sup>rd</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.6.2
 </center>
 
 <br/><br/><br/>
@@ -101,7 +101,7 @@ tt {
 <center>
 <span style="line-height:80%;">
 <font size="-2">
-Copyright &copy; 2013 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
+Copyright &copy; 2015 Lutz Mueller, <a href="http://www.nuevatec.com">www.nuevatec.com</a>. All rights reserved.<br/>
 Permission is granted to copy, distribute and/or modify this document under the terms of the <a href="#GFDL">GNU Free Documentation License</a>,<br/>
 Version 1.2 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts,<br/>
 and no Back-Cover Texts. A copy of the license is included in the section entitled GNU Free Documentation License.<br/>
@@ -3890,7 +3890,7 @@ return(0);
 
 <p>Like many other share libraries, callbacks can be registered in newLISP library.
 The function <tt>newlispCallback</tt> must be imported and is used for registering
-callback functions. The example shows newLISP itself exporting newLISP library and
+callback functions. The example shows newLISP importing newLISP as a library and
 registering a callback <tt>callme</tt>:</p>
 
 <pre>

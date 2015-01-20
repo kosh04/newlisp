@@ -35,7 +35,7 @@
 # and all types ending 3f:
 # 
 
-(set 'is-64-bit (= 1 (& 0x100 (sys-info -1))))
+(set 'is-64-bit (= 0x100 (& 0x100 (sys-info -1))))
 (set 'has-ffi (= 1024 (& 1024 (sys-info -1))))
 
 (unless has-ffi

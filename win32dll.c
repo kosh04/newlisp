@@ -27,7 +27,6 @@ extern int bigEndian;
 extern char preLoad[];
 extern CELL * sysEvalString(char * str, SYMBOL * context, CELL * proc, int mode);
 extern char linkOffset[];
-extern LPSTR getLibname(void);
 extern int evalSilent;
 extern int opsys;
 extern SYMBOL * mainArgsSymbol;

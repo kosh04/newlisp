@@ -10,7 +10,7 @@ CFLAGS = -m64 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE
 # or without readline lib
 #CFLAGS = -m64 -Wall -Wno-uninitialized -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -D_BSD
 
-CC = gcc
+CC = cc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m64 -g -lm -lreadline -lncurses -o newlisp

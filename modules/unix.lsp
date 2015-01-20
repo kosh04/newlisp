@@ -56,7 +56,7 @@
 
 
 (unless module-is-loaded
-    (import library "getuid")`
+    (import library "getuid")
     (import library "geteuid")
     (import library "getgid")
     (import library "getegid")

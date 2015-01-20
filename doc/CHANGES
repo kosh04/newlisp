@@ -6859,7 +6859,7 @@ Dec 6, 2009
 
    Updated examples/udp-server.lsp to nmake it work on Windows.
 
-10.6.1
+10.6.1 Development release September 16th, 2014
    Added typedefs for CPPFunction and CPFuncition to compile on UBUNTU 14.04
    with libreadline v.6.1.
 
@@ -6881,7 +6881,7 @@ Dec 6, 2009
         (regex "Ω" "ΨΩ" "u") => ("Ω" 1 1)
         (regex "Ω" "ΨΩ" 2048) => ("Ω" 1 1)
 
-   An second call pattern for 'copy'
+   A second call pattern for 'copy'
         (copy <s-expr>)        ; <- original syntax
         (copy <int-addr> true) ; <- new syntax
    The new syntax marked by the true 'flag' takes a memory address of a cell 
@@ -6929,3 +6929,42 @@ Dec 6, 2009
 
     In Emscripten v.1.22.0 compiled newLISP exception handling now works.
 
+10.6.2
+    When parsing binary, hex, decimal, float and integer numbers, now up to
+    1000 digits are parsed when present. The rest will be read as new token(s).
+    Note that IEEE 754 64-bit doubles distinguish only up to 16 significant 
+    digits. For big integers the 1000 limitation exists only when parseing 
+    source. There is no limit when a result of big integers math exceeds 1000 
+    digits.
+ 
+    Added makefile_bsdLP64_utf8_ffi
+
+    varPrintf() now always avoids printing format strings without args.
+
+    Improve libffi detection with newlisp-x.x.x/configure on RedHat Linux.
+
+    On BSDs if /usr/local/include/ffi.h is present the libffi versions gets
+    compiled when using: ./configure, which is used by default when just
+    issuing: make
+
+    Fixed multi-line shell mode on Windows when comments are present.
+
+    New definition of stuffFloat() to avoid compiler error in p_getFloat()
+    which needed inlining old stuffFloat(). Test using:
+        (get-float (address (get-long (address 17.4)))) => 17.4
+
+    Optional int-max-count parameter for the 'collect' primitive.
+
+    Cacheing crc-table in crc32 function for speedup in repeated use.
+
+    The default print floating point format changed from "%1.15g" to "%1.16g".
+ 
+    A third syntax of 'reset' allows resetting the maximum cell count without
+    restarting the system. The minimum is 4095. Trying to allocate more cells
+    than the minimum allocated makes the program exit.
+
+    When using 'json-parse', null now gets translated to a symbol 'null' in 
+    newLISP not 'nil' as before. So all three JSON values true, false and null 
+    keep their appearance in newLISP symbolic expressions.
+
+    Many small additions and changes to newlisp_manual.html.

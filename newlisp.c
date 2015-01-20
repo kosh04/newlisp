@@ -1,7 +1,7 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 #include <readline/readline.h>
 /* take following line out on Slackware Linux */
 #include <readline/history.h>
-
-#ifndef MAC_OSX /* needed for UBUNTU 14.04 */
-typedef char **CPPFunction ();
-typedef char *CPFunction ();
-#endif
-
 #endif /* end READLINE */
 
 #ifdef SUPPORT_UTF8
@@ -107,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10601;
+int version = 10602;
 
 char copyright[]=
-"\nnewLISP v.10.6.1 Copyright (c) 2014 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.6.2 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.1 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.2 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.1 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.2 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.1 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.2 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.1 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.2 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -278,7 +272,7 @@ int prettyPrintCurrent = 0;
 int prettyPrintFlags = 0;
 int prettyPrintLength = 0;
 char * prettyPrintTab = " ";
-char * prettyPrintFloat = "%1.15g";
+char * prettyPrintFloat = "%1.16g";
 #define MAX_PRETTY_PRINT_LENGTH 80
 UINT prettyPrintMaxLength =  MAX_PRETTY_PRINT_LENGTH;
 int stringOutputRaw = TRUE;
@@ -552,7 +546,7 @@ if(strncmp(linkOffset + 4, "@@@@", 4) == 0)
             }
         }
     }
-/* load encrypted part at offset no init.lsp or .init.lsp is loaded */
+/* load part at offset no init.lsp or .init.lsp is loaded */
 else
     {
 #ifdef WINDOWS
@@ -777,15 +771,22 @@ if(realpath(".", startupDir) == NULL)
 for(idx = 1; idx < argc; idx++)
     {
     if(strncmp(argv[idx], "-c", 2) == 0)
+        {
         noPromptMode = TRUE;
+        continue;
+        }
 
     if(strncmp(argv[idx], "-C", 2) == 0)
+        {
         forcePromptMode = TRUE;
+        continue;
+        }
 
     if(strncmp(argv[idx], "-http", 5) == 0)
         {
         noPromptMode = TRUE;
         httpMode = TRUE;
+        continue;
         }
 
     if(strncmp(argv[idx], "-s", 2) == 0)
@@ -814,12 +815,6 @@ for(idx = 1; idx < argc; idx++)
         connectionTimeout = atoi(getArg(argv, argc, &idx));
         continue;
         }
-
-    if(strncmp(argv[idx], "-e", 2) == 0)
-        {
-        executeCommandLine(getArg(argv, argc, &idx), OUT_CONSOLE, &cmdStream);
-        exit(0);
-        }       
 
     if(strncmp(argv[idx], "-l", 2) == 0 || strncmp(argv[idx], "-L", 2) == 0)
         {
@@ -852,6 +847,7 @@ for(idx = 1; idx < argc; idx++)
         {
         ADDR_FAMILY = AF_INET6;
         initDefaultInAddr(); 
+        continue;
         }
 
     if(strcmp(argv[idx], "-v") == 0)
@@ -860,13 +856,18 @@ for(idx = 1; idx < argc; idx++)
         exit(0);
         }
 
+    if(strncmp(argv[idx], "-e", 2) == 0)
+        {
+        executeCommandLine(getArg(argv, argc, &idx), OUT_CONSOLE, &cmdStream);
+        exit(0);
+        }       
+
     if(strncmp(argv[idx], "-x", 2) == 0)
         {
         if(argc == 4)
             linkSource(argv[0], argv[idx + 1], argv[idx + 2]);
         exit(0);
         }
-
 
     if(strcmp(argv[idx], "-h") == 0)
         {
@@ -910,7 +911,7 @@ if(errorReg && !isNil((CELL*)errorEvent->contents) )
 
 #ifdef READLINE
 rl_readline_name = "newlisp";
-rl_attempted_completion_function = (CPPFunction *)newlisp_completion;
+rl_attempted_completion_function = (char ** (*) (const char *, int, int))newlisp_completion;
 #if defined(LINUX) || defined(_BSD)
 /* in Bash .inputrc put 'set blink-matching-paren on' */
 rl_set_paren_blink_timeout(300000); /* 300 ms */
@@ -929,7 +930,7 @@ while(TRUE)
         }
 
     if(IOchannel != stdin || forcePromptMode) 
-        varPrintf(OUT_CONSOLE, prompt());
+        varPrintf(OUT_CONSOLE, "%s", prompt());
 
     /* daemon mode timeout if nothing read after accepting connection */
     if(connectionTimeout && IOchannel && daemonMode)
@@ -990,16 +991,13 @@ while((name = primitive[list_index].name))
 return ((char *)NULL);
 }
 
-#ifdef _BSD
-extern char **completion_matches PARAMS((char *, rl_compentry_func_t *));
-#else
-char ** completion_matches(const char * text, CPFunction commands);
-#endif
+char ** completion_matches(const char * text,  char * (*commands)(const char *, int)); 
 
 char ** newlisp_completion (char * text, int start, int end)
 {
-return(completion_matches(text, (CPFunction *)command_generator));
+return(completion_matches(text,  (char * (*) (const char *, int) )command_generator));
 }
+
 #endif /* READLINE */
 
 
@@ -1009,7 +1007,7 @@ char * cmd;
 int len;
 
 #ifndef READLINE
-if(!batchMode) varPrintf(OUT_CONSOLE, prompt());
+if(!batchMode) varPrintf(OUT_CONSOLE, "%s", prompt());
 cmd = calloc(MAX_COMMAND_LINE + 4, 1);
 if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL) 
     {
@@ -1019,6 +1017,7 @@ if(fgets(cmd, MAX_COMMAND_LINE - 1, IOchannel) == NULL)
 len = strlen(cmd);
 /* cut off line terminators  left by fgets */
 *(cmd + len - LINE_FEED_LEN) = 0;
+len -= LINE_FEED_LEN; /* v.10.6.2 */
 #else /*  READLINE */
 int errnoSave = errno;
 if((cmd = readline(batchMode ? "" : prompt())) == NULL) 
@@ -1544,7 +1543,7 @@ switch(cell->type)
             sPtr= translateCreateSymbol(newContext->name, CELL_NIL, newContext, TRUE);
             pCell = (CELL *)sPtr->contents;
 
-            /* is the default functor continas nil, it works like a hash function */
+            /* if the default functor contains nil, it works like a hash function */
             if(isNil(pCell))
                 {
                 result = evaluateNamespaceHash(args->next, newContext);
@@ -1584,7 +1583,7 @@ switch(cell->type)
             break;
             }
 #endif
-        /* implicit indexing or resting for list, array or string i
+        /* implicit indexing or resting for list, array or string 
         */
         if(args->next != nilCell)
             {
@@ -2078,15 +2077,15 @@ memcpy((void *)cell->contents, string, len);
 return(cell);
 }
 
-CELL * stuffFloat(double * floatPtr)
+CELL * stuffFloat(double floatVal)
 {
 CELL * cell;
 
 cell = getCell(CELL_FLOAT);
 #ifndef NEWLISP64
-*(double *)&cell->aux = *floatPtr;
+*(double *)&cell->aux = floatVal;
 #else
-*(double *)&cell->contents = *floatPtr;
+*(double *)&cell->contents = floatVal;
 #endif
 return(cell);
 }
@@ -2322,7 +2321,11 @@ void allocBlock()
 {
 int i;
 
-if(cellCount > MAX_CELL_COUNT) fatalError(ERR_NOT_ENOUGH_MEMORY, NULL, 0);
+if(cellCount > MAX_CELL_COUNT - MAX_BLOCK)  
+    {
+    printErrorMessage(ERR_NOT_ENOUGH_MEMORY, NULL, 0);
+    exit(ERR_NOT_ENOUGH_MEMORY);
+    }
 
 if(cellMemory == NULL)
     {
@@ -2525,7 +2528,7 @@ char * ptr;
 #endif
 
 if(cell == debugPrintCell)
-    varPrintf(device, debugPreStr);
+    varPrintf(device, "%s", debugPreStr);
 
 switch(cell->type)
     {
@@ -2641,7 +2644,7 @@ switch(cell->type)
     }
 
 if(cell == debugPrintCell)
-    varPrintf(device, debugPostStr);
+    varPrintf(device, "%s", debugPostStr);
 
 prettyPrintFlags &= ~PRETTYPRINT_DOUBLE;
 }
@@ -2766,7 +2769,7 @@ if(prettyPrintPars > 0)
     varPrintf(device, LINE_FEED);
 
 for(i = 0; i < prettyPrintPars; i++) 
-    varPrintf(device, prettyPrintTab);
+    varPrintf(device, "%s", prettyPrintTab);
 
 prettyPrintLength = prettyPrintCurrent = prettyPrintPars;
 prettyPrintFlags |= PRETTYPRINT_DOUBLE;
@@ -2799,7 +2802,7 @@ switch(symbolType(sPtr))
         break;
     case CELL_SYMBOL:
     case CELL_DYN_SYMBOL:
-        varPrintf(device, setStr);
+        varPrintf(device, "%s", setStr);
         printSymbolNameExt(device, sPtr);
         varPrintf(device,"'");
         printCell((CELL *)sPtr->contents, TRUE, device);
@@ -2807,7 +2810,7 @@ switch(symbolType(sPtr))
         break;
     case CELL_ARRAY:
     case CELL_EXPRESSION:
-        varPrintf(device, setStr);
+        varPrintf(device, "%s", setStr);
         printSymbolNameExt(device, sPtr);
         cell = (CELL *)sPtr->contents;
 
@@ -2857,7 +2860,7 @@ switch(symbolType(sPtr))
         else printLambda(sPtr, device);
         break;
     default:
-        varPrintf(device, setStr);
+        varPrintf(device, "%s", setStr);
         printSymbolNameExt(device, sPtr);
         printCell((CELL *)sPtr->contents, TRUE, device);
         varPrintf(device, ")");
@@ -3082,15 +3085,15 @@ char * errorMessage[] =
     "invalid ffi type",             /* 72 */
     "ffi struct expected",          /* 73 */
     "bigint type not applicable",   /* 74 */
-    "not a number or infinitive",   /* 75 */
+    "not a number or infinite",     /* 75 */
     NULL
     };
 
 
 void errorMissingPar(STREAM * stream)
 {
-char str[64]; 
-snprintf(str, 40, "...%-40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
+char str[48]; 
+snprintf(str, 40, "...%.40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
 errorProcExt2(ERR_MISSING_PAR, stuffString(str));
 }
 
@@ -3142,7 +3145,6 @@ UINT * stackIdx = lambdaStackIdx;
 SYMBOL * context;
 int i;
 
-
 if(errorNumber == EXCEPTION_THROW)
     errorNumber = ERR_THROW_WO_CATCH;
 
@@ -3177,7 +3179,7 @@ while(stackIdx > lambdaStack)
     if(lambdaFunc->type == CELL_SYMBOL)
         {
         writeStreamStr(&errorStream, LINE_FEED, 0);
-        writeStreamStr(&errorStream, "called from user defined function ", 0);
+        writeStreamStr(&errorStream, "called from user function ", 0);
         context = ((SYMBOL *)lambdaFunc->contents)->context;
         if(context != mainContext)
           {
@@ -3289,13 +3291,6 @@ if(strchr(pathname, '/') == NULL)
 size = readFile(pathname, &buffer);
 sourceLen = (size_t)fileSize(source);
 
-/*
-printf("sourceLen %d\n", sourceLen);
-printf("pathname %s\n", pathname);
-printf("size %d\n", size);
-printf("errno %d\n", errno);
-*/
-
 if(errno) 
     {
     printf("%s\n", strerror(errno));
@@ -3342,7 +3337,6 @@ int listFlag, tklen;
 char * lastPtr;
 int errnoSave;
 INT64 number;
-
 
 listFlag = TRUE; /* cell is either quote or list envelope */
 
@@ -3407,7 +3401,7 @@ switch(getToken(stream, token, &tklen))
 
     case TKN_FLOAT:
         floatNumber = (double)atof(token);
-        newCell = stuffFloat(&floatNumber);
+        newCell = stuffFloat(floatNumber);
         break;
 
     case TKN_STRING:
@@ -3552,8 +3546,7 @@ return(FALSE);
 
 void linkCell(CELL * left, CELL * right, int linkFlag)
 {
-if(linkFlag == 0)
-    left->next = right;
+if(linkFlag == 0) left->next = right;
 else left->contents = (UINT)right;
 }
 
@@ -5886,7 +5879,7 @@ for(i = 0; i <= stepCnt; i++)
     else
         {
         interval = fromFlt + i * step;
-        symbol->contents = (UINT)stuffFloat(&interval);
+        symbol->contents = (UINT)stuffFloat(interval);
         }
     /* cleanupResults(resultIdxSave);*/
     while(resultStackIdx > resultIdxSave) deleteList(popResult());
@@ -6897,11 +6890,11 @@ makeStreamFromString(&stream, source);
 return(getToken(&stream, token, &tklen) == TKN_SYMBOL && tklen == stream.size - 4 * MAX_STRING);
 }
 
-#ifndef EMSCRIPTEN
 CELL * p_exit(CELL * params)
 {
 UINT result;
 
+#ifndef EMSCRIPTEN
 if(daemonMode) 
     {
     fclose(IOchannel);
@@ -6910,6 +6903,9 @@ if(daemonMode)
 #endif
     longjmp(errorJump, ERR_USER_RESET);
     }
+#else
+return(nilCell);
+#endif
 
 if(params != nilCell) getInteger(params, &result);
 else result = 0;
@@ -6922,33 +6918,30 @@ purgeSpawnList(TRUE);
 exit(result);
 return(trueCell);
 }
-#else 
-/* when  EMSCRIPTEN */
-CELL * p_exit(CELL * params)
+
+
+#ifdef EMSCRIPTEN
+void emscriptenReload(void)
 {
 char * cmd = "location.reload();";
 printf("# newLISP is reloading ...\n");
 evalStringJS(cmd, strlen(cmd));
-return(trueCell);
 }
 #endif
 
 
-
 CELL * p_reset(CELL * params)
 {
-#ifdef EMSCRIPTEN
-if(params == nilCell)
-    longjmp(errorJump, ERR_USER_RESET);
-
-freeCellBlocks();
-if(!getFlag(params))
-    return(stuffInteger(blockCount));
-return(trueCell);
-#else
 if(params != nilCell)
     {
-    if(!getFlag(params)) 
+    params = evaluateExpression(params);
+    if(isNumber(params->type))
+        {
+        getIntegerExt(params, (UINT*)&MAX_CELL_COUNT, FALSE);
+        if(MAX_CELL_COUNT < MAX_BLOCK) MAX_CELL_COUNT = MAX_BLOCK;
+        return(stuffInteger(MAX_CELL_COUNT));
+        }
+    else if(isNil(params)) 
         {
         freeCellBlocks(); 
         return(stuffInteger(blockCount)); /* 10.3.3 */
@@ -6959,12 +6952,18 @@ if(params != nilCell)
         execv(MainArgs[0], MainArgs);
 #endif
 #endif
+#ifdef EMSCRIPTEN
+        emscriptenReload();
+#endif
     }
 else
+#ifndef EMSCRIPTEN
     longjmp(errorJump, ERR_USER_RESET);
+#else
+    return(nilCell);
+#endif
 
 return(trueCell);
-#endif /* EMSCRIPTEN */
 }
 
 CELL * setEvent(CELL * params, SYMBOL * * eventSymPtr, char * sysSymName)
@@ -7030,7 +7029,7 @@ if(params != nilCell)
     getitimer(timerOption, &outVal);
 
   seconds = duration - (outVal.it_value.tv_sec + outVal.it_value.tv_usec / 1000000.0);
-  return(stuffFloat(&seconds));
+  return(stuffFloat(seconds));
   }
   
 return(makeCell(CELL_SYMBOL, (UINT)timerEvent));

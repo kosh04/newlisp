@@ -1,6 +1,6 @@
 /* unix-lib.c - make the newlisp shared newlisp library
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ extern FILE * IOchannel;
 int libInitialized = 0;
 
 #ifdef MAC_OSX
-#ifdef EMCSRIPTEN
+#ifdef EMSCRIPTEN
 #define LIBNAME "newlisp-js-lib.js"
 #else
 #define LIBNAME "newlisp.dylib"

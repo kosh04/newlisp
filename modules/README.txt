@@ -11,7 +11,7 @@ This will genereate an index page index.html and one html file each
 for each module of the form name.lsp.html, where name is the name of the module.
 For additional conversion options see newlisp-x.x.x/doc/newLISPdoc.html .
 
-The newlispdoc utility can be found in newlisp-x.x.x/examples/newlispdoc .
+The newlispdoc utility can be found in newlisp-x.x.x/util/newlispdoc .
 
 Documentation on how to format newLISP source files for this program can be found 
 in newlisp-x.x.x/doc/newLISPdoc.html or in /usr/share/doc/newlisp/newLISPdoc.html.

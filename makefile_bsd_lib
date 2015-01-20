@@ -5,7 +5,7 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 CFLAGS = -m32 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -D_BSD
 
-CC = gcc
+CC = cc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m32 -lm -shared -o newlisp.so

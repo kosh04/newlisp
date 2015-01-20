@@ -3,7 +3,7 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-<title>newLISP  v.10.6.1 Release Notes </title>
+<title>newLISP  v.10.6.2 Release Notes </title>
 
 <style type="text/css" media="screen">
 
@@ -49,17 +49,21 @@ li {
 </head>
 
 <body>
-<h1>newLISP<font size=-1>&#174;</font> v.10.6.1 Development Release
-<font color="red" size="-1">2014-9-16</font></h1>
+<h1>newLISP<font size=-1>&#174;</font> v.10.6.2 Stable Release
+<font color="red" size="-1">2015-01-20</font></h1>
 
-<p>This development release adds minor new functionality and fixes bugs.</p>
+<p>This stable release adds minor new functionality and fixes bugs.</p>
 
 
 <h3>Additions and changes</h3>
 
 <ul>
-<li>A new function <tt>(collect <em>exp</em>)</tt> reapeatedly evaluates <em>exp</em>
-and collects results in a list until evaluation yields <tt>nil</tt>.</li>
+<li>A new function <tt>(collect <em>exp</em> [<em>int-max-count</em>])</tt> reapeatedly 
+evaluates <em>exp</em> and collects results in a list until evaluation yields <tt>nil</tt>
+or an optional maximum count of results is collected.</li>
+
+<li>An addtional syntax of the <tt>reset</tt> function can be used to change the maximum 
+cell count as reported by <tt>sys-info</tt>.</li>
 
 <li>Some PCRE regular expression options can now be given as either numbers or letters.
 Multiple letter optiosn can be combined in a string. This affects all functions using 
@@ -83,6 +87,8 @@ was created using the <tt>macro</tt> function.</li>
 <li>A wrong UDP option in <tt>net-connect</tt> or <tt>net-listen</tt> will now throw 
 an error message. Previously wrong UDP options were ignored.</li>
 
+<li><tt>json-parse</tt> now translates JSON <tt>null</tt> to a symbol <tt>null</tt>
+in newLISP not <tt>nil</tt> as before.</li>
 </ul>
 
 <h3>Bug fixes</h3>
@@ -97,10 +103,14 @@ Previusly on 32-bit versions a signed integer was returned.</li>
 
 <li>The <tt>protected?</tt> function did not recognize <tt>macro</tt> symbols 
 as protected.</li>
+
+<li>Fixed multi-line shell mode on Windows when comments are present.</li>
+
 </ul>
 
 <h3>Compatibility with previous versions</h3>
-<p>This version is compatible with the previous version 10.6.0.</p>
+<p>Except for <tt>null</tt> translation in <tt>json-parse</tt>, this version is 
+compatible with the previous version 10.6.0.</p>
 
 <center>&part;</center>
 

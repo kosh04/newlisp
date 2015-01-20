@@ -4,7 +4,7 @@
 //
 //  Created by Lutz Mueller on 7/19/07.
 //
-//    Copyright (C) 2014 Lutz Mueller
+//    Copyright (C) 2015 Lutz Mueller
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by

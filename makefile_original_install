@@ -1,6 +1,6 @@
 #
 
-VERSION=10.6.1
+VERSION=10.6.2
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -52,7 +52,6 @@ install:
 	-install -m 644 modules/crypto.lsp $(datadir)/newlisp/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp $(datadir)/newlisp/modules/ftp.lsp
 	-install -m 644 modules/getopts.lsp $(datadir)/newlisp/modules/getopts.lsp
-	-install -m 644 modules/gmp.lsp $(datadir)/newlisp/modules/gmp.lsp
 	-install -m 644 modules/gsl.lsp $(datadir)/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(datadir)/newlisp/modules/infix.lsp
 	-install -m 644 modules/mysql.lsp $(datadir)/newlisp/modules/mysql.lsp
@@ -154,7 +153,6 @@ install_home:
 	-install -m 644 modules/crypto.lsp $(HOME)/share/newlisp/modules/crypto.lsp
 	-install -m 644 modules/ftp.lsp $(HOME)/share/newlisp/modules/ftp.lsp
 	-install -m 644 modules/getopts.lsp $(HOME)/share/newlisp/modules/getopts.lsp
-	-install -m 644 modules/gmp.lsp $(HOME)/share/newlisp/modules/gmp.lsp
 	-install -m 644 modules/gsl.lsp $(HOME)/share/newlisp/modules/gsl.lsp
 	-install -m 644 modules/infix.lsp $(HOME)/share/newlisp/modules/infix.lsp
 	-install -m 644 modules/macro.lsp $(HOME)/share/newlisp/modules/macro.lsp

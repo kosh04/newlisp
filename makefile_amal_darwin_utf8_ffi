@@ -1,0 +1,30 @@
+# amalgamation makefile for newLISP v. 10.x.x on Mac OSX with readline support
+# Concats all newLISP source files into one big file. At least on gcc v.4.0.1
+# on Mac OS X there is no speed advantage through better optimization of the
+# compiler. But other platforms compilers may show different results.
+#
+# needs readline library and headerfiles installed (X tools)
+#
+
+
+OBJS = newlisp-amal.o pcre.o
+
+CFLAGS = -Wall -m32 -O1 -I/usr/include -c -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DFFI
+
+CC = gcc
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m32 -lm -lreadline -lffi -o newlisp
+	strip newlisp
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+newlisp-amal.c:
+	cat newlisp.c nl-symbol.c nl-math.c nl-list.c nl-liststr.c nl-string.c nl-filesys.c \
+    nl-sock.c nl-import.c nl-xml-json.c nl-web.c nl-matrix.c nl-debug.c nl-utf8.c > newlisp-amal.c
+
+
+$(OBJS): newlisp.h primes.h protos.h makefile_amal_darwin_utf8_ffi
+
+

@@ -1,7 +1,7 @@
 # this packages the Win32 binary distribution
 # this makefile is executed from a MinGW MSYS shell
 
-VERSION=10.6.1
+VERSION=10.6.2
 
 win-gui:
 	-mkdir /c/newlisp
@@ -61,7 +61,6 @@ win-gui:
 	cp modules/cgi.lsp /c/newlisp/modules
 	cp modules/crypto.lsp /c/newlisp/modules
 	cp modules/ftp.lsp /c/newlisp/modules
-	cp modules/gmp.lsp /c/newlisp/modules
 	cp modules/gsl.lsp /c/newlisp/modules
 	cp modules/infix.lsp /c/newlisp/modules
 	cp modules/mysql.lsp /c/newlisp/modules

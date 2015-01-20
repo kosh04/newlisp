@@ -1,7 +1,7 @@
 # makefile for newLISP 64bit UTF-8 v.10.x.x on 64 bit on LINUX RedHat CentOS with FFI
 #
 # don't use this make file directly. Use ./configure to detect and replace the correct
-# libffi version
+# libffi version oer define LIBFFI_VERSION in the OS environment.
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o

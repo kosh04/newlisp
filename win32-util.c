@@ -1,7 +1,7 @@
 /* 
    win32-util.c, utitity routines for native win32 port of newLISP 
 
-    Copyright (C) 2014 Lutz Mueller
+    Copyright (C) 2015 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -262,7 +262,7 @@ if(params != nilCell)
             86400000 - start + now :
             now - start)/1000.0;  
     }
-  return(stuffFloat(&seconds));    
+  return(stuffFloat(seconds));    
   }
   
 symCell = getCell(CELL_SYMBOL);

@@ -153,6 +153,7 @@
 "chop"	prim
 "clean"	prim
 "close"	prim
+"collect"	prim
 "command-event"	prim
 "cond"	prim
 "cons"	prim

@@ -1395,7 +1395,11 @@ true
 ))
 
 (define (test-get-float )
-  (= 1.234 (get-float (pack "lf" 1.234))))
+    (and
+        (= 1.234 (get-float (pack "lf" 1.234)))
+        (= (get-float (address (get-long (address 17.4)))) 17.4)
+        (= (get-long (address (get-float (address 4625590882276894310)))) 4625590882276894310) 
+    ) )
 
 (define (test-get-int )
   (and
@@ -2286,7 +2290,8 @@ true
 ))
 
 (define (test-pretty-print)
-  (= (pretty-print) '(80 " " "%1.15g")))
+  (= (pretty-print) '(80 " " "%1.16g"))
+)
 
 (define (test-primitive? )
   (primitive? primitive?))
