@@ -5,10 +5,12 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq mingw32
-  - suto apt-get install -qq mingw-w64
+  - sudo apt-get install -qq mingw-w64
 script:
 #   - make
 #   - make testall
   - make -f makefile_mingw_utf8 CC=i586-mingw32msvc-gcc STRIP=i586-mingw32msvc-strip
   - file newlisp.exe
   - ls
+after_script:
+  - echo Done
