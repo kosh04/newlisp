@@ -20,4 +20,4 @@ before_install:
 script:
   - make -f $MAKEFILE
 # - make -f $MAKEFILE CC=$CC STRIP=$STRIP
-  - [ "$RUN_TESTS" == true ] && make testall
+  - if [ "$RUN_TESTS" == true ]; then make testall; fi
