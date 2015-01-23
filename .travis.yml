@@ -8,7 +8,7 @@ matrix:
   include:
     - compiler: i586-mingw32msvc-gcc
       env: STRIP=i586-mingw32msvc-strip
-      script: make -f makefile_mingw_utf8
+      script: make -f makefile_mingw_utf8 CC=$CC STRIP=$STRIP
 
 before_install:
   - sudo apt-get update -qq
