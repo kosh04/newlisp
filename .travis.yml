@@ -4,16 +4,16 @@ compiler:
   - clang
   - gcc
 
+env:
+  global:
+    - MAKEFILE=Makefile.pcre
+
 matrix:
   include:
     - compiler: i586-mingw32msvc-gcc
       env: STRIP=i586-mingw32msvc-strip
-      script: make -f makefile_mingw_utf8 CC=$CC STRIP=$STRIP
-
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq mingw32
+      script: make -f $(MAKEFILE) CC=$CC
 
 script:
-  - make
-  - make testall
+  - make -f $(MAKEFILE)
+  - make -f $(MAKEFILE) test
