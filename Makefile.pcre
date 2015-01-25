@@ -1,0 +1,124 @@
+# -*- mode: makefile -*-
+#
+# force update PCRE embedded in newLISP
+
+# Usage:
+# ~> make -f Makefile.pcre [enable_utf8=1] [CC=clang]
+# ~> make -f Makefile.pcre test
+
+TARGET := newlisp
+
+main_OBJS :=  \
+	newlisp.o     \
+	nl-debug.o    \
+	nl-filesys.o  \
+	nl-import.o   \
+	nl-list.o     \
+	nl-liststr.o  \
+	nl-math.o     \
+	nl-matrix.o   \
+	nl-sock.o     \
+	nl-string.o   \
+	nl-symbol.o   \
+	nl-web.o      \
+	nl-xml-json.o
+#	nl-utf8.o
+#	pcre.o
+
+# PCRE
+pcre_name        := pcre-8.36
+pcre_dir         := $(pcre_name)
+pcre_archive     := $(pcre_name).tar.gz
+pcre_archive_url := ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$(pcre_archive)
+
+pcre_OBJS :=				\
+	$(pcre_dir)/pcre_compile.o	\
+	$(pcre_dir)/pcre_exec.o		\
+	$(pcre_dir)/pcre_fullinfo.o	\
+	$(pcre_dir)/pcre_tables.o	\
+	$(pcre_dir)/pcre_newline.o	\
+	$(pcre_dir)/pcre_globals.o	\
+	$(pcre_dir)/pcre_chartables.o	\
+	$(pcre_dir)/pcre_version.o
+
+pcre_utf8_OBJS :=			\
+	$(pcre_OBJS)			\
+	$(pcre_dir)/pcre_ord2utf8.o	\
+	$(pcre_dir)/pcre_valid_utf8.o	\
+	$(pcre_dir)/pcre_xclass.o
+
+OBJS := $(main_OBJS)
+OBJS += $(if $(enable_utf8), nl-utf8.o)
+OBJS += $(if $(enable_utf8), $(pcre_utf8_OBJS), $(pcre_OBJS))
+DEFS := $(if $(enable_utf8), -DSUPPORT_UTF8)
+LIBS :=
+
+# OS depends
+MACHINE := $(shell $(CC) -dumpmachine)
+# NOTE: `uname' cannot detect cross-compiler spec
+#uname_S := $(shell uname -s || echo 'unknown')
+
+ifeq (mingw,$(findstring mingw,$(MACHINE)))
+OBJS += win32-path.o \
+	win32-util.o
+#	win32dll.o
+DEFS += -DWIN_32
+LIBS += -lws2_32
+else ifeq (darwin,$(findstring darwin,$(MACHINE)))
+DEFS += -DMAC_OSX
+LIBS +=
+else ifeq (linux,$(findstring linux,$(MACHINE)))
+DEFS += -DLINUX
+LIBS += -lm -ldl
+endif
+
+# detect 64-bit compiler
+ifeq (x86_64,$(findstring x86_64,$(MACHINE)))
+DEFS += -DNEWLISP64
+endif
+
+# compiler setup
+CC ?= cc
+CFLAGS   := -Wall -g -O2
+CFLAGS   += -pedantic -Wno-uninitialized -Wno-long-long -fno-strict-aliasing
+CPPFLAGS := $(DEFS)
+LDFLAGS  :=
+LDLIBS   := $(LIBS)
+WGET     ?= wget
+
+.PHONY: default
+default: newlisp
+
+newlisp: $(OBJS)
+
+$(pcre_dir)/%.o: CFLAGS   = -Wall -g -O2
+$(pcre_dir)/%.o: CPPFLAGS = -DHAVE_CONFIG_H $(if $(enable_utf8), -DSUPPORT_UTF8)
+
+$(pcre_OBJS:%.o=%.c):      $(pcre_dir)/config.h
+$(pcre_utf8_OBJS:%.o=%.c): $(pcre_dir)/config.h
+
+$(pcre_dir)/pcre_chartables.c:
+	cp -p $(pcre_dir)/pcre_chartables.c.dist $@
+
+$(pcre_dir)/config.h: | $(pcre_dir)
+$(pcre_dir)/config.h:
+	cd $(pcre_dir) && sh ./configure $(if $(enable_utf8), --enable-utf8, --disable-utf8)
+
+$(pcre_dir): $(pcre_archive)
+	tar xf $<
+
+$(pcre_archive):
+	$(WGET) $(pcre_archive_url)
+
+.PHONY: check test
+check test:
+	$(MAKE) check
+
+.PHONY: clean
+clean:
+	-$(MAKE) clean
+	-$(MAKE) -C $(pcre_dir) distclean
+
+.PHONY: help usage
+help usage:
+	@echo "make -f Makefile.pcre [enable_utf8=1]"
