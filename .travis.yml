@@ -12,8 +12,8 @@ matrix:
   include:
     - compiler: i586-mingw32msvc-gcc
       env: STRIP=i586-mingw32msvc-strip
-      script: make -f $(MAKEFILE) CC=$CC
+      script: make -f $MAKEFILE CC=$CC
 
 script:
-  - make -f $(MAKEFILE)
-  - make -f $(MAKEFILE) test
+  - make -f $MAKEFILE
+  - make -f $MAKEFILE test
