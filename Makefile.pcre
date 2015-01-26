@@ -102,7 +102,7 @@ $(pcre_dir)/pcre_chartables.c:
 
 $(pcre_dir)/config.h: | $(pcre_dir)
 $(pcre_dir)/config.h:
-	cd $(pcre_dir) && sh ./configure $(if $(enable_utf8), --enable-utf8, --disable-utf8)
+	cd $(pcre_dir) && sh ./configure $(if $(enable_utf8), --enable-utf8, --disable-utf8) --host=$(MACHINE)
 
 $(pcre_dir): $(pcre_archive)
 	tar xf $<

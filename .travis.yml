@@ -5,6 +5,9 @@ compiler:
   - gcc
 
 env:
+  # matrix:
+  #   - TARGET_ARCH=-m64
+  #   - TARGET_ARCH=-m32
   global:
     - MAKEFILE=Makefile.pcre
 
