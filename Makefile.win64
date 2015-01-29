@@ -1,41 +1,93 @@
 # Makefile for mingw32/64
-# not tested features ffi,dll
+# not tested features library
 
-USAGE := make -f Makefile.win64 [CC=gcc] [FEATURES=utf8]
-
-TARGET := newlisp
+CC ?= cc
 FEATURES ?= utf8
 
-enable_utf8 := $(findstring utf8,$(FEATURES))
+usage := make -f $(notdir $(MAKEFILE_LIST)) [CC=$(CC)] [FEATURES=utf8,ffi,readline]
 
-CC = gcc
+# $(call grep, string, word-list)
+grep = $(strip $(foreach word,$2,$(findstring $(word),$1)))
 
-MACHINE := $(shell $(CC) -dumpmachine)
+platform_list := mingw msys cygwin linux bsd darwin # solaris
+hostname := $(shell $(CC) -dumpmachine)
+platform := $(call grep, $(hostname), $(platform_list))
 
-OBJS := newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
-	win32-util.o win32-path.o \
-	$(if $(enable_utf8), nl-utf8.o)
+TARGET := newlisp
+TARGET := $(if $(findstring mingw, $(platform)), $(TARGET).exe, $(TARGET))
 
-DEFS := $(if $(findstring x86_64,$(MACHINE)), -DNEWLISP64) \
-	$(if $(enable_utf8), -DSUPPORT_UTF8) \
-	-DWIN_32
-LIBS := -lws2_32
+OBJS_default := newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+                nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
 
-CFLAGS   := -Wall -Wno-uninitialized -Wno-long-long -g
-CPPFLAGS := $(DEFS)
-LDLIBS   := $(LIBS)
+CFLAGS_default := -Wall -Wno-uninitialized -Wno-long-long -g
+
+OBJS_mingw := win32-util.o win32-path.o
+DEFS_mingw := -DWIN_32
+LIBS_mingw := -lws2_32
+
+CFLAGS_cygwin := -Wno-char-subscripts
+DEFS_cygwin   := -DCYGWIN
+LIBS_cygwin   := -ldl
+
+CFLAGS_msys := $(CFLAGS_cygwin)
+DEFS_msys   := $(DEFS_cygwin)
+LIBS_msys   := $(LIBS_cygwin)
+
+DEFS_linux := -DLINUX
+LIBS_linux := -ldl
+
+DEFS_darwin := -DMAC_OSX
+
+DEFS_bsd := -D_BSD
+
+# feature
+
+use_utf8  := $(findstring utf8, $(FEATURES))
+OBJS_utf8 := nl-utf8.o
+DEFS_utf8 := -DSUPPORT_UTF8
+
+use_ffi    := $(findstring ffi, $(FEATURES))
+CFLAGS_ffi := $(shell pkg-config --cflags libffi 2>/dev/null)
+DEFS_ffi   := -DFFI
+LIBS_ffi   := $(shell pkg-config --libs libffi 2>/dev/null)
+
+use_readline  := $(findstring readline, $(FEATURES))
+DEFS_readline := -DREADLINE
+LIBS_readline := -lreadline # -lncurses
+
+
+OBJS := $(OBJS_default)		\
+        $(OBJS_$(platform))	\
+        $(if $(use_utf8), $(OBJS_utf8))
+
+CFLAGS := $(CFLAGS_default)     \
+          $(CFLAGS_$(platform)) \
+          $(if $(use_ffi), $(CFLAGS_ffi))
+
+CPPFLAGS := $(DEFS_$(platform))				\
+            $(if $(use_utf8), $(DEFS_utf8))		\
+            $(if $(use_ffi), $(DEFS_ffi))		\
+            $(if $(use_readline), $(DEFS_readline))	\
+            $(if $(call grep $(hostname), x86_64 amd64), -DNEWLISP64)
+
+LDLIBS := $(LIBS_$(platform))           \
+          $(if $(use_ffi), $(LIBS_ffi)) \
+          $(if $(use_readline), $(LIBS_readline))
+
 
 .PHONY: default
-default: clean $(TARGET) test
+default: $(TARGET)
+
+%.exe: %.o
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 $(TARGET): $(OBJS)
 
-$(OBJS): primes.h protos.h newlisp.h Makefile.win64
+$(OBJS): primes.h protos.h newlisp.h
 
 .PHONY: help usage
 help usage:
-	@echo usage: $(USAGE)
+	@echo usage: $(usage)
 
 .PHONY: check test
 check test:
