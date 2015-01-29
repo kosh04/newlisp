@@ -2539,19 +2539,11 @@ switch(cell->type)
         varPrintf(device, "true"); break;
     
     case CELL_LONG:
-        varPrintf(device,"%ld", cell->contents); break;
+        varPrintf(device,"%"PRIdPTR, cell->contents); break;
 
 #ifndef NEWLISP64
     case CELL_INT64:
-#ifdef TRU64
-        varPrintf(device,"%ld", *(INT64 *)&cell->aux); break;
-#else
-#ifdef WINDOWS
-        varPrintf(device,"%I64d", *(INT64 *)&cell->aux); break;
-#else
-        varPrintf(device,"%lld", *(INT64 *)&cell->aux); break;
-#endif /* WIN32 */
-#endif /* TRU64 */
+        varPrintf(device,"%"PRId64, *(INT64 *)&cell->aux); break;
 #endif /* NEWLISP64 */
 #ifdef BIGINT
     case CELL_BIGINT:
@@ -7063,7 +7055,7 @@ if(params->type == CELL_STRING)
     }
 else if(params != nilCell)
     {
-    snprintf(sigStr, 11, "$signal-%ld", sig);
+    snprintf(sigStr, 11, "$signal-%d", (int)sig);
     getCreateSymbol(params, &signalEvent, sigStr);
     symHandler[sig - 1] = signalEvent;
     if(signal(sig, signal_handler) == SIG_ERR) return(nilCell);

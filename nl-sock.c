@@ -24,7 +24,10 @@
 #ifdef WINDOWS
 
 #include <winsock2.h>
+#pragma push_macro("UINT")
+#undef UINT
 #include <ws2tcpip.h>
+#pragma pop_macro("UINT")
 #include <ws2spi.h>
 #define fdopen win32_fdopen
 #define SHUT_RDWR 2

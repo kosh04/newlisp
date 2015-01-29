@@ -1120,15 +1120,9 @@ switch(type)
 
             if(type == HTTP_HEAD)
                 {
-#if defined(WINDOWS) || defined(TRU64)
                 snprintf(buff, MAX_BUFF - 1, 
-                    "Content-length: %ld\r\nContent-type: %s\r\n\r\n", 
-                    (INT)fileSize(request), mediaType);
-#else
-                snprintf(buff, MAX_BUFF - 1, 
-                    "Content-length: %lld\r\nContent-type: %s\r\n\r\n", 
-                    (long long int)fileSize(request), mediaType);
-#endif
+                    "Content-length: %"PRId64"\r\nContent-type: %s\r\n\r\n",
+                    fileSize(request), mediaType);
                 sendHTTPpage(buff, strlen(buff), NULL);
                 }
             else

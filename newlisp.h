@@ -307,36 +307,19 @@ This is for 64bit large file support (LFS),
 
 #define UTF8_MAX_BYTES 6
 
-/* autosize on 32-bit ILP32 and 64-bit on LP64 and LLP64 */
-#ifndef WIN_64 /* UNIX 32 or 64 or WIN_32 */
-#define INT long
-#define UINT unsigned long 
-#else          /* WIN_64 LLP64 */
-#define INT long long
-#define UINT unsigned long long
-#endif
+/* autosize on 32-bit ILP32 and 64-bit on LP64 (unix) and LLP64 (win64) */
+#include <stdint.h>
+#include <inttypes.h>
 
-#define INT16 short int
-#ifndef NEWLISP64
-#define MAX_LONG 0x7FFFFFFF
-#else
-#define MAX_LONG 0x7FFFFFFFFFFFFFFFLL
-#endif
+#define UINT   uintptr_t
+#define INT    intptr_t
+#define INT16  int16_t
+#define INT64  int64_t
+#define UINT64 int64_t
+
+#define MAX_LONG INTPTR_MAX
 
 #define CONNECT_TIMEOUT 10000 
-
-#ifndef NEWLISP64
-#ifdef TRU64
-#define INT64 long
-#define UINT64 unsigned long
-#else /* not TRU64 */
-#define INT64 long long int
-#define UINT64 unsigned long long int
-#endif
-#else /* NEWLISP64 */
-#define INT64 long
-#define UINT64 unsigned long
-#endif
 
 #define pushEnvironment(A) (*(envStackIdx++) = (UINT)(A))
 #define popEnvironment() (*(--envStackIdx))
@@ -707,7 +690,7 @@ extern int ADDR_FAMILY;
 extern int IOchannelIsSocket;
 #endif
 extern int MAX_CPU_STACK;
-extern long MAX_CELL_COUNT;
+extern INT MAX_CELL_COUNT;
 extern int version;
 extern int opsys;
 extern char ostype[];

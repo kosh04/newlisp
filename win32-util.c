@@ -94,7 +94,7 @@ UINT winPipedProcess(char * cmd, int inpipe, int outpipe, int option)
 STARTUPINFO si = { 0 };
 PROCESS_INFORMATION process;
 int result;
-long fin, fout; 
+HANDLE fin, fout; 
 UINT pid;
 
 if(inpipe == -1 && outpipe == -1)
@@ -111,12 +111,12 @@ else
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
 
-    fin = _get_osfhandle(inpipe);
-    fout = _get_osfhandle(outpipe);
+    fin  = (HANDLE)_get_osfhandle(inpipe);
+    fout = (HANDLE)_get_osfhandle(outpipe);
 
-    si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
-    si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdInput  = (inpipe)  ? fin  : GetStdHandle(STD_INPUT_HANDLE);
+    si.hStdOutput = (outpipe) ? fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError  = (outpipe) ? fout : GetStdHandle(STD_OUTPUT_HANDLE);
     }
 
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
@@ -141,8 +141,8 @@ sa.lpSecurityDescriptor = NULL;
 if(!CreatePipe(&pipe_r, &pipe_w, &sa, 0))
     return(0);
 
-*inpipe = _open_osfhandle((long) pipe_r, 0);
-*outpipe = _open_osfhandle((long) pipe_w, 0);
+*inpipe = _open_osfhandle((intptr_t) pipe_r, 0);
+*outpipe = _open_osfhandle((intptr_t) pipe_w, 0);
 
 
 return(1);
@@ -162,14 +162,14 @@ security.lpSecurityDescriptor = NULL; /* default of caller */
 
 hSemaphore = CreateSemaphore(&security, 0, 65536, NULL);
 
-return((UINT)hSemaphore);
+return((ULONG_PTR)hSemaphore);
 } 
 
 UINT winWaitSemaphore(UINT hSemaphore)
 {
 DWORD dwWaitResult; 
 
-dwWaitResult = WaitForSingleObject((HANDLE)hSemaphore, INFINITE);
+dwWaitResult = WaitForSingleObject(LongToHandle(hSemaphore), INFINITE);
 
 if(dwWaitResult == WAIT_FAILED)
     return(FALSE);
@@ -179,12 +179,12 @@ return(TRUE);
 
 UINT winSignalSemaphore(UINT hSemaphore, int count)
 {
-return(ReleaseSemaphore((HANDLE)hSemaphore, count, NULL));
+return(ReleaseSemaphore(LongToHandle(hSemaphore), count, NULL));
 }
 
 int winDeleteSemaphore(UINT hSemaphore) 
 {
-return (CloseHandle((HANDLE)hSemaphore));
+return (CloseHandle(LongToHandle(hSemaphore)));
 }
 
 /*
@@ -204,14 +204,14 @@ sa.nLength = sizeof(sa);
 sa.bInheritHandle = TRUE;
 sa.lpSecurityDescriptor = NULL; /* default of caller */
 
-hMemory = CreateFileMapping((HANDLE)0xFFFFFFFF, &sa, PAGE_READWRITE, 0, size, NULL);
+hMemory = CreateFileMapping(INVALID_HANDLE_VALUE, &sa, PAGE_READWRITE, 0, size, NULL);
 
-return((UINT)hMemory);
+return((ULONG_PTR)hMemory);
 }
 
 UINT * winMapView(UINT hMemory, int size)
 {
-return((UINT*)MapViewOfFile((HANDLE)hMemory, FILE_MAP_WRITE, 0, 0, size));
+return((UINT*)MapViewOfFile(LongToHandle(hMemory), FILE_MAP_WRITE, 0, 0, size));
 }
 
 /* ---------------------------- timer -------------------------------------- */

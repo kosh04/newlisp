@@ -627,7 +627,11 @@ if(*fmt == 'l' && *(fmt + 1) == 'l' && (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' |
 if(memcmp(fmt, "I64", 3) == 0 &&
         (*(fmt + 3) == 'd' || *(fmt + 3) == 'u' || *(fmt + 3) =='x' || *(fmt + 3) == 'X'))
     {
+#ifndef NEWLISP64
     *type = CELL_INT64;
+#else
+    *type = CELL_LONG;
+#endif
     return(fmt+4);
     }
 #endif
@@ -1208,31 +1212,17 @@ char number[32];
 SYMBOL * context;
 SYMBOL * sPtr;
 CELL * cell;
-#ifdef WINDOWS
-char * fmt = "%I64d";
-#endif
-
 
 cell = evaluateExpression(params);
 switch(cell->type)
     {
     case CELL_LONG:
-        snprintf(number, 30, "%ld", cell->contents);
+        snprintf(number, 30, "%"PRIdPTR, cell->contents);
         token = number;
         break;
 #ifndef NEWLISP64
     case CELL_INT64:
-#ifdef TRU64
-        snprintf(number, 30, "%ld", *(INT64 *)&cell->aux); 
-#else
-
-#ifdef WINDOWS
-        snprintf(number, 30, fmt, *(INT64 *)&cell->aux);
-#else
-        snprintf(number, 30, "%lld", *(INT64 *)&cell->aux);
-#endif /* WINDOWS */
-
-#endif /* TRU64 */
+        snprintf(number, 30, "%"PRId64, *(INT64 *)&cell->aux);
         token = number;
         break;
 #endif /* NEWLISP64 */

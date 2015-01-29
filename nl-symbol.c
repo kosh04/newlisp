@@ -139,7 +139,7 @@ if(isNumber(cell->type))
     {
     token = alloca(32);
     getIntegerExt(cell, &number, FALSE);
-    snprintf(token, 31, "_%ld", number);
+    snprintf(token, 31, "_%"PRIdPTR, number);
     }
 else
     {

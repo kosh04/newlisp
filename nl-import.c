@@ -427,28 +427,30 @@ INT callback14(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8)
 INT callback15(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8) 
     {return template(15, p1, p2, p3, p4, p5, p6, p7, p8);}
 
+typedef INT (*lib_callback_t)(INT p1, INT p2, INT p3, INT p4, INT p5, INT p6, INT p7, INT p8);
+
 typedef struct {
     SYMBOL * sym;
-    UINT func;
+    lib_callback_t func;
     } LIBCALLBACK;
 
 LIBCALLBACK callback[] = {
-    { NULL, (UINT)callback0 },
-    { NULL, (UINT)callback1 },
-    { NULL, (UINT)callback2 },
-    { NULL, (UINT)callback3 },
-    { NULL, (UINT)callback4 },
-    { NULL, (UINT)callback5 },
-    { NULL, (UINT)callback6 },
-    { NULL, (UINT)callback7 },
-    { NULL, (UINT)callback8 },
-    { NULL, (UINT)callback9 },
-    { NULL, (UINT)callback10 },
-    { NULL, (UINT)callback11 },
-    { NULL, (UINT)callback12 },
-    { NULL, (UINT)callback13 },
-    { NULL, (UINT)callback14 },
-    { NULL, (UINT)callback15 },
+    { NULL, callback0 },
+    { NULL, callback1 },
+    { NULL, callback2 },
+    { NULL, callback3 },
+    { NULL, callback4 },
+    { NULL, callback5 },
+    { NULL, callback6 },
+    { NULL, callback7 },
+    { NULL, callback8 },
+    { NULL, callback9 },
+    { NULL, callback10 },
+    { NULL, callback11 },
+    { NULL, callback12 },
+    { NULL, callback13 },
+    { NULL, callback14 },
+    { NULL, callback15 },
 };
 
 
@@ -612,7 +614,7 @@ if(n > 15) return(errorProc(ERR_NUMBER_OUT_OF_RANGE));
 getSymbol(params->next, &sPtr);
 callback[n].sym = sPtr;
 
-return(stuffInteger(callback[n].func));
+return(stuffInteger((UINT)callback[n].func));
 }
 
 /* ========================= FFFI using ffilib ========================== */

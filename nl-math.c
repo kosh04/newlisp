@@ -569,7 +569,7 @@ double floatNum = 0.0;
 if(param->type == CELL_FLOAT)
     return(*(double *)&param->aux);
 else if(param->type == CELL_LONG)
-    floatNum = (long)param->contents;
+    floatNum = (long)param->contents; /* INT ? */
 else if(param->type == CELL_INT64)
     floatNum = *(INT64 *)&param->aux;
 #ifdef BIGINT
@@ -1066,8 +1066,8 @@ switch(left->type)
 #endif 
     case CELL_LONG:
     default:
-        if((long)left->contents > (long)right->contents) return(1);
-        if((long)left->contents < (long)right->contents) return(-1);
+        if((INT)left->contents > (INT)right->contents) return(1);
+        if((INT)left->contents < (INT)right->contents) return(-1);
         break;  
     }
 

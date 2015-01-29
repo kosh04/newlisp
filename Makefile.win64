@@ -1,0 +1,47 @@
+# Makefile for mingw32/64
+# not tested features ffi,dll
+
+USAGE := make -f Makefile.win64 [CC=gcc] [FEATURES=utf8]
+
+TARGET := newlisp
+FEATURES ?= utf8
+
+enable_utf8 := $(findstring utf8,$(FEATURES))
+
+CC = gcc
+
+MACHINE := $(shell $(CC) -dumpmachine)
+
+OBJS := newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
+	win32-util.o win32-path.o \
+	$(if $(enable_utf8), nl-utf8.o)
+
+DEFS := $(if $(findstring x86_64,$(MACHINE)), -DNEWLISP64) \
+	$(if $(enable_utf8), -DSUPPORT_UTF8) \
+	-DWIN_32
+LIBS := -lws2_32
+
+CFLAGS   := -Wall -Wno-uninitialized -Wno-long-long -g
+CPPFLAGS := $(DEFS)
+LDLIBS   := $(LIBS)
+
+.PHONY: default
+default: clean $(TARGET) test
+
+$(TARGET): $(OBJS)
+
+$(OBJS): primes.h protos.h newlisp.h Makefile.win64
+
+.PHONY: help usage
+help usage:
+	@echo usage: $(USAGE)
+
+.PHONY: check test
+check test:
+	./$(TARGET) -n -e "(make-dir {/temp})"	# use `share'
+	./$(TARGET) -n qa-dot
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGET) $(OBJS)

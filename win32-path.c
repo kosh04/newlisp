@@ -284,12 +284,29 @@ int rename_utf16(const char* oldname8, const char* newname8)
 int stat_utf16(const char* filename8, struct stat* buf)
 {
     int i = -1;
+    struct _stat st;
     WCHAR * filename16 = utf8_to_utf16(filename8);
     if (filename16)
     {
-        i = _wstat(filename16, (struct _stat*)buf);
+        i = _wstat(filename16, &st);
         free(filename16);
     }
+
+    if (i == 0) {
+    /* FIXME: incompatible type 'struct _stat' and 'struct stat' in MinGW64 ? */
+    buf->st_dev   = st.st_dev;
+    buf->st_ino   = st.st_ino;
+    buf->st_mode  = st.st_mode;
+    buf->st_nlink = st.st_nlink;
+    buf->st_uid   = st.st_uid;
+    buf->st_gid   = st.st_gid;
+    buf->st_rdev  = st.st_rdev;
+    buf->st_size  = st.st_size;
+    buf->st_atime = st.st_atime;
+    buf->st_mtime = st.st_mtime;
+    buf->st_ctime = st.st_ctime;
+    }
+
     return i;
 }
 
