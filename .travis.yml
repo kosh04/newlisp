@@ -4,23 +4,23 @@ compiler:
   - gcc
   - clang
 
-matrix:
-  include:
-    - compiler: i586-mingw32msvc-gcc
-      before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install wine
-      script:
-        - make -f Makefile.win64
-        - wine newlisp.exe qa-dot
-    - compiler: x86_64-w64-mingw32-gcc
-      before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
-        - sudo apt-get install -y wine
-      script:
-        - make -f Makefile.win64
-        - wine newlisp.exe qa-dot
+# matrix:
+#   include:
+#     - compiler: i586-mingw32msvc-gcc
+#       before_install:
+#         - sudo apt-get update -qq
+#         - sudo apt-get install wine
+#       script:
+#         - make -f Makefile.win64
+#         - wine newlisp.exe qa-dot
+#     - compiler: x86_64-w64-mingw32-gcc
+#       before_install:
+#         - sudo apt-get update -qq
+#         - sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+#         - sudo apt-get install -y wine
+#       script:
+#         - make -f Makefile.win64
+#         - wine newlisp.exe qa-dot
 
 script:
   - make
