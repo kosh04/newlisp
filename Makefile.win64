@@ -14,7 +14,6 @@ hostname := $(shell $(CC) -dumpmachine)
 platform := $(call grep, $(hostname), $(platform_list))
 
 TARGET := newlisp
-TARGET := $(if $(findstring mingw, $(platform)), $(TARGET).exe, $(TARGET))
 
 OBJS_default := newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
                 nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
@@ -68,7 +67,7 @@ CPPFLAGS := $(DEFS_$(platform))				\
             $(if $(use_utf8), $(DEFS_utf8))		\
             $(if $(use_ffi), $(DEFS_ffi))		\
             $(if $(use_readline), $(DEFS_readline))	\
-            $(if $(call grep $(hostname), x86_64 amd64), -DNEWLISP64)
+            $(if $(call grep, $(hostname), x86_64 amd64), -DNEWLISP64)
 
 LDLIBS := $(LIBS_$(platform))           \
           $(if $(use_ffi), $(LIBS_ffi)) \
