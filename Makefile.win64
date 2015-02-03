@@ -90,8 +90,8 @@ help usage:
 .PHONY: check test
 check test:
 	./$(TARGET) -v
-	./$(TARGET) -n -e "(make-dir {/temp})"	# use `share'
-	./$(TARGET) -n qa-dot
+	./$(TARGET) -n -e "(if (= ostype {Win32}) (make-dir {/temp}))" # use `share'
+	$(MAKE) -f Makefile testall
 
 .PHONY: clean
 clean:
