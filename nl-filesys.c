@@ -72,6 +72,7 @@ extern char ** environ;
 #define srandom srand
 #include <conio.h>  
 #include <dir.h>
+#include <direct.h>
 #define popen  _popen
 #define pclose _pclose
 #define pipe _pipe
