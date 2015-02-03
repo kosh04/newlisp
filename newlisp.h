@@ -29,6 +29,14 @@
 #define BIGINT
 #define KMEANS 
 
+/* disable -DNEWLISP64 in Makefile */
+#undef  NEWLISP64
+/* detect memory model LP64 (unix/linux) and LLP64 (win64) */
+#if  defined(_LP64)  \
+  || defined(_WIN64) \
+  || defined(__SIZEOF_POINTER__) && (SIZEOF_POINTER == 8) /* other GCC platform */
+#define NEWLISP64
+#endif
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */
 #ifdef NEWCONFIG

@@ -66,8 +66,7 @@ CFLAGS := $(CFLAGS_default)     \
 CPPFLAGS := $(DEFS_$(platform))				\
             $(if $(use_utf8), $(DEFS_utf8))		\
             $(if $(use_ffi), $(DEFS_ffi))		\
-            $(if $(use_readline), $(DEFS_readline))	\
-            $(if $(call grep, $(hostname), x86_64 amd64), -DNEWLISP64)
+            $(if $(use_readline), $(DEFS_readline))
 
 LDLIBS := $(LIBS_$(platform))           \
           $(if $(use_ffi), $(LIBS_ffi)) \
@@ -90,6 +89,7 @@ help usage:
 
 .PHONY: check test
 check test:
+	./$(TARGET) -v
 	./$(TARGET) -n -e "(make-dir {/temp})"	# use `share'
 	./$(TARGET) -n qa-dot
 
