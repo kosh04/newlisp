@@ -159,7 +159,7 @@ if(defaultIn != NULL) free(defaultIn);
 defaultInLen = (ADDR_FAMILY == AF_INET6) ? 
     sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 
-defaultIn = allocMemory(defaultInLen);
+defaultIn = callocMemory(defaultInLen);
 
 if(ADDR_FAMILY == AF_INET6)
     {
