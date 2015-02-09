@@ -19,7 +19,6 @@
 */
 
 #include "newlisp.h"
-#include "pcre.h"
 #include "protos.h"
 
 extern CELL * lastCellCopied;

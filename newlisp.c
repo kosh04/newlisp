@@ -18,7 +18,6 @@
 */
 
 #include "newlisp.h"
-#include "pcre.h"
 #include "protos.h"
 #include "primes.h"
 

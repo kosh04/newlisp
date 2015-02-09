@@ -21,6 +21,7 @@
 #ifdef SUPPORT_UTF8
 #include <wctype.h>
 #endif
+#define PCRE_STATIC
 #include "pcre.h"
 #include "protos.h"
 
@@ -2298,11 +2299,7 @@ if((cPattern == NULL) || (strcmp(cPattern, pattern) != 0) || (options != cacheOp
     len = strlen(pattern);
     cPattern = (char *)allocMemory(len + 1);
     memcpy(cPattern, pattern, len + 1);
-#ifdef WINDOWS
-    if(re != NULL) free(re);
-#else
     if(re != NULL) (pcre_free)(re);
-#endif
     re = pcre_compile(pattern, options, &error, &errOffset, NULL); 
 
     /* Compilation failed: print the error message and exit */
