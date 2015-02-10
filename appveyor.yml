@@ -1,0 +1,54 @@
+version: 1.0.{build}
+
+os: unstable
+
+environment:
+  global:
+    CYGWIN_ROOT:  C:\cygwin
+    CYGWIN_CACHE: C:\cygwin\var\cache\setup
+    CYGWIN_MIRROR: http://cygwin.mirror.constant.com
+  matrix:
+    # Cygwin32
+    ## NOTE: pre-installed packages: gcc-core,libffi6,libreadline7,make,mingw-gcc-core,pkg-config
+    - CYGWIN_ARCH: x86
+      CYGWIN_PACKAGES: libffi-devel,libreadline-devel
+      NEWLISP_FEATURES: utf8,ffi,readline
+      CC: gcc
+    # Cygwin64
+    ## WARNING: It can cross-build on cygwin32, but cannot run.
+    - CYGWIN_ARCH: x86_64
+      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,pkg-config,cygrunsrv
+      NEWLISP_FEATURES: utf8,ffi,readline
+      CC: gcc
+    # MinGW (build and test on cygwin32)
+    - CYGWIN_ARCH: x86
+      CYGWIN_PACKAGES: mingw-gcc-core,mingw64-i686-gcc-core
+      CC: i686-pc-mingw32-gcc
+      #CC: i686-w64-mingw32-gcc
+      NEWLISP_FEATURES: utf8
+    # MinGW-w64
+    - CYGWIN_ARCH: x86
+      CYGWIN_PACKAGES: mingw64-x86_64-gcc-core
+      CC: x86_64-w64-mingw32-gcc
+      NEWLISP_FEATURES: utf8
+
+init:
+  - 'git config --global core.autocrlf input'
+  - 'if "%CYGWIN_ARCH%" == "x86_64" set CYGWIN_ROOT=C:\cygwin64'
+  - 'if "%CYGWIN_ARCH%" == "x86_64" set CYGWIN_CACHE=C:\cygwin64\var\cache\setup'
+
+install:
+  - 'C:\cygwin\setup-x86.exe -qnNdO --arch="%CYGWIN_ARCH%" --root="%CYGWIN_ROOT%" --site="%CYGWIN_MIRROR%" --local-package-dir="%CYGWIN_CACHE%" --packages="%CYGWIN_PACKAGES%" >NUL'
+  - 'set PATH=%CYGWIN_ROOT%\bin;%PATH%'
+  - 'sh -lc "echo require packages: %CYGWIN_PACKAGES%"'
+  - 'sh -lc "cygcheck -cd cygwin $(echo %CYGWIN_PACKAGES% | tr , \" \")"'
+  - 'sh -lc "echo CC=%CC%; %CC% -v"'
+
+build_script:
+  - sh -c "make -f Makefile.win64 FEATURES=%NEWLISP_FEATURES%"
+
+test_script:
+  - sh -c "./newlisp -v"
+  - sh -c "./newlisp -e '(if (= ostype {Win32}) (make-dir {/temp}))'"
+  - sh -c "./newlisp -e '(if (= ostype {Cygwin}) (! {cygserver-config -y && cygrunsrv --start cygserver}))'"
+  - sh -c "make testall"

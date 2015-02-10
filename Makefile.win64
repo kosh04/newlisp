@@ -24,7 +24,7 @@ OBJS_mingw := win32-util.o win32-path.o
 DEFS_mingw := -DWIN_32
 LIBS_mingw := -lws2_32
 
-CFLAGS_cygwin := -Wno-char-subscripts
+CFLAGS_cygwin := -Wno-char-subscripts -Iinclude
 DEFS_cygwin   := -DCYGWIN
 LIBS_cygwin   := -ldl
 
@@ -83,16 +83,32 @@ $(TARGET): $(OBJS)
 
 $(OBJS): primes.h protos.h newlisp.h
 
+ifeq ($(platform),cygwin)
+nl-sock.o: ./include/netinet/icmp6.h
+
+./include/netinet/icmp6.h:
+	mkdir -p ./include/netinet/
+	curl -s http://www.scs.stanford.edu/histar/src/pkg/uclibc/include/netinet/icmp6.h > ./include/netinet/icmp6.h
+endif
+
+PROFILE_OBJS := gmon.out gmon.out *.gcda *.gcno
+
+.PHONY: profile
+profile: CFLAGS  += -pg -fprofile-arcs -ftest-coverage
+profile: LDFLAGS += -pg -fprofile-arcs -ftest-coverage
+profile: default
+#	$(MAKE) testall
+#	gprof $(TARGET)
+
 .PHONY: help usage
 help usage:
 	@echo usage: $(usage)
 
 .PHONY: check test
-check test:
+check test: $(TARGET)
 	./$(TARGET) -v
-	./$(TARGET) -n -e "(if (= ostype {Win32}) (make-dir {/temp}))" # use `share'
 	$(MAKE) -f Makefile testall
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS)
+	$(RM) $(TARGET) $(OBJS) $(PROFILE_OBJS)

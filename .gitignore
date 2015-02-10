@@ -20,6 +20,11 @@ qa-junk.txt
 /modules/test.gz
 ._*
 
+# profile/coverage
+gmon.out
+*.gcda
+*.gcno
+
 # guiserver
 *.class
 
@@ -32,6 +37,7 @@ qa-junk.txt
 nbproject
 
 # misc
+include
 TAGS
 XTAGS
 *.stackdump

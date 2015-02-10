@@ -46,7 +46,7 @@
 #endif
 
 /* force ISO_C90 restrictions */
-#if defined(CYGWN) || defined(OS2) || defined(SOLARIS) || defined(AIX) || defined(SUNOS)
+#if defined(CYGWIN) || defined(OS2) || defined(SOLARIS) || defined(AIX) || defined(SUNOS)
 #define ISO_C90
 #endif
 
@@ -115,11 +115,11 @@
 #include <ffi/ffi.h>
 #endif
 
-#if defined(WINDOWS) || defined(CYGWN) 
+#if defined(WINDOWS)
 #include "win-ffi.h" 
 #endif
 
-#if defined(LINUX) || defined(_BSD) /* makefiles specify include directory */
+#if defined(LINUX) || defined(_BSD) || defined(CYGWIN) /* makefiles specify include directory */
 #include <ffi.h>
 #endif
 

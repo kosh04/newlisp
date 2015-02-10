@@ -25,12 +25,17 @@
 
 (define (fibo n)
   (local (f1 f2)
-    (if(< n 2) 1
-		(begin 
+    (if (< n 2) 1
+      (begin 
 			(spawn 'f1 (fibo (- n 1)))
 			(spawn 'f2 (fibo (- n 2)))
-			(sync 10000)
-			(+ f1 f2)))))
+			(sync (* 20 1000))
+			(if (and (number? f1) (number? f2))
+				(+ f1 f2)
+				(begin
+					(println "sync error:" f1 "," f2)
+					0))
+			))))
 
 (if (not fork) ; does not have fork
   (if (= (fibo 7) 21)
