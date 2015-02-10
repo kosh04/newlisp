@@ -1,7 +1,8 @@
 newLISP mirror
 ==============
 
-[![Build Status](https://travis-ci.org/kosh04/newlisp.svg)](https://travis-ci.org/kosh04/newlisp)
+[![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
+[![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
 ## newLISP with Git(Hub)
@@ -17,13 +18,14 @@ The final goal is newLISP development introduces DVCS (Git, Mercurial, etc) in o
 ### branch
 
 - `master`  : mirror from original newlisp sources
-- `develop` : `master` files and `README.md`, `.travis.yml` (default branch)
+- `develop` : `master` files and `README.md`, `.travis.yml`, `appveyor.yml` (default branch)
 - `feature/xxx` : (reserved)
 
 ### features
 
 - [Source Archives](https://github.com/kosh04/newlisp/releases)
 - [Travis CI](https://travis-ci.org/kosh04/newlisp) : Continuous Integration
+- [AppVeyor](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop) : Continuous Integration (for MinGW)
 - [Gitter](https://gitter.im/kosh04/newlisp) : Chat about this repo
 
 ## License
