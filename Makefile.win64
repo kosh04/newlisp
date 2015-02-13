@@ -13,73 +13,60 @@ platform_list := mingw msys cygwin linux bsd darwin # solaris
 hostname := $(shell $(CC) -dumpmachine)
 platform := $(call grep, $(hostname), $(platform_list))
 
-TARGET := newlisp
+use_utf8     := $(findstring utf8, $(FEATURES))
+use_ffi      := $(findstring ffi, $(FEATURES))
+use_readline := $(findstring readline, $(FEATURES))
+
+#TARGET := newlisp
 
 OBJS_default := newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
                 nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
-
-CFLAGS_default := -Wall -Wno-uninitialized -Wno-long-long -g
-
 OBJS_mingw := win32-util.o win32-path.o
-DEFS_mingw := -DWIN_32
-LIBS_mingw := -lws2_32
-
-CFLAGS_cygwin := -Wno-char-subscripts -Iinclude
-DEFS_cygwin   := -DCYGWIN
-LIBS_cygwin   := -ldl
-
-CFLAGS_msys := $(CFLAGS_cygwin)
-DEFS_msys   := $(DEFS_cygwin)
-LIBS_msys   := $(LIBS_cygwin)
-
-DEFS_linux := -DLINUX
-LIBS_linux := -ldl
-
-DEFS_darwin := -DMAC_OSX
-
-DEFS_bsd := -D_BSD
-
-# feature
-
-use_utf8  := $(findstring utf8, $(FEATURES))
-OBJS_utf8 := nl-utf8.o
-DEFS_utf8 := -DSUPPORT_UTF8
-
-use_ffi    := $(findstring ffi, $(FEATURES))
-CFLAGS_ffi := $(shell pkg-config --cflags libffi 2>/dev/null)
-DEFS_ffi   := -DFFI
-LIBS_ffi   := $(shell pkg-config --libs libffi 2>/dev/null)
-
-use_readline  := $(findstring readline, $(FEATURES))
-DEFS_readline := -DREADLINE
-LIBS_readline := -lreadline # -lncurses
-
-
+OBJS_FEATURE_utf8 := nl-utf8.o
 OBJS := $(OBJS_default)		\
         $(OBJS_$(platform))	\
-        $(if $(use_utf8), $(OBJS_utf8))
+        $(if $(use_utf8), $(OBJS_FEATURE_utf8))
 
+CFLAGS_default := -Wall -Wno-uninitialized -Wno-long-long -g
+CFLAGS_cygwin  := -Wno-char-subscripts -Iinclude
+CFLAGS_msys    := $(CFLAGS_cygwin)
+CFLAGS_FEATURE_ffi := $(shell pkg-config --cflags libffi 2>/dev/null)
 CFLAGS := $(CFLAGS_default)     \
           $(CFLAGS_$(platform)) \
-          $(if $(use_ffi), $(CFLAGS_ffi))
+          $(if $(use_ffi), $(CFLAGS_FEATURE_ffi))
 
+DEFS_mingw  := -DWIN_32
+DEFS_cygwin := -DCYGWIN
+DEFS_msys   := $(DEFS_cygwin)
+DEFS_darwin := -DMAC_OSX
+DEFS_bsd    := -D_BSD
+DEFS_linux  := -DLINUX
+DEFS_FEATURE_utf8 := -DSUPPORT_UTF8
+DEFS_FEATURE_ffi  := -DFFI
+DEFS_FEATURE_readline := -DREADLINE
 CPPFLAGS := $(DEFS_$(platform))				\
-            $(if $(use_utf8), $(DEFS_utf8))		\
-            $(if $(use_ffi), $(DEFS_ffi))		\
-            $(if $(use_readline), $(DEFS_readline))
+            $(if $(use_utf8), $(DEFS_FEATURE_utf8))	\
+            $(if $(use_ffi), $(DEFS_FEATURE_ffi))	\
+            $(if $(use_readline), $(DEFS_FEATURE_readline))
 
+LIBS_mingw  := -lws2_32
+LIBS_cygwin := -ldl
+LIBS_msys   := $(LIBS_cygwin)
+LIBS_linux  := -ldl
+LIBS_FEATURE_ffi      := $(shell pkg-config --libs libffi 2>/dev/null)
+LIBS_FEATURE_readline := -lreadline # -lncurses
 LDLIBS := $(LIBS_$(platform))           \
-          $(if $(use_ffi), $(LIBS_ffi)) \
-          $(if $(use_readline), $(LIBS_readline))
-
+          $(if $(use_ffi), $(LIBS_FEATURE_ffi)) \
+          $(if $(use_readline), $(LIBS_FEATURE_readline))
 
 .PHONY: default
-default: $(TARGET)
+default: newlisp
 
-%.exe: %.o
-	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+# %.exe: %.o
+# 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
-$(TARGET): $(OBJS)
+newlisp: $(OBJS)
+	$(CC) $^ $(LDFLAGS) $(LDLIBS) -o $@
 
 $(OBJS): primes.h protos.h newlisp.h
 
@@ -91,24 +78,24 @@ nl-sock.o: ./include/netinet/icmp6.h
 	curl -s http://www.scs.stanford.edu/histar/src/pkg/uclibc/include/netinet/icmp6.h > ./include/netinet/icmp6.h
 endif
 
-PROFILE_OBJS := gmon.out gmon.out *.gcda *.gcno
+OBJS_PROFILE := gmon.out gmon.out *.gcda *.gcno
 
 .PHONY: profile
 profile: CFLAGS  += -pg -fprofile-arcs -ftest-coverage
 profile: LDFLAGS += -pg -fprofile-arcs -ftest-coverage
 profile: default
 #	$(MAKE) testall
-#	gprof $(TARGET)
+#	gprof newlisp
 
 .PHONY: help usage
 help usage:
 	@echo usage: $(usage)
 
 .PHONY: check test
-check test: $(TARGET)
-	./$(TARGET) -v
+check test: newlisp
+	./newlisp -v
 	$(MAKE) -f Makefile testall
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS) $(PROFILE_OBJS)
+	$(RM) newlisp $(OBJS) $(OBJS_PROFILE)
