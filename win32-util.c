@@ -17,11 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "newlisp.h"
+#include "protos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#define WIN32_LEAN_AND_MEAN     /* exclude rarely-used windows headers */
 #include <windows.h>
 #include <io.h>
 #include <process.h>
@@ -162,14 +165,14 @@ security.lpSecurityDescriptor = NULL; /* default of caller */
 
 hSemaphore = CreateSemaphore(&security, 0, 65536, NULL);
 
-return((ULONG_PTR)hSemaphore);
+return((UINT)hSemaphore);
 } 
 
 UINT winWaitSemaphore(UINT hSemaphore)
 {
 DWORD dwWaitResult; 
 
-dwWaitResult = WaitForSingleObject(LongToHandle(hSemaphore), INFINITE);
+dwWaitResult = WaitForSingleObject((HANDLE)hSemaphore, INFINITE);
 
 if(dwWaitResult == WAIT_FAILED)
     return(FALSE);
@@ -179,12 +182,12 @@ return(TRUE);
 
 UINT winSignalSemaphore(UINT hSemaphore, int count)
 {
-return(ReleaseSemaphore(LongToHandle(hSemaphore), count, NULL));
+return(ReleaseSemaphore((HANDLE)hSemaphore, count, NULL));
 }
 
 int winDeleteSemaphore(UINT hSemaphore) 
 {
-return (CloseHandle(LongToHandle(hSemaphore)));
+return (CloseHandle((HANDLE)hSemaphore));
 }
 
 /*
@@ -206,19 +209,16 @@ sa.lpSecurityDescriptor = NULL; /* default of caller */
 
 hMemory = CreateFileMapping(INVALID_HANDLE_VALUE, &sa, PAGE_READWRITE, 0, size, NULL);
 
-return((ULONG_PTR)hMemory);
+return((UINT)hMemory);
 }
 
 UINT * winMapView(UINT hMemory, int size)
 {
-return((UINT*)MapViewOfFile(LongToHandle(hMemory), FILE_MAP_WRITE, 0, 0, size));
+return((UINT *)MapViewOfFile((HANDLE)hMemory, FILE_MAP_WRITE, 0, 0, size));
 }
 
 /* ---------------------------- timer -------------------------------------- */
 
-
-#include "newlisp.h"
-#include "protos.h"
 
 extern SYMBOL * timerEvent;
 extern int milliSecTime(void);
