@@ -2,14 +2,14 @@
 
 ; path-name of the library depending on platform
 ; on Mac OSX use newlisp.dylib
-(set 'LIBRARY (if (= ostype "Win32") "newlisp.dll" "./newlisp.so"))
+(set 'LIBRARY (if (= ostype "Windows") "newlisp.dll" "./newlisp.so"))
 
 ; import functions from the newLISP shared library
 (import LIBRARY "newlispEvalStr")
 (import LIBRARY "newlispCallback")
 
 ; set calltype platform specific
-(set 'CALLTYPE (if (= ostype "Win32") "stdcall" "cdecl"))
+(set 'CALLTYPE (if (= ostype "Windows") "stdcall" "cdecl"))
 
 ; the callback function
 (define (callme p1 p2 p3 result)
@@ -28,3 +28,4 @@
     {(callme 123 456 789 99999)})))
 
 
+(exit)

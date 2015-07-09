@@ -24,10 +24,13 @@
    are enabled on all shipped binaries. Out-comment definitions to suppress.
    Other capabilities like READLINE, SUPPORT_UTF8 can be en/disabled in
    makefiles.
+   Undefining DEBUGGER does not affected simple tracing with (trace <device-no>)
 */
+
 #define XML_SUPPORT
 #define BIGINT
 #define KMEANS 
+#define DEBUGGER
 
 
 /* config.h is only needed when doing auto configuration with ./configure-alt */
@@ -38,7 +41,8 @@
 #endif
 
 /* force ISO_C90 restrictions */
-#if defined(CYGWN) || defined(OS2) || defined(SOLARIS) || defined(AIX) || defined(SUNOS)
+#if defined(CYGWIN) || defined(OS2) || defined(SOLARIS) || defined(AIX) || defined(SUNOS)
+/* not sure how this plays with introducing C99 based inttypes.h header file in 10.6.3 */
 #define ISO_C90
 #endif
 
@@ -80,15 +84,14 @@
 #define OSTYPE "AIX" 
 #endif 
 
-#ifdef WIN_32
-#define WINDOWS
-#define OSTYPE "Win32"
-#endif
 
-#ifdef WIN_64 /* has never been tried, just preparation */
-#define WINDOWS
-#define OSTYPE "Win64"
-#define NEWLISP64
+#ifdef WINDOWS
+#define OSTYPE "Windows"
+#ifdef NEWLISP64
+#define WIN_64 
+#else
+#define WIN_32
+#endif
 #endif
 
 #ifdef CYGWIN
@@ -107,14 +110,13 @@
 #include <ffi/ffi.h>
 #endif
 
-#if defined(WINDOWS) || defined(CYGWN) 
+#if defined(WINDOWS)  
 #include "win-ffi.h" 
 #endif
 
-#if defined(LINUX) || defined(_BSD) /* makefiles specify include directory */
+#if defined(LINUX) || defined(_BSD) || defined(CYGWIN) 
 #include <ffi.h>
 #endif
-
 
 #define LIBFFI " libffi"
 #else /* not FFI */
@@ -141,7 +143,7 @@
 #endif
 
 #ifdef EMSCRIPTEN
-#define MY_RANDOM
+/* #define MY_RANDOM */
 #define NO_DEBUG
 #define NO_NET_FUNCTIONS
 #define NO_WEB_FUNCTIONS
@@ -245,7 +247,11 @@ This is for 64bit large file support (LFS),
 #endif
 
 #ifdef WINDOWS
+
+/* not needed on later MinGW, linker will complain if necessary  */
 #define MY_VASPRINTF
+#define vasprintf my_vasprintf
+
 #define MY_SETENV
 #define NO_SPAWN
 #define NO_FORK
@@ -256,7 +262,6 @@ This is for 64bit large file support (LFS),
 #define LINE_FEED "\r\n"
 #define LINE_FEED_LEN 2
 #define getSocket(A) ((A)->_file)
-#define vasprintf my_vasprintf
 #define setenv my_setenv
 #ifndef MY_RANDOM
 #define random rand
@@ -274,7 +279,7 @@ This is for 64bit large file support (LFS),
 #define lstat stat
 #endif
 
-#define realpath win32_realpath
+#define realpath win_realpath
 
 /* WINDOWS UTF16 support for file paths */
 #ifdef SUPPORT_UTF8 
@@ -307,36 +312,19 @@ This is for 64bit large file support (LFS),
 
 #define UTF8_MAX_BYTES 6
 
-/* autosize on 32-bit ILP32 and 64-bit on LP64 and LLP64 */
-#ifndef WIN_64 /* UNIX 32 or 64 or WIN_32 */
-#define INT long
-#define UINT unsigned long 
-#else          /* WIN_64 LLP64 */
-#define INT long long
-#define UINT unsigned long long
-#endif
+#include <stdint.h>
+#include <inttypes.h>
 
-#define INT16 short int
-#ifndef NEWLISP64
-#define MAX_LONG 0x7FFFFFFF
-#else
-#define MAX_LONG 0x7FFFFFFFFFFFFFFFLL
-#endif
+#define UINT   uintptr_t  /* either 32-bit on ILP32 or 64-bit on LP64,LLP64 */
+#define INT    intptr_t   /* replaces 'long' which stayed 32-bit on Windows LLP64 */   
+
+#define INT16  int16_t
+#define INT64  int64_t
+#define UINT64 int64_t
+
+#define MAX_LONG INTPTR_MAX
 
 #define CONNECT_TIMEOUT 10000 
-
-#ifndef NEWLISP64
-#ifdef TRU64
-#define INT64 long
-#define UINT64 unsigned long
-#else /* not TRU64 */
-#define INT64 long long int
-#define UINT64 unsigned long long int
-#endif
-#else /* NEWLISP64 */
-#define INT64 long
-#define UINT64 unsigned long
-#endif
 
 #define pushEnvironment(A) (*(envStackIdx++) = (UINT)(A))
 #define popEnvironment() (*(--envStackIdx))
@@ -363,7 +351,7 @@ This is for 64bit large file support (LFS),
 #define MAX_BIN_NO MAX_DIGITS /* 64 + 0B */
 #define MAX_DECIMALS MAX_DIGITS /* 32, numbers with decimal point */
 
-#define MAX_FILE_BUFFER 0x40000
+#define MAX_FILE_BUFFER 0x2000
 #define MAX_BLOCK 4095
 #define MAX_URL_LEN 255 /* strlen() */
 
@@ -485,6 +473,7 @@ This is for 64bit large file support (LFS),
 #define TRACE_DEBUG_EVAL 0x0020
 #define TRACE_DEBUG_STEP 0x0040
 #define TRACE_DEBUG_NEXT 0x0080
+#define TRACE_PRINT_EVAL 0x0100
 #define TRACE_SIGINT 0x1000
 #define TRACE_TIMER  0x2000
 #define TRACE_SIGNAL 0x4000
@@ -567,7 +556,8 @@ This is for 64bit large file support (LFS),
 #define ERR_FFI_STRUCT_EXPECTED 73
 #define ERR_BIGINT_NOT_ALLOWED 74
 #define ERR_CANNOT_CONVERT 75
-#define MAX_ERROR_NUMBER 75
+#define ERR_CANNOT_CONVERT_NULL 76
+#define MAX_ERROR_NUMBER 76
 #define UNKNOWN_ERROR "Unknown error"
 
 /* network error handling */
@@ -620,13 +610,14 @@ This is for 64bit large file support (LFS),
 #define EVAL_STRING 0 /* the classic eval-string: read, xlate, evaluate */
 #define READ_EXPR 1 /* read one toplevel expression: read */
 #define READ_EXPR_SYNC 2 /* called from sync */
+#define READ_EXPR_NET 3 /* called from net-eval */
 
 /* used inf setDefine() define in newlisp.c */
 #define SET_SET 1
 #define SET_CONSTANT 2
 #define SET_DEFINE 3
 
-extern int vasprintf (char **, const char *, va_list);
+extern int vasprintf (char **, const char *, va_list); 
 
 /* ---------------------------- standard types ------------------------- */
 
@@ -701,13 +692,14 @@ typedef struct
 /* --------------------------- globals -------------------------------- */
 
 extern char startupDir[];
+extern char * tempDir;
 extern FILE * IOchannel;
 extern int ADDR_FAMILY;
 #ifdef WINDOWS
 extern int IOchannelIsSocket;
 #endif
 extern int MAX_CPU_STACK;
-extern long MAX_CELL_COUNT;
+extern INT MAX_CELL_COUNT;
 extern int version;
 extern int opsys;
 extern char ostype[];

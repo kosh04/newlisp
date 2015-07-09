@@ -10,6 +10,8 @@
 (println)
 (println "Testing floating point performance")
 
+(set-locale "C")
+
 (set 'aNan (sqrt -1))
 (set 'aInf (div 1.0 0))
 (set 'aNegInf (div -1 0))

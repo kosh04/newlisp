@@ -6,9 +6,9 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 # the option -fno-strict-aliasing may not be available on some BSD versions 
 
-CFLAGS = -m64 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -DREADLINE -DNEWLISP64 -DSUPPORT_UTF8 -D_BSD
+CFLAGS = -m64 -Wall -Wno-strict-aliasing -O2 -c -g -I/usr/local/include -DREADLINE -DNEWLISP64 -DSUPPORT_UTF8 -D_BSD
 # or without readline lib
-#CFLAGS = -m64 -Wall -Wno-uninitialized -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -D_BSD
+#CFLAGS = -m64 -Wall -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -D_BSD
 
 CC = cc
 

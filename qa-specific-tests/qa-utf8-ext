@@ -1,0 +1,36 @@
+﻿#!/usr/bin/newlisp
+
+(println "raw:      " (set 'utf8str "我能吞下玻璃而不伤身体。"))
+(set 'utf8str-ext " \n 我能吞下玻璃而不伤身体。 \t ")
+(print "dostring: ") (dostring (c utf8str) (print(char c)))
+(println)
+(print "unicode: ") (dostring (c utf8str) (print c " "))
+(println)
+
+(println "length raw, utf8: " (length utf8str) ", " 
+          (if utf8len (utf8len utf8str) " no utf8 version"))
+(println)
+(println "(= (trim utf8str) utf8str)) => " (= (trim utf8str) utf8str))
+(println "(= (trim utf8str-ext) utf8str)) => " (= (trim utf8str-ext) utf8str)) 
+(println)
+
+(println "unpack raw, trimmed, trimmed with 2nd parameter")
+(println (unpack (dup "b" 36) utf8str))
+(println (unpack (dup "b" 36) (trim utf8str)))
+(println (unpack (dup "b" 36) (trim utf8str " ")))
+
+(println "explode raw, trimmed, trimmed with 2nd parameter")
+(println (explode utf8str))
+(println (explode (trim utf8str)))
+(println (explode (trim utf8str " " " ")))
+
+(println "(map char (explode ...)) raw, trimmed, trimmed with 2nd parameter")
+(println (map char (explode utf8str)))
+(println (map char (explode (trim utf8str))))
+(println (map char (explode (trim utf8str " " " "))))
+
+;(bits 21534) ; 3rd correct
+;(bits 24542) ; 3rd on Java GS
+
+(exit)
+

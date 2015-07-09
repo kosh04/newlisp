@@ -14,7 +14,7 @@
 # environment
 #
 # Generates newlisp-js-lib.js and newlisp-js-lib.html.
-# The html file can be discarded use newlisp-x.x.x/util/newlisp-js.html instead
+# The html file can be discarded use newlisp-js/newlisp-js.html instead
 #
 # this makefile has been tested on a MAC OSX 10.9/10 platforms
 

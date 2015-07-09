@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Only LP64 and ILP32 memory models are supported
+# Only LP64, LLP64 and ILP32 memory models are supported
 echo
 echo "removing old objects and setting correct permissions ..."
 make clean > /dev/null
@@ -17,8 +17,8 @@ case `uname` in
 	SunOS) true ${os_type:=SUNOS} ;;
 	AIX) true ${os_type:=AIX} ;; 
 	OSF1) true ${os_type:=TRU64} ;;
-	MINGW32_NT-5.1) true ${os_type:=WIN_32} ;;
-	MINGW32_NT-6.1) true ${os_type:=WIN_32} ;;
+	MINGW32_*) true ${os_type:=WINDOWS} ;;
+	MINGW64_*) true ${os_type:=WINDOWS} ;;
 	CYGWIN*) true ${os_type:=CYGWIN} ;;
 	OS/2) true ${os_type:=OS2} ;;
 	*)
@@ -112,8 +112,12 @@ elif [ ${os_type} = AIX ] ; then
 	fi
 elif [ ${os_type} = TRU64 ] ; then
 	cp makefile_tru64 makefile_build
-elif [ ${os_type} = WIN_32 ] ; then
-	cp makefile_mingw_ffi makefile_build
+elif [ ${os_type} = WINDOWS ] ; then
+	if [ ${memory_model} = LLP64 ] ; then
+		cp makefile_mingw64_ffi makefile_build
+	else
+		cp makefile_mingw_ffi makefile_build
+	fi
 elif [ ${os_type} = CYGWIN ] ; then
 	cp makefile_cygwin makefile_build
 elif [ ${os_type} = OS2 ] ; then

@@ -17,7 +17,7 @@
 ;10    89      177
 
 
-(when (= ostype "Win32")
+(when (find ostype '("Windows"))
 	(exit))
 
 (println)
@@ -29,13 +29,14 @@
 		(begin 
 			(spawn 'f1 (fibo (- n 1)))
 			(spawn 'f2 (fibo (- n 2)))
-			(sync 10000)
+			(println "wait/sync up to 20 secs")
+			(sync 20000)
 			(+ f1 f2)))))
 
 (if (not fork) ; does not have fork
-  (if (= (fibo 7) 21)
-	(println ">>>>> SIMULATED CILK API TESTED SUCCESSFUL ---")
-	(println ">>>>> PROBLEM with simulated Cilk API")
+  (if (= (fibo 7) 21) 
+	(println ">>>>> CILK API TESTED SUCCESSFUL ---")
+	(println ">>>>> PROBLEM with Cilk API")
 ))
 
 (if (not fork) (exit))

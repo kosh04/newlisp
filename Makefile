@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.6.2
-INT_VERSION = 10602
+VERSION = 10.6.3
+INT_VERSION = 10603
 
 default: makefile_build
 	make -f makefile_build
@@ -83,9 +83,31 @@ winall_utf8:
 	./newlisp qa-dot
 	tar czvf newlisp-win-utf8.tgz newlisp.exe newlisp.dll
 
+winall64:
+	make clean
+	make -f makefile_mingw64_ffi
+	rm *.o
+	make -f makefile_mingw64dll_ffi
+	rm *.o
+	./newlisp qa-dot
+	tar czvf newlisp-win64.tgz newlisp.exe newlisp.dll
+
+# make newlisp.exe and newlisp.dll in UTF-8 flavor
+winall64_utf8:
+	make clean
+	make -f makefile_mingw64_utf8_ffi
+	rm *.o
+	make -f makefile_mingw64dll_utf8_ffi
+	rm *.o
+	./newlisp qa-dot
+	tar czvf newlisp-win64-utf8.tgz newlisp.exe newlisp.dll
+
 # make a Windows intaller package
 wings:
 	make -f makefile_wings
+	
+wings64:
+	make -f makefile_wings64
 	
 
 # scripts for making UBUNTU linux packages
@@ -163,7 +185,7 @@ check:
 	./newlisp qa-specific-tests/qa-cilk
 	./newlisp qa-specific-tests/qa-ref
 	./newlisp qa-specific-tests/qa-message
-	./newlisp qa-specific-tests/qa-win32dll
+	./newlisp qa-specific-tests/qa-win-dll
 	./newlisp qa-specific-tests/qa-bigint 10000
 	./newlisp qa-specific-tests/qa-bench
 
@@ -182,7 +204,7 @@ checkall:
 	./newlisp qa-specific-tests/qa-cilk
 	./newlisp qa-specific-tests/qa-ref
 	./newlisp qa-specific-tests/qa-message
-	./newlisp qa-specific-tests/qa-win32dll
+	./newlisp qa-specific-tests/qa-win-dll
 	./newlisp qa-specific-tests/qa-blockmemory
 	./newlisp qa-specific-tests/qa-exception
 	./newlisp qa-specific-tests/qa-float
@@ -225,7 +247,7 @@ install_home:
 uninstall_home:
 	-make -f makefile_install uninstall_home
 
-# This make the main newlisp-x.x.x.tgz source distribuition package
+# This makes the main newlisp-x.x.x.tgz source distribuition package
 dist: clean
 	-mkdir newlisp-$(VERSION)
 	-mkdir newlisp-$(VERSION)/guiserver
@@ -239,7 +261,7 @@ dist: clean
 	-mkdir newlisp-$(VERSION)/newlisp-js
 	cp README newlisp-$(VERSION)
 	cp nl*.c newlisp.c *.h pcre*.c index.cgi newlisp-$(VERSION)
-	cp win3*.* unix*.c newlisp-$(VERSION)
+	cp win64-dll.def win-*.* unix*.c newlisp-$(VERSION)
 	cp Makefile configure* makefile* qa-dot qa-comma newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
 	cp examples/* newlisp-$(VERSION)/examples
@@ -248,8 +270,6 @@ dist: clean
 	cp qa-specific-tests/* newlisp-$(VERSION)/qa-specific-tests
 	cp -R guiserver/* newlisp-$(VERSION)/guiserver
 	cp -R newlisp-js/* newlisp-$(VERSION)/newlisp-js
-
-
 	tar czvf newlisp-$(VERSION).tgz newlisp-$(VERSION)/*
 	rm -rf newlisp-$(VERSION)
 	mv newlisp-$(VERSION).tgz ..
@@ -270,7 +290,6 @@ android_dist_utf8:
 	cp doc/Android.html newlisp-ndk-utf8-$(VERSION)
 	cp util/Android-utf8.mk newlisp-ndk-utf8-$(VERSION)/jni/Android.mk
 	cp util/Application.mk newlisp-ndk-utf8-$(VERSION)/jni
-
 	tar czvf newlisp-ndk-utf8-$(VERSION).tgz newlisp-ndk-utf8-$(VERSION)/*
 	rm -rf newlisp-ndk-utf8-$(VERSION)
 	mv newlisp-ndk-utf8-$(VERSION).tgz ..
@@ -289,7 +308,6 @@ android_dist:
 	cp doc/Android.html newlisp-ndk-$(VERSION)
 	cp util/Android.mk newlisp-ndk-$(VERSION)/jni
 	cp util/Application.mk newlisp-ndk-$(VERSION)/jni
-
 	tar czvf newlisp-ndk-$(VERSION).tgz newlisp-ndk-$(VERSION)/*
 	rm -rf newlisp-ndk-$(VERSION)
 	mv newlisp-ndk-$(VERSION).tgz ..
@@ -307,6 +325,8 @@ version:
 	sed -i.bak -E 's/Reference v.+<\/h2>/Reference v.$(VERSION)<\/h2>/' doc/newlisp_manual.html
 	sed -i.bak -E 's/newlisp-.....-win/newlisp-$(INT_VERSION)-win/' guiserver/newlisp-gs.nsi
 	sed -i.bak -E 's/and newLISP .+ on /and newLISP $(VERSION) on /' guiserver/newlisp-gs.nsi
+	sed -i.bak -E 's/newlisp-.....-win/newlisp-$(INT_VERSION)-win/' guiserver/newlisp64-gs.nsi
+	sed -i.bak -E 's/and newLISP .+ on /and newLISP $(VERSION) on /' guiserver/newlisp64-gs.nsi
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' configure-alt
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_original_install 
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_darwin_package

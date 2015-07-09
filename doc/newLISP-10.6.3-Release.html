@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.6.3 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #606060;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #606060;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.6.3 Development Release
+<font color="red" size="-1">2015-07-08</font></h1>
+
+<p>This development release adds new functionality to existing
+functions and fixes bugs.</p>
+
+
+<h3>Additions and changes</h3>
+
+<ul>
+<li><tt>dolist</tt> now also accepts arrays.</li>
+
+<li>The <tt>net-eval</tt> function now returns the evaluation
+of the last function passed, not the first. The possibility of
+passing more than one expression in <tt>net-eval</tt>  is not
+documented.</li>
+
+<li>The system variable <tt>ostype</tt> on MS Windows now reports
+the string <tt>"Windows"</tt> not <tt>"Win32"</tt>. Windows now
+also can be compiled as a 64-bit application.</li>
+
+<li><tt>net-eval</tt> connection timeout changed to 15 seconds from 
+60 secconds. The processing timeout while connected can still be set 
+by the user in a <tt>net-eval</tt> parameter.</li>
+
+<li>The environment variable <tt>HTTP_AUTHORIZATION</tt> has been
+added to the variables handled in HTTP server mode.</li>
+
+<li>In <tt>date-value</tt> the date and time numbers can now be 
+given in one list instead of separate number parameters using and 
+additional syntax.</li>
+
+<li>The <tt>date-list</tt> function, when given without a parameter,
+now returns the date list for the current UTC date and time value.</li>
+
+<li>The <tt>trim</tt> function without trim character parameters will 
+now trim all white-space characters, not only spaces.</li> 
+<li><tt>dump</tt> now returns the number of cells dumped not <tt>true</tt>.</li>
+
+<li>A new <tt>trace</tt> syntax <tt>(trace <em>int-device</em>)</tt> writes
+all expression entries and exit results to the device given. <em>int-device</em> can
+be could be an open file or <tt>1</tt> for <em>stdout</em>.</li>
+
+<li>The stack trace in error messages now prints the entire espression
+passed for evaluation, not only the function name.</li>
+
+<li>The <tt>tmp</tt> directory is now defined on newLISP startup. For UNIX this is 
+<tt>/tmp</tt>, for Windows it is taken from the <tt>TMP</tt> environment variable 
+or assumed as <tt>/tmp</tt>.  The directory is used by the built-in function 
+<tt>share</tt> and the built-in HTTPD server.</li>
+
+<li>A new newLISP library call <tt>(newlispLibConsole 1)</tt> forces console 
+output to <em>stdout</em> instead of writing to the return string of 
+<tt>newlispEvalStr</tt>. The same call also enables console input via
+<em>stdin</em>.</li>
+
+<li>newLISP can now be compiled as a 64-bit executable. Thanks to
+<i>Shigeru Kobayashi</i> for doing most of this work.</li>
+
+</ul>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li><tt>date-list</tt> crashed for negative values on some Windows versions.</li>
+
+<li>The <tt>det</tt> and <tt>mat</tt> functions now give an
+error message when passed the wrong dimensions.</li>
+
+<li>HTTP server mode now works correctly with Apache server, when the environment
+variables NEWLISPDIR and PROGRAMFILES are not defined. Default file paths
+are assumed for these variables.</li>
+
+<li>HTTP only server mode with command-line switch <tt>-http</tt> did not 
+reject <tt>net-eval</tt> requests.</li>
+
+<li><tt>expand</tt> could crash when evaluating binding lists.</li>
+
+<li>The 'json-parse' function now handles 64-bit number also in 32-bit versions
+of newLISP.</li>
+
+</ul>
+
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous version 10.6.2 except
+for <tt>dump</tt> which now has a different return value, <tt>trim</tt>
+which now strips all white-space when in default mode and <tt>ostype</tt>
+which now reports <tt>"Windows"</tt> for all MS Windows versions. Most
+existing source should not be affected by this.</p>
+
+<center>&part;</center>
+
+</body>
+</html>
+

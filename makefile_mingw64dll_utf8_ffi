@@ -1,0 +1,24 @@
+# makefile for newLISP  DLL v. 10.x.x on Windows DLL FFI UTF8 LLP64 
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o \
+	win-util.o win-path.o win-dll.o
+
+CFLAGS = -m64 -Wall -c -O1 -DNEWLISP64 -DWINDOWS -DSUPPORT_UTF8 -DFFI -DLIBRARY 
+
+CC = gcc
+STRIP = strip
+WRAP = dllwrap
+
+default: $(OBJS)
+#	$(CC) -m64 -shared *.o -Wl,--output-def win64-dll.def -lffi -lws2_32 -o newlisp.dll 
+	$(CC) -m64 -shared *.o -Wl,--kill-at -lffi -lws2_32 -o newlisp.dll 
+	$(STRIP) newlisp.dll
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_mingw64dll_utf8_ffi
+
+

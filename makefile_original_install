@@ -1,6 +1,6 @@
 #
 
-VERSION=10.6.2
+VERSION=10.6.3
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -75,7 +75,7 @@ install:
 	-install -m 644 guiserver/guiserver.lsp $(datadir)/newlisp/guiserver.lsp
 	-install -m 644 guiserver/images/newLISP128.png $(datadir)/newlisp/newLISP128.png
 	-install -m 644 guiserver/COPYING $(datadir)/doc/newlisp/guiserver/COPYING
-	-install -m 644 guiserver/index.html $(datadir)/doc/newlisp/guiserver/index.html
+	-install -m 644 guiserver/index-gs.html $(datadir)/doc/newlisp/guiserver/index-gs.html
 	-install -m 644 guiserver/guiserver.lsp.html $(datadir)/doc/newlisp/guiserver/guiserver.lsp.html
 	-install -m 644 util/newlispdoc.css $(datadir)/doc/newlisp/guiserver/newlispdoc.css
 	-install -m 644 guiserver/allfonts-demo.lsp $(datadir)/newlisp/guiserver/allfonts-demo.lsp
@@ -135,7 +135,7 @@ install_home:
 	-install -m 755 util/newlispdoc $(HOME)/bin/newlispdoc
 	-install -m 644 util/syntax.cgi $(HOME)/share/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(HOME)/share/newlisp/util/newlisp.vim
-	-install -m 644 guiserver/index.html $(HOME)/share/doc/newlisp/guiserver/index.html
+	-install -m 644 guiserver/index-gs.html $(HOME)/share/doc/newlisp/guiserver/index-gs.html
 	-install -m 644 guiserver/guiserver.lsp.html $(HOME)/share/doc/newlisp/guiserver/guiserver.lsp.html
 	-install -m 644 doc/COPYING $(HOME)/share/doc/newlisp/COPYING
 	-install -m 644 doc/COPYING $(HOME)/share/doc/newlisp/guiserver/COPYING

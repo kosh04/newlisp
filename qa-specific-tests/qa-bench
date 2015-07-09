@@ -1112,7 +1112,7 @@
 (define (sub-read-exec ) 
    (write-file "exectest" {(println "hello") (exit)})
    (and
-    (set 'result (if (find ostype '("Win32" "OS/2"))
+    (set 'result (if (find ostype '("Windows" "OS/2"))
         (exec "newlisp exectest") 
         (exec "./newlisp exectest")))
     (= "hello" (last  result)) 
@@ -1121,7 +1121,7 @@
 (define (sub-write-exec )
   (and 
     (write-file "testexec" {(write-file "exectest" (read-line))})
-    (if (find ostype '("Win32" "OS/2"))
+    (if (find ostype '("Windows" "OS/2"))
      (exec "newlisp testexec" "HELLO") (exec "./newlisp testexec" "HELLO"))
     (= "HELLO" (read-file "exectest"))
     (delete-file "testexec")
@@ -1299,7 +1299,7 @@
    (= (test-format-r '(("foo" "bar") ("foo" "baz"))) 
       "[ [ 'foo', 'bar' ], [ 'foo', 'baz' ] ]")
    ; test 64-bit formatting
-   (if (= ostype "Win32") ;; Win32 
+   (if (find ostype '("Windows")) ;; Windows
       (begin
         (and
          (= (format "%I64d" 0x7fffffffffffffff) "9223372036854775807")
@@ -1996,7 +1996,7 @@
 ))
 
 (define (test-pretty-print)
-  (= (pretty-print) '(80 " " "%1.15g")))
+  (= (pretty-print) '(80 " " "%1.16g")))
 
 (define (test-primitive? )
   (primitive? primitive?))
@@ -2667,7 +2667,7 @@
     (set 'Bf:Bf "")
     (set 'S:S "hello world")
     (write-line Bf S)
-    (if (= ostype "Win32")
+    (if (find ostype '("Windows" "OS/2"))
         (= Bf:Bf "hello world\r\n")
         (= Bf:Bf "hello world\n"))
 ))
@@ -2694,7 +2694,7 @@
   (and
     (= (~ 0) -1)
     (if 
-        (find ostype '("Win32" "OS/2"))
+        (find ostype '("Windows" "OS/2"))
         (= (format "%I64x" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
 
         (= ostype "True64Unix")

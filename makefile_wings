@@ -1,7 +1,7 @@
 # this packages the Win32 binary distribution
 # this makefile is executed from a MinGW MSYS shell
 
-VERSION=10.6.2
+VERSION=10.6.3
 
 win-gui:
 	-mkdir /c/newlisp
@@ -25,7 +25,7 @@ win-gui:
 	cp guiserver/newlisp-edit.lsp /c/newlisp
 
 	# guiserver sub directory
-	cp guiserver/index.html /c/newlisp/guiserver
+	cp guiserver/index-gs.html /c/newlisp/guiserver
 	cp guiserver/guiserver.lsp.html /c/newlisp/guiserver
 	cp util/newlispdoc.css /c/newlisp/guiserver
 	cp guiserver/allfonts-demo.lsp /c/newlisp/guiserver

@@ -53,25 +53,18 @@ char * getUUID(char * str, char * node);
 int semctl(int semid, int semnum, int cmd, ...);
 #endif
 
-#ifdef MAC_OSX
-#ifdef LIBRARY
-char ** environ = NULL;
-#else
-extern char ** environ;
-#endif
-#else
 #ifndef TRU64
 extern char ** environ;
 #endif
-#endif
 
 #ifdef WINDOWS
-#define fgetc win32_fgetc
-#define realpath win32_realpath
+#define fgetc win_fgetc
+#define realpath win_realpath
 #define random rand
 #define srandom srand
 #include <conio.h>  
-#include <dir.h>
+#include <io.h>
+#include <direct.h>
 #define popen  _popen
 #define pclose _pclose
 #define pipe _pipe
@@ -96,6 +89,7 @@ char * strptime(const char * str, const char * fmt, struct tm * ttm);
 #endif
 
 time_t calcDateValue(int year, int month, int day, int hour, int min, int sec);
+ssize_t currentDateValue(void);
 extern STREAM readLineStream;
 extern FILE * IOchannel;
 extern int pagesize;
@@ -103,6 +97,7 @@ extern int pagesize;
 extern char * errorMessage[];
 extern STREAM errorStream;
 extern UINT netErrorIdx;
+extern int newlispLibConsoleFlag;
 
 /* semaphore() function type */
 #ifndef NO_SEMAPHORE
@@ -694,6 +689,10 @@ if(printDevice == 1 || printDevice == 2) handle = 0;
 
 /* check if stream input can be done */
 fstream = (handle == 0) ? IOchannel : getIOstream(handle);
+#ifdef LIBRARY
+if(!newlispLibConsoleFlag && fstream == stdin)
+    return(nilCell);
+#endif
 if(fstream != NULL)
     {
     if((line = readStreamLine(&readLineStream, fstream)) == NULL)
@@ -906,7 +905,7 @@ CELL * dirList;
 char * dirPath;
 char * fileName;
 char * pattern = NULL;
-UINT options = 0;
+INT options = 0;
 DIR * dir;
 struct dirent * dEnt;
 
@@ -1184,7 +1183,7 @@ CELL * p_pipe(CELL * params)
 UINT hin, hout;
 IO_SESSION * session;
 
-if(!winPipe(&hin, &hout))    /* see file win32-util.c */
+if(!winPipe(&hin, &hout))    /* see file win-util.c */
     return(nilCell);
 
 session = createIOsession(hin, AF_UNSPEC);
@@ -2110,8 +2109,8 @@ UINT * winMapView(UINT handle, int size);
 #endif
 
 /* since 10.1.0 also can share object > pagesize
-   in this case transfer is done using /tmp/nls-*
-   ot /temp/nls-* files (Win32)
+   objects are stored in the tmp directory of OS
+   as a file starting with nls-
 */
 
 CELL * p_share(CELL * params)
@@ -2308,9 +2307,8 @@ return(cell);
 
 
 /* Takes anything and passes as string or file which has to
-   be compiled back into expression when reading
-
-   returns a new cell object on read, old on write
+   be compiled back into expression when reading.
+   Returns a new cell object on read, old on write
 */
 
 CELL * readWriteSharedExpression(UINT * address, CELL * params)
@@ -2359,18 +2357,10 @@ else
     {
     checkDeleteShareFile(address);
     memset((char *)(address + 2), 0, pagesize - 2 * sizeof(INT));
-#ifndef WINDOWS
-#ifdef ANDROID
-    strncpy((char *)(address + 2), "/data/tmp/nls-", 15);
-    getUUID((char *)(address + 2) + 14, 0);
-#else /* all other UNIX */
-    strncpy((char *)(address + 2), "/tmp/nls-", 10);
-    getUUID((char *)(address + 2) + 9, 0);
-#endif
-#else /* WINDOWS */
-    strncpy((char *)(address + 2), "/temp/nls-", 11);
-    getUUID((char *)(address + 2) + 10, 0);
-#endif
+    strncpy((char *)(address + 2), tempDir, PATH_MAX);
+    strncat((char *)(address + 2), "/nls-", 6);
+    size = strlen((char *)(address + 2));
+    getUUID((char *)(address + 2) + size, 0);
     writeFile((char *)(address + 2), strStream.buffer, strStream.position, "w");
     }
 closeStrStream(&strStream);
@@ -2452,7 +2442,6 @@ return(cell);
 CELL * p_date(CELL * params)
 {
 time_t t;
-struct timeval tv;
 struct tm * ltm;
 char * ct;
 char * fmt;
@@ -2472,10 +2461,7 @@ char * timeString;
 #endif
 
 if(params == nilCell)
-    {
-    gettimeofday(&tv, NULL);
-    t = tv.tv_sec;
-    }
+    t = (time_t)currentDateValue();
 else
     {
     /* 10.6.1 */
@@ -2532,8 +2518,6 @@ struct tm * ttm;
 time_t sec;
 
 gettimeofday(&tv, NULL);
-
-/* ttm = localtime((time_t *)&tv.tv_sec); 10.6.1 */
 sec = tv.tv_sec;
 ttm = localtime(&sec);
 
@@ -2690,7 +2674,6 @@ gmtoff = ltm->tm_gmtoff/60;
 GetTimeZoneInformation(&timeZone);
 #endif
 
-/* ttm = gmtime((time_t *)&tv.tv_sec); 10.6.1 */
 sec = tv.tv_sec;
 ttm = gmtime(&sec);
 
@@ -2724,7 +2707,7 @@ cell = stuffIntegerList(
 
 #if defined(WINDOWS)
      -timeZone.Bias,
-     timeZone.DaylightBias  
+     (UINT)timeZone.DaylightBias  
 #endif
     );
 
@@ -2737,7 +2720,6 @@ if(params != nilCell)
 return(cell);
 }
 
-
 CELL * p_dateList(CELL * params)
 {
 struct tm *ttm;
@@ -2745,10 +2727,14 @@ ssize_t timeValue;
 time_t timer;
 CELL * cell;
 
-params = getInteger(params, (UINT*)&timeValue);
-/* ttm = gmtime((time_t *)&timeValue); 10.6.1 */
+if(params == nilCell)
+    timeValue = currentDateValue();
+else
+    params = getInteger(params, (UINT*)&timeValue);
+
 timer = (time_t)timeValue;
-ttm = gmtime(&timer);
+if((ttm = gmtime(&timer)) == NULL)
+    return(errorProcExt2(ERR_INVALID_PARAMETER, stuffInteger((UINT)timeValue)));
 
 cell = stuffIntegerList(
     8,
@@ -2771,31 +2757,40 @@ if(params != nilCell)
 return(cell);
 }
 
+ssize_t currentDateValue(void)
+{
+struct timeval tv;
+
+gettimeofday(&tv, NULL);
+return(tv.tv_sec);
+}
 
 CELL * p_dateValue(CELL * params)
 {
-struct timeval tv;
 ssize_t year, month, day, hour, min, sec;
 time_t dateValue;
+int evalFlag = TRUE;
 
 if(params->type == CELL_NIL)
+    return(stuffInteger(currentDateValue()));
+
+params = evaluateExpression(params);
+if(params->type == CELL_EXPRESSION)
     {
-    gettimeofday(&tv, NULL);
-    return(stuffInteger(tv.tv_sec));
+    params = (CELL *)params->contents;
+    evalFlag = FALSE;
     }
 
-params = getInteger(params, (UINT *)&year);
-params = getInteger(params, (UINT *)&month);
-params = getInteger(params, (UINT *)&day);
-
-/* if(year < 1970) return(stuffInteger(0)); */
+params = getIntegerExt(params, (UINT *)&year, FALSE);
+params = getIntegerExt(params, (UINT *)&month, evalFlag);
+params = getIntegerExt(params, (UINT *)&day, evalFlag);
 
 hour = min = sec = 0;
 if(params != nilCell)
         {
-        params = getInteger(params, (UINT *)&hour);
-        params = getInteger(params, (UINT *)&min);
-        getInteger(params, (UINT *)&sec);
+        params = getIntegerExt(params, (UINT *)&hour, evalFlag);
+        params = getIntegerExt(params, (UINT *)&min, evalFlag);
+        getIntegerExt(params, (UINT *)&sec, evalFlag);
         }
 
 dateValue = calcDateValue(year, month, day, hour, min, sec);
@@ -2806,6 +2801,8 @@ return(stuffInteger64((INT64)dateValue));
 return(stuffInteger((UINT)dateValue));
 #endif
 }
+
+
 
 /* changed for 10.6.1 where time_t can be 64-bit on 32-bit Windows */
 time_t calcDateValue(int year, int month, int day, int hour, int min, int sec)
@@ -2946,12 +2943,6 @@ char * ptr;
 lastEntry = NULL;
 envList = getCell(CELL_EXPRESSION);
 
-#ifdef MAC_OSX
-#ifdef LIBRARY
-return(envList);
-#endif
-#endif
-
 env = environ;
 
 while(*env)
@@ -3041,42 +3032,26 @@ return(stuffInteger((UINT)result));
 /* --------------------- library functions not found on some OSs -------------*/
 
 #ifdef MY_VASPRINTF
-
 int my_vasprintf(char * * buffer, const char * format, va_list argptr)
 {
-ssize_t size = MAX_STRING;
-ssize_t pSize;
+int size;
 
-while(TRUE)
-    {
-    *buffer = allocMemory(size + 2);
-    pSize = vsnprintf(*buffer, size + 1, format, argptr);
+/* get size */
+size = vsnprintf(NULL, 0, format, argptr);
+if (size < 0) return -1;
 
-#if defined(TRU64)
-    if(pSize < 0)
-        {
-        freeMemory(*buffer);
-        size = size + size / 2;
-        continue;
-        }
-#else
-    if(pSize > size)
-        {
-        freeMemory(*buffer);
-        size = pSize;    
-        continue;
-        }
-#endif
-    break;
-    }
+*buffer = malloc(size + 1);
+if (!*buffer) return(-1);
 
-return((int)pSize);
+vsnprintf(*buffer, size + 1, format, argptr);
+(*buffer)[size] = '\0';
+
+return(size);
 }
-
 #endif
 
 
-#ifdef MY_RANDOM /* used with #define EMSCRIPTEN */
+#ifdef MY_RANDOM /* used with #define EMSCRIPTEN before 1.29 */
 
 int  m_w = 0x12345678;    /* must not be zero, nor 0x464fffff */
 int  m_z = 0x23456789;    /* must not be zero, nor 0x9068ffff */

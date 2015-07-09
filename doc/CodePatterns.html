@@ -92,8 +92,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2014 November 3<sup>rd</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.6.2
+</h1>Version 2015 April 6<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.6.3
 </center>
 
 <br/><br/><br/>
@@ -282,7 +282,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <li>Simple versus extended FFI interface</li>
   <li>A shared library in C</li>
   <li>Compile on Unix</li>
-  <li>Compile a DLL on Win32</li>
+  <li>Compile a DLL on MS Windows</li>
   <li>Importing data structures</li>
   <li>Memory management</li>
   <li>Unevenly aligned structures</li>
@@ -2277,7 +2277,7 @@ str &rarr; "ABCD"
 (net-send-udp "host.com" 1001 "Hello")
 </pre>
 
-<p>Win32 and Unix's show different behavior when sending less or more bytes than specified on the receiving end.</p>
+<p>MS Windows and Unix's show different behavior when sending less or more bytes than specified on the receiving end.</p>
 
 <h3>Multi-cast communications</h3>
 
@@ -2501,8 +2501,8 @@ tmp)
 #
 # usage of 'fork', 'wait-pid', 'semaphore' and 'share'
  
-(when (= ostype "Win32")
-    (println "this will not run on Win32")
+(when (= ostype "Windows")
+    (println "this will not run on Windows OS")
     (exit))
  
 (constant 'wait -1 'sig 1 'release 0)
@@ -3102,7 +3102,7 @@ http://localhost:4711//usr/share/newlisp/doc/newlisp_manual.html
 result: (7 11 15 19 23)
 </pre>
 
-<p>When running Unix and using an <tt>inetd</tt> or <tt>xinetd</tt> configured newLISP server, the servers and programs can be run on just one CPU, replacing all IP numbers with <tt>"localhost"</tt> or the same local IP number. The <tt>indetd</tt> or <tt>xinetd</tt> daemon will then start 5 independent newLISP processes. On Win32 5 state-full newLISP servers could be started on different port numbers to accomplish the same.</p>
+<p>When running Unix and using an <tt>inetd</tt> or <tt>xinetd</tt> configured newLISP server, the servers and programs can be run on just one CPU, replacing all IP numbers with <tt>"localhost"</tt> or the same local IP number. The <tt>indetd</tt> or <tt>xinetd</tt> daemon will then start 5 independent newLISP processes. On MS Windows 5 state-full newLISP servers could be started on different port numbers to accomplish the same.</p>
 
 <p>Instead of collecting all results at once on the return of <tt>net-eval</tt>, a callback function can be used to receive and process results as they become available:</p>
 
@@ -3133,7 +3133,7 @@ result: (7 11 15 19 23)
 ("192.168.1.104" 4711 23)
 </pre>
 
-<p>For testing on just one CPU, replace addresses with <tt>"localhost"</tt>; the Unix <tt>inetd</tt> or <tt>xinetd</tt> daemon will start a separate process for each connection made and all listening on port <tt>4711</tt>. When using a state-full server on the same Win32 CPU specify a different port number for each server.</p>
+<p>For testing on just one CPU, replace addresses with <tt>"localhost"</tt>; the Unix <tt>inetd</tt> or <tt>xinetd</tt> daemon will start a separate process for each connection made and all listening on port <tt>4711</tt>. When using a state-full server on the same MS Windows CPU specify a different port number for each server.</p>
 
 <h3>Setting up the 'net-eval' parameter structure</h3>
 
@@ -3378,7 +3378,7 @@ at: http://www.newlisp.org/modules/.</p>
 <a name="toc-23"></a>
 <h2>23. Extending newLISP</h2>
 
-<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so, ending in .dylib on Mac OS X).</p>
+<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on MS Windows or shared libraries on Linux/Unix (ending in .so, ending in .dylib on Mac OS X).</p>
 
 <h3>Simple versus extended FFI interface</h3>
 
@@ -3408,7 +3408,7 @@ and <tt>unpack</tt>.</p>
 
 <h3>A shared library in C</h3>
 
-<p>This chapter shows how to compile and use libraries on both, Win32 and Linux/Unix 
+<p>This chapter shows how to compile and use libraries on both, MS Windows and Linux/Unix 
 platforms. We will compile a DLL and a Linux/Unix shared library from the following 'C' program.</p>
 
 
@@ -3451,7 +3451,7 @@ gcc testlib.c -shared -o testlib.so
 gcc testlib.c -bundle -o testlib.dylib
 </pre>
 
-<p>The library <tt>testlib.so</tt> will be built with Linux/Unix default <tt>cdecl</tt> conventions. Importing the library is very similar on both Linux and Win32 platforms, but on Win32 the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
+<p>The library <tt>testlib.so</tt> will be built with Linux/Unix default <tt>cdecl</tt> conventions. Importing the library is very similar on both Linux and MS Windows platforms, but on MS Windows the library can be found in the current directory. You may have to specify the full path or put the library in the library path of the os:</p>
 
 <pre>
 &gt; (import "/home/newlisp/testlib.so" "foo1")
@@ -3476,9 +3476,9 @@ the string: hello the number: 123
 
 <p>Again, the number returned from <tt>foo2</tt> is the string address pointer and get-string can be used to access the string. When using get-string only character up to a zero byte are returned. When returning the addresses to binary buffers different techniques using unpack are used to access the information.</p>
 
-<h3>Compile a DLL on Win32</h3>
+<h3>Compile a DLL on MS Windows</h3>
 
-<p>DLLs on Win32 can be made using the MinGW, Borland or CYGWIN compilers. This example shows, how to do it using the MinGW compiler.</p>
+<p>DLLs on MS Windows can be made using the MinGW, Borland or CYGWIN compilers. This example shows, how to do it using the MinGW compiler.</p>
 
 <p>Compile it:</p>
 
@@ -3501,7 +3501,7 @@ EXPORTS
 dllwrap testlib.o --def testlib.def -o testlib.dll -lws2_32
 </pre>
 
-<p>The library <tt>testlib.dll</tt> will be built with default Win32 <tt>stdcall</tt> conventions. The following shows an interactive session, importing the library and using the functions:</p>
+<p>The library <tt>testlib.dll</tt> will be built with default MS Windows <tt>stdcall</tt> conventions. The following shows an interactive session, importing the library and using the functions:</p>
 
 <pre>
 &gt; (import "testlib.dll" "foo1")
@@ -3800,10 +3800,10 @@ callbacks on the Windows platform.</p>
 <a name="toc-24"></a>
 <h2>24. newLISP as a shared library</h2>
 
-<p>On all platforms, newLISP can be compiled as a shared library. On Win32, the library
+<p>On all platforms, newLISP can be compiled as a shared library. On MS Windows, the library
 is called <tt>newlisp.dll</tt>, on Mac OS X <tt>newlisp.dylib</tt> and on Linux and
 BSDs, the library is called <tt>newlisp.so</tt>. Makefiles are included in the source 
-distribution for most platforms. Only on Win32, the installer comes with a precompiled 
+distribution for most platforms. Only on MS Windows, the installer comes with a precompiled 
 <tt>newlisp.dll</tt> and will install it in the <tt>WINDOWS\system32\</tt> directory 
 (since v.10.3.3) and in the <tt>Program Files/newlisp/</tt> directory.</p>
 
@@ -3897,14 +3897,14 @@ registering a callback <tt>callme</tt>:</p>
 #!/usr/bin/newlisp
 
 ; path-name of the library depending on platform
-(set 'LIBRARY (if (= ostype "Win32") "newlisp.dll" "newlisp.dylib"))
+(set 'LIBRARY (if (= ostype "Windows") "newlisp.dll" "newlisp.dylib"))
 
 ; import functions from the newLISP shared library
 (import LIBRARY "newlispEvalStr")
 (import LIBRARY "newlispCallback")
 
 ; set calltype platform specific
-(set 'CALLTYPE (if (= ostype "Win32") "stdcall" "cdecl"))
+(set 'CALLTYPE (if (= ostype "Windows") "stdcall" "cdecl"))
 
 ; the callback function
 (define (callme p1 p2 p3 result)
@@ -3934,7 +3934,7 @@ p1 =&gt; 123 p2 =&gt; 456 p3 =&gt; 789
 99999
 </pre>
 
-<p>Note that Win32  and many Unix flavors will look for <tt>newlisp.dll</tt> 
+<p>Note that MS Windows  and many Unix flavors will look for <tt>newlisp.dll</tt> 
 in the system library path, but Mac OS X will look for <tt>newlisp.dylib</tt> 
 first in the current directory, if the full file path is not specified. The 
 program above can also be found as <tt>callback</tt> in the source distribution 

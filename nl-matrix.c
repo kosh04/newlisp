@@ -207,7 +207,7 @@ double tiny = FP_NAN;
 double tiny = sqrt(-1);
 #endif
 
-if( (M = getMatrix(params, &typeM, &m, &n, &err)) == NULL)
+if( (M = getMatrix(params, &typeM, &n, &m, &err)) == NULL)
     return(errorProcExt(err, params));
 
 if(params->next != nilCell)
@@ -293,7 +293,11 @@ else
 typeC = (typeA == CELL_ARRAY || typeB == CELL_ARRAY) ? CELL_ARRAY : CELL_EXPRESSION;
 
 if(n != k || m != l)
-    err = ERR_WRONG_DIMENSIONS;
+    {
+    freeMatrix(A, n);
+    freeMatrix(B, k);
+    return(errorProc(ERR_WRONG_DIMENSIONS));
+    }
 else if((M = allocateMatrix(n, m)) == NULL)
     err = ERR_NOT_ENOUGH_MEMORY;
 else 

@@ -20,6 +20,7 @@ wchar_t       4
 size_t        4
 off_t         4
 time_t        4
+intptr_t      4
 
 output on Windows MinGW 32-bit
 
@@ -40,6 +41,7 @@ wchar_t       2
 size_t        4
 off_t         4
 time_t        4
+intptr_t      4
 
 output on AMD64 and Intel dual Core 2, memory model LP64
 
@@ -60,6 +62,29 @@ wchar_t       4
 size_t        8
 off_t         8
 time_t        8
+intptr_t      8
+
+LLP64 Windows when compiling with tdm gcc 64-bit
+
+type        bytes
+-----------------
+char          1
+char *        8
+void *        8
+short int     2
+int           4
+long          4
+long int      4
+long long int 8
+float         4
+double        8
+long double   16
+wchar_t       2
+size_t        8
+off_t         4
+time_t        8
+intptr_t      8
+
 
 */
 
@@ -68,6 +93,7 @@ time_t        8
 #include <wchar.h>
 #include <fcntl.h>
 #include <locale.h>
+#include <inttypes.h>
 
 #ifndef time_t
 #include <time.h>
@@ -131,6 +157,9 @@ printf("wchar_t       %lu\n", sizeof(wchar_t));
 printf("size_t        %lu\n", sizeof(size_t));
 printf("off_t         %lu\n", sizeof(off_t));
 printf("time_t        %lu\n", sizeof(time_t));
+#if defined(_INTTYPES_H_)
+printf("intptr_t      %lu\n", sizeof(intptr_t));
+#endif
 
 printf("\nAlignment:\n");
 printf("size of struct {char, short int, int} is: %ld\n", sizeof(checkstruct1));

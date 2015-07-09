@@ -21,6 +21,7 @@
 #ifdef SUPPORT_UTF8
 #include <wctype.h>
 #endif
+#define PCRE_STATIC
 #include "pcre.h"
 #include "protos.h"
 
@@ -138,7 +139,7 @@ do
     if(options == -1)
         position = searchBuffer(buffer, bytesRead, searchString, len, 1);
     else
-        position = searchBufferRegex(buffer, 0, searchString, (int)bytesRead , options, (int *)&len);
+        position = searchBufferRegex(buffer, 0, searchString, bytesRead , options, &len);
     if(position != -1)
         {
         if(flag)
@@ -627,7 +628,11 @@ if(*fmt == 'l' && *(fmt + 1) == 'l' && (*(fmt + 2) == 'd' || *(fmt + 2) == 'u' |
 if(memcmp(fmt, "I64", 3) == 0 &&
         (*(fmt + 3) == 'd' || *(fmt + 3) == 'u' || *(fmt + 3) =='x' || *(fmt + 3) == 'X'))
     {
+#ifndef NEWLISP64
     *type = CELL_INT64;
+#else
+    *type = CELL_LONG;
+#endif
     return(fmt+4);
     }
 #endif
@@ -1208,32 +1213,19 @@ char number[32];
 SYMBOL * context;
 SYMBOL * sPtr;
 CELL * cell;
-#ifdef WINDOWS
-char * fmt = "%I64d";
-#endif
 
 
 cell = evaluateExpression(params);
 switch(cell->type)
     {
     case CELL_LONG:
-        snprintf(number, 30, "%ld", cell->contents);
+        snprintf(number, 30, "%"PRIdPTR, cell->contents);
         token = number;
         break;
 #ifndef NEWLISP64
     case CELL_INT64:
-#ifdef TRU64
-        snprintf(number, 30, "%ld", *(INT64 *)&cell->aux); 
-#else
-
-#ifdef WINDOWS
-        snprintf(number, 30, fmt, *(INT64 *)&cell->aux);
-#else
-        snprintf(number, 30, "%lld", *(INT64 *)&cell->aux);
-#endif /* WINDOWS */
-
-#endif /* TRU64 */
         token = number;
+        snprintf(number, 30, "%"PRId64, *(INT64 *)&cell->aux);
         break;
 #endif /* NEWLISP64 */
     case CELL_FLOAT:
@@ -1366,6 +1358,9 @@ char * limit;
 char zeros[4] = {0,0,0,0};
 
 address = getAddress(params);
+if(address == 0)
+    errorProc(ERR_CANNOT_CONVERT_NULL);
+
 /* (get-string <address>) ; get zero terminated ASCII or UTF-8 */ 
 if(params->next == nilCell) 
     return(stuffString((char *)address));
@@ -2010,6 +2005,9 @@ while( (source = parsePackFormat(source, &len, &type))!= NULL)
             break;
             
         case PACK_STRING:
+            if(pPtr == NULL)
+                errorProc(ERR_CANNOT_CONVERT_NULL);
+
             cell = stuffStringN(pPtr, len);
             break;
 
@@ -2034,22 +2032,29 @@ return(result);
 CELL * p_trim(CELL * params)
 {
 char * str;
-size_t left, right, len;
-char * trimChr;
-#ifndef SUPPORT_UTF8
 char * ptr;
-char lchr, rchr;
-#else
+size_t left = 0, right = 0, len;
+char * trimChr;
+int lchr, rchr;
+#ifdef SUPPORT_UTF8
 int * wstr;
 int * wptr;
-int lchr, rchr;
 CELL * result;
 #endif
 
 params = getStringSize(params, &str, &len, TRUE);
+if(params == nilCell)   
+    {
+    ptr = str;
+    while((unsigned char)*str <= 32 && *str != 0) str++, left++;
+    if(left == len) 
+        return(stuffString(""));
+    str = ptr + len -1;
+    while((unsigned char)*str <= 32) str--, right++;
+    return(stuffStringN(ptr + left, len - left - right));
+    }
 
 #ifndef SUPPORT_UTF8
-len = strlen(str);
 ptr = str;
 #else
 len = utf8_wlen(str, str + len + 1);
@@ -2060,29 +2065,23 @@ len = utf8_wstr(wstr, str, len);
 if(len == 0)
     return(stuffString(str));
 
-if(params == nilCell)   
-    lchr = rchr = 32;
-else 
+params = getString(params, &trimChr);
+#ifndef SUPPORT_UTF8
+lchr = *trimChr;
+#else
+utf8_wchar(trimChr, &lchr);
+#endif
+if(params != nilCell)
     {
-    params = getString(params, &trimChr);
+    getString(params, &trimChr);
 #ifndef SUPPORT_UTF8
-    lchr = *trimChr;
+    rchr = *trimChr;
 #else
-    utf8_wchar(trimChr, &lchr);
+    utf8_wchar(trimChr, &rchr);
 #endif
-    if(params != nilCell)
-        {
-        getString(params, &trimChr);
-#ifndef SUPPORT_UTF8
-        rchr = *trimChr;
-#else
-        utf8_wchar(trimChr, &rchr);
-#endif
-        }       
-    else rchr = lchr;
-    }
+    }       
+else rchr = lchr;
 
-left = right = 0;
 #ifndef SUPPORT_UTF8
 while(*str == lchr) str++, left++;
 #else
@@ -2251,8 +2250,8 @@ return(result);
 }
 
 
-ssize_t searchBufferRegex(char * string,  int offset, 
-                          char * pattern, int length, int options, int * len)
+ssize_t searchBufferRegex(char * string,  size_t offset, 
+                          char * pattern, size_t length, int options, size_t * len)
 {
 pcre *re;
 int ovector[OVECCOUNT];
@@ -2308,11 +2307,7 @@ if((cPattern == NULL) || (strcmp(cPattern, pattern) != 0) || (options != cacheOp
     len = strlen(pattern);
     cPattern = (char *)allocMemory(len + 1);
     memcpy(cPattern, pattern, len + 1);
-#ifdef WINDOWS
-    if(re != NULL) free(re);
-#else
     if(re != NULL) (pcre_free)(re);
-#endif
     re = pcre_compile(pattern, options, &error, &errOffset, NULL); 
 
     /* Compilation failed: print the error message and exit */
@@ -2353,7 +2348,7 @@ typedef struct {
 void freeRegex(REGEX * regex);
 
 char * replaceString
-   (char * keyStr, int keyLen, char * buff, size_t buffLen, CELL * exprCell, 
+   (char * keyStr, size_t keyLen, char * buff, size_t buffLen, CELL * exprCell, 
     UINT * cnt, int options, size_t * newLen)
 {
 ssize_t oldLen, findPos;
@@ -2377,7 +2372,7 @@ while(offset <= buffLen)
         findPos = searchBuffer(buff + offset, buffLen - offset, keyStr, keyLen, TRUE);
     else
         {
-        findPos = searchBufferRegex(buff, (int)offset, keyStr, (int)buffLen, options, &keyLen);
+        findPos = searchBufferRegex(buff, offset, keyStr, buffLen, options, &keyLen);
         itSymbol->contents = sysSymbol[0]->contents;
         }
 

@@ -1,0 +1,8 @@
+EXPORTS
+    WEP@4 @1
+    debugConsole@0 @2
+    dllEvalStr@4 @3
+    dllName@4 @4
+    newlispCallback@12 @5
+    newlispEvalStr@4 @6
+    newlispLibConsole@4 @7

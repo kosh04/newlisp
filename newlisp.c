@@ -18,7 +18,6 @@
 */
 
 #include "newlisp.h"
-#include "pcre.h"
 #include "protos.h"
 #include "primes.h"
 
@@ -43,13 +42,14 @@
 #define INIT_FILE "init.lsp"
 
 #ifdef WINDOWS
-#define fprintf win32_fprintf
-#define fgets win32_fgets
-#define fclose win32_fclose
+#define fprintf win_fprintf
+#define fgets win_fgets
+#define fclose win_fclose
 #endif
 
 #ifdef LIBRARY
 extern STREAM libStrStream;
+int newlispLibConsoleFlag = 0;
 #endif
 
 #ifdef LINUX
@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10602;
+int version = 10603;
 
 char copyright[]=
-"\nnewLISP v.10.6.2 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.6.3 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.2 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.3 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.2 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.3 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.2 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.2 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.3 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -282,6 +282,7 @@ int stringOutputRaw = TRUE;
 int pushResultFlag = TRUE;
 
 char startupDir[PATH_MAX]; /* start up directory, if defined via -w */
+char * tempDir; /* /tmp on unix or geten("TMP") on Windows */
 char logFile[PATH_MAX]; /* logFile, is define with -l, -L */
 
 /* memory management in nl-filesys.c */
@@ -550,7 +551,7 @@ if(strncmp(linkOffset + 4, "@@@@", 4) == 0)
 else
     {
 #ifdef WINDOWS
-	name = win32_getExePath(alloca(MAX_PATH));
+	name = win_getExePath(alloca(MAX_PATH));
     loadFile(name, *(unsigned int *)linkOffset, 1, mainContext);
 #else /* if not Win32 get full pathname of file in name */
     if(strchr(name, '/') == NULL) 
@@ -563,7 +564,7 @@ else
 #endif
     }
 }
-#endif
+#endif /* LIBRARY */
 
 #ifdef _BSD
 struct lconv    *localeconv(void);
@@ -606,11 +607,11 @@ if(getenv("NEWLISPDIR") == NULL)
     {
     newlispDir = alloca(MAX_PATH);
     varValue = getenv("PROGRAMFILES");
-    len = strlen(varValue);
     if(varValue != NULL)
         {
+        len = strlen(varValue);
         strncpy(newlispDir, varValue, MAX_PATH - 12);
-        memcpy(newlispDir, "/newlisp", 8);
+        memcpy(newlispDir + len, "/newlisp", 8);
         newlispDir[len + 8] = 0; 
         setenv("NEWLISPDIR", newlispDir, TRUE);
         }
@@ -620,6 +621,24 @@ if(getenv("NEWLISPDIR") == NULL)
 if(getenv("NEWLISPDIR") == NULL)
     setenv("NEWLISPDIR", NEWLISPDIR, TRUE);
 #endif
+}
+
+void initTempDir()
+{
+#ifdef WINDOWS
+if((tempDir = getenv("TMP")) == NULL)
+    {
+    printf("Environment variable TMP not set, assuming /tmp .");
+    tempDir = "/tmp";
+    }
+#else
+#ifdef ANDROID
+tempDir = "/data/tmp";
+#else /* all UNIX */
+tempDir = "/tmp";
+#endif
+#endif
+return;
 }
 
 #ifndef  LIBRARY
@@ -711,6 +730,7 @@ _fpreset();
 
 initLocale();
 initNewlispDir();
+initTempDir();
 
 IOchannel = stdin;
 bigEndian = (*((char *)&bigEndian) == 0);
@@ -1117,8 +1137,8 @@ if(traceFlag & TRACE_SIGINT)
     longjmp(errorJump, errorReg);
     }
     
-if(traceFlag)
-    snprintf(string, 63, "%s %d> ", contextName, recursionCount);
+if(traceFlag && !(traceFlag & TRACE_PRINT_EVAL))
+    snprintf(string, 63, "%d %s> ", recursionCount, contextName);
 else
     snprintf(string, 63, "%s> ", contextName);
 
@@ -1212,6 +1232,8 @@ if(!batchMode)
     return;
     }
 
+if(httpMode) goto RETURN_BATCHMODE;
+
 EXEC_COMMANDLINE:
 if(noPromptMode == FALSE && *command == '!' && *(command + 1) != ' ' && strlen(command) > 1)
     {
@@ -1248,6 +1270,7 @@ if(cmdStream != NULL && batchMode)
         writeStreamStr(cmdStream, buff, 0);
         }
     closeStrStream(cmdStream);
+RETURN_BATCHMODE:
     if(!daemonMode)  exit(1);
     if(IOchannel != NULL) fclose(IOchannel);
 #ifndef LIBRARY
@@ -1562,7 +1585,7 @@ switch(cell->type)
         
         if(pCell->type == CELL_LAMBDA)
             { 
-            pushLambda(args);
+            pushLambda(cell);
             result = evaluateLambda((CELL *)pCell->contents, args->next, newContext); 
             --lambdaStackIdx; 
             break; 
@@ -1570,7 +1593,7 @@ switch(cell->type)
         
         if(pCell->type == CELL_FEXPR)
             { 
-            pushLambda(args);
+            pushLambda(cell);
             result = evaluateLambdaMacro((CELL *)pCell->contents, args->next, newContext);
             --lambdaStackIdx; 
             break;
@@ -2186,9 +2209,11 @@ return(cell);
 
 CELL * copyCell(CELL * cell)
 {
+#ifdef ISO_C90
 CELL * newCell;
 CELL * list;
 UINT len;
+#endif
 
 /* avoids copy if cell on resultStack */
 if(cell == (CELL *)*(resultStackIdx))
@@ -2196,6 +2221,12 @@ if(cell == (CELL *)*(resultStackIdx))
     if(cell != nilCell && cell != trueCell)
         return(popResult());
     }
+
+#ifndef ISO_C90
+CELL * newCell;
+CELL * list;
+UINT len;
+#endif
 
 if(firstFreeCell == NULL) allocBlock();
 newCell = firstFreeCell;
@@ -2251,14 +2282,21 @@ return(newCell);
    if copying with envelope call copyCell() instead */
 CELL * copyList(CELL * cell)
 {
+#ifdef ISO_C90
 CELL * firstCell;
 CELL * newCell;
+#endif
 
 if(cell == nilCell) 
     {
     lastCellCopied = nilCell;
     return(cell);
     }
+
+#ifndef ISO_C90
+CELL * firstCell;
+CELL * newCell;
+#endif
 
 firstCell = newCell = copyCell(cell);
 
@@ -2292,8 +2330,10 @@ while(cell != nilCell)
             )
         freeMemory( (void *)cell->contents);
     
-    /* free cell */
-    if(cell != nilCell && cell != trueCell) 
+    /* free cell changes in 10.6.3 */
+    if(cell == nilCell || cell == trueCell) 
+        cell = cell->next;
+    else    
         {
         next = cell->next;
         cell->type = CELL_FREE;
@@ -2301,10 +2341,8 @@ while(cell != nilCell)
         firstFreeCell = cell;
         --cellCount;
         cell = next;
-        continue;
         }
 
-    cell = cell->next;
     }
 }
 
@@ -2492,10 +2530,14 @@ switch(device)
             }
     case OUT_CONSOLE:
 #ifdef LIBRARY
-        writeStreamStr(&libStrStream, buffer, 0);
-        freeMemory(buffer);
-        fflush(NULL);
-        return;
+        if(!newlispLibConsoleFlag)
+            {
+            writeStreamStr(&libStrStream, buffer, 0);
+            freeMemory(buffer);
+            fflush(NULL);
+            return;
+            }
+        else
 #endif
         if(IOchannel == stdin)
             {
@@ -2539,19 +2581,10 @@ switch(cell->type)
         varPrintf(device, "true"); break;
     
     case CELL_LONG:
-        varPrintf(device,"%ld", cell->contents); break;
-
+        varPrintf(device,"%"PRIdPTR, cell->contents); break;
 #ifndef NEWLISP64
     case CELL_INT64:
-#ifdef TRU64
-        varPrintf(device,"%ld", *(INT64 *)&cell->aux); break;
-#else
-#ifdef WINDOWS
-        varPrintf(device,"%I64d", *(INT64 *)&cell->aux); break;
-#else
-        varPrintf(device,"%lld", *(INT64 *)&cell->aux); break;
-#endif /* WIN32 */
-#endif /* TRU64 */
+        varPrintf(device,"%"PRId64, *(INT64 *)&cell->aux); break;
 #endif /* NEWLISP64 */
 #ifdef BIGINT
     case CELL_BIGINT:
@@ -3086,6 +3119,7 @@ char * errorMessage[] =
     "ffi struct expected",          /* 73 */
     "bigint type not applicable",   /* 74 */
     "not a number or infinite",     /* 75 */
+    "cannot convert NULL to string",/* 76 */
     NULL
     };
 
@@ -3141,6 +3175,7 @@ longjmp(errorJump, errorReg);
 void printErrorMessage(UINT errorNumber, CELL * expr, int deleteFlag)
 {
 CELL * lambdaFunc;
+CELL * lambdaExpr;
 UINT * stackIdx = lambdaStackIdx;
 SYMBOL * context;
 int i;
@@ -3175,7 +3210,8 @@ if(expr != NULL)
 
 while(stackIdx > lambdaStack)
     {
-    lambdaFunc = (CELL *)*(--stackIdx);
+    lambdaExpr = (CELL *)*(--stackIdx);
+    lambdaFunc = (CELL *)lambdaExpr->contents;
     if(lambdaFunc->type == CELL_SYMBOL)
         {
         writeStreamStr(&errorStream, LINE_FEED, 0);
@@ -3186,7 +3222,8 @@ while(stackIdx > lambdaStack)
           writeStreamStr(&errorStream, context->name, 0);
           writeStreamStr(&errorStream, ":", 0);
           }
-        writeStreamStr(&errorStream, ((SYMBOL *)lambdaFunc->contents)->name, 0);
+        /* writeStreamStr(&errorStream, ((SYMBOL *)lambdaFunc->contents)->name, 0); */
+        printCell(lambdaExpr, (errorNumber != ERR_USER_ERROR), (UINT)&errorStream); /* 10.6.3 */
         }
     }
 
@@ -3206,6 +3243,8 @@ if(errorEvent == nilSymbol)
         if(logTraffic == LOG_MORE) writeLog(errorStream.buffer, TRUE);
         }
     }
+
+if(traceFlag & TRACE_PRINT_EVAL) tracePrint(errorStream.buffer, NULL);
 }
 
 
@@ -3282,7 +3321,7 @@ char * ptr;
 
 #ifdef WINDOWS
 /* gets full path of currently executing newlisp.exe */
-pathname = win32_getExePath(alloca(PATH_MAX));
+pathname = win_getExePath(alloca(PATH_MAX));
 #else /* Unix */
 if(strchr(pathname, '/') == NULL) 
     pathname = which(pathname, alloca(PATH_MAX));
@@ -4506,6 +4545,8 @@ READ_EXPR_SYNC
   used by p_sync() in nl-filesys.c 
 READ_EXPR
   used by p_readExpr 
+READ_EXPR_NET
+  used by p_netEval introduces in 10.6.3, before READ_EXPR_SYNC was used
 */
 
 
@@ -4566,14 +4607,14 @@ while(TRUE)
         }
     if(mode == EVAL_STRING)
         resultCell = evaluateExpression((CELL *)program->contents);
-    else /* READ_EXPR or READ_EXPR_SYNC */
+    else /* READ_EXPR, READ_EXPR_SYNC, READ_EXPR_NET */
         {
+        if(resultCell != nilCell) pushResult(resultCell); /* 10.6.3 */
         countCell->contents = (UINT)(stream.ptr - stream.buffer);
         resultCell = (CELL *)program->contents;
         program->contents = (UINT)nilCell; /* de-couple */
-        /* note that resultCell is not marked for deletion
-           because decoupled from cell program */
-        break;
+        if(mode == READ_EXPR_SYNC || mode == READ_EXPR) /* 10.6.3 */
+            break; /* only do first expression */
         }
 
     if(resultStackIdx > resultStackTop - 256)
@@ -4774,12 +4815,14 @@ void expandExprSymbol(CELL * cell, SYMBOL * sPtr)
 CELL * rep;
 
 rep = copyCell((CELL*)sPtr->contents);
+/* check for and undo copyCell optimization */
+while((UINT)rep == sPtr->contents)
+    rep = copyCell((CELL*)sPtr->contents);
+
 cell->type = rep->type;
 cell->aux = rep->aux;
 cell->contents = rep->contents;
 rep->type = CELL_LONG;
-rep->aux = 0;
-rep->contents = 0;
 deleteList(rep);
 }
 
@@ -4835,7 +4878,7 @@ while((params = next) != nilCell)
     else if(params->type == CELL_EXPRESSION)
         {
         evalFlag = getFlag(next);
-        list = (CELL*)params->contents;
+        list = (CELL*)params->contents; /* expansion assoc list */
         while(list != nilCell)
             {
             if(list->type != CELL_EXPRESSION)
@@ -4847,10 +4890,11 @@ while((params = next) != nilCell)
             pushEnvironment(symbol->contents);
             pushEnvironment(symbol);
             if(evalFlag)
-                symbol->contents = (UINT)evaluateExpression(cell->next);
+                symbol->contents = (UINT)copyCell(evaluateExpression(cell->next));
             else
                 symbol->contents = (UINT)cell->next;
             expr = expand(copyCell(expr), symbol);
+            if(evalFlag) deleteList((CELL *)symbol->contents); 
             symbol = (SYMBOL*)popEnvironment();
             symbol->contents = popEnvironment();
             pushResult(expr);
@@ -5964,9 +6008,9 @@ switch(doType)
     case DOLIST:
         /* list = copyCell(evaluateExpression(cell)); */
         getEvalDefault(cell, &list);
-        list = copyCell(list);
-        if(!isList(list->type))
-            return(errorProcExt(ERR_LIST_EXPECTED, cell));
+        if(isList(list->type)) list = copyCell(list);
+        else if(list->type == CELL_ARRAY) list = arrayList(list, FALSE);
+        else return(errorProcExt(ERR_LIST_EXPECTED, cell));
         cond = cell->next;
         break;
     case DOTREE:
@@ -6057,11 +6101,16 @@ return(cell);
 
 CELL * p_evalBlock(CELL * params)
 {
-CELL * cell;
+CELL * result = nilCell;
 
-cell = evaluateBlock(params);
+while(params != nilCell)
+    {
+    result = evaluateExpression(params);
+    params = params->next;
+    }
+
 pushResultFlag = FALSE;
-return(cell);
+return(result);
 }
 
 extern UINT getAddress(CELL * params);
@@ -7063,7 +7112,7 @@ if(params->type == CELL_STRING)
     }
 else if(params != nilCell)
     {
-    snprintf(sigStr, 11, "$signal-%ld", sig);
+    snprintf(sigStr, 11, "$signal-%d", (int)sig);
     getCreateSymbol(params, &signalEvent, sigStr);
     symHandler[sig - 1] = signalEvent;
     if(signal(sig, signal_handler) == SIG_ERR) return(nilCell);
@@ -7099,8 +7148,9 @@ return(result);
 CELL * p_dump(CELL * params)
 {
 CELL * blockPtr;
-int i;
 CELL * cell;
+UINT count = 0;
+int i;
 
 if(params != nilCell)
     {
@@ -7119,12 +7169,14 @@ while(blockPtr != NULL)
             varPrintf(OUT_DEVICE, "address=%lX type=%d contents=", blockPtr, blockPtr->type);
             printCell(blockPtr, TRUE, OUT_DEVICE);
             varPrintf(OUT_DEVICE, LINE_FEED);
+            ++count;
             }
         ++blockPtr;
         }
     blockPtr = blockPtr->next;
     }
-return(trueCell);
+
+return(stuffInteger(count));
 }
 
 

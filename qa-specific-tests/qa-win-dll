@@ -1,0 +1,51 @@
+#!/usr/bin/newlisp
+
+;; test newlisp DLL
+
+(println)
+(println "Testing Windows DLL calls")
+
+(unless (find ostype '("Windows"))
+	(println "not tested on " ostype)
+	(exit)
+)
+
+(unless (file-info "newlisp.dll")
+	(println ">>>>> No newlisp.dll found")
+	(exit)
+)
+
+(error-event (fn () 
+    (println ">>>>> ERROR " (first (last-error)) " " (last (last-error)))
+    (exit)
+))
+
+(define (dll-eval expr)
+	(unless newlispEvalStr
+		(import "newlisp.dll" "newlispEvalStr"))
+	(let (result (get-string (newlispEvalStr (string expr))) )
+		(if (starts-with result "\nERR:")
+			"ERROR in DLL call"
+			(read-expr result))
+	)
+)
+
+
+(if (and
+		(println (= (dll-eval '(+ 3 4)) 7))
+		(println (= (dll-eval '(sequence 1 10)) (sequence 1 10)))
+		(println (= (dll-eval '(set 'x 12345)) 12345))
+		(println (= (dll-eval 'x) 12345))
+		(println (= (dll-eval '(foo bar)) "ERROR in DLL call")) )
+
+	(println ">>>>> Windows DLL CALLS SUCCESSFUL")
+	(println ">>>>> PROBLEM IN Windows DLL CALLS")
+)
+
+(println)
+
+(exit)
+
+
+
+

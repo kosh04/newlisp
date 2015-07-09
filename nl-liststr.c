@@ -19,7 +19,6 @@
 */
 
 #include "newlisp.h"
-#include "pcre.h"
 #include "protos.h"
 
 extern CELL * lastCellCopied;
@@ -1062,7 +1061,7 @@ if(keyCell->type == CELL_STRING && next->type == CELL_STRING)
     if(options == -1)
         found = searchBuffer(str + offset, size - offset, key, keyCell->aux - 1, TRUE);
     else
-        found = searchBufferRegex(str, (int)offset, key, (int)size, options, NULL) - offset;
+        found = searchBufferRegex(str, offset, key, size, options, NULL) - offset;
     if(found < 0) return(nilCell);
     }
 else
@@ -1135,8 +1134,8 @@ CELL * cell = NULL;
 UINT * resultIdxSave;
 jmp_buf errorJumpSave;
 int errNo; 
-int len;
-int offset = 0;
+size_t len;
+size_t offset = 0;
 
 exprCell = params;
 if((params = params->next) != nilCell)
@@ -1157,7 +1156,7 @@ if(exprCell != nilCell)
         }   
     }
 
-while( (findPos = searchBufferRegex(str, offset, pattern, (int)size, options, &len)) 
+while( (findPos = searchBufferRegex(str, offset, pattern, size, options, &len)) 
        != -1)
     {
     countCell->contents++;
@@ -1406,7 +1405,7 @@ char * key;
 char * keydollar;
 INT options = -1;
 size_t slen, pos;
-int klen;
+size_t klen;
 CELL * cell, * list;
 
 cell = params->next;

@@ -333,11 +333,11 @@ PRIMITIVE primitive[] =
 	{"exists",		p_exists,	0},
 	{"symbols",		p_symbols,	0},
 	{"exit",		p_exit,		0},
-#ifndef NO_DEBUG
+#ifdef DEBUGGER
 	{"debug",		p_debug,	0},
-	{"trace",		p_trace,	0},
 	{"trace-highlight", 	p_traceHighlight,0},
 #endif
+	{"trace",		p_trace,	0},
 	{"reset",		p_reset,	0},
 	{"throw-error",	p_throwError,	0},
 	{"error-event",	p_errorEvent,	0},

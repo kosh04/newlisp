@@ -1,0 +1,26 @@
+#!/usr/bin/env newlisp
+
+; unpack, get-string and ffliob returns with char* == NULL
+; should give an error message "ERR: cannot convert NULL to string"
+; else they most likely will segfault
+
+(struct '_struct_string "char*" "long")
+(setf s (pack _struct_string 0 0))
+
+(if (not (catch (unpack _struct_string s) 'ret))
+        (println ">>>>> SUCCESS unpacking NULL ptr")
+        (println ">>>>> ERROR unpacking NULL ptr")
+)
+
+(if (and 
+        (not (catch (get-string 0) 'ret))
+        (not (catch (get-string 0 10) 'ret))
+        (not (catch (get-string 0 10 "end") 'ret))
+    )
+    (println ">>>>> SUCCESS get-string on NULL ptr")
+    (println ">>>>> ERROR get-string on NULL ptr")
+)
+
+(exit)
+
+

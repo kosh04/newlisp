@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.6.2
+VERSION=10.6.3
 
 rm -f config.h makefile_build makefile_install
 
@@ -71,6 +71,7 @@ case `uname` in
 	AIX) true ${os_type:=AIX} ;; 
 	OSF1) true ${os_type:=TRU64} ;;
 	MINGW32_*) true ${os_type:=WIN_32} ;;
+	MINGW64_*) true ${os_type:=WIN_64} ;;
 	OS/2) true ${os_type:=OS2} ;;
 	*)
 		echo Could not discover your OS platform use one of the following commands:
@@ -103,7 +104,7 @@ elif [ ${os_type} = WIN_32 ] ; then
 	DEFAULT_CC="${WIN32_CC}"
 	DEFAULT_CFLAGS="${WIN32_CFLAGS}"
 	DEFAULT_LDFLAGS="${WIN32_LDFLAGS}"
-	DEFAULT_OBJS="${DEFAULT_OBJS} win32-util.o win32-path.o"
+	DEFAULT_OBJS="${DEFAULT_OBJS} win-util.o win-path.o"
 	DEFAULT_STRIP="${WIN32_STRIP}"
 	DEFAULT_TARG="${WIN32_TARG}"
 	true ${enable_readline:=no};

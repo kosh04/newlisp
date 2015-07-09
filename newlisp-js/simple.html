@@ -593,25 +593,27 @@
     </div>
     <div class="two-column" id="editdiv">
     <textarea id="input" class="light-theme" spellcheck="false" onkeydown="editorKeyDown(event);"
-        onkeypress="editorKeyPress(event);" onkeyup="editorKeyUp(event);">; Welcome to newLISP running in a browser.
-;
+        onkeypress="editorKeyPress(event);" onkeyup="editorKeyUp(event);"
+         >; Welcome to newLISP running in a browser.
+; based on newLISP v10.6.3 2015-05-14, Emscripten v1.29.0
+; best used with FireFox browser
 ; Click [eval]
 
 (println "Hello World")
-    
+
 (define (double x)
    (+ x x))
-   
+
 (println "=> " (double 123))
-    
+
 ; [eval] shows all the return values from
 ; evaluated expressions plus the effect from
 ; 'println'. Now click [silent]. It only shows
 ; the effect from the 'println' expression.
-    
-; To find out more about how to use this
+
+; To find out more about how to use this 
 ; editor, click the [info] button.
-    
+
 ; The best introduction to newLISP can be found
 ; here:
 ; en.wikibooks.org/wiki/Introduction_to_newLISP
@@ -625,7 +627,7 @@
     <div class="two-column" id="logdiv">
     <textarea  id="output" class="light-theme" style="cursor:default;" readonly ></textarea>
     <center>
-    <font size="-1">Copyright &copy; 2014, <a href="http://newlisp.org">newlisp.org</a></font>
+    <font size="-1">Copyright &copy; 2014-2015, <a href="http://newlisp.org">newlisp.org</a></font>
     </center>
     </div>
     <div class="lower-menu">

@@ -24,9 +24,13 @@
 #ifdef WINDOWS
 
 #include <winsock2.h>
+#pragma push_macro("UINT") 
+#undef UINT /* avoid clash with newLISP UINT */
 #include <ws2tcpip.h>
+#pragma pop_macro("UINT")
 #include <ws2spi.h>
-#define fdopen win32_fdopen
+
+#define fdopen win_fdopen
 #define SHUT_RDWR 2
 #define gethostbyname2(A, B) gethostbyname(A)
 
@@ -156,7 +160,7 @@ if(defaultIn != NULL) free(defaultIn);
 defaultInLen = (ADDR_FAMILY == AF_INET6) ? 
     sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
 
-defaultIn = allocMemory(defaultInLen);
+defaultIn = callocMemory(defaultInLen);
 
 if(ADDR_FAMILY == AF_INET6)
     {
@@ -1497,6 +1501,7 @@ close(handle);
 #endif
 }
 
+FILE * win_fdopen(int handle, const char * mode);
 
 FILE * serverFD(int port, char * domain, int reconnect)
 {
@@ -1598,7 +1603,7 @@ if(list->type == CELL_STRING)
     host = (char *)list->contents;
     params = getIntegerExt(params->next, &port, TRUE);
     /* params = getStringSize(params, &prog, &size, TRUE); */
-    /* convert to strong if required (since 10.1.1) */
+    /* convert to string if required (since 10.1.1) */
     prog = cellToString(evaluateExpression(params), &size, FALSE);
     params = params->next;
     list = nilCell;
@@ -1645,14 +1650,15 @@ else
     memset(session, 0, sizeof(NETEVAL));
     }
 
-
+/* timeout for making connection is always 15 secs, 
+   but variable timeOut is used during connection */
 #ifndef WINDOWS
 if(port != 0)
-    sock = netConnect(host, (int)port, SOCK_STREAM, 0, timeOut);
+    sock = netConnect(host, (int)port, SOCK_STREAM, 0, 15000);
 else
     sock = netConnectLocal(host);
 #else
-sock = netConnect(host, (int)port, SOCK_STREAM, 0, timeOut);
+sock = netConnect(host, (int)port, SOCK_STREAM, 0, 15000);
 #endif
 
 if(sock == SOCKET_ERROR)
@@ -1695,6 +1701,7 @@ if(params != nilCell)
 /* printf("timeout %d idle-loop %X\n", timeOut, netEvalIdle); */
  
 /* collect data from host in each active session */
+
 while(count)
     {
     resultStackIdxSave = resultStackIdx;
@@ -1725,16 +1732,22 @@ while(count)
         {
         memset(buffer, 0, MAX_BUFF);
         bytes = recv(session->sock, buffer, MAX_BUFF, NO_FLAGS_SET);
-        /* if(bytes >= 0) printf("bytes:%ld=>%s<=\n", bytes, buffer); */
+
+/*
+        if(bytes >= 0) printf("bytes:%ld=>%s<=\n", bytes, buffer); 
+*/
         if(bytes) 
             {
+	    if(bytes == -1) bytes = 0;
             errNo = (memcmp(buffer, "\nERR: ", 6) == 0);
             writeStreamStr(netStream, buffer, bytes);
             }
         }
     if(ready < 0 || bytes == 0 || errNo || elapsed >= timeOut)
         {
-        /* printf("count=%ld ready=%d bytes=%ld elapsed=%d\n", count, ready, bytes, elapsed); */
+/*
+        printf("count=%ld ready=%d bytes=%ld elapsed=%d\n", count, ready, bytes, elapsed); 
+*/
         if(elapsed >= timeOut) result = copyCell(nilCell); 
         else if(rawMode || errNo) /* get raw buffer without the quote */
             result = stuffStringN(netStream->buffer, netStream->position);
@@ -1747,7 +1760,11 @@ while(count)
                 freeSessions(base);
                 longjmp(errorJump, errNo);
                 }
-            result = sysEvalString(netStream->buffer, currentContext, nilCell, READ_EXPR_SYNC);
+            /* Only one expression should be sent out by net-eval. When contained
+               in a string more than one can be sent out and will be evaluated,
+               burt net-eval will only return the result of the last(10.6.3) one */
+            result = sysEvalString(netStream->buffer, currentContext, nilCell, READ_EXPR_NET);
+            /* changed from READ_EXPR+SYNC to READ_EXPR in 10.6.3 */
             memcpy(errorJump, errorJumpSave, sizeof(jmp_buf));
             }
 
@@ -1795,7 +1812,7 @@ while(count)
     if(session == NULL) session = base;
 
     cleanupResults(resultStackIdxSave);
-  }
+    }
 
 /* free all sessions and configure result */
 result = NULL;
@@ -2409,7 +2426,7 @@ return(checksum);
 }
 #endif /* NO_NET_PACKET */
 
-/* ------------------ socket->filestream stuff for win32 ------------------------*/
+/* ------------------ socket->filestream stuff for windows ------------------------*/
 
 #ifdef WINDOWS
 extern int IOchannelIsSocketStream;
@@ -2418,11 +2435,11 @@ extern int IOchannelIsSocketStream;
 These functions use the FILE structure to store the raw file handle in '->_file' and
 set ->_flag to 0xFFFF, to identify this as a faked FILE structure.
 Sinc 10.0.1 the IOchannelIsSocketStream flag is used to identify IOchannel as
-a fake file struct and extract the socket. Following win32_fxxx routines
+a fake file struct and extract the socket. Following win_fxxx routines
 are used to define fopen(), fclose(), fprintf(), fgetc() and fgets() in some *.c
 */
 
-FILE * win32_fdopen(int handle, const char * mode)
+FILE * win_fdopen(int handle, const char * mode)
 {
 FILE * fPtr;
 
@@ -2437,7 +2454,7 @@ fPtr->_flag = 0xFFFF;
 return(fPtr);
 }
 
-int win32_fclose(FILE * fPtr)
+int win_fclose(FILE * fPtr)
 {
 if(IOchannelIsSocketStream)
    return(close(getSocket(fPtr)));
@@ -2446,7 +2463,7 @@ return(fclose(fPtr));
 }
 
 
-int win32_fprintf(FILE * fPtr, char * notused, char * buffer)
+int win_fprintf(FILE * fPtr, char * notused, char * buffer)
 {
 int pSize;
 
@@ -2464,7 +2481,7 @@ if((pSize = sendall(getSocket(fPtr), buffer, pSize)) == SOCKET_ERROR)
 return(pSize);
 }
 
-int win32_fgetc(FILE * fPtr)
+int win_fgetc(FILE * fPtr)
 {
 char chr;
 
@@ -2481,7 +2498,7 @@ return(chr);
 }
 
 
-char * win32_fgets(char * buffer, int size, FILE * fPtr)
+char * win_fgets(char * buffer, int size, FILE * fPtr)
 {
 int bytesReceived = 0;
 char chr;

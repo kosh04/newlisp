@@ -8,6 +8,9 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 CFLAGS = -fPIC -m64 -Wall -Wno-uninitialized -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DSUPPORT_UTF8 -DNEWLISP64 -DLINUX -DFFI -I/usr/local/lib/libffi-3.0.13/include 
 
+# replace -O2 with -Oz when using clang/llvm
+#CC = clang 
+
 CC = gcc
 
 default: $(OBJS)

@@ -4,6 +4,8 @@
     (println "big integers not enabled in this version")
     (exit))
 
+(println ">>>>> testing big ints arithmetik ... ")
+
 (set-locale "C")
 
 ;; check embedded bigint 0's
@@ -68,14 +70,15 @@
 (dotimes (i N)
     (set 'f (pow (random 10 100) (+ 15 (rand 50))))
     (set 'f1 (float (bigint f)))
-    (unless eval-string-js (print i "       \r"))
+    (unless eval-string-js 
+        (when (= i (* (/ i 1000) 1000)) (print ".")))
     ;(println "=>" (sub (abs (div f f1)) 1.0))
     (unless (<= (abs (sub (abs (div f f1)) 1.0)) 0.000000001)
        (println f "   " f1 " " (abs (sub (abs (div f f1)) 1)))
        (println ">>>>> ERROR in big integer/float conversion")
        (exit))
 )
-
+(println)
 (define (get-bignum n , num)
     (set 'num (amb "-" ""))
     (if (zero? n) (++ n))
@@ -89,7 +92,8 @@
     (setq x (get-bignum (rand 30)))
     (setq y (get-bignum (rand 30)))
     ;(println "x=" x " y=" y)
-    (unless eval-string-js (print i "       \r"))
+    (unless eval-string-js 
+        (when (= i (* (/ i 1000) 1000)) (print ".")))
     (unless (= (zero? x) (= x 0))
         (println ">>>>> ERROR in zero? for x = " x)
         (exit))
@@ -139,6 +143,7 @@
     )
 
 )
+(println)
 
 ; gcd for bigint
 ; from http://bit-player.org/2013/the-keys-to-the-keydom

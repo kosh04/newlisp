@@ -8,11 +8,11 @@
 
 (set 'foo-code (append
      (pack "bbbbbbbbbb" 0x55 0x8B 0xEC 0x8B 0x45 0x08 0x03 0x45 0x0C 0x5D)
-     (if (= ostype "Win32") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
+     (if (= ostype "Windows") (pack "bbb" 0xC2 0x08 0x00) (pack "b" 0xC3))))
 (set 'foo print)
-;(cpymem (pack "ld" (if (= ostype "Win32") 265 264)) (first (dump foo)) 4) ; pre v10.3.10
-;(cpymem (pack "ld" (if (= ostype "Win32") 2312 1288)) (first (dump foo)) 4) 
-(cpymem (pack "ld" (if (= ostype "Win32") 0x2200 0x2100)) (first (dump foo)) 4) 
+;(cpymem (pack "ld" (if (= ostype "Windows") 265 264)) (first (dump foo)) 4) ; pre v10.3.10
+;(cpymem (pack "ld" (if (= ostype "Windows") 2312 1288)) (first (dump foo)) 4) 
+(cpymem (pack "ld" (if (= ostype "Windows") 0x2200 0x2100)) (first (dump foo)) 4) 
 (cpymem (pack "ld" (address foo-code)) (+ (first (dump foo)) 12) 4)
 (set 'foo-name "foo")
 (cpymem (pack "ld" foo-name) (+ (first (dump foo)) 8) 4)

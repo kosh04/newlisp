@@ -12,7 +12,10 @@
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.53 doc fixes</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.60 new table functions, new naming gs:table-show-row-number</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.61 more options for gs:scroll-pane added by FdB</font>
-<font color='#555555'>;; <font color='#308080'>@author</font> LM, 2008, 2009, 2010, Unya 2012, FdB 2013</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.62 doc corrections</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.63 make deprecated gs:table-set-row-number work</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.70 default comm port with Guiserver are now 64001 and 64002</font>
+<font color='#555555'>;; <font color='#308080'>@author</font> LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the</font>
 <font color='#555555'>;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on</font>
@@ -22,7 +25,7 @@
 <font color='#555555'>;; '/usr/bin/java'.</font>
 <font color='#555555'>;; </font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; On Win32 the MIDI sound features require a soundbank file to</font>
+<font color='#555555'>;; On Windows the MIDI sound features require a soundbank file to</font>
 <font color='#555555'>;; be installed. See the description for 'gs:play-note' for details.</font>
 <font color='#555555'>;; &lt;br&gt;&lt;br&gt;</font>
 <font color='#555555'>;; &lt;h2&gt;What is newLISP-GS&lt;/h2&gt;</font>
@@ -47,10 +50,10 @@
 <font color='#555555'>;; When newLISP starts up and this variable is not set yet, it sets it</font>
 <font color='#555555'>;; to a default value of '/usr/share/newlisp' on MacOS X and Unix OSs, and </font>
 <font color='#555555'>;; to 'C:\Program Files\newlisp' or whatever it finds in the 'PROGRAMFILES'</font>
-<font color='#555555'>;; environment variable on Win32 systems and adding '/newlisp' to it.</font>
+<font color='#555555'>;; environment variable on MS Windows systems and adding '/newlisp' to it.</font>
 <font color='#555555'>;; This can be overwritten by specifying system wide  setting for the environment </font>
 <font color='#555555'>;; variable &lt;tt&gt;NEWLISPDIR&lt;/tt&gt;, which normally is set to '%PROGRAMFILES%/newlisp' </font>
-<font color='#555555'>;; on Win32. When using the Win32 binary installer 'NEWLISPDIR' is written </font>
+<font color='#555555'>;; on MS Windows. When using the MS Windows binary installer 'NEWLISPDIR' is written </font>
 <font color='#555555'>;; to the registry automatically and gets into effect after rebooting.</font>
 <font color='#555555'>;; &lt;br&gt;&lt;br&gt;</font>
 <font color='#555555'>;; &lt;h2&gt;Architecture of a newLISP GUI application&lt;/h2&gt;</font>
@@ -110,15 +113,15 @@
 <font color='#555555'>;; &lt;h2&gt;Application start&lt;/h2&gt;</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;;     ./button-demo       ; on MacOS X and Unix</font>
-<font color='#555555'>;;     newlisp button-demo ; on Win32</font>
+<font color='#555555'>;;     newlisp button-demo ; on MS Windows</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;; By default guiserver.jar uses the ports 47011 and 47012, but this setting can be overwritten </font>
+<font color='#555555'>;; By default guiserver.jar uses the ports 64001 and 64002, but this setting can be overwritten </font>
 <font color='#555555'>;; either by supplying a port number parameter to the 'gs:init' function or by overwriting the</font>
 <font color='#555555'>;; port number from the command-line. newLISP-GS will then use the port number supplied and the number</font>
 <font color='#555555'>;; following it:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;;     ./button-demo 10001       ; on MacOS X and Unix</font>
-<font color='#555555'>;;     newlisp button-demo 10001 ; on Win32</font>
+<font color='#555555'>;;     newlisp button-demo 10001 ; on MS Windows</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; newLISP-GS 'guiserver.jar' will now use the ports '10001' and '10002'.</font>
 <font color='#555555'>;; Ports under &lt;tt&gt;1024&lt;/tt&gt; should not be used, as many of them are already in use by other</font>
@@ -127,22 +130,22 @@
 <font color='#555555'>;; A second method to start a newLISP-GS application starts the 'guiserver.jar' first, which then</font>
 <font color='#555555'>;; starts the newLISP application:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;     Java -jar /usr/share/newlisp/guiserver.jar 47011 /usr/home/aUser/MyApplication.lsp</font>
+<font color='#555555'>;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; A different port number can be used. Port numbers below 1024 need administrator</font>
 <font color='#555555'>;; permissions. Optionally a splash screen can be specified as the last parameter:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;     Java -jar /usr/share/newlisp/guiserver.jar 47011 /home/apps/myapp.lsp /local/newLISP128.png</font>
+<font color='#555555'>;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; The example specifies an image inside 'guiserver.jar'. Any other image path on the local file system</font>
 <font color='#555555'>;; can be used.</font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; On Win32 similar methods can be used replacing the appropriate file paths, but on Win32 Java jar files</font>
+<font color='#555555'>;; On MS Windows similar methods can be used replacing the appropriate file paths, but on MS Windows Java jar files</font>
 <font color='#555555'>;; can also be treated as executables and executed directly without calling Java explicitly. By default</font>
 <font color='#555555'>;; 'guiserver.jar' and 'guiserver.lsp' are  installed in 'c:\Program Files\newlisp\' or any other </font>
-<font color='#555555'>;; directory configured on a Win32 platform using the 'PROGRAMFILES' environment variable:</font>
+<font color='#555555'>;; directory configured on a MS Windows platform using the 'PROGRAMFILES' environment variable:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;    "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 47011 c:\myprogs\MyApplication.lsp</font>
+<font color='#555555'>;;    "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 64001 c:\myprogs\MyApplication.lsp</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; Quotes are necessary when spaces are present in the argument string. The example assumes that</font>
 <font color='#555555'>;; 'newlisp.exe' is in the path for executables, and it also assumes that the Windows registry has</font>
@@ -150,7 +153,7 @@
 <font color='#555555'>;; association is normally present when a java run-time environment (JRE) is installed in Windows.</font>
 <font color='#555555'>;; If this association is not registered, the following method can be used:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;    javaw -jar "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 47011 c:\myprogs\MyApplication.lsp</font>
+<font color='#555555'>;;    javaw -jar "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 64001 c:\myprogs\MyApplication.lsp</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; The quotes are necessary for path-names containing spaces.</font>
 <font color='#555555'>;;</font>
@@ -167,9 +170,9 @@
 <font color='#555555'>;;</font>
 <font color='#555555'>;; &lt;blockquote&gt;&lt;pre&gt;</font>
 <font color='#555555'>;; newLISP-GS v.0.94</font>
-<font color='#555555'>;; listening on 47011</font>
+<font color='#555555'>;; listening on 64001</font>
 <font color='#555555'>;; accepted from 0.0.0.0</font>
-<font color='#555555'>;; connecting to 0.0.0.0 47012</font>
+<font color='#555555'>;; connecting to 0.0.0.0 64002</font>
 <font color='#555555'>;; retrying to connect</font>
 <font color='#555555'>;; connected</font>
 <font color='#555555'>;; -> frame MAIN:ButtonDemo 100 100 400 300 QnV0dG9uIGRlbW8= nil</font>
@@ -302,13 +305,13 @@
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; The initialization function starts &lt;tt&gt;guiserver.jar&lt;/tt&gt; which will listen to the &lt;i&gt;server-port&lt;/i&gt;</font>
 <font color='#555555'>;; and initiate another connection on &lt;tt&gt;server-port + 1&lt;/tt&gt; back to newLISP. If a &lt;server-port&gt;</font>
-<font color='#555555'>;; is not supplied &lt;tt&gt;guiserver&lt;/tt&gt; will assume &lt;tt&gt;47011&lt;/tt&gt; and &lt;tt&gt;47012&lt;/tt&gt;.</font>
+<font color='#555555'>;; is not supplied &lt;tt&gt;guiserver&lt;/tt&gt; will assume &lt;tt&gt;64001&lt;/tt&gt; and &lt;tt&gt;64002&lt;/tt&gt;.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; As the last statement in the application put:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;;    (gs:listen)</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;; This function listens on &lt;tt&gt;47012&lt;/tt&gt; (by default) for event messages from newLISP-GS</font>
+<font color='#555555'>;; This function listens on &lt;tt&gt;64002&lt;/tt&gt; (by default) for event messages from newLISP-GS</font>
 <font color='#555555'>;; and dispatches them to the user-defined action handlers. To avoid newLISP shutting down</font>
 <font color='#555555'>;; when the guiserver shuts down, use:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
@@ -612,7 +615,7 @@
 <font color='#555555'>;; The 'guiserver.jar' file has the following icons and images built in. Each of</font>
 <font color='#555555'>;; them is prefixed with the path '/local/'. For example '/local/newLISP128.png'</font>
 <font color='#555555'>;; addresses the newLISP logo of size 128x128. To address images outside of</font>
-<font color='#555555'>;; 'guiserver.jar', use a normal file path suitable to your platform. On Win32</font>
+<font color='#555555'>;; 'guiserver.jar', use a normal file path suitable to your platform. On MS Windows</font>
 <font color='#555555'>;; use forward slashes instead of backslashes.</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;; Image path</font>
@@ -697,7 +700,7 @@
 <font color='#555555'>;; &lt;li&gt;&lt;b&gt;Sound  and MIDI API&lt;/b&gt;&lt;br&gt;</font>
 <font color='#555555'>;; The newLISP-GS sound API uses the default saundbank and sound hardware installed </font>
 <font color='#555555'>;; on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be</font>
-<font color='#555555'>;; installed. On Win32 and some Unix platforms a soundbank file needs to be installed.</font>
+<font color='#555555'>;; installed. On MS Windows and some Unix platforms a soundbank file needs to be installed.</font>
 <font color='#555555'>;; Soundbanks for the Java JRE can be obtained at:</font>
 <font color='#555555'>;; <font color='#308080'>@link</font> http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html</font>
 <font color='#555555'>;; The demo files shipped with the newLISP-GS installation use the midsize soundbank. Other soundbanks</font>
@@ -705,11 +708,11 @@
 <font color='#555555'>;;</font>
 <font color='#555555'>;; The sound API is capable of playing of mutliple tracks at the same time</font>
 <font color='#555555'>;; depending on the sound hardware installed on a specific platform. Mac OS X platforms</font>
-<font color='#555555'>;; and most Win32 platforms should be capable of playing 16 instruments (channels) at the</font>
+<font color='#555555'>;; and most MS Windows platforms should be capable of playing 16 instruments (channels) at the</font>
 <font color='#555555'>;; the same time 32 on parallel sounding tracks. newLISP GS supports 128 instruments of the</font>
 <font color='#555555'>;; default soundbank installed.</font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; On Mac OS X and Win32 channel 9 is a special channel sounding a different rythm </font>
+<font color='#555555'>;; On Mac OS X and MS Windows channel 9 is a special channel sounding a different rythm </font>
 <font color='#555555'>;; instrument for all 128 different keys/notes.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; Basic capabilities of the sound API are shown in the demo files &lt;tt&gt;midi-demo.lsp&lt;/tt&gt;</font>
@@ -753,8 +756,8 @@
 <font color='#555555'>; ====================== utility routines</font>
 
 <font color='#555555'>; set server path</font>
-<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Win32"</font><font color='#AA0000'>)</font>
-	<font color='#555555'>; on some Win32 systems the jar -> javaw.exe association my be missing, the use the following:</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Windows"</font><font color='#AA0000'>)</font>
+	<font color='#555555'>; on some MS Windows systems the jar -> javaw.exe association my be missing, the use the following:</font>
 	<font color='#555555'>;(set 'server-path (string "javaw.exe -jar " "'&#092;&#034;" (env "NEWLISPDIR") "/guiserver.jar&#092;&#034;'")) </font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'server-path <font color='#AA0000'>(</font><font color='#0000AA'>string</font>  <font color='#008800'>"'&#092;&#034;"</font> <font color='#AA0000'>(</font><font color='#0000AA'>env</font> <font color='#008800'>"NEWLISPDIR"</font><font color='#AA0000'>)</font> <font color='#008800'>"/guiserver.jar&#092;&#034;'"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'server-path <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#AA0000'>(</font><font color='#0000AA'>env</font> <font color='#008800'>"NEWLISPDIR"</font><font color='#AA0000'>)</font> <font color='#008800'>"/guiserver.jar"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
@@ -1187,15 +1190,15 @@
 <font color='#555555'>;; the newLISP GUI application has started.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; <font color='#308080'>@example</font></font>
-<font color='#555555'>;; java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png</font>
-<font color='#555555'>;; ; or on Win32</font>
-<font color='#555555'>;; java -jar "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 4711 "newlisp program.lsp" /local/newLISPsplashWin.png</font>
+<font color='#555555'>;; java -jar /usr/share/newlisp/guiserver.jar 64001 program.lsp /local/newLISP128.png</font>
+<font color='#555555'>;; ; or on MS Windows</font>
+<font color='#555555'>;; java -jar "c:&#092;Program Files&#092;newlisp&#092;guiserver.jar" 64001 "newlisp program.lsp" /local/newLISPsplashWin.png</font>
 
 <font color='#555555'>;; The example starts newLISP-GS with an application 'program.lsp' and a splash</font>
-<font color='#555555'>;; screen showing the built-in newLISP logos and using port 4711. Instead, the full pathname </font>
+<font color='#555555'>;; screen showing the built-in newLISP logos and using port 64001/2. Instead, the full pathname </font>
 <font color='#555555'>;; of a different image file can be specified. Inside 'program.lsp' the function</font>
 <font color='#555555'>;; 'gs:dispose-splash' or a mouse click on the image will turn off the splash screen. </font>
-<font color='#555555'>;; For 'program.lsp' the full pathname may be necessary. On Win32 quotes are necessary to bracket </font>
+<font color='#555555'>;; For 'program.lsp' the full pathname may be necessary. On MS Windows quotes are necessary to bracket </font>
 <font color='#555555'>;; arguments to 'guiserver.jar' which contain spaces. </font>
 
 <font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>dispose-splash<font color='#AA0000'>)</font>
@@ -1865,13 +1868,13 @@
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;int-port&gt; The optional guiserver server port.</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;str-host&gt; The optional remote host of the guiserver.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>init <font color='#AA0000'>(</font>portIn <font color='#665500'>47011</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font>host <font color='#008800'>"127.0.0.1"</font><font color='#AA0000'>)</font> manual<font color='#AA0000'>)</font>
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> <font color='#AA0000'>(</font>init <font color='#AA0000'>(</font>portIn <font color='#665500'>64001</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font>host <font color='#008800'>"127.0.0.1"</font><font color='#AA0000'>)</font> manual<font color='#AA0000'>)</font>
 	<font color='#555555'>; check for server portIn and if this was started by java</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>main-args</font> <font color='#665500'>2</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>set</font> 'portIn <font color='#AA0000'>(</font><font color='#0000AA'>int</font> <font color='#AA0000'>(</font><font color='#0000AA'>main-args</font> <font color='#665500'>2</font><font color='#AA0000'>)</font> portIn<font color='#AA0000'>)</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 	<font color='#555555'>; if guiserver.jar did not start this process then guiserver.jar</font>
 	<font color='#555555'>; still has to be started, except when manual parameter is true</font>
 	<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>and</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> <font color='#AA0000'>(</font><font color='#0000AA'>main-args</font> <font color='#665500'>3</font><font color='#AA0000'>)</font> <font color='#008800'>"javastart"</font><font color='#AA0000'>)</font><font color='#AA0000'>)</font> <font color='#AA0000'>(</font><font color='#0000AA'>not</font> manual<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
-		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Win32"</font><font color='#AA0000'>)</font>
+		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Windows"</font><font color='#AA0000'>)</font>
 			<font color='#AA0000'>(</font><font color='#0000AA'>process</font> <font color='#AA0000'>(</font><font color='#0000AA'>string</font> <font color='#008800'>"cmd /c "</font> server-path <font color='#008800'>" "</font> portIn<font color='#AA0000'>)</font><font color='#AA0000'>)</font>
 
 			<font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"OSX"</font><font color='#AA0000'>)</font>
@@ -1892,7 +1895,7 @@
 		<font color='#AA0000'>(</font><font color='#0000AA'>if</font> <font color='#AA0000'>(</font><font color='#0000AA'>></font> retry <font color='#665500'>200</font><font color='#AA0000'>)</font> <font color='#555555'>; try for 20 seconds</font>
 			<font color='#AA0000'>(</font><font color='#0000AA'>begin</font>
 				<font color='#AA0000'>(</font><font color='#0000AA'>println</font> <font color='#008800'>"Could not connect to guiserver.jar"</font><font color='#AA0000'>)</font>
-				<font color='#AA0000'>(</font><font color='#0000AA'>when</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Win32"</font><font color='#AA0000'>)</font>
+				<font color='#AA0000'>(</font><font color='#0000AA'>when</font> <font color='#AA0000'>(</font><font color='#0000AA'>=</font> ostype <font color='#008800'>"Windows"</font><font color='#AA0000'>)</font>
 					<font color='#AA0000'>(</font><font color='#0000AA'>import</font> <font color='#008800'>"user32.dll"</font> <font color='#008800'>"MessageBoxA"</font><font color='#AA0000'>)</font>
 					<font color='#AA0000'>(</font>MessageBoxA <font color='#665500'>0</font> <font color='#008800'>"Could not connect to guiserver.jar"</font> <font color='#008800'>"Problem connecting"</font> <font color='#665500'>1</font><font color='#AA0000'>)</font>
 				<font color='#AA0000'>)</font>
@@ -2176,7 +2179,7 @@
 <font color='#555555'>;; When not using the default soundbank, the function 'gs:get-instruments'</font>
 <font color='#555555'>;; should be used first to find out the correct naming of instruments</font>
 <font color='#555555'>;; for the 'gs:midi-patch' statements. The soundbank used for testing the</font>
-<font color='#555555'>;; demo files 'midi-demo.lsp' and 'midi2-demo.lsp' on Win32 is the midsize</font>
+<font color='#555555'>;; demo files 'midi-demo.lsp' and 'midi2-demo.lsp' on Windows is the midsize</font>
 <font color='#555555'>;; soundbank available here:</font>
 <font color='#555555'>;; <font color='#308080'>@link</font> http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html</font>
 <font color='#555555'>;; This soundbank has equivalent named instruments to those used in the Mac OS X default JRE installation.</font>
@@ -2386,7 +2389,7 @@
 <font color='#555555'>;; a Piano instrument unless the function 'gs:midi-patch' has been used to change assignment</font>
 <font color='#555555'>;; to a different instrument.</font>
 <font color='#555555'>;;</font>
-<font color='#555555'>;; On Win32 and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto </font>
+<font color='#555555'>;; On Windows and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto </font>
 <font color='#555555'>;; <font color='#308080'>@link</font> http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html</font>
 <font color='#555555'>;; for instructions how to download and install a soundbank. For the demo files 'mide-demo.lsp' and</font>
 <font color='#555555'>;; 'midi2-demo' the midsize quality soundbank was used. On Mac OS X a soundbank is installed by default.</font>
@@ -3579,7 +3582,6 @@
 <font color='#555555'>;; Use 'gs:table-show-row-number'. The old naming is deprecated but will </font>
 <font color='#555555'>;; still work.</font>
 
-<font color='#AA0000'>(</font><font color='#0000AA'>define</font> table-set-row-number table-show-row-number<font color='#AA0000'>)</font>
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:table-show-row-number &lt;sym-id&gt; &lt;bool-row-number&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;sym-id&gt; The name of the table.</font>
@@ -3593,6 +3595,8 @@
     <font color='#555555'>;(println "gs:table-show-row-number " s)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>write-buffer</font> s <font color='#008800'>"&#092;n"</font><font color='#AA0000'>)</font>
     <font color='#AA0000'>(</font><font color='#0000AA'>net-send</font> out s<font color='#AA0000'>)</font> <font color='#AA0000'>)</font> <font color='#AA0000'>)</font>
+
+<font color='#AA0000'>(</font><font color='#0000AA'>define</font> table-set-row-number table-show-row-number<font color='#AA0000'>)</font>
 
 <font color='#555555'>;; <font color='#308080'>@syntax</font> (gs:text-area &lt;sym-id&gt; &lt;sym-action&gt; &lt;int-width&gt; &lt;int-height&gt;)</font>
 <font color='#555555'>;; <font color='#308080'>@param</font> &lt;symid&gt; The name of the text area.</font>

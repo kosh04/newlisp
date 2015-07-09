@@ -2,6 +2,7 @@
 ;; @description Selected functions from the GNU Scientific Library
 ;; @version 1.0 - initial release. Minimum newLISP version is 10.4.0.
 ;; @version 1.1 - added check for extended ffi enabled version.
+;; @version 1.2 - changed ostype Win32 to Windows
 ;; @author Lutz Mueller 2012
 
 ;; <h2>Module GSL For The GNU Scientific Library</h2>
@@ -166,7 +167,7 @@
 ; the following assumes the libararies installed in the system library path
 (set 'LIB 
 	(if 
-		(= ostype "Win32") "libgsl-0.dll" ; 32-bit
+		(= ostype "Windows") "libgsl-0.dll" ; 32-bit or 64-bit
 		(= ostype "OSX")   "libgsl.dylib" ; 32-bit or 64-bit
 		(= ostype "Linux") "/usr/local/lib/libgsl.so" ; 32-bit or 64-bit
 	))

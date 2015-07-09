@@ -8,6 +8,8 @@
 
 ; when doing "make testall" only text lines starting with ">>>" are printed
 
+(set-locale "C")
+
 (when (zero? (& 1024 (sys-info -1)))
     (println ">>>>> qa-libc-libffi: tests only run on extended FFI enabled versions compiled with ffilib")
     (exit))
@@ -24,20 +26,12 @@
 
 (define LIBC
   (case ostype
-    ("Win32" "msvcrt.dll")
+    ("Windows" "msvcrt.dll")
     ("Cygwin" "msvcrt.dll")
     ("OSX" "libc.dylib")
     ("BSD" (get-libc-name) )
     ("Linux" (get-libc-name) )
     ))
-
-;(define LIBC (case ostype
-;               ("Win32" "msvcrt.dll")
-;               ("OSX" "libc.dylib")
-;               ("Linux" (if is64bit
-;                            "/lib/x86_64-linux-gnu/libc.so.6"
-;                            "/lib/i386-linux-gnu/libc.so.6"))
-;             ))
 
 (println "\nTesting imports from " LIBC "\n")
 
@@ -48,7 +42,7 @@
 (set 'buff (dup "\000" 64))
 (sprintf buff "int 42 => %i, double Pi => %6.4f" 42 (mul 2 (acos 0))) 
 (set 'buff (get-string buff)) ;; trim buff of trailing zeroes
-(println buff)
+(println "->" buff "<-")
 (unless (= buff "int 42 => 42, double Pi => 3.1416")
     (println ">>>>> ERR problem importing sprinf() in qa-libc-libffi"))
 
@@ -83,12 +77,12 @@
 (import LIBC "asctime" "char*" "void*")
 (import LIBC "localtime" "void*" "void*")
 
-(if (= ostype "Win32")
+(if (find ostype '("Windows"))
 	(struct 'tm "int" "int" "int" "int" "int" "int" "int" "int" "int")
 	(struct 'tm "int" "int" "int" "int" "int" "int" "int" "int" "int" "long" "char*")
 )
 
-(if (or (= ostype "Win32") (= ostype "Cygwin"))
+(if (find ostype '("Windows" "Cygwin"))
     (set 'tmlist '(1 2 3 4 5 6 7 8 9))
     (set 'tmlist '(1 2 3 4 5 6 7 8 9 10 "hello world")))
 
