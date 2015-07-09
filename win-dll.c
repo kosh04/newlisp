@@ -1,4 +1,4 @@
-/* win32dll.c - make the newlisp.exe usable as a DLL 
+/* win-dll.c - make the newlisp.exe usable as a DLL 
 
     Copyright (C) 2011 Lutz Mueller
 
@@ -30,6 +30,8 @@ extern char linkOffset[];
 extern int evalSilent;
 extern int opsys;
 extern SYMBOL * mainArgsSymbol;
+extern FILE * IOchannel;
+extern int newlispLibConsoleFlag;
 
 
 int dllInitialized = 0;
@@ -42,12 +44,21 @@ void initializeMain(void)
 char name[MAX_LINE];
 char * initFile;
 
+
 WSAStartup(MAKEWORD(2,2), &WSAData);
+
+_setmode(_fileno(stdin), _O_BINARY);
+_setmode(_fileno(stdout), _O_BINARY);
+_setmode(_fileno(stderr), _O_BINARY);
 
 opsys += 64;
 
 #ifdef SUPPORT_UTF8
 opsys += 128;
+#endif
+
+#ifdef NEWLISP64
+opsys += 256;
 #endif
 
 #ifdef FFI
@@ -59,6 +70,8 @@ bigEndian = (*((char *)&bigEndian) == 0);
 initLocale();
 initStacks();
 initialize();
+IOchannel = stdin;
+
 mainArgsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)stuffString(libName));
 sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
@@ -149,6 +162,13 @@ LPSTR EXPORT dllEvalStr(LPSTR cmd)
 return(newlispEvalStr(cmd));
 }
 
+/* don't let stdout be included in return string */
+int EXPORT newlispLibConsole(int flag)
+{
+newlispLibConsoleFlag = flag;
+return(flag);
+}
+
 
 /* callbacks from newlisp library into caller 
 
@@ -163,7 +183,7 @@ currently only tested with newLISP as caller:
 
 */
 
-long EXPORT newlispCallback(char * funcName, long funcAddr, char * callType)
+intptr_t EXPORT newlispCallback(char * funcName, intptr_t funcAddr, char * callType)
 {
 CELL * pCell;
 SYMBOL * symbol;

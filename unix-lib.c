@@ -29,6 +29,7 @@ extern int opsys;
 extern SYMBOL * mainArgsSymbol;
 extern char linkOffset[];
 extern FILE * IOchannel;
+extern int newlispLibConsoleFlag;
 
 int libInitialized = 0;
 
@@ -79,9 +80,8 @@ mainArgsSymbol->contents = (UINT)makeCell(CELL_EXPRESSION, (UINT)stuffString(LIB
 sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
 
-#ifdef EMSCRIPTEN
 IOchannel = stdin;
-#else
+#ifndef EMSCRIPTEN
 initDefaultInAddr(); 
 
 initFile = getenv("NEWLISPLIB_INIT");
@@ -128,6 +128,13 @@ executeCommandLine(cmd, (UINT)&libStrStream, NULL);
 if(evalSilent) evalSilent = 0;
 
 return(libStrStream.buffer);
+}
+
+/* don't let stdout be included in return string */
+int newlispLibConsole(int flag)
+{
+newlispLibConsoleFlag = flag;
+return(flag);
 }
 
 #ifdef EMSCRIPTEN

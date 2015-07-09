@@ -32,7 +32,7 @@
 ;; <tt>libcrypto.so</tt> is installed by default as part of the OpenSSL
 ;; libraries in <tt>usr/lib/libcrypto.so</tt>. If loading this module 
 ;; finishes with an error message the path of the library should be corrected.
-;; For Win32 a library is available at 
+;; For MS Windows a library is available at 
 ;; @link http://gnuwin32.sourceforge.net/ http://gnuwin32.sourceforge.net/ .
 ;; 
 ;; This module has been tested on Mac OS X, UBUNTU Linux and FreeBSD.

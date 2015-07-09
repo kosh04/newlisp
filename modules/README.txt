@@ -3,7 +3,7 @@ execute the following statement inside the newlisp-x.x.x/modules directory:
 
    newlispdoc -s -d *.lsp
 
-or on Win32
+or on Windows
 
    newlisp newlispdoc -s -d *.lsp
 

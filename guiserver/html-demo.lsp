@@ -16,8 +16,8 @@
 (gs:set-font 'HtmlPane "Monospaced" 14 "plain")
 (gs:set-background 'HtmlPane 1 1 0.96)
 
-(if (= ostype "Win32")
-	(set 'url (string "file:///" (env "PROGRAMFILES") "/newlisp/guiserver/html-demo.lsp"))
+(if (= ostype "Windows")
+	(set 'url (string "file:///" (env "NEWLISPDIR") "/guiserver/html-demo.lsp"))
 	(set 'url "file:///usr/share/newlisp/guiserver/html-demo.lsp")
 )
 

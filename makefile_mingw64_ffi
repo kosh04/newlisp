@@ -1,0 +1,22 @@
+# makefile for newLISP v. 10.x.x on Windows with FFI 64-bit
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
+	win-util.o win-path.o
+
+CFLAGS = -m64 -Wall -c -O1 -g -DNEWLISP64 -DWINDOWS -DFFI 
+
+CC = gcc
+STRIP = strip
+
+default: $(OBJS)
+	$(CC) -m64 $(OBJS) -lws2_32 -lffi -o newlisp.exe
+	$(STRIP) newlisp.exe 
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h newlisp.h makefile_mingw64_ffi
+
+

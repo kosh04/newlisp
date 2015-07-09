@@ -6,6 +6,10 @@
 (println)
 (println "Testing UNIX local domain sockets")
 
+(when (find ostype '("Windows" "OS/2"))
+  (println "not tested on " ostype)
+  (exit))
+
 (define (listener path)
 	(set 'lsock (net-listen path))
 	(set 'csock (net-accept lsock))

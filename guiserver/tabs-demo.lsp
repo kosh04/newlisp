@@ -1,6 +1,7 @@
 #!/usr/bin/newlisp
 ;;
 ;; tabs-demo.lsp - demonstrate tabs and icons
+;; for 10.6.3 ideprecated gs:table-set-row-number was replaced with gs:table-show-row-number
 
 ;;;; initialization
 (set-locale "C")
@@ -77,7 +78,7 @@
 ;(gs:remove-tab 'MyTabs 0) ; just for test
 
 (gs:table 'Table 'gs:no-action "A" "B" "C")
-(gs:table-set-row-number 'Table true)
+(gs:table-show-row-number 'Table true)
 (gs:table-add-row 'Table "1 A" "1 B" "1 C")
 (gs:table-add-row 'Table "2 A" "2 B" "2 C")
 (gs:table-add-row 'Table "3 A" "3 B" "3 C")

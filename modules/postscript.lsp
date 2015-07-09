@@ -5,8 +5,8 @@
 ;; @version 2.2 - formatting
 ;; @version 2.3 - documentation
 ;; @version 2.4 - replaced if-not with unless
-;; @version 2.43 - doc corrections
-;; @author Lutz Mueller, July 2006, 2009, 2010, 2012, 2013
+;; @version 2.45 - doc corrections
+;; @author Lutz Mueller, July 2006, 2009, 2010, 2012, 2013, 2015
 ;;
 ;; <h2>Routines for creating postscript files</h2>
 ;; To use this module include the following 'load' statement at
@@ -120,7 +120,7 @@
 ;; <br>
 ;; Set the turtle angle to <num-dg> degrees.
 ;; Upwards is 0, right 90, downwards 180 and left 270 degrees.
-;; The turtle position is aved on the graphics state stack when using 
+;; The turtle position is saved on the graphics state stack when using 
 ;; '(ps:gsave)'.
 
 ;; @syntax (ps:bezier <num-x1> <num-y1> <num-x2> <num-y2> <num-x3> <num-y3>) 
@@ -137,7 +137,7 @@
 
 ;; @syntax (ps:circle <num-rad> [<bool-fill>])
 ;; @param <num-rad> Radius of the circle.
-;; @param <num-fill> Optional fill flag.
+;; @param <bool-fill> Optional fill flag.
 ;; <br>
 ;; Draw a circle with radius <num-rad>. The optional <num-fill> flag 
 ;; with either 'true' or 'nil' (default) indicates if the circle
@@ -395,7 +395,7 @@
 ;; factors less 1.0 or expand for factors bigger than 1.0.
 ;; With a scaling factor for x = 2.0 each point position
 ;; specified would cover the double of horizontal distance
-;; on the page. Previou scaling factors can be saved on the graphics
+;; on the page. Previous scaling factors can be saved on the graphics
 ;; state stack using the function 'ps:gsave' and restored using 'ps:grestore'.
 
 ;; @syntax (ps:shape <list-of-num-lists> [<bool-fill>])

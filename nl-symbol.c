@@ -139,7 +139,7 @@ if(isNumber(cell->type))
     {
     token = alloca(32);
     getIntegerExt(cell, &number, FALSE);
-    snprintf(token, 31, "_%ld", number);
+    snprintf(token, 31, "_%"PRIdPTR, number);
     }
 else
     {
@@ -371,35 +371,6 @@ if(checkReferences)
 deleteList(symbolList);
 }
 
-
-
-/*
-void deleteContextSymbols(CELL * cell, int checkReferences)
-{
-SYMBOL * context;
-SYMBOL * treePtr;
-CELL * symbolList;
-CELL * nextSymbol;
-
-context = (SYMBOL *)cell->contents;
-treePtr = (SYMBOL *)cell->aux;
-
-symbolList = getCell(CELL_EXPRESSION);
-collectSymbols((SYMBOL *)treePtr, symbolList);
-
-nextSymbol = (CELL *)symbolList->contents;
-while(nextSymbol != nilCell)
-    {
-    deleteAndFreeSymbol((SYMBOL*)nextSymbol->contents, FALSE);
-    nextSymbol = nextSymbol->next;
-    }
-    
-if(checkReferences)
-    externalContextReferences(context, TRUE);
-
-deleteList(symbolList);
-}
-*/
 
 void deleteAndFreeSymbol(SYMBOL * sPtr, int checkReferences)
 {

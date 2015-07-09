@@ -2,7 +2,8 @@
 #
 # two forked processes communicating via pipes
 
-(when (= ostype "Win32")
+(when (find ostype '("Windows"))
+    (println "fork not available on Windows")
 	(exit))
 
 

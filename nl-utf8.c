@@ -27,7 +27,7 @@
 #include <wctype.h>
 #include "protos.h"
 
-/* from win32-path.c */
+/* from win-path.c */
 CELL * utf8_from_mbcs(void * mbcs_str);
 
 /*************************************************

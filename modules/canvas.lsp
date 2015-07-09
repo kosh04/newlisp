@@ -9,13 +9,12 @@
 ;; @version 1.4 cv:petal was broken (JavaScript change?)
 ;; @version 1.44 doc corrections
 ;; @version 1.45 cv:render works on Emscripten newLISP
-;; @author Lutz Mueller, March 2009, June 2012, January 2014
+;; @version 1.52 changed Win32 to Windows and spelling
+;; @version 1.6 sign error in shape caused incompatibility with postscript.lsp
+;; @author Lutz Mueller, March 2009, June 2012, January 2014, 2015
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
-;; the HTML-5 canvas tag. As of March 2009 only the Safari 4.0 Beta
-;; (Mac OS X and Win32) and Firefox v.3.1 beta-2 (Mac OS X, Linux, Win32) 
-;; browsers both recognize all JavaScript functions supporting 
-;; the canvas tag in this module.
+;; the HTML-5 canvas tag. 
 
 ;; <h3>Example program</h3>
 ;; The following is a simple example how to create an HTML page
@@ -81,7 +80,7 @@
 
 ;; A package with more demo files can be downloaded from 
 ;; @link http://www.newlisp.org/canvas/canvas-15.tgz www.newlisp.org/canvas/canvas-15.tgz .
-;; The demo files assume the Safari (4.0 beta) browser on Mac OS X and Win32 or
+;; The demo files assume the Safari (4.0 beta) browser on Mac OS X and Windows or
 ;; The Firefox browser (3.1. beta 3) on Linux and start the browser automatically.
 ;; Change the last 'cv:render' line in each of the demo file to manually load
 ;; the generated page-file spciefied in the 'cv:render' statement.
@@ -215,7 +214,7 @@
 ;; <br>
 ;; Set the turtle angle to <num-dg> degrees.
 ;; Upwards is 0, right 90, downwards 180 and left 270 degrees.
-;; The turtle position is aved on the graphics state stack when using 
+;; The turtle position is saved on the graphics state stack when using 
 ;; '(cv:gsave)'.
 
 ;; @syntax (cv:bezier <num-x1> <num-y1> <num-x2> <num-y2> <num-x3> <num-y3>) 
@@ -232,7 +231,7 @@
 
 ;; @syntax (cv:circle <num-rad> [<bool-fill>])
 ;; @param <num-rad> Radius of the circle.
-;; @param <num-fill> Optional fill flag.
+;; @param <bool-fill> Optional fill flag.
 ;; <br>
 ;; Draw a circle with radius <num-rad>. The optional <num-fill> flag 
 ;; with either 'true' or 'nil' (default) indicates if the circle
@@ -463,7 +462,7 @@
 ;; file <tt>/tmp/noname.html</tt> is shown. This is the best mode for
 ;; interactive development.
 ;;
-;; On Win32 'cv:render' tries to open 'c:\Program Files\Safari\Safari.exe'.
+;; On Windows 'cv:render' tries to open 'c:\Program Files\Safari\Safari.exe'.
 ;; The function 'cv:render' at the end of the source in 'canvas.lsp'
 ;; can be modified for a different browser.
 ;;
@@ -709,7 +708,7 @@ function Path(lst) {
 			x3 = lst[i + 5]; y3 = -lst[i + 6]; 
 			PathBezier(x1, y1, x2, y2, x3, y3);
 			phi = Math.atan2(y3, x3);
-			orient = orient - 0.5 * Math.PI + phi; // turn 90 right + phi
+			orient = orient - 0.5 * Math.PI - phi; // turn 90 right + phi
 			if(phi == 0) Move(x3); else Move(y3 / Math.sin(phi)); 
 			orient = orient + 0.5 * Math.PI; // turn 90 left
 			i += 7;
@@ -1088,7 +1087,7 @@ function drawAllCanvas() { try
   (cond
     ( (= ostype "OSX")
       (exec "open /tmp/noname.html"))
-    ( (= ostype "Win32")
+    ( (= ostype "Windows")
       (set 'prog (string "cmd /c \"" (env "PROGRAMFILES") 
 ;                 Use either Firefox or Safari 4.0
 ;                 "/Mozilla Firefox 3.1 Beta 2/firefox.exe\""))

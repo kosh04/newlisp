@@ -4651,7 +4651,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
 
   'setf' is a new introduced function working not only on symbol references like 'setq'
    but also on any other reference returned from an expression. 'setq' now works like
-  'setf' and both point to the same ineternal code and are interchangeable. It is 
+  'setf' and both point to the same internal code and are interchangeable. It is 
   recommended to use 'setq' for setting symbol variables and use 'setf' whenever a sublist 
   or subarray is referenced, this follows usage in other LISPs:
 
@@ -5030,6 +5030,8 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     Users Manual corrections
 
     CodePatterns.html corrections, separate chapter about HTTP mode.
+
+    Experimental 'estack' with variable environment history.
 
 9.9.95
     No NEWLISPDIR/init.lsp or HOME/.init.lsp will be loaded by a newlisp.dll
@@ -5476,7 +5478,7 @@ Shows acceptable speed on dial-up (old newlisp-tk.conf should be deleted)
     All event fuctions now can take either nil or 'nil (quoted) to disable an
     event handler, before only quoted 'nil was working, unquoted nil could crash.
 
-    Removed experimental 'estack' from code and newlisp.vim
+    Removed experimental 'estack' from code and newlisp.vim (introduced in v9.9.94)
 
     Throw reference error in 'setf' on string when base ptr is not from sub-expression 
     string. Wouldn't do anything before.
@@ -6929,7 +6931,7 @@ Dec 6, 2009
 
     In Emscripten v.1.22.0 compiled newLISP exception handling now works.
 
-10.6.2
+10.6.2 January 20, 2015
     When parsing binary, hex, decimal, float and integer numbers, now up to
     1000 digits are parsed when present. The rest will be read as new token(s).
     Note that IEEE 754 64-bit doubles distinguish only up to 16 significant 
@@ -6958,6 +6960,7 @@ Dec 6, 2009
     Cacheing crc-table in crc32 function for speedup in repeated use.
 
     The default print floating point format changed from "%1.15g" to "%1.16g".
+    (can always be user changed using pretty-print function)
  
     A third syntax of 'reset' allows resetting the maximum cell count without
     restarting the system. The minimum is 4095. Trying to allocate more cells
@@ -6968,3 +6971,93 @@ Dec 6, 2009
     keep their appearance in newLISP symbolic expressions.
 
     Many small additions and changes to newlisp_manual.html.
+
+10.6.3
+    Starting with this version only use the TDM-GCC-64 toolchain, it
+    uses mingw32 and can compile for both, 32-bit and 64-bit.
+
+    On some Windows versions negative time value in 'date-list' for dates
+    before 1970-1-1 are not handled by gmtime() and could crash newLISP.
+    Now an error 44 is thrown when gmtime() cannot handle negative values.
+
+    Fixed 'det' and 'mat' for Ubuntu Linux when using wrong dimensions. 
+    Tested on OSX, OpenBSD, FreeBSD Ubuntu Linux, Windows.
+
+    Changes in several files for compiling a 64-bit version for Windows
+    using mingw64. Thanks to Shigeru Kobayashi for doing this work.
+
+    Filenames win32xxx.c change to win-xxx.c.
+
+    The 'dolist' function now also works on arrays. 
+
+    The 'net-eval' functions now return the result of the last expression 
+    in the string argument, not the first.
+        (net-eval host port "(+ 3 4) (* 3 4)" => 12 ; previously 7
+    In previous versions, although all expressions in 'net-eval' would be
+    evaluated, the result of the first was returned. The possibility
+    of multiple expressions in a string was not documented. The new
+    behaviour is more in line with the behaviour of 'eval-string' and
+    'load'.
+
+    Fixed a bug on Windows when APACHE was starting newlisp and no 
+    NEWLISPDIR wnd PROGRAMFILES environment variables were defined.
+
+    New makefiles for Windows: 
+	makefile_mingw64 makefile_mingw64_ffi 
+	makefile_mingw64_utf8 makefile_mingw64_utf8_ffi
+	makefile_mingw64dll makefile_mingw64dll_ffi 
+	makefile_mingw64dll_utf8 makefile_mingw64dll_utf8_ffi
+    are working. Tested using tdm gcc 64 (MinGW based).
+
+    The configure utility now uses the mingw64 makefiles if LLP64 is present.
+    The configure-alt utility still only compiles for 32-bit. 
+
+    Both, 32-bit and 64-bit newLISP on Windows, now have ostype "Windows".
+    In modules canvas.lsp and gsl.lsp ostype has been changed to "Windows"
+    from "Win32". Same change in many qa-* files and web applications.
+
+    C type cleanup for string size_t length in some C-functions.
+
+    Server mode -http did not reject net-eval requests.
+
+    'net-eval' connection timeout changed to 15 secs from 60 secs.
+    Processing timeout still set by user in 'net-eval' parameter.
+
+    Added HTTP_AUTHORIZATION to environment variables in HTTP server.
+   
+    Additional syntax for 'date-value' -> (date-value list-date-time).
+    Additional syntax (date-list) now same as (date-list (date-value)).
+
+    The 'trim' function without trim-char parameters will trim all
+    white-space characters, not only spaces.
+
+    Fixed 'expand' bug when evaluating binding lists.
+
+    'dump' now returns the number of cells dumped not 'true'
+
+    New 'trace' syntax: (trace device-no) prints an evaluation trace to
+    device-no. Example:
+        (trace (open "trace.txt" "w")) ; open trace file (or "a")
+        ... ; one or more expressions to evaluate
+        (trace nil) ; close trace file
+
+    Stack trace in error message changed from function name to full
+    expression.
+
+    tmp directory is now defined on newLISP startup. For UNIX it is /tmp
+    for Windows it is taken from TMP environment variable or assumed /tmp. 
+    This directory is used by the 'share' functions and the built-in http 
+    server.
+
+    When char* in libffi returns 0 (NULL) then an error message will be
+    thrown: "cannot convert NULL to string".
+
+    A new newLISP library call (newlispLibConsole 1) forces console output
+    for stdout instead of writing it to the return string of newlispEvalStr.
+    The same also enables console input on stdin.
+
+    The 'json-parse' function now handles 64-bit number also in 32-bit versions
+    of newLISP.
+
+    Fixed shape sign error in canvas.lsp for bezier curves in shapes.
+

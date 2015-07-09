@@ -8,7 +8,7 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 
 CFLAGS = -m64 -Wall -O1 -c -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DLIBRARY
 
-CC = gcc
+CC = cc
 
 default: $(OBJS)
 	$(CC) $(OBJS) -m64 -lm -lreadline -bundle -o newlisp.dylib

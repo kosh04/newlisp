@@ -24,7 +24,10 @@
 <b>Version: </b>1.53 doc fixes<br/>
 <b>Version: </b>1.60 new table functions, new naming gs:table-show-row-number<br/>
 <b>Version: </b>1.61 more options for gs:scroll-pane added by FdB<br/>
-<b>Author: </b>LM, 2008, 2009, 2010, Unya 2012, FdB 2013<br/>
+<b>Version: </b>1.62 doc corrections<br/>
+<b>Version: </b>1.63 make deprecated gs:table-set-row-number work<br/>
+<b>Version: </b>1.70 default comm port with Guiserver are now 64001 and 64002<br/>
+<b>Author: </b>LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -34,7 +37,7 @@
  <tt>/usr/bin/java</tt>.
 <br/><br/>
 <br/><br/>
- On Win32 the MIDI sound features require a soundbank file to
+ On Windows the MIDI sound features require a soundbank file to
  be installed. See the description for <tt>gs:play-note</tt> for details.
  <br><br>
  <h2>What is newLISP-GS</h2>
@@ -59,10 +62,10 @@
  When newLISP starts up and this variable is not set yet, it sets it
  to a default value of <tt>/usr/share/newlisp</tt> on MacOS X and Unix OSs, and 
  to <tt>C:\Program Files\newlisp</tt> or whatever it finds in the <tt>PROGRAMFILES</tt>
- environment variable on Win32 systems and adding <tt>/newlisp</tt> to it.
+ environment variable on MS Windows systems and adding <tt>/newlisp</tt> to it.
  This can be overwritten by specifying system wide  setting for the environment 
  variable <tt>NEWLISPDIR</tt>, which normally is set to <tt>%PROGRAMFILES%/newlisp</tt> 
- on Win32. When using the Win32 binary installer <tt>NEWLISPDIR</tt> is written 
+ on MS Windows. When using the MS Windows binary installer <tt>NEWLISPDIR</tt> is written 
  to the registry automatically and gets into effect after rebooting.
  <br><br>
  <h2>Architecture of a newLISP GUI application</h2>
@@ -120,15 +123,15 @@
  <h2>Application start</h2>
  <pre>
      ./button-demo       ; on MacOS X and Unix
-     newlisp button-demo ; on Win32
+     newlisp button-demo ; on MS Windows
  </pre>
- By default guiserver.jar uses the ports 47011 and 47012, but this setting can be overwritten 
+ By default guiserver.jar uses the ports 64001 and 64002, but this setting can be overwritten 
  either by supplying a port number parameter to the <tt>gs:init</tt> function or by overwriting the
  port number from the command-line. newLISP-GS will then use the port number supplied and the number
  following it:
  <pre>
      ./button-demo 10001       ; on MacOS X and Unix
-     newlisp button-demo 10001 ; on Win32
+     newlisp button-demo 10001 ; on MS Windows
  </pre>
  newLISP-GS <tt>guiserver.jar</tt> will now use the ports <tt>10001</tt> and <tt>10002</tt>.
  Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
@@ -137,22 +140,22 @@
  A second method to start a newLISP-GS application starts the <tt>guiserver.jar</tt> first, which then
  starts the newLISP application:
  <pre>
-     Java -jar /usr/share/newlisp/guiserver.jar 47011 /usr/home/aUser/MyApplication.lsp
+     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
  </pre>
  A different port number can be used. Port numbers below 1024 need administrator
  permissions. Optionally a splash screen can be specified as the last parameter:
  <pre>
-     Java -jar /usr/share/newlisp/guiserver.jar 47011 /home/apps/myapp.lsp /local/newLISP128.png
+     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
  </pre>
  The example specifies an image inside <tt>guiserver.jar</tt>. Any other image path on the local file system
  can be used.
 <br/><br/>
- On Win32 similar methods can be used replacing the appropriate file paths, but on Win32 Java jar files
+ On MS Windows similar methods can be used replacing the appropriate file paths, but on MS Windows Java jar files
  can also be treated as executables and executed directly without calling Java explicitly. By default
  <tt>guiserver.jar</tt> and <tt>guiserver.lsp</tt> are  installed in <tt>c:\Program Files\newlisp\</tt> or any other 
- directory configured on a Win32 platform using the <tt>PROGRAMFILES</tt> environment variable:
+ directory configured on a MS Windows platform using the <tt>PROGRAMFILES</tt> environment variable:
  <pre>
-    "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
+    "c:\Program Files\newlisp\guiserver.jar" 64001 c:\myprogs\MyApplication.lsp
  </pre>
  Quotes are necessary when spaces are present in the argument string. The example assumes that
  <tt>newlisp.exe</tt> is in the path for executables, and it also assumes that the Windows registry has
@@ -160,7 +163,7 @@
  association is normally present when a java run-time environment (JRE) is installed in Windows.
  If this association is not registered, the following method can be used:
  <pre>
-    javaw -jar "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
+    javaw -jar "c:\Program Files\newlisp\guiserver.jar" 64001 c:\myprogs\MyApplication.lsp
  </pre>
  The quotes are necessary for path-names containing spaces.
 <br/><br/>
@@ -177,9 +180,9 @@
 <br/><br/>
  <blockquote><pre>
  newLISP-GS v.0.94
- listening on 47011
+ listening on 64001
  accepted from 0.0.0.0
- connecting to 0.0.0.0 47012
+ connecting to 0.0.0.0 64002
  retrying to connect
  connected
  -> frame MAIN:ButtonDemo 100 100 400 300 QnV0dG9uIGRlbW8= nil
@@ -312,13 +315,13 @@
  </pre>
  The initialization function starts <tt>guiserver.jar</tt> which will listen to the <i>server-port</i>
  and initiate another connection on <tt>server-port + 1</tt> back to newLISP. If a <em>server-port</em>
- is not supplied <tt>guiserver</tt> will assume <tt>47011</tt> and <tt>47012</tt>.
+ is not supplied <tt>guiserver</tt> will assume <tt>64001</tt> and <tt>64002</tt>.
 <br/><br/>
  As the last statement in the application put:
  <pre>
     (gs:listen)
  </pre>
- This function listens on <tt>47012</tt> (by default) for event messages from newLISP-GS
+ This function listens on <tt>64002</tt> (by default) for event messages from newLISP-GS
  and dispatches them to the user-defined action handlers. To avoid newLISP shutting down
  when the guiserver shuts down, use:
  <pre>
@@ -622,7 +625,7 @@
  The <tt>guiserver.jar</tt> file has the following icons and images built in. Each of
  them is prefixed with the path <tt>/local/</tt>. For example <tt>/local/newLISP128.png</tt>
  addresses the newLISP logo of size 128x128. To address images outside of
- <tt>guiserver.jar</tt>, use a normal file path suitable to your platform. On Win32
+ <tt>guiserver.jar</tt>, use a normal file path suitable to your platform. On MS Windows
  use forward slashes instead of backslashes.
  <pre>
  Image path
@@ -707,18 +710,18 @@
  <li><b>Sound  and MIDI API</b><br>
  The newLISP-GS sound API uses the default saundbank and sound hardware installed 
  on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be
- installed. On Win32 and some Unix platforms a soundbank file needs to be installed.
+ installed. On MS Windows and some Unix platforms a soundbank file needs to be installed.
  Soundbanks for the Java JRE can be obtained at:
  <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  The demo files shipped with the newLISP-GS installation use the midsize soundbank. Other soundbanks
  may require different naming of instruments in the <tt>gs:midi-patch</tt> statement. 
 <br/><br/>
  The sound API is capable of playing of mutliple tracks at the same time
  depending on the sound hardware installed on a specific platform. Mac OS X platforms
- and most Win32 platforms should be capable of playing 16 instruments (channels) at the
+ and most MS Windows platforms should be capable of playing 16 instruments (channels) at the
  the same time 32 on parallel sounding tracks. newLISP GS supports 128 instruments of the
  default soundbank installed.
 <br/><br/>
- On Mac OS X and Win32 channel 9 is a special channel sounding a different rythm 
+ On Mac OS X and MS Windows channel 9 is a special channel sounding a different rythm 
  instrument for all 128 different keys/notes.
 <br/><br/>
  Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
@@ -1052,14 +1055,14 @@
  The function <tt>gs:dispose-splash</tt> is used to turn off the splash image after
  the newLISP GUI application has started.
 <br/><br/>
-<b>Example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
- ; or on Win32
- java -jar "c:\Program Files\newlisp\guiserver.jar" 4711 "newlisp program.lsp" /local/newLISPsplashWin.png</pre></blockquote>
+<b>Example:</b><blockquote><pre> java -jar /usr/share/newlisp/guiserver.jar 64001 program.lsp /local/newLISP128.png
+ ; or on MS Windows
+ java -jar "c:\Program Files\newlisp\guiserver.jar" 64001 "newlisp program.lsp" /local/newLISPsplashWin.png</pre></blockquote>
  The example starts newLISP-GS with an application <tt>program.lsp</tt> and a splash
- screen showing the built-in newLISP logos and using port 4711. Instead, the full pathname 
+ screen showing the built-in newLISP logos and using port 64001/2. Instead, the full pathname 
  of a different image file can be specified. Inside <tt>program.lsp</tt> the function
  <tt>gs:dispose-splash</tt> or a mouse click on the image will turn off the splash screen. 
- For <tt>program.lsp</tt> the full pathname may be necessary. On Win32 quotes are necessary to bracket 
+ For <tt>program.lsp</tt> the full pathname may be necessary. On MS Windows quotes are necessary to bracket 
  arguments to <tt>guiserver.jar</tt> which contain spaces. 
 
 
@@ -1737,7 +1740,7 @@
  When not using the default soundbank, the function <tt>gs:get-instruments</tt>
  should be used first to find out the correct naming of instruments
  for the <tt>gs:midi-patch</tt> statements. The soundbank used for testing the
- demo files <tt>midi-demo.lsp</tt> and <tt>midi2-demo.lsp</tt> on Win32 is the midsize
+ demo files <tt>midi-demo.lsp</tt> and <tt>midi2-demo.lsp</tt> on Windows is the midsize
  soundbank available here:
  <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  This soundbank has equivalent named instruments to those used in the Mac OS X default JRE installation.
  Currently only the first 128 instruments in a soundbank are accessed by newLISP-GS.
@@ -1916,7 +1919,7 @@
  a Piano instrument unless the function <tt>gs:midi-patch</tt> has been used to change assignment
  to a different instrument.
 <br/><br/>
- On Win32 and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
+ On Windows and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
  <a href="http://java.sun.com/products/java-media/sound/soundbanks.html">http://java.sun.com/products/java-media/sound/soundbanks.html</a>  for instructions how to download and install a soundbank. For the demo files <tt>mide-demo.lsp</tt> and
  <tt>midi2-demo</tt> the midsize quality soundbank was used. On Mac OS X a soundbank is installed by default.
  The default for the bend parameer is <tt>0</tt> for no bend. Negative values down to <tt>-8192</tt>
@@ -2859,6 +2862,7 @@
 <b>parameter: </b><em>bool-row-number</em> - <tt>true</tt> if rows should carry a row number; default <tt>nil</tt>.<br/>
 <br/><br/>
  Show or hide the row number headers. The default is hiding row numbers.
+
 
 
 <br/><br/><center>&sect;</center><br/>

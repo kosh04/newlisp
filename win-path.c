@@ -1,4 +1,4 @@
-/*  win32-path.c 
+/*  win-path.c 
 
     directory and file functions working on UTF-16 file and path names
 
@@ -72,7 +72,7 @@ WCHAR * utf8_to_utf16(const char *utf8str)
 
 /*
 utf16_to_utf8ptr
-Used in win32_realpath,
+Used in win_realpath,
 but otherwise wrapped by utf16_to_utf8.
 */
 int utf16_to_utf8ptr(const WCHAR *utf16str, char * utf8str, int size)
@@ -194,7 +194,7 @@ WCHAR * ansi_mbcs_to_utf16(const char *mbcsStr)
 }
 
 /*
-win32_realpath
+win_realpath
 Identical interface as realpath
 for both ANSI and UTF-16 path names on Windows.
 Has the following functional differences
@@ -202,7 +202,7 @@ Has the following functional differences
 * Uses GetFullPathNameA or GetFullPathNameW to receive the char/WCHAR path
 * If GetFullPathNameW, converts the UTF-16 WCHAR path back to UTF-8
 */
-char *win32_realpath(const char *filepath, char *realpath)
+char *win_realpath(const char *filepath, char *realpath)
 {
 
 #ifdef USE_WIN_UTF16PATH
@@ -232,13 +232,13 @@ return(isFile(realpath, 0) ? 0 : realpath);
 }
 
 /*
-win32_getModulePath - added by LM for version 10.4.7
+win_getModulePath - added by LM for version 10.4.7
 used in newlisp.c:loadStartup(..) and newlisp.c:linkUnlink(...)
 gets the full path for a loaded module (executable).
 EXEName must be allocated by caller with PATH_MAX typically
 */
 
-char * win32_getExePath(char * EXEName)
+char * win_getExePath(char * EXEName)
 {
 #ifdef SUPPORT_UTF8
  WCHAR wEXEName[PATH_MAX] ;
@@ -284,12 +284,29 @@ int rename_utf16(const char* oldname8, const char* newname8)
 int stat_utf16(const char* filename8, struct stat* buf)
 {
     int i = -1;
+    struct _stat st;
     WCHAR * filename16 = utf8_to_utf16(filename8);
     if (filename16)
     {
-        i = _wstat(filename16, (struct _stat*)buf);
+        i = _wstat(filename16, &st);
         free(filename16);
     }
+
+    if (i == 0) {
+    /* FIXME: incompatible type 'struct _stat' and 'struct stat' in MinGW64 ? */
+    buf->st_dev   = st.st_dev;
+    buf->st_ino   = st.st_ino;
+    buf->st_mode  = st.st_mode;
+    buf->st_nlink = st.st_nlink;
+    buf->st_uid   = st.st_uid;
+    buf->st_gid   = st.st_gid;
+    buf->st_rdev  = st.st_rdev;
+    buf->st_size  = st.st_size;
+    buf->st_atime = st.st_atime;
+    buf->st_mtime = st.st_mtime;
+    buf->st_ctime = st.st_ctime;
+    }
+
     return i;
 }
 

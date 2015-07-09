@@ -6,7 +6,7 @@
 ; qa-message, check send and receive functions
 ; child processes
 
-(when (= ostype "Win32")
+(when (find ostype '("Windows"))
 	(println "qa-message runs only run on Unix - exit")
 	(exit)
 )

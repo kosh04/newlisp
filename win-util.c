@@ -1,5 +1,5 @@
 /* 
-   win32-util.c, utitity routines for native win32 port of newLISP 
+   win-util.c, utitity routines for native windows port of newLISP 
 
     Copyright (C) 2015 Lutz Mueller
 
@@ -17,11 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "newlisp.h"
+#include "protos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#define WIN32_LEAN_AND_MEAN     /* exclude rarely-used windows headers */
 #include <windows.h>
 #include <io.h>
 #include <process.h>
@@ -94,7 +97,7 @@ UINT winPipedProcess(char * cmd, int inpipe, int outpipe, int option)
 STARTUPINFO si = { 0 };
 PROCESS_INFORMATION process;
 int result;
-long fin, fout; 
+HANDLE fin, fout; 
 UINT pid;
 
 if(inpipe == -1 && outpipe == -1)
@@ -111,12 +114,12 @@ else
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     si.wShowWindow = option; /* SW_SHOW, SW_HIDE  get additional user option in Win32 versions */
 
-    fin = _get_osfhandle(inpipe);
-    fout = _get_osfhandle(outpipe);
+    fin  = (HANDLE)_get_osfhandle(inpipe);
+    fout = (HANDLE)_get_osfhandle(outpipe);
 
-    si.hStdInput = (inpipe) ? (HANDLE)fin : GetStdHandle(STD_INPUT_HANDLE);
-    si.hStdOutput = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = (outpipe) ? (HANDLE)fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdInput  = (inpipe)  ? fin  : GetStdHandle(STD_INPUT_HANDLE);
+    si.hStdOutput = (outpipe) ? fout : GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError  = (outpipe) ? fout : GetStdHandle(STD_OUTPUT_HANDLE);
     }
 
 if((result = CreateProcess(NULL,cmd,NULL,NULL,TRUE,DETACHED_PROCESS,NULL,NULL,&si, &process)) == 0)
@@ -141,8 +144,8 @@ sa.lpSecurityDescriptor = NULL;
 if(!CreatePipe(&pipe_r, &pipe_w, &sa, 0))
     return(0);
 
-*inpipe = _open_osfhandle((long) pipe_r, 0);
-*outpipe = _open_osfhandle((long) pipe_w, 0);
+*inpipe = _open_osfhandle((intptr_t) pipe_r, 0);
+*outpipe = _open_osfhandle((intptr_t) pipe_w, 0);
 
 
 return(1);
@@ -204,21 +207,17 @@ sa.nLength = sizeof(sa);
 sa.bInheritHandle = TRUE;
 sa.lpSecurityDescriptor = NULL; /* default of caller */
 
-hMemory = CreateFileMapping((HANDLE)0xFFFFFFFF, &sa, PAGE_READWRITE, 0, size, NULL);
+hMemory = CreateFileMapping(INVALID_HANDLE_VALUE, &sa, PAGE_READWRITE, 0, size, NULL);
 
 return((UINT)hMemory);
 }
 
 UINT * winMapView(UINT hMemory, int size)
 {
-return((UINT*)MapViewOfFile((HANDLE)hMemory, FILE_MAP_WRITE, 0, 0, size));
+return((UINT *)MapViewOfFile((HANDLE)hMemory, FILE_MAP_WRITE, 0, 0, size));
 }
 
 /* ---------------------------- timer -------------------------------------- */
-
-
-#include "newlisp.h"
-#include "protos.h"
 
 extern SYMBOL * timerEvent;
 extern int milliSecTime(void);

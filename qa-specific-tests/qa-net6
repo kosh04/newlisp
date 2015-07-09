@@ -20,7 +20,6 @@
 ;        ./newlisp qa-net http://localhost:4711//Users/Lutz/newlisp-8.9.8
 ;
 
-; one windows run this alone, not as part of 'make testall'
 ; remove the file qa-junk.txt manually before running
 (when (find ostype '("OS/2" "SunOS"))
 	(println "disabled for " ostype " - must exit -")
@@ -52,7 +51,7 @@
 		(main-args 2)
 		(append "http://[::1]:10001/" (real-path) "/qa-junk.txt")))
 
-(replace "\\" targetURL "/") ; for Win32
+(replace "\\" targetURL "/") ; for Win32/64
 
 (if (not (ends-with targetURL "/qa-junk.txt"))
 	(set 'targetURL (append targetURL "/qa-junk.txt")))
@@ -75,7 +74,7 @@
 (if (not connection)
 	(begin
 		(println "Starting server on localhost")
-		(if (find ostype '("Win32" "OS/2"))
+		(if (find ostype '("Windows" "OS/2"))
 			(set 'pid (process (string "newlisp -6 -c -d " port)))
 			(set 'pid (process (string "./newlisp -6 -c -d " port)))))
 	(begin
@@ -112,9 +111,9 @@
 	(set 'result3 (println "save to URL ->OK"))
 	(println " >>>> save to URL ->ERROR"))
 
-(when (find ostype '("Win32""Cygwin"))
+(when (find ostype '("Windows" "Cygwin"))
 	(print "waiting on Windows for file to be unlocked .")
-	(until (= 53 (first (file-info file-path)))
+	(until (= (length (source 'key)) (first (file-info file-path)))
 		(sleep 1000) 
 		(print "."))
 	(println))
@@ -126,7 +125,7 @@
        (= key verify))
        (set 'result4 (println "load from URL ->OK"))
 	(begin
-    	(println " >>>> load from URL ->ERROR OK on some Win32")
+    	(println " >>>> load from URL ->ERROR OK on some Windows")
 		(println result))
 )
 
@@ -142,7 +141,7 @@
 	(set 'result5 (println "write-file to remote URL ->OK"))
 	(println "write-file to remote URL ->ERROR"))
 
-(when (find ostype '("Win32""Cygwin"))
+(when (find ostype '("Windows" "Cygwin"))
 	(print "waiting on Windows for file to be unlocked .")
 	(until (= 100000 (first (file-info file-path)))
 		(sleep 1000) 
@@ -153,12 +152,12 @@
 (if (catch (= contents (read-file targetURL)) 'result)
     (set 'result6 (println "read-file from remote URL ->OK"))
     (begin
-        (println " >>>> read-file from  remote URL ->ERROR OK on some Win32")
+        (println " >>>> read-file from  remote URL ->ERROR OK on some Windows")
 		(println result))
 )
 
 ; delete file at remote URL
-(if (!= ostype "Win32") ; does not work on Windows when on the same machine
+(if (not (find ostype '("Windows"))) ; does not work on Windows when on the same machine
 	(if (delete-file targetURL)
 		(set 'result7 (println "delete-file from remote URL ->OK"))
 		(println " >>>> delete-file from remote URL ->Error"))

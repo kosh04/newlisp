@@ -950,7 +950,7 @@ if(isFloat)
     return(stuffFloat(floatNumber));
     }
 else
-    return(stuffInteger(atol(number)));
+    return(stuffInteger64(atoll(number)));
 
 
 NOT_STRING_OR_NUMBER:

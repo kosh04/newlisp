@@ -36,7 +36,7 @@
     "/usr/lib/libz.so.4.1" ; OpenBSD 4.6
     "/usr/lib64/libz.so" ; for 64Bit CentOS 6 Linux
     "/usr/lib/libz.dylib" ; Mac OSX / Darwin
-    "libz1.dll" ; Win32
+    "libz1.dll" ; MS Windows 
 ))
 
 (set 'library (files (or

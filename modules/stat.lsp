@@ -2,8 +2,9 @@
 ;; @description Basic statistics and plotting library
 ;; @version 3.0 - Eliminated plot functions and f-prob which now is built-in as prob-f
 ;; @version 3.1 - Documentation changes
+;; @version 3.2 - Documentation, mention built-in 'stats' function since 10.4.2
 ;;
-;; @author Lutz Mueller, 2001-2013
+;; @author Lutz Mueller, 2001-2014
 ;; <h2>Functions for statistics</h2>
 ;; To use this module it has to be loaded at the beginning of the
 ;; program file:
@@ -28,16 +29,16 @@
 ;; <h2>Summary of functions</h2><br>
 ;; <h3>General uni- and bi- variate statistics</h3>
 ;; <pre>
-;; stat:sum      - returns the sum of a vector of numbers
-;; stat:mean     - returns the arithmetik mean of a vector of numbers
-;; stat:var      - returns the estimated variance of numbers in a vector sample
-;; stat:sdev     - returns the estimated standard deviation of numbers in a vector
-;; stat:sum-sq   - returns the sum of squares of a data vector
-;; stat:sum-xy   - returns the sum of products of a two data vectors
-;; stat:corr     - returns the correlation coefficient between two vectors (built-in since 10.4.2)
-;; stat:cov      - returns the covariance of two number vectors
-;; stat:sum-d2   - returns the sum of squared differences of a vector from its mean
-;; stat:sum-d2xy - returns sum of squared diffferences of two vectors
+;; stat:sum      - sum of a vector of numbers (see also built-in stats since 10.4.2)
+;; stat:mean     - arithmetik mean of a vector of numbers (see also built-in stats since 10.4.2)
+;; stat:var      - estimated variance of numbers in a vector sample
+;; stat:sdev     - estimated standard deviation of numbers in a vector (see also built-in stats since 10.4.2)
+;; stat:sum-sq   - sum of squares of a data vector
+;; stat:sum-xy   - sum of products of a two data vectors
+;; stat:corr     - correlation coefficient between two vectors (built-in since 10.4.2)
+;; stat:cov      - covariance of two number vectors
+;; stat:sum-d2   - sum of squared differences of a vector from its mean
+;; stat:sum-d2xy - sum of squared diffferences of two vectors
 ;; stat:regression - calculates the intecept and slope of a regression estimate
 ;; stat:fit      - return the fitted line using regression coefficients
 ;; stat:moments  - calulates 1st to 3rd moments from a vector of numbers

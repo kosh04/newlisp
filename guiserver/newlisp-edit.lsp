@@ -12,21 +12,22 @@
 ; version 1.33 eliminated manuals in help on all but OSX platform
 ; version 1.34 fix for OSX Homebrew when NEWLISPENV is not /usr/share/newlisp
 ; version 1.50 fix for run-shell for Java 7 update 21 (also runs on previous Java)
+; version 1.51 changes for ostype Windows and guisever/index.html renamed to index-gs.html
 
 (set-locale "C")
 
 ;;;; initialization
 (set 'newlispDir (env "NEWLISPDIR"))
 
-(set 'newlispDoc (if (= ostype "Win32")
+(set 'newlispDoc (if (= ostype "Windows")
    newlispDir (join (reverse (cons "doc/newlisp" (rest (reverse (parse newlispDir "/"))))) "/")))
 
 (load (string newlispDir "/guiserver.lsp"))
 
 (constant (global '$HOME) (or (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT") ""))
-(constant '$TEMP (if (= ostype "Win32") (or (env "TEMP") "C:\\temp") "/tmp"))
+(constant '$TEMP (if (= ostype "Windows") (or (env "TEMP") "C:\\temp") "/tmp"))
 
-(if (= ostype "Win32")
+(if (= ostype "Windows")
 	(begin
 		(set 'userSettingsDir (string
 			(or (env "APPDATA") (env "HOME") (env "USERPROFILE") (env "DOCUMENT_ROOT")) "/newLISP"))
@@ -42,7 +43,7 @@
 
 ;; init guiserver
 
-(gs:init 2000 "localhost") 
+(gs:init 64001 "localhost") ; default port is 64001 but can be changed
 ;(gs:set-trace true)
 
 
@@ -56,10 +57,10 @@
 (set 'config:currentForeground '(0.0 0.0 0.2))
 (set 'config:currentBackground '(1.0 1.0 1.0))
 (set 'config:currentDir $HOME)
-(set 'config:currentFontName (if (= ostype "Win32") "Monospaced" "Lucida Sans Typewriter"))
-(set 'config:currentFontSize (if (= ostype "Win32") 14 13))
-(set 'config:currentMonitorFontName (if (= ostype "Win32") "Monospaced" "Lucida Sans Typewriter"))
-(set 'config:currentMonitorFontSize (if (= ostype "Win32") 14 13))
+(set 'config:currentFontName (if (= ostype "Windows") "Monospaced" "Lucida Sans Typewriter"))
+(set 'config:currentFontSize (if (= ostype "Windows") 14 13))
+(set 'config:currentMonitorFontName (if (= ostype "Windows") "Monospaced" "Lucida Sans Typewriter"))
+(set 'config:currentMonitorFontSize (if (= ostype "Windows") 14 13))
 (set 'config:currentToolbarFloatable "no")
 (set 'config:currentTabsize 16)
 (set 'config:currentTabsPosition "top")
@@ -152,28 +153,28 @@
 (define (script-execute id text)
 	(if (not text) (set 'text "===="))
 	(let (file (string $TEMP "/" (uuid)))
-		(if (= ostype "Win32")
+		(if (= ostype "Windows")
 			(write-file file (replace "\n" (base64-dec text) "\r\n"))
 			(write-file file (base64-dec text)))
-		(if (= ostype "Win32")
+		(if (= ostype "Windows")
 			(catch (exec (string {newlisp.exe "} currentScriptFile {" } file " > " (string file "out"))) 'result)
 			(catch (exec (string "/usr/bin/newlisp " currentScriptFile " " file)) 'result)
 		)
 		(if (list? result)
 			(begin
-				(set 'result (if (= ostype "Win32")
+				(set 'result (if (= ostype "Windows")
 					(read-file (string file "out"))
  					(join result "\n")))
 				(if (= currentScriptMode "selection")
 					(paste-action result)
-					(if (= ostype "Win32")
+					(if (= ostype "Windows")
 						(output-monitor result)
 						(output-monitor (string result "\n")))
 				)
 			)
 			(output-monitor result)
 		)
-		(if (= ostype "Win32") (delete-file (string file "out")))
+		(if (= ostype "Windows") (delete-file (string file "out")))
 		(delete-file file)
 	)
 )
@@ -221,7 +222,7 @@
 ;(gs:set-look-and-feel "com.sun.java.swing.plaf.gtk.GTKLookAndFeel")
 
 (define (start-newlisp-shell)
-	(if (= ostype "Win32")
+	(if (= ostype "Windows")
 		(gs:run-shell 'OutputArea 
 			(string newlispDir "/newlisp.exe") (string currentExtension " -C -w \"" $HOME "\""))
 		(gs:run-shell 'OutputArea 
@@ -352,7 +353,7 @@
 (gs:menu-item 'FileSave 'savebutton-handler "Save")
 (gs:menu-item 'FileSaveAs 'saveasbutton-handler "Save As ...")
 (gs:menu-item 'FileSettings 'savesettings-handler "Save Settings")
-(gs:menu-item 'FileQuit 'quitbutton-handler (if (= ostype "Win32") "Exit" "Quit"))
+(gs:menu-item 'FileQuit 'quitbutton-handler (if (= ostype "Windows") "Exit" "Quit"))
 
 (gs:menu 'FileRecent "Recent Files")
 
@@ -734,7 +735,7 @@
 (define (writefile-action id text)
 	(local (bytes)
 		(if text
-			(if (= ostype "Win32")
+			(if (= ostype "Windows")
 				(set 'bytes (write-file currentPath (replace "\n" (base64-dec text) "\r\n")))
 				(set 'bytes (write-file currentPath (base64-dec text)) ) ))
 		(save-recent-list)
@@ -1404,8 +1405,8 @@
 		(begin
 			(gs:get-version)
 			(gs:message-dialog 'TheEditor (string "newLISP-GS v." gs:version)
-				(string "Software: copyright (c) 2007-13 Lutz Mueller http://newlisp.org\n" 
-						"Icons: copyright (c) 2007-13 Michael Michaels http://neglook.com\n"
+				(string "Software: copyright (c) 2007-15 Lutz Mueller http://newlisp.org\n" 
+						"Icons: copyright (c) 2007-15 Michael Michaels http://neglook.com\n"
 						"All rights reserved.")
 				"information" "/local/newLISP64.png" )
 		)
@@ -1421,10 +1422,10 @@
 ;; show GS Manual
 
 (define (helpguiserver-handler)
-	(load-platform-help "/guiserver/index.html")
+	(load-platform-help "/guiserver/index-gs.html")
 )
 
-; help menu itrems for HTNL documentaion have been taken out because
+; help menu items for HTNL documentaion have been taken out because
 ; only on Mac OSX they will not block the IDE. On Windows and Linux
 ; the IDE stops working until the browser window is closed.
 
@@ -1439,7 +1440,7 @@
 			(exec (string "open file://" newlispDoc file-name))
 		)
 		; MS Windows
-		((= ostype "Win32")
+		((= ostype "Windows")
 			(begin
 				(set 'prog (string "cmd /c \"" (env "PROGRAMFILES") "/Internet Explorer/IEXPLORE.EXE\""))
 				;(println "->" prog "<-")

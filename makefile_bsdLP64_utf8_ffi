@@ -5,10 +5,10 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
 # the option -fno-strict-aliasing may not be available on some BSD versions 
-CFLAGS = -m64 -Wall -Wno-uninitialized -fno-strict-aliasing -O2 -c -g -I/usr/local/include -DREADLINE -DNEWLISP64 -DSUPPORT_UTF8 -D_BSD -DFFI
+CFLAGS = -m64 -Wall -fno-strict-aliasing -O2 -c -g -I/usr/local/include -DREADLINE -DNEWLISP64 -DSUPPORT_UTF8 -D_BSD -DFFI
 
 # or without readline lib and libffi
-#CFLAGS = -m64 -Wall -Wno-uninitialized -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -D_BSD
+#CFLAGS = -m64 -Wall -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -D_BSD
 
 CC = cc
 

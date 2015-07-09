@@ -1,0 +1,90 @@
+# this packages the Win64 binary distribution
+# this makefile is executed from a MinGW MSYS shell
+
+VERSION=10.6.3
+
+win-gui:
+	-mkdir /c/newlisp
+	-mkdir /c/newlisp/guiserver
+	-mkdir /c/newlisp/modules
+	-mkdir /c/newlisp/util
+	cp newlisp.exe /c/newlisp
+	cp newlisp.dll /c/newlisp
+	cp util/newlispdoc /c/newlisp/util
+	cp util/newlisp.vim /c/newlisp/util
+	cp util/syntax.cgi /c/newlisp/util
+	cp doc/newlisp_manual.html /c/newlisp
+	cp doc/newlisp_index.html /c/newlisp
+	cp doc/manual_frame.html /c/newlisp
+	cp doc/CodePatterns.html /c/newlisp
+	cp doc/newLISPdoc.html /c/newlisp
+	cp doc/newLISP-$(VERSION)-Release.html /c/newlisp
+	cp doc/COPYING /c/newlisp
+	cp guiserver/guiserver.lsp /c/newlisp
+	cp guiserver/guiserver.jar /c/newlisp	
+	cp guiserver/newlisp-edit.lsp /c/newlisp
+
+	# guiserver sub directory
+	cp guiserver/index-gs.html /c/newlisp/guiserver
+	cp guiserver/guiserver.lsp.html /c/newlisp/guiserver
+	cp util/newlispdoc.css /c/newlisp/guiserver
+	cp guiserver/allfonts-demo.lsp /c/newlisp/guiserver
+	cp guiserver/animation-demo.lsp /c/newlisp/guiserver
+	cp guiserver/border-layout-demo.lsp /c/newlisp/guiserver
+	cp guiserver/button-demo.lsp /c/newlisp/guiserver
+	cp guiserver/clipboard-demo.lsp /c/newlisp/guiserver
+	cp guiserver/cursor-demo.lsp /c/newlisp/guiserver
+	cp guiserver/drag-demo.lsp /c/newlisp/guiserver
+	cp guiserver/font-demo.lsp /c/newlisp/guiserver
+	cp guiserver/frameless-demo.lsp /c/newlisp/guiserver
+	cp guiserver/html-demo.lsp /c/newlisp/guiserver
+	cp guiserver/image-demo.lsp /c/newlisp/guiserver
+	cp guiserver/midi-demo.lsp /c/newlisp/guiserver
+	cp guiserver/midi2-demo.lsp /c/newlisp/guiserver
+	cp guiserver/mouse-demo.lsp /c/newlisp/guiserver
+	cp guiserver/move-resize-demo.lsp /c/newlisp/guiserver
+	cp guiserver/pinballs-demo.lsp /c/newlisp/guiserver
+	cp guiserver/properties-demo.lsp /c/newlisp/guiserver
+	cp guiserver/rotation-demo.lsp /c/newlisp/guiserver
+	cp guiserver/scroll-pane-demo.lsp /c/newlisp/guiserver
+	cp guiserver/shapes-demo.lsp /c/newlisp/guiserver
+	cp guiserver/sound-demo.lsp /c/newlisp/guiserver
+	cp guiserver/stroke-demo.lsp /c/newlisp/guiserver
+	cp guiserver/tabs-demo.lsp /c/newlisp/guiserver
+	cp guiserver/table-demo.lsp /c/newlisp/guiserver
+	cp guiserver/textrot-demo.lsp /c/newlisp/guiserver
+	cp guiserver/widgets-demo.lsp /c/newlisp/guiserver
+	cp guiserver/word-count.lsp /c/newlisp/guiserver
+	cp guiserver/uppercase.lsp /c/newlisp/guiserver
+	# modules sub directory
+	cp modules/canvas.lsp /c/newlisp/modules
+	cp modules/cgi.lsp /c/newlisp/modules
+	cp modules/crypto.lsp /c/newlisp/modules
+	cp modules/ftp.lsp /c/newlisp/modules
+	cp modules/gsl.lsp /c/newlisp/modules
+	cp modules/infix.lsp /c/newlisp/modules
+	cp modules/mysql.lsp /c/newlisp/modules
+	cp modules/odbc.lsp /c/newlisp/modules
+	cp modules/plot.lsp /c/newlisp/modules
+	cp modules/pop3.lsp /c/newlisp/modules
+	cp modules/postgres.lsp /c/newlisp/modules
+	cp modules/postscript.lsp /c/newlisp/modules
+	cp modules/smtp.lsp /c/newlisp/modules
+	cp modules/smtpx.lsp /c/newlisp/modules
+	cp modules/sqlite3.lsp /c/newlisp/modules
+	cp modules/stat.lsp /c/newlisp/modules
+	cp modules/unix.lsp /c/newlisp/modules
+	cp modules/xmlrpc-client.lsp /c/newlisp/modules
+	cp modules/zlib.lsp /c/newlisp/modules
+	cp guiserver/newlisp-win.ico /c/newlisp
+	# prepare pack program
+	cp guiserver/newlisp64-gs.nsi /NSIS
+	cp guiserver/newlisp-win.ico /NSIS
+	echo 'md5sum /c/newlisp/*.exe /c/newlisp/*.dll > /c/newlisp/md5-checksums.txt' >> pack-gui
+	echo 'cd /NSIS/' >> pack-gui
+	echo './makensis newlisp64-gs.nsi' >> pack-gui
+	chmod 755 pack-gui
+	# pack everything
+	./pack-gui
+	rm ./pack-gui
+	rm -rf /c/newlisp

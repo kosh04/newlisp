@@ -22,7 +22,7 @@
 #include "protos.h"
 
 #ifdef WINDOWS
-#define fgets win32_fgets
+#define fgets win_fgets
 #endif
 
 extern FILE * IOchannel;
@@ -42,6 +42,7 @@ extern int currentSignal;
 int currentLevel = 0;
 int debugStackIdx = 0;
 UINT * debugStack;
+UINT tracePrintDevice;
 
 char debugPreStr[8] = "#";
 char debugPostStr[8] = "#";
@@ -67,12 +68,14 @@ void openTrace(void)
 
 void closeTrace(void)
     {
+    if(traceFlag & TRACE_PRINT_EVAL) 
+        close(tracePrintDevice);
     traceFlag = 0;
     if(debugStack) free(debugStack);
     debugStack = NULL;
     }
 
-#ifndef NO_DEBUG
+#ifdef DEBUGGER
 CELL * p_debug(CELL * params)
 {
 CELL * result;
@@ -84,13 +87,21 @@ closeTrace();
 
 return(result);
 }
+#endif
 
 
 CELL * p_trace(CELL * params)
 {
 if(params != nilCell)
     {
-    if(getFlag(params))
+    params = evaluateExpression(params);
+    if(isNumber(params->type))
+        {
+        traceFlag |= TRACE_PRINT_EVAL;
+        getIntegerExt(params, &tracePrintDevice, FALSE);
+        return(stuffInteger(tracePrintDevice));
+        }
+    if(!isNil(params))
         {
         openTrace();
         traceFlag |= TRACE_IN_DEBUG;
@@ -99,9 +110,12 @@ if(params != nilCell)
         closeTrace();
     }
 
-return((traceFlag == 0 ? nilCell : trueCell));
+if(traceFlag & TRACE_IN_DEBUG) return(trueCell);
+if(traceFlag & TRACE_PRINT_EVAL) return(stuffInteger(tracePrintDevice));
+return(nilCell);
 }
 
+#ifdef DEBUGGER
 CELL * p_traceHighlight(CELL * params)
 {
 char * pre, * post, * header, * footer;
@@ -131,16 +145,27 @@ if(params != nilCell)
 
 return(trueCell);
 }
-#endif /* NO_DEBUG */
+#endif /* DEBUGGER */
+
+void tracePrint(char * label, CELL * expr)
+{
+UINT printDeviceSave = printDevice;
+
+printDevice = tracePrintDevice;
+varPrintf(OUT_DEVICE, "%d %s: ", recursionCount, label);
+if(expr) printCell(expr, TRUE, OUT_DEVICE);
+varPrintf(OUT_DEVICE, "%s", "\n");
+printDevice = printDeviceSave;
+}
 
 void traceEntry(CELL * cell, CELL * pCell, CELL * args)
 {
-#ifndef NO_DEBUG
-int defaultFuncFlag = FALSE;
-#endif
-
 if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_DEBUG_NEXT)) return;
 traceFlag |= TRACE_IN_ENTRY;
+
+#ifdef DEBUGGER
+int defaultFuncFlag = FALSE;
+#endif
 
 if(traceFlag & TRACE_SIGNAL)
     {
@@ -164,7 +189,14 @@ if(traceFlag & TRACE_TIMER)
     return;
     }
 
-#ifndef NO_DEBUG
+if(traceFlag & TRACE_PRINT_EVAL)
+    {
+    if(cell->type == CELL_EXPRESSION) tracePrint("entry", cell);
+    traceFlag &= ~TRACE_IN_ENTRY;
+    return;
+    }
+
+#ifdef DEBUGGER
 if(debugStackIdx > 1)
     {
     if(debugPrintFunction(cell))
@@ -210,9 +242,16 @@ traceFlag &= ~TRACE_IN_ENTRY;
 void traceExit(CELL * result, CELL * cell, CELL * pCell, CELL * args)
 {
 if(traceFlag & (TRACE_IN_ENTRY | TRACE_IN_EXIT | TRACE_SIGNAL | TRACE_SIGINT | TRACE_TIMER)) return;
+
+if(traceFlag == TRACE_PRINT_EVAL)
+    {
+    tracePrint("exit", result);
+    return;
+    }
+
 traceFlag |= TRACE_IN_EXIT;
 
-#ifndef NO_DEBUG
+#ifdef DEBUGGER
 if(traceFlag & TRACE_DEBUG_NEXT)
     {
     if(currentLevel >= recursionCount)
@@ -252,12 +291,12 @@ if(debugPrintFunction(cell))
 
 if(traceFlag & TRACE_DEBUG_NEXT)
     currentLevel = recursionCount;
-#endif /* NO_DEBUG */
+#endif /* DEBUGGER */
 
 traceFlag &= ~TRACE_IN_EXIT;
 }
 
-
+#ifdef DEBUGGER
 void getDebuggerInput(char * msg)
 {
 char command[MAX_LINE];
@@ -359,6 +398,7 @@ closeStrStream(&strStream);
 return (strPos != NULL);
 }
 
+#endif /* DEBUGGER */
 /* eof */
 
 

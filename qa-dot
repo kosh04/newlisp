@@ -765,7 +765,7 @@ true
 )
 
 (define (test-date-value )
-  (= 0 (date-value 1970 1 1 0 0 0)))
+  (= 0 (date-value 1970 1 1 0 0 0) (date-value '(1970 1 1 0 0 0))) )
 
 (define (test-debug )
   (= (debug (+ 3 4)) 7))
@@ -836,10 +836,15 @@ true
 	(destroy pid))
 
 (define (test-det) 
-  (set 'A '((-1 1 1) (1 4 -5) (1 -2 0)))
-  (<  (sub (det A) -1) 2e-10))
+  (and
+    (set 'A '((-1 1 1) (1 4 -5) (1 -2 0)))
+    (<  (sub (det A) -1) 2e-10)
+    (set 'A '((1 2 3) (4 5 6)))
+    (not (catch (det A) 'result))
+    (starts-with result "ERR: wrong dimensions")
+))
 
-(define (test-device , fno)
+    (define (test-device , fno)
   (set 'fno (open "junk" "write"))
   (device fno)
   (if (= (device) fno) 
@@ -1068,7 +1073,7 @@ true
 (define (sub-read-exec ) 
    (write-file "exectest" {(println "hello") (exit)})
    (and
-	(set 'result (if (find ostype '("Win32" "OS/2"))
+	(set 'result (if (find ostype '("Windows" "OS/2"))
      	(exec "newlisp exectest") 
 		(exec "./newlisp exectest")))
 	(= "hello" (last  result)) 
@@ -1077,7 +1082,7 @@ true
 (define (sub-write-exec )
   (and 
     (write-file "testexec" {(write-file "exectest" (read-line))})
-	(if (find ostype '("Win32" "OS/2"))
+	(if (find ostype '("Windows" "OS/2"))
 	 (exec "newlisp testexec" "HELLO") (exec "./newlisp testexec" "HELLO"))
     (= "HELLO" (read-file "exectest"))
     (delete-file "testexec")
@@ -1299,7 +1304,7 @@ true
    (= (test-format-r '(("foo" "bar") ("foo" "baz"))) 
       "[ [ 'foo', 'bar' ], [ 'foo', 'baz' ] ]")
    ; test 64-bit formatting
-   (if (= ostype "Win32") ;; Win32 
+   (if (find ostype '("Windows")) ;; Win32 and Win64
       (begin
         (and
          (= (format "%I64d" 0x7fffffffffffffff) "9223372036854775807")
@@ -1786,6 +1791,10 @@ true
 		(set 'DA:DA A)
 		(set 'DB:DB B)
 		(= (mat + DA DB) '((2 4 6) (8 10 12)))
+        (set 'B '((-1 1 1) (1 4 -5) (1 -2 0)))
+        (set 'A '((1 2 3) (4 5 6)))
+        (not (catch (mat + A B) 'result))
+        (starts-with result "ERR: wrong dimensions")
 	))
 
 (define (test-match)
@@ -1949,10 +1958,10 @@ true
     )
   (and
     (set 'sid (semaphore))
-    (if (find ostype '("Win32" "OS/2"))
+    (if (find ostype '("Windows" "OS/2"))
       (process (string "newlisp udptest.lsp " 10001 " " 10002 " " sid))
       (process (string "./newlisp udptest.lsp " 10001 " " 10002 " " sid)))
-    ;(println "---------- testing UDP Win32 and OS/2 -------------")
+    ;(println "---------- testing UDP Win32/64 and OS/2 -------------")
     ;(println "waiting ...");
     (semaphore sid -1) ; wait for child process
     (sleep 100)
@@ -2162,7 +2171,7 @@ true
 	(set 'channel (pipe))
 	(set 'in (first channel))
 	(set 'out (last channel))
-	(if (find ostype '("Win32" "OS/2"))
+	(if (find ostype '("Windows" "OS/2"))
 		(process (string "newlisp pipe-child.lsp " in " " out))
 		(process (string "./newlisp pipe-child.lsp " in " " out)))
 	(sleep 500)
@@ -2350,8 +2359,8 @@ true
 
 (define (test-process ) 
    (write-file "process test" {(write-file "test process" "hello") (exit)})
-   (if (find ostype '("Win32" "OS/2"))
-	(process {newlisp '"process test"'}) ; Win32
+   (if (find ostype '("Windows" "OS/2"))
+	(process {newlisp '"process test"'}) ; Win32 and Win64
     (process "./newlisp 'process test'")) ; Unix
    (until (file? "test process") (sleep 500))
    (sleep 200)
@@ -2531,7 +2540,7 @@ true
     (string? (real-path "."))
     (not (real-path "foofoo"))
     (not (real-path "foofoo" true))
-    (if (!= ostype "Win32")
+    (if (!= ostype "Windows") 
         (let ( old-path (env "PATH"))
             (and
                 (env "PATH" (append (real-path) ":" (env "PATH")))
@@ -2881,8 +2890,8 @@ true
 
 (define (test-share)
     (and 
-      (if (find ostype '("Win32" "OS/2"))
-          (win32-test-share)
+      (if (find ostype '("Windows" "OS/2"))
+          (windows-test-share)
           (unix-test-share))
       (set 'mvar (share))
       (not (share mvar nil)) 
@@ -2902,11 +2911,11 @@ true
       (= 10000 (length (share mvar)))
       ; force deletion of temporary file
       (not (share mvar nil))
-      (unless (= ostype "Win32") (share nil mvar))
+      (unless (= ostype "Windows") (share nil mvar))
 ))
 
 
-(define (win32-test-share)
+(define (windows-test-share)
     (write-file "sharetest.lsp"
 [text]
 (map set '(sid mm) (map int (slice (main-args) 2)))
@@ -2919,7 +2928,7 @@ true
     (set 'sid (semaphore))
     (set 'mm (share))
     (share mm "hello")
-    (if (find ostype '("Win32" "OS/2"))
+    (if (find ostype '("Windows" "OS/2"))
       (process (string "newlisp sharetest.lsp " sid " " mm))
       (process (string "./newlisp sharetest.lsp " sid " " mm)))
     (semaphore sid -1) ; wait for child process
@@ -3161,7 +3170,7 @@ true
 
 (define (test-trim )
   (and 
-    (= (trim "    hello    ") "hello") 
+    (= (trim "  \n \t  h e l l o \r   ") "h e l l o") 
     (= (trim "----hello----" "-") "hello")
     (= (trim "----hello====" "-" "=") "hello")
     (= (trim "000012345" "0" "") "12345")))
@@ -3310,7 +3319,7 @@ true
     (set 'Bf:Bf "")
 	(set 'S:S "hello world")
 	(write-line Bf S)
-	(if (= ostype "Win32")
+	(if (find ostype '("Windows"))
 		(= Bf:Bf "hello world\r\n")
 		(= Bf:Bf "hello world\n"))
 ))
@@ -3340,7 +3349,7 @@ true
   (and
     (= (~ 0) -1)
     (if 
-        (find ostype '("Win32" "OS/2"))
+        (find ostype '("Windows" "OS/2"))
         (= (format "%I64x" (~ 0xa0a0a0a0a0a0a0a0)) "5f5f5f5f5f5f5f5f")
 
         (= ostype "True64Unix")
@@ -3364,7 +3373,7 @@ true
 		(set 'px (spawn 'x (+ 1 2 3 4))) ; integer
 		(set 'py (spawn 'y (add 1.23 4.56))) ; float
         (set 'pz (spawn 'z (upper-case "hello world"))) ;string
-		(if (!= ostype "Win32")
+		(if (!= ostype "Windows")
 			(begin
 				(find pw (sync))
 				(find px (sync))

@@ -6,15 +6,15 @@
 Name "newLISP-GS"
 
 ; The file to write
-OutFile "c:\WinDev\newlisp\newlisp-10602-win-gs-163.exe"
+OutFile "c:\WinDev\newlisp\newlisp-10603-win-gs-163.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\newlisp
 
 ; The text to prompt the user to enter a directory
-DirText "This will install newLISP v.10.6.2 and Guiserver 1.63 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT AFTER INSTALL."
+DirText "This will install newLISP v.10.6.3 and Guiserver 1.63 on your computer. IF NOT INSTALLING IN THE DEFAULT DIRECTORY REBOOT AFTER INSTALL."
 
-;;;;;;;;;;;;;;;;;;;;;; subroutines for PATH change in Win32 environment ;;;;;;;;;;;;;;
+;;;;;;; subroutines for PATH change in MS Windows environment ;;;;;;;;;
 !verbose 3
 !include "WinMessages.NSH"
 !verbose 4
@@ -278,7 +278,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\manual_frame.html"
   File "c:\newlisp\CodePatterns.html"
   File "c:\newlisp\newLISPdoc.html"
-  File "c:\newlisp\newLISP-10.6.2-Release.html"
+  File "c:\newlisp\newLISP-10.6.3-Release.html"
   File "c:\newlisp\COPYING"
   File "c:\newlisp\guiserver.lsp"
   File "c:\newlisp\guiserver.jar"
@@ -286,7 +286,7 @@ Section "newLISP program (required) and DLL"
   File "c:\newlisp\newlisp-win.ico"
 
   SetOutPath $INSTDIR\guiserver
-  File "c:\newlisp\guiserver\index.html"
+  File "c:\newlisp\guiserver\index-gs.html"
   File "c:\newlisp\guiserver\guiserver.lsp.html"
   File "c:\newlisp\guiserver\newlispdoc.css"
   File "c:\newlisp\guiserver\allfonts-demo.lsp"
@@ -361,11 +361,11 @@ Section "newLISP program (required) and DLL"
   ; make menu in startmenus
   CreateDirectory "$SMPROGRAMS\newLISP"
   CreateShortCut "$SMPROGRAMS\newLISP\newLISP.lnk" "$INSTDIR\newlisp.exe" "" "$INSTDIR\newlisp.exe" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\Release Notes.lnk" "$INSTDIR\newLISP-10.6.2-Release.html" "" "$INSTDIR\newLISP-10.6.2-Release.html" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\Release Notes.lnk" "$INSTDIR\newLISP-10.6.3-Release.html" "" "$INSTDIR\newLISP-10.6.3-Release.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Manual and Reference.lnk" "$INSTDIR\manual_frame.html" "" "$INSTDIR\manual_frame.html" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Code Patterns.lnk" "$INSTDIR\CodePatterns.html" "" "$INSTDIR\CodePatterns.html" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\GS Manual and Reference.lnk" "$INSTDIR\guiserver\index.html" "" "$INSTDIR\guiserver\index.html" 0
-  CreateShortCut "$SMPROGRAMS\newLISP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\GS Manual and Reference.lnk" "$INSTDIR\guiserver\index-gs.html" "" "$INSTDIR\guiserver\index-gs.html" 0
+  CreateShortCut "$SMPROGRAMS\newLISP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "64001 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
   CreateShortCut "$SMPROGRAMS\newLISP\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
 SectionEnd ; end the section
@@ -376,11 +376,10 @@ Section "Add to path"
 SectionEnd
 
 Section "Create desktop shortcut"
-  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "47011 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
+  CreateShortCut "$DESKTOP\newLISP-GS.lnk" "$INSTDIR\guiserver.jar" "64001 newlisp-edit.lsp /local/newLISPsplash.png" "$INSTDIR\newlisp-win.ico" 0
 SectionEnd
 
 ; uninstall stuff
-
 UninstallText "This will uninstall newLISP. Hit next to continue."
 
 ; special uninstall section.
@@ -403,14 +402,14 @@ Section "Uninstall"
   Delete $INSTDIR\manual_frame.html
   Delete $INSTDIR\CodePatterns.html
   Delete $INSTDIR\newLISPdoc.html
-  Delete $INSTDIR\newLISP-10.6.2-Release.html
+  Delete $INSTDIR\newLISP-10.6.3-Release.html
   Delete $INSTDIR\COPYING
   Delete $INSTDIR\guiserver.lsp
   Delete $INSTDIR\guiserver.jar
   Delete $INSTDIR\newlisp-edit.lsp
   Delete $INSTDIR\newlisp-win.ico
 
-  Delete $INSTDIR\guiserver\index.html
+  Delete $INSTDIR\guiserver\index-gs.html
   Delete $INSTDIR\guiserver\guiserver.lsp.html
   Delete $INSTDIR\guiserver\newlispdoc.css
   Delete $INSTDIR\guiserver\allfonts-demo.lsp

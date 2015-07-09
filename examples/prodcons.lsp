@@ -6,8 +6,8 @@
 #
 # usage of 'fork', 'wait-pid', 'semaphore' and 'share'
 
-(when (= ostype "Win32")
-		(println "this will not run on Win32")
+(when (= ostype "Windows")
+		(println "this will not run on Windows")
 		(exit))
 
 (constant 'wait -1 'sig 1 'release 0)
@@ -44,7 +44,7 @@
 	(semaphore cons-sem release) ; release semaphores
 	(semaphore prod-sem release))
 
-(set 'N 10000)
+(set 'N (or (int (main-args -1)) 100000))
 (set 'duration (time (run N)))
 
 (println (div duration N) " ms per exchange")

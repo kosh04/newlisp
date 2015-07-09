@@ -11,6 +11,8 @@
     (println ">>>>> qa-libffi: tests only run on extended FFI enabled versions compiled with libffi")
     (exit))
 
+(set-locale "C")
+
 (define (compile-recover CC-CALL) ; thanks to Rick Hansen
   ;; Exec the compiler invocation CC-CALL (which is a string) and, on
   ;; failure, check certain error conditions, amend the invocation and try
@@ -78,14 +80,14 @@
   (println ">>>>> ERR testing libffi API"))
 
 ;; test simple import and callback API
-(import "./ffitest.dylib" "register_callback_simple")
-(import "./ffitest.dylib" "trigger_callback_simple")
+(import "./ffitest.dylib" "register_callback_simple" "cdecl")
+(import "./ffitest.dylib" "trigger_callback_simple" "cdecl")
 (define (callme-simple ptr int-num) 
     (print (get-string ptr)  int-num)
     (if (= int-num 1234567890)
         (println " (simple callback API) SUCCESSFUL")
         (println "ERR in simple callback API")
-    )) ; without return value
+    )) 
 
 (register_callback_simple (callback 0 'callme-simple))
 

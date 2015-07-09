@@ -1,0 +1,24 @@
+# makefile for newLISP 64-bit v. 10.x.x on MinGW DLL with UTF-8 support
+#
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o \
+	win-util.o win-path.o win-dll.o
+
+CFLAGS = -m64 -Wall -c -O1 -DLIBRARY -DSUPPORT_UTF8 -DNEWLISP64 -DWINDOWS
+
+CC = gcc
+STRIP = strip
+WRAP = dllwrap
+
+default: $(OBJS)
+#	$(CC) -m64 -shared *.o -Wl,--output-def win64-dll.def -lws2_32 -o newlisp.dll 
+	$(CC) -m64 -shared *.o -Wl,--kill-at -lws2_32 -o newlisp.dll 
+	$(STRIP) newlisp.dll
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_mingw64dll_utf8
+
+

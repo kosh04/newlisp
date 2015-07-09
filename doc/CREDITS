@@ -138,7 +138,8 @@ Stefan Sonnenberg implemented the extended libffi based API for the import
   to connect to many C-libraries, which were not accessible before.
   
 Shigeru Kobayashi contributed newLISP modules for Emacs, Curl and fixed various
-  bugs in the newLISP C-source code.
+  bugs in the newLISP C-source code. He also made many contributions to Windows
+  specific code. He prepared the first 64-bit compilation for Windows.
 
 ------------------------- other contributors, sources ----------------------------
 Phillip Hazel

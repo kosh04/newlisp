@@ -12,7 +12,9 @@
 ;; @version 1.60 new table functions, new naming gs:table-show-row-number
 ;; @version 1.61 more options for gs:scroll-pane added by FdB
 ;; @version 1.62 doc corrections
-;; @author LM, 2008, 2009, 2010, Unya 2012, FdB 2013
+;; @version 1.63 make deprecated gs:table-set-row-number work
+;; @version 1.70 default comm port with Guiserver are now 64001 and 64002
+;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -22,7 +24,7 @@
 ;; '/usr/bin/java'.
 ;; 
 ;;
-;; On Win32 the MIDI sound features require a soundbank file to
+;; On Windows the MIDI sound features require a soundbank file to
 ;; be installed. See the description for 'gs:play-note' for details.
 ;; <br><br>
 ;; <h2>What is newLISP-GS</h2>
@@ -47,10 +49,10 @@
 ;; When newLISP starts up and this variable is not set yet, it sets it
 ;; to a default value of '/usr/share/newlisp' on MacOS X and Unix OSs, and 
 ;; to 'C:\Program Files\newlisp' or whatever it finds in the 'PROGRAMFILES'
-;; environment variable on Win32 systems and adding '/newlisp' to it.
+;; environment variable on MS Windows systems and adding '/newlisp' to it.
 ;; This can be overwritten by specifying system wide  setting for the environment 
 ;; variable <tt>NEWLISPDIR</tt>, which normally is set to '%PROGRAMFILES%/newlisp' 
-;; on Win32. When using the Win32 binary installer 'NEWLISPDIR' is written 
+;; on MS Windows. When using the MS Windows binary installer 'NEWLISPDIR' is written 
 ;; to the registry automatically and gets into effect after rebooting.
 ;; <br><br>
 ;; <h2>Architecture of a newLISP GUI application</h2>
@@ -110,15 +112,15 @@
 ;; <h2>Application start</h2>
 ;; <pre>
 ;;     ./button-demo       ; on MacOS X and Unix
-;;     newlisp button-demo ; on Win32
+;;     newlisp button-demo ; on MS Windows
 ;; </pre>
-;; By default guiserver.jar uses the ports 47011 and 47012, but this setting can be overwritten 
+;; By default guiserver.jar uses the ports 64001 and 64002, but this setting can be overwritten 
 ;; either by supplying a port number parameter to the 'gs:init' function or by overwriting the
 ;; port number from the command-line. newLISP-GS will then use the port number supplied and the number
 ;; following it:
 ;; <pre>
 ;;     ./button-demo 10001       ; on MacOS X and Unix
-;;     newlisp button-demo 10001 ; on Win32
+;;     newlisp button-demo 10001 ; on MS Windows
 ;; </pre>
 ;; newLISP-GS 'guiserver.jar' will now use the ports '10001' and '10002'.
 ;; Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
@@ -127,22 +129,22 @@
 ;; A second method to start a newLISP-GS application starts the 'guiserver.jar' first, which then
 ;; starts the newLISP application:
 ;; <pre>
-;;     java -jar /usr/share/newlisp/guiserver.jar 47011 /usr/home/aUser/MyApplication.lsp
+;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
 ;; </pre>
 ;; A different port number can be used. Port numbers below 1024 need administrator
 ;; permissions. Optionally a splash screen can be specified as the last parameter:
 ;; <pre>
-;;     java -jar /usr/share/newlisp/guiserver.jar 47011 /home/apps/myapp.lsp /local/newLISP128.png
+;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
 ;; </pre>
 ;; The example specifies an image inside 'guiserver.jar'. Any other image path on the local file system
 ;; can be used.
 ;;
-;; On Win32 similar methods can be used replacing the appropriate file paths, but on Win32 Java jar files
+;; On MS Windows similar methods can be used replacing the appropriate file paths, but on MS Windows Java jar files
 ;; can also be treated as executables and executed directly without calling Java explicitly. By default
 ;; 'guiserver.jar' and 'guiserver.lsp' are  installed in 'c:\Program Files\newlisp\' or any other 
-;; directory configured on a Win32 platform using the 'PROGRAMFILES' environment variable:
+;; directory configured on a MS Windows platform using the 'PROGRAMFILES' environment variable:
 ;; <pre>
-;;    "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
+;;    "c:\Program Files\newlisp\guiserver.jar" 64001 c:\myprogs\MyApplication.lsp
 ;; </pre>
 ;; Quotes are necessary when spaces are present in the argument string. The example assumes that
 ;; 'newlisp.exe' is in the path for executables, and it also assumes that the Windows registry has
@@ -150,7 +152,7 @@
 ;; association is normally present when a java run-time environment (JRE) is installed in Windows.
 ;; If this association is not registered, the following method can be used:
 ;; <pre>
-;;    javaw -jar "c:\Program Files\newlisp\guiserver.jar" 47011 c:\myprogs\MyApplication.lsp
+;;    javaw -jar "c:\Program Files\newlisp\guiserver.jar" 64001 c:\myprogs\MyApplication.lsp
 ;; </pre>
 ;; The quotes are necessary for path-names containing spaces.
 ;;
@@ -167,9 +169,9 @@
 ;;
 ;; <blockquote><pre>
 ;; newLISP-GS v.0.94
-;; listening on 47011
+;; listening on 64001
 ;; accepted from 0.0.0.0
-;; connecting to 0.0.0.0 47012
+;; connecting to 0.0.0.0 64002
 ;; retrying to connect
 ;; connected
 ;; -> frame MAIN:ButtonDemo 100 100 400 300 QnV0dG9uIGRlbW8= nil
@@ -302,13 +304,13 @@
 ;; </pre>
 ;; The initialization function starts <tt>guiserver.jar</tt> which will listen to the <i>server-port</i>
 ;; and initiate another connection on <tt>server-port + 1</tt> back to newLISP. If a <server-port>
-;; is not supplied <tt>guiserver</tt> will assume <tt>47011</tt> and <tt>47012</tt>.
+;; is not supplied <tt>guiserver</tt> will assume <tt>64001</tt> and <tt>64002</tt>.
 ;;
 ;; As the last statement in the application put:
 ;; <pre>
 ;;    (gs:listen)
 ;; </pre>
-;; This function listens on <tt>47012</tt> (by default) for event messages from newLISP-GS
+;; This function listens on <tt>64002</tt> (by default) for event messages from newLISP-GS
 ;; and dispatches them to the user-defined action handlers. To avoid newLISP shutting down
 ;; when the guiserver shuts down, use:
 ;; <pre>
@@ -612,7 +614,7 @@
 ;; The 'guiserver.jar' file has the following icons and images built in. Each of
 ;; them is prefixed with the path '/local/'. For example '/local/newLISP128.png'
 ;; addresses the newLISP logo of size 128x128. To address images outside of
-;; 'guiserver.jar', use a normal file path suitable to your platform. On Win32
+;; 'guiserver.jar', use a normal file path suitable to your platform. On MS Windows
 ;; use forward slashes instead of backslashes.
 ;; <pre>
 ;; Image path
@@ -697,7 +699,7 @@
 ;; <li><b>Sound  and MIDI API</b><br>
 ;; The newLISP-GS sound API uses the default saundbank and sound hardware installed 
 ;; on the platform newLISP-GS is running on. On Mac OS X nothing additional needs to be
-;; installed. On Win32 and some Unix platforms a soundbank file needs to be installed.
+;; installed. On MS Windows and some Unix platforms a soundbank file needs to be installed.
 ;; Soundbanks for the Java JRE can be obtained at:
 ;; @link http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html
 ;; The demo files shipped with the newLISP-GS installation use the midsize soundbank. Other soundbanks
@@ -705,11 +707,11 @@
 ;;
 ;; The sound API is capable of playing of mutliple tracks at the same time
 ;; depending on the sound hardware installed on a specific platform. Mac OS X platforms
-;; and most Win32 platforms should be capable of playing 16 instruments (channels) at the
+;; and most MS Windows platforms should be capable of playing 16 instruments (channels) at the
 ;; the same time 32 on parallel sounding tracks. newLISP GS supports 128 instruments of the
 ;; default soundbank installed.
 ;;
-;; On Mac OS X and Win32 channel 9 is a special channel sounding a different rythm 
+;; On Mac OS X and MS Windows channel 9 is a special channel sounding a different rythm 
 ;; instrument for all 128 different keys/notes.
 ;;
 ;; Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
@@ -753,8 +755,8 @@
 ; ====================== utility routines
 
 ; set server path
-(if (= ostype "Win32")
-	; on some Win32 systems the jar -> javaw.exe association my be missing, the use the following:
+(if (= ostype "Windows")
+	; on some MS Windows systems the jar -> javaw.exe association my be missing, the use the following:
 	;(set 'server-path (string "javaw.exe -jar " "'\"" (env "NEWLISPDIR") "/guiserver.jar\"'")) 
 	(set 'server-path (string  "'\"" (env "NEWLISPDIR") "/guiserver.jar\"'"))
 	(set 'server-path (string (env "NEWLISPDIR") "/guiserver.jar"))
@@ -1187,15 +1189,15 @@ true
 ;; the newLISP GUI application has started.
 ;;
 ;; @example
-;; java -jar /usr/share/newlisp/guiserver.jar 4711 program.lsp /local/newLISP128.png
-;; ; or on Win32
-;; java -jar "c:\Program Files\newlisp\guiserver.jar" 4711 "newlisp program.lsp" /local/newLISPsplashWin.png
+;; java -jar /usr/share/newlisp/guiserver.jar 64001 program.lsp /local/newLISP128.png
+;; ; or on MS Windows
+;; java -jar "c:\Program Files\newlisp\guiserver.jar" 64001 "newlisp program.lsp" /local/newLISPsplashWin.png
 
 ;; The example starts newLISP-GS with an application 'program.lsp' and a splash
-;; screen showing the built-in newLISP logos and using port 4711. Instead, the full pathname 
+;; screen showing the built-in newLISP logos and using port 64001/2. Instead, the full pathname 
 ;; of a different image file can be specified. Inside 'program.lsp' the function
 ;; 'gs:dispose-splash' or a mouse click on the image will turn off the splash screen. 
-;; For 'program.lsp' the full pathname may be necessary. On Win32 quotes are necessary to bracket 
+;; For 'program.lsp' the full pathname may be necessary. On MS Windows quotes are necessary to bracket 
 ;; arguments to 'guiserver.jar' which contain spaces. 
 
 (define (dispose-splash)
@@ -1865,13 +1867,13 @@ true
 ;; @param <int-port> The optional guiserver server port.
 ;; @param <str-host> The optional remote host of the guiserver.
 
-(define (init (portIn 47011) (host "127.0.0.1") manual)
+(define (init (portIn 64001) (host "127.0.0.1") manual)
 	; check for server portIn and if this was started by java
 	(if (main-args 2) (set 'portIn (int (main-args 2) portIn)))
 	; if guiserver.jar did not start this process then guiserver.jar
 	; still has to be started, except when manual parameter is true
 	(if (and (not (= (main-args 3) "javastart")) (not manual))
-		(if (= ostype "Win32")
+		(if (= ostype "Windows")
 			(process (string "cmd /c " server-path " " portIn))
 
 			(= ostype "OSX")
@@ -1892,7 +1894,7 @@ true
 		(if (> retry 200) ; try for 20 seconds
 			(begin
 				(println "Could not connect to guiserver.jar")
-				(when (= ostype "Win32")
+				(when (= ostype "Windows")
 					(import "user32.dll" "MessageBoxA")
 					(MessageBoxA 0 "Could not connect to guiserver.jar" "Problem connecting" 1)
 				)
@@ -2176,7 +2178,7 @@ true
 ;; When not using the default soundbank, the function 'gs:get-instruments'
 ;; should be used first to find out the correct naming of instruments
 ;; for the 'gs:midi-patch' statements. The soundbank used for testing the
-;; demo files 'midi-demo.lsp' and 'midi2-demo.lsp' on Win32 is the midsize
+;; demo files 'midi-demo.lsp' and 'midi2-demo.lsp' on Windows is the midsize
 ;; soundbank available here:
 ;; @link http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html
 ;; This soundbank has equivalent named instruments to those used in the Mac OS X default JRE installation.
@@ -2386,7 +2388,7 @@ true
 ;; a Piano instrument unless the function 'gs:midi-patch' has been used to change assignment
 ;; to a different instrument.
 ;;
-;; On Win32 and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
+;; On Windows and some Linux or other UNIX no MIDI soundbank files are installed by default. Goto 
 ;; @link http://java.sun.com/products/java-media/sound/soundbanks.html http://java.sun.com/products/java-media/sound/soundbanks.html
 ;; for instructions how to download and install a soundbank. For the demo files 'mide-demo.lsp' and
 ;; 'midi2-demo' the midsize quality soundbank was used. On Mac OS X a soundbank is installed by default.
@@ -3579,7 +3581,6 @@ true
 ;; Use 'gs:table-show-row-number'. The old naming is deprecated but will 
 ;; still work.
 
-(define table-set-row-number table-show-row-number)
 
 ;; @syntax (gs:table-show-row-number <sym-id> <bool-row-number>)
 ;; @param <sym-id> The name of the table.
@@ -3593,6 +3594,8 @@ true
     ;(println "gs:table-show-row-number " s)
     (write-buffer s "\n")
     (net-send out s) ) )
+
+(define table-set-row-number table-show-row-number)
 
 ;; @syntax (gs:text-area <sym-id> <sym-action> <int-width> <int-height>)
 ;; @param <symid> The name of the text area.

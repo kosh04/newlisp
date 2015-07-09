@@ -1,5 +1,6 @@
 #!/usr/bin/newlisp
 
+
 (define (test-pipe)
 	(write-file "pipe-child.lsp" 
 [text]
@@ -12,12 +13,12 @@
 	(set 'channel (pipe))
 	(set 'in (first channel))
 	(set 'out (last channel))
-	(if (find ostype '("Win32" "OS/2"))
+	(if (find ostype '("Windows" "OS/2"))
 		(process (string "newlisp pipe-child.lsp " in " " out))
 		(process (string "./newlisp pipe-child.lsp " in " " out)))
-	(sleep 500)
+	(sleep 1000)
 	(write-line out (dup "hello there " 1000))
-	(sleep 500)
+	(sleep 1000)
 	(= (read-line in) (dup "HELLO THERE " 1000))
 	(delete-file "pipe-child.lsp")
   )
