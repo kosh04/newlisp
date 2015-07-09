@@ -15,9 +15,11 @@ newlisp
 junk
 junk2
 qa-junk.txt
+pipe-child.lsp
 \#*\#
 /modules/SQLITE3-TEST
 /modules/test.gz
+/util/types
 ._*
 
 # guiserver
