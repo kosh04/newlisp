@@ -1,0 +1,100 @@
+version: 1.0.{build}
+
+os: Windows Server 2012 R2
+
+init:
+  - git config --global core.autocrlf input
+
+environment:
+  global:
+    NEWLISP_MAKE_TARGET: default
+    CC: gcc
+    STRIP: strip
+    MSYS2_BASEVER: 20150512
+    CYGWIN_CACHE: C:\cygwin\var\cache\setup
+    CYGWIN_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
+
+  matrix:
+    - TARGET: x86_64-w64-mingw32
+      MSYS2_ARCH: x86_64
+      MSYS2_ROOT: msys64
+      MSYSTEM: MINGW64
+      NEWLISP_MAKE_TARGET: winall64_utf8
+
+    - TARGET: i686-w64-mingw32
+      MSYS2_ARCH: i686
+      MSYS2_ROOT: msys32
+      MSYSTEM: MINGW32
+      NEWLISP_MAKE_TARGET: winall_utf8
+
+    - TARGET: mingw32
+      MSYS_ARCH: x86
+      MSYS_ROOT: C:\MinGW\msys\1.0
+      MINGW_ROOT: C:\MinGW
+      NEWLISP_MAKE_TARGET: winall_utf8
+
+    - TARGET: i686-pc-cygwin
+      CYGWIN_ARCH: x86
+      CYGWIN_ROOT: C:\cygwin
+      CYGWIN_PACKAGES: libffi-devel,libreadline-devel
+
+    - TARGET: x86_64-pc-cygwin
+      CYGWIN_ARCH: x86_64
+      CYGWIN_ROOT: C:\cygwin64
+      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,pkg-config,cygrunsrv
+
+matrix:
+  allow_failures:
+    # Note: mingw32 with libffi requires CFLAGS+="-DWINVER=0x0600"
+    - TARGET: mingw32
+    # Note: makefile_cygwin apply only 32-bit
+    - TARGET: x86_64-pc-cygwin
+
+install:
+  - if defined MSYS2_ARCH appveyor DownloadFile "http://kent.dl.sourceforge.net/project/msys2/Base/%MSYS2_ARCH%/msys2-base-%MSYS2_ARCH%-%MSYS2_BASEVER%.tar.xz"
+  - if defined MSYS2_ARCH 7z x msys2-base-%MSYS2_ARCH%-%MSYS2_BASEVER%.tar.xz
+  - if defined MSYS2_ARCH 7z x msys2-base-%MSYS2_ARCH%-%MSYS2_BASEVER%.tar > NUL
+  - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\usr\bin;%PATH%"
+  - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\%MSYSTEM%\bin;%PATH%;%PATH%"
+  - if defined MSYS2_ARCH bash -lc ""
+  - if defined MSYS2_ARCH bash -lc "pacman --noconfirm -Syy pacman-mirrors"
+  - if defined MSYS2_ARCH bash -lc "pacman --noconfirm -Su"
+  - if defined MSYS2_ARCH bash -lc "pacman --noconfirm -S make mingw-w64-$MSYS2_ARCH-{gcc,libtool,libffi}"
+  - if defined MSYS2_ARCH %MSYS2_ROOT%\autorebase.bat
+
+  - if defined MSYS_ARCH appveyor SetVariable -Name PATH -Value "%MINGW_ROOT%\bin;%PATH%"
+  - if defined MSYS_ARCH appveyor SetVariable -Name PATH -Value "%MSYS_ROOT%\bin;%PATH%"
+  - if defined MSYS_ARCH curl -Os ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
+  - if defined MSYS_ARCH tar xf libffi-3.2.1.tar.gz
+  - if defined MSYS_ARCH cd libffi-3.2.1
+  - if defined MSYS_ARCH sh -c "./configure --prefix=/usr/local"
+  - if defined MSYS_ARCH sh -c "make && make install"
+  - if defined MSYS_ARCH cd ..
+  - if defined MSYS_ARCH appveyor SetVariable -Name LIBRARY_PATH -Value "/usr/local/lib"
+
+  - if defined CYGWIN_ARCH appveyor SetVariable -Name PATH -Value "%CYGWIN_ROOT%\bin;%PATH%"
+  - if defined CYGWIN_ARCH C:\cygwin\setup-x86.exe -qnNdO --arch="%CYGWIN_ARCH%" --root="%CYGWIN_ROOT%" --site="%CYGWIN_MIRROR%" --local-package-dir="%CYGWIN_CACHE%" --packages="%CYGWIN_PACKAGES%"
+  - if defined CYGWIN_ARCH sh -lc ""
+  - if defined CYGWIN_ARCH sh -lc "cygcheck -cd cygwin $(echo %CYGWIN_PACKAGES% | tr , ' ')"
+  - if defined CYGWIN_ARCH sh -lc "cygserver-config -y && cygrunsrv --start cygserver"
+  - if defined CYGWIN_ARCH sh -lc "mkdir -p /usr/include/netinet/"
+  - if defined CYGWIN_ARCH sh -lc "curl -OLsk https://github.com/bminor/glibc/raw/master/inet/netinet/icmp6.h"
+  - if defined CYGWIN_ARCH sh -lc "mv -fv icmp6.h /usr/include/netinet/icmp6.h"
+
+  - '%CC% -v'
+
+cache:
+  - 'msys2-base-%MSYS2_ARCH%-%MSYS2_BASEVER%.tar.xz'
+  - '%MSYS2_ROOT%\var\cache\pacman\pkg'
+  - '%CYGWIN_CACHE%'
+
+build_script:
+  - sh -c 'make $NEWLISP_MAKE_TARGET'
+
+test_script:
+  - sh -c "./newlisp -v"
+  - sh -c "make testall"
+
+artifacts:
+  - path: newlisp.exe
+  - path: newlisp.dll
