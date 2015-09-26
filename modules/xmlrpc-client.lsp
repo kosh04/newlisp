@@ -6,12 +6,13 @@
 ;; @version 0.6 - fixed bug in error handler
 ;; @version 0.61 - fixed doc typo
 ;; @version 0.7 - check for valid list type in (get-value expr) thanks Kosh
+;; @version 0.8 - changed references to /usr/ to /usr/local/
 ;; @author Lutz Mueller 2005-2011, Kosh 2012
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/xmlrpc-client.lsp")
+;; (load "/usr/local/share/newlisp/modules/xmlrpc-client.lsp")
 ;; ; or shorter
 ;; (module "xmlrpc-client.lsp")
 ;; </pre>

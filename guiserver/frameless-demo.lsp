@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ;; frameless-demo.lsp - frameless and transparent (on MacOS X)
 

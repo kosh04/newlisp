@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; allfonts-demo.lsp - show all fonts on the system
 ;; this program also demonstrates that strings can be used instead 

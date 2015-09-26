@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10603;
+int version = 10604;
 
 char copyright[]=
-"\nnewLISP v.10.6.3 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.6.4 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.3 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.4 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.3 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.4 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.6.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.3 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.6.4 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -285,8 +285,7 @@ char startupDir[PATH_MAX]; /* start up directory, if defined via -w */
 char * tempDir; /* /tmp on unix or geten("TMP") on Windows */
 char logFile[PATH_MAX]; /* logFile, is define with -l, -L */
 
-/* memory management in nl-filesys.c */
-
+/* nl-filesys.c */
 int pagesize;
 
 /* ============================== MAIN ================================ */
@@ -2814,6 +2813,7 @@ void printSymbol(SYMBOL * sPtr, UINT device)
 CELL * cell;
 CELL * list = NULL;
 char * setStr;
+size_t offset, len;
 
 prettyPrintCurrent = prettyPrintPars = 1;
 prettyPrintLength = 0;
@@ -2895,7 +2895,23 @@ switch(symbolType(sPtr))
     default:
         varPrintf(device, "%s", setStr);
         printSymbolNameExt(device, sPtr);
-        printCell((CELL *)sPtr->contents, TRUE, device);
+        cell = (CELL *)sPtr->contents;
+        if(cell->type == CELL_STRING && cell->aux > MAX_STRING) /* size > 2047 */
+            {
+            varPrintf(device, "%s ", "(append ");
+            offset = 0;
+            while(offset < cell->aux - 1)
+                {
+                varPrintf(device, "%s  ", LINE_FEED); 
+                len = (cell->aux - 1 - offset);
+                len = len > 72 ? 72 : len;
+                printString((char *)(cell->contents + offset), device, len); 
+                offset += len;
+                }
+            varPrintf(device, "))");
+            break; 
+            }
+        printCell(cell, TRUE, device);
         varPrintf(device, ")");
         break;
     }
@@ -3083,7 +3099,7 @@ char * errorMessage[] =
     "symbol is protected",          /* 37 */
     "number out of range",          /* 38 */
     "regular expression",           /* 39 */
-    "missing end of text [/text]",  /* 40 */
+    "end of text [/text] tag",      /* 40 */
     "mismatch in number of arguments",  /* 41 */
     "problem in format string",     /* 42 */
     "data type and format don't match", /* 43 */
@@ -3476,7 +3492,7 @@ switch(getToken(stream, token, &tklen))
             if(newCell->contents == 0)
                 {
                 deleteList(newCell); 
-                errorProc(ERR_MISSING_TEXT_END);
+                errorProc(ERR_TEXT_END_TAG);
                 }
             newCell->aux = tklen + 1;
             break;
@@ -6981,6 +6997,8 @@ evalStringJS(cmd, strlen(cmd));
 
 CELL * p_reset(CELL * params)
 {
+int blockCountBefore = blockCount;
+
 if(params != nilCell)
     {
     params = evaluateExpression(params);
@@ -6993,7 +7011,7 @@ if(params != nilCell)
     else if(isNil(params)) 
         {
         freeCellBlocks(); 
-        return(stuffInteger(blockCount)); /* 10.3.3 */
+        return(stuffIntegerList(2, blockCountBefore, blockCount)); /* 10.3.3 */
         }
 #ifndef LIBRARY
 #ifndef WINDOWS

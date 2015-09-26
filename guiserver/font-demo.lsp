@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; font-demo.lsp - show all built-in Java fonts (available on all platforms)
 

@@ -1,21 +1,22 @@
 # prepare Mac OSX package root directory in ../Package_contents
 
-VERSION=10.6.3
+VERSION=10.6.4
 
-datadir=Package_contents/usr/share
-bindir=Package_contents/usr/bin
-mandir=Package_contents/usr/share/man
+datadir=Package_contents/usr/local/share
+bindir=Package_contents/usr/local/bin
+mandir=Package_contents/usr/local/share/man
 appdir=Package_contents/Applications
 
-GUISERVER = ../Package_contents/usr/share/newlisp/guiserver
+GUISERVER = ../Package_contents/usr/local/share/newlisp/guiserver
 
 darwin-package:
 	-mkdir Package_contents
-	-mkdir Package_contents/usr
-	-mkdir Package_contents/usr/bin
-	-mkdir Package_contents/usr/share
-	-mkdir Package_contents/usr/share/man
-	-mkdir Package_contents/usr/share/man/man1
+	-mkdir Package_contents/usr/
+	-mkdir Package_contents/usr/local
+	-mkdir Package_contents/usr/local/bin
+	-mkdir Package_contents/usr/local/share
+	-mkdir Package_contents/usr/local/share/man
+	-mkdir Package_contents/usr/local/share/man/man1
 	-mkdir Package_contents/Applications
 	# identical from install section in main Makefile except for $(bindir)/newlisp
 	# which installed versioned and linked when installing with 'make install'

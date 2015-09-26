@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; tabs-demo.lsp - demonstrate tabs and icons
 ;; for 10.6.3 ideprecated gs:table-set-row-number was replaced with gs:table-show-row-number

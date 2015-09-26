@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.10.6.4 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #606060;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #606060;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.6.4 Development Release
+<font color="red" size="-1">2015-09-24</font></h1>
+
+<p>This development release adds new functionality to existing
+functions and fixes bugs.</p>
+
+
+<h3>Additions and changes</h3>
+
+<ul>
+<li>The installation location iprefix for OS X, Linux and other Unix like 
+platforms has been changed from <tt>/usr/</tt> to <tt>/ust/local/</tt>.</li>
+
+<li>Only on Mac OS X when starting guiserver.jar first, when it is not
+loaded by another newLISP program, guiserver.jar expects the newlisp 
+executable in <tt>/usr/local/bin/newlisp</tt>.</li>
+
+<li>In <tt>get/put/post-url</tt> the new string option <tt>"raw"</tt> inhibits 
+'Location' redirection. <tt>"raw"</tt> can also be combined with the "list" 
+and "debug" options.</li>
+
+<li>In <tt>get/put/post-url</tt> list mode the second string in the list contains 
+only the returned content. The third list member is the server HTTP response line. 
+The fourth list member contains the status-code, which is 0 for an invalid HTTP 
+response.</li>
+
+<li>The <tt>save</tt> function now saves symbols with strings longer than 2027
+characters appending multiple partial lines delimited by quotes <tt>"..."</tt>.
+This way lines can contain escape characters which are not allowed when using
+<tt>[text]...[/text]</tt> tags as delimiters..</li>
+
+</ul>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li>Response string from 'get/put/post-url' was not zero-terminated for
+HTTP error returns.</li>
+
+<li><tt>date-value</tt> did not evaluate month, day parameters.</li>
+
+<li>PCRE options PCRE_NOTBOL, PCRE_NOTEOL and PCRE_NOTEMPTY did not work.</li>
+
+<li>Loading an empty file now returns <tt>nil</tt> instead of throwing an
+error.</li>
+
+</ul>
+
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous development version.</p>
+<center>&part;</center>
+
+</body>
+</html>
+

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; rotationn-demo.lsp - demonstrate gs:rotate-tag, gs:translate-tag and  gs:scale-tag
 ;; and the mouse-wheel rotating an object

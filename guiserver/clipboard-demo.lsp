@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; clipboard-demo.lsp - demonstrate the gs:paste-text function
 

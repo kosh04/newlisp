@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; html-demo.lsp - demonstrate  the text pane with HTML
 
@@ -18,7 +18,7 @@
 
 (if (= ostype "Windows")
 	(set 'url (string "file:///" (env "NEWLISPDIR") "/guiserver/html-demo.lsp"))
-	(set 'url "file:///usr/share/newlisp/guiserver/html-demo.lsp")
+	(set 'url "file:///usr/local/share/newlisp/guiserver/html-demo.lsp")
 )
 
 (set 'page (format [text]

@@ -780,7 +780,10 @@ true
 )
 
 (define (test-date-value )
-  (= 0 (date-value 1970 1 1 0 0 0) (date-value '(1970 1 1 0 0 0))) )
+  (= 0 
+        (date-value 1970 1 1 0 0 0) 
+        (date-value (+ 1970) (+ 1) (+ 1) (+ 0) (+ 0) (+ 0)) 
+        (date-value '(1970 1 1 0 0 0))) )
 
 (define (test-debug )
   (= (debug (+ 3 4)) 7))

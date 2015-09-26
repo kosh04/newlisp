@@ -100,8 +100,8 @@ MINIMUM INSTALL
 Note that for a minumum install only the executable newlisp or newlisp.exe
 in Win32 is necessary.
 
-On Mac OS X or other UNIX copy  newlisp to /usr/bin or to ~/bin and give
-it executable permissions.
+On Mac OS X or other UNIX copy  newlisp to /usr/local/bin or /usr/bin or ~/bin 
+and give it executable permissions.
 
 
 LICENSE

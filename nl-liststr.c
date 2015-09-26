@@ -571,7 +571,8 @@ return(listOrg);
 CELL * p_pop(CELL * params)
 {
 CELL * list;
-CELL * cell = NULL;
+CELL * envelope = NULL; /* suppress bogus warning on some compilers */
+CELL * cell;
 ssize_t index;
 int evalFlag = FALSE;
 
@@ -587,7 +588,7 @@ if(!isList(list->type))
         return(errorProcExt(ERR_LIST_OR_STRING_EXPECTED, list));
     }
 
-/* leave last element optimization if popping first for queues */
+/* no index, popping first */
 if(params == nilCell)
     {
     cell = (CELL *)list->contents;
@@ -614,10 +615,10 @@ else
         }
     }
 
+/* pop with index */
 while(isList(list->type))
     {
-    list->aux = (UINT)nilCell; /* undo last element optimization */
-    cell = list;
+    cell = envelope = list;
     list = (CELL *)list->contents;
 
     if(index < 0) index = convertNegativeOffset(index, list);
@@ -632,6 +633,14 @@ while(isList(list->type))
 
     if(params == nilCell || !isList(list->type)) break;
     params = getIntegerExt(params, (UINT*)&index, evalFlag);
+    }
+
+if(list->next == nilCell) /* last cell is popped */
+    {
+    if(list == (CELL*)cell->contents) /* last is also first cell */
+        envelope->aux = (UINT)nilCell;        
+    else 
+        envelope->aux = (UINT)cell; /* cell is previous to last popped */
     }
 
 if(list == (CELL*)cell->contents)
