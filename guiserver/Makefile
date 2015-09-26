@@ -9,10 +9,10 @@ all:
 	rm *.class
 
 install:
-	-install -d  /usr/share/newlisp/guiserver
-	-install -d  /usr/share/doc/newlisp/guiserver
-	-install -m 644 guiserver.jar /usr/share/newlisp/
-	-install -m 644 guiserver.lsp /usr/share/newlisp/
-	-install -m 644 index.html /usr/share/doc/newlisp/guiserver/
-	-install -m 644 guiserver.lsp.html /usr/share/doc/newlisp/guiserver/
-	-install -m 755 newlisp-edit.lsp /usr/bin/newlisp-edit
+	-install -d  /usr/local/share/newlisp/guiserver
+	-install -d  /usr/local/share/doc/newlisp/guiserver
+	-install -m 644 guiserver.jar /usr/local/share/newlisp/
+	-install -m 644 guiserver.lsp /usr/local/share/newlisp/
+	-install -m 644 index.html /usr/local/share/doc/newlisp/guiserver/
+	-install -m 644 guiserver.lsp.html /usr/local/share/doc/newlisp/guiserver/
+	-install -m 755 newlisp-edit.lsp /usr/local/bin/newlisp-edit

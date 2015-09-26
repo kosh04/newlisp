@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 (load (append (env "NEWLISPDIR") "/guiserver.lsp"))
 (gs:init)

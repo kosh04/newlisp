@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ; move-resize-demo.lsp - demonstrate gs:window-moved and hs:window-resized events
 

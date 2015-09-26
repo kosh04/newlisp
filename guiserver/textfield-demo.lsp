@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ; textfield-demo.lsp - demonstrate the test-field widget
 

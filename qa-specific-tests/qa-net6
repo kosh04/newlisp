@@ -90,8 +90,8 @@
 	(println "net-connect to wrong port ->OK"))
 
 
-(if (find "server code 404:" (get-url "http://[::1]:10001/xyz.xyz"))
-	(println "get-url ->OK")
+(if (find "HTTP/1.0 404" (get-url "http://[::1]:10001/xyz.xyz"))
+	(set 'result0 (println "get-url ->OK"))
 	(println " >>>> get-url problem ->ERROR"))
 
 ; test short syntax normal mode
@@ -169,7 +169,7 @@
 
 (println "\nduration -> " (- (time-of-day) start) " ms\n")
 
-(if (and result1 result2 result3 result4 result5 result6 result7)
+(if (and result0 result1 result2 result3 result4 result5 result6 result7)
 	(println ">>>>> Network eval and network file functions IPv6 SUCCESSFUL")
 	(println ">>>>> PROBLEM in network eval and network file IPv6 functions")
 )

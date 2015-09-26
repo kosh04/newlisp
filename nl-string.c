@@ -955,6 +955,8 @@ return(len);
 
 int makeStreamFromFile(STREAM * stream, char * fileName, size_t size, size_t offset)
 {
+int result;
+
 if((stream->handle = openFile(fileName, "r", NULL)) == -1)
     return(0);
 
@@ -966,7 +968,7 @@ stream->position = offset;
 stream->size = size;
 
 /* load first buffer */
-if(read(stream->handle, stream->buffer, size) <= 0)
+if((result = read(stream->handle, stream->buffer, size)) < 0)
     {
     closeStrStream(stream);
     return(0);
@@ -2127,6 +2129,11 @@ return(result);
 
 void regexError(char * msg_1, int num, const char * msg_2);
 
+/* PCRE options from manual not allowed from newLISP regex options in pcre_compile() */
+#define PCRE_NOT_COMPILE (PCRE_NOTBOL | PCRE_NOTEOL | PCRE_NOTEMPTY)
+
+/* PCRE options from manual allowed for pcre_exec() */
+#define PCRE_EXEC_OPTIONS (PCRE_ANCHORED | PCRE_NOTBOL | PCRE_NOTEOL | PCRE_NOTEMPTY)
 
 
 CELL * p_regex(CELL * params)
@@ -2156,6 +2163,7 @@ if(params != nilCell)
         getInteger(params, &offset);
     }
 
+
 /* Compile the regular expression in the first argument */
 re = pcreCachedCompile(pattern, (int)options);
 
@@ -2166,7 +2174,7 @@ rc = pcre_exec(
     subject,       /* the subject string */
     size,          /* the length of the subject */
     (int)offset,   /* start at offset 0 in the subject */
-    0,             /* default options */
+    (int)options & PCRE_EXEC_OPTIONS, 
     ovector,       /* output vector for substring information */
     OVECCOUNT);    /* number of elements in the output vector */
 
@@ -2264,7 +2272,7 @@ options &= ~REPLACE_ONCE ; /* turn custom bits off for PCRE */
 re = pcreCachedCompile(pattern, options);
 
 /* Compilation succeeded: match the subject in the second argument */
-rc = pcre_exec(re, NULL, string, length, offset, 0, ovector, OVECCOUNT);
+rc = pcre_exec(re, NULL, string, length, offset, options & PCRE_EXEC_OPTIONS, ovector, OVECCOUNT);
 
 /* matching failed */
 if (rc == -1)  
@@ -2308,6 +2316,9 @@ if((cPattern == NULL) || (strcmp(cPattern, pattern) != 0) || (options != cacheOp
     cPattern = (char *)allocMemory(len + 1);
     memcpy(cPattern, pattern, len + 1);
     if(re != NULL) (pcre_free)(re);
+
+
+    options = options & ~PCRE_NOT_COMPILE;
     re = pcre_compile(pattern, options, &error, &errOffset, NULL); 
 
     /* Compilation failed: print the error message and exit */

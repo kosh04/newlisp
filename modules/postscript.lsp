@@ -6,6 +6,7 @@
 ;; @version 2.3 - documentation
 ;; @version 2.4 - replaced if-not with unless
 ;; @version 2.45 - doc corrections
+;; @version 2.5 - eliminated link to postscript-24.tgz
 ;; @author Lutz Mueller, July 2006, 2009, 2010, 2012, 2013, 2015
 ;;
 ;; <h2>Routines for creating postscript files</h2>
@@ -54,12 +55,6 @@
 ;;
 ;; Return value from 'ps:xxx' functions are not used and not mentioned in
 ;; the documentation.
-;;
-;; A package with all demo files can be downloaded at
-;; @link http://www.newlisp.org/postscript/postscript-24.tgz www.newlisp.org/postscript/postscript-24.tgz
-;; The demo files in the package assume execution on Mac OS X with automatic preview of PS pages.
-;; For other platforms chamges the last 'ps:render' statement to include a filename for a postscript
-;; file.
 ;;
 ;; <h2>Summary of functions</h2>
 ;; <h3>Turtle coordinate positioning and turning</h3>

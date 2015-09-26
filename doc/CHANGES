@@ -6972,7 +6972,7 @@ Dec 6, 2009
 
     Many small additions and changes to newlisp_manual.html.
 
-10.6.3
+10.6.3 July 8th, 2015 Development release
     Starting with this version only use the TDM-GCC-64 toolchain, it
     uses mingw32 and can compile for both, 32-bit and 64-bit.
 
@@ -7060,4 +7060,60 @@ Dec 6, 2009
     of newLISP.
 
     Fixed shape sign error in canvas.lsp for bezier curves in shapes.
+
+10.6.4
+    Now can retrieve 0-length document with 'get-url'.
+
+    A fix for 'share' on Linux (bug introduced in development v.10.6.3)
+
+    In 'get/put/post-url' the new string option "raw" inhibits 'Location'
+    redirection. "raw" can also be combined with the "list" and "debug" options.
+    When in "list" mode now the server status code is added as a third list
+    member.
+ 
+    Fixed a error date-value introduced in 10.6.3.
+
+    Fixed potential error in my_vasprintf() only used on Windows, OS2, TRU64,
+    Solaris and AIX.
+
+    Avoid calling varargs function sendf() with empty argptr nl-web.c.
+
+    Avoid allocating too much stack space in getPutPostDeleteUrl().
+
+    Response string from 'get/put/post-url' was not zero-terminated for
+    HTTP error returns.
+
+    When a HTTP server returns an error code and also returns content, 
+    the string "ERR: " with the HTTP server response line gets prepended when 
+    not in list mode. This is necessary for compatibility with previous
+    versions, as delete/get/put/post -url always return a string and errors
+    are marked by a beginning "ERR: " of the string. 
+    In list mode the second string in the list contains only the returned content.
+    The third list member is the server HTTP response line. The fourth list
+    member contains the status-code, which is 0 for an invalid HTTP response.
+
+    date-value did not evaluate month, day parameters.
+
+    Last element list optimization now always retained when using pop on the list.
+
+    PCRE options PCRE_NOTBOL, PCRE_NOTEOL and PCRE_NOTEMPTY did not work.
+
+    Expansion 'macro' definitions can be redefined with 'contanst' not 'define'
+    as described in the manual.
+
+    Installation prefix changed from /usr to /usr/local for OSX and other Unix.
+
+    The 'save' function now saves symbols with strings longer 2047 chars 
+    appending multiple partial lines of "," delimited strings of up to 72
+    characters. This allows to \ escape non-displayable  characters, which
+    [text],[/text] delimited text not allows.
+
+    New version 1.7 canvas.lsp fixes ellipse, petal, pie, polygon, shape: 
+    now first fill() then stroke() as in postscript.lsp.
+
+    Loading an empty file should return nil.
+
+    On Mac OS X guiserver expects newlisp in /usr/local/bin/newlisp on all other
+    OS it is only is expected in the executable path, as in previous versions.
+
 

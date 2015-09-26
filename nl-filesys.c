@@ -2357,7 +2357,7 @@ else
     {
     checkDeleteShareFile(address);
     memset((char *)(address + 2), 0, pagesize - 2 * sizeof(INT));
-    strncpy((char *)(address + 2), tempDir, PATH_MAX);
+    strncpy((char *)(address + 2), tempDir, PATH_MAX - 2 * sizeof(INT));
     strncat((char *)(address + 2), "/nls-", 6);
     size = strlen((char *)(address + 2));
     getUUID((char *)(address + 2) + size, 0);
@@ -2706,7 +2706,7 @@ cell = stuffIntegerList(
 #endif
 
 #if defined(WINDOWS)
-     -timeZone.Bias,
+     (UINT)-timeZone.Bias - (UINT)timeZone.DaylightBias,
      (UINT)timeZone.DaylightBias  
 #endif
     );
@@ -2770,19 +2770,22 @@ CELL * p_dateValue(CELL * params)
 ssize_t year, month, day, hour, min, sec;
 time_t dateValue;
 int evalFlag = TRUE;
+CELL * next;
 
 if(params->type == CELL_NIL)
     return(stuffInteger(currentDateValue()));
 
+next = params->next;
 params = evaluateExpression(params);
 if(params->type == CELL_EXPRESSION)
     {
     params = (CELL *)params->contents;
+    next = params->next;
     evalFlag = FALSE;
     }
 
 params = getIntegerExt(params, (UINT *)&year, FALSE);
-params = getIntegerExt(params, (UINT *)&month, evalFlag);
+params = getIntegerExt(next, (UINT *)&month, evalFlag);
 params = getIntegerExt(params, (UINT *)&day, evalFlag);
 
 hour = min = sec = 0;
@@ -3040,7 +3043,7 @@ int size;
 size = vsnprintf(NULL, 0, format, argptr);
 if (size < 0) return -1;
 
-*buffer = malloc(size + 1);
+*buffer = calloc(size + 1, 1);
 if (!*buffer) return(-1);
 
 vsnprintf(*buffer, size + 1, format, argptr);

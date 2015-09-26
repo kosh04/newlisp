@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; animation-demo.lsp - demonstrate gs:move-tag for making animations
 ;; and the mouse-wheel moving a text object

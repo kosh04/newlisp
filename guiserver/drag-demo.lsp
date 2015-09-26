@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; drag-demo.lsp - demonstrate dragging of objects with the mouse
 ;;

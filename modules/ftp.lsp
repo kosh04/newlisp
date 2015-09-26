@@ -10,7 +10,7 @@
 ;; To use the module put a 'load' statement at beginning of your
 ;; program file:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/ftp.lsp")
+;; (load "/usr/local/share/newlisp/modules/ftp.lsp")
 ;; ; or shorter
 ;; (module "ftp.lsp")
 ;; </pre>

@@ -85,7 +85,6 @@ off_t         4
 time_t        8
 intptr_t      8
 
-
 */
 
 #include <stdio.h>

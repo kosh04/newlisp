@@ -13,7 +13,8 @@
 ;; @version 3.44  - library load path upgraded for CentOS 6.x 
 ;; @version 3.45  - library load path upgraded for UBUNTU Linux 12.04
 ;; @version 3.46  - add UTF-8 handling in documentation (Csfreebird July/2014)
-;; @author Lutz Mueller 2003-2010, Gordon Fischer 2005, Jeff Ober 2007
+;; @version 3.47  changed references to /usr/ to /usr/local/
+;; @author Lutz Mueller 2003-2015, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
 ;; of mysql from @link http://www.mysql.com www.mysql.com
@@ -24,7 +25,7 @@
 ;; <h3>Requirements</h3>
 ;; At the beginning of the program file include a 'load' statement for the module:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/mysql.lsp")
+;; (load "/usr/local/share/newlisp/modules/mysql.lsp")
 ;; ; or shorter
 ;; (module "mysql.lsp")
 ;; </pre>

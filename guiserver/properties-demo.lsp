@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; property-demo.lsp - demonstrate gs:get-screen and gs:get-version
 
