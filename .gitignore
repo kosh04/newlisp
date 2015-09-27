@@ -11,6 +11,10 @@
 *.dylib
 newlisp
 
+# makefiles
+makefile_build
+makefile_install
+
 # test files
 junk
 junk2
@@ -34,6 +38,7 @@ pipe-child.lsp
 nbproject
 
 # misc
+config.h
 TAGS
 XTAGS
 *.stackdump
