@@ -81,17 +81,23 @@ install:
   - if defined CYGWIN_ARCH sh -lc "curl -OLsk https://github.com/bminor/glibc/raw/master/inet/netinet/icmp6.h"
   - if defined CYGWIN_ARCH sh -lc "mv -fv icmp6.h /usr/include/netinet/icmp6.h"
 
+  - appveyor DownloadFile http://www.sno.phy.queensu.ca/~phil/exiftool/exiftool-9.93.zip
+  - 7z x exiftool-9.93.zip
+  - move "exiftool(-k).exe" exiftool.exe
+
   - '%CC% -v'
 
 cache:
   - 'msys2-base-%MSYS2_ARCH%-%MSYS2_BASEVER%.tar.xz'
   - '%MSYS2_ROOT%\var\cache\pacman\pkg'
   - '%CYGWIN_CACHE%'
+  - exiftool-9.93.zip
 
 build_script:
   - sh -c 'make $NEWLISP_MAKE_TARGET'
 
 test_script:
+  - exiftool newlisp.exe
   - sh -c "./newlisp -v"
   - sh -c "make testall"
 

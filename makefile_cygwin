@@ -16,21 +16,24 @@
 # at least one CYGWIN library must be installed too
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
+	windows/icon.o
 
-CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DCYGWIN
+CFLAGS = -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -Wno-char-subscripts -c -O2 -g -DREADLINE -DCYGWIN
 #CFLAGS = -m32 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DFFI -DCYGWIN
 
 CC = gcc
 
-
 default: $(OBJS)
-	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -o newlisp.exe
+	$(CC) $(OBJS) -g -lm -ldl -lreadline -o newlisp.exe
 #	$(CC) $(OBJS) -m32 -g -lm -ldl -lreadline -lffi -o newlisp.exe
 	strip newlisp.exe
 
 .c.o:
 	$(CC) $(CFLAGS) $<
+
+%.o: %.rc
+	windres $< -O coff -o $@
 
 $(OBJS): primes.h protos.h makefile_cygwin
 

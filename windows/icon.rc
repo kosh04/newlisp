@@ -1,0 +1,60 @@
+// Link
+// VERSIONINFO resource
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa381058(v=vs.85).aspx
+
+// VS_FIXEDFILEINFO structure
+// https://msdn.microsoft.com/ja-jp/library/windows/desktop/ms646997(v=vs.85).aspx
+
+// StringFileInfo BLOCK statement
+// https://msdn.microsoft.com/en-us/library/windows/desktop/aa381049%28v=vs.85%29.aspx
+
+/* Strings are enclosed in quotation marks. RC does not automatically 
+ * append a terminating null character to a string. Each string is a 
+ * sequence of the specified ANSI characters, unless you qualify it as a 
+ * wide-character string with the "L" prefix.
+ */
+
+#include "../version.h"
+#include <winver.h>
+
+#define NEWLISP_PROGNAME	"newlisp.exe"
+#define NEWLISP_DESCRIPTION	"newLISP interpreter (CUI)"
+
+#define RC_VERSION  NEWLISP_VERSION_MAJOR, NEWLISP_VERSION_MINOR, NEWLISP_VERSION_PATCH, 0
+
+#ifndef _DEBUG
+# define VER_DEBUG	0x0L
+#else
+# define VER_DEBUG	VS_FF_DEBUG
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION	RC_VERSION
+ PRODUCTVERSION	RC_VERSION
+ FILEFLAGSMASK	0x17L
+ FILEFLAGS	VER_DEBUG
+ FILEOS		VOS_DOS_WINDOWS32
+ FILETYPE	VFT_APP
+ FILESUBTYPE	0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "FileDescription",	NEWLISP_DESCRIPTION "\0"
+            VALUE "LegalCopyright",	NEWLISP_COPYRIGHT "\0"
+            VALUE "OriginalFilename",	NEWLISP_PROGNAME "\0"
+            VALUE "ProductName",	NEWLISP_SOFTWARE_NAME "\0"
+            VALUE "ProductVersion",	NEWLISP_VERSION "\0"
+            VALUE "FileVersion",	NEWLISP_VERSION "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        /* U.S.English, Unicode */
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+2 ICON "newLISP.ico"

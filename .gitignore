@@ -9,14 +9,20 @@
 *.o
 *.so
 *.dylib
+*.stackdump
 newlisp
 
+# makefiles
+makefile_build
+makefile_install
+
 # test files
+\#*\#
 junk
 junk2
 qa-junk.txt
 pipe-child.lsp
-\#*\#
+udptest.lsp
 /modules/SQLITE3-TEST
 /modules/test.gz
 /util/types
@@ -36,4 +42,5 @@ nbproject
 # misc
 TAGS
 XTAGS
-*.stackdump
+config.h
+include/
