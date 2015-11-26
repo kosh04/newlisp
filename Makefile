@@ -155,7 +155,7 @@ dmg_intel:
 
 # this cleans the tree for a rebuild using the same configuration as before
 clean:
-	-rm -f *~ *.bak *.o *.obj *.map *.core core *.tgz *.txt TEST newlisp-universal
+	-rm -f *~ *.bak *.o windows/*.o *.obj *.map *.core core *.tgz *.txt TEST newlisp-universal
 	-rm -f newlisp-js*.*
 	-rm -rf newlisp-js-$(VERSION)
 	-rm -f guiserver/*.class */*~ */._*

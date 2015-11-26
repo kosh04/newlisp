@@ -3,20 +3,23 @@
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o  \
-	nl-utf8.o win-util.o win-path.o
+	nl-utf8.o win-util.o win-path.o windows/icon.o
 
-CFLAGS = -m64 -Wall -c -O1 -g -DNEWLISP64 -DWINDOWS -DSUPPORT_UTF8 -DFFI
+CFLAGS = -Wall -c -O1 -g -DNEWLISP64 -DWINDOWS -DSUPPORT_UTF8 -DFFI
 
 CC = gcc
 STRIP = strip
+WINDRES = windres
 
 default: $(OBJS)
-	$(CC) -m64 $(OBJS) -lws2_32 -lffi -o newlisp.exe
+	$(CC) $(OBJS) -lws2_32 -lffi -o newlisp.exe
 	$(STRIP) newlisp.exe 
 
 .c.o:
 	$(CC) $(CFLAGS) $<
 
+%.o: %.rc
+	$(WINDRES) $< -O coff -o $@
+
 $(OBJS): primes.h protos.h newlisp.h makefile_mingw64_utf8_ffi
-
-
+windows/icon.o: version.h

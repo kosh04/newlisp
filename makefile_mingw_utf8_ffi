@@ -5,12 +5,12 @@ OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-fil
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
 	nl-utf8.o win-util.o win-path.o windows/icon.o
 
-CFLAGS = -Wall -O1 -DSUPPORT_UTF8 -DWINDOWS -DFFI
+CFLAGS = -Wall -O1 -DSUPPORT_UTF8 -DWINDOWS=1 -D_WIN32_WINNT=0x0600 -DFFI
 LDLIBS = -lws2_32 -lffi
 
 CC = gcc
-WINDRES = windres
 STRIP = strip
+WINDRES = windres
 
 default: newlisp.exe
 
