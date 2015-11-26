@@ -98,9 +98,11 @@ build_script:
 
 test_script:
   - exiftool newlisp.exe
+  - if exist newlisp.dll exiftool newlisp.dll
   - sh -c "./newlisp -v"
   - sh -c "make testall"
 
 artifacts:
   - path: newlisp.exe
   - path: newlisp.dll
+  - path: setup.log
