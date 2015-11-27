@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ;; - midi-demo.lsp -
 ;;

@@ -15,7 +15,8 @@
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.62 doc corrections</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.63 make deprecated gs:table-set-row-number work</font>
 <font color='#555555'>;; <font color='#308080'>@version</font> 1.70 default comm port with Guiserver are now 64001 and 64002</font>
-<font color='#555555'>;; <font color='#308080'>@author</font> LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013</font>
+<font color='#555555'>;; <font color='#308080'>@version</font> 1.71 references to /usr/ changed to /usr/local/</font>
+<font color='#555555'>;; <font color='#308080'>@author</font> LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2015</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the</font>
 <font color='#555555'>;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on</font>
@@ -39,7 +40,7 @@
 <font color='#555555'>;; &lt;h2&gt;Usage&lt;/h2&gt;</font>
 <font color='#555555'>;; At the beginning of the program file, include a 'load' statement for the module:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;; (load "/usr/share/newlisp/guiserver.lsp")</font>
+<font color='#555555'>;; (load "/usr/local/share/newlisp/guiserver.lsp")</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; or on MS Windows:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
@@ -48,7 +49,7 @@
 <font color='#555555'>;; 'guiserver.lsp' expects the server 'guiserver.jar' to be</font>
 <font color='#555555'>;; in the directoey specified in the environment variable NEWLISPDIR.</font>
 <font color='#555555'>;; When newLISP starts up and this variable is not set yet, it sets it</font>
-<font color='#555555'>;; to a default value of '/usr/share/newlisp' on MacOS X and Unix OSs, and </font>
+<font color='#555555'>;; to a default value of '/usr/local/share/newlisp' on MacOS X and Unix OSs, and </font>
 <font color='#555555'>;; to 'C:\Program Files\newlisp' or whatever it finds in the 'PROGRAMFILES'</font>
 <font color='#555555'>;; environment variable on MS Windows systems and adding '/newlisp' to it.</font>
 <font color='#555555'>;; This can be overwritten by specifying system wide  setting for the environment </font>
@@ -123,19 +124,19 @@
 <font color='#555555'>;;     ./button-demo 10001       ; on MacOS X and Unix</font>
 <font color='#555555'>;;     newlisp button-demo 10001 ; on MS Windows</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
-<font color='#555555'>;; newLISP-GS 'guiserver.jar' will now use the ports '10001' and '10002'.</font>
+<font color='#555555'>;; newLISP-GS 'guiserver.jar' will now use the ports '64001' and '60002'.</font>
 <font color='#555555'>;; Ports under &lt;tt&gt;1024&lt;/tt&gt; should not be used, as many of them are already in use by other</font>
 <font color='#555555'>;; OS services and need administrator privileges to use them.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; A second method to start a newLISP-GS application starts the 'guiserver.jar' first, which then</font>
 <font color='#555555'>;; starts the newLISP application:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp</font>
+<font color='#555555'>;;     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; A different port number can be used. Port numbers below 1024 need administrator</font>
 <font color='#555555'>;; permissions. Optionally a splash screen can be specified as the last parameter:</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
-<font color='#555555'>;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png</font>
+<font color='#555555'>;;     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png</font>
 <font color='#555555'>;; &lt;/pre&gt;</font>
 <font color='#555555'>;; The example specifies an image inside 'guiserver.jar'. Any other image path on the local file system</font>
 <font color='#555555'>;; can be used.</font>
@@ -716,7 +717,7 @@
 <font color='#555555'>;; instrument for all 128 different keys/notes.</font>
 <font color='#555555'>;;</font>
 <font color='#555555'>;; Basic capabilities of the sound API are shown in the demo files &lt;tt&gt;midi-demo.lsp&lt;/tt&gt;</font>
-<font color='#555555'>;; and &lt;tt&gt;midi2-demo.lsp&lt;/tt&gt; in the &lt;tt&gt;/usr/share/newlisp/guiserver/&lt;/tt&gt; or </font>
+<font color='#555555'>;; and &lt;tt&gt;midi2-demo.lsp&lt;/tt&gt; in the &lt;tt&gt;/usr/local/share/newlisp/guiserver/&lt;/tt&gt; or </font>
 <font color='#555555'>;; &lt;tt&gt;c:\Program files\newlisp\guiserver\&lt;/tt&gt; directory.</font>
 <font color='#555555'>;; &lt;pre&gt;</font>
 <font color='#555555'>;;    (gs:add-track &lt;int channel&gt;&lt;list-notes&gt;)</font>

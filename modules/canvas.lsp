@@ -11,6 +11,8 @@
 ;; @version 1.45 cv:render works on Emscripten newLISP
 ;; @version 1.52 changed Win32 to Windows and spelling
 ;; @version 1.6 sign error in shape caused incompatibility with postscript.lsp
+;; @version 1.61 eliminated canvas-15.tgz link
+;; @version 1.7 fixed ellipse, petal, pie, polygon, shape fill first the stroke
 ;; @author Lutz Mueller, March 2009, June 2012, January 2014, 2015
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
@@ -677,8 +679,9 @@ function Line(lst) {
 function Shape(lst, flag) {
 	turtleStack.push(xpos, ypos, orient);
 	Path(lst);
-	ctx.closePath(); ctx.stroke();
+	ctx.closePath(); 
 	if(flag == true) { ctx.fill(); }
+    ctx.stroke();
 	orient = turtleStack.pop();
 	ypos = turtleStack.pop();
 	xpos = turtleStack.pop();
@@ -732,7 +735,6 @@ function Bezier(x1, y1, x2, y2, x3, y3) {
 	var phi = Math.atan2(y3, x3);
 	ctx.beginPath(); 
 	PathBezier(x1, -y1, x2, -y2, x3, -y3); 
-	ctx.stroke();
 	orient += phi;
 	orient = orient - Math.PI * 0.5; // turn 90
 	if (phi == 0) { Move(x3); } else { Move(y3 / Math.sin(phi));}
@@ -754,8 +756,9 @@ function Polygon(rad, n, flag) {
 	for (var angle = 0; angle < 2 * Math.PI; angle += orientinc) {
 		ctx.lineTo(Math.sin(angle) * rad, Math.cos(angle) * rad);
 		}
-	ctx.closePath(); ctx.stroke();
+	ctx.closePath(); 
 	if (flag == true) ctx.fill();
+    ctx.stroke();
 	ctx.restore();
 	}
 
@@ -764,8 +767,9 @@ function Pie(rad, height, flag) {
 	var end = start + (Math.PI / 2) * (height / 90);
 	ctx.beginPath(); ctx.moveTo(xpos, ypos);
 	ctx.arc(xpos, ypos, rad, start, end, false); 
-	ctx.closePath(); ctx.stroke();
+	ctx.closePath();
 	if (flag == true) ctx.fill();
+    ctx.stroke();
 	}
 
 function Circle(rad, flag) {
@@ -784,8 +788,9 @@ function Ellipse(xrad, yrad, start, end, flag) {
 	start = Math.PI * start / 180 - Math.PI/2;
 	end =  Math.PI * end / 180 - Math.PI/2;
 	ctx.arc(0, 0, xrad, start, end, 0);
-	ctx.closePath();ctx.stroke();
+	ctx.closePath();
 	if (flag == true) ctx.fill();
+    ctx.stroke();
 	ctx.restore();
 	}   
 
@@ -915,7 +920,7 @@ function drawAllCanvas() { try
 	
 
 (define (cv:bezier x1 y1 x2 y2 x3 y3)
-	(cv (format "Bezier(%g, %g, %g, %g, %g, %g);"
+	(cv (format "Bezier(%g, %g, %g, %g, %g, %g); ctx.stroke();"
 			 x1 y1 x2 y2 x3 y3))
 )
 
@@ -950,8 +955,11 @@ function drawAllCanvas() { try
 (define (cv:petal width height flag)
     ; x3 (offset from x1) cannot be 0 or the Bezier does not get drawn
 	(bezier (sub width) height width height 0.001 0 flag)
+	(cv (format "Bezier(%g, %g, %g, %g, %g, %g);"
+			 (sub width) height width height 0.001 0))
 	(cv "ctx.closPath")
 	(if flag (cv "ctx.fill();"))
+    (cv "ctx.stroke();")
 )
 
 

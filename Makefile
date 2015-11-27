@@ -9,7 +9,7 @@
 #
 # for 'make install' you have to login as 'root' else do 'make install_home'
 # note that 'make install_home' will not install guiserver files which
-# must be in /usr/share/newlisp in MacOX X and UNIX machines
+# must be in /usr/local/share/newlisp in MacOX X and UNIX machines
 #
 # to make the distribution archive:  'make dist'
 #
@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.6.3
-INT_VERSION = 10603
+VERSION = 10.6.4
+INT_VERSION = 10604
 
 default: makefile_build
 	make -f makefile_build
@@ -39,8 +39,8 @@ help:
 	@echo "\nDo one of the following:"
 	@echo "  make                 # auto-select one of the predefined makefiles and build newLISP"
 	@echo "  make help            # display this help"
-	@echo "  make install         # install on LINUX/UNIX in /usr/bin and /usr/share (need to be root)"
-	@echo "  make uninstall       # uninstall on LINUX/UNIX from /usr/bin and /usr/share (need to be root)"
+	@echo "  make install         # install on LINUX/UNIX in /usr/local/bin and /usr/local/share (need to be root)"
+	@echo "  make uninstall       # uninstall on LINUX/UNIX from /usr/local/bin and /usr/local/share (need to be root)"
 	@echo "  make install_home    # install on LINUX/UNIX in users home directory "
 	@echo "  make uninstall_home  # uninstall on LINUX/UNIX from users home directory "
 	@echo
@@ -175,6 +175,10 @@ clean:
 	-rm -f makefile_build makefile_install config.h test-*
 
 # run test scripts
+sharebug:
+	./newlisp qa-dot
+
+
 check:
 	./newlisp qa-dot
 	./newlisp qa-specific-tests/qa-dictionary

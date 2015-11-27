@@ -9,6 +9,7 @@
 ;; @version 1.7 - added library for CentOS 6 Linux
 ;; @version 1.71 - added library for Ubuntu Linux 12.04 and 13.04
 ;; @version 1.72 - swap else-less 'if' for 'when'
+;; @version 1.73 changes references to /usr/ to /usr/local/
 ;; @author L.M 2006-2013
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
@@ -19,7 +20,7 @@
 ;; 
 ;; Before using the module it must be loaded:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/zlib.lsp")
+;; (load "/usr/local/share/newlisp/modules/zlib.lsp")
 ;; ; or shorter
 ;; (module "zlib.lsp")
 ;; </pre>

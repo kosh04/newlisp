@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;; pinballs-demo.lsp - demos animations and gs:check-event function
 
 ;; GS 1.05+

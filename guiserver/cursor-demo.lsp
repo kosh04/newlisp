@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; cursor-demo - demonstrate cursor shapes with gs:set-cursor
 

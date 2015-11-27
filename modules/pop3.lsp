@@ -3,6 +3,7 @@
 ;; @version 2.0 - eliminated old net-send syntax
 ;; @version 2.1 - changes for 10.0
 ;; @version 2.3 - three fixes by winger 2012-08-29 (search: winger's fix)
+;; @version 2.4 - changes references to /usr/ to /usr/local/
 ; Do not fully understand winger's 'net-receive-blank' , couldn't 'net-flush'
 ; be used instead? The problem seems to be trailing spaces after "+OK".
 ; Can somebody with access to a pop3 server verify?
@@ -15,7 +16,7 @@
 ;;
 ;; To use the module put a 'load' statement at the top of your file:
 ;; <pre>
-;; (load "/usr/share/newlisp/modules/pop3.lsp")
+;; (load "/usr/local/share/newlisp/modules/pop3.lsp")
 ;; ; or shorter
 ;; (module "pop3")
 ;; </pre>

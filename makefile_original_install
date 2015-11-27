@@ -1,21 +1,21 @@
 #
 
-VERSION=10.6.3
+VERSION=10.6.4
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
 # else NEWLISPDIR will be defined during newlisp startup
 # as /usr/share/newlisp which is hardcoded in newlisp.c
-prefix=/usr
+prefix=/usr/local
 datadir=$(prefix)/share
 bindir=$(prefix)/bin
 mandir=$(prefix)/share/man
 
-# if prefix is not /usr then several places in the file 
-# guiserver/newlisp-exit.lsp must change too
+# if prefix is not /usr/local then several places in the file 
+# guiserver/newlisp-edit.lsp must change too
 GUISERVER = $(prefix)/share/newlisp/guiserver
 
-# this is the standard install in /usr/bin and usr/share (with prefix=/usr)
+# this is the standard install in /usr/local/bin and /usr/local/share
 # which as to be done as 'root' with supersuser permissions
 # for an install in your home directory use make install_home
 #
@@ -44,7 +44,7 @@ install:
 	-install -m 644 doc/manual_frame.html $(datadir)/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(datadir)/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(datadir)/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-$(VERSION)-Release.html $(datadir)/doc/newlisp/newlisp-$(Version)-Release.html
+	-install -m 644 doc/newLISP-$(VERSION)-Release.html $(datadir)/doc/newlisp/newLISP-$(VERSION)-Release.html
 	-install -m 644 doc/newlisp.1 $(mandir)/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(mandir)/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(datadir)/newlisp/modules/canvas.lsp
@@ -145,7 +145,7 @@ install_home:
 	-install -m 644 doc/manual_frame.html $(HOME)/share/doc/newlisp/manual_frame.html
 	-install -m 644 doc/CodePatterns.html $(HOME)/share/doc/newlisp/CodePatterns.html
 	-install -m 644 doc/newLISPdoc.html $(HOME)/share/doc/newlisp/newLISPdoc.html
-	-install -m 644 doc/newLISP-$(VERSION)-Release.html
+	-install -m 644 doc/newLISP-$(VERSION)-Release.html $(HOME)/share/doc/newlisp/newLISP-$(VERSION)-Release.html
 	-install -m 644 doc/newlisp.1 $(HOME)/share/man/man1/newlisp.1
 	-install -m 644 doc/newlispdoc.1 $(HOME)/share/man/man1/newlispdoc.1
 	-install -m 644 modules/canvas.lsp $(HOME)/share/newlisp/modules/canvas.lsp

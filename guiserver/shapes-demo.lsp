@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; shapes-demo.lsp - demonstrate different lines, outlines and shapes
 ;; v.1.0

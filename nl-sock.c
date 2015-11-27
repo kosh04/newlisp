@@ -1914,7 +1914,7 @@ char * netErrorMsg[] =
     "HTTP transfer failed",
     "HTTP invalid response from server",
     "HTTP no response from server",
-    "HTTP document empty",
+    "HTTP not content",
     "HTTP error in header",
     "HTTP error in chunked format"
     };

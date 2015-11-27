@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.6.3
+VERSION=10.6.4
 
 rm -f config.h makefile_build makefile_install
 
@@ -70,8 +70,7 @@ case `uname` in
 	SunOS) true ${os_type:=SUNOS} ;;
 	AIX) true ${os_type:=AIX} ;; 
 	OSF1) true ${os_type:=TRU64} ;;
-	MINGW32_*) true ${os_type:=WIN_32} ;;
-	MINGW64_*) true ${os_type:=WIN_64} ;;
+	MINGW*) true ${os_type:=WINDOWS} ;;
 	OS/2) true ${os_type:=OS2} ;;
 	*)
 		echo Could not discover your OS platform use one of the following commands:
@@ -100,7 +99,7 @@ elif [ ${os_type} = TRU64 ] ; then
 	DEFAULT_CC="${TRU64_CC}"
 	DEFAULT_CFLAGS="${TRU64_CFLAGS}"
 	DEFAULT_LDFLAGS="${TRU64_LDFLAGS}"
-elif [ ${os_type} = WIN_32 ] ; then
+elif [ ${os_type} = WINDOWS ] ; then
 	DEFAULT_CC="${WIN32_CC}"
 	DEFAULT_CFLAGS="${WIN32_CFLAGS}"
 	DEFAULT_LDFLAGS="${WIN32_LDFLAGS}"

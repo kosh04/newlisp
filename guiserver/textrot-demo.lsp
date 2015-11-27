@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; textrot-demo.lsp - demonstrate gs:rotate-tag on text
 ;; and the mouse-wheel rotating an object

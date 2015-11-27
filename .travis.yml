@@ -1,19 +1,27 @@
 language: c
 
+sudo: false
+
+os:
+  - linux
+  - osx
+
 compiler:
   - clang
   - gcc
 
 matrix:
   include:
+    # cross build for mingw32
     - compiler: i586-mingw32msvc-gcc
       env: STRIP=i586-mingw32msvc-strip
       script: make -f makefile_mingw_utf8 CC=$CC STRIP=$STRIP
-
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq mingw32
+      sudo: required
+      before_install:
+        - sudo apt-get update -qq
+        - sudo apt-get install -qq mingw32
 
 script:
-  - make
+  - make CC="$CC"
+  - file ./newlisp && ./newlisp -v
   - make testall

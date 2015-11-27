@@ -42,7 +42,7 @@
 #ifdef NEWCONFIG
 #include "config.h"
 #else
-#define NEWLISPDIR "/usr/share/newlisp"
+#define NEWLISPDIR "/usr/local/share/newlisp"
 #endif
 
 /* force ISO_C90 restrictions */
@@ -525,7 +525,7 @@ This is for 64bit large file support (LFS),
 #define ERR_SYMBOL_PROTECTED 37
 #define ERR_NUMBER_OUT_OF_RANGE 38
 #define ERR_REGEX 39
-#define ERR_MISSING_TEXT_END 40
+#define ERR_TEXT_END_TAG 40
 #define ERR_NUM_ARGS 41
 #define ERR_FORMAT_STRING 42
 #define ERR_FORMAT_DATA_TYPE 43
@@ -590,7 +590,7 @@ This is for 64bit large file support (LFS),
 #define ERROR_TRANSFER 21
 #define ERROR_INVALID_RESPONSE 22
 #define ERROR_NO_RESPONSE 23
-#define ERROR_DOCUMENT_EMPTY 24
+#define ERROR_NO_CONTENT 24
 #define ERROR_HEADER 25
 #define ERROR_CHUNKED_FORMAT 26
 

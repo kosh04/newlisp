@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ; table-demo.lsp - demo of the table UI
 

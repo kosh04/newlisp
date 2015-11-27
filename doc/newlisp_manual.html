@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.6.3 Manual and Reference</title>
+   <title>newLISP v.10.6.4 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,7 +148,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.6.3<font /></h2>
+<h2>User Manual and Reference v.10.6.4</h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -1823,9 +1823,9 @@ versions of newLISP.</td>
 itself</td></tr>
 </table><br/>
 
-<p>Quoted strings cannot exceed 2,048 characters. Longer strings should use 
+<p>Quoted strings cannot exceed 2,047 characters. Longer strings should use 
 the <tt>[text]</tt> and <tt>[/text]</tt> tag delimiters.  newLISP automatically 
-uses these tags for string output longer than 2,048 characters.</p>
+uses these tags for string output longer than 2,047 characters.</p>
 
 <p>The <tt>{</tt> (left curly bracket), <tt>}</tt> (right curly bracket), 
 and <tt>[text], [/text]</tt> delimiters do not perform escape character 
@@ -2304,7 +2304,11 @@ retrieve the elements of a list or array or the characters of a string:</p>
 (myarray 1 0)   <span class='arw'>&rarr;</span> 3
 (myarray 0 -1)  <span class='arw'>&rarr;</span> 2
 
+; indexing ASCII strings
 ("newLISP" 3)   <span class='arw'>&rarr;</span> "L"
+
+; indexing strings in UTF8 enabled versions
+ ("我能吞下玻璃而不伤身体。" 3) <span class='arw'>&rarr;</span> "下"
 </pre>		
 
 <p>Indices may also be supplied from a list. In this way, implicit 
@@ -2398,6 +2402,9 @@ If the length is negative it counts from the end of the list or string:</p>
 (-3 2 lst)   <span class='arw'>&rarr;</span> (e f)
 (2 -2 lst)   <span class='arw'>&rarr;</span> (c d e)
 
+; resting and slicing is always on 8-bit char borders
+; even on UTF8 enabled versions
+
 (set 'str "abcdefg")
 
 (1 str)      <span class='arw'>&rarr;</span> "bcdefg"
@@ -2405,6 +2412,7 @@ If the length is negative it counts from the end of the list or string:</p>
 (2 3 str)    <span class='arw'>&rarr;</span> "cde"
 (-3 2 str)   <span class='arw'>&rarr;</span> "ef"
 (2 -2 str)   <span class='arw'>&rarr;</span> "cde"
+
 </pre>	
 
 <p>The functions <a href="#rest">rest</a>, <a href="#first">first</a>
@@ -2962,7 +2970,7 @@ portions of code belonging to the same context:</p>
 <p>If the context does not exist yet, the context symbol must be quoted.
 If the symbol is not quoted, newLISP assumes the symbol is a variable
 holding the symbol of the context to create. Because a context evaluates
-to itself, elready existing contexts like MAIN do not require quoting.</p>
+to itself, already existing contexts like MAIN do not require quoting.</p>
 
 <p>When newLISP reads the above code, it will read, then evaluate the first
 statement: <tt>(context 'FOO)</tt>. This causes newLISP to switch the namespace
@@ -3026,7 +3034,7 @@ of the context:</p>
 <tt>ACTX</tt>. The symbols <tt>x</tt> and <tt>y</tt> will still be part
 of <tt>MAIN</tt>. To make all locals of <tt>ACTX:foo</tt> members of
 the <tt>ACTX</tt> context, they would either have to be prefixed with
-<tt>ACTX</tt>, ot the whole funtion must be preceded by a context
+<tt>ACTX</tt>, or the whole funtion must be preceded by a context
 switch satement at the top level:</p>
 
 <pre>
@@ -5208,7 +5216,7 @@ or a place referenced by functions like <a href="#first">first</a>, <a href="#la
 by either quotes <tt>""</tt>, braces <tt>{}</tt> or <tt>[text][/text]</tt> tags.</p>
 
 <p>Strings limited by either quotes <tt>""</tt> or braces <tt>{}</tt> must not exceed
-2048 characters. Longer strings should be limited by <tt>[text][/text]</tt> tags for
+2047 characters. Longer strings should be limited by <tt>[text][/text]</tt> tags for
 unlimited text length.</p>
 
 <pre>
@@ -12254,7 +12262,7 @@ See <a href="#delete-url">delete-url</a> for details.
 
 <a name="delete-url"></a>
 <h2><span class="function">delete-url</span></h2>
-<h4>syntax: (delete-file <em>str-url</em>)</h4>
+<h4>syntax: (delete-url <em>str-url</em>)</h4>
 
 <p>This function deletes the file on a remote HTTP server specified in <em>str-url</em>.
 The HTTP <tt>DELETE</tt> protocol must be enabled on the target web server, 
@@ -15591,7 +15599,10 @@ or make it unstable if the wrong address is specified.
 the HTTP GET protocol.  Both <tt>http://</tt> and <tt>file://</tt>
 URLs are handled.  <tt>"header"</tt> can be specified in the optional argument 
 <em>str-option</em> to retrieve only the header.  The  option <tt>"list"</tt> 
-causes header and page information to be returned as separate strings in a list. </p>
+causes header and page information to be returned as separate strings in a list
+and also includes the server status code as the third list member (since 10.6.4).
+The <tt>"raw"</tt> option (since 10.6.4), which can be used alone or combined
+with other options, suppresses header location redirection.</p>
 
 <p>A <tt>"debug"</tt> option can be specified either alone or after the
 <tt>"header"</tt> or <tt>"list"</tt> option separated by one character, 
@@ -17673,21 +17684,24 @@ the <a href="#read-expr">read-expr</a> function:</p>
 other macros defined earlier. But <tt>macro</tt> definitions cannot be repeated for the same 
 symbol during the same newLISP session. To redefine a macro, e.g. for reading source with a 
 different definition of an exisiting <tt>macro</tt> definition, use the 
-<a href="#define">define</a> function in the following way:</p>
+<a href="#constant">constant</a> function in the following way:</p>
 
 <pre>
 ; change existing macro 'double' to allow floating point parameters
 ; use upper-case for variables for expansion
 
-(define double (lambda-macro (X) (expand '(add X X))))
+(constant 'double (lambda-macro (X) (expand '(add X X))))
 <span class='arw'>&rarr;</span> (lambda-macro (X) (expand '(add X X)))
 
 (double 1.23) <span class='arw'>&rarr;</span> 2.46
 </pre>
 
-<p>Note, that <a href="#define">define</a> can be used only to re-define macros, not
+<p>Note, that <a href="#constant">constant</a> can be used only to re-define macros, not
 to create new macros. Internally newLISP knows that <tt>macro</tt> defined symbols
 are executed during source reading, not evaluation.</p>
+
+<p>The redefinition will only affect future read code, it will not affect
+code already load and translated by the reader routines.</p>
 
 <h3>Using <tt>map</tt> and <tt>apply</tt> with <tt>macro</tt></h3>
 
@@ -18774,7 +18788,7 @@ function clears the error number.</p>
 <tr><td>21</td><td>HTTP transfer failed</td></tr>
 <tr><td>22</td><td>HTTP invalid response from server</td></tr>
 <tr><td>23</td><td>HTTP no response from server</td></tr>
-<tr><td>24</td><td>HTTP document empty</td></tr>
+<tr><td>24</td><td>HTTP no content</td></tr>
 <tr><td>25</td><td>HTTP error in header</td></tr>
 <tr><td>26</td><td>HTTP error in chunked format</td></tr>
 </table><br/>
@@ -21542,12 +21556,11 @@ When the content-type parameter is omitted,
 
 <h3>Additional parameters</h3>
 <p>
-When <em>str-content-type</em> is specified,
-the <em>str-option</em> <tt>"header"</tt> or <tt>"list"</tt> can be specified as the return page.
-If the <em>int-timeout</em> option is specified,
-the custom header option <em>str-header</em> can be specified,
-as well.
-See the function <a href="#get-url">get-url</a> for details on both of these options.
+When <em>str-content-type</em> is specified, the optional <em>str-option</em> 
+can take the same options as <a href="#get-url">get-url</a> for the returned 
+content.  If the <em>int-timeout</em> option is specified, the custom header 
+option <em>str-header</em> can be specified, as well. See the function 
+<a href="#get-url">get-url</a> for details on all options.
 </p>
 
 <p>
@@ -22336,17 +22349,15 @@ Script PUT /cgi-bin/put.cgi
 
 <h3>Additional parameters</h3>
 <p>
-	In <em>str-option</em>,
-	<tt>"header"</tt> or <tt>"list"</tt> can be specified for the returned page.
-	If the <em>int-timeout</em> option is specified,
-	the custom header option <em>str-header</em> can be specified,
-	as well.
-	See the function <a href="#get-url">get-url</a> for details on both of these options.
+In <em>str-option</em> can take the same options as <a href="#get-url">get-url</a>
+for the returned content. If the <em>int-timeout</em> option is specified, the 
+custom header option <em>str-header</em> can be specified, as well. See the 
+function <a href="#get-url">get-url</a> for details on all options.
 </p>
 
 <p>
-	See also the functions <a href="#get-url">get-url</a> and <a href="#post-url">post-url</a>,
-	which can be used to upload files when formatting form data as <tt>multipart/form-data</tt>.
+See also the functions <a href="#get-url">get-url</a> and <a href="#post-url">post-url</a>,
+which can be used to upload files when formatting form data as <tt>multipart/form-data</tt>.
 </p>
 
 <br/><br/>
@@ -25347,10 +25358,10 @@ will crash the system.</p>
 <p>Memory can be shared between parent and child processes,
 but not between independent processes.</p>
 
-<p>10.1.0 size of share objects can exceed the shared memory pagesize
+<p>Since 10.1.0 size of share objects can exceed the shared memory pagesize
 of the operating system. For objects bigger than the pagesize, newLISP internally
 uses files for sharing. This requires a <tt>/tmp</tt> directory on Unix-like
-operating system. On MS Windows systems the environment vatiable <tt>TEMP</tt>
+operating system. On MS Windows systems the environment variable <tt>TEMP</tt>
 must be set.</p>
 
 <!-- example -->
@@ -27175,8 +27186,8 @@ define (interrupt)
 <a name="trace"></a>
 <h2><span class="function">trace</span></h2>
 
-<h4>syntax: (trace <em>true</em>)<br/>
-syntax: (trace <em>int-device</em>)<br/>
+<h4>syntax: (trace <em>int-device</em>)<br/>
+syntax: (trace <em>true</em>)<br/>
 syntax: (trace <em>nil</em>)<br/>
 syntax: (trace)</h4>
 
@@ -27196,7 +27207,7 @@ Output is continuously written to that device. If <em>int-device</em> is
 (trace nil)
 </pre>
 
-<p>In the second syntax debugger mode is switched on when when the 
+<p>In the second syntax debugger mode is switched on when the 
 parameter evaluates true. When in debugging mode newLISP will stop
 after each entry and exit from an expression and wait for user input.
 Highlighting is done by bracketing the expression between two # 

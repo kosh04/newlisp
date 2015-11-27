@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; strokes-demo.lsp - demonstrate strokes with round endings in different lines and outlines
 ;; v. 1.0

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; mouse-demo.lsp - demonstrate mouse handlers and gs:delete-tag
 

@@ -14,7 +14,8 @@
 ;; @version 1.62 doc corrections
 ;; @version 1.63 make deprecated gs:table-set-row-number work
 ;; @version 1.70 default comm port with Guiserver are now 64001 and 64002
-;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013
+;; @version 1.71 references to /usr/ changed to /usr/local/
+;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2015
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -38,7 +39,7 @@
 ;; <h2>Usage</h2>
 ;; At the beginning of the program file, include a 'load' statement for the module:
 ;; <pre>
-;; (load "/usr/share/newlisp/guiserver.lsp")
+;; (load "/usr/local/share/newlisp/guiserver.lsp")
 ;; </pre>
 ;; or on MS Windows:
 ;; <pre>
@@ -47,7 +48,7 @@
 ;; 'guiserver.lsp' expects the server 'guiserver.jar' to be
 ;; in the directoey specified in the environment variable NEWLISPDIR.
 ;; When newLISP starts up and this variable is not set yet, it sets it
-;; to a default value of '/usr/share/newlisp' on MacOS X and Unix OSs, and 
+;; to a default value of '/usr/local/share/newlisp' on MacOS X and Unix OSs, and 
 ;; to 'C:\Program Files\newlisp' or whatever it finds in the 'PROGRAMFILES'
 ;; environment variable on MS Windows systems and adding '/newlisp' to it.
 ;; This can be overwritten by specifying system wide  setting for the environment 
@@ -122,19 +123,19 @@
 ;;     ./button-demo 10001       ; on MacOS X and Unix
 ;;     newlisp button-demo 10001 ; on MS Windows
 ;; </pre>
-;; newLISP-GS 'guiserver.jar' will now use the ports '10001' and '10002'.
+;; newLISP-GS 'guiserver.jar' will now use the ports '64001' and '60002'.
 ;; Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
 ;; OS services and need administrator privileges to use them.
 ;;
 ;; A second method to start a newLISP-GS application starts the 'guiserver.jar' first, which then
 ;; starts the newLISP application:
 ;; <pre>
-;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
+;;     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
 ;; </pre>
 ;; A different port number can be used. Port numbers below 1024 need administrator
 ;; permissions. Optionally a splash screen can be specified as the last parameter:
 ;; <pre>
-;;     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
+;;     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
 ;; </pre>
 ;; The example specifies an image inside 'guiserver.jar'. Any other image path on the local file system
 ;; can be used.
@@ -715,7 +716,7 @@
 ;; instrument for all 128 different keys/notes.
 ;;
 ;; Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
-;; and <tt>midi2-demo.lsp</tt> in the <tt>/usr/share/newlisp/guiserver/</tt> or 
+;; and <tt>midi2-demo.lsp</tt> in the <tt>/usr/local/share/newlisp/guiserver/</tt> or 
 ;; <tt>c:\Program files\newlisp\guiserver\</tt> directory.
 ;; <pre>
 ;;    (gs:add-track <int channel><list-notes>)

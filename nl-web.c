@@ -241,19 +241,21 @@ char * customHeader = NULL;
 size_t bufflen;
 int port, pPort, sock = 0;
 char * option, * method = NULL;
-char buff[BUFFSIZE];
-char errorTxt[128];
+char * buff;
+char resultTxt[128];
 char * buffPtr;
 char * resultPtr = NULL;
-int haveContentLength = FALSE, headRequest = FALSE, listFlag = FALSE, debugFlag = FALSE;
+int haveContentLength = FALSE, headRequest = FALSE, listFlag = FALSE, debugFlag = FALSE, rawFlag = FALSE;
 int chunked = FALSE;
 ssize_t sizeRead = 0;
 size_t resultSize = 0, fSize = 0, size = 0;
 CELL * result, * cell;
 CELL * headerCell = NULL;
-int ch;
+int ch, len;
 int responseLoop;
 int statusCode;
+
+buff = alloca(BUFFSIZE);
 
 /* reset net-error */
 netErrorIdx = 0;
@@ -279,8 +281,8 @@ if(my_strnicmp(url, "file://", 7) == 0)
         {
         if(writeFile(url, putPostStr, size, "w") == -1)
             return(webError(ERROR_FILE_OP));
-        snprintf(errorTxt, 64, "%u bytes written", (unsigned int)size);
-        return(stuffString(errorTxt));
+        snprintf(resultTxt, 64, "%u bytes written", (unsigned int)size);
+        return(stuffString(resultTxt)); /* not an error */
         }
     if(type == HTTP_DELETE)
         {
@@ -313,18 +315,16 @@ if(isNumber(result->type))
 else if(result->type == CELL_STRING)
     {
     option = (char *)result->contents;    
-    if(my_strnicmp(option, "header", 6) == 0)
+    len = result->aux - 1;
+    if(searchBuffer(option, len, "header", 6, 0) != -1)
       headRequest = TRUE;
-    if(my_strnicmp(option, "list", 4) == 0)
+    if(searchBuffer(option, len, "list", 4, 0) != -1)
       listFlag = TRUE;
-    /* "debug" or "header debug" or "list-debug" options
-       print all outgoing informatiopn on the console */    
-    if(my_strnicmp(option, "debug", 5) == 0)
+    if(searchBuffer(option, len, "debug", 5, 0) != -1)
       debugFlag = TRUE;
-    if(my_strnicmp(option + 7, "debug", 5) == 0) /* header debug */
-      debugFlag = TRUE;
-    if(my_strnicmp(option + 5, "debug", 5) == 0) /* list-debug */
-      debugFlag = TRUE;
+    if(searchBuffer(option, len, "raw", 3, 0) != -1)
+      rawFlag = TRUE;
+
     if(params != nilCell)
         params = getInteger(params, (UINT*)&socketTimeout);
     }
@@ -392,12 +392,12 @@ if (customHeader != NULL)
 else
     sendf(sock, debugFlag, "User-Agent: newLISP v%d\r\n", version);
 
-sendf(sock, debugFlag, "Connection: close\r\n");
+sendf(sock, debugFlag, "%s", "Connection: close\r\n");
 
 /* expanded header for PUT, POST and body */
 if(type == HTTP_PUT || type == HTTP_PUT_APPEND)
     {
-    if(type == HTTP_PUT_APPEND) sendf(sock, debugFlag, "Pragma: append\r\n");
+    if(type == HTTP_PUT_APPEND) sendf(sock, debugFlag, "%s", "Pragma: append\r\n");
     if(customHeader == NULL)
         sendf(sock, debugFlag, "Content-type: text/html\r\nContent-length: %d\r\n\r\n", size);
     else
@@ -415,7 +415,7 @@ else if(type == HTTP_POST)
     if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
     }
 else /* HTTP_GET, HTTP_DELETE */
-    sendf(sock, debugFlag, "\r\n");
+    sendf(sock, debugFlag, "%s", "\r\n");
 
 if(setjmp(socketTimeoutJump) != 0)
     {
@@ -430,10 +430,11 @@ READ_RESPONSE:
 if(++responseLoop == 4)
         return(webError(ERROR_INVALID_RESPONSE));
 
+
 if (recvs_tm(buff, BUFFSIZE, sock) == NULL) 
    return(webError(ERROR_NO_RESPONSE));
 
-if(debugFlag) varPrintf(OUT_CONSOLE, "%s\n", buff);
+if(debugFlag) varPrintf(OUT_CONSOLE, "\n%s\n", buff);
 
 /* go past first token */
 for (buffPtr = buff; *buffPtr != '\0' && !isspace((int)*buffPtr); ++buffPtr) {;}
@@ -443,6 +444,11 @@ while(isspace((int)*buffPtr)) ++buffPtr;
 
 /* get status code */
 statusCode = atoi(buffPtr);
+if(statusCode >= 400)
+    snprintf(resultTxt, 128, "ERR: %s", buff);
+else
+    snprintf(resultTxt, 128, "%s", buff);
+
 switch (statusCode) 
     {
     case 0:
@@ -464,8 +470,6 @@ switch (statusCode)
     case 307:
         break;
     default:
-        if(strlen(buff) > 127) buff[127] = 0;
-        snprintf(errorTxt, 127, "ERR: server code %d: %s", atoi(buffPtr), buff);
         break;
     }
 
@@ -488,7 +492,7 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
         haveContentLength = TRUE;
         }
     /* 302 contradicts standard for redirection but is common practice */
-    if(my_strnicmp(buff, "location:", 9) == 0 && 
+    if(my_strnicmp(buff, "location:", 9) == 0 && !rawFlag &&
                 (statusCode == 301 || statusCode == 302 || statusCode == 303))
         {
         buffPtr = buff + 9;
@@ -513,24 +517,27 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
         }
 
     if(my_strnicmp(buff, "Transfer-Encoding:", 18) == 0 
-        && searchBuffer(buff, strlen(buff), "chunked", 7, 0) != 0xFFFFFFFF)
+        && searchBuffer(buff, strlen(buff), "chunked", 7, 0) != -1)
         chunked = TRUE;
     }
     
 if(headRequest)
     return(headerCell);
 
-if((haveContentLength == TRUE && fSize == 0) || statusCode == 204)
+/* changed in 10.6.4 should allow 0-length contents and 204 handled earlier */
+/* if((haveContentLength == TRUE && fSize == 0) || statusCode == 204) */
+if(statusCode == 204)
     {
-    return(webError(ERROR_DOCUMENT_EMPTY));
+    return(webError(ERROR_NO_CONTENT));
     resultPtr = NULL;
     }
+
 /* Retrieve HTTP body. */
 else if(chunked == TRUE)
     {
     resultPtr = NULL;
     if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-        return(webError(ERROR_DOCUMENT_EMPTY));
+        return(webError(ERROR_NO_CONTENT));
     while((size = strtoul(buff, NULL, 16)) > 0)
         {
         if(resultSize == 0)
@@ -548,13 +555,13 @@ else if(chunked == TRUE)
         }
     }
 
-else if(haveContentLength == TRUE)
+else if(haveContentLength == TRUE && fSize)
     {
     resultPtr = allocMemory(fSize + 1);
     if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
         {
         free(resultPtr);
-        return(webError(ERROR_DOCUMENT_EMPTY));
+        return(webError(ERROR_NO_CONTENT));
         }
     }
     
@@ -582,23 +589,23 @@ if(resultPtr == NULL)
     {
     if(statusCode < 400)
         result = stuffString("");
-    else
-        result = stuffString(errorTxt);
+    else 
+        result = stuffString(resultTxt);
     }
 else
     {
-    *(resultPtr + resultSize) = 0;
     result = getCell(CELL_STRING);
-    if(statusCode >= 400)
+    if(statusCode >= 400 && listFlag == FALSE)
         {
-        bufflen = strlen(errorTxt);
+        bufflen = strlen(resultTxt);
         buffPtr = allocMemory(bufflen + resultSize + 1);
-        memcpy(buffPtr, errorTxt, bufflen);
+        memcpy(buffPtr, resultTxt, bufflen);
         memcpy(buffPtr + bufflen, resultPtr, resultSize);
         free(resultPtr);
         resultPtr = buffPtr;
         resultSize += bufflen;
         }       
+    *(resultPtr + resultSize) = 0;
     result->contents = (UINT)resultPtr;
     result->aux = resultSize + 1;
     }
@@ -607,8 +614,11 @@ close(sock);
 
 if(listFlag)
     {
-    cell = makeCell(CELL_EXPRESSION, (UINT)headerCell);
-    headerCell->next = result;
+    cell = getCell(CELL_EXPRESSION);
+    addList(cell, headerCell); 
+    addList(cell, result);
+    addList(cell, stuffString(statusCode >= 400 ? resultTxt + 5 : resultTxt));
+    addList(cell, stuffInteger(statusCode));
     return(cell);
     }
 
@@ -964,7 +974,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 #ifndef LIBRARY
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.6.3"
+#define SERVER_SOFTWARE "newLISP/10.6.4"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);

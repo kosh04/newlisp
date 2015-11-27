@@ -45,7 +45,7 @@ public class guiserver extends gsObject
 	static boolean connected = false;
 	static SplashWindow splash = null;
 	static Frame frame = null;
-	static double version = 1.63;
+	static double version = 1.64;
 
     public static void main (String args[]) throws IOException, InterruptedException 
 		{
@@ -54,6 +54,7 @@ public class guiserver extends gsObject
 		String host = null;
 		String tkn = null;
 		String osName;
+        String newlispPath;
 		Socket socket = null;
 		String splashImagePath = null;
 		
@@ -81,9 +82,12 @@ public class guiserver extends gsObject
 			portIn = Integer.parseInt(args[0]);
 		
 		portOut = portIn + 1;
+
+        if(MAC_OS_X) newlispPath = "/usr/local/bin/newlisp ";
+        else newlispPath = "newlisp ";
 			
 		if(args.length >= 2)
-			execCommand("newlisp " + args[1] + " " + portIn + " javastart &");
+			execCommand(newlispPath + args[1] + " " + portIn + " javastart &");
 			
 		// open listener and connection to remote
 		System.out.println(" listening on " + portIn);

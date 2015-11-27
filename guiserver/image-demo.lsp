@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 ;;
 ;; image-demo.lsp - demonstrate images rotating and zooming
 ;; and the mouse-wheel rotating an object

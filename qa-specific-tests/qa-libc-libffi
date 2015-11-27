@@ -109,7 +109,7 @@
 
 (unless (= ostype "Linux")
     (import LIBC "atexit" "void" "void*")
-    (define (quit) (println "Quit !"))
+    (define (quit) (println "-> Quit ! => true"))
     (print "atexit callback => ")
     (atexit (callback 'quit "void" "void"))
 )

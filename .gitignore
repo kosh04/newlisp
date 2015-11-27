@@ -40,6 +40,8 @@ udptest.lsp
 nbproject
 
 # misc
+config.h
+icmp6.h
 TAGS
 XTAGS
 config.h

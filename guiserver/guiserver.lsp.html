@@ -27,7 +27,8 @@
 <b>Version: </b>1.62 doc corrections<br/>
 <b>Version: </b>1.63 make deprecated gs:table-set-row-number work<br/>
 <b>Version: </b>1.70 default comm port with Guiserver are now 64001 and 64002<br/>
-<b>Author: </b>LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013<br/>
+<b>Version: </b>1.71 references to /usr/ changed to /usr/local/<br/>
+<b>Author: </b>LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2015<br/>
 <br/><br/>
  This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
  Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -51,7 +52,7 @@
  <h2>Usage</h2>
  At the beginning of the program file, include a <tt>load</tt> statement for the module:
  <pre>
- (load "/usr/share/newlisp/guiserver.lsp")
+ (load "/usr/local/share/newlisp/guiserver.lsp")
  </pre>
  or on MS Windows:
  <pre>
@@ -60,7 +61,7 @@
  <tt>guiserver.lsp</tt> expects the server <tt>guiserver.jar</tt> to be
  in the directoey specified in the environment variable NEWLISPDIR.
  When newLISP starts up and this variable is not set yet, it sets it
- to a default value of <tt>/usr/share/newlisp</tt> on MacOS X and Unix OSs, and 
+ to a default value of <tt>/usr/local/share/newlisp</tt> on MacOS X and Unix OSs, and 
  to <tt>C:\Program Files\newlisp</tt> or whatever it finds in the <tt>PROGRAMFILES</tt>
  environment variable on MS Windows systems and adding <tt>/newlisp</tt> to it.
  This can be overwritten by specifying system wide  setting for the environment 
@@ -133,19 +134,19 @@
      ./button-demo 10001       ; on MacOS X and Unix
      newlisp button-demo 10001 ; on MS Windows
  </pre>
- newLISP-GS <tt>guiserver.jar</tt> will now use the ports <tt>10001</tt> and <tt>10002</tt>.
+ newLISP-GS <tt>guiserver.jar</tt> will now use the ports <tt>64001</tt> and <tt>60002</tt>.
  Ports under <tt>1024</tt> should not be used, as many of them are already in use by other
  OS services and need administrator privileges to use them.
 <br/><br/>
  A second method to start a newLISP-GS application starts the <tt>guiserver.jar</tt> first, which then
  starts the newLISP application:
  <pre>
-     java -jar /usr/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
+     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /usr/home/aUser/MyApplication.lsp
  </pre>
  A different port number can be used. Port numbers below 1024 need administrator
  permissions. Optionally a splash screen can be specified as the last parameter:
  <pre>
-     java -jar /usr/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
+     java -jar /usr/local/share/newlisp/guiserver.jar 64001 /home/apps/myapp.lsp /local/newLISP128.png
  </pre>
  The example specifies an image inside <tt>guiserver.jar</tt>. Any other image path on the local file system
  can be used.
@@ -725,7 +726,7 @@
  instrument for all 128 different keys/notes.
 <br/><br/>
  Basic capabilities of the sound API are shown in the demo files <tt>midi-demo.lsp</tt>
- and <tt>midi2-demo.lsp</tt> in the <tt>/usr/share/newlisp/guiserver/</tt> or 
+ and <tt>midi2-demo.lsp</tt> in the <tt>/usr/local/share/newlisp/guiserver/</tt> or 
  <tt>c:\Program files\newlisp\guiserver\</tt> directory.
  <pre>
     (gs:add-track <em>int channel</em><em>list-notes</em>)
@@ -751,6 +752,7 @@
 
 
 
+	
 
  <br><br><br>
 
@@ -1256,6 +1258,7 @@
  When specifying width and height, a smaller or bigger portion of the canvas
  than seen on the screen is printed to the image.
 
+			
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_fill-arc"></a><h3><font color=#CC0000>gs:fill-arc</font></h3>
@@ -1536,6 +1539,7 @@
  When specifying an index equal or greater to the number of items in the list, the item 
  is added at the end.
 
+		
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_insert-tab"></a><h3><font color=#CC0000>gs:insert-tab</font></h3>
@@ -1717,6 +1721,7 @@
  The preset resolution of 16 ticks per quarter note is the highest which can be set
  and should be sufficient for all applications.
 
+	
 
 
 
@@ -2819,6 +2824,8 @@
  is greater than the current number of columns, new columns are added to the end 
  of each row in the table. If the number of columnnames is less than the current
  number of columns, all the extra columns at the end of a row are discarded.
+	
+	  
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_table-set-row-count"></a><h3><font color=#CC0000>gs:table-set-row-count</font></h3>
 <b>syntax: (<font color=#CC0000>gs:table-set-row-count</font> <em>sym-id</em> <em>int-row-count</em>)</b><br/>
@@ -2828,6 +2835,7 @@
  Sets the number of rows in the table. If the new size is greater than the 
  current size, new rows are added to the end of the table. If the new size is 
  less than the current size, all rows at index rownumber and greater are discarded.
+	  
 
 <br/><br/><center>&sect;</center><br/>
 <a name="gs_table-get"></a><h3><font color=#CC0000>gs:table-get</font></h3>
