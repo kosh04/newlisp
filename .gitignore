@@ -39,6 +39,7 @@ nbproject
 
 # misc
 config.h
+icmp6.h
 TAGS
 XTAGS
 *.stackdump
