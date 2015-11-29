@@ -13,14 +13,14 @@ WRAP = dllwrap
 
 default: $(OBJS)
 #	$(CC) -m64 -shared *.o -Wl,--output-def win64-dll.def -lffi -lws2_32 -o newlisp.dll 
-	$(CC) -m64 -shared *.o -Wl,--kill-at -lffi -lws2_32 -o newlisp.dll 
+	$(CC) -m64 -shared $^ -Wl,--kill-at -lffi -lws2_32 -o newlisp.dll 
 	$(STRIP) newlisp.dll
 
 .c.o:
 	$(CC) $(CFLAGS) $<
 
 %.o: %.rc
-	$(WINDRES) $< -O coff -o $@
+	$(WINDRES) $< -O coff -o $@ $(RCFLAGS)
 
 $(OBJS): primes.h protos.h makefile_mingw64dll_utf8_ffi
 windows/icon.o: version.h

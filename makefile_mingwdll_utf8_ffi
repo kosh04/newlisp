@@ -12,7 +12,7 @@ STRIP = strip
 WRAP = dllwrap
 
 default: $(OBJS)
-	$(WRAP) -m32 *.o -Wl,--enable-stdcall-fixup --def win-dll.def -lffi -lws2_32 \
+	$(WRAP) -m32 $^ -Wl,--enable-stdcall-fixup --def win-dll.def -lffi -lws2_32 \
 	-o newlisp.dll 
 	$(STRIP) newlisp.dll
 
@@ -20,6 +20,6 @@ default: $(OBJS)
 	$(CC) $(CFLAGS) $<
 
 %.o: %.rc
-	$(WINDRES) $< -O coff -o $@
+	$(WINDRES) $< -O coff -o $@ $(RCFLAGS)
 
 $(OBJS): primes.h protos.h makefile_mingwdll_utf8_ffi

@@ -93,4 +93,3 @@ test_script:
 artifacts:
   - path: newlisp.exe
   - path: newlisp.dll
-  - path: setup.log
