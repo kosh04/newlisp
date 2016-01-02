@@ -2,6 +2,7 @@ newLISP mirror
 ==============
 
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
+[![Coverage Status](https://coveralls.io/repos/kosh04/newlisp/badge.svg?branch=feature%2Fcoveralls&service=github)](https://coveralls.io/github/kosh04/newlisp?branch=feature%2Fcoveralls)
 [![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
