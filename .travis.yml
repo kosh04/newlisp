@@ -12,14 +12,29 @@ compiler:
 
 matrix:
   include:
-    # cross build for mingw32
-    - compiler: i586-mingw32msvc-gcc
-      env: STRIP=i586-mingw32msvc-strip
-      script: make -f makefile_mingw_utf8 CC=$CC STRIP=$STRIP
-      sudo: required
-      before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install -qq mingw32
+    # cross build for MinGW-w64
+    - os: linux
+      compiler: x86_64-w64-mingw32-gcc
+      env: STRIP=x86_64-w64-mingw32-strip
+      addons:
+        apt:
+          packages:
+            - gcc-mingw-w64
+            - gcc-mingw-w64-x86-64
+            - binutils-mingw-w64-x86-64
+      script:
+        - make -f makefile_mingw64_utf8 CC=${CC} STRIP=${STRIP}
+    - os: linux
+      compiler: i686-w64-mingw32-gcc
+      env: STRIP=i686-w64-mingw32-strip
+      addons:
+        apt:
+          packages:
+            - gcc-mingw-w64
+            - gcc-mingw-w64-i686
+            - binutils-mingw-w64-i686
+      script:
+        - make -f makefile_mingw_utf8 CC=${CC} STRIP=${STRIP}
 
 script:
   - make CC="$CC"
