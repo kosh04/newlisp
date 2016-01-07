@@ -29,6 +29,11 @@ pipe-child.lsp
 # guiserver
 *.class
 
+# coveralls (gcov)
+*.gcov
+*.gcda
+*.gcno
+
 # eclipse
 .settings
 
