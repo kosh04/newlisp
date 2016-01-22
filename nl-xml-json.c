@@ -1,6 +1,6 @@
 /* nl-xml-json.c - newLISP XML and JSON interface 
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

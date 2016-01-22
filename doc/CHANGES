@@ -7061,7 +7061,7 @@ Dec 6, 2009
 
     Fixed shape sign error in canvas.lsp for bezier curves in shapes.
 
-10.6.4
+10.6.4 September 24th, 2015 Development Release
     Now can retrieve 0-length document with 'get-url'.
 
     A fix for 'share' on Linux (bug introduced in development v.10.6.3)
@@ -7116,4 +7116,34 @@ Dec 6, 2009
     On Mac OS X guiserver expects newlisp in /usr/local/bin/newlisp on all other
     OS it is only is expected in the executable path, as in previous versions.
 
+10.6.5
+    In the crypto.lsp module "cdecl" must be used when importing on Windows.
+    (since v.10.6.3 a new compiler setup is used)
+
+    A second PRNG with variable initial N for seed initialization
+    via (seed S true N) and inquiry of current seed state via (seed).
+    This PRNG is built-in with same results across all platforms and
+    compilers. The current PRNG will stay as it offers a bigger set of
+    random numbers on Unix platforms. This new PRNG is necessary for doing
+    computer simulations and AI art, which is reproducable across
+    platforms and where random number sequences can be broken up in 
+    repeatable layers using the (seed) instruction to save state. 
+    When using the default libc based PRNG (seed) now returns the last
+    seed set by the programmer. On the new PRNG (seed) returns the last 
+    seed state. - Not yet documented, may replace old PRNG in the future.
+
+    A (ssq vector) sum of squares function has been added. The vector can
+    be either a list or array vector.
+
+    guiserver.jar version 1.65 now correctly forces updates of a gs:canvas
+    in a gs:scroll-pane.
+
+    When a deleted symbol was prefix in a dynamic symbol, memory got corrupted.
+    The dynamic symbol reference is now replaced with nil like other symbol
+    references.
+ 
+    A illegal symbol when trying to create a context could crash the system,
+    when referenced again after the error message.
+
+10.7.0 version 10.6.5 released as stable release January 2016.
 
