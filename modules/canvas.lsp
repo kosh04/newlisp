@@ -13,6 +13,7 @@
 ;; @version 1.6 sign error in shape caused incompatibility with postscript.lsp
 ;; @version 1.61 eliminated canvas-15.tgz link
 ;; @version 1.7 fixed ellipse, petal, pie, polygon, shape fill first the stroke
+;; @version 1.71 fixed documentation for cv:clip
 ;; @author Lutz Mueller, March 2009, June 2012, January 2014, 2015
 ;; <h2>Turtle graphics for the HTML-5 canvas tag</h2>
 ;; This module generates HTML pages suited for browsers which recognize
@@ -241,10 +242,9 @@
 ;; The circle is drawn around the current turtle position.
 ;; The turtle position or orientation is not changed.
 
-;; @syntax (cv:clip <list-of-num-lists>) 
-;; @param <list-of-num-lists> A list of turtle movements and/or Bezier curves.
+;; @syntax (cv:clip <list-of-lists>) 
+;; @param <list-of-lists> A list of turtle movements and/or Bezier curves.
 ;; <br>
-;; Draw a circle with radius <num-rad>. The optional <num-fill> flag 
 ;; Define a clipping path using turtle movements (<degree> <distance>) and
 ;; Bezier curves (<x1> <y1> <x2> <y2> <x3> <y3>) starting from the 
 ;; last turtle coordinates <x0>, <y0> and finishing at <x3>, <y3>. 

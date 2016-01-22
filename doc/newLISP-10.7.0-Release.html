@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.1.7.0 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #606060;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #606060;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.7.0 Stable Release
+<font color="red" size="-1">2016-01-21</font></h1>
+
+<p>This stable release adds new functionality to existing functions, 
+adds one new function and fixes bugs.</p>
+
+
+<h3>Additions and changes</h3>
+
+<ul>
+<li>The installation location prefix for OS X, Linux and other Unix like 
+platforms has been changed from <tt>/usr</tt> to <tt>/usr/local</tt> for
+installation in the <tt>/usr/local/</tt> directory. See also the file
+<tt>makefile-original-install</tt> in the main source directory.</li>
+
+<li>On Mac OS X, when starting <tt>guiserver.jar</tt> first, when it is not
+loaded by another newLISP program, <tt>guiserver.jar</tt> expects the newlisp 
+executable in <tt>/usr/local/bin/newlisp</tt>. On other UNIX the newlisp
+executable must be in the executable path of the operating system.</li>
+
+<li>On MS Windows, newLISP can now be compiled as a 64-bit executable. 
+Thanks to <i>Shigeru Kobayashi</i> for doing most of this work.</li>
+
+<li><tt>dolist</tt> now also accepts arrays.</li>
+
+<li>The <tt>net-eval</tt> function now returns the evaluation
+of the last expression passed, not the first. The possibility of
+passing more than one expression in <tt>net-eval</tt>  is not
+documented.</li>
+
+<li>The system variable <tt>ostype</tt> on MS Windows now reports
+the string <tt>"Windows"</tt>. In previous version 1.62 <tt>"Win32"</tt>
+was reported.</li>
+
+<li>The <tt>net-eval</tt> connection timeout has changed to 15 seconds 
+from 60 secconds. The processing timeout while connected can still be set 
+by the user in a <tt>net-eval</tt> parameter.</li>
+
+<li>The environment variable <tt>HTTP_AUTHORIZATION</tt> has been
+added to the variables handled in HTTP server mode.</li>
+
+<li>In <tt>date-value</tt> the date and time numbers can now be 
+given in one list instead of separate number parameters using and 
+additional syntax.</li>
+
+<li>The <tt>date-list</tt> function, when given without a parameter,
+now returns the date list for the current UTC date and time value.</li>
+
+<li>The <tt>trim</tt> function without trim character parameters will 
+now trim all white-space characters, not only spaces.</li> 
+
+<li><tt>dump</tt> now returns the number of cells dumped. Previously
+<tt>true</tt> was returned.</li>
+
+<li>A new <tt>trace</tt> syntax <tt>(trace <em>int-device</em>)</tt> writes
+all expression entries and exit results to the device given. 
+<em>int-device</em> can be the handle of an <tt>open</tt>'ed file or 
+<tt>1</tt> for <em>stdout</em>.</li>
+
+<li>The stack trace in error messages now prints the entire expression
+passed for evaluation, not only the function name.</li>
+
+<li>The <tt>tmp</tt> directory is now defined during newLISP startup. 
+For UNIX this is <tt>/tmp</tt>, for Windows it is taken from the 
+<tt>TMP</tt> environment variable or assumed as <tt>/tmp</tt> when <tt>TMP</tt>
+is not defined.  The directory is used by the built-in function <tt>share</tt> 
+and the built-in HTTPD server.</li>
+
+<li>A new newLISP library call <tt>(newlispLibConsole 1)</tt> forces console 
+output to <em>stdout</em> instead of writing to the return string of 
+<tt>newlispEvalStr</tt>. The same call also enables console input via
+<em>stdin</em>.</li>
+
+<li>In <tt>get/put/post-url</tt> the new string option <tt>"raw"</tt> inhibits 
+'Location' redirection. <tt>"raw"</tt> parameter can also be combined with the 
+<tt>"list"</tt> and <tt>"debug"</tt> options, e.g. <tt>"raw debug"</tt>.</li>
+
+<li>In <tt>get/put/post-url</tt> list mode the second string in the returned list 
+contains only the returned content. The third list member is the server HTTP 
+response line.  The fourth list member contains the status-code, which is 0 for an 
+invalid HTTP response.</li>
+
+<li>The <tt>save</tt> function now saves symbols with strings longer than 2027
+characters appending multiple partial lines delimited by quotes <tt>"..."</tt>.
+This way lines can contain escape characters which are not allowed when using
+<tt>[text]...[/text]</tt> tags as delimiters.</li>
+
+<li>When using a new second <tt>seed</tt> syntax, all randomizing functions are 
+based on a random generator independent of platforms and compilers used to built 
+newLISP. When seeding using the second syntax all random functions called subsequenly 
+like <tt>amb</tt>, <tt>normal</tt>, <tt>rand</tt>, <tt>random</tt> and <tt>randomize</tt>
+are based on this platform independent random generator. After initializing with
+the new <tt>seed</tt> syntax a subsequent call to <tt>seed</tt> without parameters
+returns the current seed state of the random generator, which can be used at a later
+time to seed the generator for the same state in a sequence.</li>
+
+<li>A new <tt>ssq</tt> function returns the Sum of SQquares (SSQ) for a list or array
+vector.</li>
+
+
+</ul>
+
+<h3>Bug fixes</h3>
+
+<ul>
+<li><tt>date-list</tt> crashed for negative values on some MS Windows versions.</li>
+
+<li>The <tt>det</tt> and <tt>mat</tt> functions now give an
+error message when passed the wrong dimensions.</li>
+
+<li>HTTP server mode now works correctly with Apache server, when the environment
+variables NEWLISPDIR and PROGRAMFILES are not defined. Default file paths
+are then assumed for these variables.</li>
+
+<li>HTTP only server mode with command-line switch <tt>-http</tt> did not 
+reject <tt>net-eval</tt> requests.</li>
+
+<li><tt>expand</tt> could crash when evaluating binding lists.</li>
+
+<li>The <tt>json-parse</tt> function now handles 64-bit numbers also in 32-bit 
+versions of newLISP.</li>
+
+<li>Response string from <tt>get- put- post-url</tt> was not zero-terminated for
+HTTP error returns.</li>
+
+<li><tt>date-value</tt> did not evaluate month, day parameters.</li>
+
+<li>PCRE options PCRE_NOTBOL, PCRE_NOTEOL and PCRE_NOTEMPTY did not work.</li>
+
+<li>Loading an empty file now returns <tt>nil</tt> instead of throwing an
+error.</li>
+
+<li>guiserver.jar version 1.65 now correctly forces updates of a <tt>gs:canvas</tt>
+in a <tt>gs:scroll-pane</tt>.
+
+</ul>
+
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is fully compatible with the previous development version 1.64 .</p>
+
+<center>&part;</center>
+
+</body>
+</html>
+

@@ -7,7 +7,8 @@
 ;; @version 0.61 - fixed doc typo
 ;; @version 0.7 - check for valid list type in (get-value expr) thanks Kosh
 ;; @version 0.8 - changed references to /usr/ to /usr/local/
-;; @author Lutz Mueller 2005-2011, Kosh 2012
+;; @version 0.9 - make system.listMethods more flexible for no of args - thanks Ofoe
+;; @author Lutz Mueller 2005-2011, Kosh 2012, Oofoe 2016
 ;;
 ;; <h2>Functions for XML-RPC client</h2>
 ;; To use this module include a 'load' statement at the beginning of the program:
@@ -165,15 +166,21 @@
 # convert to SXML
 (xml-type-tags nil nil nil nil)
 
+# ( method /arg.../ -- XML) Compose XML request.
+(define (format-request method)
+  (let ((xml (format
+             "<?xml version=\"1.0\"?><methodCall><methodName>%s</methodName><params>"
+             method)))
+    (dolist (value (args))
+      (push (format "<param><value>%s</value></param>" value) xml -1))
+    (push "</params></methodCall>\n" xml -1)))
 
-# report all methods of XML-RPC server at url
 # return method names in a list of strings
 #
 # (XMLRPC:system.listMethods <url>)  
 #
 (define (system.listMethods url)
-    (execute url (format request "system.listMethods" "")))
-	
+    (execute url (format-request "system.listMethods")))
 
 # get help for a methodName at url
 # return help in a string

@@ -1,17 +1,18 @@
 # makefile for newLISP v. 10.x.x on Mac OSX LP64 memory model with readline support, UTF8, FFI
 #
-# for OS X 10.4 and later
+# for OS X 10.6 and later
+# this is the makefile used to make Mac OS X package for OS X 10.6 Snow Leopard and after
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
-CFLAGS = -m64 -Wall -Oz -c -DREADLINE -DMAC_OSX -DNEWLISP64 -DSUPPORT_UTF8 -DFFI
+CFLAGS = -m64 -mmacosx-version-min=10.6 -Wall -Oz -c -DREADLINE -DMAC_OSX -DNEWLISP64 -DSUPPORT_UTF8 -DFFI
 
 CC = cc
 
 default: $(OBJS)
-	$(CC) $(OBJS) -m64 -lm -lreadline -lffi -o newlisp
+	$(CC) $(OBJS) -m64 -mmacosx-version-min=10.6 -lm -lreadline -lffi -o newlisp
 	strip newlisp
 
 .c.o:

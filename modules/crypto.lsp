@@ -12,6 +12,8 @@
 ;; @version 1.11 - added  path for UBUNTU Linux 13.04
 ;; @version 1.12 - added  path for UBUNTU Linux 12.04 and CentOS, removed old
 ;; @version 1.13 - fix for crypto:hmac. Thanks Cormullion, March 2014
+;; @version 1.14 - starting v10.6.3 import using "cdecl" on Windows
+;; @version 1.15 - added path for Debian Jessie
 ;; @author Lutz Mueller 2007, Martin Quiroga 2007, Norman Deppenbroek 2009, 
 ;; @author Marc Hildman, 2011
 ;;
@@ -48,6 +50,7 @@
               "/usr/lib/i386-linux-gnu/libcrypto.so"; Ubuntu 12.04
               "/lib/i386-linux-gnu/libcrypto.so.1.0.0" ; UBUNTU Linux 13.04
               "/usr/lib64/libcrypto.so" ; Fedora, CentOS 6.x
+              "/usr/lib/x86_64-linux-gnu/libcrypto.so.1.0.0" ; Debian jessie
               "/usr/lib/libcrypto.so"
               "/usr/lib/libcrypto.so.4"
               "/usr/lib/libcrypto.so.18.0" ; OpenBSD 4.6
@@ -59,10 +62,12 @@
                       (find true (map file? files))
                       (throw-error "cannot find crypto library"))))
 
-(import library "MD5")
-(import library "RIPEMD160")
-(import library "SHA1")
-(import library "SHA256")
+(set 'option (if (= ostype "Windows") "cdecl"))
+
+(import library "MD5" option)
+(import library "RIPEMD160" option)
+(import library "SHA1" option)
+(import library "SHA256" option)
 
 ;; @syntax (crypto:md5 <string> <bool-raw>)
 ;; @param <string> The string buffer for which to calculate a MD5 hash

@@ -143,7 +143,6 @@
 #endif
 
 #ifdef EMSCRIPTEN
-/* #define MY_RANDOM */
 #define NO_DEBUG
 #define NO_NET_FUNCTIONS
 #define NO_WEB_FUNCTIONS
@@ -263,10 +262,8 @@ This is for 64bit large file support (LFS),
 #define LINE_FEED_LEN 2
 #define getSocket(A) ((A)->_file)
 #define setenv my_setenv
-#ifndef MY_RANDOM
 #define random rand
 #define srandom srand
-#endif
 #define ioctl ioctlsocket
 #define off_t off64_t
 #define lseek lseek64
