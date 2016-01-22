@@ -19,13 +19,13 @@ CC = /usr/bin/gcc-4.2
 # SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk
 SDKROOT = /Developer/SDKs/MacOSX10.5.sdk
 
-CFLAGS = -Wall -arch ppc -Os -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DFFI -isysroot $(SDKROOT) 
+CFLAGS = -m32 -Wall -arch ppc -Os -c -g -DREADLINE -DMAC_OSX -DSUPPORT_UTF8 -DFFI -isysroot $(SDKROOT) 
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
 
 default: $(OBJS)
-	$(CC) $(OBJS) -mmacosx-version-min=10.5 -arch ppc -g -lm -lreadline -lffi -o newlisp
+	$(CC) $(OBJS) -m32 -mmacosx-version-min=10.5 -arch ppc -g -lm -lreadline -lffi -o newlisp
 	strip newlisp
 
 .c.o:

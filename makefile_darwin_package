@@ -1,6 +1,6 @@
 # prepare Mac OSX package root directory in ../Package_contents
 
-VERSION=10.6.4
+VERSION=10.7.0
 
 datadir=Package_contents/usr/local/share
 bindir=Package_contents/usr/local/bin

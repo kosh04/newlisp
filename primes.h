@@ -162,6 +162,7 @@ PRIMITIVE primitive[] =
 	{"exp",		    p_exp,		0},
 	{"log",		    p_log,		0},
 	{"sqrt",		p_sqrt,     0},
+	{"ssq",		    p_ssq,      0},
 	{"rand",		p_rand, 	0},
 	{"seed",		p_seed,     0},
 	{"random",      p_random,	0},

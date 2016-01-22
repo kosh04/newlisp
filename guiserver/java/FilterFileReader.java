@@ -3,7 +3,7 @@
 //  guiserver
 //
 //  Created by Lutz Mueller on 7/17/07.
-//    Copyright (C) 2015 Lutz Mueller
+//    Copyright (C) 2016 Lutz Mueller
 
 import java.awt.event.*;
 import java.io.*;

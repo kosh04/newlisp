@@ -1,7 +1,7 @@
 /* nl-math.c
 
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you cann redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,14 +62,12 @@
 
 #ifdef BIGINT
 #define BIGINT_BASE 1000000000 /* 9 zeros */
-#define BIGINT_BASE2 1000000000000000000LL
+#define BIGINT_BASE2 1000000000000000000LL /* 18 zeros */
 #endif
 
-/* eliminated in 10.6.1
-#ifdef WINDOWS
-int _matherr(struct _exception *e) {return 1;}
-#endif
-*/
+extern uint32_t my_random();
+void my_srandom(uint32_t seed);
+uint32_t max_rand = MY_RAND_MAX;
 
 #ifdef DEBUG
 void debug(int * x, int n, char * txt)
@@ -703,6 +701,40 @@ cell = getCell(CELL_FLOAT);
 return(cell);
 }
 
+CELL * p_ssq(CELL * params)
+{
+CELL * cell;
+double floatNum = 0.0;
+double sqSum = 0.0;
+CELL * * addr;
+UINT idx, n;
+
+getEvalDefault(params, &cell);
+if(cell->type == CELL_EXPRESSION)
+    {
+    cell = (CELL *)cell->contents;
+    while(cell != nilCell)
+        {
+        floatNum = getDirectFloat(cell);
+        sqSum += floatNum * floatNum;
+        cell = cell->next;
+        }    
+    }
+else if(cell->type == CELL_ARRAY)
+    {
+    addr = (CELL * *)cell->contents;
+    n = (cell->aux - 1) / sizeof(CELL *);
+    for (idx = 0; idx < n; idx++)
+        {
+        cell = *(addr + idx);
+        floatNum = getDirectFloat(cell);
+        sqSum += floatNum * floatNum;
+        }
+    }
+else return(errorProcExt(ERR_LIST_OR_ARRAY_EXPECTED, params));
+
+return(stuffFloat(sqSum));
+}
 
 CELL * p_atan2(CELL * params)
 {
@@ -762,14 +794,14 @@ double scale;
 
 params = getInteger(params, (UINT *)&range);
 scale = range;
-if(range == 0) 
+if(range == 0)
     {
     srandom((unsigned)time(NULL));
     return(trueCell);
     }
 
-while((rnum = random()) == MY_RAND_MAX);
-rnum = (scale * rnum)/MY_RAND_MAX;
+while((rnum = my_random()) == max_rand);
+rnum = (scale * rnum)/max_rand;
 
 if(params->type == CELL_NIL)
     return(stuffInteger((UINT)rnum));
@@ -783,8 +815,8 @@ dist = makeCell(CELL_EXPRESSION, (UINT)cell);
 --n;
 while(n-- > 0)
     {
-    while((rnum = random()) == MY_RAND_MAX);
-    rnum = (scale * rnum)/MY_RAND_MAX;
+    while((rnum = my_random()) == max_rand);
+    rnum = (scale * rnum)/max_rand;
     cell->next = stuffInteger((UINT)rnum);
     cell = cell->next;
     }
@@ -800,7 +832,7 @@ CELL * cell;
 
 if((len = listlen(params)) == 0) return(nilCell);
 
-len = random() % len;
+len = my_random() % len;
 
 while(len--) params = params->next;
 
@@ -815,13 +847,27 @@ return(copyCell(cell));
 }
 
 
+/* from my_srandom() */
+extern int my_random_flag;
+extern UINT nshuff;
+extern uint32_t randseed;
+
 CELL *  p_seed(CELL * params)
 {
-INT64 seedNum;
+static INT64 seedNum = 0;
 
-getInteger64Ext(params, &seedNum, TRUE);
+if(params == nilCell)
+    return(stuffInteger(my_random_flag ? randseed : seedNum));
 
-srandom((UINT)(seedNum & 0xFFFFFFFF));
+params = getInteger64Ext(params, &seedNum, TRUE);
+
+my_random_flag = getFlag(params);
+max_rand = my_random_flag ? 0x7FFFFFFF : MY_RAND_MAX;
+
+if(my_random_flag && params->next != nilCell)
+        getInteger(params->next, &nshuff);
+        
+my_srandom((UINT)(seedNum & 0xFFFFFFFF));
 
 return(stuffInteger(seedNum));
 }
@@ -1304,15 +1350,15 @@ double randnum;
 
 if(type == DIST_RANDOM)
     {
-    randnum = random();
-    return(scale * randnum/MY_RAND_MAX + offset);
+    randnum = my_random();
+    return(scale * randnum/max_rand + offset);
     }
 
 if(type == DIST_NORMAL)
     {
     randnum = 0.0;
     for(i = 0; i < 12; i++)
-        randnum += random() % 1024;
+        randnum += my_random() % 1024;
     return(scale * (randnum - 6144 + 6)/1024 + offset);
     }
 
@@ -1397,8 +1443,8 @@ RANDOMIZE:
 for(i = 0; i < (length - 1); i++)
     {
     scale = length - i;
-    while((rnum = random()) == MY_RAND_MAX);
-    rnum = (scale * rnum)/MY_RAND_MAX;
+    while((rnum = my_random()) == max_rand);
+    rnum = (scale * rnum)/max_rand;
     j = i + rnum;
     cell = vector[i];
     vector[i] = vector[j];
@@ -1638,6 +1684,75 @@ CELL * p_criticalF(CELL  * params)
 return(criticalX(params, STAT_F));
 }
 
+/* Built-in versions for random() and srandom() are used only 
+   when 'seed' was called with extra 'true' value. Guarantees 
+   platform and compiler/libc indepedence when needed for some
+   applications. '(seed)' then can be used to retrieve state,
+   '(seed num true N)' can be used to set 'nshuff', which should
+   be 0 to when starting with a previously saved state seed. 
+
+   Adapted from FreeBSD: 
+   http://fxr.watson.org/fxr/source/libkern/random.c 
+   result is uniform on [0, 2^31 - 1]. 
+*/
+
+
+UINT nshuff = 50;  /* to drop some "seed -> 1st value" linearity */
+uint32_t randseed = 937186357; /* after srandom(1), NSHUFF=50 counted */
+int my_random_flag = 0; /* if not set, call libc version */
+
+void my_srandom(uint32_t seed)
+{
+int i;
+
+if(my_random_flag == 0) srandom(seed);
+else 
+    {
+    randseed = seed;
+    for (i = 0; i < nshuff; i++)
+        my_random();
+    }
+}
+
+uint32_t my_random()
+{
+int32_t x, hi, lo, t;
+
+if(my_random_flag == 0) return(random());
+
+/*
+* Compute x[n + 1] = (7^5 * x[n]) mod (2^31 - 1).
+* From "Random number generators: good ones are hard to find",
+* Park and Miller, Communications of the ACM, vol. 31, no. 10,
+* October 1988, p. 1195. (from FreeBSD code base)
+*/
+
+if ((x = randseed) == 0) x = 123459876;
+hi = x / 127773;
+lo = x % 127773;
+t = 16807 * lo - 2836 * hi;
+if (t < 0) t += 0x7fffffff;
+randseed = t;
+return (t);
+}
+
+#ifdef ALTERNATIVE_MY_RANDOM /* used for EMSCRIPTEN before v1.29 */
+int  m_w = 0x12345678;    /* must not be zero, nor 0x464fffff */
+int  m_z = 0x23456789;    /* must not be zero, nor 0x9068ffff */
+ 
+long int random(void)
+{
+m_z = 36969 * (m_z & 65535) + (m_z >> 16);
+m_w = 18000 * (m_w & 65535) + (m_w >> 16);
+return (((m_z << 16) + m_w)  & 0x7fffffff);  /* 31-bit result */
+}
+
+void srandom(unsigned int init)
+{
+m_z = init;
+m_w = 3 * init;
+}
+#endif
 
 /* ----------------------- betai and gammaln fucntions ----------------------*/
 
@@ -2902,7 +3017,7 @@ return(result);
 
 /*
 //
-// Copyright (C) 1992-2015 Lutz Mueller <lutz@nuevatec.com>
+// Copyright (C) 1992-2016 Lutz Mueller <lutz@nuevatec.com>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2, 1991,

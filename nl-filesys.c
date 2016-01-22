@@ -1,7 +1,7 @@
 /*
 
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,8 +60,6 @@ extern char ** environ;
 #ifdef WINDOWS
 #define fgetc win_fgetc
 #define realpath win_realpath
-#define random rand
-#define srandom srand
 #include <conio.h>  
 #include <io.h>
 #include <direct.h>
@@ -3053,26 +3051,6 @@ return(size);
 }
 #endif
 
-
-#ifdef MY_RANDOM /* used with #define EMSCRIPTEN before 1.29 */
-
-int  m_w = 0x12345678;    /* must not be zero, nor 0x464fffff */
-int  m_z = 0x23456789;    /* must not be zero, nor 0x9068ffff */
- 
-long int random(void)
-{
-m_z = 36969 * (m_z & 65535) + (m_z >> 16);
-m_w = 18000 * (m_w & 65535) + (m_w >> 16);
-return (((m_z << 16) + m_w)  & 0x7fffffff);  /* 31-bit result */
-}
-
-void srandom(unsigned int init)
-{
-m_z = init;
-m_w = 3 * init;
-}
-
-#endif
 
 /* ---------------------- Universal Unique ID version 1 and 3 ----------- */
 

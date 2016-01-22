@@ -1,6 +1,6 @@
 /* nl-symbol.c --- symbol handling routines for newLISP
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -339,7 +339,9 @@ if(cell->type == CELL_CONTEXT)
     sPtr->contents = (UINT)copyCell(nilCell);
     }
 else 
+    {
     deleteAndFreeSymbol(sPtr, checkReferences);
+    }
 return(trueCell);
 }
 
@@ -402,12 +404,18 @@ UINT * idx = envStackIdx;
 while(idx > envStack)
     {
     if(symbol == (SYMBOL *)*(--idx))
+        {
+        symbol->contents = (UINT)copyCell(nilCell);
         errorProcExt2(ERR_CANNOT_PROTECT_LOCAL, stuffSymbol(symbol));
+        }
     --idx;
     }
 
 if(!isLegalSymbol(symbol->name))
-        errorProcExt2(ERR_INVALID_PARAMETER, stuffString(symbol->name));
+    {
+    symbol->contents = (UINT)copyCell(nilCell);
+    errorProcExt2(ERR_INVALID_PARAMETER, stuffString(symbol->name));
+    }
 
 
 contextCell = makeCell(CELL_CONTEXT, (UINT)symbol);
@@ -430,14 +438,18 @@ while(blockPtr != NULL)
     {
     for(i = 0; i < MAX_BLOCK; i++)
         {
-        if( blockPtr->contents == (UINT)sPtr &&
-            (*(UINT *)blockPtr == CELL_SYMBOL ||  *(UINT *)blockPtr == CELL_CONTEXT))
+        if( (blockPtr->contents == (UINT)sPtr &&
+            (*(UINT *)blockPtr == CELL_SYMBOL || *(UINT *)blockPtr == CELL_CONTEXT))
+            ||
+            ( *(UINT *)blockPtr == CELL_DYN_SYMBOL && blockPtr->aux == (UINT)sPtr ) )
             {
             count++;
             if(replaceFlag)
                 {
                 blockPtr->type = CELL_SYMBOL;
                 blockPtr->aux = (UINT)nilCell;  
+                if(*(UINT *)blockPtr == CELL_DYN_SYMBOL) 
+                    free((void *)blockPtr->contents);
                 blockPtr->contents = (UINT)nilSymbol;
                 }
             }

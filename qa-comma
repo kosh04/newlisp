@@ -2734,7 +2734,17 @@ true
   (set 'a (rand 10))
   (seed 123)
   (set 'b (rand 10))
-  (= a b))
+  (= a b)
+  ; built-in PRNG with state recall
+  (seed 123 true)
+  (rand 100 100)
+  (set 'state (seed)) ; save state
+  (set 'r1 (rand 100 100))
+  (rand 100 100) 
+  (normal 10 3 100)
+  (seed state true 0) ; recall state
+  (= r1 (rand 100 100))
+)
 
 (define (test-seek , file chr)
   (set 'file (open "junk" "write"))
@@ -3006,6 +3016,10 @@ true
 
 (define (test-sqrt )
   (and (= 10 (sqrt 100)) (= 1,2 (sqrt 1,44))))
+
+(define (test-ssq)
+	(= 385 (ssq (sequence 1 10)) (ssq (array 10 (sequence 1 10))))
+)
 
 (define (test-starts-with )
   (and 

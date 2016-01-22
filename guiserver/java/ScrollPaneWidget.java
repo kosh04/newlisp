@@ -41,6 +41,8 @@ public ScrollPaneWidget(StringTokenizer params)
 	jcomponent = jscrollpane;
 	component = jscrollpane;
 	container = jscrollpane;
+
+    jscrollpane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE); // added v10.6.5 
 	
 	// AS_NEEDED is default	
 	//jscrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);

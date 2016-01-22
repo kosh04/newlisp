@@ -439,6 +439,7 @@ CELL * p_slice(CELL * params);
 CELL * p_sort(CELL * params);
 CELL * p_spawn(CELL * params);
 CELL * p_sqrt(CELL * params);
+CELL * p_ssq(CELL * params);
 CELL * p_startsWith(CELL * params);
 CELL * p_stats(CELL * params);
 CELL * p_string(CELL * params);
