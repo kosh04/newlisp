@@ -40,6 +40,7 @@ matrix:
 
 before_install:
   - source ./ci/coveralls/before_install_${TRAVIS_OS_NAME}.sh
+  - pip install --user codecov
 
 script:
   - make CC="$CC --coverage"
@@ -48,3 +49,4 @@ script:
 
 after_success:
   - coveralls --exclude util
+  - codecov

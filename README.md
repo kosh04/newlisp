@@ -2,8 +2,9 @@ newLISP mirror
 ==============
 
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
-[![Coverage Status](https://coveralls.io/repos/kosh04/newlisp/badge.svg?branch=develop&service=github)](https://coveralls.io/github/kosh04/newlisp?branch=develop)
 [![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
+[![Coverage Status](https://coveralls.io/repos/kosh04/newlisp/badge.svg?branch=develop&service=github)](https://coveralls.io/github/kosh04/newlisp?branch=develop)
+[![codecov.io](https://codecov.io/github/kosh04/newlisp/coverage.svg?branch=develop)](https://codecov.io/github/kosh04/newlisp?branch=develop)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
 ## newLISP with Git(Hub)
@@ -26,8 +27,9 @@ The final goal is newLISP development introduces DVCS (Git, Mercurial, etc) in o
 
 - [Source Archives](https://github.com/kosh04/newlisp/releases)
 - [Travis CI](https://travis-ci.org/kosh04/newlisp) : Continuous Integration
-- [Coveralls](https://coveralls.io/github/kosh04/newlisp) : Code Coverage
 - [AppVeyor](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop) : Continuous Integration (for Windows)
+- [Coveralls](https://coveralls.io/github/kosh04/newlisp) : Code Coverage
+- [Codecov](http://codecov.io/github/kosh04/newlisp?ref=develop) : Code Coverage
 - [Gitter](https://gitter.im/kosh04/newlisp) : Chat about this repo
 
 ## Contribute
