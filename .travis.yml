@@ -24,6 +24,7 @@ matrix:
             - binutils-mingw-w64-x86-64
       script:
         - make -f makefile_mingw64_utf8 CC=${CC} STRIP=${STRIP}
+      after_success: echo "Skip report coverage"
     - os: linux
       compiler: i686-w64-mingw32-gcc
       env: STRIP=i686-w64-mingw32-strip
@@ -35,6 +36,7 @@ matrix:
             - binutils-mingw-w64-i686
       script:
         - make -f makefile_mingw_utf8 CC=${CC} STRIP=${STRIP}
+      after_success: echo "Skip report coverage"
 
 before_install:
   - source ./ci/coveralls/before_install_${TRAVIS_OS_NAME}.sh
