@@ -1,4 +1,4 @@
-version: 1.0.{build}
+version: 10.7.0.{build}
 
 os: Windows Server 2012 R2
 
@@ -7,7 +7,6 @@ init:
 
 environment:
   global:
-    NEWLISP_MAKE_TARGET: default
     CC: gcc
     STRIP: strip
     MSYS_ROOT: C:\MinGW\msys\1.0
@@ -20,16 +19,13 @@ environment:
     - TARGET: x86_64-w64-mingw32
       MSYS2_ARCH: x86_64
       MSYSTEM: MINGW64
-      NEWLISP_MAKE_TARGET: winall64_utf8
 
     - TARGET: i686-w64-mingw32
       MSYS2_ARCH: i686
       MSYSTEM: MINGW32
-      NEWLISP_MAKE_TARGET: winall_utf8
 
     - TARGET: mingw32
       MSYS_ARCH: x86
-      NEWLISP_MAKE_TARGET: winall_utf8
 
     - TARGET: i686-pc-cygwin
       CYGWIN_ARCH: x86
@@ -39,14 +35,12 @@ environment:
     - TARGET: x86_64-pc-cygwin
       CYGWIN_ARCH: x86_64
       CYGWIN_ROOT: C:\cygwin64
-      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,pkg-config,cygrunsrv,curl
+      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,pkg-config,cygrunsrv,curl,libisl10,libcloog-isl4
 
 matrix:
   allow_failures:
-    # Note: mingw32 with libffi requires CFLAGS+="-DWINVER=0x0600"
+    # Note: mingw32 with libffi may requires CFLAGS+="-DWINVER=0x0600"
     - TARGET: mingw32
-    # Note: makefile_cygwin apply only 32-bit
-    - TARGET: x86_64-pc-cygwin
 
 install:
   - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\%MSYSTEM%\bin;%PATH%"
@@ -77,11 +71,17 @@ cache:
   - '%CYGWIN_CACHE%'
 
 build_script:
-  - sh -c 'make $NEWLISP_MAKE_TARGET'
+  - sh -c 'make $NEWLISP_MAKE_TARGET CC="$CC --coverage"'
 
 test_script:
   - sh -c "./newlisp -v"
   - sh -c "make testall"
+
+on_success:
+  - set PYTHON=C:\Python27
+  - set PATH=%PYTHON%;%PYTHON%\Scripts;%APPDATA%\Python\Scripts;%PATH%
+  - pip install --user codecov
+  - codecov
 
 artifacts:
   - path: newlisp.exe
