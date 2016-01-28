@@ -981,5 +981,5 @@
    Make +123 and +1.23 work in syntax highlighter.
    Make sicentific notation e.g. 1.23e-4 work in syntax highlighter.
 
-   
+1.66 fixed screeen update when scrolling, fixed guierver quit menu.
 

@@ -1,0 +1,36 @@
+# makefile for newLISP v.10.x.x on Cygwin with readline support
+#
+# support for CYGWIN was dropped with version 8.6 in 2005
+# nl-sock.c needs a GNU version of icmp6.h
+#
+# to use extended FFI add -lff to the $(CC) line and -DFFI to CFLAGS
+#
+# to use the semaphore function install cygserver:
+# http://cygwin.com/cygwin-ug-net/using-cygserver.html
+#
+# Note, that readline support may require different libraries on different OSs
+# 
+# To install, install the normal Win32 version of newLISP first, 
+# then copy the newlisp.exe into $(NEWLISPDIR), which is normally 
+# defined as "C:\Program Files\newlisp" after the Win32 install. 
+# at least one CYGWIN library must be installed too
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+
+CFLAGS = -m64 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DCYGWIN
+#CFLAGS = -m64 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DFFI -DCYGWIN
+
+CC = gcc
+
+
+default: $(OBJS)
+	$(CC) $(OBJS) -m64 -g -lm -ldl -lreadline -o newlisp.exe
+#	$(CC) $(OBJS) -m64 -g -lm -ldl -lreadline -lffi -o newlisp.exe
+	strip newlisp.exe
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_cygwin
+

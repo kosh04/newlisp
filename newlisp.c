@@ -1,7 +1,7 @@
 /* newlisp.c --- enrty point and main functions for newLISP
 
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10604;
+int version = 10700;
 
 char copyright[]=
-"\nnewLISP v.10.6.4 Copyright (c) 2015 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.7.0 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.4 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.0 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.4 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.0 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.6.4 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.0 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.6.4 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.0 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -3378,7 +3378,7 @@ free(buffer);
    evaluateExpression() function.
 
 */
-
+int references(SYMBOL *, int);
 int compileExpression(STREAM * stream, CELL * cell)
 {
 char token[MAX_STRING + 4];
@@ -3526,7 +3526,6 @@ switch(getToken(stream, token, &tklen))
             }
 
         contextCell = (CELL *)contextPtr->contents;
-
         if(getToken(stream, token, &tklen) != TKN_SYMBOL)
             errorProcExt2(ERR_SYMBOL_EXPECTED, stuffString(lastPtr));
 

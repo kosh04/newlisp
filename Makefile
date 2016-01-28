@@ -24,8 +24,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.6.4
-INT_VERSION = 10604
+VERSION = 10.7.0
+INT_VERSION = 10700
 
 default: makefile_build
 	make -f makefile_build
@@ -102,7 +102,7 @@ winall64_utf8:
 	./newlisp qa-dot
 	tar czvf newlisp-win64-utf8.tgz newlisp.exe newlisp.dll
 
-# make a Windows intaller package
+# make a Windows installer package
 wings:
 	make -f makefile_wings
 	
@@ -335,6 +335,7 @@ version:
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_original_install 
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_darwin_package
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_wings
+	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_wings64
 
 # Prepare the manual file for PDF conversion, by replaceing all <span class="function"></span>
 # with <font color="#DD0000"></font> in the syntax statements and replacing &rarr; (one line

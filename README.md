@@ -3,6 +3,7 @@ newLISP mirror
 
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
 [![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
+[![codecov.io](https://codecov.io/github/kosh04/newlisp/coverage.svg?branch=develop)](https://codecov.io/github/kosh04/newlisp?branch=develop)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
 ## newLISP with Git(Hub)
@@ -25,11 +26,24 @@ The final goal is newLISP development introduces DVCS (Git, Mercurial, etc) in o
 
 - [Source Archives](https://github.com/kosh04/newlisp/releases)
 - [Travis CI](https://travis-ci.org/kosh04/newlisp) : Continuous Integration
-- [AppVeyor](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop) : Continuous Integration (for MinGW)
+- [AppVeyor](https://ci.appveyor.com/project/kosh04) : Continuous Integration (for Windows)
+- [Codecov](https://codecov.io/github/kosh04/newlisp) : Code Coverage
 - [Gitter](https://gitter.im/kosh04/newlisp) : Chat about this repo
+
+## Contribute
+
+Issue and pull requests about this repository are welcome.
+
+For code contributions, bug fixes, reports and comments,
+please contact Lutz Mueller (see README) or post to the Forum.
+
+## Link
+
+- newLISP http://www.newlisp.org/
+- newLISP Forum http://www.newlispfanclub.alh.net/
 
 ## License
 
 newLISP and Nuevatec are trademarks of Lutz Mueller.
 All files are distribute by GPLv3. For more details,
-see doc/COPYING and doc/License.html.
+see [doc/COPYING](https://github.com/kosh04/newlisp/blob/master/doc/COPYING) and [doc/License.html](https://rawgit.com/kosh04/newlisp/master/doc/License.html).

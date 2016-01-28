@@ -1,7 +1,7 @@
 /* 
    win-util.c, utitity routines for native windows port of newLISP 
 
-    Copyright (C) 2015 Lutz Mueller
+    Copyright (C) 2016 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

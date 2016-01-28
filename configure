@@ -72,7 +72,7 @@ if   [ ${os_type} = MAC_OSX ] ; then
 	cp makefile_darwinLP64_utf8_ffi makefile_build
 elif [ ${os_type} = LINUX ] ; then
 	if [ -f /etc/redhat-release ] ; then
-		libffi_version=$(ls -d /usr/lib*/libffi*/include &>/dev/null)
+		libffi_version=$(ls -d /usr/lib*/libffi*/include)
         if [ -z "${libffi_version}" ] ; then
             libffi_version="/usr/include"
         fi
@@ -120,6 +120,11 @@ elif [ ${os_type} = WINDOWS ] ; then
 	fi
 elif [ ${os_type} = CYGWIN ] ; then
 	cp makefile_cygwin makefile_build
+	if [ ${memory_model} = LP64 ]; then
+	cp makefile_cygwinLP64 makefile_build
+	else 
+	cp makefile_cygwin makefile_build
+    fi
 elif [ ${os_type} = OS2 ] ; then
 	cp makefile_os2 makefile_build
 fi

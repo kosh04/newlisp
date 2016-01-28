@@ -15,6 +15,7 @@
 ;; @version 1.63 make deprecated gs:table-set-row-number work
 ;; @version 1.70 default comm port with Guiserver are now 64001 and 64002
 ;; @version 1.71 references to /usr/ changed to /usr/local/
+;; @version 1.72 doc corrections
 ;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2015
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
@@ -1962,9 +1963,9 @@ true
 ;;
 ;; 'gs:key-event' can be used to register a general unspecific key event handler
 ;; for any component in the system. Since version 1.05 of newLISP-GS this also
-;; includes text widgets, which already handle key events using their normal event 
-;; handler function. With 'gs:key-event' a second handler function can be registered
-;; for text widgets. Both functions will fire on their respective events.
+;; includes 'gs:text-field', which already handles key events 
+;; using the normal event handler function. With 'gs:key-event' a second handler 
+;; function can be registered. Both functions will fire on their respective events.
 ;;
 ;; Components respond to the following key event types: '"pressed"', '"released"', '"typed"'.
 ;; 
