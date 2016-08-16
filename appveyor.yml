@@ -16,16 +16,16 @@ environment:
     CYGWIN_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
 
   matrix:
-    - TARGET: x86_64-w64-mingw32
-      MSYS2_ARCH: x86_64
-      MSYSTEM: MINGW64
+    - TARGET: mingw32
+      MSYS_ARCH: x86
 
     - TARGET: i686-w64-mingw32
       MSYS2_ARCH: i686
       MSYSTEM: MINGW32
 
-    - TARGET: mingw32
-      MSYS_ARCH: x86
+    - TARGET: x86_64-w64-mingw32
+      MSYS2_ARCH: x86_64
+      MSYSTEM: MINGW64
 
     - TARGET: i686-pc-cygwin
       CYGWIN_ARCH: x86
@@ -42,9 +42,13 @@ matrix:
     # Note: mingw32 with libffi may requires CFLAGS+="-DWINVER=0x0600"
     - TARGET: mingw32
 
+cache:
+  - '%MSYS2_ROOT%\var\cache'
+  - '%CYGWIN_CACHE%'
+
 install:
-  - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\%MSYSTEM%\bin;%PATH%"
   - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\usr\bin;%PATH%"
+  - if defined MSYS2_ARCH appveyor SetVariable -Name PATH -Value "%MSYS2_ROOT%\%MSYSTEM%\bin;%PATH%"
 
   - if defined MSYS_ARCH appveyor SetVariable -Name PATH -Value "%MINGW_ROOT%\bin;%PATH%"
   - if defined MSYS_ARCH appveyor SetVariable -Name PATH -Value "%MSYS_ROOT%\bin;%PATH%"
@@ -64,14 +68,11 @@ install:
   - if defined CYGWIN_ARCH sh -lc "curl -OLsk https://github.com/bminor/glibc/raw/master/inet/netinet/icmp6.h"
   - if defined CYGWIN_ARCH sh -lc "install -D icmp6.h /usr/include/netinet/icmp6.h"
 
+  - where %CC%
   - '%CC% -v'
 
-cache:
-  - '%MSYS2_ROOT%\var\cache'
-  - '%CYGWIN_CACHE%'
-
 build_script:
-  - sh -c 'make $NEWLISP_MAKE_TARGET CC="$CC --coverage"'
+  - sh -c 'make CC="$CC --coverage"'
 
 test_script:
   - sh -c "./newlisp -v"
