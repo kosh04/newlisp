@@ -3,7 +3,7 @@ newLISP mirror
 
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
 [![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
-[![codecov.io](https://codecov.io/github/kosh04/newlisp/coverage.svg?branch=develop)](https://codecov.io/github/kosh04/newlisp?branch=develop)
+[![codecov](https://codecov.io/gh/kosh04/newlisp/branch/develop/graph/badge.svg)](https://codecov.io/gh/kosh04/newlisp)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
 ## newLISP with Git(Hub)
@@ -27,7 +27,7 @@ The final goal is newLISP development introduces DVCS (Git, Mercurial, etc) in o
 - [Source Archives](https://github.com/kosh04/newlisp/releases)
 - [Travis CI](https://travis-ci.org/kosh04/newlisp) : Continuous Integration
 - [AppVeyor](https://ci.appveyor.com/project/kosh04) : Continuous Integration (for Windows)
-- [Codecov](https://codecov.io/github/kosh04/newlisp) : Code Coverage
+- [Codecov](https://codecov.io/gh/kosh04/newlisp) : Code Coverage
 - [Gitter](https://gitter.im/kosh04/newlisp) : Chat about this repo
 
 ## Contribute
