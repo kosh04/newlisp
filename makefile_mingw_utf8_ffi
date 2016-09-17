@@ -1,9 +1,11 @@
 # makefile for newLISP v. 10.x.x on MinGW with UTF-8 support and FFI
 #
 
+include windres.mk
+
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
-	nl-utf8.o win-util.o win-path.o windows/icon.o
+	nl-utf8.o win-util.o win-path.o windows/resource.o
 
 CFLAGS = -Wall -O1 -DSUPPORT_UTF8 -DWINDOWS=1 -D_WIN32_WINNT=0x0600 -DFFI
 LDFLAGS = -static
@@ -11,7 +13,6 @@ LDLIBS = -lws2_32 -lffi
 
 CC = gcc
 STRIP = strip
-WINDRES = windres
 
 default: newlisp.exe
 
@@ -22,8 +23,4 @@ newlisp.exe: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-%.o: %.rc
-	$(WINDRES) $< -O coff -o $@ $(RCFLAGS)
-
-$(OBJS): primes.h protos.h newlisp.h makefile_mingw_utf8_ffi
-windows/icon.o: version.h
+$(OBJS): primes.h protos.h newlisp.h version.h makefile_mingw_utf8_ffi

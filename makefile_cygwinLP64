@@ -15,8 +15,11 @@
 # defined as "C:\Program Files\newlisp" after the Win32 install. 
 # at least one CYGWIN library must be installed too
 
+include windres.mk
+
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
+	windows/resource.o
 
 CFLAGS = -m64 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DCYGWIN
 #CFLAGS = -m64 -Wall -pedantic -Wno-strict-aliasing -Wno-long-long -c -O2 -g -DREADLINE -DFFI -DCYGWIN
@@ -32,5 +35,5 @@ default: $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_cygwin
+$(OBJS): primes.h protos.h version.h makefile_cygwin
 
