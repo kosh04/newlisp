@@ -1,13 +1,14 @@
 # Makefile.mingw
 # Usage: make -f Makefile.mingw [newlisp|lib|clean]
 
+include windres.mk
+
 CC = gcc
-WINDRES = windres
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
 	nl-utf8.o \
-	$(if eq ($(OS),Windows_NT), win-util.o win-path.o windows/icon.o)
+	$(if eq ($(OS),Windows_NT), win-util.o win-path.o windows/resource.o)
 
 DEFS := -DWINDOWS -D_WIN32_WINNT=0x0600 -DSUPPORT_UTF8
 
@@ -18,22 +19,18 @@ LDLIBS   := -lws2_32
 
 default: newlisp
 
-lib: newlisp.dll
-
 newlisp: $(OBJS)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+lib: newlisp.dll
 
 newlisp.dll: CPPFLAGS += -DLIBRARY
 newlisp.dll: LDFLAGS += -static-libgcc -Wl,--enable-stdcall-fixup
 newlisp.dll: $(OBJS) win-dll.o win-dll.def
 	$(CC) -shared $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-%.o: %.rc
-	$(WINDRES) --input-format=rc --output-format=coff $< -o $@
-
-
 $(OBJS): primes.h protos.h newlisp.h
-windows/icon.o: version.h
+windows/resource.o: version.h
 
 clean:
 	$(RM) $(OBJS) newlisp.exe newlisp.dll

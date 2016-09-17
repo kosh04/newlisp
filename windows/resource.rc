@@ -1,21 +1,7 @@
-// Link
-// VERSIONINFO resource
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa381058(v=vs.85).aspx
+/* Resource script */
 
-// VS_FIXEDFILEINFO structure
-// https://msdn.microsoft.com/ja-jp/library/windows/desktop/ms646997(v=vs.85).aspx
-
-// StringFileInfo BLOCK statement
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa381049%28v=vs.85%29.aspx
-
-/* Strings are enclosed in quotation marks. RC does not automatically 
- * append a terminating null character to a string. Each string is a 
- * sequence of the specified ANSI characters, unless you qualify it as a 
- * wide-character string with the "L" prefix.
- */
-
-#include "../version.h"
 #include <winver.h>
+#include "../version.h"
 
 #define NEWLISP_PROGNAME	"newlisp.exe"
 #define NEWLISP_DESCRIPTION	"newLISP interpreter (CUI)"
@@ -29,13 +15,13 @@
 #endif
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION	RC_VERSION
- PRODUCTVERSION	RC_VERSION
- FILEFLAGSMASK	0x17L
- FILEFLAGS	VER_DEBUG
- FILEOS		VOS_DOS_WINDOWS32
- FILETYPE	VFT_APP
- FILESUBTYPE	0x0L
+FILEVERSION	RC_VERSION
+PRODUCTVERSION	RC_VERSION
+FILEFLAGSMASK	0x17L
+FILEFLAGS	VER_DEBUG
+FILEOS		VOS_DOS_WINDOWS32
+FILETYPE	VFT_APP
+FILESUBTYPE	0x0L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
