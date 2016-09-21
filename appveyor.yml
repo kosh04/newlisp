@@ -35,7 +35,7 @@ environment:
     - TARGET: x86_64-pc-cygwin
       CYGWIN_ARCH: x86_64
       CYGWIN_ROOT: C:\cygwin64
-      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,pkg-config,cygrunsrv,curl,libisl10,libcloog-isl4
+      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,cygrunsrv,libisl10,libcloog-isl4
 
 matrix:
   allow_failures:
