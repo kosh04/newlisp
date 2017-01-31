@@ -52,7 +52,7 @@ extern STREAM libStrStream;
 int newlispLibConsoleFlag = 0;
 #endif
 
-#ifdef LINUX
+#if defined(LINUX) || defined(KFREEBSD)
 #ifdef ANDROID
 int opsys = 11;
 #else
@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10700;
+int version = 10701;
 
 char copyright[]=
-"\nnewLISP v.10.7.0 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.7.1 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.0 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.1 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.0 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.1 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.0 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.1 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.0 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.1 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -931,7 +931,7 @@ if(errorReg && !isNil((CELL*)errorEvent->contents) )
 #ifdef READLINE
 rl_readline_name = "newlisp";
 rl_attempted_completion_function = (char ** (*) (const char *, int, int))newlisp_completion;
-#if defined(LINUX) || defined(_BSD)
+#if defined(LINUX) || defined(_BSD) || defined(KFREEBSD)
 /* in Bash .inputrc put 'set blink-matching-paren on' */
 rl_set_paren_blink_timeout(300000); /* 300 ms */
 #endif
@@ -3264,6 +3264,33 @@ if(traceFlag & TRACE_PRINT_EVAL) tracePrint(errorStream.buffer, NULL);
 }
 
 
+extern UINT * lambdaStack;
+extern UINT * lambdaStackIdx;
+CELL * p_history(CELL * params)
+{
+CELL * history;
+CELL * lambdaFunc;
+CELL * lambdaExpr;
+UINT * stackIdx = lambdaStackIdx;
+
+history = getCell(CELL_EXPRESSION);
+while(stackIdx > lambdaStack)
+    {
+    lambdaExpr = (CELL *)*(--stackIdx);
+    lambdaFunc = (CELL *)lambdaExpr->contents;
+    if(lambdaFunc->type == CELL_SYMBOL)
+		{
+		if(getFlag(params))
+			addList(history, copyCell(lambdaExpr));
+		else
+			addList(history, copyCell((CELL*)lambdaExpr->contents));
+		}
+    }
+
+return(history);
+}
+
+
 /* --------------------------- load source file ------------------------- */
 
 
@@ -5101,6 +5128,7 @@ for(;;)
     next = params->next;
     if(params == nilCell)
         return(errorProc(ERR_MISSING_ARGUMENT));
+	pushResultFlag = TRUE;
     if(next == nilCell) return(setDefine(symbol, params, SET_SET));
     setDefine(symbol, params, SET_SET);
     params = next;
@@ -7237,7 +7265,11 @@ if(params->next == nilCell)
 params = params->next;
 cell = evaluateExpression(params);
 if(cell->type == CELL_STRING)
+    {
+    if(cell->aux - 1 > MAX_SYMBOL)
+        return(errorProcExt(ERR_STRING_TOO_LONG, cell));	
     newSymStr = (char *)cell->contents;
+    }
 else if(cell->type == CELL_SYMBOL)  
     newSymStr = ((SYMBOL *)cell->contents)->name;
 else if(cell->type == CELL_DYN_SYMBOL)

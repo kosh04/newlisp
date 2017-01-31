@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.7.0 Manual and Reference</title>
+   <title>newLISP v.10.7.1 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,7 +148,7 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.7.0</h2>
+<h2>User Manual and Reference v.10.7.1&nbsp;<font size='2'></font></h2>
 </center>
 
 <br/><br/><br/><br/>
@@ -1121,11 +1121,11 @@ Put one of the following lines into <tt>inetd.conf:</tt>
 </p>
 
 <pre>
-net-eval  stream  tcp  nowait  root  /usr/bin/newlisp -c
+net-eval  stream  tcp  nowait  root  /usr/local/bin/newlisp -c
 											 
 # as an alternative, a program can also be preloaded
 											 
-net-eval  stream  tcp  nowait  root  /usr/bin/newlisp -c myprog.lsp
+net-eval  stream  tcp  nowait  root  /usr/local/bin/newlisp -c myprog.lsp
 </pre>
 
 <p>
@@ -1153,7 +1153,7 @@ service net-eval
     socket_type = stream
     wait = no
     user = root
-    server = /usr/bin/newlisp
+    server = /usr/local/bin/newlisp
     port = 4711
     server_args = -c
     only_from = localhost
@@ -1275,7 +1275,7 @@ CONVERT ME TO UPPERCASE
 <h3>Environment variable <tt>NEWLISPDIR</tt></h3>
 <p>During startup, newLISP sets the environment variable <tt>NEWLISPDIR</tt>, 
 if it is not set already. On Linux, BSDs, Mac OS X and other Unixes the 
-variable is set to <tt>/usr/share/newlisp</tt>. On MS Windows the variable is set 
+variable is set to <tt>/usr/local/share/newlisp</tt>. On MS Windows the variable is set 
 to <tt>%PROGRAMFILES%/newlisp</tt>.</p>
 
 <p>The environment variable <tt>NEWLISPDIR</tt> is useful when loading files 
@@ -1326,10 +1326,10 @@ convenient for defining functions and system-wide variables.</p>
 <a name="directories_unix"></a>
 <h3> Directories on Linux, BSD, Mac OS X and other Unix </h3>
 <p>
-The directory <tt>/usr/share/newlisp/modules</tt> contains modules with useful 
-functions POP3 mail, etc. The directory <tt>/usr/share/newlisp/guiserver</tt> 
+The directory <tt>/usr/local/share/newlisp/modules</tt> contains modules with useful 
+functions POP3 mail, etc. The directory <tt>/usr/local/share/newlisp/guiserver</tt> 
 contains sample programs for writing GUI applications with newLISP-GS.
-The directory <tt>/usr/share/doc/newlisp/</tt> contains documentation in HTML 
+The directory <tt>/usr/local/share/doc/newlisp/</tt> contains documentation in HTML 
 format.</p>
 
 <br/>
@@ -3548,13 +3548,15 @@ uninitialized <a href="#default_function">default functor</a>:</p>
 
 ; or as a safer alternative
 
-(new Tree 'MyHash) ; create from built-in template
+(new Tree 'Myhash) ; create from built-in template
 </pre>		
 
 <p>Either method can be used to make the  <tt>MyHash</tt> dictionary space and default
 functor. The second method is safer, as it will protect the default functor 
 <tt>MyHash:MyHash</tt> from change. The <em>default functor</em> in a namespace must 
-contain <tt>nil</tt> to be used as a dictionary. Creating key-value pairs and retrieving 
+contain <tt>nil</tt> to be used as a dictionary. The string used for the symbol name
+is limited to 1022 characters and internally an underscore is prepended to the symbol
+name used in the context. Creating key-value pairs and retrieving 
 a value is easy:</p>
 
 <pre>
@@ -3567,6 +3569,10 @@ a value is easy:</p>
 (Myhash 456 "hello")
 
 (Myhash 456)    <span class='arw'>&rarr;</span> "hello"
+
+; internally an underscore is prepended to the symbol name
+
+(symbols Myhash)  <span class='arw'>&rarr;</span> (Myhash:Myhash Myhash:_456 Myhash:_var)
 </pre>		
 
 <p>Symbol variables created this way can contain spaces or other characters
@@ -7430,6 +7436,11 @@ arithmetic">
 </tr>
 
 <tr>
+<td><a href="#history">history</a></td>
+<td>returns the call history of a function</td>
+</tr>
+
+<tr>
 <td><a href="#last-error">last-error</a></td>
 <td>report the last error number and text</td>
 </tr>
@@ -10470,7 +10481,7 @@ for further customizing interactive mode by modifying the newLISP prompt.</p>
 <tt>init.lsp</tt> startup file:</p>
 
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ; set the prompt to the current directory name
 (prompt-event (fn (ctx) (append (real-path) "&gt; ")))
@@ -11368,7 +11379,7 @@ for testing of statistical significance and confidence intervals.</p>
 <!-- example -->
 
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
  
 (set 'inFile (open (main-args 2) "read"))
 (while (read-line inFile) 
@@ -12323,7 +12334,7 @@ This second syntax is not available on MS Windows.</p>
 <!-- example -->
 
 <pre>
-(set 'pid (process "/usr/bin/bc" bcin bcout)) 
+(set 'pid (process "/usr/local/bin/bc" bcin bcout)) 
 (destroy pid)
 
 (set 'pid (fork (dotimes (i 1000) (println i) (sleep 10))))
@@ -12371,10 +12382,10 @@ specified, <tt>nil</tt> is returned.</p>
 <h4>syntax: (device [<em>int-io-handle</em>])</h4>
 
 <p><em>int-io-handle</em> is an I/O device number, which is set to 0 (zero)
-for the default STD I/O pair of handles, 0 for <i>stdin</i> and 1
-for <i>stdout</i>. <em>int-io-handle</em> may also be a file handle 
-previously obtained using <a href="#open">open</a>. In this case
-both, input and output are channeled through this handle.
+for the default STD I/O pair of handles, 0 for <i>stdin</i>, 1
+for <i>stdout</i> and 2 for <i>stderr</i>. <em>int-io-handle</em> may also 
+be a file handle previously obtained using <a href="#open">open</a>. In this 
+case both, input and output are channeled through this handle.
 When no argument is supplied, the current I/O device number is returned. 
 </p>
 
@@ -12531,7 +12542,7 @@ syntax: (directory <em>str-path</em> <em>str-pattern</em> [<em>regex-option</em>
 
 <pre>
 (directory? "/etc")             <span class='arw'>&rarr;</span> true
-(directory? "/usr/bin/emacs/")  <span class='arw'>&rarr;</span> nil
+(directory? "/usr/local/bin/emacs/")  <span class='arw'>&rarr;</span> nil
 </pre>
 
 <br/><br/>
@@ -13226,7 +13237,7 @@ where the variable stays with an empty string.</p>
 <!-- example -->
 
 <pre>
-(env "NEWLISPBIN" "/usr/bin/")  <span class='arw'>&rarr;</span> true
+(env "NEWLISPBIN" "/usr/local/bin/")  <span class='arw'>&rarr;</span> true
 (env "NEWLISPBIN")              <span class='arw'>&rarr;</span> "/usr/bin/"
 (env "NEWLISPBIN" "")           <span class='arw'>&rarr;</span> true
 (env "NEWLISPBIN")              <span class='arw'>&rarr;</span> nil
@@ -14043,7 +14054,7 @@ read or write permissions for the current user.</p>
 <pre>
 (if (file? "afile") (set 'fileNo (open "afile" "read")))
 
-(file? "/usr/bin/newlisp" true) <span class='arw'>&rarr;</span> "/usr/bin/newlisp"
+(file? "/usr/local/bin/newlisp" true) <span class='arw'>&rarr;</span> "/usr/local/bin/newlisp"
 (file? "/usr/bin/foo" true)     <span class='arw'>&rarr;</span> nil
 </pre>
 
@@ -14832,7 +14843,7 @@ to communicate between processes.</p>
 <!-- example -->
 
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 (define (count-down-proc x channel)
   (while (!= x 0)
@@ -15809,6 +15820,37 @@ global? 'print)   <span class='arw'>&rarr;</span> true
 
 <br/><br/>
 
+<a name="history"></a>
+<h2><span class="function">history</span></h2>
+
+<h4>syntax: (history [<em>bool-params</em>])</h4>
+
+<p><em>history</em> returns a list of the call history of the enclosing function.
+Without the optional <em>bool-params</em>, a list of function symbols is returned.
+The first symbol is the name of the enclosing function. When the optional 
+<em>bool-params</em> evaluates to to <em>true</em>, the call arguments are included 
+with the symbol.</p>
+<br/><br/>
+
+<pre>
+(define (foo x y) 
+    (bar (+ x 1) (* y 2)))
+
+(define (bar a b) 
+    (history))
+
+; history returns names of calling functions
+(foo 1 2) <span class='arw'>&rarr;</span> (bar foo)
+
+; the addtional 'true' forces inclusion of callpatterns
+(define (bar a b) 
+    (history true))
+
+(foo 1 2) <span class='arw'>&rarr;</span> ((bar (+ x 1) (* y 2)) (foo 1 2))
+</pre>
+
+<br/><br/>
+
 <a name="if"></a>
 <h2><span class="function">if</span></h2>
 
@@ -15836,12 +15878,12 @@ of the conditional expression in <tt>if</tt>.</p>
 ; more than one statement in the true or false
 ; part must be blocked with (begin ...)
 (if (= x y)
-(begin
-(some-func x)
-(some-func y))
-(begin
-(do-this x y)
-(do-that x y))
+  (begin
+    (some-func x)
+    (some-func y))
+  (begin
+    (do-this x y)
+    (do-that x y))
 )
 
 ; if also sets the anaphoric system variable $it
@@ -16031,6 +16073,7 @@ environment use the <a href="#extended_import">extended <tt>import</tt> syntax</
 ("Windows" "msvcrt.dll")
 ("OSX" "libc.dylib")
 
+(import LIBC "printf")
 (printf "%g %s %d %c\n" 1.23 "hello" 999 65)
 <b>1.23 hello 999 A</b>
 <span class='arw'>&rarr;</span> 17 ; return value
@@ -17488,7 +17531,7 @@ URLs are supported.
 
 (load "a-file.lsp" "b-file.lsp" 'MyCTX)
 
-(load "file:///usr/share/newlisp/mysql.lsp")
+(load "file:///usr/local/share/newlisp/mysql.lsp")
 </pre>
 
 
@@ -17832,7 +17875,7 @@ the command-line arguments.
 newlisp 1 2 3
 
 &gt; (main-args)
-<b>("/usr/bin/newlisp" "1" "2" "3")</b>
+<b>("/usr/local/bin/newlisp" "1" "2" "3")</b>
 </pre>
 
 
@@ -17855,7 +17898,7 @@ in list-indexing.
 newlisp a b c
 
 &gt; (main-args 0)   
-<b>"/usr/bin/newlisp"</b>
+<b>"/usr/local/bin/newlisp"</b>
 &gt; (main-args -1)  
 <b>"c"</b>
 &gt; (main-args 2)   
@@ -17873,7 +17916,7 @@ of the script as the second argument:
 
 
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 # 
 # script to show the effect of 'main-args' in script file
 
@@ -17886,7 +17929,7 @@ of the script as the second argument:
 
 script 1 2 3
 
-<b>("/usr/bin/newlisp" "./script" "1" "2" "3")</b>
+<b>("/usr/local/bin/newlisp" "./script" "1" "2" "3")</b>
 </pre>
 
 
@@ -20471,9 +20514,9 @@ return a specific member in the result list.</p>
 		
 <tr><td>day of current year</td><td>Jan 1st is 1</td></tr>
 <tr><td>day of current week</td><td> (1&ndash;7) starting Monday</td></tr>
-<tr><td>time zone offset in minutes</td><td> west of GMT</td></tr>
+<tr><td>time zone offset in minutes</td><td> west of GMT including daylight savings bias</td></tr>
 <tr><td>daylight savings time type </td><td> (0&ndash;6) on Linux/Unix
-		or bias in minutes on MS Windows</td></tr>
+		or (0&ndash;2) on MS Windows</td></tr>
 </table><br/>
 
 <p>The second example returns the Coordinated Universal Time (UTC) 
@@ -20495,15 +20538,23 @@ returns <tt>0</tt> (zero) even during daylight savings time (dst).</p>
 (dst) has a different value from 1 to 6:</p>
 
 <table  width="35%" summary="date formatting">
-<tr align="left"><th>type</th><th>area</th></tr>
-<tr><td>0</td><td>not on dst</td></tr>
+<tr align="left"><th>UNIX type</th><th>area</th></tr>
+<tr><td>0</td><td>not on daylight savings</td></tr>
 <tr><td>1</td><td>USA style dst</td></tr>
-<tr><td>2</td><td>Australian style dst</td></tr>
-<tr><td>3</td><td>Western European dst</td></tr>
-<tr><td>4</td><td>Middle European dst</td></tr>
-<tr><td>5</td><td>Eastern European dst</td></tr>
+<tr><td>2</td><td>Australian style daylight savings</td></tr>
+<tr><td>3</td><td>Western European daylight savings</td></tr>
+<tr><td>4</td><td>Middle European daylight savings</td></tr>
+<tr><td>5</td><td>Eastern European daylight savings</td></tr>
 <tr><td>6</td><td>Canada dst</td></tr>
 </table>
+<br />
+<table  width="35%" summary="date formatting">
+<tr align="left"><th>Windows type</th><th></th></tr>
+<tr><td>0</td><td>Daylight saving time is not used</td></tr>
+<tr><td>1</td><td>Standard date time range is used</td></tr>
+<tr><td>2</td><td>Daylight date time range is used (daylight savings active)</td></tr> 
+</table>
+
 
 
 <p>See also the <a href="#date">date</a>, 
@@ -23835,7 +23886,7 @@ which may take a few seconds in a heavily loaded system.</p>
 <p>In the second syntax, <tt>reset</tt> will stop the current process 
 and start a new clean newLISP process with the same command-line parameters.
 This mode will only work when newLISP was started using its full path-name, 
-e.g. <tt>/usr/bin/newlisp</tt> instead of only <tt>newlisp</tt>. This mode is 
+e.g. <tt>/usr/local/bin/newlisp</tt> instead of only <tt>newlisp</tt>. This mode is 
 not available on MS Windows.</p>
 
 <p>In the third syntax. <tt>reset</tt> will change the maximum cell count allowed
@@ -24219,7 +24270,7 @@ in newLISP are based on this function.</p>
 
 <p>When using the second syntax, all randomizing functions are based on a random generator
 independent of platforms and compilers used to built newLISP. When seeding with the second
-syntax all random functions called subsequenly like 
+syntax all random functions called subsequently like 
 <a href="#amb">amb</a>, <a href="#normal">normal</a>, <a href="#rand">rand</a>,
 <a href="#random">random</a> and <a href="#randomize">randomize</a> are based on this
 platform independent random generator.</p>
@@ -24692,7 +24743,7 @@ child processes and exit:</p>
 <!-- example -->
 
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ; child process transmits random numbers
 (define (child-process)
@@ -24755,7 +24806,7 @@ These expressions can be any valid newLISP statements:</p>
 
 <!-- example -->
 <pre>
-#!/usr/bin/newlisp
+#!/usr/local/bin/newlisp
 
 ; sender child process of the message
 (set 'A (spawn 'result 

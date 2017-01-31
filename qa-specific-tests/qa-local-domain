@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; test local domain UNIX sockets
 ; v 1.1 change net-receive for 10.0

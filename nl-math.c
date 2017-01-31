@@ -174,8 +174,12 @@ if(!isNil(cell))
 #endif
     
 
+if(cell == nilCell) /* v. 10.7.1 */
+        errorProc(ERR_INVALID_PARAMETER);
+
 if(params->next != nilCell)
     getInteger64Ext(params->next, &adjust, TRUE);
+
 
 #ifndef NEWLISP64
 cell->type = CELL_INT64;
@@ -209,6 +213,9 @@ else
     }
 
 if(!isNil(cell)) getFloat(cell, &lValue);
+
+if(cell == nilCell) /* v. 10.7.1 */
+        errorProc(ERR_INVALID_PARAMETER);
 
 if(params->next != nilCell)
     getFloat(params->next, &adjust);

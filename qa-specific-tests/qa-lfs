@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ;; Test for LFS (Large Files Support)
 ;; create a file with more than 2^32 bytes

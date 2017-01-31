@@ -347,6 +347,8 @@ PRIMITIVE primitive[] =
 	{"xfer-event", 	p_transferEvent, 0},
 	{"reader-event", 	p_readerEvent, 0},
 	{"last-error", 	p_lastError, 0},
+	{"history", 	p_history, 0},
+
 #ifndef EMSCRIPTEN
 #ifndef NO_SIGNAL
 	{"signal",		p_signal,	0},

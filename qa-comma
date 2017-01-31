@@ -161,11 +161,12 @@ true
   (close out-file))
 
 (define (line-count file)
-  (device (open file "read"))
+  (set 'fno (open file "read"))
   (set 'cnt 0)
-  (while (read-line) 
+  (while (read-line fno) 
    (inc cnt))
-  (close (device))cnt)
+  (close fno )
+  cnt)
 
 (define (myappend x y)
   (cond 
@@ -1430,6 +1431,11 @@ true
 		(global? 'println)
 ))
 
+(define (test-history)
+	(= '((qa)) (history true))
+	(= '(qa) (history))
+)
+
 (define (test-if )
   (and 
    (if true true) 
@@ -1769,6 +1775,7 @@ true
         (set 'A '((1 2 3) (4 5 6)))
         (not (catch (mat + A B) 'result))
         (starts-with result "ERR: wrong dimensions")
+        ( = (mat * '((1 2 3)) -1) '((-1 -2 -3)))
 	))
 
 
@@ -2803,7 +2810,7 @@ true
 ))
 
 (define (test-set , x y z)
-  (set 'x (set 'y (set 'z 123)))
+  (set 'x 123 'y (string "foo"))
   (= x 123))
 
 (define (test-setf)

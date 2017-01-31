@@ -1,4 +1,4 @@
-﻿#!/usr/bin/newlisp
+﻿#!/usr/bin/env newlisp
 
 (println "raw:      " (set 'utf8str "我能吞下玻璃而不伤身体。"))
 (set 'utf8str-ext " \n 我能吞下玻璃而不伤身体。 \t ")

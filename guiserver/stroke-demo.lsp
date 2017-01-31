@@ -1,7 +1,7 @@
 #!/usr/local/bin/newlisp
 ;;
 ;; strokes-demo.lsp - demonstrate strokes with round endings in different lines and outlines
-;; v. 1.0
+;; v. 1.1
 
 ;;;; initialization
 (set-locale "C")
@@ -35,7 +35,7 @@
 ;;;; describe the GUI
 (gs:frame 'StrokesDemo 100 100 640 640 "Random lines, rectangles, circles, ellipses and arcs Demo")
 (gs:set-border-layout 'StrokesDemo)
-(gs:canvas 'MyCanvas 'StrokesDemo)
+(gs:canvas 'MyCanvas)
 (gs:panel 'Selection)
 (gs:label 'HelpText "show or hide shapes:")
 (gs:check-box 'LineSelect 'select-action "lines") 

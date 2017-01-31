@@ -26,13 +26,13 @@ try running again or test on a less busy, faster system.
 (set 'after (sys-info 0))  ; adjusting cellcount
 
 (println "loading and running qa-dot 2")
-(silent (load "qa-dot"))
+(load (load "qa-dot"))
 
 (println (sys-info))
 (set 'before (sys-info 0))
 
 (println "loading and running qa-dot 3")
-(silent (load "qa-dot"))
+(load "qa-dot")
 
 (println (sys-info))
 (set 'after (sys-info 0))

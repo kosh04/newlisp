@@ -156,7 +156,9 @@ do
 freeMemory(buffer);
 
 if(position == -1) return(nilCell);
-
+#ifndef WINDOWS
+fseek(getIOstream(fileHandle), foundPosition, 0);
+#endif
 lseek((int)fileHandle, foundPosition, SEEK_SET);
 #ifdef LFS
 result = foundPosition;

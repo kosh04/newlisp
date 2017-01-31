@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; Test IEE compliance of some FP operations and handling of 'inf' and 'NaN' 
 ; numbers. In all versions of newLISP (32Bit and 64Bit) floating point numbers

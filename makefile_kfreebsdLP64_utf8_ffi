@@ -1,0 +1,23 @@
+# makefile for newLISP v. 10.x.x on GNU/kFreeBSD with UTF8 support
+# and with <libffi support
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+
+# the option -fno-strict-aliasing may not be available on some BSD versions 
+DEFAULT_CFLAGS = -m64 -Wall -fno-strict-aliasing -O2 -c -g -DREADLINE -DNEWLISP64 -DSUPPORT_UTF8 -DKFREEBSD -DFFI $(CFLAGS)
+
+# or without readline lib and libffi
+#CFLAGS = -Wall -Wno-strict-aliasing -O2 -c -g -DNEWLISP64 -DKFREEBSD
+
+CC = cc
+
+default: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) -m64 -g -lm -lreadline -lncurses -ldl -lffi -o newlisp
+# or without readline lib
+#	$(CC) $(LDFLAGS) $(OBJS) -m64 -g -lm -o newlisp
+
+.c.o:
+	$(CC) $(CPPFLAGS) $(DEFAULT_CFLAGS) $<
+
+$(OBJS): primes.h protos.h makefile_bsdLP64_utf8_ffi
