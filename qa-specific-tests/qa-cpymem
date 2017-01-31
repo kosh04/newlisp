@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; this may not run on newer CPUs and definitely only runs in Intel i386
 ; runs fine on Mac OSX 10.6 Intel dual core 2 MacMini (2007)

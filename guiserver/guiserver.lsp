@@ -16,7 +16,8 @@
 ;; @version 1.70 default comm port with Guiserver are now 64001 and 64002
 ;; @version 1.71 references to /usr/ changed to /usr/local/
 ;; @version 1.72 doc corrections
-;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2015
+;; @version 1.73 eliminated dead code in gs:canvas
+;; @author LM, 2008, 2009, 2010, 2015, Unya 2012, FdB 2013, LM 2016
 ;;
 ;; This module has been tested on MacOS X 10.5 (Leopard) and Windows XP, both with the
 ;; Standard SUN Java RE v.1.5 (runtime environment) which came pre-installed on
@@ -967,7 +968,7 @@
 ;; When widgets are present on a canvas they appear to be floating over
 ;; the drawing. See the file 'textrot-demo.lsp' for an example.
 
-(define (canvas id parent)
+(define (canvas id)
 	(set 'gs:currentCanvas id)
 	(net-send out (string "canvas " id "\n"))
 )

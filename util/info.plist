@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+	<key>CFBundleName</key>
+	<string>newLISP-GS</string>
+	<key>CFBundleVersion</key>
+	<string>10.3</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<string>true</string>
+	<key>CFBundleExecutable</key>
+	<string>JavaApplicationStub</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleIconFile</key>
+	<string>newLISP-GS.icns</string>
+	<key>Java</key>
+	<dict>
+		<key>MainClass</key>
+		<string>guiserver</string>
+		<key>JVMVersion</key>
+		<string>1.6+</string>
+		<key>Arguments</key>
+		<string>64001 /usr/local/bin/newlisp-edit /local/newLISP128.png</string>
+		<key>ClassPath</key>
+			<string>$JAVAROOT/guiserver.jar</string>
+		<key>Properties</key>
+		<dict>
+			<key>apple.laf.useScreenMenuBar</key>
+			<string>true</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

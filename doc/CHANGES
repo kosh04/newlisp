@@ -7147,3 +7147,36 @@ Dec 6, 2009
 
 10.7.0 version 10.6.5 released as stable release January 2016.
 
+
+10.7.1 
+    GMT - offset now includes a potential daylight savings bias, when
+    daylight savings time is active on Windows and Unix-like OSs.
+
+    Like on UNIX the last field in the 'now' function shows similar to UNIX 
+    more info about usage of daylight savings time. In older Windows versions 
+    the daylight savings bias was shown all year.
+
+    'set' with multiple args leaked memory under certain conditions.
+
+    New not yet documented (history) returnst list of call history
+
+    Thanks to Sergio Durigan Junior for contributing changes and makefiles
+    for kFreeBSD. Debian GNU/kFreeBSD is a general purpose operating system, 
+    an official Debian GNU distribution using the kernel of FreeBSD instead 
+    of the Linux kernel. 
+
+    Fixed bug in 'search' and 'seek' with 'read-line' on some platforms.
+    Stream and raw handle file position went out of sink. 
+
+    'mat' with a scalar second argument was broken on 64-bit when scalar
+    was not a float.
+
+    fixed a problem in -- ++ when passing a 'nil' not contents of a 
+    symbol
+
+    symbol length extended from 255 to 1023 characters 
+    (1022 when using the hash function). Creating symbols
+    using a hash functor will now throw an error message
+    when the symbol is too long. The 'contect' and 'sys'
+    functions already threw an error message.
+

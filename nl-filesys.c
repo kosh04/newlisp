@@ -53,6 +53,17 @@ char * getUUID(char * str, char * node);
 int semctl(int semid, int semnum, int cmd, ...);
 #endif
 
+#if defined(LINUX) || defined(KFREEBSD)
+union semun {
+  int val;    /* Value for SETVAL */
+  struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+  unsigned short *array;  /* Array for GETALL, SETALL */
+#ifdef LINUX
+  struct seminfo *__buf;  /* Buffer for IPC_INFO (Linux-specific) */
+#endif
+};
+#endif /* LINUX || KFREEBSD */
+
 #ifndef TRU64
 extern char ** environ;
 #endif
@@ -82,7 +93,7 @@ int setenv (const char *name, const char *value, int replace);
 #define INVALID_SOCKET -1
 #endif
 
-#if defined(LINUX) || defined(CYGWIN)
+#if defined(LINUX) || defined(KFREEBSD) || defined(CYGWIN)
 char * strptime(const char * str, const char * fmt, struct tm * ttm);
 #endif
 
@@ -560,7 +571,6 @@ return(stuffInteger(size + (lineFeed ? LINE_FEED_LEN : 0)));
 CELL * p_seek(CELL * params)
 {
 UINT handle;
-FILE * fstream;
 #ifdef LFS
 INT64 paramPosition;
 off_t newPosition;
@@ -575,8 +585,6 @@ if(params == nilCell)
     {
     if(handle == 0)
         newPosition = ftell(stdout);
-    else if((fstream = getIOstream(handle)) != NULL)
-        newPosition = ftell(fstream);
     else if( (newPosition = lseek(handle, 0, SEEK_CUR)) == -1)
         return(nilCell);
     }
@@ -666,6 +674,7 @@ if(feof(inStream))
 return(stream->buffer);
 }
 
+
 CELL * p_readLine(CELL * params)
 {
 UINT handle;
@@ -673,7 +682,6 @@ unsigned char chr;
 char * line;
 int bytesRead;
 FILE * fstream;
-
 
 if(params != nilCell)
     getInteger(params, &handle);
@@ -1675,7 +1683,7 @@ fd_set thisFdSet;
 tv.tv_sec = 0;
 tv.tv_usec = 892 + random() / 10000000;
 
-#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN) || defined(AIX) 
+#if defined(SUNOS) || defined(LINUX) || defined(CYGWIN) || defined(AIX) || defined(KFREEBSD)
 memcpy(&thisFdSet, &myFdSet, sizeof(fd_set));
 #else
 FD_COPY(&myFdSet, &thisFdSet);
@@ -2025,7 +2033,7 @@ int semun_val = 0;
 #endif
 #endif
 
-#ifdef MAC_OSX
+#if defined(MAC_OSX) || defined(LINUX) || defined(KFREEBSD)
 union semun semu;
 
 semu.val = 0;
@@ -2046,10 +2054,10 @@ if(type != SEM_CREATE)
     #endif
 
 #else /* not SPARC */
-    #ifdef MAC_OSX
-            if(semctl(sem_id, 0, IPC_RMID, semu) == -1) /* MAC_OSX */
+    #if defined(MAC_OSX) || defined(LINUX) || defined(KFREEBSD)
+            if(semctl(sem_id, 0, IPC_RMID, semu) == -1) /* MAC_OSX, GNU/Linux, GNU/kFreeBSD */
     #else
-            if(semctl(sem_id, 0, IPC_RMID, 0) == -1) /* LINUX, BSD, TRU64 */
+            if(semctl(sem_id, 0, IPC_RMID, 0) == -1) /* BSD, TRU64 */
     #endif /* not MAC_OSX */
 #endif /* not SPARC */
                 return(-1);
@@ -2067,7 +2075,7 @@ if(type != SEM_CREATE)
 
     else
         /* return semaphore value */
-#ifdef MAC_OSX
+#if defined(MAC_OSX) || defined(LINUX) || defined(KFREEBSD)
         return(semctl(sem_id, 0, GETVAL, semu));
 #else
         return(semctl(sem_id, 0, GETVAL, 0));
@@ -2084,10 +2092,10 @@ if(semctl(sem_id, 0, SETVAL, &semun_val) == -1) /* SPARC 32 */
 if(semctl(sem_id, 0, SETVAL, 0) == -1) /* SPARC 64 */
   #endif
 #else /* not SPARC */
- #ifdef MAC_OSX
-if(semctl(sem_id, 0, SETVAL, semu) == -1) /* MAC_OSX */
+ #if defined(MAC_OSX) || defined(LINUX) || defined(KFREEBSD)
+if(semctl(sem_id, 0, SETVAL, semu) == -1) /* MAC_OSX, GNU/Linux, GNU/kFreeBSD */
  #else
-if(semctl(sem_id, 0, SETVAL, 0) == -1) /* LINUX, BSD, TRU64 */
+if(semctl(sem_id, 0, SETVAL, 0) == -1) /* BSD, TRU64 */
  #endif /* not MAC_OSX */
 #endif /* not SPARC */
     return(-1);
@@ -2638,6 +2646,7 @@ UINT isdst;
 #endif
 #else /* WINDOWS */
 TIME_ZONE_INFORMATION timeZone;
+int retval;
 #endif
 ssize_t offset = 0;
 time_t sec;
@@ -2669,7 +2678,8 @@ gmtoff = ltm->tm_gmtoff/60;
 #endif
 #endif
 #else /* WINDOWS */
-GetTimeZoneInformation(&timeZone);
+memset((void *)&timeZone, 0, sizeof(timeZone));
+retval = GetTimeZoneInformation(&timeZone);
 #endif
 
 sec = tv.tv_sec;
@@ -2687,7 +2697,7 @@ cell = stuffIntegerList(
     (UINT)ttm->tm_yday + 1,
     ((UINT)ttm->tm_wday == 0 ? 7 : (UINT)ttm->tm_wday),
 
-#if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) || defined(CYGWIN)
+#if defined(MAC_OSX) || defined(LINUX) || defined(_BSD) || defined(KFREEBSD) || defined(CYGWIN)
     gmtoff, isdst
 #endif
 
@@ -2704,8 +2714,8 @@ cell = stuffIntegerList(
 #endif
 
 #if defined(WINDOWS)
-     (UINT)-timeZone.Bias - (UINT)timeZone.DaylightBias,
-     (UINT)timeZone.DaylightBias  
+    (retval == 2) ?  ((UINT)-timeZone.Bias - (UINT)timeZone.DaylightBias) : (UINT)-timeZone.Bias,
+    (UINT)retval
 #endif
     );
 

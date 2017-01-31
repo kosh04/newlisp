@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; now updated for reworked message API in v.10.3.5:
 ; must specify 'true' in 'spawn' when using 'send/'receive'

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 #
 # a selection of languages from from 
 # http://www.columbia.edu/kermit/utf8.html

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; note that run fibonacci with Cilk is not a good idea
 ; in the real world, but it tests well the integrity

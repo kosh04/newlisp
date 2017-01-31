@@ -258,6 +258,7 @@ CELL * p_getenv(CELL * params);
 CELL * p_global(CELL * params);
 CELL * p_greater(CELL * params);
 CELL * p_greaterEqual(CELL * params);
+CELL * p_history(CELL * params);
 CELL * p_if(CELL * params);
 CELL * p_ifNot(CELL * params);
 CELL * p_ifft(CELL * params);

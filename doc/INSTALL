@@ -70,15 +70,15 @@ and
 
 For a minumum install, only the executable file: newlisp (or newlisp.exe
 on Win32) needs to be moved to a directory in the executable path, i.e. 
-/usr/bin/newlisp on Unix. No other files are required. This installation
+/usr/local/bin/newlisp on Unix. No other files are required. This installation
 is recommended for ISPs and other server installations. If modules are
 installed the environment NEWLISPDIR should be defined to point to
 the modules parent directory. If NEWLISPDIR is not defined, newLISP sets
-it to /usr/share/newlisp during startup.
+it to /usr/local/share/newlisp during startup.
 
 To reduce an exisiting UNIX install to a minimum installation, remove all 
-files in /usr/share/newlisp and /usr/share/doc/newlisp and the executable 
-files /usr/bin/newlisp-edit and /usr/bin/newlispdoc.
+files in /usr/share/newlisp and /usr/local/share/doc/newlisp and the executable 
+files /usr/local/bin/newlisp-edit and /usr/local/bin/newlispdoc.
 
 On Mac OX X remove also the files under the Applications icon in the 
 Applications folder. On Windows remove all file except newlisp.exe in 
@@ -179,9 +179,7 @@ For questions and support for configure-alt, please contact:
      Ted Walther <ted@reactor-core.org>.
 
 Note thet configure-alt uses a version-numbered directory for the 
-installation. By default it also uses /usr/local instead of /usr
-as a prefix for the bin, man, share/newlisp and share/doc/newlisp
-directories.
+installation. 
 
 Avoid having installs from the standard 'configure' and alternate
 'configure-alt' script on the same machine!
@@ -277,10 +275,10 @@ or if installed with: make install_home
     
 To manually uninstall on Win32 remove all files in c:\Program files\newlisp
 
-On Mac OS X and other UNIX remove all files in /usr/share/newlisp and
-/usr/share/doc/newlisp and the executable files /usr/bin/newlisp,
-/usr/bin/newliso-edit and /usr/bin/newlispdoc. On Mac OX X also remove
-the newLISP icon in the Applications folder.
+On Mac OS X and other UNIX remove all files in /usr/local/share/newlisp and
+/usr/share/doc/newlisp and the executable files /usr/local/bin/newlisp,
+/usr/local/bin/newliso-edit and /usr/local/bin/newlispdoc. On Mac OX X also 
+remove the newLISP icon in the Applications folder.
 
    
 (8) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
@@ -292,7 +290,7 @@ On all platforms simply execute:
 
 On Win32 the execution path of newlisp.exe was added to the environment 
 during installation. On all other platforms the newlisp binary is in 
-/usr/bin/newlisp or when using the home install in $HOME/bin
+/usr/local/bin/newlisp or when using the home install in $HOME/bin
 where $HOME is the the home directory of the user taken from the environment
 variable HOME.
 
@@ -318,9 +316,9 @@ Java for OS X 10.7 Lion from here: http://support.apple.com/kb/DL1421
 
 By default the configure script uses the following install directories:
 
-/usr/bin/
-/usr/share/newlisp
-/usr/share/doc/newlisp
+/usr/local/bin/
+/usr/local/share/newlisp
+/usr/local/share/doc/newlisp
 
 As an alternative the configure-alt script can be used. Do a:
 

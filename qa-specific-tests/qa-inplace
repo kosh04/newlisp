@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; qa-inplace - test in-place modificatin since v.10.1.12 
 ; This file tests a usually not used ability of

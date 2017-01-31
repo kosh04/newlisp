@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 (if (catch (regex-comp "ほげほげ" 0x800) 'result)
 	(println ">>>>> UTF-8 compile SUCESSFULL")

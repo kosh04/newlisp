@@ -832,7 +832,7 @@ if(number->type == CELL_FLOAT)
     s = *(double *)&number->contents;
 #endif
 else
-    s = number->contents;
+    s = *(INT64 *)&number->contents;
 
 if((matrix = allocateMatrix(n, m)) == NULL)
     return(NULL);

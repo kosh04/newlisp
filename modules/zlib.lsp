@@ -10,7 +10,8 @@
 ;; @version 1.71 - added library for Ubuntu Linux 12.04 and 13.04
 ;; @version 1.72 - swap else-less 'if' for 'when'
 ;; @version 1.73 changes references to /usr/ to /usr/local/
-;; @author L.M 2006-2013
+;; @version 1.74 library path additions
+;; @author L.M 2006-2016
 ;; <h3>Functions for compression/decompression with zlib</h3> 
 ;; For this module a platform sepcific library
 ;; from @link http://www.zlib.net/ www.zib.net is needed.
@@ -31,13 +32,14 @@
 (context 'zlib)
 
 (set 'files '(
+    "/lib/x86_64-linux-gnu/libz.so.1" ; Ubunto 14.04 64bit, & Debian 8 64bit
+    "/usr/lib/x86_64-linux-gnu/libz.so.1" ; Ubuntu 12.04 LTS 64bit
     "/lib/i386-linux-gnu/libz.so.1" ; Ubuntu 13.04
-    "/usr/lib/x86_64-linux-gnu/libz.so" ; Ubuntu 12.04 LTS
     "/usr/lib/libz.so" ; Linux, BSD, Solaris
     "/usr/lib/libz.so.4.1" ; OpenBSD 4.6
     "/usr/lib64/libz.so" ; for 64Bit CentOS 6 Linux
     "/usr/lib/libz.dylib" ; Mac OSX / Darwin
-    "libz1.dll" ; MS Windows 
+    "libz1.dll" ; MS Windows
 ))
 
 (set 'library (files (or

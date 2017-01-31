@@ -58,6 +58,10 @@
 #define OSTYPE "BSD"
 #endif
 
+#ifdef KFREEBSD
+#define OSTYPE "GNU/kFreeBSD"
+#endif
+
 #ifdef MAC_OSX
 #ifdef EMSCRIPTEN
 #define OSTYPE "JS"
@@ -114,7 +118,7 @@
 #include "win-ffi.h" 
 #endif
 
-#if defined(LINUX) || defined(_BSD) || defined(CYGWIN) 
+#if defined(LINUX) || defined(_BSD) || defined(KFREEBSD) || defined(CYGWIN) 
 #include <ffi.h>
 #endif
 
@@ -342,7 +346,7 @@ This is for 64bit large file support (LFS),
 #define MAX_LINE 256 /* buffer length */
 /* following limits are only for parsing */
 #define MAX_COMMAND_LINE 1024 /* buffer length */
-#define MAX_SYMBOL 255 /* strlen() */
+#define MAX_SYMBOL 1023 /* string length -1 */
 #define MAX_DIGITS 1001 /* 1000 + sign, limitation only for parsing source */
 #define MAX_HEX_NO MAX_DIGITS /* 16 + 0x */
 #define MAX_BIN_NO MAX_DIGITS /* 64 + 0B */
