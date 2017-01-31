@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 (println)
 (println "Testing UDP communicatiobs with spawned processes")

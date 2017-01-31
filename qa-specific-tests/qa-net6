@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; qa-net6 - test network routines for server mode in IPv6 mode
 ; currently only UNIX like OSs.

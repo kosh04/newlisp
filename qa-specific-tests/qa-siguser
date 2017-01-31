@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ;; numbers and names may be different on
 ;; your platform look int:

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 # run this from the main distribution directory:
 #   ./newlisp qa-specific-tests/qa-libffi
@@ -12,6 +12,8 @@
     (exit))
 
 (set-locale "C")
+
+(set 'CC (if (= ostype "Windows") "gcc" "cc"))
 
 (define (compile-recover CC-CALL) ; thanks to Rick Hansen
   ;; Exec the compiler invocation CC-CALL (which is a string) and, on
@@ -28,11 +30,11 @@
 
     (if (ends-with (real-path) "qa-specific-tests")
         (if (zero? (& 0x100 (sys-info -1)))
-            (compile-recover "gcc -m32 ../util/ffitest.c -shared -o ffitest.dylib")
-            (compile-recover "gcc -m64 ../util/ffitest.c -shared -o ffitest.dylib"))
+            (compile-recover (append CC " -m32 ../util/ffitest.c -shared -o ffitest.dylib"))
+            (compile-recover (append CC " -m64 ../util/ffitest.c -shared -o ffitest.dylib")))
         (if (zero? (& 0x100 (sys-info -1)))
-            (compile-recover "gcc -m32 util/ffitest.c -shared -o ffitest.dylib")
-            (compile-recover "gcc -m64 util/ffitest.c -shared -o ffitest.dylib"))
+            (compile-recover (append CC " -m32 util/ffitest.c -shared -o ffitest.dylib"))
+            (compile-recover (append CC " -m64 util/ffitest.c -shared -o ffitest.dylib")))
     )
 
 (if (and

@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ;
 ; qa-bench - benchmarks most non-I/O functions

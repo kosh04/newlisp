@@ -1,23 +1,23 @@
-# makefile for newLISP v. 10.x.x on Mac OSX LP64 memory model with readline support, UTF8, FFI
+# makefile for newLISP v. 10.x.x on Mac OSX with readline, UTF-8, FFI support
 #
-# for OS X 10.6 and later
-# this is the makefile used to make Mac OS X package for OS X 10.6 Snow Leopard and after
+# needs readline library and headerfiles installed (X tools)
 #
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
-	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o nl-utf8.o pcre.o
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o
 
-CFLAGS = -m64 -mmacosx-version-min=10.6 -Wall -Oz -c -DREADLINE -DMAC_OSX -DNEWLISP64 -DSUPPORT_UTF8 -DFFI
+CFLAGS = -m64 -Wall -O1 -c -DREADLINE -DNEWLISP64 -DMAC_OSX -DSUPPORT_UTF8 -DFFI
 
 CC = cc
+#CC = gcc 
 
 default: $(OBJS)
-	$(CC) $(OBJS) -m64 -mmacosx-version-min=10.6 -lm -lreadline -lffi -o newlisp
+	$(CC) $(OBJS) -m64 -lm -lreadline -lffi -o newlisp
 	strip newlisp
 
 .c.o:
 	$(CC) $(CFLAGS) $<
 
-$(OBJS): newlisp.h primes.h protos.h makefile_darwinLP64_utf8_ffi
+$(OBJS): primes.h protos.h makefile_darwin_utf8_ffi
 
 

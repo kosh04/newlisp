@@ -12,7 +12,7 @@ your own liking -->
 	<string>org.newlisp.newlisp</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/bin/newlisp</string>
+		<string>/usr/local/bin/newlisp</string>
 		<string>-c</string>
 		<string>-d4711</string>
 		<string>-w/Users/lutzmueller/Sites</string>

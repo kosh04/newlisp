@@ -7,6 +7,7 @@
 " Last change:  2013 Jun 02
 " Last change:  2013 Jun 18 L.M. added kmeans-query, kmeans-train
 " Last change:  2014 Dec 31 L.M. added collect
+" Last change:  2017 Jan 31 L.M. added history
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.37 2013/06/02 22:30:55 slobin Exp $
@@ -117,8 +118,8 @@ syn keyword newlispFunction encrypt ends-with env erf error-event eval eval-stri
 syn keyword newlispFunction exit exp expand explode extend factor fft file-info file? filter find
 syn keyword newlispFunction find-all first flat float float? floor flt for for-all fork format fv
 syn keyword newlispFunction gammai gammaln gcd get-char get-float get-int get-long get-string
-syn keyword newlispFunction get-url global global? if if-not ifft import inc index inf? int integer
-syn keyword newlispFunction integer? intersect invert irr join json-error json-parse 
+syn keyword newlispFunction get-url global global? history if if-not ifft import inc index inf? 
+syn keyword newlispFunction int integer integer? intersect invert irr join json-error json-parse 
 syn keyword newlispFunction kmeans-query kmeans-train lambda? last
 syn keyword newlispFunction last-error legal? length let letex letn list list? load local log lookup
 syn keyword newlispFunction lower-case macro? main-args make-dir map mat match max member min mod

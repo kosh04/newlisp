@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ;; qa-utf16path - check WIN_32 file and directory routines on 
 ;; UTF-16 encoded paths

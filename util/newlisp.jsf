@@ -38,6 +38,8 @@
 # 20 January 2013, L.M. added json-parse, json-error
 # 20 May 2013, L.M. added bigint, bigint? 
 # 18 JUne 2013, L.M. added kmeans-query, kmeans-train
+# 31 Dec 2014, L.M. added collect
+# 31 Jan 2017, L.M. added history
 # version 1.18
 
 =Idle		
@@ -94,7 +96,7 @@
 "&"	prim
 "*"	prim
 "+"	prim
-"++"	prim
+"++"	prime
 "-"	prim
 "--"	prim
 "/"	prim
@@ -248,6 +250,7 @@
 "get-url"	prim
 "global"	prim
 "global?"	prim
+"history"	prim
 "if"	prim
 "if-not"	prim
 "ifft"	prim

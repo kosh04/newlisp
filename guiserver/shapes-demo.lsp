@@ -1,7 +1,7 @@
 #!/usr/local/bin/newlisp
 ;;
 ;; shapes-demo.lsp - demonstrate different lines, outlines and shapes
-;; v.1.0
+;; v.1.1
 
 ;;;; initialization
 (set-locale "C")
@@ -50,7 +50,7 @@
 ;;;; describe the GUI
 (gs:frame 'ShapesDemo 100 100 640 640 "Random lines, rectangles, circles, ellipses and arcs Demo")
 (gs:set-border-layout 'ShapesDemo)
-(gs:canvas 'MyCanvas 'ShapesDemo)
+(gs:canvas 'MyCanvas)
 (gs:panel 'Selection)
 (gs:label 'HelpText "show or hide shapes:")
 (gs:check-box 'LineSelect 'select-action "lines") 

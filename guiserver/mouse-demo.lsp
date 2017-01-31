@@ -1,6 +1,7 @@
 #!/usr/local/bin/newlisp
 ;;
 ;; mouse-demo.lsp - demonstrate mouse handlers and gs:delete-tag
+;; v.1.1
 
 ;;;; initialization
 (set-locale "C")
@@ -13,7 +14,7 @@
 
 ;;;; describe the GUI
 (gs:frame 'MouseDemo 100 100 640 640 "Canvas Demo")
-(gs:canvas 'MyCanvas 'MouseDemo)
+(gs:canvas 'MyCanvas)
 (gs:add-to 'MouseDemo 'MyCanvas)
 (gs:set-background 'MyCanvas gs:white)
 (gs:mouse-pressed 'MyCanvas 'mouse-pressed-action true)

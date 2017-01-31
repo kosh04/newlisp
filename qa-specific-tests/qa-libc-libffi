@@ -1,4 +1,4 @@
-#!/usr/bin/newlisp
+#!/usr/bin/env newlisp
 
 ; Test libffi routines - all of the tests are performed using only the
 ; OS platforms libc system library. For tests compiling a C libray
@@ -17,7 +17,7 @@
 (set 'is64bit (not (zero? (& 256 (sys-info -1))))) ; used later
 
 (define (get-libc-name)
-    (letn (libc-name (first (exec "gcc -print-file-name=libc.so"))
+    (letn (libc-name (first (exec "cc -print-file-name=libc.so"))
            libc-filetype (first (exec (string "file -b " libc-name))))
        (if (find "ASCII" libc-filetype)
            (first (regex "[^ \t]+/libc\\.so\\.*[0-9]*" (read-file libc-name)))
