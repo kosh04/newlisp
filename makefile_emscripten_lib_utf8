@@ -29,7 +29,7 @@ default: $(OBJS)
 	cp qa-specific-tests/qa-bench newlisp-js
 	cp modules/canvas.lsp newlisp-js
 	$(CC) $(OBJS) -m32 -O2 -o newlisp-js-lib.html -s EXPORTED_FUNCTIONS="['_newlispEvalStr']" \
-	-s MAX_SETJMPS=100 -s TOTAL_MEMORY=33554432 --closure 1 \
+	-s TOTAL_MEMORY=33554432 --closure 1 \
 	--embed-file newlisp-js/readme.txt --embed-file newlisp-js/qa-bench --embed-file newlisp-js/canvas.lsp
 	rm newlisp-js/qa-bench newlisp-js/canvas.lsp
 

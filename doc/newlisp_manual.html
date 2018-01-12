@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.7.1 Manual and Reference</title>
+   <title>newLISP v.10.7.3 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -144,18 +144,18 @@ tt {
 <br/>
 
 <center>
-<b>For Mac OS X, GNU Linux, Unix and Windows</b>
+<b>For macOS, GNU Linux, Unix and Windows</b>
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.7.1&nbsp;<font size='2'></font></h2>
+<h2>User Manual and Reference v.10.7.3</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2016 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2017 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -205,7 +205,7 @@ newLISP is a registered trademark of Lutz Mueller.
   <ul>
   <li><a href="#environment">Environment variable NEWLISPDIR</a></li>
   <li><a href="#initialization">The initialization file <tt>init.lsp</tt></a></li>
-  <li><a href="#directories_unix">Directories on Linux, BSD, Mac OS X</a></li>
+  <li><a href="#directories_unix">Directories on Linux, BSD, macOS</a></li>
   <li><a href="#directories_win">Directories on MS Windows</a></li>
   </ul>
 </li>
@@ -475,7 +475,7 @@ newLISP can be run a as a CGI capable web server using its built-in http mode op
 <p>newLISP has built-in support for distributed processing on networks and parallel,
 concurrent processing on the same CPU with one or more processing cores.</p>
 
-<p>The source distribution can be compiled for Linux, Mac OS X/Darwin, BSDs, many 
+<p>The source distribution can be compiled for Linux, macOS/Darwin, BSDs, many 
 other Unix flavors and MS Windows. newLISP can be compiled as a 64-bit LP64 application 
 for full 64-bit memory addressing.</p>
 
@@ -489,7 +489,7 @@ a <a href="http://www.newlisp.org/newlisp-js/">web browser</a>.</p>
 <p>newLISP-GS comprises a graphical user interface (GUI) and library server. The 
 GUI front-end is written in newLISP, whereas the library server is Java based 
 and uses the standard Java runtime environment installed on all Windows and 
-Mac OS X platforms. Applications built with newLISP-GS can have the host operating 
+macOS platforms. Applications built with newLISP-GS can have the host operating 
 system's native look and feel. Interfaces to GTK, Tcl/Tk and OpenGL graphics 
 libraries are also available.</p>
 
@@ -517,7 +517,7 @@ are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p
 <br/>
 
 <a name="deprecated"></a>
-<h2>2. Deprecated functions and future changes</h2>
+<h2>2. Deprecated functions since version 10.3.0</h2>
 
 <p>Since version 10.3.0 newLISP can switch between IPv4 and IPv6 modes during
 run-time using the new <a href="#net-ipv">net-ipv</a> function. The 
@@ -539,7 +539,6 @@ file <tt>json.lsp</tt> is removed from the distribution.</p>
 
 <p>Since version 10.4.8 newLISP has built-in support for unlimited precision
 integers. This makes the GNU GMP module <tt>gmp.lsp</tt> obsolete.</p>
-
 
 <br/>
 
@@ -654,9 +653,9 @@ newlisp -h
 <p>in a command shell will produce the following summary of options and switches:</p>
 
 <pre>
- -h this help
+ -h this help (no init.lsp)
  -n no init.lsp (must be first)
- -x &lt;source&gt; &lt;target&gt; link
+ -x &lt;source&gt; &lt;target&gt; link (no init.lsp)
  -v version
  -s &lt;stacksize&gt;
  -m &lt;max-mem-MB&gt; cell memory
@@ -1142,7 +1141,7 @@ net-eval        4711/tcp     # newLISP net-eval requests
 </pre>		
 
 <p>
-On Mac OS X and some Unix systems, <tt>xinetd</tt> can be used instead of 
+On macOS and some Unix systems, <tt>xinetd</tt> can be used instead of 
 <tt>inetd</tt>. Save the following to a file named <tt>net-eval</tt> in the 
 <tt>/etc/xinetd.d/</tt> directory:
 </p>
@@ -1274,7 +1273,7 @@ CONVERT ME TO UPPERCASE
 <a name="environment"></a>
 <h3>Environment variable <tt>NEWLISPDIR</tt></h3>
 <p>During startup, newLISP sets the environment variable <tt>NEWLISPDIR</tt>, 
-if it is not set already. On Linux, BSDs, Mac OS X and other Unixes the 
+if it is not set already. On Linux, BSDs, macOS and other Unixes the 
 variable is set to <tt>/usr/local/share/newlisp</tt>. On MS Windows the variable is set 
 to <tt>%PROGRAMFILES%/newlisp</tt>.</p>
 
@@ -1301,7 +1300,7 @@ directory:</p>
 <h3> The initialization file <tt>init.lsp</tt></h3>
 <p>Before loading any files specified on the command-line, and before the 
 banner and prompt are shown. newLISP tries to load a file <tt>.init.lsp</tt> 
-from the home directory of the user starting newLISP. On Mac OS X, Linux and 
+from the home directory of the user starting newLISP. On macOS, Linux and 
 other Unix the home directory is found in the <tt>HOME</tt> environment 
 variable.  On MS Windows the directory name is contained in the <tt>USERPROFILE</tt>
 or <tt>DOCUMENT_ROOT</tt> environment variable.</p>
@@ -1319,12 +1318,14 @@ not defined, no initialization file will be loaded by the library module.</p>
 convenient for defining functions and system-wide variables.</p>
 
 <p>Note that neither one of the initialization files <tt>init.lsp</tt> nor 
-<tt>.init.lsp</tt> is loaded during startup of linked programs.</p>
+<tt>.init.lsp</tt> is loaded during startup of linked programs or
+when one of the options <tt>-n</tt>, <tt>-h</tt>, <tt>-x</tt> is
+specified.</p>
 
 <br/>
 
 <a name="directories_unix"></a>
-<h3> Directories on Linux, BSD, Mac OS X and other Unix </h3>
+<h3> Directories on Linux, BSD, macOS and other Unix </h3>
 <p>
 The directory <tt>/usr/local/share/newlisp/modules</tt> contains modules with useful 
 functions POP3 mail, etc. The directory <tt>/usr/local/share/newlisp/guiserver</tt> 
@@ -1394,7 +1395,7 @@ Code Patterns in newLISP</a> document.</p>
 
 <p>newLISP can be compiled as a shared C library. On Linux, BSDs and other Unix 
 flavors the library is called <tt>newlisp.so</tt>. On Windows it is called 
-<tt>newlisp.dll</tt> and <tt>newlisp.dylib</tt> on Mac OS X. A newLISP shared 
+<tt>newlisp.dll</tt> and <tt>newlisp.dylib</tt> on macOS. A newLISP shared 
 library is used like any other shared library.</p>
 
 <p>The main function to import is <tt>newlispEvalStr</tt>.  Like 
@@ -2623,6 +2624,11 @@ variable, list, array, or string:</p>
 <tr>
 <td><a href="#swap">swap</a></td>
 <td>swaps two elements inside a list or string</td>
+</tr>
+
+<tr>
+<td><a href="#write">write</a></td>
+<td>write a string to a file or string buffer</td>
 </tr>
 
 </table><br/>
@@ -4169,9 +4175,8 @@ can be evaluated in the recipients environment.</p>
 <a href="#share">share</a> functionalities to control processes and synchronize
 the passing of computed results via a shared memory interface.</p>
 
-<p>Only on Mac OS X and other Unixes will the Cilk API parallelize tasks.
-On MS Windows, the API partly simulates the behavior on Unix but executes tasks
-sequentially. This way, code can be written that runs on all platforms.</p>
+<p>Only on macOS and other Unixes will the Cilk API parallelize tasks.
+On MS Windows, the API is not available.</p>
 
 <br/>
 
@@ -4546,7 +4551,7 @@ in this chapter.</p>
 	for UTF-8.
 </p>
 <p>
-	The Mac OS X binary installer contains
+	The macOS binary installer contains
 	a UTF-8&ndash;enabled version by default.
 </p>
 <p>
@@ -7051,7 +7056,7 @@ arithmetic">
 
 <tr>
 <td><a href="#write">write</a></td>
-<td>writes binary data to a file</td>
+<td>writes binary data to a file or string</td>
 </tr>
 
 <tr>
@@ -11564,7 +11569,7 @@ different on Unix)</td></tr>
 <p>
 Leading zeroes in the display of decimal day numbers can be suppressed 
 using <tt>"%-d"</tt> on Linux and FreeBSD and using <tt>"%e"</tt> 
-on OpenBSD, SunOS/Solaris and Mac OS X.  On MS Windows use <tt>"%#d"</tt>.
+on OpenBSD, SunOS/Solaris and macOS.  On MS Windows use <tt>"%#d"</tt>.
 </p>
 
 <p>See also <a href="#date-value">date-value</a>, <a href="#date-list">date-list</a>,
@@ -12317,7 +12322,7 @@ syntax: (destroy <em>int-pid</em> <em>int-signal</em>)</h4>
 
 <p>Destroys a process with process id in <em>int-pid</em> and returns <tt>true</tt>
 on success or <tt>nil</tt> on failure. The process id is normally obtained from a 
-previous call to <a href="#fork">fork</a> on Mac OS X and other Unix or 
+previous call to <a href="#fork">fork</a> on macOS and other Unix or 
 <a href="#process">process</a> on all platforms. On Unix, <tt>destroy</tt> works like 
 the system utility <em>kill</em> using the SIGKILL signal.</p>
 
@@ -15828,7 +15833,7 @@ global? 'print)   <span class='arw'>&rarr;</span> true
 <p><em>history</em> returns a list of the call history of the enclosing function.
 Without the optional <em>bool-params</em>, a list of function symbols is returned.
 The first symbol is the name of the enclosing function. When the optional 
-<em>bool-params</em> evaluates to to <em>true</em>, the call arguments are included 
+<em>bool-params</em> evaluates to <em>true</em>, the call arguments are included 
 with the symbol.</p>
 <br/><br/>
 
@@ -16153,7 +16158,7 @@ to call DLL library routines by default.  This is necessary for calling DLLs tha
 to the MS Windows operating system.  Most third-party DLLs are compiled for 
 C declaration <em>cdecl</em> calling conventions and may need to specify the string 
 <tt>"cdecl"</tt> as an additional last argument when importing functions. 
-newLISP compiled for Mac OS X, Linux and other Unix systems uses the 
+newLISP compiled for macOS, Linux and other Unix systems uses the 
 <em>cdecl</em> calling conventions by default and ignores any additional string.</p>
 
 <pre>
@@ -17825,6 +17830,9 @@ evaluation, just like <tt>define-macro is</tt>:</p>
 This must be considered when writing both, <tt>macro</tt> or <tt>define-macro</tt>
 expressions and symbols occur more than once in the body of the definition.</p> 
 
+<p>See also <a href="#reader-event">reader-event</a> for general preprocessing
+of expressions during reading of source code.</p>
+
 <br/><br/>
 
 <a name="macrop"></a>
@@ -19469,10 +19477,10 @@ with an IP number.
 a <em>raw sockets</em> interface. The packet in <em>str-packet</em> must
 start with an IP (Internet Protocol) header followed by either
 a TCP, UDP or ICMP header and optional data. newLISP must be run with
-super user privileges, and this function is only available on Mac OS X,
+super user privileges, and this function is only available on macOS,
 Linux and other Unix operating systems and only for IPv4.
 Currently <tt>net-packet</tt> is IPv4 only and has been tested on
-Mac OS X, Linux and OpenBSD.</p> 
+macOS, Linux and OpenBSD.</p> 
 
 <p>On success the function returns the number of bytes sent. On failure
 the function returns <tt>nil</tt> and both, <a href="#net-error">net-error</a>
@@ -19583,11 +19591,11 @@ syntax: (net-ping <em>list-addresses</em> [<em>int-timeout</em> [<em>int-count</
 
 <p> This function is only available on Unix-based systems 
 and must be run in superuser mode, i.e. using: <tt>sudo newlisp</tt> to
-start newLISP on Mac OS X or other BSD's, or as the root user on Linux.
+start newLISP on macOS or other BSD's, or as the root user on Linux.
  Broadcast mode and specifying ranges with the <tt>-</tt> (hyphen) or
 <em>*</em> (star) are not available on IPv6 address mode.</p>
 
-<p>Superuser mode is not required on Mac OS X.</p>
+<p>Superuser mode is not required on macOS.</p>
 
 <p> In the first syntax, <tt>net-ping</tt> sends a ping 
 ICMP 64-byte echo request to the address specified in <em>str-address</em>. 
@@ -20175,7 +20183,7 @@ The data sent is in <em>str-buffer</em>.
 
 <p>The theoretical maximum data size of a UDP packet on an IPv4 system
 is 64K minus IP layer overhead, but much smaller on most Unix flavors.
-8k seems to be a safe size on Mac OS X, BSDs and Linux.</p>
+8k seems to be a safe size on macOS, BSDs and Linux.</p>
 
 <p>
 No previous setup using <tt>net-connect</tt> 
@@ -20991,10 +20999,10 @@ appendix.</p>
 
 <a name="pack"></a>
 <h2><span class="function">pack</span></h2>
-<h4>syntax: (pack <em>str-format</em> <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
-syntax: (pack <em>str-format</em> <em>list</em>)<br/><br/>
-syntax: (pack <em>struct</em> <em>exp-1</em> [<em>exp-2</em> ... ])<br/>
-syntax: (pack <em>struct</em> <em>list</em>)</h4>
+<h4>syntax: (pack <em>str-format</em> [<em>exp-1</em> [<em>exp-2</em> ... ]])<br/>
+syntax: (pack <em>str-format</em> [<em>list</em>])<br/><br/>
+syntax: (pack <em>struct</em> [<em>exp-1</em> [<em>exp-2</em> ... ]])<br/>
+syntax: (pack <em>struct</em> [<em>list</em>])</h4>
 
 <p>When the first parameter is a string, <tt>pack</tt> packs one or more expressions 
 (<em>exp-1</em> to <em>exp-n</em>) into a binary format specified in the format 
@@ -21012,6 +21020,9 @@ While <tt>pack</tt> with <em>str-format</em> literally packs as specified,
 <tt>pack</tt> with <em>struct</em> will insert structure aligning pad-bytes
 depending on data type, order of elements and CPU architecture.
 Refer to the description of the <a href="#struct">struct</a> function for more detail.</p>
+
+<p>When no data expressions or lists are specified, formats or structures are filled
+with <tt>0</tt>s (zeros).</p> 
 
 <p>The following characters are used in <em>str-format</em>:</p>
 
@@ -21144,11 +21155,10 @@ into integers when required by the format specification.
 (map get-string (unpack "lululu" adr))    <span class='arw'>&rarr;</span> ("A" "B" "C")
 </pre>
 
-
 <p>Note that the list should be referenced directly in <tt>pack</tt>,
 so the pointers passed by <tt>adr</tt> are valid. <tt>adr</tt> would be written 
 as <tt>char * adr[]</tt> in the C-programming language and represents a 32-bit pointer to an
-array of 32-bit string pointers.
+array of 32-bit string pointers or a 64-bit pointers on the 64-bit version of newLISP.
 </p>
 
 <p>
@@ -21172,25 +21182,34 @@ when packing or unpacking:
 
 <p>
 Switching the byte order will affect all number formats with 16-,
-32-,
-or 64-bit sizes.
+32-, or 64-bit sizes.
 </p>
 
 <p>
 The pack and unpack format need not be the same:
 </p>
 
-
 <pre>
 (set 's (pack "s3" "ABC"))
 (unpack "c c c" s)  <span class='arw'>&rarr;</span> (65 66 67)
 </pre>
 
-
 <p>
 The examples show spaces between the format specifiers.
 These are not required but can be used to improve readability.
 </p> 
+
+
+<p>Using <tt>pack</tt> and <tt>unpack</tt> on UTF-8 strings:</p>
+
+<pre>
+(set 'txt "我能吞下玻璃而不伤身体。") 
+<span class='arw'>&rarr;</span> "我能吞下玻璃而不伤身体。"
+(set 'lst (unpack (dup "b" (length txt)) txt)) 
+<span class='arw'>&rarr;</span> (230 136 145 232 ... 147 227 128 130)
+(pack (dup "b" (length lst)) lst) 
+<span class='arw'>&rarr;</span> "我能吞下玻璃而不伤身体。"
+</pre>
 
 <p>
 See also the <a href="#address">address</a>,
@@ -21948,11 +21967,11 @@ returns with a process ID or <tt>nil</tt> if a process could not be created. Thi
 process will execute the program specified or immediately die if <em>str-command</em> could not be executed.
 </p>
 
-<p>On Mac OS X and other Unixes, the application or script must be specified with its full path-name.
+<p>On macOS and other Unixes, the application or script must be specified with its full path-name.
 The new process inherits the OS environment from the parent process.</p>
 
 <p>Command line arguments are parsed out at spaces. Arguments containing spaces must be delimited using
-single quotes on Mac OS X and other Unixes. On MS Windows, double quotes are used. The process id returned
+single quotes on macOS and other Unixes. On MS Windows, double quotes are used. The process id returned
 can be used to destroy the running process using <a href="#destroy">destroy</a>, if the process does
 not exit by itself.</p>
 
@@ -22087,7 +22106,7 @@ on the pipe handles:</p>
 See also the <a href="#pipe">pipe</a> and <a href="#share">share</a> functions for inter-process 
 communications and the <a href="#semaphore">semaphore</a> function for synchronization of several processes.
 See the <a href="#fork">fork</a> and <a href="#spawn">spawn</a> functions for other ways of starting 
-newLISP processes. Both are only available on Mac OS X, Linux and other Unix like operating systems.
+newLISP processes. Both are only available on macOS, Linux and other Unix like operating systems.
 </p>
 
 <br/><br/>
@@ -22855,16 +22874,23 @@ When the prefix is <tt>http://</tt>, <tt>read-file</tt> works exactly like
 
 <a name="read-key"></a>
 <h2><span class="function">read-key</span></h2>
-<h4>syntax: (read-key)</h4>
+<h4>syntax: (read-key [true])</h4>
 
 <p>
 Reads a key from the keyboard and returns an integer value. 
 For navigation keys, more than one <tt>read-key</tt> call 
-must be made. For keys representing ASCII characters, 
-the return value is the same on all OSes, except for navigation keys 
-and other control sequences like function keys, in which case the return 
-values may vary on different OSes and configurations.
+must be made depending of the platform OS. For keys representing 
+ASCII characters, the return value is the same on all OSes, except 
+for navigation keys and other control sequences like function keys, 
+in which case the return values may vary on different OSes and 
+configurations.
 </p>
+
+<p>Wen using the <tt>true</tt> flag the <tt>read-key</tt> is non-blocking
+and a <tt>0</tt> (zero) is returned when no key has been pressed.
+When not using the extra flag, the call to <tt>read-key</tt> is blocking
+until a key is pressed.</p>
+
 
 
 <!-- example -->
@@ -22874,6 +22900,8 @@ values may vary on different OSes and configurations.
 (read-key)  <span class='arw'>&rarr;</span> 65  ; after hitting the shifted A key
 (read-key)  <span class='arw'>&rarr;</span> 10  ; after hitting [enter] on Linux
 (read-key)  <span class='arw'>&rarr;</span> 13  ; after hitting [enter] on Windows
+
+(read-key true)  <span class='arw'>&rarr;</span> 0 ; when no key has been pressed
 
 (while (!= (set 'c (read-key)) 1) (println c))
 </pre>
@@ -25113,7 +25141,7 @@ and so forth. The options valid on your platform can be found in the C include f
 is specified, <tt>LC_ALL</tt> is used to turn on all options for that locale.</p>
 
 <table>
-<tr align="left"><th>Category</th><th>Mac OS X, BSDs<br/>&amp; MS Windows</th></tr>
+<tr align="left"><th>Category</th><th>macOS, BSDs<br/>&amp; MS Windows</th></tr>
 <tr><td>LC_ALL</td><td>0</td></tr>
 <tr><td>LC_COLLATE</td><td>1</td></tr>
 <tr><td>LC_CTYPE</td><td>2</td></tr>
@@ -25127,7 +25155,7 @@ is specified, <tt>LC_ALL</tt> is used to turn on all options for that locale.</p
 
 <pre>
 ; with the current locale "en_US.UTF-8", only change the decimal separator 
-; to German locale comma on  Mac OS X. LC_NUMERIC is 4 on most platforms 
+; to German locale comma on  macOS. LC_NUMERIC is 4 on most platforms 
 
 (set-locale) <span class='arw'>&rarr;</span> ("en_US.UTF-8" ".") 
 (set-locale "de_DE.UTF-8" 4) <span class='arw'>&rarr;</span> ("de_DE.UTF-8" ",") 
@@ -25583,7 +25611,7 @@ it will still accept the signal and the handler function will be executed:</p>
 
 
 <pre>
-; only on Mac OSX, BSDs and Linux, not on Windows
+; only on macOS, BSDs and Linux, not on Windows
 (constant 'SIGINT 2)
 (define (ctrlC-handler) (println "ctrl-C has been pressed"))
 
@@ -26328,7 +26356,7 @@ struct tm {
 <pre>
 ;; for pointers to structs always use void*
 ;; as a library use msvcrt.dll on Windows or libc.so on Unix.
-;; The tm struct type is configured for Mac OSX and Linux.
+;; The tm struct type is configured for macOS and Linux.
 ;; On other OS the tm structure may be different
  
 (import "libc.dylib" "asctime" "char*" "void*")
@@ -28325,7 +28353,7 @@ right away with a <tt>0</tt> in the pid of the list returned. This option used t
 on returned child processes.</p>
 
 <p>
-This function is only available on Mac OS X, Linux and other Unix-like operating systems.
+This function is only available on macOS, Linux and other Unix-like operating systems.
 </p>
 
 <!-- example -->
@@ -28406,8 +28434,8 @@ Use the <a href="#do-while">do-while</a> function to evaluate the condition
 
 <br/><br/>
 
-<a name="write-buffer"></a>
 <a name="write"></a>
+<a name="write-buffer"></a>
 
 <h2><span class="function">write</span>&nbsp;<a href="#destructive">!</a></h2>
 <h4>syntax: (write)<br/>

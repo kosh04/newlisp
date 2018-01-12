@@ -7,6 +7,7 @@
 ;; @version 2.4 - replaced if-not with unless
 ;; @version 2.45 - doc corrections
 ;; @version 2.5 - eliminated link to postscript-24.tgz
+;; @version 2.51 - description of ps:drawto
 ;; @author Lutz Mueller, July 2006, 2009, 2010, 2012, 2013, 2015
 ;;
 ;; <h2>Routines for creating postscript files</h2>
@@ -171,7 +172,9 @@
 ;; <x>, <y> like '(ps:goto x y)', but also draws a line from 
 ;; the old to the new position. The turtle position is changed to the
 ;; new point <x>, <y> and the orientation is changed to the orientaion of 
-;; the line drawn.
+;; the line drawn. On some systems 'ps:drawto' can crash when the current
+;; coordinates and the coordinates to draw to are identical, when the
+;; distance to draw is of zero length.
 
 ;; @syntax (ps:ellipse <num-x-rad> <num-y-rad> <num-start> <num-end> [<bool-fill>]) 
 ;; @param <num-x-rad> The x axis radius.

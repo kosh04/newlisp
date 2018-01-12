@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10701;
+int version = 10703;
 
 char copyright[]=
-"\nnewLISP v.10.7.1 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.7.3 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.1 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.3 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.1 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.3 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.1 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.1 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.3 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -773,10 +773,10 @@ setupAllSignals();
 
 sysEvalString(preLoad, mainContext, nilCell, EVAL_STRING);
 
-/* loading of init.lsp can be suppressed with -n as first option
+/* loading of init.lsp will be suppressed with -n, -x or -h as first option
    but is never done when program is link.lsp'd */
 
-if(argc < 2 || strncmp(argv[1], "-n", 2))
+if(argc < 2 || (strncmp(argv[1], "-n", 2) && strncmp(argv[1], "-h", 2)) )
     {
     if(!(argc >= 2 && strcmp(argv[1], "-x") == 0)) 
         loadStartup(argv[0]);
@@ -1062,9 +1062,9 @@ varPrintf(OUT_CONSOLE, copyright,
     "usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:");
 varPrintf(OUT_CONSOLE, 
     "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
-    " -h this help",
+    " -h this help (no init.lsp)",
     " -n no init.lsp (must be first)",
-    " -x <source> <target> link",
+    " -x <source> <target> link (no init.lsp)",
     " -v version",
     " -s <stacksize>",
     " -m <max-mem-MB> cell memory",
@@ -2541,7 +2541,11 @@ switch(device)
         if(IOchannel == stdin)
             {
             printf("%s", buffer);
+#if defined(MAC_OSX) || defined(_BSD) /* 10.7.3 */
+            fflush(NULL);
+#else
             if(!isTTY) fflush(NULL);
+#endif
             }
         else if(IOchannel != NULL) 
             fprintf(IOchannel, "%s", buffer);
@@ -5061,7 +5065,7 @@ symbolRef = symbolCheck;
 stringRef = stringCell;
 indexRefPtr = stringIndexPtr;
 
-if(symbolRef && isProtected(symbolRef->flags))
+if(symbolRef && isProtected(symbolRef->flags) && symbolRef->contents == (UINT)cell)
     return(errorProcExt2(ERR_SYMBOL_PROTECTED, stuffSymbol(symbolRef)));
 
 itSymbol->contents = (UINT)cell;
