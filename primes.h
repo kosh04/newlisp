@@ -287,10 +287,10 @@ PRIMITIVE primitive[] =
 	{"read-utf8",	p_readUTF8,	0},
 #endif
 	{"write-char",	p_writeChar,0},
-	{"read-buffer",	p_readBuffer,0x400},
 	{"read",		p_readBuffer,0x400},
-	{"write-buffer",p_writeBuffer,0},
+	{"read-buffer",	p_readBuffer,0x400},
 	{"write",		p_writeBuffer,0},
+	{"write-buffer",p_writeBuffer,0},
 	{"write-file",	p_writeFile,0},
 	{"append-file",	p_appendFile,	0},
 	{"read-file",	p_readFile, 0},

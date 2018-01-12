@@ -74,7 +74,6 @@ extern char ** environ;
 #include <conio.h>  
 #include <io.h>
 #include <direct.h>
-#define popen  _popen
 #define pclose _pclose
 #define pipe _pipe
 
@@ -335,6 +334,16 @@ if(bytesRead == 0)
     closeStrStream(&stream); 
     return(nilCell);
     } 
+
+/*
+#ifndef WINDOWS
+if((fstream = getIOstream(handle)) != NULL)
+    {
+    newPosition = lseek(handle, 0, SEEK_CUR);
+    fseek(fstream, newPosition, 0);
+    }
+#endif
+*/
 
 if(stream.size > bytesRead)
     stream.buffer = reallocMemory(stream.buffer, bytesRead + 1);
@@ -597,6 +606,7 @@ else
 #endif
 
     newPosition = paramPosition;
+
     if(newPosition == -1)
         {
         if( (newPosition = lseek((int)handle, 0, SEEK_END)) == -1)
@@ -688,7 +698,7 @@ if(params != nilCell)
 else 
     handle = printDevice;
 
-#ifdef WINDOWSXXX
+#ifdef WINDOWS
 /* make it work as on Unix */
 if(printDevice == 1 || printDevice == 2) handle = 0;
 #endif
@@ -701,8 +711,10 @@ if(!newlispLibConsoleFlag && fstream == stdin)
 #endif
 if(fstream != NULL)
     {
+    if(handle != 0) fseek(fstream, lseek(handle, 0, SEEK_CUR), 0); /* 10.7.2 */
     if((line = readStreamLine(&readLineStream, fstream)) == NULL)
         return(nilCell);
+    if(handle != 0) lseek((int)handle, ftell(fstream), SEEK_SET); /* 10.7.2 */ 
     return(stuffString(line));
     }
 
@@ -762,12 +774,21 @@ if(option != NULL && *option == 'n')
     blocking = O_NONBLOCK;
 #endif
 
+
 if(*accessMode == 'r')
+#ifdef USE_WIN_UTF16PATH
+    return(open_utf16(fileName, O_RDONLY | O_BINARY | blocking, 0));
+#else
     return(open(fileName, O_RDONLY | O_BINARY | blocking, 0));
+#endif
 
 else if(*accessMode == 'w')
 #ifdef WINDOWS
-    return(open( fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE) );
+#ifdef USE_WIN_UTF16PATH
+    return(open_utf16(fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
+#else
+    return(open (fileName, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, S_IREAD | S_IWRITE));
+#endif /* UTF16 */
 #else
     return(open(fileName,O_WRONLY | O_CREAT | O_TRUNC | O_BINARY | blocking, 
         S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH)); /* rw-rw-rw */
@@ -777,19 +798,23 @@ else if(*accessMode == 'u')
     return(open(fileName, O_RDWR | O_BINARY, 0));
 
 else if(*accessMode == 'a')
-       {
+   {
 #ifdef WINDOWS
-       return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE));
+#ifdef USE_WIN_UTF16PATH
+   return(open_utf16(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE));
 #else
-       handle = open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
+   return(open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE));
+#endif /* UTF 16 */
+#else
+   handle = open(fileName, O_RDWR | O_APPEND | O_BINARY | O_CREAT,
           S_IRUSR | S_IRGRP | S_IROTH | S_IWUSR | S_IWGRP | S_IWOTH); /* rw-rw-rw */
 #ifdef EMSCRIPTEN
        /* oppen append is broken on Emscripten, open for update but filepointer
           stays at the beginning and old contents is overwritten */
-       if(lseek(handle, 0, SEEK_END) != -1)
-                return(handle);
+   if(lseek(handle, 0, SEEK_END) != -1)
+      return(handle);
 #else
-       return(handle);
+    return(handle);
 #endif
 
 #endif
@@ -841,7 +866,12 @@ char *newName;
 
 params = getString(params, &oldName);
 getString(params, &newName);
+
+#ifdef USE_WIN_UTF16PATH
+return(rename_utf16(oldName, newName) == 0 ? trueCell : nilCell);
+#else
 return(rename(oldName, newName) == 0 ? trueCell : nilCell);
+#endif
 }
 
 
@@ -862,7 +892,11 @@ if(my_strnicmp(fileName, "http://", 7) == 0)
 #endif
 
 fileName = getLocalPath(fileName);
+#ifdef USE_WIN_UTF16PATH
+return(unlink_utf16(fileName) == 0 ? trueCell : nilCell);
+#else
 return(unlink(fileName) == 0 ? trueCell : nilCell);
+#endif
 }
 
 
@@ -881,7 +915,11 @@ if(params != nilCell)
     }
 
 #ifdef WINDOWS
+#ifdef USE_WIN_UTF16PATH
+return(mkdir_utf16(dirString) == 0 ? trueCell : nilCell);
+#else
 return(mkdir(dirString) == 0 ? trueCell : nilCell);
+#endif /* UTF16 */
 #else
 return(mkdir(dirString, (mode_t)mode) == 0 ? trueCell : nilCell);
 #endif
@@ -893,7 +931,11 @@ CELL * p_removeDir(CELL * params)
 char * dirString;
 
 getString(params, &dirString);
+#ifdef USE_WIN_UTF16PATH
+return(rmdir_utf16(dirString) == 0 ? trueCell : nilCell);
+#else
 return(rmdir(dirString) == 0 ? trueCell : nilCell);
+#endif
 }
 
 
@@ -902,7 +944,11 @@ CELL * p_changeDir(CELL * params)
 char * newDir;
 
 getString(params, &newDir);
+#ifdef USE_WIN_UTF16PATH
+return(chdir_utf16(newDir) == 0 ? trueCell : nilCell);
+#else
 return(chdir(newDir) == 0 ? trueCell : nilCell);
+#endif
 }
 
 CELL * p_directory(CELL * params)
@@ -2989,38 +3035,60 @@ return(envList);
 /* --------------------- read the keyboard -----------------------------------*/
 
 /* thanks to Peter van Eerten for contributing this function */
+/* included non-blocking ability 10.7.3, LM */
+
 CELL * p_readKey(CELL * params)
 {
+
 #if defined(WINDOWS) || defined(OS2)
-return(stuffInteger(getch()));
+if(!isNil(evaluateExpression(params)) )
+	{
+	if(kbhit()) 
+		return(stuffInteger(getch()));
+	else 
+		return(stuffInteger(0));
+	}
+else
+	return(stuffInteger(getch()));
 #else
 
 struct termios term, oterm;
-char c = 0;
+char ch = 0;
+int noblock = 0;
+int oldf;
+
+noblock = !isNil(evaluateExpression(params));
 
 tcgetattr(0, &oterm);
-
-memcpy(&term, &oterm, sizeof(term));
-
-/* put the terminal in non-canonical mode, any
-reads timeout after 0.1 seconds or when a
-single character is read */
+term = oterm;
 term.c_lflag &= ~(ICANON | ECHO);
-term.c_cc[VMIN] = 0;
-term.c_cc[VTIME] = 1;
-tcsetattr(0, TCSANOW, &term);
 
-#if defined(_BSD) || defined(MAC_OSX)
-while(read(0, &c, 1) == 0);
-#else
-while((c = (char)getchar()) == (char)-1);
-#endif
+if(!noblock)
+    {
+    term.c_cc[VMIN] = 0;
+    term.c_cc[VTIME] = 1;
+    }
 
-/* reset the terminal to original state */
-tcsetattr(0, TCSANOW, &oterm);
+tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
-return(stuffInteger(c));
-#endif
+if(noblock)
+    {
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+    }
+
+while(read(STDIN_FILENO, &ch, 1) == 0); 
+
+if(noblock)
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+tcsetattr(STDIN_FILENO, TCSANOW, &oterm);
+
+if(ch != EOF)
+    return(stuffInteger((UINT)ch));
+
+return(stuffInteger(0));
+#endif /* not Windows or OS2 */
 } 
 
 /* --------------------- peek a file descriptor ------------------------------*/

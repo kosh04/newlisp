@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.1.7.3 Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 900px;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #606060;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #606060;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.7.3 Development Release
+<font color="red" size="-1">2017-10-09</font></h1>
+
+<p>This development release fixes bugs and adds functionality.</p>
+<p>For newer macOS versions legacy Java 6 runtime has to be installed. 
+It can be downloaded from Apple 
+<a href="https://support.apple.com/kb/DL1572?locale=en_US">here</a>. 
+
+<h3>Bug fixes</h3>
+
+<p>Better handling of UTF-16 encoded filenames on MS Windows. 
+Filenames in newLISP UTF-8 versions should be given encoded in UTF-8 but 
+will be correctly encoded to UTF-16 format on Windows. When reading from 
+the Windows file system, they will be correctly translated to UTF-8.</p>
+
+<p>Fixed a wrong 'symbol protected message' when a protected symbol is
+part of a nested espression, but not a symbol with its content to be
+modified.</p>
+
+<p>Fixed a flushing problem on <tt>print</tt> to stdout on macOS and 
+other BSDs.</p>
+
+<p><tt>(trim str)</tt> on some strings containing <tt>0</tt>'s would overrun 
+memory and <tt>0</tt>'s where not trimmed from the left. All characters less 
+than space (32) should be trimmed from both ends of the string buffer. When the
+entire string is valid ASCII or UTF-8 with no <tt>0</tt>s, <tt>trim</tt> behaves
+like in older versions.</p>
+
+<h3>New Features</h3>
+
+<p>Supress loading of startup file <tt>init.lsp</tt> when <tt>-h</tt> option 
+is present. In older versions only the <tt>-n</tt> and <tt>-x</tt> options 
+supressed <tt>init.lsp</tt>.</p>
+
+<p><tt>(read-key true)</tt> with the <tt>true</tt> parameter is now 
+non-blocking.</p>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous versions in the 10.7.x series.</p>
+
+<center>&part;</center>
+
+</body>
+</html>
+

@@ -73,7 +73,12 @@
 
 (setq msg (pack "n28"))
 
-(until (member (GetMessageA msg hwnd 0 0) '(0 -1))
+; when using an IME window for input set hwnd to 0, to receive all messages
+; in the thread, not only from the window in hwnd (added in 10.7.3) 
+
+;(until (member (GetMessageA msg hwnd 0 0) '(0 -1))
+
+(until (member (GetMessageA msg 0 0 0) '(0 -1))
     (TranslateMessage msg)
     (DispatchMessageA msg))
 

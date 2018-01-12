@@ -92,8 +92,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2015 July 11th<sup>rd</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.6.2
+</h1>Version 2017 Augusr 11<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.7.3
 </center>
 
 <br/><br/><br/>
@@ -2335,7 +2335,12 @@ str &rarr; "ABCD"
 <p>This method is only suited for short exchanges, executing one command and receiving the output.</p>
 
 <pre>
-(exec "ls *.c") → ("." ".." "util.c" "example.ls")
+> (exec "ls *.c")
+("newlisp.c" "nl-debug.c" "nl-filesys.c" "nl-import.c" "nl-list.c" "nl-liststr.c" 
+ "nl-math.c" "nl-matrix.c" "nl-sock.c" "nl-string.c" "nl-symbol.c" "nl-utf8.c" "nl-web.c" 
+ "nl-xml-json.c" "pcre-chartables.c" "pcre.c" "unix-lib.c" "win-dll.c" "win-path.c" 
+ "win-util.c")
+> 
 </pre>
 
 <p>The <tt>exec</tt> function opens a process pipe for the Unix command-line utility <tt>ls</tt> and collects each line of STDOUT into a list of strings.</p>
@@ -3010,7 +3015,7 @@ service net-eval
 
 <p>After configuring <tt>inetd</tt> or <tt>xinetd</tt> either process must be restarted to re-read the configuration files. This can be accomplished by sending the Unix <tt>HUP</tt> signal to either the <tt>inetd</tt> or <tt>xinetd</tt> process using the Unix <tt>kill</tt> or Unix <tt>nohup</tt> utility.</p>
 
-<p>On Mac OS X the <tt>launchd</tt> facility can be used in a similar fashion. The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt> in the <tt>util/</tt> directory. This file can be used to launch newlisp server during OS boot time as a persistent server.</p>
+<p>On macOS the <tt>launchd</tt> facility can be used in a similar fashion. The newLISP source distribution contains the file <tt>org.newlisp.newlisp.plist</tt> in the <tt>util/</tt> directory. This file can be used to launch newlisp server during OS boot time as a persistent server.</p>
 
 <h3>Test the server with telnet</h3>
 
@@ -3378,7 +3383,7 @@ at: http://www.newlisp.org/modules/.</p>
 <a name="toc-23"></a>
 <h2>23. Extending newLISP</h2>
 
-<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so, ending in .dylib on Mac OS X).</p>
+<p>newLISP has an import function, which allows importing function from DLLs (Dynamic Link Libraries) on Win32 or shared libraries on Linux/Unix (ending in .so, ending in .dylib on macOS).</p>
 
 <h3>Simple versus extended FFI interface</h3>
 
@@ -3439,7 +3444,7 @@ char * foo2(char * ptr, int number)
 
 <h3>Compile on Unix</h3>
 
-<p>On Mac OS X and Linux/Unix we can compile and link <tt>testlib.so</tt> in one step:</p>
+<p>On macOS and Linux/Unix we can compile and link <tt>testlib.so</tt> in one step:</p>
 
 <pre>
 gcc testlib.c -shared -o testlib.so
@@ -3700,7 +3705,7 @@ and double precision floating point types and for advanced usage of <tt>pack</tt
 
 <h3>Writing library wrappers</h3>
 
-<p>Sometimes the simple version of newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running Mac OS X on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on Mac OS X cannot be used.</p>
+<p>Sometimes the simple version of newLISP's built-in import facility cannot be used with a library. This happens whenever a library does not strictly adhere to <tt>cdecl</tt> calling conventions expecting all parameters passed on the stack. E.g. when running macOS on older PPC CPUs instead of Intel CPUs, the OpenGL libraries installed by default on macOS cannot be used.</p>
 
 <p>Since newLISP version 10.4.0, the problem can be solved easiest using the newer extended syntax of <tt>import</tt>, which automatically resolves platform and architectural differences. On very small systems or whenever the needed <tt>libffi</tt> system library is not present on a platform, a special wrapper library can be built to translate <tt>cdecl</tt> conventions expected by newLISP into the calling conventions expected by the target library.</p>
 
@@ -3801,7 +3806,7 @@ callbacks on the Windows platform.</p>
 <h2>24. newLISP as a shared library</h2>
 
 <p>On all platforms, newLISP can be compiled as a shared library. On Win32, the library
-is called <tt>newlisp.dll</tt>, on Mac OS X <tt>newlisp.dylib</tt> and on Linux and
+is called <tt>newlisp.dll</tt>, on macOS <tt>newlisp.dylib</tt> and on Linux and
 BSDs, the library is called <tt>newlisp.so</tt>. Makefiles are included in the source 
 distribution for most platforms. Only on Win32, the installer comes with a precompiled 
 <tt>newlisp.dll</tt> and will install it in the <tt>Program Files/newlisp/</tt> directory.</p>
@@ -3934,7 +3939,7 @@ p1 =&gt; 123 p2 =&gt; 456 p3 =&gt; 789
 </pre>
 
 <p>Note that Win32  and many Unix flavors will look for <tt>newlisp.dll</tt> 
-in the system library path, but Mac OS X will look for <tt>newlisp.dylib</tt> 
+in the system library path, but macOS will look for <tt>newlisp.dylib</tt> 
 first in the current directory, if the full file path is not specified. The 
 program above can also be found as <tt>callback</tt> in the source distribution 
 in the <tt>newlisp-x.x.x/examples</tt> directory.</p>

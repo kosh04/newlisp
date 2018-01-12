@@ -7145,10 +7145,10 @@ Dec 6, 2009
     A illegal symbol when trying to create a context could crash the system,
     when referenced again after the error message.
 
-10.7.0 version 10.6.5 released as stable release January 2016.
+10.7.0 verson 10.6.5 released as stable release January 2016.
 
 
-10.7.1 
+10.7.1 stable release Jan 21st 2017
     GMT - offset now includes a potential daylight savings bias, when
     daylight savings time is active on Windows and Unix-like OSs.
 
@@ -7179,4 +7179,46 @@ Dec 6, 2009
     using a hash functor will now throw an error message
     when the symbol is too long. The 'contect' and 'sys'
     functions already threw an error message.
+
+10.7.2
+   Fixing out-of-sink of file positions when mixing 'search' and 'seek' 
+   with 'read-line' on IO-streams introduced a new errror making
+   the newlisp-10.x.x/examples/upload.cgi script fail.
+
+10.7.3
+   Supress loading of startup init.lsp when -h option is present. Before
+   only the -n and -x options supressed init.lsp.
+
+   Change in modules/gsl.lsp to make it work on locales using comma separator.
+
+   Ability to use 'open', 'rename-file', 'delete-file', 'make-dir' and 
+   'remove-dir' with UTF16 filenames in UTF8 versions on Windows when
+   using the UTF8 version of newLISP. The functions 'file-info', 'file?', 
+   'change-dir' and 'dir? already worked on UTF16 filenames when using the UTF8 
+   version of newLISP on Windows.
+
+   Thanks to Michael Sabin who started the work a few years back writing the 
+   win-path.c file with functions translating between UTF8 and UTF16. 
+
+   When using the UTF8 version of newLISP on Windows in a command shell, that
+   command shell program also should be able to handle/display UTF8 (not UTF16).
+   On Windows and Linux the Java based frontend newLISP-GS handles UTF8.
+   On Mac OS the terminal program handles UTF8.
+
+   Fixed a wrong 'symbol protected message' when a protected symbol is 
+   part of a nested espression, but not a symbol with its content to be 
+   modified.
+
+   New modules/postscript.lsp changes description of ps:drawto.
+
+   Fixed flushing problem on 'print' to stdout on Mac OS and other BSDs.
+
+   '(read-key true)' with the 'true' parameter is now non-blocking.
+
+   (trim str) on some strings containing 0's would overrun memory and 0's
+   where not trimmed from the left. All character <= 32 (space) should
+   be trimmed from the left and right ends of the string buffer. When the 
+   entire string is valid ASCII or UTF-8 with no 0s, ‘trim’ behaves 
+   like in older versions.
+
 
