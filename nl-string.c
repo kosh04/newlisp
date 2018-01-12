@@ -156,9 +156,7 @@ do
 freeMemory(buffer);
 
 if(position == -1) return(nilCell);
-#ifndef WINDOWS
-fseek(getIOstream(fileHandle), foundPosition, 0);
-#endif
+
 lseek((int)fileHandle, foundPosition, SEEK_SET);
 #ifdef LFS
 result = foundPosition;
@@ -2050,11 +2048,11 @@ params = getStringSize(params, &str, &len, TRUE);
 if(params == nilCell)   
     {
     ptr = str;
-    while((unsigned char)*str <= 32 && *str != 0) str++, left++;
+    while((unsigned char)*str <= 32 && left < len) str++, left++;
     if(left == len) 
         return(stuffString(""));
-    str = ptr + len -1;
-    while((unsigned char)*str <= 32) str--, right++;
+    str = ptr + len - 1;
+    while((unsigned char)*str <= 32 && right < len) str--, right++;
     return(stuffStringN(ptr + left, len - left - right));
     }
 
@@ -2087,9 +2085,9 @@ if(params != nilCell)
 else rchr = lchr;
 
 #ifndef SUPPORT_UTF8
-while(*str == lchr) str++, left++;
+while(*str == lchr && left < len) str++, left++;
 #else
-while(*wstr == lchr) wstr++, left++;
+while(*wstr == lchr && left < len) wstr++, left++;
 #endif
 
 if(left == len)

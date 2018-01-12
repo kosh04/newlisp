@@ -8,6 +8,7 @@
 " Last change:  2013 Jun 18 L.M. added kmeans-query, kmeans-train
 " Last change:  2014 Dec 31 L.M. added collect
 " Last change:  2017 Jan 31 L.M. added history
+" Last change:  2017 Jun 27 L.M. added missing macro
 " newLISP site: http://www.newlisp.org/
 
 " $Id: newlisp.vim,v 1.37 2013/06/02 22:30:55 slobin Exp $
@@ -122,8 +123,8 @@ syn keyword newlispFunction get-url global global? history if if-not ifft import
 syn keyword newlispFunction int integer integer? intersect invert irr join json-error json-parse 
 syn keyword newlispFunction kmeans-query kmeans-train lambda? last
 syn keyword newlispFunction last-error legal? length let letex letn list list? load local log lookup
-syn keyword newlispFunction lower-case macro? main-args make-dir map mat match max member min mod
-syn keyword newlispFunction mul multiply net-accept net-close net-connect net-error net-eval
+syn keyword newlispFunction lower-case macro macro? main-args make-dir map mat match max member min 
+syn keyword newlispFunction mod mul multiply net-accept net-close net-connect net-error net-eval
 syn keyword newlispFunction net-interface net-ipv net-listen net-local net-lookup net-packet
 syn keyword newlispFunction net-peek net-peer net-ping net-receive net-receive-from net-receive-udp
 syn keyword newlispFunction net-select net-send net-send-to net-send-udp net-service net-sessions

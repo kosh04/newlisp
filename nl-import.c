@@ -671,7 +671,7 @@ void initFFI(void)
 memcpy(&ffi_type_charpointer, &ffi_type_pointer, sizeof(ffi_type));
 }
 
-/* creates ffi usable struct information */
+/* creates extended ffi usable struct information */
 CELL * p_struct(CELL * params)
 {
 CELL * ffiCell;
@@ -744,10 +744,10 @@ elements = (ffi_type **) ffi->cstruct->elements;
 
 data = allocMemory(ffi->cstruct->size + 1);
 memset(data, 0, ffi->cstruct->size + 1);
-
-/* check if data come in as a list like in traditional pack */
+/* if no data are given the structure stays with 0s */
     
 /* computing offsets and copy data */
+/* data may come in as a list or flat */
 elements = (ffi_type **) ffi->cstruct->elements;
 while( (elem = *elements++) != NULL)
     {

@@ -4,7 +4,7 @@
 #
 # version 1.7
 #
-# works on Apache server 1.2 and after and newLISP server 10.3.0 and after
+# works on Apache server 1.2 and after and Unix newLISP server 10.3.0 and after
 # works on newLISP CGI with 10.1 and after
 
 ; make compatible with older versions of newLISP
@@ -57,7 +57,8 @@
 	    (dec size bytesread))
 	(close infile)
 	(close outfile)
-	(delete-file "upload-file"))
+	(delete-file "upload-file")
+)
 
 (if (not (catch (process-upload) 'result))
 	(print "<h2>" (first (parse result "\\r\\n|\\n" 0)) "</h2>")

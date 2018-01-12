@@ -3,7 +3,8 @@
 ;; @version 1.0 - initial release. Minimum newLISP version is 10.4.0.
 ;; @version 1.1 - added check for extended ffi enabled version.
 ;; @version 1.2 - changed ostype Win32 to Windows
-;; @author Lutz Mueller 2012
+;; @version 1.3 - replaced 0.0 in CholeskyD with (float 0) for all locales
+;; @author Lutz Mueller 2012, 2014
 
 ;; <h2>Module GSL For The GNU Scientific Library</h2>
 ;; The @link http://www.gnu.org/software/gsl/ GSL GNU Scientific Library
@@ -17,8 +18,8 @@
 ;; This module requires newLISP version 10.4.0 as a minimum. For 64-bit
 ;; newLISP on Mac OSX, Linux and other Unix, 10.4.2 is the minimum. 
 ;; 
-;; Precompiled 32-bit libraries for the binary distributions of newLISP 
-;; versions are available in the
+;; Precompiled 32-bit and 64-bit libraries for the binary distributions i
+;; of newLISP versions are available in the
 ;; @link http://www.nuevatec.com/GSL/ http://www.nuevatec.com/GSL/
 ;; directory. See the 'INSTALL.txt' file in that directory for instructions how
 ;; to install the library files.
@@ -278,7 +279,7 @@
         ; zero the triangle above diagonal
         (for (i 0 (- m 2)) 
             (for (j (+ i 1) (- n 1)) 
-                (gsl_matrix_set Aptr i j 0.0)))
+                (gsl_matrix_set Aptr i j (float 0))))
         (set 'result (get-list-from-matrix Ar))
         (gsl_matrix_free Aptr)
     result) ; matix L of A = LLt

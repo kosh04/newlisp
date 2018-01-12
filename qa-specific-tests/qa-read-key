@@ -1,0 +1,5 @@
+(while true
+    (print ".") (sleep 100)
+    (if (!= 0 (set 'chr (read-key true))) (println " " chr)))
+)
+
