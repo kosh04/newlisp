@@ -19,6 +19,7 @@
 
 
 #include "newlisp.h"
+#include "sockssl.h"
 #include <string.h>
 
 #ifdef WINDOWS
@@ -1099,7 +1100,8 @@ CELL * p_netSend(CELL * params)
 UINT sock; 
 size_t size, size2; 
 char * buffer; 
-ssize_t bytesSent; 
+ssize_t bytesSent;
+struct socket *socket;
 
 params = getInteger(params, &sock); 
 params = getStringSize(params, &buffer, &size, TRUE);
@@ -1110,7 +1112,8 @@ if(params->type != CELL_NIL)
     if(size2 < size) size = size2;
     }
 
-if((bytesSent = sendall((int)sock, buffer, size))  == SOCKET_ERROR) 
+socket = socket_new(sock);
+if((bytesSent = sendall(socket, buffer, size))  == SOCKET_ERROR) 
     { 
     deleteIOsession((int)sock); 
     return(netError(ERR_INET_WRITE)); 
@@ -1870,14 +1873,18 @@ while(base != NULL)
     }
 }
 
-int sendall(int sock, char * buffer, int len)
+int sendall(struct socket *sock, char * buffer, int len)
 {
 int bytesSend = 0;
 int n;
 
 while(bytesSend < len)
     {
-    if((n = send(sock, buffer + bytesSend, len - bytesSend, NO_FLAGS_SET)) == SOCKET_ERROR)
+    if (sock->ssl)
+        n = SSL_write(sock->ssl, buffer+bytesSend, len-bytesSend);
+    else
+        n = send(sock->fd, buffer + bytesSend, len - bytesSend, NO_FLAGS_SET);
+    if(n == SOCKET_ERROR)
         return(SOCKET_ERROR);
     bytesSend += n;
     }

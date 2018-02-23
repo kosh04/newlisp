@@ -19,6 +19,7 @@
 
 #include "newlisp.h"
 #include <errno.h>
+#include "sockssl.h"
 #include "protos.h"
 
 #ifdef WINDOWS
@@ -86,13 +87,13 @@ INT socketTimeout = 0;
 struct timeval socketStart;
 
 /* socket send and receive routines with timeout */
-int recvc_tm(int sock)
+int recvc_tm(struct socket *sock)
 {
 struct timeval tm;
 unsigned char chr;
 ssize_t bytes;
 
-while(wait_ready(sock, 1000, 0) <= 0)
+while(wait_ready(sock->fd, 1000, 0) <= 0)
   {
   if(socketTimeout)
     {
@@ -101,15 +102,19 @@ while(wait_ready(sock, 1000, 0) <= 0)
         longjmp(socketTimeoutJump, 1);
     }
   } 
+
+if (sock->need_ssl)
+    bytes = SSL_read(sock->ssl, &chr, 1);
+else
+    bytes = recv(sock->fd, &chr, 1, NO_FLAGS_SET);
    
-bytes = recv(sock, (void *)&chr, 1, NO_FLAGS_SET);
 if(bytes <= 0) return(-1);
 
 return(chr);
 }
 
 
-char * recvs_tm(char * buffer, size_t size, int sock)
+char * recvs_tm(char * buffer, size_t size, struct socket *sock)
 {
 ssize_t bytesReceived = 0;
 int chr;
@@ -146,16 +151,19 @@ while(wait_ready(sock, 1000, 0) <= 0)
     }
 }
 
-size_t recvsize_tm(char * buffer, size_t size, int sock, int flag)
+size_t recvsize_tm(char * buffer, size_t size, struct socket *sock, int flag)
 {
 ssize_t sizeRead = 0;
 size_t resultSize = 0;
 
-wait_until_read_ready(sock);
+wait_until_read_ready(sock->fd);
 memset(buffer, 0, size);
 while(size)
   { 
-  sizeRead = recv(sock, buffer + resultSize, size, NO_FLAGS_SET);
+  if (sock->need_ssl)
+      sizeRead = SSL_read(sock->ssl, buffer + resultSize, size);
+  else
+      sizeRead = recv(sock->fd, buffer + resultSize, size, NO_FLAGS_SET);
   if(sizeRead <= 0)
       {
       sizeRead = 0;
@@ -165,23 +173,30 @@ while(size)
   size -= sizeRead;
   if(flag && transferEvent != nilSymbol)
         executeSymbol(transferEvent, stuffInteger(sizeRead), NULL);
-  wait_until_read_ready(sock);
+  wait_until_read_ready(sock->fd);
   }
 
 return(resultSize);
 }
 
-ssize_t sendf(int sock, int debug, char * format, ...)
+ssize_t sendf(struct socket *sock, int debug, char * format, ...)
 {
 char * buffer;
 va_list argptr;
 int result;
+size_t size;
  
 va_start(argptr,format);
 /* new in 7201 , defined in nl-filesys.c if not in libc */
-vasprintf(&buffer, format, argptr); 
+size = vasprintf(&buffer, format, argptr); 
 
-result = send(sock, buffer, strlen(buffer), NO_FLAGS_SET);
+assert(size == strlen(buffer));
+
+if (sock->need_ssl)
+  result = SSL_write(sock->ssl, buffer, size);
+else
+  result = send(sock->fd, buffer, size, NO_FLAGS_SET);
+
 if(debug) varPrintf(OUT_CONSOLE, "%s", buffer);
 
 freeMemory(buffer);
@@ -212,7 +227,7 @@ CELL * p_deleteUrl(CELL * params)
 return(getPutPostDeleteUrl(NULL, params, HTTP_DELETE, CONNECT_TIMEOUT));
 }
 
-int transfer(int sock, char * buff, int len)
+int transfer(struct socket *sock, char * buff, int len)
 {
 int bytesSend = 0, n;
 
@@ -239,7 +254,7 @@ char * pHost;
 char * path;
 char * customHeader = NULL;
 size_t bufflen;
-int port, pPort, sock = 0;
+int port, pPort, fd = 0;
 char * option, * method = NULL;
 char * buff;
 char resultTxt[128];
@@ -254,6 +269,7 @@ CELL * headerCell = NULL;
 int ch, len;
 int responseLoop;
 int statusCode;
+struct socket *sock;
 
 buff = alloca(BUFFSIZE);
 
@@ -366,16 +382,29 @@ else
 gettimeofday(&socketStart, NULL);
 /* connect to host */
 CONNECT_TO_HOST:
-if(sock) 
-    close(sock);
+if(fd) close(fd);
 
 
-if((sock = netConnect(pHost, pPort, SOCK_STREAM, 0, timeout)) == SOCKET_ERROR)
+if((fd = netConnect(pHost, pPort, SOCK_STREAM, 0, timeout)) == SOCKET_ERROR)
     return(webError(netErrorIdx));
+
+sock = socket_new(fd, (strcmp(protocol, "https") == 0));
 
 if(type == HTTP_GET)
     if(headRequest == TRUE) type = HTTP_HEAD;
 method = requestMethod[type];
+
+if (sock->need_ssl) {
+  int err;
+  err = ssl_connect(sock);
+  if (err != 1) {
+    const char *msg = ERR_reason_error_string(ERR_get_error());
+    return stuffString((char *)msg);
+  }
+
+  fprintf(stderr, "SSL version: %s\n", SSL_get_version(sock->ssl));
+  fprintf(stderr, "SSL state:   %s\n", SSL_state_string(sock->ssl));
+}
 
 /* send header */
 if(proxyUrl != NULL)
@@ -419,7 +448,7 @@ else /* HTTP_GET, HTTP_DELETE */
 
 if(setjmp(socketTimeoutJump) != 0)
     {
-    if(sock) close(sock);
+    if(sock->fd) close(sock->fd);
     if(resultPtr != NULL) free(resultPtr);
     return(webError(ERR_INET_TIMEOUT));
     }
@@ -610,7 +639,11 @@ else
     result->aux = resultSize + 1;
     }
 
-close(sock);
+if (sock->need_ssl) {
+    ssl_close(sock);
+}
+
+socket_close(sock);
 
 if(listFlag)
     {
@@ -653,6 +686,7 @@ if(my_strnicmp(url, "http://", 7) == 0)
     }
 else if( my_strnicmp(url, "https://", 8) == 0)
     {
+    *port = 443;                /* XXX */
     strncpy(protocol, "https", MAX_PROTOCOL);
     if( (ADDR_FAMILY == AF_INET6) && (*(url + 8) == '[') )
         strncpy(host, url+9, bufflen);

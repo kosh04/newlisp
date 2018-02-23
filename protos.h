@@ -18,6 +18,8 @@
 
 #ifndef PROTOS_H
 #define PROTOS_H
+#include "sockssl.h"
+
 CELL * addResult(CELL * * result, CELL * cell, CELL * newCell);
 CELL * appendArray(CELL * cell, CELL * params);
 CELL * appendNode(CELL * node, CELL * newNode);
@@ -589,7 +591,7 @@ int netListenOrDatagram(int portNo, int type, char * ifAddr, char * mcAddr, int 
 int openFile(char * fileName, char * accessMode, char * option);
 int process(char * command, int inpipe, int outpipe, int errpipe);
 int semaphore(UINT sem_id, int value, int type);
-int sendall(int sock, char * buffer, int len);
+int sendall(struct socket *, char * buffer, int len);
 int sortFunc(const void * left, const void *right);
 int timediff_ms(struct timeval end, struct timeval start);
 int waitPeek(int handle, int microsecs);

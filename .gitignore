@@ -48,3 +48,9 @@ icmp6.h
 TAGS
 XTAGS
 *.stackdump
+
+wscript
+build/
+
+.cquery
+.cquery_cached_index/
