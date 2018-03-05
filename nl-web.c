@@ -19,6 +19,7 @@
 
 #include "newlisp.h"
 #include <errno.h>
+#include <assert.h>
 #include "sockssl.h"
 #include "protos.h"
 
@@ -103,10 +104,7 @@ while(wait_ready(sock->fd, 1000, 0) <= 0)
     }
   } 
 
-if (sock->need_ssl)
-    bytes = SSL_read(sock->ssl, &chr, 1);
-else
-    bytes = recv(sock->fd, &chr, 1, NO_FLAGS_SET);
+bytes = socket_read(sock, &chr, 1);
    
 if(bytes <= 0) return(-1);
 
@@ -160,10 +158,7 @@ wait_until_read_ready(sock->fd);
 memset(buffer, 0, size);
 while(size)
   { 
-  if (sock->need_ssl)
-      sizeRead = SSL_read(sock->ssl, buffer + resultSize, size);
-  else
-      sizeRead = recv(sock->fd, buffer + resultSize, size, NO_FLAGS_SET);
+  sizeRead = socket_read(sock, buffer + resultSize, size);
   if(sizeRead <= 0)
       {
       sizeRead = 0;
@@ -192,10 +187,7 @@ size = vasprintf(&buffer, format, argptr);
 
 assert(size == strlen(buffer));
 
-if (sock->need_ssl)
-  result = SSL_write(sock->ssl, buffer, size);
-else
-  result = send(sock->fd, buffer, size, NO_FLAGS_SET);
+result = socket_write(sock, buffer, size);
 
 if(debug) varPrintf(OUT_CONSOLE, "%s", buffer);
 
@@ -269,7 +261,7 @@ CELL * headerCell = NULL;
 int ch, len;
 int responseLoop;
 int statusCode;
-struct socket *sock;
+struct socket *sock = NULL;
 
 buff = alloca(BUFFSIZE);
 
@@ -382,29 +374,20 @@ else
 gettimeofday(&socketStart, NULL);
 /* connect to host */
 CONNECT_TO_HOST:
-if(fd) close(fd);
-
+if (sock) socket_close(sock);
 
 if((fd = netConnect(pHost, pPort, SOCK_STREAM, 0, timeout)) == SOCKET_ERROR)
     return(webError(netErrorIdx));
 
 sock = socket_new(fd, (strcmp(protocol, "https") == 0));
+if (sock == NULL)
+    {
+    return webError(-1);        /* stuffString("OpenSSL error"); */
+    }
 
 if(type == HTTP_GET)
     if(headRequest == TRUE) type = HTTP_HEAD;
 method = requestMethod[type];
-
-if (sock->need_ssl) {
-  int err;
-  err = ssl_connect(sock);
-  if (err != 1) {
-    const char *msg = ERR_reason_error_string(ERR_get_error());
-    return stuffString((char *)msg);
-  }
-
-  fprintf(stderr, "SSL version: %s\n", SSL_get_version(sock->ssl));
-  fprintf(stderr, "SSL state:   %s\n", SSL_state_string(sock->ssl));
-}
 
 /* send header */
 if(proxyUrl != NULL)
@@ -448,7 +431,7 @@ else /* HTTP_GET, HTTP_DELETE */
 
 if(setjmp(socketTimeoutJump) != 0)
     {
-    if(sock->fd) close(sock->fd);
+    socket_close(sock);
     if(resultPtr != NULL) free(resultPtr);
     return(webError(ERR_INET_TIMEOUT));
     }
@@ -638,10 +621,6 @@ else
     result->contents = (UINT)resultPtr;
     result->aux = resultSize + 1;
     }
-
-if (sock->need_ssl) {
-    ssl_close(sock);
-}
 
 socket_close(sock);
 

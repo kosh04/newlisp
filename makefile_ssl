@@ -1,0 +1,113 @@
+# Makefile for SSL support
+# not tested features library
+
+CC ?= cc
+FEATURES ?= utf8 readline ffi ssl
+
+usage := make -f $(notdir $(MAKEFILE_LIST)) [CC=$(CC)] [FEATURES=utf8,ffi,readline,ssl]
+
+TARGET := newlisp
+
+# $(call grep, string, word-list)
+grep = $(strip $(foreach word,$2,$(findstring $(word),$1)))
+
+platform_list := mingw msys cygwin linux bsd darwin # solaris
+hostname := $(shell $(CC) -dumpmachine)
+platform := $(call grep, $(hostname), $(platform_list))
+
+feature_utf8     := $(findstring utf8, $(FEATURES))
+feature_ffi      := $(findstring ffi, $(FEATURES))
+feature_readline := $(findstring readline, $(FEATURES))
+feature_ssl      := $(findstring ssl, $(FEATURES))
+
+OBJS_default = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+	nl-sock.o nl-import.o nl-xml-json.o nl-web.o nl-matrix.o nl-debug.o pcre.o \
+	sockssl.o
+OBJS_mingw = win32-util.o win32-path.o
+OBJS_utf8 = nl-utf8.o
+OBJS_lib = unix-lib.o
+
+OBJS = $(OBJS_default) \
+	$(OBJS_$(platform)) \
+	$(OBJS_$(feature_utf8)) \
+	$(OBJS_$(feature_lib))
+
+CFLAGS_default = -Wall -Wno-uninitialized -Wno-long-long -g
+CFLAGS_mingw   = -DWINDOWS
+CFLAGS_cygwin  = -DCYGWIN -Wno-char-subscripts -Iinclude
+CFLAGS_msys    = $(CFLAGS_cygwin)
+CFLAGS_darwin  = -DMAC_OSX
+CFLAGS_bsd     = -D_BSD
+CFLAGS_linux   = -DLINUX
+CFLAGS_utf8    = -DSUPPORT_UTF8
+CFLAGS_ffi     = -DFFI $(shell pkg-config --cflags libffi 2>/dev/null)
+CFLAGS_readline = -DREADLINE
+CFLAGS_ssl     = -DHAVE_OPENSSL \
+	-I/usr/local/opt/openssl/include \
+	$(shell pkg-config --cflags libssl)
+
+CFLAGS := $(CFLAGS_default) \
+	$(CFLAGS_$(platform)) \
+	$(CFLAGS_$(feature_utf8)) \
+	$(CFLAGS_$(feature_ffi)) \
+	$(CFLAGS_$(feature_readline)) \
+	$(CFLAGS_$(feature_ssl))
+
+LDFLAGS_ssl = -L/usr/local/opt/openssl/lib
+
+LDFLAGS := $(LDFLAGS_$(feature_ssl))
+
+LDLIBS_mingw  = -lws2_32
+LDLIBS_cygwin = -ldl
+LDLIBS_msys   = $(LIBS_cygwin)
+LDLIBS_linux  = -ldl
+LDLIBS_ffi    = -lffi $(shell pkg-config --libs libffi 2>/dev/null)
+LDLIBS_readline = -lreadline # -lncurses
+LDLIBS_ssl    = $(shell pkg-config --libs libssl 2>/dev/null)
+
+LDLIBS := $(LDLIBS_$(platform)) \
+	$(LDLIBS_$(feature_ffi)) \
+	$(LDLIBS_$(feature_readline)) \
+	$(LDLIBS_$(feature_ssl))
+
+default: $(TARGET)
+
+# %.exe: %.o
+# 	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+newlisp: $(OBJS)
+	$(CC) $^ $(LDFLAGS) $(LDLIBS) -o $@
+
+$(OBJS): primes.h protos.h newlisp.h
+
+ifeq ($(platform),cygwin)
+nl-sock.o: ./include/netinet/icmp6.h
+
+./include/netinet/icmp6.h:
+	mkdir -p ./include/netinet/
+	curl -s http://www.scs.stanford.edu/histar/src/pkg/uclibc/include/netinet/icmp6.h > ./include/netinet/icmp6.h
+endif
+
+OBJS_PROFILE := gmon.out gmon.out *.gcda *.gcno
+
+profile: CFLAGS  += -pg -fprofile-arcs -ftest-coverage
+profile: LDFLAGS += -pg -fprofile-arcs -ftest-coverage
+profile: default
+#	$(MAKE) testall
+#	gprof newlisp
+
+help usage:
+	@echo usage: $(usage)
+
+check test: newlisp
+	./newlisp -v
+	$(MAKE) -f Makefile testall
+
+clean:
+	$(RM) newlisp $(OBJS) $(OBJS_PROFILE)
+
+.PHONY: default
+.PHONY: profile
+.PHONY: help usage
+.PHONY: check test
+.PHONY: clean

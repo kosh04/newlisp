@@ -187,7 +187,7 @@ else
 
 /********************** IO session functions *******************/
 
-IO_SESSION * createIOsession(int handle, int family)
+IO_SESSION * createIOsession(int handle, int family, void *res)
 {
 IO_SESSION * iSession;
 
@@ -195,6 +195,7 @@ iSession = (IO_SESSION *)calloc(sizeof(IO_SESSION), 1);
 
 iSession->handle = handle;
 iSession->family = family;
+iSession->res.p  = res;
 
 if(ioSessions == NULL)
     {
@@ -208,6 +209,17 @@ else
     }
 
 return(iSession);
+}
+
+IO_SESSION * findIOsession(int handle)
+{
+IO_SESSION * session;
+
+for (session = ioSessions; session != NULL; session = session->next)
+    if(session->handle == handle)
+        return session;
+
+return NULL;
 }
 
 int deleteIOsession(int handle)
@@ -228,10 +240,22 @@ while(session)
             ioSessions = session->next;
         else
             previous->next = session->next;
-        if(session->stream != NULL)
-            fclose(session->stream);
-        else close(handle);
-        free((char *)session);
+        switch (session->family)
+            {
+            case AF_UNSPEC:
+                if (session->res.stream != NULL)
+                    fclose(session->res.stream);
+                break;
+            case AF_INET:
+            case AF_INET6:
+            case AF_UNIX:
+                if (session->res.socket != NULL)
+                    socket_close(session->res.socket);
+                break;
+            default:
+                break;
+            }
+        free(session);
         return(TRUE);
         }
     previous = session;
@@ -242,38 +266,18 @@ return(FALSE);
 }
 
 
-int isSessionSocket(int sock)
+int isSessionSocket(int handle)
 {
-IO_SESSION * session;
-
-if(ioSessions == NULL)
-    return(FALSE);
-
-session = ioSessions;
-while(session)
-    {
-    if(session->handle == sock)
-        return(TRUE);
-    session = session->next;
-    }
-
-return(FALSE);
+return (findIOsession(handle) != NULL);
 }
 
-int getSocketFamily(int sock)
+int getSocketFamily(int handle)
 {
 IO_SESSION * session;
 
-session = ioSessions;
-
-while(session)
-    {
-    if(session->handle == sock)
-        return(session->family);
-    session = session->next;
-    }
-
-return(-1);
+if ((session = findIOsession(handle)) == NULL)
+    return -1;
+return session->family;
 }
 
 
@@ -281,16 +285,9 @@ FILE * getIOstream(int handle)
 {
 IO_SESSION * session;
 
-session = ioSessions;
-
-while(session)
-    {
-    if(session->handle == handle)
-        return(session->stream);
-    session = session->next;
-    }
-
-return(NULL);
+if ((session = findIOsession(handle)) == NULL)
+    return NULL;
+return session->res.stream;
 }
 
 /* ========================= IO session functions end ===================== */
@@ -365,7 +362,7 @@ while(session)
     sPtr = session;
     session = session->next;
     if(sPtr->family != AF_UNSPEC || getFlag(params))
-        addList(sList, stuffInteger(sPtr->handle));
+        addList(sList, stuffInteger((UINT)sPtr->res.socket));
     }
 
 return(sList);
@@ -462,7 +459,7 @@ if((sock = netConnect(remoteHostName,
         (int)portNo, type, protocol, (int)topt)) == SOCKET_ERROR)
     return(netError(netErrorIdx));
 
-createIOsession(sock, ADDR_FAMILY);
+createIOsession(sock, ADDR_FAMILY, socket_new(sock, FALSE));
 
 netErrorIdx = 0;
 return(stuffInteger((UINT)sock)); 
@@ -492,7 +489,7 @@ if (connect(sock, (struct sockaddr *)&remote_sun, SUN_LEN(&remote_sun)) == -1)
     return(SOCKET_ERROR);
     }
 
-createIOsession(sock, AF_UNIX);
+createIOsession(sock, AF_UNIX, socket_new(sock, FALSE));
 
 netErrorIdx = 0;
 return(sock); 
@@ -782,7 +779,7 @@ else
 
 if(sock != INVALID_SOCKET) 
     {
-    createIOsession(sock, family);
+    createIOsession(sock, family, socket_new(sock, FALSE));
     netErrorIdx = 0;
     }
 
@@ -1101,7 +1098,7 @@ UINT sock;
 size_t size, size2; 
 char * buffer; 
 ssize_t bytesSent;
-struct socket *socket;
+IO_SESSION * session;
 
 params = getInteger(params, &sock); 
 params = getStringSize(params, &buffer, &size, TRUE);
@@ -1112,10 +1109,10 @@ if(params->type != CELL_NIL)
     if(size2 < size) size = size2;
     }
 
-socket = socket_new(sock);
-if((bytesSent = sendall(socket, buffer, size))  == SOCKET_ERROR) 
-    { 
-    deleteIOsession((int)sock); 
+session = findIOsession(sock);
+if((bytesSent = sendall(session->res.socket, buffer, size))  == SOCKET_ERROR) 
+    {
+    deleteIOsession(sock); 
     return(netError(ERR_INET_WRITE)); 
     }
 
@@ -1295,7 +1292,7 @@ if(listen(sock, MAX_PENDING_CONNECTS) == SOCKET_ERROR)
     return(SOCKET_ERROR);
     }
 
-createIOsession(sock, AF_UNIX);
+createIOsession(sock, AF_UNIX, socket_new(sock, FALSE));
 
 netErrorIdx = 0;
 return(sock);
@@ -1358,7 +1355,7 @@ if(stype == SOCK_STREAM)
         } 
     }
 
-createIOsession(sock, ADDR_FAMILY); 
+createIOsession(sock, ADDR_FAMILY, socket_new(sock, FALSE)); 
 
 netErrorIdx = 0;
 return(sock);
@@ -1542,7 +1539,7 @@ if((connection = netAccept(sock)) == SOCKET_ERROR)
 
 /* avoid registering socket twice */
 if(!isSessionSocket(connection))
-    createIOsession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX);
+    createIOsession(connection, (port != 0) ? ADDR_FAMILY : AF_UNIX, socket_new(connection, FALSE));
 
 /* print log */
 getIpPortFromSocket(connection, PEER_INFO, name);
@@ -1599,6 +1596,7 @@ int singleSession = FALSE;
 jmp_buf errorJumpSave;
 int errNo;
 UINT * resultStackIdxSave;
+struct socket *socket;
 
 list  = evaluateExpression(params);
 if(list->type == CELL_STRING)
@@ -1673,12 +1671,13 @@ if(sock == SOCKET_ERROR)
 session->host = host;
 session->port = port;
 session->sock = sock;
+socket = socket_new(sock, FALSE);
 
-if( sendall(sock, "[cmd]\n", 6)  == SOCKET_ERROR ||
-    sendall(sock, prog, size) == SOCKET_ERROR ||
-    sendall(sock, "(exit)\n[/cmd]\n", 14) == SOCKET_ERROR )
+if( sendall(socket, "[cmd]\n", 6)  == SOCKET_ERROR ||
+    sendall(socket, prog, size) == SOCKET_ERROR ||
+    sendall(socket, "(exit)\n[/cmd]\n", 14) == SOCKET_ERROR )
     { 
-    close(sock); 
+    socket_close(socket);
     session->result = netEvalError(ERR_INET_WRITE); 
     goto CONTINUE_CREATE_SESSION;
     }
@@ -1686,7 +1685,7 @@ if( sendall(sock, "[cmd]\n", 6)  == SOCKET_ERROR ||
 session->netStream = (void *)allocMemory(sizeof(STREAM));
 memset(session->netStream, 0, sizeof(STREAM));
 openStrStream(session->netStream, MAX_BUFF, 0);
-createIOsession(sock, ADDR_FAMILY);
+createIOsession(sock, ADDR_FAMILY, socket);
 count++;
 CONTINUE_CREATE_SESSION:
 list = list->next;

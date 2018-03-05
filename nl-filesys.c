@@ -217,7 +217,7 @@ char * fileName;
 char * accessMode;
 char * option = NULL;
 int handle;
-IO_SESSION * session;
+char * mode;
 
 params = getString(params, &fileName);
 params = getString(params, &accessMode);
@@ -228,15 +228,12 @@ if(params != nilCell)
 if( (handle = openFile(fileName, accessMode, option)) == (int)-1)
     return(nilCell);
 
-session = createIOsession(handle, AF_UNSPEC);
-if(*accessMode == 'r')
-    session->stream = fdopen(handle, "r");
-else if(*accessMode == 'w')
-    session->stream = fdopen(handle, "w");
-else if(*accessMode == 'u')
-    session->stream = fdopen(handle, "r+");
-else if(*accessMode == 'a')
-    session->stream = fdopen(handle, "a+");
+if(*accessMode == 'r') mode = "r";
+else if(*accessMode == 'w') mode = "w";
+else if(*accessMode == 'u') mode = "r+";
+else if(*accessMode == 'a') mode = "a+";
+
+createIOsession(handle, AF_UNSPEC, fdopen(handle, mode));
 
 return(stuffInteger((UINT)handle));
 }
@@ -1233,15 +1230,12 @@ UINT plainProcess(char * command, size_t size);
 CELL * p_pipe(CELL * params)
 {
 UINT hin, hout;
-IO_SESSION * session;
 
 if(!winPipe(&hin, &hout))    /* see file win-util.c */
     return(nilCell);
 
-session = createIOsession(hin, AF_UNSPEC);
-session->stream = fdopen(hin, "r");
-session = createIOsession(hout, AF_UNSPEC);
-session->stream = fdopen(hout, "w");
+createIOsession(hin,  AF_UNSPEC, fdopen(hin, "r"));
+createIOsession(hout, AF_UNSPEC, fdopen(hout, "w"));
 
 return(stuffIntegerList(2, hin, hout));
 }
@@ -1277,18 +1271,13 @@ return(stuffInteger(result));
 CELL * p_pipe(CELL * params)
 {
 int handles[2];
-#ifndef SUNOS
-IO_SESSION * session;
-#endif
 
 if(pipe(handles) != 0)
     return(nilCell);
 
 #ifndef SUNOS
-session = createIOsession(handles[0], AF_UNSPEC);
-session->stream = fdopen(handles[0], "r");
-session = createIOsession(handles[1], AF_UNSPEC);
-session->stream = fdopen(handles[0], "w");
+createIOsession(handles[0], AF_UNSPEC, fdopen(handles[0], "r"));
+createIOsession(handles[1], AF_UNSPEC, fdopen(handles[0], "w"));
 #endif
 
 return(stuffIntegerList(2, (UINT)handles[0], (UINT)handles[1]));

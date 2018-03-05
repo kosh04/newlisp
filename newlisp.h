@@ -658,11 +658,19 @@ typedef struct
 	short int flags;
 	} PRIMITIVE;
 
+/* see sockssl.h */
+struct socket;
+
 typedef struct
     {
     int handle;
     int family;
-    FILE * stream;
+    union /* resource */
+        {
+        FILE *stream;             /* family=AF_UNSPEC */
+        struct socket *socket;    /* family=AF_INET,AF_INET6,AF_UNIX */
+        void *p;
+        } res;
     void * next;
     } IO_SESSION;
 

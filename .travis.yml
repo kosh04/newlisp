@@ -37,6 +37,16 @@ matrix:
       script:
         - make -f makefile_mingw_utf8 CC=${CC} STRIP=${STRIP}
       after_success: echo "Skip report coverage"
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - libssl-dev
+        script:
+          - make -f makefile_ssl
+          - ls -lh ./newlisp && ldd ./newlisp && ./newlisp -v
+          - make testall
+          - ./newlisp -n -e "(silent)(print (get-url {https://example.com/} {debug}))"
 
 before_install:
   - source ./ci/coveralls/before_install_${TRAVIS_OS_NAME}.sh
