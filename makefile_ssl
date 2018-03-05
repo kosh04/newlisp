@@ -44,7 +44,7 @@ CFLAGS_ffi     = -DFFI $(shell pkg-config --cflags libffi 2>/dev/null)
 CFLAGS_readline = -DREADLINE
 CFLAGS_ssl     = -DHAVE_OPENSSL \
 	-I/usr/local/opt/openssl/include \
-	$(shell pkg-config --cflags libssl)
+	$(shell pkg-config --cflags libssl libcrypto)
 
 CFLAGS := $(CFLAGS_default) \
 	$(CFLAGS_$(platform)) \
@@ -60,10 +60,10 @@ LDFLAGS := $(LDFLAGS_$(feature_ssl))
 LDLIBS_mingw  = -lws2_32
 LDLIBS_cygwin = -ldl
 LDLIBS_msys   = $(LIBS_cygwin)
-LDLIBS_linux  = -ldl
+LDLIBS_linux  = -ldl -lm
 LDLIBS_ffi    = -lffi $(shell pkg-config --libs libffi 2>/dev/null)
 LDLIBS_readline = -lreadline # -lncurses
-LDLIBS_ssl    = $(shell pkg-config --libs libssl 2>/dev/null)
+LDLIBS_ssl    = $(shell pkg-config --libs libssl libcrypto 2>/dev/null)
 
 LDLIBS := $(LDLIBS_$(platform)) \
 	$(LDLIBS_$(feature_ffi)) \
