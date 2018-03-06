@@ -1,12 +1,15 @@
 #ifndef _SOCKSSL_H
 #define _SOCKSSL_H
 
-#ifndef HAVE_OPENSSL
-#define HAVE_OPENSSL
-#endif
-
 #ifndef SSL_DEBUG
 #define SSL_DEBUG
+#endif
+
+/* FIXME: avoid conflicting types for 'UUID' when #include <openssl/ssl.h> */
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #endif
 
 #ifdef HAVE_OPENSSL

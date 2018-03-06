@@ -30,12 +30,12 @@ environment:
     - TARGET: i686-pc-cygwin
       CYGWIN_ARCH: x86
       CYGWIN_ROOT: C:\cygwin
-      CYGWIN_PACKAGES: libffi-devel,libreadline-devel
+      CYGWIN_PACKAGES: libffi-devel,libreadline-devel,openssl-devel
 
     - TARGET: x86_64-pc-cygwin
       CYGWIN_ARCH: x86_64
       CYGWIN_ROOT: C:\cygwin64
-      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,cygrunsrv,libisl10,libcloog-isl4
+      CYGWIN_PACKAGES: make,gcc-core,libffi6,libffi-devel,libreadline7,libreadline-devel,cygrunsrv,libisl10,libcloog-isl4,openssl-devel
 
 matrix:
   allow_failures:
@@ -72,11 +72,12 @@ install:
   - '%CC% -v'
 
 build_script:
-  - sh -c 'make CC="$CC --coverage"'
+  - sh -c 'make -f makefile_ssl CC="$CC --coverage"'
 
 test_script:
   - sh -c "./newlisp -v"
   - sh -c "make testall"
+  - sh -c "./newlisp -n -e '(silent)(print (get-url {https://example.com/} {debug}))'"
 
 on_success:
   - set PYTHON=C:\Python27

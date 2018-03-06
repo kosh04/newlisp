@@ -362,7 +362,7 @@ while(session)
     sPtr = session;
     session = session->next;
     if(sPtr->family != AF_UNSPEC || getFlag(params))
-        addList(sList, stuffInteger((UINT)sPtr->res.socket));
+        addList(sList, stuffInteger((UINT)sPtr->handle));
     }
 
 return(sList);
@@ -1879,10 +1879,7 @@ int n;
 
 while(bytesSend < len)
     {
-    if (sock->ssl)
-        n = SSL_write(sock->ssl, buffer+bytesSend, len-bytesSend);
-    else
-        n = send(sock->fd, buffer + bytesSend, len - bytesSend, NO_FLAGS_SET);
+    n = socket_write(sock, buffer+bytesSend, len-bytesSend);
     if(n == SOCKET_ERROR)
         return(SOCKET_ERROR);
     bytesSend += n;
@@ -2472,13 +2469,15 @@ return(fclose(fPtr));
 int win_fprintf(FILE * fPtr, char * notused, char * buffer)
 {
 int pSize;
+IO_SESSION *ssn;
 
 if(!IOchannelIsSocketStream)
     return(fprintf(fPtr, buffer));
 
+ssn = findIOsession(getSocket(fPtr));
 pSize = strlen(buffer);
 
-if((pSize = sendall(getSocket(fPtr), buffer, pSize)) == SOCKET_ERROR)
+if((pSize = sendall(ssn->res.socket, buffer, pSize)) == SOCKET_ERROR)
      {
      close(getSocket(fPtr));
      return(-1);

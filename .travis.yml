@@ -46,6 +46,12 @@ matrix:
 before_install:
   - source ./ci/coveralls/before_install_${TRAVIS_OS_NAME}.sh
   - pip install --user codecov
+  - if [ ${TRAVIS_OS_NAME} = osx ]
+    then
+      brew install openssl libffi
+      PKG_CONFIG_PATH+=:/usr/local/opt/openssl/lib/pkgconfig
+      PKG_CONFIG_PATH+=:/usr/local/opt/libffi/lib/pkgconfig
+    fi
 
 script:
   - make -f makefile_ssl CC="$CC --coverage"

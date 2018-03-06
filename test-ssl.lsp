@@ -4,7 +4,7 @@
   (setq url (main-args -1)))
 
 (println "Testing URL: " url)
-(println (get-url url "debug list"))
+(println (get-url url "debug" (* 2 1000)))
 (exit)
 
 ;; https://securitytraning.com/

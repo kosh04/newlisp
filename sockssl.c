@@ -4,7 +4,9 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <sys/socket.h>
+#endif
 #include "sockssl.h"
 
 #ifdef HAVE_OPENSSL

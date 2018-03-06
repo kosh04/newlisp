@@ -1038,7 +1038,8 @@ IOchannel = NULL;
 #else /* it is WINDOWS */
 if(IOchannel != NULL && IOchannelIsSocketStream)
     {
-    sendall(getSocket(IOchannel), content, size);
+    IO_SESSION *ssn = findIOsession(getSocket(IOchannel));
+    sendall(ssn->res.socket, content, size);
     close(getSocket(IOchannel));
     }
 else 
