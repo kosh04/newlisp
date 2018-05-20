@@ -4,6 +4,7 @@ newLISP mirror
 [![Build Status](https://travis-ci.org/kosh04/newlisp.svg?branch=develop)](https://travis-ci.org/kosh04/newlisp)
 [![Build status](https://ci.appveyor.com/api/projects/status/qg6ijtx867q5fxnl/branch/develop?svg=true)](https://ci.appveyor.com/project/kosh04/newlisp/branch/develop)
 [![codecov](https://codecov.io/gh/kosh04/newlisp/branch/develop/graph/badge.svg)](https://codecov.io/gh/kosh04/newlisp)
+[![DebianBadge](https://badges.debian.net/badges/debian/stable/newlisp/version.svg)](https://packages.debian.org/stable/newlisp) <!-- OR https://buildd.debian.org/status/package.php?p=newlisp -->
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kosh04/newlisp)
 
 ## newLISP with Git(Hub)
