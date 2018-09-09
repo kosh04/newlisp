@@ -92,8 +92,8 @@ tt {
 
 <center>
 <h1 class="title">Code Patterns in newLISP<font size="-1">&#174;</font>
-</h1>Version 2017 Augusr 11<sup>th</sup><br/>
-<a href="http://newlisp.org">newLISP</a> v.10.7.3
+</h1>Version 2018 July 12<sup>th</sup><br/>
+<a href="http://newlisp.org">newLISP</a> v.10.7.4
 </center>
 
 <br/><br/><br/>
@@ -3690,7 +3690,7 @@ and double precision floating point types and for advanced usage of <tt>pack</tt
 <tr><td> <tt>string</tt></td><td> <tt>(set 'string (get-string (foo x y z)</tt></td><td> <tt>return(char * string)</tt></td></tr>
 <tr><td> <tt>integer array</tt></td><td> <tt>(set 'numList (unpack "ld ld ld" (foo x y z)))</tt></td><td> <tt>return(int numList[])</tt></td></tr>
 <tr><td> <tt>float array</tt></td><td> <tt>(set 'numList (unpack "f f f" (foo x y z)))</tt></td><td> <tt>return(float numList[])</tt></td></tr>
-<tr><td> <tt>double array</tt></td><td> <tt>(set 'numList (unpack "lf lf lf") (foo x y z)))</tt></td><td> <tt>return(double numList[])</tt></td></tr>
+<tr><td> <tt>double array</tt></td><td> <tt>(set 'numList (unpack "lf lf lf" (foo x y z)))</tt></td><td> <tt>return(double numList[])</tt></td></tr>
 <tr><td> <tt>string array</tt></td><td> <tt>(set 'stringList (map get-string (unpack "ld ld ld" (foo x y z))))</tt></td><td><tt>return(char * string[])</tt></td></tr>
 </table>
 <p><tt>Floats</tt> and <tt>doubles</tt> can only be returned via address pointer references.</p>
