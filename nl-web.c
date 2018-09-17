@@ -20,7 +20,7 @@
 #include "newlisp.h"
 #include <errno.h>
 #include "protos.h"
-
+ 
 #ifdef WINDOWS
 #include <winsock2.h>
 #else
@@ -46,6 +46,9 @@
 /* from nl-sock.c */
 extern UINT netErrorIdx;
 extern char * netErrorMsg[];
+
+/* from newlisp.c */
+extern int httpSafe;
 
 #define OK_FILE_DELETED "file deleted"
 
@@ -974,7 +977,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 #ifndef LIBRARY
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.7.3"
+#define SERVER_SOFTWARE "newLISP/10.7.4"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1092,6 +1095,8 @@ decoded = alloca(strlen(request) + 1);
 url_decode(decoded, request);
 request = decoded;
 
+setenv("REQUEST_URI", request, 1); /* 10.7.4 */
+
 /* change to base dir of request file */
 sptr = request + strlen(request);
 while(*sptr != '/' && sptr != request) --sptr;
@@ -1146,6 +1151,12 @@ switch(type)
         break;
 
     case HTTP_DELETE:
+        if(httpSafe)
+            {
+            sendHTTPpage("Server in safe mode", 19, MEDIA_TEXT);
+            break;
+            }
+            
         if(unlink(request) != 0)    
             sendHTTPmessage(500, "Could not delete", request);
         else
@@ -1172,6 +1183,11 @@ switch(type)
         break;
 
     case HTTP_PUT:
+        if(httpSafe)
+            {
+            sendHTTPpage("Server in safe mode", 19, request);
+            break;
+            }
         if(pragmaFlag) fileMode = "a";
 
         if(!size)
@@ -1182,7 +1198,7 @@ switch(type)
 
         if( (outFile = openFile(request, fileMode, NULL)) == (int)-1)
             {
-            sendHTTPmessage(500, "Cannot create file", request);
+            sendHTTPmessage(500, "cannot create file", request);
             break;
             }
 
