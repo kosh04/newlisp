@@ -14,7 +14,8 @@
 ;; @version 3.45  - library load path upgraded for UBUNTU Linux 12.04
 ;; @version 3.46  - add UTF-8 handling in documentation (Csfreebird July/2014)
 ;; @version 3.47  changed references to /usr/ to /usr/local/
-;; @author Lutz Mueller 2003-2015, Gordon Fischer 2005, Jeff Ober 2007
+;; @version 3.48  missing quote in documentation and doc for Windows 10
+;; @author Lutz Mueller 2003-2018, Gordon Fischer 2005, Jeff Ober 2007
 ;;
 ;; This MySQL 5.x interface module has been tested on versions 5.0 and 5.1
 ;; of mysql from @link http://www.mysql.com www.mysql.com
@@ -45,6 +46,9 @@
 ;; This library might be in a different location on a particular
 ;; installation of MySQL or have a different name.
 ;; Change accordingly in the code at the beginning.
+;;
+;; On MS Windows 10 (64 bit) use the 'libmariadb.dll' library available
+;; here from @link https://downloads.mariadb.org https://downloads.mariadb.org
 ;;
 ;; The MySQL server itself may reside on a different machine
 ;; on the network. The library 'libmysqlclient' will communicate
@@ -80,7 +84,7 @@
 ;; The following code piece outlines a typical MySQL session:
 ;;
 ;; @example
-;; (module "mysql.lsp) ; load the module file
+;; (module "mysql.lsp") ; load the module file
 ;; 
 ;; (MySQL:init)       ; initialize
 ;; (MySQL:connect "192.168.1.10" "auser" "secret" "mydb") ; logon

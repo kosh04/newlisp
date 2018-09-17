@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.7.3
+VERSION=10.7.4
 
 rm -f config.h makefile_build makefile_install
 
@@ -552,45 +552,6 @@ install:
 	-install -m 644 modules/unix.lsp \$(pkgdatadir)/modules/unix.lsp
 	-install -m 644 modules/xmlrpc-client.lsp \$(pkgdatadir)/modules/xmlrpc-client.lsp
 	-install -m 644 modules/zlib.lsp \$(pkgdatadir)/modules/zlib.lsp
-	# GUI-Server install
-	-install -d \$(pkgdatadir)/guiserver
-	-install -d \$(docdir)/guiserver
-	-install -m 755 guiserver/newlisp-edit.lsp \$(bindir)/newlisp-edit
-	-install -m 644 guiserver/guiserver.jar \$(pkgdatadir)/guiserver.jar
-	-install -m 644 guiserver/guiserver.lsp \$(pkgdatadir)/guiserver.lsp
-	-install -m 644 guiserver/images/newLISP128.png \$(pkgdatadir)/newLISP128.png
-	-install -m 644 guiserver/COPYING \$(docdir)/guiserver/COPYING
-	-install -m 644 guiserver/index.html \$(docdir)/guiserver/index.html
-	-install -m 644 guiserver/guiserver.lsp.html \$(docdir)/guiserver/guiserver.lsp.html
-	-install -m 644 util/newlispdoc.css \$(docdir)/guiserver/newlispdoc.css
-	-install -m 644 guiserver/allfonts-demo.lsp \$(pkgdatadir)/guiserver/allfonts-demo.lsp
-	-install -m 644 guiserver/animation-demo.lsp \$(pkgdatadir)/guiserver/animation-demo.lsp
-	-install -m 644 guiserver/border-layout-demo.lsp \$(pkgdatadir)/guiserver/border-layout-demo.lsp
-	-install -m 644 guiserver/button-demo.lsp \$(pkgdatadir)/guiserver/button-demo.lsp
-	-install -m 644 guiserver/clipboard-demo.lsp \$(pkgdatadir)/guiserver/clipboard-demo.lsp
-	-install -m 644 guiserver/cursor-demo.lsp \$(pkgdatadir)/guiserver/cursor-demo.lsp
-	-install -m 644 guiserver/drag-demo.lsp \$(pkgdatadir)/guiserver/drag-demo.lsp
-	-install -m 644 guiserver/font-demo.lsp \$(pkgdatadir)/guiserver/font-demo.lsp
-	-install -m 644 guiserver/frameless-demo.lsp \$(pkgdatadir)/guiserver/frameless-demo.lsp
-	-install -m 644 guiserver/html-demo.lsp \$(pkgdatadir)/guiserver/html-demo.lsp
-	-install -m 644 guiserver/image-demo.lsp \$(pkgdatadir)/guiserver/image-demo.lsp
-	-install -m 644 guiserver/midi-demo.lsp \$(pkgdatadir)/guiserver/midi-demo.lsp
-	-install -m 644 guiserver/midi2-demo.lsp \$(pkgdatadir)/guiserver/midi2-demo.lsp
-	-install -m 644 guiserver/mouse-demo.lsp \$(pkgdatadir)/guiserver/mouse-demo.lsp
-	-install -m 644 guiserver/move-resize-demo.lsp \$(pkgdatadir)/guiserver/move-resize-demo.lsp
-	-install -m 644 guiserver/pinballs-demo.lsp \$(pkgdatadir)/guiserver/pinballs-demo.lsp
-	-install -m 644 guiserver/properties-demo.lsp \$(pkgdatadir)/guiserver/properties-demo.lsp
-	-install -m 644 guiserver/rotation-demo.lsp \$(pkgdatadir)/guiserver/rotation-demo.lsp
-	-install -m 644 guiserver/shapes-demo.lsp \$(pkgdatadir)/guiserver/shapes-demo.lsp
-	-install -m 644 guiserver/sound-demo.lsp \$(pkgdatadir)/guiserver/sound-demo.lsp
-	-install -m 644 guiserver/stroke-demo.lsp \$(pkgdatadir)/guiserver/stroke-demo.lsp
-	-install -m 644 guiserver/tabs-demo.lsp \$(pkgdatadir)/guiserver/tabs-demo.lsp
-	-install -m 644 guiserver/table-demo.lsp \$(pkgdatadir)/guiserver/table-demo.lsp
-	-install -m 644 guiserver/textfield-demo.lsp \$(pkgdatadir)/guiserver/textfield-demo.lsp
-	-install -m 644 guiserver/textrot-demo.lsp \$(pkgdatadir)/guiserver/textrot-demo.lsp
-	-install -m 644 guiserver/widgets-demo.lsp \$(pkgdatadir)/guiserver/widgets-demo.lsp
-	-install -m 644 guiserver/word-count.lsp \$(pkgdatadir)/guiserver/word-count.lsp
-	-install -m 644 guiserver/uppercase.lsp \$(pkgdatadir)/guiserver/uppercase.lsp
 
 
 uninstall:

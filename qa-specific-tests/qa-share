@@ -1,0 +1,17 @@
+#!/usr/bin/env newlisp
+
+
+(set 'flash (share))
+(share flash (pack (dup "u" 10) (sequence 1 10)))
+
+(define (get-data adr)
+    (unpack (dup "u" 10) (share adr)))
+
+(spawn 'X (get-data flash))
+(sync 10)
+(println X " = " (sequence 1 10))
+(if (= X (sequence 1 10))
+    (println "test passed SUCCESSFUL")
+    (println "test passed with error"))
+
+(exit)
