@@ -525,14 +525,17 @@ while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
     }
     
 if(headRequest)
+{
+    close(sock);
     return(headerCell);
-
+}
 /* changed in 10.6.4 should allow 0-length contents and 204 handled earlier */
 /* if((haveContentLength == TRUE && fSize == 0) || statusCode == 204) */
 if(statusCode == 204)
     {
-    return(webError(ERROR_NO_CONTENT));
+    close(sock);
     resultPtr = NULL;
+    return(webError(ERROR_NO_CONTENT));
     }
 
 /* Retrieve HTTP body. */
@@ -540,7 +543,10 @@ else if(chunked == TRUE)
     {
     resultPtr = NULL;
     if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
+    {
+	close(sock);
         return(webError(ERROR_NO_CONTENT));
+    }
     while((size = strtoul(buff, NULL, 16)) > 0)
         {
         if(resultSize == 0)
@@ -549,6 +555,7 @@ else if(chunked == TRUE)
             resultPtr = reallocMemory(resultPtr, resultSize + size + 1);
         if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
             {
+	    close(sock);
             free(resultPtr);
             return(webError(ERROR_CHUNKED_FORMAT));
             }
@@ -563,6 +570,7 @@ else if(haveContentLength == TRUE && fSize)
     resultPtr = allocMemory(fSize + 1);
     if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
         {
+	close(sock);
         free(resultPtr);
         return(webError(ERROR_NO_CONTENT));
         }
