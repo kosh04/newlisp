@@ -139,7 +139,11 @@ if(isNumber(cell->type))
     {
     token = alloca(32);
     getIntegerExt(cell, &number, FALSE);
+#ifndef EMSCRIPTEN
     snprintf(token, 31, "_%"PRIdPTR, number);
+#else
+    snprintf(token, 31, "_%"PRIdPTR, (int)number);
+#endif
     }
 else
     {

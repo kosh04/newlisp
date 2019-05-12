@@ -1,7 +1,5 @@
-# makefile for newLISP v. 10.5.x and after with UTF8 support for the Emscripten SDK
-#
-# With Emscripten version v1.22.0 all execption handling related problems
-# known have been solved. (November 2014)
+# makefile for newLISP v. 10.7.5 and after with UTF8 support for the Emscripten SDK
+# end browsers with web assembly support. Best on Firefox browser
 #
 # see also: https://github.com/kripken/emscripten/wiki
 #
@@ -16,7 +14,7 @@
 # Generates newlisp-js-lib.js and newlisp-js-lib.html.
 # The html file can be discarded use newlisp-js/newlisp-js.html instead
 #
-# this makefile has been tested on a MAC OSX 10.9/10 platforms
+# this makefile has been tested on a MAC OSX 10.9-14 platforms
 
 OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
 nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o unix-lib.o
@@ -24,6 +22,8 @@ nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o unix-li
 CFLAGS = -m32 -Wall -c -DMAC_OSX -DLIBRARY -DEMSCRIPTEN -DSUPPORT_UTF8
 
 CC = emcc
+
+# to compile without WebAssembly for JavaScript only set WASM=0
 
 default: $(OBJS)
 	cp qa-specific-tests/qa-bench newlisp-js
@@ -39,6 +39,6 @@ default: $(OBJS)
 .c.o:
 	$(CC) -O2 --closure 1 $(CFLAGS) $<
 
-$(OBJS): primes.h protos.h makefile_emscripten_lib_utf8
+$(OBJS): primes.h protos.h 
 
 
