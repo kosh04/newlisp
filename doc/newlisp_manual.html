@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.7.4 Manual and Reference</title>
+   <title>newLISP v.10.7.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,14 +148,14 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.7.4</h2>
+<h2>User Manual and Reference v.10.7.5</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2018 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2019 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -1380,7 +1380,9 @@ Code Patterns in newLISP</a> document.</p>
 <p>newLISP can be compiled as a shared C library. On Linux, BSDs and other Unix 
 flavors the library is called <tt>newlisp.so</tt>. On Windows it is called 
 <tt>newlisp.dll</tt> and <tt>newlisp.dylib</tt> on macOS. A newLISP shared 
-library is used like any other shared library.</p>
+library is used like any other shared library. A newLISP shared library is
+only required for importing newLISP functionality into other programming
+languages.</p>
 
 <p>The main function to import is <tt>newlispEvalStr</tt>.  Like 
 <a href="#eval-string">eval-string</a>, this function takes a string containing 
@@ -17445,7 +17447,8 @@ around the initializer expressions can be omitted.
 <h4>syntax: (list <em>exp-1</em> [<em>exp-2</em> ... ])</h4>
 
 <p>The <em>exp</em> are evaluated and the values used to construct a new list.
-Note that arguments of array type are converted to lists.
+Note that arguments of array type are converted to lists. See the chapter 
+<a href="#arrays">Arrays</a> for dealing with multidimensional lists.
 </p>
 
 <!-- example -->
@@ -22708,7 +22711,8 @@ form still works but is deprecated and should be avoided in new code.</p>
 </p>
 
 <p>
-	See also the <a href="#write">write</a> function.
+	See also the <a href="#write">write</a> function. To start reading at 
+	a specific position in the file, use the <a href="#seek">seek</a> function.
 </p>
 
 <br/><br/>
@@ -25756,7 +25760,7 @@ from a <em>list</em>.  The original list is left unchanged.
 The sublist extracted starts at index <em>int-index</em> 
 and has a length of <em>int-length</em>.  If <em>int-length</em> is negative,
 <tt>slice</tt> will take the parameter as offset counting from the end and copy 
-up to that offset.  If the parameter is omitted, 
+up to but not including that offset.  If the parameter is omitted, 
 <tt>slice</tt> copies all of the elements to the end of the list.</p>
 
 <p>

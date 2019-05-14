@@ -22,8 +22,8 @@
 # and file LOCALIZATION for details
 #
 
-VERSION = 10.7.4
-INT_VERSION = 10704
+VERSION = 10.7.5
+INT_VERSION = 10705
 
 default: makefile_build
 	make -f makefile_build
@@ -60,7 +60,7 @@ help:
 	@echo " "
 	@echo "For other customization options (exe dir, install dir,  etc) see the file doc/INSTALL"
 
-# make newlisp.exe and newlisp.dll on a MinGW, MSYS system
+# make 32 bit newlisp.exe and newlisp.dll on a MinGW, MSYS system
 # also needs the installer NSYS installed
 winall:
 	make clean
@@ -69,8 +69,9 @@ winall:
 	make -f makefile_mingwdll_ffi
 	rm *.o
 	./newlisp qa-dot
+	tar czvf newlisp-win.tgz newlisp.exe newlisp.dll
 
-# make newlisp.exe and newlisp.dll in UTF-8 flavor
+# make 32 bit newlisp.exe and newlisp.dll in UTF-8 flavor
 winall_utf8:
 	make clean
 	make -f makefile_mingw_utf8_ffi
@@ -98,6 +99,18 @@ winall64_utf8:
 	rm *.o
 	./newlisp qa-dot
 	tar czvf newlisp-win64-utf8.tgz newlisp.exe newlisp.dll
+
+# make macOS newlisp 64bit executable and dynamic link library
+macosall:
+	make clean
+	make -f makefile_darwinLP64_utf8_ffi
+	rm *.o
+	make -f makefile_darwinLP64_utf8_lib
+	rm *.o
+	./newlisp qa-dot
+	tar czvf newlisp-macos-utf8.tgz newlisp newlisp.dylib
+	
+
 
 # this cleans the tree for a rebuild using the same configuration as before
 clean:
@@ -197,7 +210,7 @@ dist: clean
 	cp README newlisp-$(VERSION)
 	cp nl*.c newlisp.c *.h pcre*.c index.cgi newlisp-$(VERSION)
 	cp win64-dll.def win-*.* unix*.c newlisp-$(VERSION)
-	cp Makefile configure* makefile* qa-dot qa-comma newlisp-$(VERSION)
+	cp Makefile configure* make* qa-dot qa-comma newlisp-$(VERSION)
 	cp modules/* newlisp-$(VERSION)/modules
 	cp examples/* newlisp-$(VERSION)/examples
 	cp doc/* newlisp-$(VERSION)/doc
@@ -259,9 +272,6 @@ version:
 	sed -i.bak -E 's/Reference v.+<\/h2>/Reference v.$(VERSION)<\/h2>/' doc/newlisp_manual.html
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' configure-alt
 	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_original_install 
-	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_darwin_package
-	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_wings
-	sed -i.bak -E 's/VERSION=.+/VERSION=$(VERSION)/' makefile_wings64
 
 # Prepare the manual file for PDF conversion, by replaceing all <span class="function"></span>
 # with <font color="#DD0000"></font> in the syntax statements and replacing &rarr; (one line
