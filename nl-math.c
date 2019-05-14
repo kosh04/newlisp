@@ -921,6 +921,7 @@ while(TRUE)
     else
         right = evaluateExpression(params);
     ++cnt;
+
     if((comp = compareCells(left, right)) == 9) 
         return( (op == OP_NOTEQUAL) ? trueCell : nilCell);
 
@@ -1021,6 +1022,7 @@ return (comp > 0 ? 1 : -1);
 int compareCells(CELL * left, CELL * right)
 {
 int comp;
+
 if(left->type != right->type)
     {
     if(left->type == CELL_FLOAT && ((right->type & COMPARE_TYPE_MASK) == CELL_INT))
@@ -1046,7 +1048,6 @@ if(left->type != right->type)
 
     if(isNil(right) || isTrue(right))
         return(1);
-
     if(isSymbol(left->type) && isSymbol(right->type))
         return(compareSymbols(left, right));
         
@@ -1131,15 +1132,16 @@ int compareLists(CELL * left, CELL * right)
 {
 int result;
 
-while(left != nilCell)
+while(left != nilCell && right != nilCell) /* 10.7.5 */
     {
     if( (result = compareCells(left, right)) != 0)
         return(result);
     left = left->next;
     right = right->next;
     }
-if(right == nilCell) return(0);
-return(-1);
+if(right == nilCell && left == nilCell) /* 10.7.5 */
+	return(0);
+return((left == nilCell) ? -1 : 1); /* 10.7.5 */
 }
 
 /* ---------------------------- encryption -----------------------------

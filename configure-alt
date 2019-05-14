@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=newlisp
-VERSION=10.7.4
+VERSION=10.7.5
 
 rm -f config.h makefile_build makefile_install
 

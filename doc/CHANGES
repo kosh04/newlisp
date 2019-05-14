@@ -7242,3 +7242,8 @@ Dec 6, 2009
 
    (rotate theList -offsetOfRotation) was buggy
 
+10.7.5
+   In getPutPostDeleteUrl(....) sock wasn't closed when returning with webError(..)
+
+   compareLists() in nl-math.c did not take list lengths into account. Also update
+   of qa-dot for relevant cases.

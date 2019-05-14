@@ -1221,7 +1221,11 @@ cell = evaluateExpression(params);
 switch(cell->type)
     {
     case CELL_LONG:
+#ifndef EMSCRIPTEN
         snprintf(number, 30, "%"PRIdPTR, cell->contents);
+#else
+        snprintf(number, 30, "%"PRIdPTR, (int)cell->contents);
+#endif
         token = number;
         break;
 #ifndef NEWLISP64
