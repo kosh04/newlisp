@@ -1,6 +1,6 @@
 #
 
-VERSION=10.7.3
+VERSION=10.7.5
 
 # NOTE when changing PREFIX, then newlisp should only run
 # run in an environment, where NEWLISPDIR is predefined,
@@ -10,10 +10,6 @@ prefix=/usr/local
 datadir=$(prefix)/share
 bindir=$(prefix)/bin
 mandir=$(prefix)/share/man
-
-# if prefix is not /usr/local then several places in the file 
-# guiserver/newlisp-edit.lsp must change too
-GUISERVER = $(prefix)/share/newlisp/guiserver
 
 # this is the standard install in /usr/local/bin and /usr/local/share
 # which as to be done as 'root' with supersuser permissions
@@ -67,47 +63,6 @@ install:
 	-install -m 644 modules/unix.lsp $(datadir)/newlisp/modules/unix.lsp
 	-install -m 644 modules/xmlrpc-client.lsp $(datadir)/newlisp/modules/xmlrpc-client.lsp
 	-install -m 644 modules/zlib.lsp $(datadir)/newlisp/modules/zlib.lsp
-	# GUI-Server install
-	-install -d $(datadir)/newlisp/guiserver
-	-install -d $(datadir)/doc/newlisp/guiserver
-	-install -m 755 guiserver/newlisp-edit.lsp $(bindir)/newlisp-edit
-	-install -m 644 guiserver/guiserver.jar $(datadir)/newlisp/guiserver.jar
-	-install -m 644 guiserver/guiserver.lsp $(datadir)/newlisp/guiserver.lsp
-	-install -m 644 guiserver/images/newLISP128.png $(datadir)/newlisp/newLISP128.png
-	-install -m 644 guiserver/COPYING $(datadir)/doc/newlisp/guiserver/COPYING
-	-install -m 644 guiserver/index-gs.html $(datadir)/doc/newlisp/guiserver/index-gs.html
-	-install -m 644 guiserver/guiserver.lsp.html $(datadir)/doc/newlisp/guiserver/guiserver.lsp.html
-	-install -m 644 util/newlispdoc.css $(datadir)/doc/newlisp/guiserver/newlispdoc.css
-	-install -m 644 guiserver/allfonts-demo.lsp $(datadir)/newlisp/guiserver/allfonts-demo.lsp
-	-install -m 644 guiserver/animation-demo.lsp $(datadir)/newlisp/guiserver/animation-demo.lsp
-	-install -m 644 guiserver/border-layout-demo.lsp $(datadir)/newlisp/guiserver/border-layout-demo.lsp
-	-install -m 644 guiserver/button-demo.lsp $(datadir)/newlisp/guiserver/button-demo.lsp
-	-install -m 644 guiserver/clipboard-demo.lsp $(datadir)/newlisp/guiserver/clipboard-demo.lsp
-	-install -m 644 guiserver/cursor-demo.lsp $(datadir)/newlisp/guiserver/cursor-demo.lsp
-	-install -m 644 guiserver/drag-demo.lsp $(datadir)/newlisp/guiserver/drag-demo.lsp
-	-install -m 644 guiserver/font-demo.lsp $(datadir)/newlisp/guiserver/font-demo.lsp
-	-install -m 644 guiserver/frameless-demo.lsp $(datadir)/newlisp/guiserver/frameless-demo.lsp
-	-install -m 644 guiserver/html-demo.lsp $(datadir)/newlisp/guiserver/html-demo.lsp
-	-install -m 644 guiserver/image-demo.lsp $(datadir)/newlisp/guiserver/image-demo.lsp
-	-install -m 644 guiserver/midi-demo.lsp $(datadir)/newlisp/guiserver/midi-demo.lsp
-	-install -m 644 guiserver/midi2-demo.lsp $(datadir)/newlisp/guiserver/midi2-demo.lsp
-	-install -m 644 guiserver/mouse-demo.lsp $(datadir)/newlisp/guiserver/mouse-demo.lsp
-	-install -m 644 guiserver/move-resize-demo.lsp $(datadir)/newlisp/guiserver/move-resize-demo.lsp
-	-install -m 644 guiserver/pinballs-demo.lsp $(datadir)/newlisp/guiserver/pinballs-demo.lsp
-	-install -m 644 guiserver/properties-demo.lsp $(datadir)/newlisp/guiserver/properties-demo.lsp
-	-install -m 644 guiserver/rotation-demo.lsp $(datadir)/newlisp/guiserver/rotation-demo.lsp
-	-install -m 644 guiserver/scroll-pane-demo.lsp $(datadir)/newlisp/guiserver/scroll-pane-demo.lsp
-	-install -m 644 guiserver/shapes-demo.lsp $(datadir)/newlisp/guiserver/shapes-demo.lsp
-	-install -m 644 guiserver/sound-demo.lsp $(datadir)/newlisp/guiserver/sound-demo.lsp
-	-install -m 644 guiserver/stroke-demo.lsp $(datadir)/newlisp/guiserver/stroke-demo.lsp
-	-install -m 644 guiserver/tabs-demo.lsp $(datadir)/newlisp/guiserver/tabs-demo.lsp
-	-install -m 644 guiserver/table-demo.lsp $(datadir)/newlisp/guiserver/table-demo.lsp
-	-install -m 644 guiserver/textfield-demo.lsp $(datadir)/newlisp/guiserver/textfield-demo.lsp
-	-install -m 644 guiserver/textrot-demo.lsp $(datadir)/newlisp/guiserver/textrot-demo.lsp
-	-install -m 644 guiserver/widgets-demo.lsp $(datadir)/newlisp/guiserver/widgets-demo.lsp
-	-install -m 644 guiserver/word-count.lsp $(datadir)/newlisp/guiserver/word-count.lsp
-	-install -m 644 guiserver/uppercase.lsp $(datadir)/newlisp/guiserver/uppercase.lsp
-
 
 uninstall:
 	-rm  $(bindir)/newlisp
@@ -118,10 +73,7 @@ uninstall:
 	-rm  $(mandir)/man1/newlisp.1
 	-rm  $(mandir)/man1/newlispdoc.1
 
-# installs newLISP in home directory, but without guiserver files except
-# documentation. To make guiserver run from ~/share/newlisp. The loading
-# from guiserver.lsp at the beginning of a guiserver app and loading
-# of guiserver.jar from inside of guiserver.lsp have to be changed.
+# installs newLISP in home directory
 
 install_home:
 	-install -d $(HOME)/bin
@@ -129,16 +81,12 @@ install_home:
 	-install -d $(HOME)/share/newlisp/modules
 	-install -d $(HOME)/share/newlisp/util
 	-install -d $(HOME)/share/doc/newlisp/
-	-install -d $(HOME)/share/doc/newlisp/guiserver
 	-install -d $(HOME)/share/man/man1
 	-install -m 755 newlisp $(HOME)/bin/newlisp
 	-install -m 755 util/newlispdoc $(HOME)/bin/newlispdoc
 	-install -m 644 util/syntax.cgi $(HOME)/share/newlisp/util/syntax.cgi
 	-install -m 644 util/newlisp.vim $(HOME)/share/newlisp/util/newlisp.vim
-	-install -m 644 guiserver/index-gs.html $(HOME)/share/doc/newlisp/guiserver/index-gs.html
-	-install -m 644 guiserver/guiserver.lsp.html $(HOME)/share/doc/newlisp/guiserver/guiserver.lsp.html
 	-install -m 644 doc/COPYING $(HOME)/share/doc/newlisp/COPYING
-	-install -m 644 doc/COPYING $(HOME)/share/doc/newlisp/guiserver/COPYING
 	-install -m 644 doc/CREDITS $(HOME)/share/doc/newlisp/CREDITS
 	-install -m 644 doc/newlisp_manual.html $(HOME)/share/doc/newlisp/newlisp_manual.html
 	-install -m 644 doc/newlisp_index.html $(HOME)/share/doc/newlisp/newlisp_index.html

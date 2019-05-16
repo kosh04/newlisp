@@ -40,7 +40,7 @@ return(index);
 
 size_t adjustCount(ssize_t count, ssize_t length)
 {
-if(length <= 1 || count == 0 || length == count)
+if(length <= 1 || count == 0 || length == labs(count))
     return(0);
 
 if(count > 0)

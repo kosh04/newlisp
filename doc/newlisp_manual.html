@@ -8,7 +8,7 @@
    <meta name="keywords" content="newLISP Lisp SCHEME programming language 
    manual reference Artificial Intelligence AI NUEVATEC"/>
    <meta name="description" content="newLISP User Manual and Reference"/>
-   <title>newLISP v.10.7.3 Manual and Reference</title>
+   <title>newLISP v.10.7.5 Manual and Reference</title>
 
 <style type="text/css" media="screen">
 
@@ -148,14 +148,14 @@ tt {
 </center>
 
 <center>
-<h2>User Manual and Reference v.10.7.3</h2>
+<h2>User Manual and Reference v.10.7.5</h2>
 </center>
 
 <br/><br/><br/><br/>
 <center>
 <span style="line-height:80%;">
 <font size='1'>
-<br/>Copyright &copy; 2017 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
+<br/>Copyright &copy; 2019 Lutz Mueller&nbsp;<a href="http://www.nuevatec.com">www.nuevatec.com</a>. 
 All rights reserved.<br/><br/>
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License,<br/> Version 1.2 or any later version 
@@ -484,26 +484,9 @@ a <a href="http://www.newlisp.org/newlisp-js/">web browser</a>.</p>
 
 <br/>
 
-<h3>newLISP-GS</h3>
-
-<p>newLISP-GS comprises a graphical user interface (GUI) and library server. The 
-GUI front-end is written in newLISP, whereas the library server is Java based 
-and uses the standard Java runtime environment installed on all Windows and 
-macOS platforms. Applications built with newLISP-GS can have the host operating 
-system's native look and feel. Interfaces to GTK, Tcl/Tk and OpenGL graphics 
-libraries are also available.</p>
-
-<p>newLISP and Java are available for most operating systems. This makes 
-newLISP-GS a platform-independent solution for writing GUI applications.</p>
-
-<p>For more information on newLISP-GS, see 
-<a href="http://newlisp.org/guiserver">newLISP-GS</a>.</p>
-
-<br/>
-
 <h3>Licensing</h3>
 
-<p>newLISP and newLISP-GS are licensed under version 3
+<p>newLISP are licensed under version 3
 of the <a href="#GNUGPL">GPL (General Public License)</a>.
 The newLISP documentation as well as other documentation packaged with newLISP 
 are licensed under the <a href="#GNUFDL">GNU Free Documentation License</a>. </p>
@@ -570,8 +553,7 @@ line. In the following example computer output is shown in bold letters:</p>
 </pre>
 
 <p>Note, that multi-line mode is only possible in an OS command terminal window
-or command shell. The monitor window in the Java based newLISP-GS IDE will not
-accept multi-line statements.</p>
+or command shell.</p>
 
 <p>Interactive Lisp mode can accept operating system shell commands. To hit
 an OS command enter the '<tt>!</tt>' character right after the prompt, immediately
@@ -602,8 +584,7 @@ the editor the program could be run using a load statement:</p>
 <b>> </b>(load "foo.lsp")
 </pre>
 
-<p>The program <tt>foo.lsp</tt> is now run. This mode using '<tt>!</tt>' can
-also be used from the newLISP-GS IDE.</p>
+<p>The program <tt>foo.lsp</tt> is now run.</p>
 
 <p>When using a Unix terminal or command shell, tab-expansion for built-in newLISP
 functions can be used:</p>
@@ -669,6 +650,7 @@ newlisp -h
  -p &lt;port-no&gt;
  -d &lt;port-no&gt; demon mode
  -http only
+ -http-safe safe mode
  -6 IPv6 mode
 </pre>
 
@@ -1035,10 +1017,11 @@ document <a href="http://www.newlisp.org/CodePatterns.html">
 Code Patterns in newLISP</a>. </p>
 
 <p>In both server modes <tt>-c</tt> and <tt>-http</tt> the environment 
-variables DOCUMENT_ROOT, HTTP_HOST, REMOTE_ADDR, REQUEST_METHOD, 
+variables DOCUMENT_ROOT, HTTP_HOST, REMOTE_ADDR, REQUEST_METHOD, REQUEST_URI, 
 SERVER_SOFTWARE and QUERY_STRING are set. The variables CONTENT_TYPE, 
 CONTENT_LENGTH, HTTP_HOST, HTTP_USER_AGENT and HTTP_COOKIE are also set, if 
-present in the HTTP header sent by the client.</p>
+present in the HTTP header sent by the client. Environment variables can be
+read using the <a href="#env">env</a> function.</p>
 
 <br/>
 		
@@ -1249,6 +1232,14 @@ environment and link a copy of the source code.</p>
 uppercase "convert me to uppercase"
 </pre>	
 
+<p>On Linux and other UNIX, if the current directory is not in the 
+executable path:</p>
+
+<pre>
+./uppercase "convert me to uppercase"
+</pre>	
+
+
 <p>The console should print:</p>
 
 <pre>
@@ -1275,14 +1266,12 @@ CONVERT ME TO UPPERCASE
 <p>During startup, newLISP sets the environment variable <tt>NEWLISPDIR</tt>, 
 if it is not set already. On Linux, BSDs, macOS and other Unixes the 
 variable is set to <tt>/usr/local/share/newlisp</tt>. On MS Windows the variable is set 
-to <tt>%PROGRAMFILES%/newlisp</tt>.</p>
+to <tt>%PROGRAMFILES%/newlisp</tt>. On most MS Windows systems <tt>%PROGRAMFILES%</tt> evaluates to the <tt>C:\Program Files (x86)\</tt> directory.</p>
 
 <p>The environment variable <tt>NEWLISPDIR</tt> is useful when loading files 
 installed with newLISP:</p>
 
 <pre>
-(load (append (env "NEWLISPDIR") "/guiserver.lsp"))
-
 (load (append (env "NEWLISPDIR") "/modules/mysql.lsp"))
 </pre>
 
@@ -1328,10 +1317,8 @@ specified.</p>
 <h3> Directories on Linux, BSD, macOS and other Unix </h3>
 <p>
 The directory <tt>/usr/local/share/newlisp/modules</tt> contains modules with useful 
-functions POP3 mail, etc. The directory <tt>/usr/local/share/newlisp/guiserver</tt> 
-contains sample programs for writing GUI applications with newLISP-GS.
-The directory <tt>/usr/local/share/doc/newlisp/</tt> contains documentation in HTML 
-format.</p>
+functions POP3 mail, etc. The directory <tt>/usr/local/share/doc/newlisp/</tt> 
+contains documentation in HTML format.</p>
 
 <br/>
 
@@ -1342,11 +1329,8 @@ format.</p>
 On MS Windows systems, all files are installed in the default directory 
 <tt>%PROGRAMFILES%\newlisp</tt>.  <tt>PROGRAMFILES</tt> is a MS Windows environment 
 variable that resolves to <tt>C:\Program files\newlisp\</tt> in English 
-language installations. The subdirectories 
-<tt>%PROGRAMFILES%\newlisp\modules</tt> and 
-<tt>%PROGRAMFILES%\newlisp\guiserver</tt>
-contain modules for interfacing to external libraries and sample programs 
-written for newLISP-GS.</p>
+language installations. The subdirectory <tt>%PROGRAMFILES%\newlisp\modules</tt> 
+contains modules for interfacing to external libraries and sample programs.</p>
 
 <br/>
 <center>
@@ -1396,7 +1380,9 @@ Code Patterns in newLISP</a> document.</p>
 <p>newLISP can be compiled as a shared C library. On Linux, BSDs and other Unix 
 flavors the library is called <tt>newlisp.so</tt>. On Windows it is called 
 <tt>newlisp.dll</tt> and <tt>newlisp.dylib</tt> on macOS. A newLISP shared 
-library is used like any other shared library.</p>
+library is used like any other shared library. A newLISP shared library is
+only required for importing newLISP functionality into other programming
+languages.</p>
 
 <p>The main function to import is <tt>newlispEvalStr</tt>.  Like 
 <a href="#eval-string">eval-string</a>, this function takes a string containing 
@@ -1487,8 +1473,7 @@ mode and evaluate expressions.</p>
 <p>As an alternativo to entering empty lines, the <tt>[cmd]</tt> and 
 <tt>[/cmd]</tt> tags are used, each entered on separate lines. This mode is 
 used by some interactive IDEs controlling newLISP and internally by the 
-<a href="#net-eval">net-eval</a> function. The <tt>[cmd]</tt> and <tt>[/cmd]</tt>
-tags must also be used in the console part of the newLISP-GS Java IDE.</p>
+<a href="#net-eval">net-eval</a> function.</p>
 
 <br/>
 
@@ -12313,6 +12298,9 @@ Other options such as special HTTP protocol headers
 can be specified, as well. 
 See the <a href="#get-url">get-url</a> function for details.</p>
 
+<p><tt>delete-url</tt> requests are also understood by newLISP server nodes, but will
+not be served when the server is started in <tt>-http-safe</tt> mode.</p>
+
 <br/><br/>
 
 <a name="destroy"></a>
@@ -17459,7 +17447,8 @@ around the initializer expressions can be omitted.
 <h4>syntax: (list <em>exp-1</em> [<em>exp-2</em> ... ])</h4>
 
 <p>The <em>exp</em> are evaluated and the values used to construct a new list.
-Note that arguments of array type are converted to lists.
+Note that arguments of array type are converted to lists. See the chapter 
+<a href="#arrays">Arrays</a> for dealing with multidimensional lists.
 </p>
 
 <!-- example -->
@@ -18904,7 +18893,7 @@ newlisp preload.lsp -c -d 12345 &amp;
 
 newlisp -l -c -d 4711 &amp;
 
-; communicating via Uix local domain sockets
+; communicating via Unix local domain sockets
 
 newlisp -c /tmp/mysocket
 </pre>
@@ -22326,9 +22315,8 @@ to the local file system.</p>
 	<tt>put-url</tt> returns a string starting with <tt>ERR:</tt> and the description of the error.
 </p>
 
-<p>
-	<tt>put-url</tt> requests are also understood by newLISP server nodes.
-</p>
+<p><tt>put-url</tt> requests are also understood by newLISP server nodes, but will
+not be served when the server is started in <tt>-http-safe</tt> mode.</p>
 
 <!-- example -->
 
@@ -22723,7 +22711,8 @@ form still works but is deprecated and should be avoided in new code.</p>
 </p>
 
 <p>
-	See also the <a href="#write">write</a> function.
+	See also the <a href="#write">write</a> function. To start reading at 
+	a specific position in the file, use the <a href="#seek">seek</a> function.
 </p>
 
 <br/><br/>
@@ -22886,7 +22875,7 @@ in which case the return values may vary on different OSes and
 configurations.
 </p>
 
-<p>Wen using the <tt>true</tt> flag the <tt>read-key</tt> is non-blocking
+<p>When using the <tt>true</tt> flag the <tt>read-key</tt> is non-blocking
 and a <tt>0</tt> (zero) is returned when no key has been pressed.
 When not using the extra flag, the call to <tt>read-key</tt> is blocking
 until a key is pressed.</p>
@@ -22914,9 +22903,9 @@ press <tt>Ctrl-A</tt>.
 </p>
 
 <p>Note that <tt>read-key</tt> will only work when newLISP is running in a
-Unix shell or Windows command shell. It will not work in the Java based newLISP-GS 
-or Tcl/Tk based newLISP-Tk frontend. It will also not work when executed by 
-newLISP Unix shared library or newLISP MS Windows DLL (Dynamic Link Library).</p>
+Unix shell or Windows command shell. It will not work when executed by 
+newLISP Unix shared library or newLISP MS Windows DLL (Dynamic Link Library).
+These libraries are not listening to STD input.</p>
 
 <br/><br/>
 
@@ -25558,7 +25547,6 @@ This behavior may also be different on different platforms.</p>
 ; now press ctrl-C
 ; the following line will appear
 ; this will only work in an interactive terminal window
-; and will not work in the newLISP-GS editor
 
 ctrl-C has been pressed
 
@@ -25772,7 +25760,7 @@ from a <em>list</em>.  The original list is left unchanged.
 The sublist extracted starts at index <em>int-index</em> 
 and has a length of <em>int-length</em>.  If <em>int-length</em> is negative,
 <tt>slice</tt> will take the parameter as offset counting from the end and copy 
-up to that offset.  If the parameter is omitted, 
+up to but not including that offset.  If the parameter is omitted, 
 <tt>slice</tt> copies all of the elements to the end of the list.</p>
 
 <p>
@@ -27928,8 +27916,8 @@ lists.</p>
 
 <p>The statements in <em>body</em> are only evaluated if <em>exp-condition</em>
 evaluates to <tt>nil</tt> or the empty list <tt>()</tt>. The result
-of the last expression in <em>body</em> is returned or <tt>nil</tt> or the empty
-list <tt>()</tt> if <em>body</em> was not executed.</p>
+of the last expression in <em>body</em> is returned or the return value
+of <em>exp-condition</em> if <em>body</em> was not executed.</p>
 
 <p>Because <tt>unless</tt> does not have an <em>else</em> condition as in
 <a href="#if">if</a>, <!-- or <a href="#if-not">if-not</a> -->the statements in <em>body</em> need 
@@ -28396,8 +28384,7 @@ list <tt>()</tt> if <em>body</em> was not executed.</p>
 )	
 </pre>
 
-<p>See also the function <a href="#unless">unless</a> working like 
-<tt>(when (not ...) ...)</tt>.</p>
+<p>See also the function <a href="#unless">unless</a>.</p>
 
 <br/><br/>
 

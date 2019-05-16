@@ -96,7 +96,7 @@ tt {
 </head>
 <body style="margin: 0 auto;" text="#000000" bgcolor="#FFFFFF" link="#376590" vlink="#551A8B" alink="#ffAA28">
 
-<h2>What is 'newLISP in a web browser'&nbsp <font size=-1>last edited 2011-11-28</font></h2>
+<h2>What is 'newLISP in a web browser'&nbsp <font size=-1>last edited 2019-05-05</font></h2>
 
 <p>newLISP can be compiled to JavaScript and then run in a web browser like any other JavaScript program.
 <tt>newlisp-js-lib.js</tt> is newLISP compiled to a JavaScript library using the Emscripten SDK tool chain:</p>
@@ -109,7 +109,7 @@ tt {
 newLISP, HTML and JavaScript code. Any other Application could be built this way.
 To run newLISP code from JavaSript a <tt>newlispEvalStr(<em>string</em>)</tt> 
 JavaScript function is available after loading the <tt>newlisp-js-lib.js</tt> 
-library and using a line of JavaScript to import this function.</p>
+library and supporting files and using a line of JavaScript to import this function.</p>
 
 <p>Likewise newLISP can call back into JavaScript code using the 
 <tt>(eval-string-js <em>string</em>)</tt> function. Both languages can be hosted 
@@ -117,8 +117,8 @@ by an HTML page.</p>
 
 <p>The <a href="app.html">app.html</a> demo file shows how to do this. Everything 
 necessary to write your own application is contained in a 3k part of this file. 
-Only <tt>app.html</tt> and the <tt>newlisp-js-lib.js</tt> library are required 
-to run this newLISP application client-side in a web browser.</p>
+Only <tt>app.html</tt>, <tt>newlisp-js-lib.js</tt> and <tt>newlisp-js-lib.wasm</tt>
+are required to run this newLISP application client-side in a web browser.</p>
 
 <!--
 <p>For a tutorial in to the basics of newLISP type <tt>(load "newlisp-js/tutorial.lsp")</tt>
@@ -134,30 +134,19 @@ but with parenthesis matching, has no external dependencies.</p>
 
 <h2>Installation</h2>
 
-<p>Download and unzip the <a href="http://www.newlisp.org/newlisp-js/newlisp-js-10.6.3.zip">
-newlisp-js-10.6.3.zip</a>  package in the document directory of a web server or do
+<p>Download and unzip the <a href="http://www.newlisp.org/newlisp-js/newlisp-js-10.7.5.zip">
+newlisp-js-10.7.5.zip</a>  package in the document directory of a web server or do
 a serverless installation on an individual computer and load the <tt>index.html</tt>
-file directly into your web browser. This file contains the editor.</p>
-
-<p>When running on a webserver, the <tt>newlisp-js-lib.js</tt> library can be 
-compressed to a <tt>.gz</tt> file for faster delivery. Compress using the Unix 
-<tt>gzip</tt> or other zip compression utilities. Full HTTP 1.1 webserver 
-installations can serve these files and they are automatically decompressed by 
-most web browsers. The compressed <tt>newlisp-js-lib.js.gz</tt> is only about 200K
-in size. When using a compressed library, the library name in <tt>index.html</tt> 
-and <tt>app.html</tt> has to be changed to reflect the name change of 
-<tt>newlisp-js-lib.js</tt>. There is only one place at the end of the file where 
-<tt>.gz</tt> has to be appended to the library name.</p>
-
-<p>The CodeMirror editor library <tt>codemirror/lib/codemirror.js</tt> can
-also be compressed and is only referenced at the beginning of <tt>index.html</tt>.
-</p>
+file directly into your web browser. Not all browsers support a serverless
+installation of newlisp-js. Firefox allows running newlisp-js by loading 
+<tt>index.html</tt> directly.</p>
 
 <h2>How to use 'newLISP in a web browser'</h2>
 
-<p>Wait for "Downloading ..." to finish. newLISP expressions can now be entered in
-the editor input window and be evaluated pushing the red <tt>eval</tt> button.
-Output is shown in the log window.</p>
+<p>Wait for "Downloading ..." in the top left corner of the browser window 
+to finish. newLISP expressions can now be entered in the editor input window
+and be evaluated pushing the red <tt>eval</tt> button. Output is shown in 
+the log window.</p>
 
 <p>The editor can also be used to edit JavaScript content or HTML content. The
 red <tt>JS</tt> button will evaluate JavaScript content and the red <tt>HTML</tt>
@@ -356,11 +345,11 @@ box:</p>
 
 
 <h2>License</h2>
-<p>The JavaScript Emscripten library <tt>newlisp-js-lib.js</tt> is licensed under
-GNU General Public License Version 3, June 2007 - (GPL v.3).</p>
+<p>All files in the in the top level of the <tt>newlisp-js</tt> directory
+are licensed under GNU General Public License Version 3, June 2007.</p>
 <br/>
 <div class="footer" align="center">
-Copyright &copy; 2014, Lutz Mueller 
+Copyright &copy; 2014,2019, Lutz Mueller 
 <a href="http://www.newlisp.org">newlisp.org</a>. All rights reserved.
 </div>
 

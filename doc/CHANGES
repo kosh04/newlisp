@@ -7221,4 +7221,29 @@ Dec 6, 2009
    entire string is valid ASCII or UTF-8 with no 0s, ‘trim’ behaves 
    like in older versions.
 
+10.7.4
+   When starting newlisp in -http-safe server mode HTTP_PUT and HTTP_DELETE 
+   requests will not be served. This will cause 'write-file' and 'delete-file'
+   in url syntax, 'put-url' and 'delete-url' functions issued from a newLISP 
+   client to return the text message "Server in safe mode".
 
+   New file qa-specific-tests/qa-share.lsp .
+
+   New guiserver.jar v 1.67 compiled with java 1.6
+   Still problems on macOS, some unrelated to change to image/icon load change
+
+   Added REQUEST_URI to environment variables in webserver mode.
+
+   Removed code introduced in 10.7.2 to syncronize file poisitons of C FILE stream 
+   and raw file handle operations. Syncronization still seem s to work on cases
+   tested, but may not work in all cases mixing 'read-line' and 'seek'.
+
+   Changes for separately packaged Java Guiserver and elimination of installers.
+
+   (rotate theList -offsetOfRotation) was buggy
+
+10.7.5
+   In getPutPostDeleteUrl(....) sock wasn't closed when returning with webError(..)
+
+   compareLists() in nl-math.c did not take list lengths into account. Also update
+   of qa-dot for relevant cases.

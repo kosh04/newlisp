@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>newLISP  v.1.7.5 Stable Release Notes </title>
+
+<style type="text/css" media="screen">
+
+h1 {
+	font-family:Optima, Georgia, Times New Roman, Times, serif; 
+	font-size: 200%;
+	font-weight: 500;
+	color: #404040;
+	}
+
+h2, h3 {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+ 	}
+
+body, p {
+	font-family: Lucida Sans, Helvetica,  sans-serif;
+	color: #404040;
+	line-height: 120%;
+	font-size: 110%;
+	max-width: 90%;
+ 	}
+
+tt {
+	font-family: Courier;
+	color: #606060;
+	line-height: 120%;
+	}
+
+em {
+	font-family: Courier;
+	color: #606060;
+	}
+
+li {
+	margin-bottom: 15px;
+    }
+	
+
+</style>
+
+</head>
+
+<body>
+<h1>newLISP<font size=-1>&#174;</font> v.10.7.5 Stable Release 
+<font color="red" size="-1">2019-05-12</font></h1>
+
+<p>This stable release fixes bugs and adds some minor functionality.</p>
+
+<h3>Bug fixes</h3>
+
+<p>Bug fixes where done in releases 10.7.2, 10.7.3, 10.7.4 and 10.7.5.</p>
+
+<ul>
+<li>When using <tt>read-line</tt> on files together with other
+funtions like <tt>read</tt>, <tt>seek</tt> and <tt>search</tt>,
+file positions are now maintained better.</li>
+
+<li>Better handling of UTF-16 encoded filenames on MS Windows. 
+Filenames in newLISP UTF-8 versions should be given encoded in UTF-8 but 
+will be correctly encoded to UTF-16 format on Windows. When reading from 
+the Windows file system, they will be correctly translated to UTF-8.</li>
+
+<li>Fixed a wrong "symbol protected" message when a protected symbol is
+part of a nested espression, but not a symbol with its content to be
+modified.</li>
+
+<li>Fixed a flushing problem on <tt>print</tt> to stdout on macOS and 
+other BSDs.</li>
+
+<li><tt>(trim str)</tt> on some strings containing <tt>0</tt>'s would overrun 
+memory and <tt>0</tt>'s where not trimmed from the left. All characters less 
+than space (32) should be trimmed from both ends of the string buffer. When the
+entire string is valid ASCII or UTF-8 with no <tt>0</tt>'s, <tt>trim</tt> behaves
+like in older versions.</li>
+
+<li><tt>(rotate theList -offsetOfRotation)</tt> did not return the correct
+original list when <tt>offsetOfRotation</tt> was equal to the length of the list 
+to rotate.</li> 
+
+<li>Some list comparisons would ignore trailing <tt>nil</tt>'s in lists, 
+which would lead to wrong results.</li>
+
+</ul>
+
+<h3>New Features</h3>
+
+<p>New features where added in development releases 10.7.3 and 10.7.4.</p>
+
+<ul>
+<li>Supress loading of startup file <tt>init.lsp</tt> when <tt>-h</tt> option 
+is present. In older versions only the <tt>-n</tt> and <tt>-x</tt> options 
+supressed <tt>init.lsp</tt>.</li>
+
+<li><tt>(read-key true)</tt> with the <tt>true</tt> parameter is now 
+non-blocking.</li>
+
+<li>When starting newlisp in <tt>-http-safe</tt> server mode HTTP_PUT and 
+HTTP_DELETE requests will not be served. This will cause <tt>write-file</tt>
+and <tt>delete-file</tt> in url syntax and <tt>put-url</tt> and <tt>delete-url</tt>
+functions issued from a newLISP client to return the text message 
+"Server in safe mode".</li>
+
+<li>The environment variable REQUEST_URI is now defined when newLISP is run
+in webserver mode.</li>
+</ul>
+
+<h3>Compatibility with previous versions</h3>
+<p>This version is compatible with the previous versions in the 10.7.x series.</p>
+
+<center>&part;</center>
+
+</body>
+</html>
+

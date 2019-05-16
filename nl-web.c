@@ -22,7 +22,7 @@
 #include <assert.h>
 #include "sockssl.h"
 #include "protos.h"
-
+ 
 #ifdef WINDOWS
 #include <winsock2.h>
 #else
@@ -48,6 +48,9 @@
 /* from nl-sock.c */
 extern UINT netErrorIdx;
 extern char * netErrorMsg[];
+
+/* from newlisp.c */
+extern int httpSafe;
 
 #define OK_FILE_DELETED "file deleted"
 
@@ -79,7 +82,7 @@ int parseUrl(char *url, char * protocol, char * host, int * port, char * path, s
 void parsePath(char * url, char * path, size_t bufflen);
 size_t parseValue(char * str);
 void trimTrailing(char * ptr);
-CELL * webError(int no);
+CELL * webError(int no, struct socket *sock);
 CELL * base64(CELL * params, int type);
 
 #ifndef EMSCRIPTEN
@@ -282,23 +285,24 @@ if(my_strnicmp(url, "file://", 7) == 0)
     if(type == HTTP_GET)
         {
         if((size = readFile(url, &buffPtr)) == -1)
-            return(webError(ERROR_FILE_OP));
+            return(webError(ERROR_FILE_OP, sock));
         return(makeStringCell(buffPtr, size));
         }
     if(type == HTTP_PUT)
         {
         if(writeFile(url, putPostStr, size, "w") == -1)
-            return(webError(ERROR_FILE_OP));
+            return(webError(ERROR_FILE_OP, sock));
         snprintf(resultTxt, 64, "%u bytes written", (unsigned int)size);
         return(stuffString(resultTxt)); /* not an error */
         }
     if(type == HTTP_DELETE)
         {
         url = getLocalPath(url);
-        return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) : webError(ERROR_FILE_OP));
+        return(unlink(url) == 0 ? stuffString(OK_FILE_DELETED) 
+								: webError(ERROR_FILE_OP, sock));
         }
 
-    return(webError(ERROR_BAD_URL));
+    return(webError(ERROR_BAD_URL, sock));
     }
 
 
@@ -353,7 +357,7 @@ path = alloca(bufflen);
 
 /* parse URL for parameters */
 if(parseUrl(url, protocol, host, &port, path, bufflen) == FALSE)
-    return(webError(ERROR_BAD_URL));
+    return(webError(ERROR_BAD_URL, sock));
 
 /* printf("protocol: %s host:%s port %d path:%s\n", protocol, host, port, path); */
 
@@ -367,7 +371,7 @@ if(proxyUrl == NULL)
 else
     {
     if(parseUrl(proxyUrl, protocol, pHost, &pPort, NULL, bufflen) == FALSE)
-        return(webError(ERROR_BAD_URL));
+        return(webError(ERROR_BAD_URL, sock));
     }
 
 /* start timer */
@@ -377,12 +381,12 @@ CONNECT_TO_HOST:
 if (sock) socket_close(sock);
 
 if((fd = netConnect(pHost, pPort, SOCK_STREAM, 0, timeout)) == SOCKET_ERROR)
-    return(webError(netErrorIdx));
+  return(webError(netErrorIdx, socket_new(fd, 0)));
 
 sock = socket_new(fd, (strcmp(protocol, "https") == 0));
 if (sock == NULL)
     {
-    return webError(-1);        /* stuffString("OpenSSL error"); */
+    return webError(-1, sock);        /* stuffString("OpenSSL error"); */
     }
 
 if(type == HTTP_GET)
@@ -416,14 +420,14 @@ if(type == HTTP_PUT || type == HTTP_PUT_APPEND)
         sendf(sock, debugFlag, "Content-length: %d\r\n\r\n", size);
 
     if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
-        return(webError(ERROR_TRANSFER));
+        return(webError(ERROR_TRANSFER, sock));
     if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
     }
 else if(type == HTTP_POST)
     {
     sendf(sock, debugFlag, "Content-type: %s\r\nContent-length: %d\r\n\r\n", contentType, size);
     if(transfer(sock, putPostStr, size) == SOCKET_ERROR) 
-        return(webError(ERROR_TRANSFER));
+        return(webError(ERROR_TRANSFER, sock));
     if(debugFlag) varPrintf(OUT_CONSOLE, "%s", putPostStr);
     }
 else /* HTTP_GET, HTTP_DELETE */
@@ -433,18 +437,18 @@ if(setjmp(socketTimeoutJump) != 0)
     {
     socket_close(sock);
     if(resultPtr != NULL) free(resultPtr);
-    return(webError(ERR_INET_TIMEOUT));
+    return(webError(ERR_INET_TIMEOUT, sock));
     }
   
 /* Retrieve HTTP response and check for status code. */
 responseLoop = 0;
 READ_RESPONSE:
 if(++responseLoop == 4)
-        return(webError(ERROR_INVALID_RESPONSE));
+        return(webError(ERROR_INVALID_RESPONSE, sock));
 
 
 if (recvs_tm(buff, BUFFSIZE, sock) == NULL) 
-   return(webError(ERROR_NO_RESPONSE));
+   return(webError(ERROR_NO_RESPONSE, sock));
 
 if(debugFlag) varPrintf(OUT_CONSOLE, "\n%s\n", buff);
 
@@ -494,7 +498,7 @@ if(listFlag || headRequest)
 while(strcmp(buff, "\r\n") != 0 && strcmp(buff, "\n") != 0)
     {
     if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-        return(webError(ERROR_HEADER));
+        return(webError(ERROR_HEADER, sock));
 
     if(listFlag || headRequest) appendCellString(headerCell, buff, strlen(buff));
 
@@ -539,17 +543,14 @@ if(headRequest)
 /* changed in 10.6.4 should allow 0-length contents and 204 handled earlier */
 /* if((haveContentLength == TRUE && fSize == 0) || statusCode == 204) */
 if(statusCode == 204)
-    {
-    return(webError(ERROR_NO_CONTENT));
-    resultPtr = NULL;
-    }
+    return(webError(ERROR_NO_CONTENT, sock));
 
 /* Retrieve HTTP body. */
 else if(chunked == TRUE)
     {
     resultPtr = NULL;
     if(recvs_tm(buff, BUFFSIZE, sock) == NULL)
-        return(webError(ERROR_NO_CONTENT));
+        return(webError(ERROR_NO_CONTENT, sock));
     while((size = strtoul(buff, NULL, 16)) > 0)
         {
         if(resultSize == 0)
@@ -559,7 +560,7 @@ else if(chunked == TRUE)
         if(recvsize_tm(resultPtr + resultSize, size, sock, TRUE) != size)
             {
             free(resultPtr);
-            return(webError(ERROR_CHUNKED_FORMAT));
+            return(webError(ERROR_CHUNKED_FORMAT, sock));
             }
         resultSize += size;
         recvs_tm(buff, BUFFSIZE, sock); /* empty line */
@@ -573,7 +574,7 @@ else if(haveContentLength == TRUE && fSize)
     if((resultSize = recvsize_tm(resultPtr, fSize, sock, TRUE)) == 0)
         {
         free(resultPtr);
-        return(webError(ERROR_NO_CONTENT));
+        return(webError(ERROR_NO_CONTENT, sock));
         }
     }
     
@@ -747,10 +748,14 @@ while(!isDigit((unsigned char)*str) && *str != 0) ++str;
 return atol(str);
 }
 
-CELL * webError(int errorNo)
+CELL * webError(int errorNo, struct socket *sock)
 {
 char msg[64];
 
+if (sock != NULL && sock->fd != 0)
+	{
+	close(sock->fd); 
+	}
 netErrorIdx = errorNo;
 snprintf(msg, 64, "ERR: %s", netErrorMsg[errorNo]);
 
@@ -987,7 +992,7 @@ size_t Curl_base64_encode(const char *inp, size_t insize, char **outptr)
 */
 #ifndef LIBRARY
 /* #define DEBUGHTTP  */
-#define SERVER_SOFTWARE "newLISP/10.7.3"
+#define SERVER_SOFTWARE "newLISP/10.7.5"
 
 int sendHTTPmessage(int status, char * description, char * request);
 void handleHTTPcgi(char * command, char * query, ssize_t querySize);
@@ -1106,6 +1111,8 @@ decoded = alloca(strlen(request) + 1);
 url_decode(decoded, request);
 request = decoded;
 
+setenv("REQUEST_URI", request, 1); /* 10.7.4 */
+
 /* change to base dir of request file */
 sptr = request + strlen(request);
 while(*sptr != '/' && sptr != request) --sptr;
@@ -1160,6 +1167,12 @@ switch(type)
         break;
 
     case HTTP_DELETE:
+        if(httpSafe)
+            {
+            sendHTTPpage("Server in safe mode", 19, MEDIA_TEXT);
+            break;
+            }
+            
         if(unlink(request) != 0)    
             sendHTTPmessage(500, "Could not delete", request);
         else
@@ -1186,6 +1199,11 @@ switch(type)
         break;
 
     case HTTP_PUT:
+        if(httpSafe)
+            {
+            sendHTTPpage("Server in safe mode", 19, request);
+            break;
+            }
         if(pragmaFlag) fileMode = "a";
 
         if(!size)
@@ -1196,7 +1214,7 @@ switch(type)
 
         if( (outFile = openFile(request, fileMode, NULL)) == (int)-1)
             {
-            sendHTTPmessage(500, "Cannot create file", request);
+            sendHTTPmessage(500, "cannot create file", request);
             break;
             }
 

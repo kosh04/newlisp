@@ -1,4 +1,4 @@
-/* newlisp.c --- enrty point and main functions for newLISP
+/* newlisp.c --- entry point and main functions for newLISP
 
 
     Copyright (C) 2016 Lutz Mueller
@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10703;
+int version = 10705;
 
 char copyright[]=
-"\nnewLISP v.10.7.3 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.7.5 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.3 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.5 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.3 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.5 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.3 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.5 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.3 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.5 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -150,6 +150,7 @@ int daemonMode = 0;
 int noPromptMode = 0;
 int forcePromptMode = 0;
 int httpMode = 0;
+int httpSafe = 0;
 int evalSilent = 0;
 
 
@@ -805,6 +806,8 @@ for(idx = 1; idx < argc; idx++)
         {
         noPromptMode = TRUE;
         httpMode = TRUE;
+        if(strncmp(argv[idx], "-http-safe", 10) == 0)
+            httpSafe = TRUE;
         continue;
         }
 
@@ -1061,7 +1064,7 @@ void printHelpText(void)
 varPrintf(OUT_CONSOLE, copyright, 
     "usage: newlisp [file | url ...] [options ...] [file | url ...]\n\noptions:");
 varPrintf(OUT_CONSOLE, 
-    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
+    "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
     " -h this help (no init.lsp)",
     " -n no init.lsp (must be first)",
     " -x <source> <target> link (no init.lsp)",
@@ -1078,6 +1081,7 @@ varPrintf(OUT_CONSOLE,
     " -p <port-no>",
     " -d <port-no> daemon mode",
     " -http only mode",
+    " -http-safe safe mode",
     " -6 IPv6 mode",
     "\nmore info at http://newlisp.org");
 }

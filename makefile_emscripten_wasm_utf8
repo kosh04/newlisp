@@ -1,0 +1,44 @@
+# makefile for newLISP v. 10.7.5 and after with UTF8 support for the Emscripten SDK
+# end browsers with web assembly support. Best on Firefox browser
+#
+# see also: https://github.com/kripken/emscripten/wiki
+#
+# Uses custom random() and srandom() in nl-filesys.c
+#
+# Does not implement the newLISP functions:
+# semaphore, net-packet, net-service, fork, spawn, sync, abort
+#
+# Will not do file and network I/O functions in the sandboxed JavaScript
+# environment
+#
+# Generates newlisp-js-lib.js and newlisp-js-lib.html.
+# The html file can be discarded use newlisp-js/newlisp-js.html instead
+#
+# this makefile has been tested on a MAC OSX 10.9-14 platforms
+
+OBJS = newlisp.o nl-symbol.o nl-math.o nl-list.o nl-liststr.o nl-string.o nl-filesys.o \
+nl-sock.o nl-web.o nl-xml-json.o nl-matrix.o nl-debug.o pcre.o nl-utf8.o unix-lib.o
+
+CFLAGS = -m32 -Wall -c -DMAC_OSX -DLIBRARY -DEMSCRIPTEN -DSUPPORT_UTF8
+
+CC = emcc
+
+# to compile without WebAssembly for JavaScript only set WASM=0
+
+default: $(OBJS)
+	cp qa-specific-tests/qa-bench newlisp-js
+	cp modules/canvas.lsp newlisp-js
+	$(CC) $(OBJS) -m32 -O2 -s WASM=1 -o newlisp-js-lib.html -s EXPORTED_FUNCTIONS="['_newlispEvalStr']" \
+	-s EXTRA_EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' \
+	-s TOTAL_MEMORY=33554432 --closure 1 \
+	--embed-file newlisp-js/readme.txt --embed-file newlisp-js/qa-bench \
+	--embed-file newlisp-js/canvas.lsp
+	rm newlisp-js/qa-bench newlisp-js/canvas.lsp
+
+
+.c.o:
+	$(CC) -O2 --closure 1 $(CFLAGS) $<
+
+$(OBJS): primes.h protos.h 
+
+

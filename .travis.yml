@@ -1,6 +1,7 @@
 language: c
 
-sudo: false
+dist: trusty
+sudo: required
 
 os:
   - linux
@@ -51,8 +52,11 @@ before_install:
 script:
   - make -f makefile_ssl CC="$CC --coverage"
   - file ./newlisp && ./newlisp -v
-  - ls -lh ./newlisp && ldd ./newlisp && ./newlisp -v
+  - ls -lh ./newlisp
+  - ldd ./newlisp
+  - ./newlisp -v
   - make testall
+  - make checkall
   - ./newlisp -n -e "(silent)(print (get-url {https://example.com/} {debug}))"
 
 after_success:

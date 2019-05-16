@@ -577,6 +577,7 @@ return(stuffInteger(size + (lineFeed ? LINE_FEED_LEN : 0)));
 CELL * p_seek(CELL * params)
 {
 UINT handle;
+FILE * fstream;
 #ifdef LFS
 INT64 paramPosition;
 off_t newPosition;
@@ -591,6 +592,8 @@ if(params == nilCell)
     {
     if(handle == 0)
         newPosition = ftell(stdout);
+    else if((fstream = getIOstream(handle)) != NULL)
+        newPosition = ftell(fstream);
     else if( (newPosition = lseek(handle, 0, SEEK_CUR)) == -1)
         return(nilCell);
     }
@@ -708,10 +711,8 @@ if(!newlispLibConsoleFlag && fstream == stdin)
 #endif
 if(fstream != NULL)
     {
-    if(handle != 0) fseek(fstream, lseek(handle, 0, SEEK_CUR), 0); /* 10.7.2 */
     if((line = readStreamLine(&readLineStream, fstream)) == NULL)
         return(nilCell);
-    if(handle != 0) lseek((int)handle, ftell(fstream), SEEK_SET); /* 10.7.2 */ 
     return(stuffString(line));
     }
 
