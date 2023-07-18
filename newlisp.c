@@ -459,7 +459,7 @@ switch(sig)
 }
 #endif /* no EMSCRIPTEN */
  
-char * which(char * name, char * buff)
+char * which(char * name, char* buff /*char[PATH_MAX]*/)
 {
 char *path_list, *test, *tmp, *path_parsed;
 struct stat filestat;
@@ -495,7 +495,7 @@ for (i = 0; i < count; i++)
     len = strlen(test);
     if((len + nlen + 2) > PATH_MAX) 
 	    return(NULL);
-    strncpy(buff, test, len + 1);
+    strncpy(buff, test, PATH_MAX);
     buff[len] = '/';
     memcpy(buff + len + 1, name, nlen);
     buff[len + 1 + nlen] = 0;
@@ -557,7 +557,7 @@ else
     if(strchr(name, '/') == NULL) 
         if((name = which(name, alloca(PATH_MAX))) == NULL)
             {
-            printf("%s: %s\n", strerror(ENOENT), name);
+            printf("%s: exepath is NULL\n", strerror(ENOENT));
             exit(ENOENT);
             }
     loadFile(name, *(unsigned int *)linkOffset, 1, mainContext);
@@ -886,9 +886,14 @@ for(idx = 1; idx < argc; idx++)
 
     if(strncmp(argv[idx], "-x", 2) == 0)
         {
-        if(argc == 4)
+        if(argc == 4) {
             linkSource(argv[0], argv[idx + 1], argv[idx + 2]);
-        exit(0);
+            if (chmod(argv[idx + 2], 0755) != 0)
+                fatalError(ERR_IO_ERROR, 0, 0);
+            exit(0);
+        }
+        varPrintf(OUT_CONSOLE, "correct usage: %s -x source.lsp a.out\n", argv[0]);
+        exit(1);
         }
 
     if(strcmp(argv[idx], "-h") == 0)
@@ -2716,9 +2721,10 @@ while(size--)
         case '"': varPrintf(device,"\\%c",'"'); break;
         default: 
             if((unsigned char)chr < 32 || (stringOutputRaw && (unsigned char)chr > 126))
-                            varPrintf(device,"\\%03u", (unsigned char)chr);
-                        else
-                varPrintf(device,"%c",chr); break;
+                varPrintf(device,"\\%03u", (unsigned char)chr);
+            else
+                varPrintf(device,"%c",chr);
+            break;
         }
     }
 varPrintf(device,"\"");
@@ -3151,7 +3157,7 @@ char * errorMessage[] =
 void errorMissingPar(STREAM * stream)
 {
 char str[48]; 
-snprintf(str, 40, "...%.40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
+snprintf(str, 44, "...%.40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
 errorProcExt2(ERR_MISSING_PAR, stuffString(str));
 }
 
@@ -5131,13 +5137,12 @@ SYMBOL * symbol;
 CELL * next;
 
 for(;;)
-    {
+{
     params = getSymbol(params, &symbol);
     next = params->next;
-    if(params == nilCell)
-        return(errorProc(ERR_MISSING_ARGUMENT));
+    if (params == nilCell) return errorProc(ERR_MISSING_ARGUMENT);
 	pushResultFlag = TRUE;
-    if(next == nilCell) return(setDefine(symbol, params, SET_SET));
+    if (next == nilCell) return setDefine(symbol, params, SET_SET);
     setDefine(symbol, params, SET_SET);
     params = next;
     }
@@ -6641,7 +6646,7 @@ else
     else
         return(errorProcExt(ERR_CONTEXT_EXPECTED, params));
 
-        overWriteFlag = (evaluateExpression(next)->type != CELL_NIL);
+    overWriteFlag = (evaluateExpression(next)->type != CELL_NIL);
 
     /* allow symbols to be converted to contexts */
     if(symbolType(toContext) != CELL_CONTEXT)
