@@ -886,9 +886,14 @@ for(idx = 1; idx < argc; idx++)
 
     if(strncmp(argv[idx], "-x", 2) == 0)
         {
-        if(argc == 4)
+        if(argc == 4) {
             linkSource(argv[0], argv[idx + 1], argv[idx + 2]);
-        exit(0);
+            if (chmod(argv[idx + 2], 0755) != 0)
+                fatalError(ERR_IO_ERROR, 0, 0);
+            exit(0);
+        }
+        varPrintf(OUT_CONSOLE, "correct usage: %s -x source.lsp a.out\n", argv[0]);
+        exit(1);
         }
 
     if(strcmp(argv[idx], "-h") == 0)
