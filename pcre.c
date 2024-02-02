@@ -1546,7 +1546,7 @@ static const uschar *
 find_bracket(const uschar *code, BOOL utf8, int number)
 {
 #ifndef SUPPORT_UTF8
-utf8 = utf8;               /* Stop pedantic compilers complaining */
+/* utf8 = utf8; v10.7.6  */               /* Stop pedantic compilers complaining */
 #endif
 
 for (;;)
@@ -1620,7 +1620,7 @@ static const uschar *
 find_recurse(const uschar *code, BOOL utf8)
 {
 #ifndef SUPPORT_UTF8
-utf8 = utf8;               /* Stop pedantic compilers complaining */
+/* utf8 = utf8; v10.7.6 */               /* Stop pedantic compilers complaining */
 #endif
 
 for (;;)
