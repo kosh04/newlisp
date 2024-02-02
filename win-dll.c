@@ -1,6 +1,6 @@
 /* win-dll.c - make the newlisp.exe usable as a DLL 
 
-    Copyright (C) 2011 Lutz Mueller
+    Copyright (C) 2020 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
