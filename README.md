@@ -11,17 +11,18 @@ newLISP mirror
 
 1. What is newLISP and what can I do with it?
 
-  newLISP is a LISP-like scripting language for doing things you typically do with scripting languages: programming for the internet, system administration, text processing, gluing other programs together, etc. newLISP is a scripting LISP for people who are fascinated by LISP's beauty and power of expression, but who need it stripped down to easy-to-learn essentials.
+   newLISP is a LISP-like scripting language for doing things you typically do with scripting languages: programming for the internet, system administration, text processing, gluing other programs together, etc. newLISP is a scripting LISP for people who are fascinated by LISP's beauty and power of expression, but who need it stripped down to easy-to-learn essentials.
 
 2. What makes newLISP so special, why 'new'?
 
-  LISP is an old language born, grown, and standardized in times very different from today, times when programming was for highly educated people who engineered programs. newLISP is LISP reborn as a scripting language: pragmatic and casual, simple to learn without requiring you to know advanced computer science concepts. Like any good scripting language, newLISP is quick to get into and gets the job done without fuss.
+   LISP is an old language born, grown, and standardized in times very different from today, times when programming was for highly educated people who engineered programs. newLISP is LISP reborn as a scripting language: pragmatic and casual, simple to learn without requiring you to know advanced computer science concepts. Like any good scripting language, newLISP is quick to get into and gets the job done without fuss.
   
-  newLISP has a very fast startup time, is small on resources like disk space and memory and has a deep, practical API with functions for networking, statistics, machine learning, regular expressions, multiprocessing and distributed computing built right into it, not added as a second thought in external modules.
+   newLISP has a very fast startup time, is small on resources like disk space and memory and has a deep, practical API with functions for networking, statistics, machine learning, regular expressions, multiprocessing and distributed computing built right into it, not added as a second thought in external modules.
   
   
 See also [the Frequently Asked Questions (FAQ) page](http://www.newlisp.org/index.cgi?FAQ).
 
+----
 
 
 NOTE: This repository is *unofficial* mirror.
@@ -63,7 +64,9 @@ newLISP and Nuevatec are trademarks of Lutz Mueller.
 All files are distribute by GPLv3. For more details,
 see [doc/COPYING](https://github.com/kosh04/newlisp/blob/master/doc/COPYING) and [doc/License.html](https://rawgit.com/kosh04/newlisp/master/doc/License.html).
 
-----
+
+------
+------
 
 newLISP version 10.x.x for LINUX, FreeBSD, macOS Solaris and Windows
 ====================================================================
@@ -196,5 +199,5 @@ See in the doc/ directory of the source distribution
 lutz@nuevatec.com
 
 
-                                  +++
+
 
