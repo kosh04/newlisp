@@ -1,0 +1,10 @@
+Building newLISP for HP's Tru64 OS
+==================================
+
+The following now will make newLISP for the tru64 OS and using the Compaq
+C compiler for the Alpha CPU:
+
+	make
+
+Please contact Peter van Eerten at peter@gtk-server.org for any 
+remaining questions.

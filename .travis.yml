@@ -1,0 +1,54 @@
+language: c
+
+dist: trusty
+sudo: required
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - clang
+  - gcc
+
+matrix:
+  include:
+    # cross build for MinGW-w64
+    - os: linux
+      compiler: x86_64-w64-mingw32-gcc
+      env: STRIP=x86_64-w64-mingw32-strip
+      addons:
+        apt:
+          packages:
+            - gcc-mingw-w64
+            - gcc-mingw-w64-x86-64
+            - binutils-mingw-w64-x86-64
+      script:
+        - make -f makefile_mingw64_utf8 CC=${CC} STRIP=${STRIP}
+      after_success: echo "Skip report coverage"
+    - os: linux
+      compiler: i686-w64-mingw32-gcc
+      env: STRIP=i686-w64-mingw32-strip
+      addons:
+        apt:
+          packages:
+            - gcc-mingw-w64
+            - gcc-mingw-w64-i686
+            - binutils-mingw-w64-i686
+      script:
+        - make -f makefile_mingw_utf8 CC=${CC} STRIP=${STRIP}
+      after_success: echo "Skip report coverage"
+
+before_install:
+  - source ./ci/before_install_${TRAVIS_OS_NAME}.sh
+  - source ./ci/coveralls/before_install_${TRAVIS_OS_NAME}.sh
+  - pip install --user codecov
+
+script:
+  - make CC="$CC --coverage"
+  - file ./newlisp && ./newlisp -v
+  - make checkall
+
+after_success:
+  - coveralls --exclude util
+  - codecov

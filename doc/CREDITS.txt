@@ -1,0 +1,173 @@
+CREDITS
+-------
+
+Over the years many users have contributed to newLISP with suggestions,
+critiques and code. They were crucial in making newLISP what it is today.
+I want to thank everybody and encourage them to continue
+to contribute with code and comments. My special thanks go to
+(in historical order):
+
+Steve Adams 
+  Did the first CYGWIN port and the new native Win32 ports, suggested many
+  other features and functions found today in newLISP.
+
+Stellan Borg 
+  Some of the string functions where suggested by him, discovered and
+  prompted the fixing of many shortcomings in newLISP, built first
+  commercial product (the knowledge manager SUCCEED tm) based on newLISP.
+
+Lars Hard
+  Many insights and ideas (where are you?, I want to contact you).
+
+Ryon Root
+  Set up and maintains the web board for discussing newLISP at
+  http://www.alh.net/newlisp/phpbb/index.php .
+
+Eddie Rucker
+  His comments, insights and ideas have prompted many changes and additions
+  since the Unix versions of newLISP have appeared in 2001.
+
+Hans Peter Wickern
+  Many usability suggestions and newlisp-tk.tcl improvements. Hans-Peter
+  also introduced newLISP to many NeoBook and PowerBasic users and has
+  written various DLLs which can be imported by newLISP on the Win32
+  platform: http://hpwsoft.de/anmeldung/html1/newLISP/newLISP.html .
+
+Nigel Brown
+  Helped making floating point behaviour consistent across platforms, 
+  researched the use of setlocale(), triggered bugfixes and changes in
+  math functions and contributed many other suggestions, which
+  helped to improve newLISP.
+
+Keith Trenton
+  Helped initiating the documentation thread on the discussion board. Since
+  that time many useres have pointed out errors in the documentation and
+  suggested improvements.
+
+Samuel CoX
+  Pointed out many flaws in the documentation, prompted addition of atan2
+  and contributed code examples.
+
+Brian Clausing
+  did the first complete pass through the manual taking care not only of
+  spelling and punctuation but also improving style.
+
+Norman Deppenbroek and Peter van Eerten, http://gtk-server.org
+  both from the GTK-server project helped improving networking functions.
+  Peter's GTK-server is an alternative to Tcl/Tk when doing platform
+  independent GUIs or graphics with newLISP.
+  Norman has contributed many useful newISP command line utilities
+  for the Internet and other usages http://www.nodep.nl/newlisp/.  
+
+David S. de Lis from http://www.geocities.com/excaliborus/
+  contributed the newlisp.vim file for VIM editor syntax highlighting
+  now part of the newLISP source distribution
+
+Luis Carvalho (Kozure) ported newLISP to the PocketPC running Win CE
+  using Alexander Mamaich's pocket gcc, a port of gcc for ARM cpu based
+  PocketPC, http://mamaich.kasone.com/fr_pocket.htm.
+
+John Small
+  initiated the advancement of logical programming in newLISP and contributed
+  many scripts showing how to use newLISP macros. He also wrote the popular
+  introduction "newLISP in 21 minutes"
+
+Greg Ben
+  contributed an account and space on a Sun Sparc workstation for better
+  development and testing on the Sun Solaris platform.
+
+Lucas Wix
+  developed the first newlisp.jsf syntax file for the Joe editor
+  now part of the newLISP source distribution
+
+Tim Johnson
+  developed the first syntax file for Emacs.
+
+John DeSanto, Gordon Fischer, John Flowers, Martin Quiroga (alphabetical order)
+  from Kozoru.com for their ideas and suggestions for improvements and enhancements
+  of the newLISP language and improvements and work-out of the database libraries
+  sqlite.lsp (Flowers) and mysql.lsp (Fischer). In June 2006 Kozoru released
+  http://byoms.com, a distributed application almost entirely built with newLISP. 
+
+Cormullion cormullion@mac.com, http://unbalanced-parentheses.nfshost.com
+  for evangelizing newLISP on the MacOS X platform and publishing many ideas
+  how to use newLISP on that platform and writing the "Introduction to newLISP"
+
+Michael and Melissa Michaels, http://www.neglook.com
+  for a complete review of the Users Manual and evangelizing efforts for newLISP
+  and other good ideas, i.e. defaults in argument lists: (define (foo x (y 1)) ...) 
+  Michael also designed the icons for newLISP-GS in v9.2 and much of the FOOP system 
+  released in 9.3 and has released a series of training videos.
+
+Bob Bae (aka frontera000, http://sparebandwidth.blogspot.com/)
+  bringing many ideas to the advancement of newLISP and actively advocating for
+  newLISP on his and other peoples blogs.
+
+Jeremy Dunn
+  introduced the idea of default args for several operators i.e. (> x) => (> x 0)
+  and for (>> x) => (>> x 1), (div x) => (div 1 x) ... and suggestions.
+
+Michael Sabin
+  contributed UTF-16 capable file and directory routines for the Win32 versions.
+
+Dmitri Cherniak from http://en.feautec.pp.ru/
+  many ideas for the newLISP API and big contributor of newLISP expansion
+  modules.
+
+Cyril Slobin from http://wagner.pp.ru/~slobin/
+  contributed a new newlisp.vim syntax-highlighing file for the vim editor.
+
+Kazimir Majorinc from http://kazimirmajorinc.blogspot.com/
+  has contributed many ideas and has helped to make newLISP known through his
+  thoughtful blog posts.
+
+Jeff Ober from http://www.artfulcode.net/
+  many of his ideas and comments have improved newLISP. On his blog a variety 
+  of interesting and useful code examples and modules can be found.
+
+Ted Walther from http://reactor-core.org/~djw/
+  helped to improve the build process.
+
+Joh from http://johu02.spaces.live.com/default.aspx and http://johu02.wordpress.com/
+  did a  thorough pass through the manual correcting many erros. His website  
+  and his Japanese translations of the reference manual and other documentation
+  help to make newLISP popular in Japan.
+
+Stefan Sonnenberg implemented the extended libffi based API for the import
+  and callback functions starting version 10.3.8. This has opened the door
+  to connect to many C-libraries, which were not accessible before.
+  
+Shigeru Kobayashi contributed newLISP modules for Emacs, Curl and fixed various
+  bugs in the newLISP C-source code. He also made many contributions to Windows
+  specific code. He prepared the first 64-bit compilation for Windows.
+
+------------------------- other contributors, sources ----------------------------
+Phillip Hazel
+  wrote the PCRE (Perl Regular Expressions) library, it is an essential
+  part of newLISP and many other scripting languages and Open Source applications
+  (i.e. Apache)
+
+Jorge Acereda and Peter O'Gorman
+  wrote dyna link library functions for OSX which are used in this project,
+  their files osx-dlfcn.c/.h were necessary on pre 10.3 versions of MacOSX
+  (functionality/code? now part of OS X since 10.3)
+
+Daniel Stenberg
+  from the cURL project, newLISP adapted the base64 encoding and decoding routines
+
+Thomas Niemannn
+  wrote a red-black binary tree algorithm used in newLISP with modifications.
+
+Sourceforge.net
+  Has helped newLISP and many other Open Source projects to get more visibility,
+  the newLISP project enjoys their compile farm to port newLISP to other platforms
+
+Richard M. Stallman
+  GCC and many other GNU - tools make it possible to write platform independent
+  software for many OSs and hardware platforms. The GNU Public License is the 
+  strongest force in the open source movement from which newLISP has benefited.
+
+My apologies to anybody, who has been forgotten on this list (let me know).
+
+                                  +++
+
