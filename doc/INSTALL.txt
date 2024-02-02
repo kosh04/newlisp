@@ -1,0 +1,249 @@
+BINARY INSTALL, BUILD, TOOLS, LOCALIZING  (last updated 2019-02-22)
+-------------------------------------------------------------------
+
+CONTENTS
+
+ (1) MINIMUM INSTALL
+ (2) BUILD, TEST AND INSTALL newLISP FROM SOURCE
+ (3) UNINSTALL
+ (4) COMMENTS FOR COMPILING AND LINKING
+ (5) LOCALIZATION
+ (6) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
+ (7) COMMENTS ABOUT LIBFFI
+
+
+(1) MINIMUM INSTALL
+-------------------
+
+For a minumum install, only the executable file, newlisp iin on UNIX like
+operating systems or newlisp.exe on Win32/64, needs to be moved to a directory
+in the executable path, i.e.  /usr/local/bin/newlisp on Unix. 
+No other files are required. 
+
+If modules are installed the environment NEWLISPDIR can be defined to point to
+the modules parent directory. If NEWLISPDIR is not defined, newLISP sets
+it to /usr/local/share/newlisp during startup on MacOS, Linux, BSDs and other
+UNIX.
+
+To reduce an exisiting UNIX install to a minimum installation, remove all 
+files in /usr/share/newlisp and /usr/local/share/doc/newlisp and the executable 
+files /usr/local/bin/newlisp-edit and /usr/local/bin/newlispdoc.
+
+On Mac OX X remove also the files under the Applications icon in the 
+Applications folder. On Windows remove all file except newlisp.exe in 
+C:/Program Files/newlisp.
+
+
+(2) BUILD AND INSTALL newLISP FROM SOURCE
+-----------------------------------------
+
+Un-tar/gunzip the distribution file newlisp-10.x.x.tgz :
+
+    tar xzvf newlisp-10.x.x.tgz
+
+Change the current directory in to newlisp-10.x.x/
+
+and check what OS flavor make would detect, type:
+
+    ./configure
+
+This will automatically detect the platforms Linus, MacOS X, FreeBSD,
+OpenBSD, NetBSD, SunOS/Solaris and Win32. To build on Win32 a MinGW
+installation hosted by MSYS is required. See http://mingw.org.
+
+If you agree with the platform detected by configure type:
+
+    make
+ 
+After building has finished type:
+
+    make testall
+
+or for a shorter version
+
+    make test
+
+when all tests are passed OK do a
+
+    sudo make install
+    
+or if already in superuser mode:
+
+    make install
+
+to find out all make options, use:
+
+    make help
+
+For shorter ouput, 'make test' can be used instead of 'make check'.
+Using 'make testall' or 'make checkall' more tests and a speed
+benchmark are performed.
+
+
+(3) UNINSTALL
+-------------
+
+On MacOS, Linux, BSDs and other UNIX: 
+
+    sudo make uninstall
+
+or if installed with: make install_home
+
+    make uninstall_home
+
+To manually uninstall on Windows remove all files in 
+c:\Program files\newlisp
+
+
+(4) COMMENTS FOR COMPILING AND LINKING
+--------------------------------------
+
+If skipping the ./configure step and just doing make, the
+configure script will be called automatically if no makefile_build
+can be found, or else the existing makefile_build will be used.
+
+The standard configure script assumes READLINE support, discovers 
+the default memory model (32 bit vs 64 bit) and copies one of the 
+pre-fabricated makefiles to makefile_build. The standard 
+configure forces 32-bit on MacOS X even if 64-bit is
+detected. To force compile for 64-bit either choose an appropiate
+make file manually or use configure-alt.
+
+If compiling with READLINE fails on Linux , it may be due to missing 
+readline.h and history.h include files. In this case the package 
+'libreadline5-dev' or a later version has to be installed.
+
+Most of the makefile_xxxxx can also be used this way:
+
+    make -f makefile_xxxxx
+
+but always read the contents of makefile_xxxxx first, as it sometimes
+contains specific instructions.
+
+
+configure-alt script
+--------------------
+This script can be used as an alternative to the standard configure
+script. Instead of creating a makefile_build from existing pre-
+configured makefile configure-alt does an analysis of the capabilities
+found on the target platform and then custom generates a makefile_build.
+
+Numerous options can be configured. To find all options use:
+
+    ./configure-alt --help 
+
+For questions and support for configure-alt, please contact:
+
+     Ted Walther <ted@reactor-core.org>.
+
+Note thet configure-alt uses a version-numbered directory for the 
+installation. 
+
+Avoid having installs from the standard 'configure' and alternate
+'configure-alt' script on the same machine!
+
+NOTE, that newLISP can only be compiled for the IPL32 and LP64 memory
+models.
+
+configure-alt will configure a 64-bit (LP64) application by default 
+if the platform and tools are capable. The standard configure script
+will configure a makefile for 32-bit (ILP32) by default. This may 
+change in the future.
+
+Compiling and running newlisp-x.x.x/util/types.c will produce:
+
+IPL32 memory model
+------------------
+type      bytes
+---------------
+char        1
+char *      4
+void *      4
+short int   2
+int         4
+long        4
+long int    4
+long long int  8
+size_t      4
+float       4
+double      8
+long double 16
+wchar_t     4
+size_t      4
+off_t       8
+time_t      4
+
+
+LP64 memory model
+-----------------
+type      bytes
+---------------
+char        1
+char *      8
+void *      8
+short int   2
+int         4
+long        8
+long int    8
+long long int  8
+size_t      8
+float       4
+double      8
+long double 16
+wchar_t     4
+size_t      8
+off_t       8
+time_t      8
+
+
+(5) LOCALIZATION
+----------------
+
+The PCRE Regular Expressions code can be localized to your country/language 
+It comes with default character tables for English, but should work well
+for other languages when using the UTF-8 version of newLISP. For correct working of 
+other string functions in your country/language a localizable 'C' library/OS 
+may have to be used. The names of newLISP functions can be localized during 
+runtime without performance loss, (see newlisp_manual.html).
+
+There are UTF-8 versions/makefiles available in the source distribution.
+See the chapter about 'Customization, localization and UTF-8' in the manual.
+
+(6) RUNNING newLISP IN A SHELL OR CONSOLE WINDOW
+------------------------------------------------
+
+On all platforms simply execute:
+ 
+    newlisp
+
+On Windows the execution path of newlisp.exe should be added to the environment 
+during installation. On all other platforms the newlisp binary should be in 
+/usr/local/bin/newlisp or /usr/bin/newlisp. 
+
+
+(7) COMMENTS ABOUT LIBFFI
+-------------------------
+
+Here some general comments for usage of libffi in newLISP:
+
+The extended ffi requiring libffi and ffi.h for compiling, was only 
+introduced a short time ago in February of 2012. Except for module/gsl.lsp 
+all other modules shipped in the distributions work with the older simple 
+form of import not requiring libffi. Both are documented in the manual.
+
+The configure utility will pick libffi enabled makefiles only for Windows, 
+MacOS and Linux. For all other OS it will pick makefiles not requiring libffi.
+
+Ted Walther's configure-alt utility, which automatically configures the 
+memory model (32-bit or 64-bit) never configures for the new extended ffi 
+using libffi.
+
+The path for ffi.h chosen in newlisp.h, is only valid for OSX and UBUNTU 
+Linux, for all other OSs the path might be different and has to be adjusted. 
+
+In any case, libffi from http://sourceware.org/libffi/ is pretty easy to make 
+for most platforms. On Windows, Mac OSX and UBUNTU Linux it is already 
+installed by default.
+
+
+                                 +++

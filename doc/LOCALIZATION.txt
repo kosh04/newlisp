@@ -1,0 +1,41 @@
+LOCALIZATION
+============
+
+See chapter 'Customization Localization and UTF-8' in the 
+Users Manual and the usage of 'set-locale' function in the 
+Function Reference.
+
+The 'set-locale' function will not influence the behaviour of
+PCRE (Perl Compatible Regular Expressions) in newLISP, but a
+special option flag number can be set to support UTF-8 in all
+functions supporting regular expressions like: regex, find,
+replace, parse and search.
+
+To further localize the behaviour of regular expressions in newLISP
+the file 'pcre-chartables.c' must be replaced with a localized
+version. To obtain this file for your locale, follow these steps:
+
+(1) get the pcre source distribution from http://www.pcre.org
+
+(2) follow the instruction in it's README file to 'configure'
+    and  'make' it. An installation is not necessary. Just using
+    the 'configure' and 'make' steps will create a file called
+    'chartables.c' suitable for the locale on your computer
+    system. Rename this file to 'pcre-chartables.c', which it
+    replaces in the newLISP source distribution.
+
+(3) recompile newLISP
+
+newLISP will now show regular expression behaviour in functions
+like 'regex', 'find', 'replace' and 'parse' appropiate to your
+locale. The function 'set-locale' should still be used to change
+all other aspects of newLISP to your locale.
+
+newLISP can be used with multi-byte character languages when
+compiled with UTF-8 options. For some OS flavors UTF-8 enabled
+makefile are shipped in the source distribution.
+
+When compiled with UTF-8 character handling some newLISP functions
+will work on multibyte characters instead of single bytes. See
+the manual for details.
+                               +++
