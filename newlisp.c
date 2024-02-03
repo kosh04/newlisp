@@ -5938,7 +5938,7 @@ UINT * resultIdxSave;
 cell = getPushSymbolParam(params, &symbol);
 
 /* integer loops for dotimes and (for (i from to) ...) */
-if((intFlag = ((CELL *)cell->next)->next == nilCell))
+if((intFlag = (((CELL *)cell->next)->next == nilCell)))
     {
     if(forFlag)
         {
