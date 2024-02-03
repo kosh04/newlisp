@@ -2,10 +2,11 @@
 # OpenGL and GLUT demo - opengl-demo-ffi.lsp
 # Using extended import and callback API based on libffi
 # tested on Windows and OS X 32/64-bit (Intel) minimum version newLISP 10.3.10
+# tested on Linux 32/64-bit (AMD) minimum version newLISP 10.7.0
 
-# verson 2.1 December 2011 - remade with extended FFI for 32 and 64-bit
-# verson 2.2 February 2012 - check if newLISP compiled for extended FFI
-# verson 2.3 April 2015 - changed ostype to Windows from Win32
+# version 2.1 December 2011 - remade with extended FFI for 32 and 64-bit
+# version 2.2 February 2012 - check if newLISP compiled for extended FFI
+# version 2.3 April 2015 - changed ostype to Windows from Win32
 # this version works on both, 32-bit and 64-bit newLISP
 # on a Mac OSX standard install everything neede for 32-bit or 64-bit
 # is included. On Windows XP and Windows 7, glut32.dll must be added. 
@@ -54,7 +55,7 @@
   (begin
     (set 'GL_LIB "opengl32.dll") ; works dfor both 32 and 64 bit
     (set 'GLUT_LIB (if is-64-bit "glut64.dll" "glut32.dll")))
-  (= ostype "Linux") ;; not tested
+  (= ostype "Linux")
   (begin
     (set 'GL_LIB "libGL.so")
     (set 'GLUT_LIB "libglut.so"))

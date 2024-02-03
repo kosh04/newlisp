@@ -1,7 +1,7 @@
 /* newlisp.c --- entry point and main functions for newLISP
 
 
-    Copyright (C) 2016 Lutz Mueller
+    Copyright (C) 2020 Lutz Mueller
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,26 +101,26 @@ int opsys = 10;
 
 int bigEndian = 1; /* gets set in main() */
 
-int version = 10705;
+int version = 10706;
 
 char copyright[]=
-"\nnewLISP v.10.7.5 Copyright (c) 2016 Lutz Mueller. All rights reserved.\n\n%s\n\n";
+"\nnewLISP v.10.7.6 Copyright (c) 2020 Lutz Mueller. All rights reserved.\n\n%s\n\n";
 
 #ifndef NEWLISP64
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.5 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.6 32-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.5 32-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.6 32-bit on %s IPv4/6%s%s\n\n";
 #endif
 #else /* NEWLISP64 */
 #ifdef SUPPORT_UTF8
 char banner[]=
-"newLISP v.10.7.5 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
+"newLISP v.10.7.6 64-bit on %s IPv4/6 UTF-8%s%s\n\n";
 #else
 char banner[]=
-"newLISP v.10.7.5 64-bit on %s IPv4/6%s%s\n\n";
+"newLISP v.10.7.6 64-bit on %s IPv4/6%s%s\n\n";
 #endif 
 #endif /* NEWLISP64 */
 
@@ -459,7 +459,7 @@ switch(sig)
 }
 #endif /* no EMSCRIPTEN */
  
-char * which(char * name, char * buff)
+char * which(char * name, char buff[PATH_MAX])
 {
 char *path_list, *test, *tmp, *path_parsed;
 struct stat filestat;
@@ -495,7 +495,7 @@ for (i = 0; i < count; i++)
     len = strlen(test);
     if((len + nlen + 2) > PATH_MAX) 
 	    return(NULL);
-    strncpy(buff, test, len + 1);
+    strncpy(buff, test, PATH_MAX);
     buff[len] = '/';
     memcpy(buff + len + 1, name, nlen);
     buff[len + 1 + nlen] = 0;
@@ -557,7 +557,7 @@ else
     if(strchr(name, '/') == NULL) 
         if((name = which(name, alloca(PATH_MAX))) == NULL)
             {
-            printf("%s: %s\n", strerror(ENOENT), name);
+            printf("%s: exepath is NULL\n", strerror(ENOENT));
             exit(ENOENT);
             }
     loadFile(name, *(unsigned int *)linkOffset, 1, mainContext);
@@ -886,9 +886,14 @@ for(idx = 1; idx < argc; idx++)
 
     if(strncmp(argv[idx], "-x", 2) == 0)
         {
-        if(argc == 4)
+        if(argc == 4) {
             linkSource(argv[0], argv[idx + 1], argv[idx + 2]);
-        exit(0);
+            if (chmod(argv[idx + 2], 0755) != 0)
+                fatalError(ERR_IO_ERROR, 0, 0);
+            exit(0);
+        }
+        varPrintf(OUT_CONSOLE, "correct usage: %s -x source.lsp a.out\n", argv[0]);
+        exit(1);
         }
 
     if(strcmp(argv[idx], "-h") == 0)
@@ -2716,9 +2721,10 @@ while(size--)
         case '"': varPrintf(device,"\\%c",'"'); break;
         default: 
             if((unsigned char)chr < 32 || (stringOutputRaw && (unsigned char)chr > 126))
-                            varPrintf(device,"\\%03u", (unsigned char)chr);
-                        else
-                varPrintf(device,"%c",chr); break;
+                varPrintf(device,"\\%03u", (unsigned char)chr);
+            else
+                varPrintf(device,"%c",chr);
+            break;
         }
     }
 varPrintf(device,"\"");
@@ -3151,7 +3157,7 @@ char * errorMessage[] =
 void errorMissingPar(STREAM * stream)
 {
 char str[48]; 
-snprintf(str, 40, "...%.40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
+snprintf(str, 44, "...%.40s", ((char *)((stream->ptr - stream->buffer) > 40 ? stream->ptr - 40 : stream->buffer)));
 errorProcExt2(ERR_MISSING_PAR, stuffString(str));
 }
 
@@ -5131,13 +5137,14 @@ SYMBOL * symbol;
 CELL * next;
 
 for(;;)
-    {
+{
     params = getSymbol(params, &symbol);
     next = params->next;
-    if(params == nilCell)
-        return(errorProc(ERR_MISSING_ARGUMENT));
+    if (params == nilCell)
+        return errorProc(ERR_MISSING_ARGUMENT);
 	pushResultFlag = TRUE;
-    if(next == nilCell) return(setDefine(symbol, params, SET_SET));
+    if (next == nilCell)
+        return setDefine(symbol, params, SET_SET);
     setDefine(symbol, params, SET_SET);
     params = next;
     }
@@ -5931,7 +5938,7 @@ UINT * resultIdxSave;
 cell = getPushSymbolParam(params, &symbol);
 
 /* integer loops for dotimes and (for (i from to) ...) */
-if((intFlag = ((CELL *)cell->next)->next == nilCell))
+if((intFlag = (((CELL *)cell->next)->next == nilCell)))
     {
     if(forFlag)
         {
@@ -6641,7 +6648,7 @@ else
     else
         return(errorProcExt(ERR_CONTEXT_EXPECTED, params));
 
-        overWriteFlag = (evaluateExpression(next)->type != CELL_NIL);
+    overWriteFlag = (evaluateExpression(next)->type != CELL_NIL);
 
     /* allow symbols to be converted to contexts */
     if(symbolType(toContext) != CELL_CONTEXT)

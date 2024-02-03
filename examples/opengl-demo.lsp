@@ -2,6 +2,7 @@
 # OpenGL and GLUT demo - opengl-demo.lsp
 # using simple import and callback API
 # tested on Windows and OS X (Intel) 32-bit only!
+# tested on Linux 32-bit (AMD) minimum version newLISP 10.7.5
 
 # version 1.2, July 2009 - make drawObject working with motion
 
@@ -16,7 +17,7 @@
 # glut32.dll -  available here: http://www.opengl.org/resources/libraries/glut/
 # Note! on Windows 7 glut32.dll should be installed c:/Windows/SysWOW64/ not system32
 # 
-# Linux/UNIX - not tested
+# Linux/UNIX
 # libGLU.so - should be on your Linux/UNIX installation or at www.opengl.org
 # glut-3.7.so - already on your system or at:
 #     http://www.opengl.org/resources/libraries/glut/
@@ -63,7 +64,7 @@
   (begin
     (set 'GL_LIB "opengl32.dll")
     (set 'GLUT_LIB "glut32.dll"))
-  (= ostype "Linux") ;; not tested
+  (= ostype "Linux")
   (begin
     (set 'GL_LIB "libGL.so")
     (set 'GLUT_LIB "libglut.so"))
